@@ -1,0 +1,33 @@
+services:
+  devcontainer:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+    volumes:
+      - ..:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+      - guma-go-mod-cache:/go/pkg/mod
+      # - guma-node-modules:/workspace/web/node_modules:rw
+      - guma-command-history:/commandhistory
+    command: sleep infinity
+    # network_mode: service:postgres
+    depends_on:
+      - postgres
+      - redis
+      - minio
+      - kratos
+    environment:
+      - DATABASE_URL=postgres://guma:password@localhost:5432/guma?sslmode=disable
+      - REDIS_URL=redis://localhost:6379/0
+      - MINIO_ENDPOINT=localhost:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - ENV=development
+volumes:
+  guma-go-mod-cache:
+  guma-node-modules:
+  guma-command-history:
