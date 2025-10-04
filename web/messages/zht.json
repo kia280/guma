@@ -1,0 +1,69 @@
+{
+  "siteMeta": {
+    "title": "桑貝幣分鑽系統",
+    "description": "桑貝幣分鑽系統",
+    "keywords": "桑貝幣分鑽系統"
+  },
+  "index": {
+    "title": "你好 世界!"
+  },
+  "loginPage": {
+    "loginWithDiscord": "使用 Discord 登入",
+    "dontHaveAccount": "沒有帳號?",
+    "register": "註冊",
+    "password": "密碼",
+    "logIn": "登入",
+    "emailAddress": "電子郵件地址",
+    "enterYourEmail": "請輸入您的電子郵件",
+    "enterYourPassword": "請輸入您的密碼",
+    "rememberMe": "記住我",
+    "forgotPassword": "忘記密碼？",
+    "or": "或"
+  },
+  "sidebar": {
+    "dashboard": "主頁",
+    "sign": "出席登記",
+    "loot": "戰利品競拍",
+    "bossCalendar": "王表",
+    "checkIn": "出席登記",
+    "wallet": "錢包"
+  },
+  "dashboardLayout": {
+    "sunbaby": "桑貝比",
+    "dashboard": "主頁",
+    "checkin": "出席登記",
+    "wallet": "錢包",
+    "auction": "戰利品競拍",
+    "lottery": "抽獎",
+    "admin": "管理",
+    "calendar": "王表"
+  },
+  "dashboard": {
+    "overview": "總覽",
+    "providentFund": "公積金",
+    "totalEarnings": "總收入",
+    "totalSpent": "總支出",
+    "news": "最新消息"
+  },
+  "checkIn": {
+    "checkIn": "出席登記",
+    "addCheckIn": "新增登記"
+  },
+  "walletPage": {
+    "wallet": "錢包",
+    "manageBalance": "管理您的餘額和交易",
+    "currentBalance": "當前餘額",
+    "availableFunds": "帳戶可用資金",
+    "transfer": "轉帳",
+    "sendMoney": "發送金額",
+    "withdraw": "提款",
+    "recentTransactions": "最近交易",
+    "viewAll": "查看全部",
+    "amount": "金額",
+    "recipient": "收款人",
+    "status": "狀態",
+    "completed": "已完成",
+    "pending": "處理中",
+    "failed": "失敗"
+  }
+}

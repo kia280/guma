@@ -1,0 +1,13 @@
+{
+  "Index": {
+    "title": "Hello world!"
+  },
+  "Login": {
+    "slogan": "登入您的帳號",
+    "account": "帳號",
+    "password": "密碼",
+    "remember-me": "記住我",
+    "signin": "登入",
+    "forgot": "忘記密碼?"
+  }
+}
