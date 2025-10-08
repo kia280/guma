@@ -1,0 +1,179 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/guma/pkg/proto/guma/v1;gumav1";
+
+service GumaService {
+  // Navigation and UI
+  rpc GetNavigation(GetNavigationRequest) returns (GetNavigationResponse) {
+    option (google.api.http) = {
+      get: "/v1/navigation"
+    };
+  }
+
+  rpc GetDashboardData(GetDashboardDataRequest) returns (GetDashboardDataResponse) {
+    option (google.api.http) = {
+      get: "/v1/dashboard/{guild_id}"
+    };
+  }
+
+  // User preferences
+  rpc GetUserPreferences(GetUserPreferencesRequest) returns (GetUserPreferencesResponse) {
+    option (google.api.http) = {
+      get: "/v1/preferences"
+    };
+  }
+
+  rpc UpdateUserPreferences(UpdateUserPreferencesRequest) returns (UpdateUserPreferencesResponse) {
+    option (google.api.http) = {
+      put: "/v1/preferences"
+      body: "*"
+    };
+  }
+
+  // Application configuration
+  rpc GetAppConfig(GetAppConfigRequest) returns (GetAppConfigResponse) {
+    option (google.api.http) = {
+      get: "/v1/config"
+    };
+  }
+
+  // Global search
+  rpc SearchGlobal(SearchGlobalRequest) returns (SearchGlobalResponse) {
+    option (google.api.http) = {
+      get: "/v1/search"
+    };
+  }
+}
+
+// Request/Response messages
+message GetNavigationRequest {
+  string guild_id = 1;  // Optional: guild-specific navigation
+}
+
+message GetNavigationResponse {
+  repeated NavigationItem items = 1;
+}
+
+message GetDashboardDataRequest {
+  string guild_id = 1;
+}
+
+message GetDashboardDataResponse {
+  DashboardData data = 1;
+}
+
+message GetUserPreferencesRequest {}
+
+message GetUserPreferencesResponse {
+  UserPreferences preferences = 1;
+}
+
+message UpdateUserPreferencesRequest {
+  UserPreferences preferences = 1;
+}
+
+message UpdateUserPreferencesResponse {
+  UserPreferences preferences = 1;
+}
+
+message GetAppConfigRequest {}
+
+message GetAppConfigResponse {
+  AppConfig config = 1;
+}
+
+message SearchGlobalRequest {
+  string query = 1;
+  string guild_id = 2;  // Optional: scope to guild
+  int32 limit = 3;      // Default: 20
+}
+
+message SearchGlobalResponse {
+  SearchResults results = 1;
+}
+
+// Data structures
+message NavigationItem {
+  string id = 1;
+  string label = 2;
+  string icon = 3;
+  string path = 4;
+  int32 order = 5;
+  repeated NavigationItem children = 6;
+  map<string, string> metadata = 7;
+  bool visible = 8;
+}
+
+message UserPreferences {
+  string theme = 1;              // "light", "dark", "auto"
+  string language = 2;           // "en", "ja", etc.
+  string timezone = 3;           // IANA timezone
+  string date_format = 4;        // Date display format
+  string time_format = 5;        // 12h/24h
+  map<string, string> ui_settings = 6;  // Custom UI settings
+}
+
+message DashboardData {
+  repeated Activity recent_activities = 1;
+  repeated Notification notifications = 2;
+  QuickStats stats = 3;
+}
+
+message Activity {
+  string id = 1;
+  string type = 2;
+  string description = 3;
+  string actor_id = 4;
+  string actor_name = 5;
+  google.protobuf.Timestamp timestamp = 6;
+  map<string, string> metadata = 7;
+}
+
+message Notification {
+  string id = 1;
+  string title = 2;
+  string message = 3;
+  string type = 4;  // "info", "warning", "error", "success"
+  bool read = 5;
+  google.protobuf.Timestamp created_at = 6;
+  string action_url = 7;
+}
+
+message QuickStats {
+  int32 guild_count = 1;
+  int32 unread_notifications = 2;
+  int32 pending_invitations = 3;
+  map<string, int32> custom_stats = 4;
+}
+
+message AppConfig {
+  string version = 1;
+  map<string, bool> features = 2;
+  map<string, string> settings = 3;
+  Limits limits = 4;
+}
+
+message Limits {
+  int32 max_guilds_per_user = 1;
+  int32 max_members_per_guild = 2;
+  int64 max_file_size_bytes = 3;
+}
+
+message SearchResults {
+  repeated SearchResult items = 1;
+  int32 total_count = 2;
+}
+
+message SearchResult {
+  string id = 1;
+  string type = 2;  // "guild", "member", "event", etc.
+  string title = 3;
+  string description = 4;
+  string url = 5;
+  map<string, string> metadata = 6;
+}

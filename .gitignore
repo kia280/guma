@@ -70,10 +70,6 @@ temp/
 # Docker
 docker-compose.override.yml
 
-# Generated files
-pkg/proto/**/*.pb.go
-pkg/proto/**/*connect.go
-
 # Test coverage
 coverage.txt
 coverage.html

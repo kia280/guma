@@ -1,0 +1,204 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/guma/pkg/proto/guma/v1;gumav1";
+
+service MemberService {
+  rpc InviteMember(InviteMemberRequest) returns (InviteMemberResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/members/invite"
+      body: "*"
+    };
+  }
+
+  rpc JoinGuild(JoinGuildRequest) returns (JoinGuildResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/join"
+      body: "*"
+    };
+  }
+
+  rpc UpdateMember(UpdateMemberRequest) returns (UpdateMemberResponse) {
+    option (google.api.http) = {
+      put: "/v1/guilds/{guild_id}/members/{member_id}"
+      body: "*"
+    };
+  }
+
+  rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/members/{member_id}"
+    };
+  }
+
+  rpc ListMembers(ListMembersRequest) returns (ListMembersResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/members"
+    };
+  }
+
+  rpc GetMember(GetMemberRequest) returns (GetMemberResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/members/{member_id}"
+    };
+  }
+
+  // Invite code management
+  rpc GenerateInviteCode(GenerateInviteCodeRequest) returns (GenerateInviteCodeResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/invites"
+      body: "*"
+    };
+  }
+
+  rpc ValidateInviteCode(ValidateInviteCodeRequest) returns (ValidateInviteCodeResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/invites/{code}"
+    };
+  }
+
+  rpc ListInvites(ListInvitesRequest) returns (ListInvitesResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/invites"
+    };
+  }
+
+  rpc RevokeInvite(RevokeInviteRequest) returns (RevokeInviteResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/invites/{invite_id}"
+    };
+  }
+}
+
+// Request/Response messages
+message InviteMemberRequest {
+  string guild_id = 1;
+  string email = 2;
+  string role = 3;
+  string message = 4;
+}
+
+message InviteMemberResponse {
+  Invitation invitation = 1;
+}
+
+message JoinGuildRequest {
+  string invite_code = 1;
+}
+
+message JoinGuildResponse {
+  Member member = 1;
+}
+
+message UpdateMemberRequest {
+  string guild_id = 1;
+  string member_id = 2;
+  string display_name = 3;
+  string role = 4;
+  map<string, string> profile = 5;
+}
+
+message UpdateMemberResponse {
+  Member member = 1;
+}
+
+message RemoveMemberRequest {
+  string guild_id = 1;
+  string member_id = 2;
+}
+
+message RemoveMemberResponse {
+  bool success = 1;
+}
+
+message ListMembersRequest {
+  string guild_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+  string role = 4;  // Filter by role
+}
+
+message ListMembersResponse {
+  repeated Member members = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message GetMemberRequest {
+  string guild_id = 1;
+  string member_id = 2;
+}
+
+message GetMemberResponse {
+  Member member = 1;
+}
+
+message GenerateInviteCodeRequest {
+  string guild_id = 1;
+  int32 max_uses = 2;
+  google.protobuf.Timestamp expires_at = 3;
+  string role = 4;  // Role assigned to invited members
+}
+
+message GenerateInviteCodeResponse {
+  Invitation invitation = 1;
+}
+
+message ValidateInviteCodeRequest {
+  string code = 1;
+}
+
+message ValidateInviteCodeResponse {
+  bool valid = 1;
+  string guild_id = 2;
+  string guild_name = 3;
+}
+
+message ListInvitesRequest {
+  string guild_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListInvitesResponse {
+  repeated Invitation invitations = 1;
+  string next_page_token = 2;
+}
+
+message RevokeInviteRequest {
+  string guild_id = 1;
+  string invite_id = 2;
+}
+
+message RevokeInviteResponse {
+  bool success = 1;
+}
+
+// Data structures
+message Member {
+  string id = 1;
+  string user_id = 2;
+  string guild_id = 3;
+  string display_name = 4;
+  string role = 5;  // "owner", "admin", "moderator", "member"
+  map<string, string> profile = 6;
+  google.protobuf.Timestamp joined_at = 7;
+  google.protobuf.Timestamp last_active = 8;
+}
+
+message Invitation {
+  string id = 1;
+  string guild_id = 2;
+  string code = 3;
+  string created_by = 4;
+  string role = 5;
+  int32 max_uses = 6;
+  int32 use_count = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp expires_at = 9;
+  bool revoked = 10;
+}

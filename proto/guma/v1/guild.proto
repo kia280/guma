@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/guma/pkg/proto/guma/v1;gumav1";
+
+service GuildService {
+  rpc CreateGuild(CreateGuildRequest) returns (CreateGuildResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds"
+      body: "*"
+    };
+  }
+
+  rpc GetGuild(GetGuildRequest) returns (GetGuildResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}"
+    };
+  }
+
+  rpc UpdateGuild(UpdateGuildRequest) returns (UpdateGuildResponse) {
+    option (google.api.http) = {
+      put: "/v1/guilds/{guild_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteGuild(DeleteGuildRequest) returns (DeleteGuildResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}"
+    };
+  }
+
+  rpc ListGuilds(ListGuildsRequest) returns (ListGuildsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds"
+    };
+  }
+
+  rpc GetGuildSettings(GetGuildSettingsRequest) returns (GetGuildSettingsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/settings"
+    };
+  }
+
+  rpc UpdateGuildSettings(UpdateGuildSettingsRequest) returns (UpdateGuildSettingsResponse) {
+    option (google.api.http) = {
+      put: "/v1/guilds/{guild_id}/settings"
+      body: "*"
+    };
+  }
+}
+
+// Request/Response messages
+message CreateGuildRequest {
+  string name = 1;
+  string description = 2;
+  map<string, string> settings = 3;
+  repeated string tags = 4;
+}
+
+message CreateGuildResponse {
+  Guild guild = 1;
+}
+
+message GetGuildRequest {
+  string guild_id = 1;
+}
+
+message GetGuildResponse {
+  Guild guild = 1;
+}
+
+message UpdateGuildRequest {
+  string guild_id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string tags = 4;
+}
+
+message UpdateGuildResponse {
+  Guild guild = 1;
+}
+
+message DeleteGuildRequest {
+  string guild_id = 1;
+}
+
+message DeleteGuildResponse {
+  bool success = 1;
+}
+
+message ListGuildsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+  string order_by = 4;
+}
+
+message ListGuildsResponse {
+  repeated Guild guilds = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message GetGuildSettingsRequest {
+  string guild_id = 1;
+}
+
+message GetGuildSettingsResponse {
+  GuildSettings settings = 1;
+}
+
+message UpdateGuildSettingsRequest {
+  string guild_id = 1;
+  GuildSettings settings = 2;
+}
+
+message UpdateGuildSettingsResponse {
+  GuildSettings settings = 1;
+}
+
+// Data structures
+message Guild {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string owner_id = 4;
+  repeated string tags = 5;
+  GuildSettings settings = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  int32 member_count = 9;
+}
+
+message GuildSettings {
+  string timezone = 1;
+  string language = 2;
+  bool public = 3;
+  bool allow_invites = 4;
+  map<string, string> custom_settings = 5;
+}
