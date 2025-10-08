@@ -4,9 +4,6 @@
 *.dll
 *.so
 *.dylib
-guma
-server
-migrate
 
 # Test binary, built with `go test -c`
 *.test
