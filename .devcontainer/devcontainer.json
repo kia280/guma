@@ -7,8 +7,10 @@
   // Configure Features
   "features": {
     "ghcr.io/devcontainers/features/node:1.6.3": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2.12.3": {},
-    "ghcr.io/devcontainers/features/github-cli:1.0.14": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2.12.4": {
+      "moby": false
+    },
+    "ghcr.io/devcontainers/features/github-cli:1.0.15": {},
     "ghcr.io/devcontainers/features/go:1.3.2": {},
     "ghcr.io/devcontainers-extra/features/protoc:1.0.3": {},
     "ghcr.io/devcontainers-extra/features/ory-kratos:1.0.6": {},

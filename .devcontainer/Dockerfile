@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/go:1.24
+FROM mcr.microsoft.com/devcontainers/go:1.25
 
 # Install Go tools that will be installed by the install-tools script
 # Pre-install them here for faster container startup
