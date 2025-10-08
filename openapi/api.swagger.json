@@ -1,0 +1,1588 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "proto/guma/v1/guild.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "GuildService"
+    },
+    {
+      "name": "GumaService"
+    },
+    {
+      "name": "MemberService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/config": {
+      "get": {
+        "summary": "Application configuration",
+        "operationId": "GumaService_GetAppConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetAppConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "GumaService"
+        ]
+      }
+    },
+    "/v1/dashboard/{guildId}": {
+      "get": {
+        "operationId": "GumaService_GetDashboardData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetDashboardDataResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GumaService"
+        ]
+      }
+    },
+    "/v1/guilds": {
+      "get": {
+        "operationId": "GuildService_ListGuilds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListGuildsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      },
+      "post": {
+        "operationId": "GuildService_CreateGuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateGuildResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateGuildRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      }
+    },
+    "/v1/guilds/invites/{code}": {
+      "get": {
+        "operationId": "MemberService_ValidateInviteCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ValidateInviteCodeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/join": {
+      "post": {
+        "operationId": "MemberService_JoinGuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1JoinGuildResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1JoinGuildRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}": {
+      "get": {
+        "operationId": "GuildService_GetGuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetGuildResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      },
+      "delete": {
+        "operationId": "GuildService_DeleteGuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteGuildResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      },
+      "put": {
+        "operationId": "GuildService_UpdateGuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateGuildResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GuildServiceUpdateGuildBody"
+            }
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/invites": {
+      "get": {
+        "operationId": "MemberService_ListInvites",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListInvitesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      },
+      "post": {
+        "summary": "Invite code management",
+        "operationId": "MemberService_GenerateInviteCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GenerateInviteCodeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MemberServiceGenerateInviteCodeBody"
+            }
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/invites/{inviteId}": {
+      "delete": {
+        "operationId": "MemberService_RevokeInvite",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RevokeInviteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "inviteId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/members": {
+      "get": {
+        "operationId": "MemberService_ListMembers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMembersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "description": "Filter by role",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/members/invite": {
+      "post": {
+        "operationId": "MemberService_InviteMember",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1InviteMemberResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MemberServiceInviteMemberBody"
+            }
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/members/{memberId}": {
+      "get": {
+        "operationId": "MemberService_GetMember",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMemberResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      },
+      "delete": {
+        "operationId": "MemberService_RemoveMember",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RemoveMemberResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      },
+      "put": {
+        "operationId": "MemberService_UpdateMember",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMemberResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MemberServiceUpdateMemberBody"
+            }
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/settings": {
+      "get": {
+        "operationId": "GuildService_GetGuildSettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetGuildSettingsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      },
+      "put": {
+        "operationId": "GuildService_UpdateGuildSettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateGuildSettingsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GuildServiceUpdateGuildSettingsBody"
+            }
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      }
+    },
+    "/v1/navigation": {
+      "get": {
+        "summary": "Navigation and UI",
+        "operationId": "GumaService_GetNavigation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetNavigationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "description": "Optional: guild-specific navigation",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GumaService"
+        ]
+      }
+    },
+    "/v1/preferences": {
+      "get": {
+        "summary": "User preferences",
+        "operationId": "GumaService_GetUserPreferences",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserPreferencesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "GumaService"
+        ]
+      },
+      "put": {
+        "operationId": "GumaService_UpdateUserPreferences",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUserPreferencesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUserPreferencesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GumaService"
+        ]
+      }
+    },
+    "/v1/search": {
+      "get": {
+        "summary": "Global search",
+        "operationId": "GumaService_SearchGlobal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SearchGlobalResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "guildId",
+            "description": "Optional: scope to guild",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "description": "Default: 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "GumaService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "GuildServiceUpdateGuildBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "GuildServiceUpdateGuildSettingsBody": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1GuildSettings"
+        }
+      }
+    },
+    "MemberServiceGenerateInviteCodeBody": {
+      "type": "object",
+      "properties": {
+        "maxUses": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "role": {
+          "type": "string",
+          "title": "Role assigned to invited members"
+        }
+      }
+    },
+    "MemberServiceInviteMemberBody": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "Request/Response messages"
+    },
+    "MemberServiceUpdateMemberBody": {
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1Activity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "actorId": {
+          "type": "string"
+        },
+        "actorName": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1AppConfig": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "features": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "settings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "limits": {
+          "$ref": "#/definitions/v1Limits"
+        }
+      }
+    },
+    "v1CreateGuildRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "settings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Request/Response messages"
+    },
+    "v1CreateGuildResponse": {
+      "type": "object",
+      "properties": {
+        "guild": {
+          "$ref": "#/definitions/v1Guild"
+        }
+      }
+    },
+    "v1DashboardData": {
+      "type": "object",
+      "properties": {
+        "recentActivities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Activity"
+          }
+        },
+        "notifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Notification"
+          }
+        },
+        "stats": {
+          "$ref": "#/definitions/v1QuickStats"
+        }
+      }
+    },
+    "v1DeleteGuildResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1GenerateInviteCodeResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1GetAppConfigResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "$ref": "#/definitions/v1AppConfig"
+        }
+      }
+    },
+    "v1GetDashboardDataResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/v1DashboardData"
+        }
+      }
+    },
+    "v1GetGuildResponse": {
+      "type": "object",
+      "properties": {
+        "guild": {
+          "$ref": "#/definitions/v1Guild"
+        }
+      }
+    },
+    "v1GetGuildSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1GuildSettings"
+        }
+      }
+    },
+    "v1GetMemberResponse": {
+      "type": "object",
+      "properties": {
+        "member": {
+          "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
+    "v1GetNavigationResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1NavigationItem"
+          }
+        }
+      }
+    },
+    "v1GetUserPreferencesResponse": {
+      "type": "object",
+      "properties": {
+        "preferences": {
+          "$ref": "#/definitions/v1UserPreferences"
+        }
+      }
+    },
+    "v1Guild": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "settings": {
+          "$ref": "#/definitions/v1GuildSettings"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "memberCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "Data structures"
+    },
+    "v1GuildSettings": {
+      "type": "object",
+      "properties": {
+        "timezone": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "public": {
+          "type": "boolean"
+        },
+        "allowInvites": {
+          "type": "boolean"
+        },
+        "customSettings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1Invitation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "maxUses": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "useCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revoked": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1InviteMemberResponse": {
+      "type": "object",
+      "properties": {
+        "invitation": {
+          "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1JoinGuildRequest": {
+      "type": "object",
+      "properties": {
+        "inviteCode": {
+          "type": "string"
+        }
+      }
+    },
+    "v1JoinGuildResponse": {
+      "type": "object",
+      "properties": {
+        "member": {
+          "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
+    "v1Limits": {
+      "type": "object",
+      "properties": {
+        "maxGuildsPerUser": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxMembersPerGuild": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxFileSizeBytes": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1ListGuildsResponse": {
+      "type": "object",
+      "properties": {
+        "guilds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Guild"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListInvitesResponse": {
+      "type": "object",
+      "properties": {
+        "invitations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Invitation"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListMembersResponse": {
+      "type": "object",
+      "properties": {
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Member"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1Member": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "title": "\"owner\", \"admin\", \"moderator\", \"member\""
+        },
+        "profile": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastActive": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "title": "Data structures"
+    },
+    "v1NavigationItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "order": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1NavigationItem"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "visible": {
+          "type": "boolean"
+        }
+      },
+      "title": "Data structures"
+    },
+    "v1Notification": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "title": "\"info\", \"warning\", \"error\", \"success\""
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "actionUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "v1QuickStats": {
+      "type": "object",
+      "properties": {
+        "guildCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "unreadNotifications": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "pendingInvitations": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "customStats": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "v1RemoveMemberResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1RevokeInviteResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1SearchGlobalResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "$ref": "#/definitions/v1SearchResults"
+        }
+      }
+    },
+    "v1SearchResult": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "description": "\"guild\", \"member\", \"event\", etc."
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1SearchResults": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SearchResult"
+          }
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1UpdateGuildResponse": {
+      "type": "object",
+      "properties": {
+        "guild": {
+          "$ref": "#/definitions/v1Guild"
+        }
+      }
+    },
+    "v1UpdateGuildSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "$ref": "#/definitions/v1GuildSettings"
+        }
+      }
+    },
+    "v1UpdateMemberResponse": {
+      "type": "object",
+      "properties": {
+        "member": {
+          "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
+    "v1UpdateUserPreferencesRequest": {
+      "type": "object",
+      "properties": {
+        "preferences": {
+          "$ref": "#/definitions/v1UserPreferences"
+        }
+      }
+    },
+    "v1UpdateUserPreferencesResponse": {
+      "type": "object",
+      "properties": {
+        "preferences": {
+          "$ref": "#/definitions/v1UserPreferences"
+        }
+      }
+    },
+    "v1UserPreferences": {
+      "type": "object",
+      "properties": {
+        "theme": {
+          "type": "string",
+          "title": "\"light\", \"dark\", \"auto\""
+        },
+        "language": {
+          "type": "string",
+          "description": "\"en\", \"ja\", etc."
+        },
+        "timezone": {
+          "type": "string",
+          "title": "IANA timezone"
+        },
+        "dateFormat": {
+          "type": "string",
+          "title": "Date display format"
+        },
+        "timeFormat": {
+          "type": "string",
+          "title": "12h/24h"
+        },
+        "uiSettings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Custom UI settings"
+        }
+      }
+    },
+    "v1ValidateInviteCodeResponse": {
+      "type": "object",
+      "properties": {
+        "valid": {
+          "type": "boolean"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "guildName": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
