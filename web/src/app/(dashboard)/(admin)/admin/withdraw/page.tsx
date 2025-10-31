@@ -3,8 +3,8 @@
 export default function Index() {
   // const t = useTranslations('Index');
   return (
-    <>
-    <h1>withdraw page goes here</h1>
-    </>
+    <div className="space-y-6">
+      <h1>withdraw page goes here</h1>
+    </div>
   );
 }

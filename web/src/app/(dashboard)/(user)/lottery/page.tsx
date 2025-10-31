@@ -3,8 +3,8 @@
 export default function Index() {
   // const t = useTranslations('Index');
   return (
-    <>
-    <h1>Wallet page goes here</h1>
-    </>
+    <div className="space-y-6">
+      <h1>Lottery page goes here</h1>
+    </div>
   );
 }

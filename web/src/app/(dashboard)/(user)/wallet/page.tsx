@@ -126,7 +126,7 @@ export default function WalletPage() {
   };
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-6 w-full p-0 sm:p-0">
+    <div className="flex flex-col gap-4 sm:gap-6 w-full">
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl sm:text-3xl font-bold">Wallet</h1>
