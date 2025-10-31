@@ -5,7 +5,7 @@ package guma.v1;
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/guma/pkg/proto/guma/v1;gumav1";
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
 
 service GuildService {
   rpc CreateGuild(CreateGuildRequest) returns (CreateGuildResponse) {
@@ -134,6 +134,15 @@ message Guild {
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;
   int32 member_count = 9;
+  repeated Plugin plugins = 10;
+}
+
+message Plugin {
+  string id = 1;
+  string name = 2;
+  string version = 3;
+  string author = 4;
+  string description = 5;
 }
 
 message GuildSettings {

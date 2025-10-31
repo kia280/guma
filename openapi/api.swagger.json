@@ -1145,6 +1145,13 @@
         "memberCount": {
           "type": "integer",
           "format": "int32"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Plugin"
+          }
         }
       },
       "title": "Data structures"
@@ -1403,6 +1410,26 @@
           "format": "date-time"
         },
         "actionUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "v1Plugin": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "description": {
           "type": "string"
         }
       }

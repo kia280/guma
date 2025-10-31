@@ -748,6 +748,7 @@ type Guild struct {
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	MemberCount   int32                  `protobuf:"varint,9,opt,name=member_count,json=memberCount,proto3" json:"member_count,omitempty"`
+	Plugins       []*Plugin              `protobuf:"bytes,10,rep,name=plugins,proto3" json:"plugins,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -845,6 +846,89 @@ func (x *Guild) GetMemberCount() int32 {
 	return 0
 }
 
+func (x *Guild) GetPlugins() []*Plugin {
+	if x != nil {
+		return x.Plugins
+	}
+	return nil
+}
+
+type Plugin struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Version       string                 `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
+	Author        string                 `protobuf:"bytes,4,opt,name=author,proto3" json:"author,omitempty"`
+	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Plugin) Reset() {
+	*x = Plugin{}
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Plugin) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Plugin) ProtoMessage() {}
+
+func (x *Plugin) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Plugin.ProtoReflect.Descriptor instead.
+func (*Plugin) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *Plugin) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Plugin) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Plugin) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *Plugin) GetAuthor() string {
+	if x != nil {
+		return x.Author
+	}
+	return ""
+}
+
+func (x *Plugin) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
 type GuildSettings struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Timezone       string                 `protobuf:"bytes,1,opt,name=timezone,proto3" json:"timezone,omitempty"`
@@ -858,7 +942,7 @@ type GuildSettings struct {
 
 func (x *GuildSettings) Reset() {
 	*x = GuildSettings{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -870,7 +954,7 @@ func (x *GuildSettings) String() string {
 func (*GuildSettings) ProtoMessage() {}
 
 func (x *GuildSettings) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -883,7 +967,7 @@ func (x *GuildSettings) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GuildSettings.ProtoReflect.Descriptor instead.
 func (*GuildSettings) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{15}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *GuildSettings) GetTimezone() string {
@@ -970,7 +1054,7 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x122\n" +
 	"\bsettings\x18\x02 \x01(\v2\x16.guma.v1.GuildSettingsR\bsettings\"Q\n" +
 	"\x1bUpdateGuildSettingsResponse\x122\n" +
-	"\bsettings\x18\x01 \x01(\v2\x16.guma.v1.GuildSettingsR\bsettings\"\xc9\x02\n" +
+	"\bsettings\x18\x01 \x01(\v2\x16.guma.v1.GuildSettingsR\bsettings\"\xf4\x02\n" +
 	"\x05Guild\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -982,7 +1066,15 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12!\n" +
-	"\fmember_count\x18\t \x01(\x05R\vmemberCount\"\x9c\x02\n" +
+	"\fmember_count\x18\t \x01(\x05R\vmemberCount\x12)\n" +
+	"\aplugins\x18\n" +
+	" \x03(\v2\x0f.guma.v1.PluginR\aplugins\"\x80\x01\n" +
+	"\x06Plugin\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
+	"\aversion\x18\x03 \x01(\tR\aversion\x12\x16\n" +
+	"\x06author\x18\x04 \x01(\tR\x06author\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\"\x9c\x02\n" +
 	"\rGuildSettings\x12\x1a\n" +
 	"\btimezone\x18\x01 \x01(\tR\btimezone\x12\x1a\n" +
 	"\blanguage\x18\x02 \x01(\tR\blanguage\x12\x16\n" +
@@ -1016,7 +1108,7 @@ func file_proto_guma_v1_guild_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_guild_proto_rawDescData
 }
 
-var file_proto_guma_v1_guild_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_proto_guma_v1_guild_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_proto_guma_v1_guild_proto_goTypes = []any{
 	(*CreateGuildRequest)(nil),          // 0: guma.v1.CreateGuildRequest
 	(*CreateGuildResponse)(nil),         // 1: guma.v1.CreateGuildResponse
@@ -1033,43 +1125,45 @@ var file_proto_guma_v1_guild_proto_goTypes = []any{
 	(*UpdateGuildSettingsRequest)(nil),  // 12: guma.v1.UpdateGuildSettingsRequest
 	(*UpdateGuildSettingsResponse)(nil), // 13: guma.v1.UpdateGuildSettingsResponse
 	(*Guild)(nil),                       // 14: guma.v1.Guild
-	(*GuildSettings)(nil),               // 15: guma.v1.GuildSettings
-	nil,                                 // 16: guma.v1.CreateGuildRequest.SettingsEntry
-	nil,                                 // 17: guma.v1.GuildSettings.CustomSettingsEntry
-	(*timestamppb.Timestamp)(nil),       // 18: google.protobuf.Timestamp
+	(*Plugin)(nil),                      // 15: guma.v1.Plugin
+	(*GuildSettings)(nil),               // 16: guma.v1.GuildSettings
+	nil,                                 // 17: guma.v1.CreateGuildRequest.SettingsEntry
+	nil,                                 // 18: guma.v1.GuildSettings.CustomSettingsEntry
+	(*timestamppb.Timestamp)(nil),       // 19: google.protobuf.Timestamp
 }
 var file_proto_guma_v1_guild_proto_depIdxs = []int32{
-	16, // 0: guma.v1.CreateGuildRequest.settings:type_name -> guma.v1.CreateGuildRequest.SettingsEntry
+	17, // 0: guma.v1.CreateGuildRequest.settings:type_name -> guma.v1.CreateGuildRequest.SettingsEntry
 	14, // 1: guma.v1.CreateGuildResponse.guild:type_name -> guma.v1.Guild
 	14, // 2: guma.v1.GetGuildResponse.guild:type_name -> guma.v1.Guild
 	14, // 3: guma.v1.UpdateGuildResponse.guild:type_name -> guma.v1.Guild
 	14, // 4: guma.v1.ListGuildsResponse.guilds:type_name -> guma.v1.Guild
-	15, // 5: guma.v1.GetGuildSettingsResponse.settings:type_name -> guma.v1.GuildSettings
-	15, // 6: guma.v1.UpdateGuildSettingsRequest.settings:type_name -> guma.v1.GuildSettings
-	15, // 7: guma.v1.UpdateGuildSettingsResponse.settings:type_name -> guma.v1.GuildSettings
-	15, // 8: guma.v1.Guild.settings:type_name -> guma.v1.GuildSettings
-	18, // 9: guma.v1.Guild.created_at:type_name -> google.protobuf.Timestamp
-	18, // 10: guma.v1.Guild.updated_at:type_name -> google.protobuf.Timestamp
-	17, // 11: guma.v1.GuildSettings.custom_settings:type_name -> guma.v1.GuildSettings.CustomSettingsEntry
-	0,  // 12: guma.v1.GuildService.CreateGuild:input_type -> guma.v1.CreateGuildRequest
-	2,  // 13: guma.v1.GuildService.GetGuild:input_type -> guma.v1.GetGuildRequest
-	4,  // 14: guma.v1.GuildService.UpdateGuild:input_type -> guma.v1.UpdateGuildRequest
-	6,  // 15: guma.v1.GuildService.DeleteGuild:input_type -> guma.v1.DeleteGuildRequest
-	8,  // 16: guma.v1.GuildService.ListGuilds:input_type -> guma.v1.ListGuildsRequest
-	10, // 17: guma.v1.GuildService.GetGuildSettings:input_type -> guma.v1.GetGuildSettingsRequest
-	12, // 18: guma.v1.GuildService.UpdateGuildSettings:input_type -> guma.v1.UpdateGuildSettingsRequest
-	1,  // 19: guma.v1.GuildService.CreateGuild:output_type -> guma.v1.CreateGuildResponse
-	3,  // 20: guma.v1.GuildService.GetGuild:output_type -> guma.v1.GetGuildResponse
-	5,  // 21: guma.v1.GuildService.UpdateGuild:output_type -> guma.v1.UpdateGuildResponse
-	7,  // 22: guma.v1.GuildService.DeleteGuild:output_type -> guma.v1.DeleteGuildResponse
-	9,  // 23: guma.v1.GuildService.ListGuilds:output_type -> guma.v1.ListGuildsResponse
-	11, // 24: guma.v1.GuildService.GetGuildSettings:output_type -> guma.v1.GetGuildSettingsResponse
-	13, // 25: guma.v1.GuildService.UpdateGuildSettings:output_type -> guma.v1.UpdateGuildSettingsResponse
-	19, // [19:26] is the sub-list for method output_type
-	12, // [12:19] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	16, // 5: guma.v1.GetGuildSettingsResponse.settings:type_name -> guma.v1.GuildSettings
+	16, // 6: guma.v1.UpdateGuildSettingsRequest.settings:type_name -> guma.v1.GuildSettings
+	16, // 7: guma.v1.UpdateGuildSettingsResponse.settings:type_name -> guma.v1.GuildSettings
+	16, // 8: guma.v1.Guild.settings:type_name -> guma.v1.GuildSettings
+	19, // 9: guma.v1.Guild.created_at:type_name -> google.protobuf.Timestamp
+	19, // 10: guma.v1.Guild.updated_at:type_name -> google.protobuf.Timestamp
+	15, // 11: guma.v1.Guild.plugins:type_name -> guma.v1.Plugin
+	18, // 12: guma.v1.GuildSettings.custom_settings:type_name -> guma.v1.GuildSettings.CustomSettingsEntry
+	0,  // 13: guma.v1.GuildService.CreateGuild:input_type -> guma.v1.CreateGuildRequest
+	2,  // 14: guma.v1.GuildService.GetGuild:input_type -> guma.v1.GetGuildRequest
+	4,  // 15: guma.v1.GuildService.UpdateGuild:input_type -> guma.v1.UpdateGuildRequest
+	6,  // 16: guma.v1.GuildService.DeleteGuild:input_type -> guma.v1.DeleteGuildRequest
+	8,  // 17: guma.v1.GuildService.ListGuilds:input_type -> guma.v1.ListGuildsRequest
+	10, // 18: guma.v1.GuildService.GetGuildSettings:input_type -> guma.v1.GetGuildSettingsRequest
+	12, // 19: guma.v1.GuildService.UpdateGuildSettings:input_type -> guma.v1.UpdateGuildSettingsRequest
+	1,  // 20: guma.v1.GuildService.CreateGuild:output_type -> guma.v1.CreateGuildResponse
+	3,  // 21: guma.v1.GuildService.GetGuild:output_type -> guma.v1.GetGuildResponse
+	5,  // 22: guma.v1.GuildService.UpdateGuild:output_type -> guma.v1.UpdateGuildResponse
+	7,  // 23: guma.v1.GuildService.DeleteGuild:output_type -> guma.v1.DeleteGuildResponse
+	9,  // 24: guma.v1.GuildService.ListGuilds:output_type -> guma.v1.ListGuildsResponse
+	11, // 25: guma.v1.GuildService.GetGuildSettings:output_type -> guma.v1.GetGuildSettingsResponse
+	13, // 26: guma.v1.GuildService.UpdateGuildSettings:output_type -> guma.v1.UpdateGuildSettingsResponse
+	20, // [20:27] is the sub-list for method output_type
+	13, // [13:20] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_guild_proto_init() }
@@ -1083,7 +1177,7 @@ func file_proto_guma_v1_guild_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_guild_proto_rawDesc), len(file_proto_guma_v1_guild_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
