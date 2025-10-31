@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
@@ -78,6 +80,7 @@ func NewGateway(ctx context.Context, cfg *config.Config, grpcAddr string, logger
 	handler = healthMux
 
 	// Apply middleware
+	handler = middleware.KratosSessionMiddleware(cfg.Auth.KratosPublicURL, logger)(handler)
 	handler = middleware.SecurityHeadersMiddleware()(handler)
 	handler = middleware.CORSMiddleware(
 		cfg.CORS.AllowedOrigins,
@@ -136,13 +139,50 @@ func (g *Gateway) Address() string {
 // customErrorHandler handles errors from gRPC-Gateway
 func customErrorHandler(logger zerolog.Logger) runtime.ErrorHandlerFunc {
 	return func(ctx context.Context, mux *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, r *http.Request, err error) {
+		const fallback = `{"error":"internal server error"}`
+
+		st := status.Convert(err)
+		httpStatus := runtime.HTTPStatusFromCode(st.Code())
+
+		payload := map[string]any{
+			"error": st.Message(),
+			"code":  st.Code().String(),
+		}
+
+		if details := st.Details(); len(details) > 0 {
+			payload["details"] = details
+		}
+
+		body, marshalErr := json.Marshal(payload)
+		if marshalErr != nil {
+			logger.Error().
+				Err(marshalErr).
+				Str("method", r.Method).
+				Str("path", r.URL.Path).
+				Msg("failed to marshal gateway error response")
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(httpStatus)
+			_, _ = w.Write([]byte(fallback))
+			return
+		}
+
 		logger.Error().
 			Err(err).
 			Str("method", r.Method).
 			Str("path", r.URL.Path).
+			Str("grpc_code", st.Code().String()).
+			Int("http_status", httpStatus).
 			Msg("gateway error")
 
-		runtime.DefaultHTTPErrorHandler(ctx, mux, marshaler, w, r, err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(httpStatus)
+		if _, writeErr := w.Write(body); writeErr != nil {
+			logger.Error().
+				Err(writeErr).
+				Str("method", r.Method).
+				Str("path", r.URL.Path).
+				Msg("failed to write gateway error response")
+		}
 	}
 }
 

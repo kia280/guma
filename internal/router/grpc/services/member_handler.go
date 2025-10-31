@@ -2,7 +2,10 @@ package services
 
 import (
 	"context"
+	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -87,7 +90,7 @@ func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRe
 	// TODO: Create member record
 
 	member := &memberv1.Member{
-		Id:          "mock-member-id",
+		Id:          uuid.NewString(),
 		UserId:      userID,
 		GuildId:     "mock-guild-id",
 		DisplayName: "User",
@@ -253,19 +256,26 @@ func (s *MemberService) GenerateInviteCode(ctx context.Context, req *memberv1.Ge
 		Str("guild_id", req.GuildId).
 		Msg("generating invite code")
 
-	// TODO: Implement invite code generation
-	// TODO: Check user permissions
+	code := strings.ToUpper(strings.ReplaceAll(uuid.NewString(), "-", ""))
+	if len(code) > 8 {
+		code = code[:8]
+	}
+
+	expiresAt := req.ExpiresAt
+	if expiresAt == nil {
+		expiresAt = timestamppb.New(time.Now().Add(48 * time.Hour))
+	}
 
 	invitation := &memberv1.Invitation{
-		Id:        "mock-invitation-id",
+		Id:        uuid.NewString(),
 		GuildId:   req.GuildId,
-		Code:      "GENERATED123",
+		Code:      code,
 		CreatedBy: userID,
 		Role:      req.Role,
 		MaxUses:   req.MaxUses,
 		UseCount:  0,
 		CreatedAt: timestamppb.Now(),
-		ExpiresAt: req.ExpiresAt,
+		ExpiresAt: expiresAt,
 		Revoked:   false,
 	}
 
@@ -280,7 +290,9 @@ func (s *MemberService) ValidateInviteCode(ctx context.Context, req *memberv1.Va
 		return nil, status.Error(codes.InvalidArgument, "code is required")
 	}
 
-	s.logger.Info().Str("code", req.Code).Msg("validating invite code")
+	code := strings.ToUpper(req.Code)
+
+	s.logger.Info().Str("code", code).Msg("validating invite code")
 
 	// TODO: Implement invite code validation
 
