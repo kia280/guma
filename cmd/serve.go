@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,21 +20,25 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the Guma server",
 	Long:  `Start the Guma gRPC and HTTP gateway servers`,
-	RunE:  runServe,
+	Run:   runServe,
 }
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
 }
 
-func runServe(cmd *cobra.Command, args []string) error {
+func runServe(cmd *cobra.Command, args []string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
-		return fmt.Errorf("failed to load configuration: %w", err)
+		logger := initLogger(&config.Config{
+			Logging: config.LoggingConfig{Level: "info"},
+		})
+		logger.Fatal().Err(err).Msg("failed to load configuration")
+		return
 	}
 
 	// Initialize logger
@@ -50,7 +53,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 		Logger:       logger,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
+		logger.Fatal().Err(err).Msg("failed to connect to database")
+		return
 	}
 	defer db.Close()
 
@@ -59,7 +63,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 	// Create gRPC server
 	grpcServer, err := grpc.NewServer(cfg, db, logger)
 	if err != nil {
-		return fmt.Errorf("failed to create gRPC server: %w", err)
+		logger.Fatal().Err(err).Msg("failed to create gRPC server")
+		return
 	}
 
 	// Start gRPC server in background
@@ -78,7 +83,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 	// Create HTTP gateway
 	gw, err := gateway.NewGateway(ctx, cfg, grpcAddr, logger)
 	if err != nil {
-		return fmt.Errorf("failed to create HTTP gateway: %w", err)
+		logger.Fatal().Err(err).Msg("failed to create HTTP gateway")
+		return
 	}
 
 	// Start HTTP gateway in background
@@ -89,8 +95,8 @@ func runServe(cmd *cobra.Command, args []string) error {
 	}()
 
 	logger.Info().Msg("servers started successfully")
-	fmt.Printf("\n✓ gRPC server listening on %s\n", grpcAddr)
-	fmt.Printf("✓ HTTP gateway listening on %s\n\n", gw.Address())
+	logger.Info().Msg("gRPC server listening on " + grpcAddr)
+	logger.Info().Msg("HTTP gateway listening on " + gw.Address())
 
 	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
@@ -114,7 +120,6 @@ func runServe(cmd *cobra.Command, args []string) error {
 	}
 
 	logger.Info().Msg("servers stopped")
-	return nil
 }
 
 func initLogger(cfg *config.Config) zerolog.Logger {
