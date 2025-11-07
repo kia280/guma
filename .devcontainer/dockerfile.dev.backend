@@ -1,0 +1,15 @@
+FROM golang:1.25-alpine
+
+RUN apk add --no-cache make
+
+# Install Go tools for development
+RUN go install github.com/air-verse/air@latest \
+    && go install github.com/go-delve/delve/cmd/dlv@latest
+
+# Set up workspace
+WORKDIR /workspace
+
+# Expose backend API and debugger ports
+EXPOSE 8080 2345
+
+CMD ["air", "-c", ".air.toml"]

@@ -1,0 +1,111 @@
+version: v0.13.0
+
+dsn: postgres://guma:password@postgres:5432/guma?sslmode=disable&max_conns=20&max_idle_conns=4
+
+serve:
+  public:
+    base_url: http://localhost:8081/
+    host: 127.0.0.1
+    cors:
+      enabled: true
+  admin:
+    base_url: http://kratos:4434/
+    host: 127.0.0.1
+
+selfservice:
+  default_browser_return_url: http://localhost:8081/dashboard
+  allowed_return_urls:
+    - http://localhost:8081/dashboard
+    - http://localhost:8081/login
+
+  methods:
+    # password:
+    #   enabled: true
+    # lookup_secret:
+    #   enabled: false
+    # link:
+    #   enabled: false
+    # code:
+    #   enabled: false
+    oidc:
+      config:
+        providers:
+          - id: discord
+            provider: discord
+            client_id: "<CLIENT_ID>"
+            client_secret: "<CLIENT_SECRET>"
+            mapper_url: "base64://bG9jYWwgY2xhaW1zID0gewogIGVtYWlsX3ZlcmlmaWVkOiBmYWxzZSwKfSArIHN0ZC5leHRWYXIoJ2NsYWltcycpOwoKewogIGlkZW50aXR5OiB7CiAgICB0cmFpdHM6IHsKICAgICAgLy8gQWxsb3dpbmcgdW52ZXJpZmllZCBlbWFpbCBhZGRyZXNzZXMgZW5hYmxlcyBhY2NvdW50CiAgICAgIC8vIGVudW1lcmF0aW9uIGF0dGFja3MsICBpZiB0aGUgdmFsdWUgaXMgdXNlZCBmb3IKICAgICAgLy8gdmVyaWZpY2F0aW9uIG9yIGFzIGEgcGFzc3dvcmQgbG9naW4gaWRlbnRpZmllci4KICAgICAgLy8KICAgICAgLy8gVGhlcmVmb3JlIHdlIG9ubHkgcmV0dXJuIHRoZSBlbWFpbCBpZiBpdCAoYSkgZXhpc3RzIGFuZCAoYikgaXMgbWFya2VkIHZlcmlmaWVkCiAgICAgIC8vIGJ5IERpc2NvcmQuCiAgICAgIFtpZiAnZW1haWwnIGluIGNsYWltcyAmJiBjbGFpbXMuZW1haWxfdmVyaWZpZWQgdGhlbiAnZW1haWwnIGVsc2UgbnVsbF06IGNsYWltcy5lbWFpbCwKICAgIH0sCgltZXRhZGF0YV9wdWJsaWM6IHsKICAgICAgYXZhdGFyOiBjbGFpbXMucGljdHVyZQoJfQogIH0sCn0="
+            scope:
+              - identify
+              - email
+      enabled: true
+  flows:
+    error:
+      ui_url: http://localhost:8081/error
+
+    # settings:
+    #   ui_url: http://localhost:8081/settings
+    #   privileged_session_max_age: 15m
+    #   required_aal: highest_available
+
+    # recovery:
+    #   enabled: true
+    #   ui_url: http://localhost:8081/recovery
+    #   use: code
+
+    # verification:
+    #   enabled: true
+    #   ui_url: http://localhost:8081/verification
+    #   use: code
+    #   after:
+    #     default_browser_return_url: http://localhost:8081/welcome
+
+    # logout:
+    #   after:
+    #     default_browser_return_url: http://localhost:8081/login
+
+    login:
+      ui_url: http://localhost:8081/login
+      after:
+        default_browser_return_url: http://localhost:8081/dashboard
+
+    # registration:
+    #   lifespan: 10m
+    #   ui_url: http://localhost:8081/registration
+    #   after:
+    #     password:
+    #       hooks:
+    #         - hook: session
+    #         - hook: show_verification_ui
+
+log:
+  level: debug
+  format: text
+  leak_sensitive_values: true
+
+secrets:
+  cookie:
+    - PLEASE-CHANGE-ME-I-AM-VERY-INSECURE
+  cipher:
+    - 32-LONG-SECRET-NOT-SECURE-AT-ALL
+
+ciphers:
+  algorithm: xchacha20-poly1305
+
+hashers:
+  algorithm: bcrypt
+  bcrypt:
+    cost: 8
+
+identity:
+  default_schema_id: default
+  schemas:
+    - id: default
+      url: file:///etc/config/kratos/identity.schema.json
+
+# courier:
+#   smtp:
+#     connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
+
+feature_flags:
+  use_continue_with_transitions: true

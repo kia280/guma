@@ -1,19 +1,13 @@
 services:
+  # a toolbox container for development
   devcontainer:
     build:
       context: ..
-      dockerfile: .devcontainer/Dockerfile
-    ports:
-      - "3000:3000"
-      - "8080:8080"
+      dockerfile: .devcontainer/dockerfile
     volumes:
-      - ..:/workspace:cached
+      - ..:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
-      - guma-go-mod-cache:/go/pkg/mod
-      # - guma-node-modules:/workspace/web/node_modules:rw
-      - guma-command-history:/commandhistory
     command: sleep infinity
-    # network_mode: service:postgres
     depends_on:
       - postgres
       - redis
@@ -26,8 +20,59 @@ services:
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - KRATOS_ADMIN_URL=http://kratos:4434
+
+  backend:
+    build:
+      context: ..
+      dockerfile: .devcontainer/dockerfile.dev.backend
+    ports:
+      - "8080:8080"
+      - "2345:2345"  # Delve debugger
+    volumes:
+      - ..:/workspace
+      - go-mod-cache:/go/pkg/mod:rw
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kratos:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://guma:password@postgres:5432/guma?sslmode=disable
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - KRATOS_ADMIN_URL=http://kratos:4434
       - ENV=development
+    networks:
+      - default
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: .devcontainer/dockerfile.dev.frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ..:/workspace
+      - node-modules-cache:/workspace/web/node_modules:rw
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kratos:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      - NEXT_PUBLIC_KRATOS_URL=http://localhost:8081
+    working_dir: /workspace/web
+    networks:
+      - default
+
 volumes:
-  guma-go-mod-cache:
-  guma-node-modules:
-  guma-command-history:
+  go-mod-cache:
+  node-modules-cache:

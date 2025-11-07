@@ -1,0 +1,14 @@
+FROM node:23-alpine
+
+# Set working directory
+WORKDIR /workspace
+
+# # Set up environment for development
+# ENV NODE_ENV=development \
+#     PATH=$PATH:/workspace/web/node_modules/.bin
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:3000 2>/dev/null || echo "waiting"
+
+ENTRYPOINT ["sh", "-c", "npm install && npm run dev"]

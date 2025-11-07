@@ -21,33 +21,17 @@ sleep 10
 
 # Check if PostgreSQL is ready
 echo "🐘 Checking PostgreSQL connection..."
-until pg_isready -h localhost -p 5432 -U guma; do
+until pg_isready -h postgres -p 5432 -U guma; do
     echo "Waiting for PostgreSQL..."
     sleep 2
 done
 
 # Check if Redis is ready
 echo "🔴 Checking Redis connection..."
-until redis-cli -h localhost -p 6379 ping; do
+until redis-cli -h redis -p 6379 ping; do
     echo "Waiting for Redis..."
     sleep 2
 done
-
-# Install frontend dependencies
-echo "📦 Installing frontend dependencies..."
-cd web && npm install && cd ..
-
-# Download Go dependencies
-echo "📥 Downloading Go dependencies..."
-go mod download
-
-# Run database migrations
-echo "🗄️ Running database migrations..."
-go run cmd/migrate/main.go -direction=up
-
-# Generate protobuf files
-echo "🔧 Generating protobuf files..."
-./scripts/generate-proto.sh
 
 echo "✅ Dev container setup complete!"
 echo ""
@@ -58,6 +42,7 @@ echo "  make test     # Run tests"
 echo "  make help     # Show all available commands"
 echo ""
 echo "🌐 Forwarded ports:"
+echo "  2345 - Delve Debugger"
 echo "  3000 - Frontend (Next.js)"
 echo "  8080 - Backend (Go)"
 echo "  5432 - PostgreSQL"
