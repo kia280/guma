@@ -1,0 +1,62 @@
+# Guma Application Configuration (YAML)
+# This is an example configuration file showing all available options.
+# Copy this to config.yaml and customize for your environment.
+# Note: Environment variables take precedence over config file values.
+
+# Server configuration
+server:
+  port: 8080
+  host: localhost
+  env: development
+  grpc_port: 50051
+
+# Database configuration
+database:
+  url: postgres://guma:password@localhost:5432/guma?sslmode=disable
+  max_open_conns: 25
+  max_idle_conns: 5
+
+# Redis configuration
+redis:
+  url: redis://localhost:6379/0
+
+# Authentication configuration
+auth:
+  jwt_secret: your-jwt-secret-key-here
+  oauth_client_id: your-oauth-client-id
+  oauth_client_secret: your-oauth-client-secret
+  kratos_public_url: http://localhost:8081
+  kratos_admin_url: http://localhost:4434
+
+# File storage configuration (MinIO/S3)
+storage:
+  endpoint: localhost:9000
+  access_key: minioadmin
+  secret_key: minioadmin
+  use_ssl: false
+  bucket: guma
+
+# Logging configuration
+logging:
+  level: debug  # debug, info, warn, error
+  format: text  # json, text
+
+# CORS configuration
+cors:
+  allowed_origins:
+    - http://localhost:3000
+    - http://localhost:8080
+  allowed_methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowed_headers:
+    - Content-Type
+    - Authorization
+
+# Rate limiting configuration
+rate_limit:
+  requests_per_minute: 60
+  burst: 10
