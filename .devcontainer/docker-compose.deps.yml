@@ -16,7 +16,7 @@ services:
       retries: 5
 
   redis:
-    image: redis:8.2.1
+    image: redis:8.2.3
     ports:
       - "6379:6379"
     volumes:
@@ -45,7 +45,7 @@ services:
       retries: 3
 
   kratos:
-    image: oryd/kratos:v1.3.1
+    image: oryd/kratos:v25.4.0
     environment:
       - DSN=postgres://guma:password@postgres:5432/guma?sslmode=disable&max_conns=20&max_idle_conns=4
     ports:
@@ -62,20 +62,6 @@ services:
     volumes:
       - ./config/kratos:/etc/config/kratos/:ro
     entrypoint: /bin/sh -c "kratos migrate sql -e -y && kratos serve --config /etc/config/kratos/kratos.yaml"
-
-  nginx:
-    image: nginx:stable
-    ports:
-      - "8081:80"
-    volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - kratos
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 volumes:
   postgres_data:
