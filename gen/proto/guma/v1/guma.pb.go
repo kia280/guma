@@ -1440,7 +1440,7 @@ const file_proto_guma_v1_guma_proto_rawDesc = "" +
 	"\fGetAppConfig\x12\x1c.guma.v1.GetAppConfigRequest\x1a\x1d.guma.v1.GetAppConfigResponse\"\x12\x82\xd3\xe4\x93\x02\f\x12\n" +
 	"/v1/config\x12_\n" +
 	"\fSearchGlobal\x12\x1c.guma.v1.SearchGlobalRequest\x1a\x1d.guma.v1.SearchGlobalResponse\"\x12\x82\xd3\xe4\x93\x02\f\x12\n" +
-	"/v1/searchB*Z(github.com/guma/pkg/proto/guma/v1;gumav1b\x06proto3"
+	"/v1/searchB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
 var (
 	file_proto_guma_v1_guma_proto_rawDescOnce sync.Once

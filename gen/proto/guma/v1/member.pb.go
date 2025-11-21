@@ -1425,7 +1425,7 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\x12GenerateInviteCode\x12\".guma.v1.GenerateInviteCodeRequest\x1a#.guma.v1.GenerateInviteCodeResponse\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/v1/guilds/{guild_id}/invites\x12\x80\x01\n" +
 	"\x12ValidateInviteCode\x12\".guma.v1.ValidateInviteCodeRequest\x1a#.guma.v1.ValidateInviteCodeResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/v1/guilds/invites/{code}\x12o\n" +
 	"\vListInvites\x12\x1b.guma.v1.ListInvitesRequest\x1a\x1c.guma.v1.ListInvitesResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/guilds/{guild_id}/invites\x12~\n" +
-	"\fRevokeInvite\x12\x1c.guma.v1.RevokeInviteRequest\x1a\x1d.guma.v1.RevokeInviteResponse\"1\x82\xd3\xe4\x93\x02+*)/v1/guilds/{guild_id}/invites/{invite_id}B*Z(github.com/guma/pkg/proto/guma/v1;gumav1b\x06proto3"
+	"\fRevokeInvite\x12\x1c.guma.v1.RevokeInviteRequest\x1a\x1d.guma.v1.RevokeInviteResponse\"1\x82\xd3\xe4\x93\x02+*)/v1/guilds/{guild_id}/invites/{invite_id}B1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
 var (
 	file_proto_guma_v1_member_proto_rawDescOnce sync.Once

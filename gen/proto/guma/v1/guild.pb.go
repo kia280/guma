@@ -1094,7 +1094,7 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"ListGuilds\x12\x1a.guma.v1.ListGuildsRequest\x1a\x1b.guma.v1.ListGuildsResponse\"\x12\x82\xd3\xe4\x93\x02\f\x12\n" +
 	"/v1/guilds\x12\x7f\n" +
 	"\x10GetGuildSettings\x12 .guma.v1.GetGuildSettingsRequest\x1a!.guma.v1.GetGuildSettingsResponse\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/guilds/{guild_id}/settings\x12\x8b\x01\n" +
-	"\x13UpdateGuildSettings\x12#.guma.v1.UpdateGuildSettingsRequest\x1a$.guma.v1.UpdateGuildSettingsResponse\")\x82\xd3\xe4\x93\x02#:\x01*\x1a\x1e/v1/guilds/{guild_id}/settingsB*Z(github.com/guma/pkg/proto/guma/v1;gumav1b\x06proto3"
+	"\x13UpdateGuildSettings\x12#.guma.v1.UpdateGuildSettingsRequest\x1a$.guma.v1.UpdateGuildSettingsResponse\")\x82\xd3\xe4\x93\x02#:\x01*\x1a\x1e/v1/guilds/{guild_id}/settingsB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
 var (
 	file_proto_guma_v1_guild_proto_rawDescOnce sync.Once
