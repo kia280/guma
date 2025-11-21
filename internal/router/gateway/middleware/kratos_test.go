@@ -16,7 +16,7 @@ func TestKratosSessionMiddleware_Success(t *testing.T) {
 		if r.URL.Path != "/sessions/whoami" {
 			t.Fatalf("unexpected path: %s", r.URL.Path)
 		}
-		if !strings.Contains(r.Header.Get("Cookie"), "ory_kratos_session=valid") {
+		if !strings.Contains(r.Header.Get("Cookie"), "guma_session=valid") {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -26,7 +26,9 @@ func TestKratosSessionMiddleware_Success(t *testing.T) {
 			"id":     "sess-123",
 			"active": true,
 			"identity": map[string]any{
-				"id": "ident-1",
+				"id":         "ident-1",
+				"schema_id":  "default",
+				"schema_url": "file://schemas/default.schema.json",
 				"traits": map[string]any{
 					"email": "user@example.com",
 				},
@@ -56,7 +58,7 @@ func TestKratosSessionMiddleware_Success(t *testing.T) {
 	}))
 
 	req := httptest.NewRequest(http.MethodGet, "/v1/navigation", nil)
-	req.AddCookie(&http.Cookie{Name: "ory_kratos_session", Value: "valid"})
+	req.AddCookie(&http.Cookie{Name: "guma_session", Value: "valid"})
 	rr := httptest.NewRecorder()
 
 	handler.ServeHTTP(rr, req)
@@ -99,7 +101,7 @@ func TestKratosSessionMiddleware_InvalidSession(t *testing.T) {
 	}))
 
 	req := httptest.NewRequest(http.MethodGet, "/v1/navigation", nil)
-	req.AddCookie(&http.Cookie{Name: "ory_kratos_session", Value: "invalid"})
+	req.AddCookie(&http.Cookie{Name: "guma_session", Value: "invalid"})
 	rr := httptest.NewRecorder()
 
 	handler.ServeHTTP(rr, req)
@@ -112,22 +114,40 @@ func TestKratosSessionMiddleware_InvalidSession(t *testing.T) {
 func TestKratosSessionMiddleware_SkipHealthPaths(t *testing.T) {
 	logger := zerolog.New(io.Discard)
 
-	var called bool
-	handler := KratosSessionMiddleware("http://example.com", logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		called = true
-		w.WriteHeader(http.StatusNoContent)
-	}))
-
-	req := httptest.NewRequest(http.MethodGet, "/health", nil)
-	rr := httptest.NewRecorder()
-
-	handler.ServeHTTP(rr, req)
-
-	if rr.Code != http.StatusNoContent {
-		t.Fatalf("expected status 204, got %d", rr.Code)
+	tests := []struct {
+		name string
+		path string
+	}{
+		{
+			name: "skip /health/ready",
+			path: "/health/ready",
+		},
+		{
+			name: "skip /health/live",
+			path: "/health/live",
+		},
 	}
-	if !called {
-		t.Fatalf("expected downstream handler to be called for health path")
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var called bool
+			handler := KratosSessionMiddleware("http://example.com", logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				called = true
+				w.WriteHeader(http.StatusNoContent)
+			}))
+
+			req := httptest.NewRequest(http.MethodGet, tt.path, nil)
+			rr := httptest.NewRecorder()
+
+			handler.ServeHTTP(rr, req)
+
+			if rr.Code != http.StatusNoContent {
+				t.Fatalf("expected status 204, got %d", rr.Code)
+			}
+			if !called {
+				t.Fatalf("expected downstream handler to be called for health path")
+			}
+		})
 	}
 }
 

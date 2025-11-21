@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	kratos "github.com/ory/kratos-client-go"
 	"github.com/rs/zerolog"
 )
 
@@ -39,8 +40,8 @@ func SessionFromContext(ctx context.Context) (*KratosSession, bool) {
 }
 
 // KratosSessionMiddleware validates incoming requests against the Kratos whoami endpoint using the
-// session cookie (and optional X-Session-Token header). When validation succeeds the resolved session
-// is attached to the request context for downstream handlers.
+// session cookie. When validation succeeds the resolved session is attached to the request context
+// for downstream handlers.
 func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Handler) http.Handler {
 	logger = logger.With().Str("middleware", "kratos-session").Logger()
 
@@ -54,13 +55,18 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 		}
 	}
 
-	whoamiURL := trimmedBaseURL + "/sessions/whoami"
-	client := &http.Client{Timeout: 5 * time.Second}
+	config := kratos.NewConfiguration()
+	config.Servers = kratos.ServerConfigurations{
+		{
+			URL: trimmedBaseURL,
+		},
+	}
+	config.HTTPClient = &http.Client{Timeout: 5 * time.Second}
+	client := kratos.NewAPIClient(config)
 
 	skipPaths := map[string]struct{}{
-		"/health":  {},
-		"/healthz": {},
-		"/ready":   {},
+		"/health/live":  {},
+		"/health/ready": {},
 	}
 
 	return func(next http.Handler) http.Handler {
@@ -70,59 +76,62 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 				return
 			}
 
-			cookieHeader := r.Header.Get("Cookie")
-			sessionToken := r.Header.Get("X-Session-Token")
-
-			if cookieHeader == "" && sessionToken == "" {
+			cookie, err := r.Cookie("guma_session")
+			if err != nil {
 				writeAuthError(w, http.StatusUnauthorized, "authentication required")
 				return
 			}
 
-			req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, whoamiURL, http.NoBody)
+			session, resp, err := client.FrontendAPI.ToSession(context.Background()).
+				Cookie(cookie.String()).
+				Execute()
+			if resp != nil && resp.Body != nil {
+				defer resp.Body.Close()
+			}
+
 			if err != nil {
-				logger.Error().Err(err).Str("path", r.URL.Path).Msg("failed to construct kratos whoami request")
-				writeAuthError(w, http.StatusServiceUnavailable, "identity service unavailable")
+				status := http.StatusServiceUnavailable
+				message := "identity service unavailable"
+
+				if resp != nil && resp.StatusCode == http.StatusUnauthorized {
+					status = http.StatusUnauthorized
+					message = "invalid session"
+					logger.Debug().
+						Int("status_code", resp.StatusCode).
+						Str("path", r.URL.Path).
+						Msg("kratos session validation failed")
+				} else {
+					logger.Error().Err(err).Str("path", r.URL.Path).Msg("failed to call kratos to_session")
+				}
+
+				writeAuthError(w, status, message)
 				return
 			}
 
-			if cookieHeader != "" {
-				req.Header.Set("Cookie", cookieHeader)
-			}
-			if sessionToken != "" {
-				req.Header.Set("X-Session-Token", sessionToken)
-			}
-
-			resp, err := client.Do(req)
-			if err != nil {
-				logger.Error().Err(err).Str("path", r.URL.Path).Msg("failed to call kratos whoami")
-				writeAuthError(w, http.StatusServiceUnavailable, "identity service unavailable")
-				return
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				logger.Debug().
-					Int("status_code", resp.StatusCode).
-					Str("path", r.URL.Path).
-					Msg("kratos session validation failed")
-				writeAuthError(w, http.StatusUnauthorized, "invalid session")
-				return
-			}
-
-			var session KratosSession
-			if err := json.NewDecoder(resp.Body).Decode(&session); err != nil {
-				logger.Error().Err(err).Msg("failed to decode kratos session response")
-				writeAuthError(w, http.StatusServiceUnavailable, "identity service unavailable")
-				return
-			}
-
-			if !session.Active {
-				logger.Debug().Str("session_id", session.ID).Msg("kratos session inactive")
+			if session == nil || !session.GetActive() {
+				logger.Debug().Msg("kratos session inactive")
 				writeAuthError(w, http.StatusUnauthorized, "inactive session")
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), sessionContextKey{}, &session)
+			identity := KratosIdentity{}
+			if ident, ok := session.GetIdentityOk(); ok && ident != nil {
+				identity.ID = ident.GetId()
+				if traits, ok := ident.GetTraitsOk(); ok && traits != nil {
+					if traitMap, ok := (*traits).(map[string]any); ok {
+						identity.Traits = traitMap
+					}
+				}
+			}
+
+			ctx := context.WithValue(r.Context(), sessionContextKey{}, &KratosSession{
+				ID:              session.GetId(),
+				Active:          session.GetActive(),
+				Identity:        identity,
+				ExpiresAt:       session.GetExpiresAt(),
+				AuthenticatedAt: session.GetAuthenticatedAt(),
+				IssuedAt:        session.GetIssuedAt(),
+			})
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
