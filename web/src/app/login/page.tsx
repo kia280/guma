@@ -21,7 +21,8 @@ export default function Login() {
         console.log(data);
         router.push(`/login?flow=${data.id}`);
       }).catch((error) => {
-        if (error.response?.data?.id == 'session_already_available') {
+        console.error('Error creating login flow:', error);
+        if (error?.response?.data?.error?.id === "session_already_available") {
           router.push('/dashboard');
           return;
         }
