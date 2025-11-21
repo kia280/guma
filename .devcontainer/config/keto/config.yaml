@@ -1,0 +1,151 @@
+$schema: https://raw.githubusercontent.com/ory/keto/refs/heads/master/.schema/config.schema.json
+dsn: postgres://guma:password@postgres:5432/guma?sslmode=disable&max_conns=20&max_idle_conns=4
+serve:
+  read:
+    port: 4466
+    host: 0.0.0.0
+    write_listen_file: file:///tmp/keto-read-api
+    cors:
+      enabled: false
+      # allowed_origins:
+      #   - https://example.com
+      #   - https://*.example.com
+      #   - https://*.foo.example.com
+      # allowed_methods:
+      #   - GET
+      # allowed_headers:
+      #   - ""
+      # exposed_headers:
+      #   - ""
+      # allow_credentials: false
+      # max_age: -100000000
+      # debug: false
+    # tls:
+    #   key:
+    #     path: path/to/file.pem
+    #     base64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tXG5NSUlEWlRDQ0FrMmdBd0lCQWdJRVY1eE90REFOQmdr...
+    #   cert:
+    #     path: path/to/file.pem
+    #     base64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tXG5NSUlEWlRDQ0FrMmdBd0lCQWdJRVY1eE90REFOQmdr...
+  write:
+    port: 4467
+    host: localhost
+    write_listen_file: file:///tmp/keto-write-api
+    cors:
+      enabled: false
+      # allowed_origins:
+      #   - https://example.com
+      #   - https://*.example.com
+      #   - https://*.foo.example.com
+      # allowed_methods:
+      #   - GET
+      # allowed_headers:
+      #   - ""
+      # exposed_headers:
+      #   - ""
+      # allow_credentials: false
+      # max_age: -100000000
+      # debug: false
+    # tls:
+    #   key:
+    #     path: path/to/file.pem
+    #     base64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tXG5NSUlEWlRDQ0FrMmdBd0lCQWdJRVY1eE90REFOQmdr...
+    #   cert:
+    #     path: path/to/file.pem
+    #     base64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tXG5NSUlEWlRDQ0FrMmdBd0lCQWdJRVY1eE90REFOQmdr...
+  # metrics:
+  #   port: 0
+  #   host: localhost
+  #   write_listen_file: file:///tmp/keto-metrics-api
+  #   cors:
+  #     enabled: false
+  #     allowed_origins:
+  #       - https://example.com
+  #       - https://*.example.com
+  #       - https://*.foo.example.com
+  #     allowed_methods:
+  #       - GET
+  #     allowed_headers:
+  #       - ""
+  #     exposed_headers:
+  #       - ""
+  #     allow_credentials: false
+  #     max_age: -100000000
+  #     debug: false
+  #   tls:
+  #     key:
+  #       path: path/to/file.pem
+  #       base64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tXG5NSUlEWlRDQ0FrMmdBd0lCQWdJRVY1eE90REFOQmdr...
+  #     cert:
+  #       path: path/to/file.pem
+  #       base64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tXG5NSUlEWlRDQ0FrMmdBd0lCQWdJRVY1eE90REFOQmdr...
+  opl:
+    port: 4469
+    host: localhost
+    write_listen_file: file:///tmp/keto-opl-api
+    cors:
+      enabled: false
+      # allowed_origins:
+      #   - https://example.com
+      #   - https://*.example.com
+      #   - https://*.foo.example.com
+      # allowed_methods:
+      #   - GET
+      # allowed_headers:
+      #   - ""
+      # exposed_headers:
+      #   - ""
+      # allow_credentials: false
+      # max_age: -100000000
+      # debug: false
+    # tls:
+    #   key:
+    #     path: path/to/file.pem
+    #     base64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tXG5NSUlEWlRDQ0FrMmdBd0lCQWdJRVY1eE90REFOQmdr...
+    #   cert:
+    #     path: path/to/file.pem
+    #     base64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tXG5NSUlEWlRDQ0FrMmdBd0lCQWdJRVY1eE90REFOQmdr...
+profiling: cpu
+log:
+  level: debug
+  format: json
+  leak_sensitive_values: true
+  redaction_text: ""
+  additional_redacted_headers:
+    - ""
+# tracing:
+#   provider: jaeger
+#   service_name: Ory Hydra
+#   deployment_environment: development
+#   providers:
+#     jaeger:
+#       local_agent_address: 127.0.0.1:6831
+#       sampling:
+#         server_url: http://localhost:5778/sampling
+#         trace_id_ratio: 0.5
+#     zipkin:
+#       server_url: http://localhost:9411/api/v2/spans
+#       sampling:
+#         sampling_ratio: 0.4
+#     otlp:
+#       server_url: localhost:4318
+#       insecure: false
+#       sampling:
+#         sampling_ratio: 0.4
+#       authorization_header: Bearer 2389s8fs9d8fus9f
+namespaces:
+  location: file:///etc/configs/keto/namespaces.ts
+limit:
+  max_read_depth: 1
+  max_read_width: 1
+  max_batch_check_size: 1
+  batch_check_max_parallelization: 1
+clients:
+  http:
+    disallow_private_ip_ranges: true
+secrets:
+  pagination:
+    - secret used for encryption
+    - old secret kept for decryption
+    - another old secret kept for decryption
+version: v0.0.0

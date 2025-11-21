@@ -63,6 +63,21 @@ services:
       - ./config/kratos:/etc/config/kratos/:ro
     entrypoint: /bin/sh -c "kratos migrate sql -e -y && kratos serve --config /etc/config/kratos/kratos.yaml --dev"
 
+  keto:
+    image: oryd/keto:v25.4.0
+    ports:
+      - "4466:4466"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4466/health/alive"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./config/keto:/etc/config/keto/:ro
+    entrypoint: keto serve --sqa-opt-out -c /etc/config/keto/config.yaml
 
 volumes:
   postgres_data:
