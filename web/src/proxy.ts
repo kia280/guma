@@ -26,7 +26,7 @@ function isProtectedRoute(pathname: string): boolean {
   });
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (isPublicRoute(pathname)) {
