@@ -145,28 +145,6 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
 
-	// Parse comma-separated strings into slices
-	if originsStr := v.GetString("cors.allowed_origins"); originsStr != "" {
-		config.CORS.AllowedOrigins = strings.Split(originsStr, ",")
-		for i := range config.CORS.AllowedOrigins {
-			config.CORS.AllowedOrigins[i] = strings.TrimSpace(config.CORS.AllowedOrigins[i])
-		}
-	}
-
-	if methodsStr := v.GetString("cors.allowed_methods"); methodsStr != "" {
-		config.CORS.AllowedMethods = strings.Split(methodsStr, ",")
-		for i := range config.CORS.AllowedMethods {
-			config.CORS.AllowedMethods[i] = strings.TrimSpace(config.CORS.AllowedMethods[i])
-		}
-	}
-
-	if headersStr := v.GetString("cors.allowed_headers"); headersStr != "" {
-		config.CORS.AllowedHeaders = strings.Split(headersStr, ",")
-		for i := range config.CORS.AllowedHeaders {
-			config.CORS.AllowedHeaders[i] = strings.TrimSpace(config.CORS.AllowedHeaders[i])
-		}
-	}
-
 	// Validate required fields
 	if err := config.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %w", err)
