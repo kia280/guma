@@ -26,7 +26,6 @@ export default function Login() {
           router.push('/dashboard');
           return;
         }
-        console.error('Error creating login flow:', error);
       });
     }
   }, [flow, router]);
