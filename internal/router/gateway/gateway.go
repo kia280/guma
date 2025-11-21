@@ -65,6 +65,10 @@ func NewGateway(ctx context.Context, cfg *config.Config, grpcAddr string, logger
 		return nil, fmt.Errorf("failed to register member gateway: %w", err)
 	}
 
+	if err := gumav1.RegisterHealthServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register health gateway: %w", err)
+	}
+
 	logger.Info().Msg("gRPC-Gateway handlers registered")
 
 	// Create HTTP handler with middleware
@@ -73,10 +77,6 @@ func NewGateway(ctx context.Context, cfg *config.Config, grpcAddr string, logger
 	// Add health check endpoints
 	healthMux := http.NewServeMux()
 	healthMux.Handle("/", mux)
-	healthMux.HandleFunc("/health", healthCheckHandler())
-	healthMux.HandleFunc("/healthz", healthCheckHandler())
-	healthMux.HandleFunc("/ready", readinessCheckHandler())
-
 	handler = healthMux
 
 	// Apply middleware
@@ -203,24 +203,5 @@ func outgoingHeaderMatcher(key string) (string, bool) {
 		return "X-Request-Id", true
 	default:
 		return key, true
-	}
-}
-
-// healthCheckHandler returns a simple health check
-func healthCheckHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok","service":"guma-backend"}`))
-	}
-}
-
-// readinessCheckHandler checks if the service is ready to serve traffic
-func readinessCheckHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: Add database connectivity check
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ready"}`))
 	}
 }

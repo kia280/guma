@@ -14,14 +14,16 @@ import (
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/router/grpc/interceptors"
 	"github.com/kia280/guma/internal/router/grpc/services"
+	"github.com/kia280/guma/internal/services/health"
 )
 
 // Server wraps the gRPC server with configuration
 type Server struct {
-	grpcServer *grpc.Server
-	listener   net.Listener
-	logger     zerolog.Logger
-	config     *config.Config
+	grpcServer    *grpc.Server
+	listener      net.Listener
+	logger        zerolog.Logger
+	config        *config.Config
+	healthService *health.Service
 }
 
 // NewServer creates and configures a new gRPC server
@@ -33,7 +35,6 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 		grpc.ChainUnaryInterceptor(
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),
-			interceptors.AuthInterceptor(),
 			interceptors.ValidationInterceptor(),
 		),
 	)
@@ -43,10 +44,14 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 	guildService := services.NewGuildService(logger)
 	memberService := services.NewMemberService(logger)
 
+	healthService := health.NewService(db)
+	healthHandler := services.NewHealthServiceHandler(healthService, logger)
+
 	// Register services
 	gumav1.RegisterGumaServiceServer(grpcServer, gumaService)
 	gumav1.RegisterGuildServiceServer(grpcServer, guildService)
 	gumav1.RegisterMemberServiceServer(grpcServer, memberService)
+	gumav1.RegisterHealthServiceServer(grpcServer, healthHandler)
 
 	// Enable reflection for debugging (disable in production)
 	if cfg.IsDevelopment() {
@@ -64,10 +69,11 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 	logger.Info().Str("address", grpcAddr).Msg("gRPC server initialized")
 
 	return &Server{
-		grpcServer: grpcServer,
-		listener:   lis,
-		logger:     logger,
-		config:     cfg,
+		grpcServer:    grpcServer,
+		listener:      lis,
+		logger:        logger,
+		config:        cfg,
+		healthService: healthService,
 	}, nil
 }
 
@@ -108,4 +114,9 @@ func (s *Server) Stop(ctx context.Context) error {
 // Address returns the server's listening address
 func (s *Server) Address() string {
 	return s.listener.Addr().String()
+}
+
+// HealthService returns the health service
+func (s *Server) HealthService() *health.Service {
+	return s.healthService
 }

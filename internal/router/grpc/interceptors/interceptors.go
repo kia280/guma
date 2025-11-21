@@ -50,42 +50,6 @@ func LoggingInterceptor(logger zerolog.Logger) grpc.UnaryServerInterceptor {
 	}
 }
 
-// AuthInterceptor validates authentication tokens
-func AuthInterceptor() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		// Skip auth for public endpoints
-		if isPublicEndpoint(info.FullMethod) {
-			return handler(ctx, req)
-		}
-
-		// Extract token from metadata
-		md, ok := metadata.FromIncomingContext(ctx)
-		if !ok {
-			return nil, status.Error(codes.Unauthenticated, "missing metadata")
-		}
-
-		tokens := md.Get("authorization")
-		if len(tokens) == 0 {
-			return nil, status.Error(codes.Unauthenticated, "missing authorization token")
-		}
-
-		// Extract bearer token
-		token := tokens[0]
-		if len(token) > 7 && token[:7] == "Bearer " {
-			token = token[7:]
-		}
-
-		// TODO: Validate token with Ory Kratos or JWT validation
-		// For now, we'll extract a mock user ID
-		userID := "mock-user-id"
-
-		// Add user ID to context
-		ctx = context.WithValue(ctx, "user_id", userID)
-
-		return handler(ctx, req)
-	}
-}
-
 // RecoveryInterceptor recovers from panics and returns proper gRPC errors
 func RecoveryInterceptor(logger zerolog.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
@@ -117,14 +81,4 @@ func ValidationInterceptor() grpc.UnaryServerInterceptor {
 
 		return handler(ctx, req)
 	}
-}
-
-// isPublicEndpoint checks if an endpoint is public (doesn't require authentication)
-func isPublicEndpoint(method string) bool {
-	publicEndpoints := map[string]bool{
-		"/guma.v1.GumaService/GetAppConfig": true,
-		// Add other public endpoints here
-	}
-
-	return publicEndpoints[method]
 }

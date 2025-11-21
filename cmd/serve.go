@@ -98,6 +98,10 @@ func runServe(cmd *cobra.Command, args []string) {
 	logger.Info().Msg("gRPC server listening on " + grpcAddr)
 	logger.Info().Msg("HTTP gateway listening on " + gw.Address())
 
+	// Mark health service startup as complete
+	grpcServer.HealthService().MarkStartupComplete()
+	logger.Info().Msg("health service startup marked as complete")
+
 	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
