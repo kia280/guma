@@ -1,4 +1,4 @@
-package services
+package handlers
 
 import (
 	"context"
@@ -150,9 +150,9 @@ func (s *GumaService) GetAppConfig(ctx context.Context, req *gumav1.GetAppConfig
 			"app_name": "Guma",
 		},
 		Limits: &gumav1.Limits{
-			MaxGuildsPerUser:    10,
-			MaxMembersPerGuild:  1000,
-			MaxFileSizeBytes:    10485760, // 10MB
+			MaxGuildsPerUser:   10,
+			MaxMembersPerGuild: 1000,
+			MaxFileSizeBytes:   10485760, // 10MB
 		},
 	}
 

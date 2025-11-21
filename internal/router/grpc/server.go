@@ -12,8 +12,8 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/config"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/router/grpc/handlers"
 	"github.com/kia280/guma/internal/router/grpc/interceptors"
-	"github.com/kia280/guma/internal/router/grpc/services"
 	"github.com/kia280/guma/internal/services/health"
 )
 
@@ -40,17 +40,17 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 	)
 
 	// Initialize service handlers
-	gumaService := services.NewGumaService(logger)
-	guildService := services.NewGuildService(logger)
-	memberService := services.NewMemberService(logger)
+	gumaHandler := handlers.NewGumaService(logger)
+	guildHandler := handlers.NewGuildService(logger)
+	memberHandler := handlers.NewMemberService(logger)
 
 	healthService := health.NewService(db)
-	healthHandler := services.NewHealthServiceHandler(healthService, logger)
+	healthHandler := handlers.NewHealthServiceHandler(healthService, logger)
 
 	// Register services
-	gumav1.RegisterGumaServiceServer(grpcServer, gumaService)
-	gumav1.RegisterGuildServiceServer(grpcServer, guildService)
-	gumav1.RegisterMemberServiceServer(grpcServer, memberService)
+	gumav1.RegisterGumaServiceServer(grpcServer, gumaHandler)
+	gumav1.RegisterGuildServiceServer(grpcServer, guildHandler)
+	gumav1.RegisterMemberServiceServer(grpcServer, memberHandler)
 	gumav1.RegisterHealthServiceServer(grpcServer, healthHandler)
 
 	// Enable reflection for debugging (disable in production)

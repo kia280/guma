@@ -1,4 +1,4 @@
-package services
+package handlers
 
 import (
 	"context"
@@ -43,10 +43,10 @@ func TestGumaService_GetNavigation(t *testing.T) {
 			wantCode: codes.Unauthenticated,
 		},
 		{
-			name: "successful navigation retrieval without guild_id",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
-			req:  &gumav1.GetNavigationRequest{},
-			wantErr: false,
+			name:      "successful navigation retrieval without guild_id",
+			ctx:       context.WithValue(context.Background(), "user_id", "test-user"),
+			req:       &gumav1.GetNavigationRequest{},
+			wantErr:   false,
 			wantItems: 2,
 			checkResult: func(t *testing.T, resp *gumav1.GetNavigationResponse) {
 				assert.Len(t, resp.Items, 2)
@@ -57,10 +57,10 @@ func TestGumaService_GetNavigation(t *testing.T) {
 			},
 		},
 		{
-			name: "successful navigation retrieval with guild_id",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
-			req:  &gumav1.GetNavigationRequest{GuildId: "guild-123"},
-			wantErr: false,
+			name:      "successful navigation retrieval with guild_id",
+			ctx:       context.WithValue(context.Background(), "user_id", "test-user"),
+			req:       &gumav1.GetNavigationRequest{GuildId: "guild-123"},
+			wantErr:   false,
 			wantItems: 2,
 		},
 	}
@@ -205,9 +205,9 @@ func TestGumaService_UpdateUserPreferences(t *testing.T) {
 			wantCode: codes.Unauthenticated,
 		},
 		{
-			name: "missing preferences",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
-			req:  &gumav1.UpdateUserPreferencesRequest{},
+			name:     "missing preferences",
+			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			req:      &gumav1.UpdateUserPreferencesRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},
@@ -302,9 +302,9 @@ func TestGumaService_SearchGlobal(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name: "empty query",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
-			req:  &gumav1.SearchGlobalRequest{Query: ""},
+			name:     "empty query",
+			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			req:      &gumav1.SearchGlobalRequest{Query: ""},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},
@@ -316,9 +316,9 @@ func TestGumaService_SearchGlobal(t *testing.T) {
 			wantCode: codes.Unauthenticated,
 		},
 		{
-			name: "successful search without guild_id",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
-			req:  &gumav1.SearchGlobalRequest{Query: "test query"},
+			name:    "successful search without guild_id",
+			ctx:     context.WithValue(context.Background(), "user_id", "test-user"),
+			req:     &gumav1.SearchGlobalRequest{Query: "test query"},
 			wantErr: false,
 		},
 		{

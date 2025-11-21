@@ -1,4 +1,4 @@
-package services
+package handlers
 
 import (
 	"context"
@@ -111,9 +111,9 @@ func TestGuildService_GetGuild(t *testing.T) {
 			wantCode: codes.InvalidArgument,
 		},
 		{
-			name: "missing user_id in context",
-			ctx:  context.Background(),
-			req:  &guildv1.GetGuildRequest{GuildId: "guild-123"},
+			name:     "missing user_id in context",
+			ctx:      context.Background(),
+			req:      &guildv1.GetGuildRequest{GuildId: "guild-123"},
 			wantErr:  true,
 			wantCode: codes.Unauthenticated,
 		},
@@ -380,9 +380,9 @@ func TestGuildService_UpdateGuildSettings(t *testing.T) {
 			wantCode: codes.InvalidArgument,
 		},
 		{
-			name: "missing settings",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
-			req:  &guildv1.UpdateGuildSettingsRequest{GuildId: "guild-123"},
+			name:     "missing settings",
+			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			req:      &guildv1.UpdateGuildSettingsRequest{GuildId: "guild-123"},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},

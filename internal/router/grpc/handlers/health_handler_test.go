@@ -1,4 +1,4 @@
-package services
+package handlers
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 // mockDependencyChecker is a mock implementation of DependencyChecker
 type mockDependencyChecker struct {
 	databaseHealthy bool
-	redisHealthy   bool
+	redisHealthy    bool
 }
 
 func (m *mockDependencyChecker) CheckDatabase(ctx context.Context) bool {
@@ -78,7 +78,7 @@ func TestCheckReady_AllHealthy(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
 	mockChecker := &mockDependencyChecker{
 		databaseHealthy: true,
-		redisHealthy:   true,
+		redisHealthy:    true,
 	}
 	svc := &testHealthService{
 		checker:         mockChecker,
@@ -100,7 +100,7 @@ func TestCheckReady_DatabaseDown(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
 	mockChecker := &mockDependencyChecker{
 		databaseHealthy: false,
-		redisHealthy:   true,
+		redisHealthy:    true,
 	}
 	svc := &testHealthService{
 		checker:         mockChecker,
@@ -122,7 +122,7 @@ func TestCheckReady_StartupNotComplete(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
 	mockChecker := &mockDependencyChecker{
 		databaseHealthy: true,
-		redisHealthy:   true,
+		redisHealthy:    true,
 	}
 	svc := &testHealthService{
 		checker:         mockChecker,
@@ -144,7 +144,7 @@ func TestCheckReady_AllUnhealthy(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
 	mockChecker := &mockDependencyChecker{
 		databaseHealthy: false,
-		redisHealthy:   false,
+		redisHealthy:    false,
 	}
 	svc := &testHealthService{
 		checker:         mockChecker,
@@ -166,7 +166,7 @@ func TestCheckLive_Responsive(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
 	mockChecker := &mockDependencyChecker{
 		databaseHealthy: false,
-		redisHealthy:   false,
+		redisHealthy:    false,
 	}
 	svc := &testHealthService{
 		checker:         mockChecker,
@@ -189,7 +189,7 @@ func TestCheckLive_DuringStartup(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
 	mockChecker := &mockDependencyChecker{
 		databaseHealthy: false,
-		redisHealthy:   false,
+		redisHealthy:    false,
 	}
 	svc := &testHealthService{
 		checker:         mockChecker,
@@ -207,31 +207,31 @@ func TestCheckLive_DuringStartup(t *testing.T) {
 
 func TestCheckReadyReturnsCorrectHTTPStatus(t *testing.T) {
 	tests := []struct {
-		name              string
-		databaseHealthy   bool
-		redisHealthy      bool
-		startupComplete   bool
-		expectedHTTPCode  int
+		name             string
+		databaseHealthy  bool
+		redisHealthy     bool
+		startupComplete  bool
+		expectedHTTPCode int
 	}{
 		{
 			name:             "All healthy returns 200",
 			databaseHealthy:  true,
-			redisHealthy:    true,
-			startupComplete: true,
+			redisHealthy:     true,
+			startupComplete:  true,
 			expectedHTTPCode: http.StatusOK,
 		},
 		{
 			name:             "Database down returns 503",
 			databaseHealthy:  false,
-			redisHealthy:    true,
-			startupComplete: true,
+			redisHealthy:     true,
+			startupComplete:  true,
 			expectedHTTPCode: http.StatusServiceUnavailable,
 		},
 		{
 			name:             "Not ready returns 503",
 			databaseHealthy:  true,
-			redisHealthy:    true,
-			startupComplete: false,
+			redisHealthy:     true,
+			startupComplete:  false,
 			expectedHTTPCode: http.StatusServiceUnavailable,
 		},
 	}
@@ -240,7 +240,7 @@ func TestCheckReadyReturnsCorrectHTTPStatus(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockChecker := &mockDependencyChecker{
 				databaseHealthy: tt.databaseHealthy,
-				redisHealthy:   tt.redisHealthy,
+				redisHealthy:    tt.redisHealthy,
 			}
 			svc := &testHealthService{
 				checker:         mockChecker,
@@ -314,7 +314,7 @@ func TestCheckReadyWithContextCancellation(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
 	mockChecker := &mockDependencyChecker{
 		databaseHealthy: true,
-		redisHealthy:   true,
+		redisHealthy:    true,
 	}
 	svc := &testHealthService{
 		checker:         mockChecker,
