@@ -21,6 +21,7 @@
     "@heroicons/react": "^2.2.0",
     "@heroui/react": "2.8.5",
     "@iconify/react": "^6.0.2",
+    "@next/env": "^16.0.3",
     "@ory/client": "^1.22.11",
     "@ory/kratos-client": "^25.4.0",
     "@tailwindcss/forms": "^0.5.10",
