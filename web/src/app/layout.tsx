@@ -1,4 +1,4 @@
-import type {Metadata} from "next";
+import type {Metadata, Viewport} from "next";
 import {Noto_Sans_TC} from "next/font/google";
 import {NextIntlClientProvider} from 'next-intl';
 import {Providers} from "./providers";
@@ -15,8 +15,12 @@ export const metadata: Metadata = {
   title: "Guma - Guild Management System",
   description: "Modern guild management system for MMO games",
   manifest: "/manifest.json",
-  viewport: "width=device-width, initial-scale=1",
 };
+
+export const generateViewport = (): Viewport => ({
+  width: "device-width",
+  initialScale: 1,
+});
 
 export default async function RootLayout({
   children,
