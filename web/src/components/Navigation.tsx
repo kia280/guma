@@ -19,202 +19,146 @@ import {
   DropdownMenu,
   DropdownItem,
   Avatar,
-  Switch,
 } from '@heroui/react';
-import {
-  HomeIcon,
-  UsersIcon,
-  CalendarIcon,
-  CogIcon,
-  SunIcon,
-  MoonIcon,
-  Bars3Icon,
-} from '@heroicons/react/24/outline';
-import { useAuth } from '@/lib/auth/auth-context';
+import { Icon } from '@iconify/react';
 import { Logo } from './Logo';
 
-// Navigation item interface
 interface NavItem {
   key: string;
   label: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: string;
   permissions?: string[];
   roles?: string[];
 }
 
-// Main navigation items
 const navigationItems: NavItem[] = [
   {
     key: 'dashboard',
     label: 'Dashboard',
     href: '/dashboard',
-    icon: HomeIcon,
+    icon: 'solar:home-2-linear',
   },
   {
     key: 'guilds',
     label: 'Guilds',
     href: '/guilds',
-    icon: UsersIcon,
+    icon: 'solar:users-group-rounded-linear',
   },
   {
     key: 'events',
     label: 'Events',
     href: '/events',
-    icon: CalendarIcon,
+    icon: 'solar:calendar-linear',
     permissions: ['events.read'],
   },
   {
     key: 'admin',
     label: 'Administration',
     href: '/admin',
-    icon: CogIcon,
+    icon: 'solar:settings-linear',
     roles: ['admin'],
   },
 ];
 
 export function Navigation() {
+  const t = useTranslations('navigation');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, logout, hasPermission, hasRole, isAuthenticated } = useAuth();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
-  const t = useTranslations();
-
-  // Filter navigation items based on permissions
-  const filteredNavItems = navigationItems.filter(item => {
-    if (!isAuthenticated) return false;
-    
-    if (item.permissions) {
-      return item.permissions.some(permission => hasPermission(permission));
-    }
-    
-    if (item.roles) {
-      return item.roles.some(role => hasRole(role));
-    }
-    
-    return true;
-  });
-
-  // Handle logout
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
-  // Toggle theme
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
-    <Navbar 
-      isMenuOpen={isMenuOpen} 
+    <Navbar
+      isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
-      className="border-b border-divider"
-      maxWidth="full"
+      classNames={{
+        base: 'border-b border-divider bg-background',
+        wrapper: 'max-w-full px-4 sm:px-6',
+      }}
     >
-      {/* Brand */}
+      {/* Mobile */}
       <NavbarContent className="sm:hidden" justify="start">
         <NavbarMenuToggle
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          icon={<Bars3Icon className="w-6 h-6" />}
+          aria-label={isMenuOpen ? t('closeMenu') : t('openMenu')}
+          icon={
+            <Icon icon="solar:hamburger-menu-outline" width={20} className="text-default-500" />
+          }
         />
       </NavbarContent>
 
       <NavbarContent className="sm:hidden pr-3" justify="center">
         <NavbarBrand>
-          <Link href="/dashboard" className="flex items-center">
+          <Link href={navigationItems[0].href} className="flex items-center">
             <Logo size="sm" clickable />
           </Link>
         </NavbarBrand>
       </NavbarContent>
 
-      {/* Desktop Navigation */}
+      {/* Desktop */}
       <NavbarContent className="hidden sm:flex gap-4" justify="start">
         <NavbarBrand>
-          <Link href="/dashboard" className="flex items-center">
+          <Link href={navigationItems[0].href} className="flex items-center">
             <Logo size="sm" clickable priority />
           </Link>
         </NavbarBrand>
       </NavbarContent>
 
-      <NavbarContent className="hidden sm:flex gap-4" justify="center">
-        {filteredNavItems.map((item) => {
-          const Icon = item.icon;
+      <NavbarContent className="hidden sm:flex gap-1" justify="center">
+        {navigationItems.map(item => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          
+
           return (
-            <NavbarItem key={item.key} isActive={isActive}>
+            <NavbarItem key={item.key}>
               <Link
                 href={item.href}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-default-100'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-default-500 hover:text-foreground hover:bg-content2'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span>{item.label}</span>
+                <Icon icon={item.icon} width={16} />
+                <span>{t(item.key as any)}</span>
               </Link>
             </NavbarItem>
           );
         })}
       </NavbarContent>
 
-      {/* User Menu */}
-      <NavbarContent className="flex gap-2" justify="end">
-        {/* Theme Toggle */}
+      {/* Right */}
+      <NavbarContent className="flex gap-1" justify="end">
         <NavbarItem>
           <Button
             isIconOnly
-            variant="ghost"
-            onPress={toggleTheme}
-            aria-label="Toggle theme"
+            variant="light"
+            className="text-default-500"
+            onPress={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label={t('toggleTheme')}
           >
-            {theme === 'dark' ? (
-              <SunIcon className="w-5 h-5" />
-            ) : (
-              <MoonIcon className="w-5 h-5" />
-            )}
+            <Icon icon={theme === 'dark' ? 'solar:sun-linear' : 'solar:moon-linear'} width={18} />
           </Button>
         </NavbarItem>
 
-        {/* User Dropdown */}
         <NavbarItem>
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
-              <Avatar
-                as="button"
-                className="transition-transform"
-                size="sm"
-                src={user?.avatar}
-                name={user?.username}
-              />
+              <Avatar as="button" className="transition-transform" size="sm" />
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
-              <DropdownItem key="profile" className="h-14 gap-2">
-                <p className="font-semibold">Signed in as</p>
-                <p className="font-semibold">{user?.email}</p>
-              </DropdownItem>
               <DropdownItem key="settings">
                 <Link href="/settings" className="w-full">
-                  Settings
+                  {t('settings')}
                 </Link>
               </DropdownItem>
               <DropdownItem key="help">
                 <Link href="/help" className="w-full">
-                  Help & Feedback
+                  {t('helpFeedback')}
                 </Link>
               </DropdownItem>
-              <DropdownItem key="logout" color="danger" onPress={handleLogout}>
-                Log Out
+              <DropdownItem key="logout" color="danger">
+                <Link href="/login" className="w-full">
+                  {t('logOut')}
+                </Link>
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
@@ -222,24 +166,23 @@ export function Navigation() {
       </NavbarContent>
 
       {/* Mobile Menu */}
-      <NavbarMenu>
-        {filteredNavItems.map((item) => {
-          const Icon = item.icon;
+      <NavbarMenu className="bg-background border-t border-divider pt-4">
+        {navigationItems.map(item => {
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          
+
           return (
             <NavbarMenuItem key={item.key}>
               <Link
                 href={item.href}
-                className={`flex items-center space-x-3 w-full py-3 px-2 rounded-lg transition-colors ${
+                className={`flex items-center gap-3 w-full py-2.5 px-3 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-default-100'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-default-500 hover:text-foreground hover:bg-content2'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                <Icon icon={item.icon} width={18} />
+                <span>{t(item.key as any)}</span>
               </Link>
             </NavbarMenuItem>
           );
