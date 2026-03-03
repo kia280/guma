@@ -2,7 +2,7 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Switch } from "@heroui/react";
-import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
+import { Icon } from "@iconify/react";
 import { useTranslations } from "next-intl";
 
 export default function ThemeSwitcher() {
@@ -23,8 +23,8 @@ export default function ThemeSwitcher() {
       isSelected={isDark}
       size="sm"
       color="primary"
-      startContent={<SunIcon className="w-4 h-4" />}
-      endContent={<MoonIcon className="w-4 h-4" />}
+      startContent={<Icon icon="solar:sun-linear" width={16} />}
+      endContent={<Icon icon="solar:moon-linear" width={16} />}
       className="text-sm font-semibold leading-6 text-default-700"
       onValueChange={(isSelected) => setTheme(isSelected ? 'dark' : 'light')}
     >
