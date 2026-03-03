@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Modal,
   ModalContent,
@@ -13,23 +14,20 @@ import {
   Select,
   SelectItem,
   Switch,
-  DatePicker,
-  TimeInput,
   Chip,
 } from '@heroui/react';
 import { useForm, Controller } from 'react-hook-form';
-import { 
-  GuildEvent, 
-  CreateEventData, 
-  UpdateEventData, 
-  EventType, 
+import {
+  GuildEvent,
+  CreateEventData,
+  UpdateEventData,
+  EventType,
   EventPriority,
   EVENT_TYPE_LABELS,
   PRIORITY_LABELS,
   EVENT_TYPE_COLORS,
-  PRIORITY_COLORS 
+  PRIORITY_COLORS,
 } from '@/types/guild-events';
-import { CalendarDate, Time } from '@internationalized/date';
 
 interface EventFormModalProps {
   isOpen: boolean;
@@ -51,8 +49,11 @@ interface FormData {
   location: string;
   priority: EventPriority;
   isRecurring: boolean;
-  recurringType: 'daily' | 'weekly' | 'monthly';
+  recurringType: 'daily' | 'weekly' | 'monthly' | 'custom';
   recurringInterval: number;
+  recurringHours: number;
+  recurringMinutes: number;
+  recurringSeconds: number;
 }
 
 export const EventFormModal: React.FC<EventFormModalProps> = ({
@@ -62,12 +63,12 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   event,
   isLoading = false,
 }) => {
+  const t = useTranslations('eventFormModal');
   const {
     control,
     handleSubmit,
     reset,
     watch,
-    setValue,
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
@@ -84,19 +85,22 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       isRecurring: false,
       recurringType: 'weekly',
       recurringInterval: 1,
+      recurringHours: 0,
+      recurringMinutes: 30,
+      recurringSeconds: 0,
     },
   });
 
   const isAllDay = watch('isAllDay');
   const isRecurring = watch('isRecurring');
-  const eventType = watch('type');
+  const recurringType = watch('recurringType');
 
-  // Reset form when event changes
   useEffect(() => {
     if (event) {
       const startDate = new Date(event.startDate);
       const endDate = event.endDate ? new Date(event.endDate) : null;
-      
+      const custom = event.recurringPattern?.customInterval;
+
       reset({
         title: event.title,
         description: event.description || '',
@@ -111,6 +115,9 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         isRecurring: event.isRecurring,
         recurringType: event.recurringPattern?.type || 'weekly',
         recurringInterval: event.recurringPattern?.interval || 1,
+        recurringHours: custom?.hours ?? 0,
+        recurringMinutes: custom?.minutes ?? 30,
+        recurringSeconds: custom?.seconds ?? 0,
       });
     } else {
       reset({
@@ -127,19 +134,22 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         isRecurring: false,
         recurringType: 'weekly',
         recurringInterval: 1,
+        recurringHours: 0,
+        recurringMinutes: 30,
+        recurringSeconds: 0,
       });
     }
   }, [event, reset]);
 
   const onFormSubmit = async (data: FormData) => {
     try {
-      const startDateTime = data.isAllDay 
+      const startDateTime = data.isAllDay
         ? `${data.startDate}T00:00:00.000Z`
         : `${data.startDate}T${data.startTime}:00.000Z`;
-      
+
       let endDateTime = undefined;
       if (data.endDate) {
-        endDateTime = data.isAllDay 
+        endDateTime = data.isAllDay
           ? `${data.endDate}T23:59:59.999Z`
           : `${data.endDate}T${data.endTime}:00.000Z`;
       }
@@ -155,10 +165,20 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         location: data.location || undefined,
         priority: data.priority,
         isRecurring: data.isRecurring,
-        recurringPattern: data.isRecurring ? {
-          type: data.recurringType,
-          interval: data.recurringInterval,
-        } : undefined,
+        recurringPattern: data.isRecurring
+          ? {
+              type: data.recurringType,
+              interval: data.recurringType === 'custom' ? 0 : data.recurringInterval,
+              customInterval:
+                data.recurringType === 'custom'
+                  ? {
+                      hours: data.recurringHours,
+                      minutes: data.recurringMinutes,
+                      seconds: data.recurringSeconds,
+                    }
+                  : undefined,
+            }
+          : undefined,
       };
 
       await onSubmit(eventData);
@@ -186,18 +206,19 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       onClose={onClose}
       size="2xl"
       scrollBehavior="inside"
+      placement="top-center"
       classNames={{
-        base: "max-h-[90vh]",
-        body: "py-6",
-        header: "pb-2",
-        footer: "pt-2",
+        base: 'max-h-[90vh]',
+        body: 'py-4 overflow-y-auto',
+        header: 'pb-2 border-b border-divider',
+        footer: 'pt-2 border-t border-divider',
       }}
     >
       <ModalContent>
-        <form onSubmit={handleSubmit(onFormSubmit)}>
-          <ModalHeader className="flex flex-col gap-1">
-            <h3 className="text-lg font-semibold">
-              {event ? 'Edit Event' : 'Create New Event'}
+        <form onSubmit={handleSubmit(onFormSubmit)} className="contents">
+          <ModalHeader>
+            <h3 className="text-base font-semibold">
+              {event ? t('editEvent') : t('createNewEvent')}
             </h3>
           </ModalHeader>
 
@@ -206,12 +227,12 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             <Controller
               name="title"
               control={control}
-              rules={{ required: 'Title is required' }}
+              rules={{ required: t('titleRequired') }}
               render={({ field }) => (
                 <Input
                   {...field}
-                  label="Title"
-                  placeholder="Enter event title"
+                  label={t('title')}
+                  placeholder={t('titlePlaceholder')}
                   isRequired
                   errorMessage={errors.title?.message}
                   isInvalid={!!errors.title}
@@ -226,101 +247,86 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               render={({ field }) => (
                 <Textarea
                   {...field}
-                  label="Description"
-                  placeholder="Enter event description"
-                  minRows={3}
-                  maxRows={6}
+                  label={t('description')}
+                  placeholder={t('descriptionPlaceholder')}
+                  minRows={2}
+                  maxRows={4}
                 />
               )}
             />
 
-            <div className="flex gap-4">
-              {/* Event Type */}
+            {/* Type + Priority */}
+            <div className="flex gap-3">
               <Controller
                 name="type"
                 control={control}
                 render={({ field }) => (
                   <Select
                     {...field}
-                    label="Event Type"
-                    placeholder="Select event type"
+                    label={t('eventType')}
+                    placeholder={t('selectType')}
                     selectedKeys={field.value ? [field.value] : []}
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={keys => {
                       const selectedKey = Array.from(keys)[0] as EventType;
                       field.onChange(selectedKey);
                     }}
                     className="flex-1"
-                    renderValue={(items) => {
-                      return items.map((item) => (
-                        <div key={item.key} className="flex items-center gap-2">
-                          <Chip
-                            color={EVENT_TYPE_COLORS[item.key as EventType] as any}
-                            size="sm"
-                            variant="flat"
-                          >
-                            {EVENT_TYPE_LABELS[item.key as EventType]}
-                          </Chip>
-                        </div>
-                      ));
-                    }}
+                    renderValue={items =>
+                      items.map(item => (
+                        <Chip
+                          key={item.key}
+                          color={EVENT_TYPE_COLORS[item.key as EventType] as any}
+                          size="sm"
+                          variant="flat"
+                        >
+                          {EVENT_TYPE_LABELS[item.key as EventType]}
+                        </Chip>
+                      ))
+                    }
                   >
-                    {eventTypeOptions.map((option) => (
+                    {eventTypeOptions.map(option => (
                       <SelectItem key={option.key}>
-                        <div className="flex items-center gap-2">
-                          <Chip
-                            color={option.color as any}
-                            size="sm"
-                            variant="flat"
-                          >
-                            {option.label}
-                          </Chip>
-                        </div>
+                        <Chip color={option.color as any} size="sm" variant="flat">
+                          {option.label}
+                        </Chip>
                       </SelectItem>
                     ))}
                   </Select>
                 )}
               />
 
-              {/* Priority */}
               <Controller
                 name="priority"
                 control={control}
                 render={({ field }) => (
                   <Select
                     {...field}
-                    label="Priority"
-                    placeholder="Select priority"
+                    label={t('priority')}
+                    placeholder={t('selectPriority')}
                     selectedKeys={field.value ? [field.value] : []}
-                    onSelectionChange={(keys) => {
+                    onSelectionChange={keys => {
                       const selectedKey = Array.from(keys)[0] as EventPriority;
                       field.onChange(selectedKey);
                     }}
                     className="flex-1"
-                    renderValue={(items) => {
-                      return items.map((item) => (
-                        <div key={item.key} className="flex items-center gap-2">
-                          <Chip
-                            color={PRIORITY_COLORS[item.key as EventPriority] as any}
-                            size="sm"
-                            variant="flat"
-                          >
-                            {PRIORITY_LABELS[item.key as EventPriority]}
-                          </Chip>
-                        </div>
-                      ));
-                    }}
+                    renderValue={items =>
+                      items.map(item => (
+                        <Chip
+                          key={item.key}
+                          color={PRIORITY_COLORS[item.key as EventPriority] as any}
+                          size="sm"
+                          variant="flat"
+                        >
+                          {PRIORITY_LABELS[item.key as EventPriority]}
+                        </Chip>
+                      ))
+                    }
                   >
-                    {priorityOptions.map((option) => (
+                    {priorityOptions.map(option => (
                       <SelectItem key={option.key}>
-                        <div className="flex items-center gap-2">
-                          <Chip
-                            color={option.color as any}
-                            size="sm"
-                            variant="flat"
-                          >
-                            {option.label}
-                          </Chip>
-                        </div>
+                        <Chip color={option.color as any} size="sm" variant="flat">
+                          {option.label}
+                        </Chip>
                       </SelectItem>
                     ))}
                   </Select>
@@ -333,27 +339,23 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               name="isAllDay"
               control={control}
               render={({ field }) => (
-                <Switch
-                  isSelected={field.value}
-                  onValueChange={field.onChange}
-                  color="primary"
-                >
-                  All Day Event
+                <Switch isSelected={field.value} onValueChange={field.onChange} color="primary">
+                  {t('allDayEvent')}
                 </Switch>
               )}
             />
 
             {/* Start Date/Time */}
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <Controller
                 name="startDate"
                 control={control}
-                rules={{ required: 'Start date is required' }}
+                rules={{ required: t('startDateRequired') }}
                 render={({ field }) => (
                   <Input
                     {...field}
                     type="date"
-                    label="Start Date"
+                    label={t('startDate')}
                     isRequired
                     errorMessage={errors.startDate?.message}
                     isInvalid={!!errors.startDate}
@@ -361,49 +363,32 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   />
                 )}
               />
-              
               {!isAllDay && (
                 <Controller
                   name="startTime"
                   control={control}
                   render={({ field }) => (
-                    <Input
-                      {...field}
-                      type="time"
-                      label="Start Time"
-                      className="flex-1"
-                    />
+                    <Input {...field} type="time" label={t('startTime')} className="flex-1" />
                   )}
                 />
               )}
             </div>
 
             {/* End Date/Time */}
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <Controller
                 name="endDate"
                 control={control}
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    type="date"
-                    label="End Date (Optional)"
-                    className="flex-1"
-                  />
+                  <Input {...field} type="date" label={t('endDateOptional')} className="flex-1" />
                 )}
               />
-              
               {!isAllDay && (
                 <Controller
                   name="endTime"
                   control={control}
                   render={({ field }) => (
-                    <Input
-                      {...field}
-                      type="time"
-                      label="End Time"
-                      className="flex-1"
-                    />
+                    <Input {...field} type="time" label={t('endTime')} className="flex-1" />
                   )}
                 />
               )}
@@ -414,88 +399,142 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               name="location"
               control={control}
               render={({ field }) => (
-                <Input
-                  {...field}
-                  label="Location"
-                  placeholder="Enter event location"
-                />
+                <Input {...field} label={t('location')} placeholder={t('locationPlaceholder')} />
               )}
             />
 
-            {/* Recurring Event Toggle */}
+            {/* Recurring Toggle */}
             <Controller
               name="isRecurring"
               control={control}
               render={({ field }) => (
-                <Switch
-                  isSelected={field.value}
-                  onValueChange={field.onChange}
-                  color="primary"
-                >
-                  Recurring Event
+                <Switch isSelected={field.value} onValueChange={field.onChange} color="primary">
+                  {t('recurringEvent')}
                 </Switch>
               )}
             />
 
             {/* Recurring Options */}
             {isRecurring && (
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-3 pl-1">
+                {/* Repeat type */}
                 <Controller
                   name="recurringType"
                   control={control}
                   render={({ field }) => (
                     <Select
                       {...field}
-                      label="Repeat"
+                      label={t('repeat')}
                       selectedKeys={field.value ? [field.value] : []}
-                      onSelectionChange={(keys) => {
-                        const selectedKey = Array.from(keys)[0] as 'daily' | 'weekly' | 'monthly';
+                      onSelectionChange={keys => {
+                        const selectedKey = Array.from(keys)[0] as FormData['recurringType'];
                         field.onChange(selectedKey);
                       }}
-                      className="flex-1"
                     >
-                      <SelectItem key="daily">Daily</SelectItem>
-                      <SelectItem key="weekly">Weekly</SelectItem>
-                      <SelectItem key="monthly">Monthly</SelectItem>
+                      <SelectItem key="daily">{t('daily')}</SelectItem>
+                      <SelectItem key="weekly">{t('weekly')}</SelectItem>
+                      <SelectItem key="monthly">{t('monthly')}</SelectItem>
+                      <SelectItem key="custom">{t('customInterval')}</SelectItem>
                     </Select>
                   )}
                 />
 
-                <Controller
-                  name="recurringInterval"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      type="number"
-                      label="Every"
-                      min={1}
-                      max={365}
-                      value={field.value?.toString() || '1'}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                      className="flex-1"
+                {/* Interval: N for daily/weekly/monthly */}
+                {recurringType !== 'custom' && (
+                  <Controller
+                    name="recurringInterval"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        type="number"
+                        label={
+                          recurringType === 'daily'
+                            ? t('everyNDays')
+                            : recurringType === 'weekly'
+                              ? t('everyNWeeks')
+                              : t('everyNMonths')
+                        }
+                        min={1}
+                        max={365}
+                        value={field.value?.toString() || '1'}
+                        onChange={e => field.onChange(parseInt(e.target.value) || 1)}
+                      />
+                    )}
+                  />
+                )}
+
+                {/* Custom hh:mm:ss interval */}
+                {recurringType === 'custom' && (
+                  <div className="flex gap-3 items-end">
+                    <Controller
+                      name="recurringHours"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          type="number"
+                          label={t('hours')}
+                          min={0}
+                          max={23}
+                          value={field.value?.toString() ?? '0'}
+                          onChange={e =>
+                            field.onChange(Math.min(23, Math.max(0, parseInt(e.target.value) || 0)))
+                          }
+                          className="flex-1"
+                        />
+                      )}
                     />
-                  )}
-                />
+                    <span className="pb-3 text-default-400 text-lg font-semibold">:</span>
+                    <Controller
+                      name="recurringMinutes"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          type="number"
+                          label={t('minutes')}
+                          min={0}
+                          max={59}
+                          value={field.value?.toString() ?? '30'}
+                          onChange={e =>
+                            field.onChange(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))
+                          }
+                          className="flex-1"
+                        />
+                      )}
+                    />
+                    <span className="pb-3 text-default-400 text-lg font-semibold">:</span>
+                    <Controller
+                      name="recurringSeconds"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          type="number"
+                          label={t('seconds')}
+                          min={0}
+                          max={59}
+                          value={field.value?.toString() ?? '0'}
+                          onChange={e =>
+                            field.onChange(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))
+                          }
+                          className="flex-1"
+                        />
+                      )}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </ModalBody>
 
           <ModalFooter>
-            <Button
-              color="danger"
-              variant="light"
-              onPress={onClose}
-              isDisabled={isLoading}
-            >
-              Cancel
+            <Button color="danger" variant="light" onPress={onClose} isDisabled={isLoading}>
+              {t('cancel')}
             </Button>
-            <Button
-              color="primary"
-              type="submit"
-              isLoading={isLoading}
-            >
-              {event ? 'Update Event' : 'Create Event'}
+            <Button color="primary" type="submit" isLoading={isLoading}>
+              {event ? t('updateEvent') : t('createEvent')}
             </Button>
           </ModalFooter>
         </form>
