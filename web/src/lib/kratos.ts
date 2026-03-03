@@ -1,7 +1,10 @@
 import { Configuration, FrontendApi } from "@ory/client";
+import { env } from "@/lib/env";
+
+console.log("Kratos Public URL:", env.kratos.publicUrl);
 
 export const kratosConfig = new Configuration({
-  basePath: "http://localhost:8081",
+  basePath: env.kratos.publicUrl,
 });
 
 export const kratos = new FrontendApi(kratosConfig);

@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { env } from '@/lib/env';
 
 // API client configuration
 interface APIClientConfig {
@@ -74,10 +75,12 @@ export const createAPIClient = (config: APIClientConfig): AxiosInstance => {
 
 // Default API client instance
 export const apiClient = createAPIClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+  baseURL: env.api.url,
   timeout: 30000,
   retries: 3,
 });
+
+console.log("API Base URL:", env.api.url);
 
 // API response wrapper
 export interface APIResponse<T = any> {
