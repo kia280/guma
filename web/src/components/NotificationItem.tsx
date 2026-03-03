@@ -1,11 +1,12 @@
-"use client";
+'use client';
 
-import React from "react";
-import {Avatar, Badge, Button} from "@heroui/react";
-import {Icon} from "@iconify/react";
-import {cn} from "@heroui/react";
+import React from 'react';
+import { Avatar, Badge, Button } from '@heroui/react';
+import { Icon } from '@iconify/react';
+import { cn } from '@heroui/react';
+import { useTranslations } from 'next-intl';
 
-export type NotificationType = "default" | "request" | "file";
+export type NotificationType = 'default' | 'request' | 'file';
 
 export type NotificationItem = {
   id: string;
@@ -20,7 +21,8 @@ export type NotificationItem = {
 export type NotificationItemProps = React.HTMLAttributes<HTMLDivElement> & NotificationItem;
 
 const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>(
-  ({children, avatar, name, description, type, time, isRead, className, ...props}, ref) => {
+  ({ children, avatar, name, description, type, time, isRead, className, ...props }, ref) => {
+    const t = useTranslations('notificationItem');
     /**
      * Defines the content for different types of notifications.
      */
@@ -29,10 +31,10 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
       request: (
         <div className="flex gap-2 pt-2">
           <Button color="primary" size="sm">
-            Accept
+            {t('accept')}
           </Button>
           <Button size="sm" variant="flat">
-            Decline
+            {t('decline')}
           </Button>
         </div>
       ),
@@ -51,11 +53,11 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
       <div
         ref={ref}
         className={cn(
-          "border-divider flex gap-3 border-b px-6 py-4",
+          'border-divider flex gap-3 border-b px-6 py-4',
           {
-            "bg-primary-50/50": !isRead,
+            'bg-primary-50/50': !isRead,
           },
-          className,
+          className
         )}
         {...props}
       >
@@ -79,9 +81,9 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
         </div>
       </div>
     );
-  },
+  }
 );
 
-NotificationItem.displayName = "NotificationItem";
+NotificationItem.displayName = 'NotificationItem';
 
 export { NotificationItem };
