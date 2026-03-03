@@ -1,10 +1,10 @@
-"use client";
-import React from "react";
-import {Button, Input, Checkbox, Link, Divider, Form, Spinner} from "@heroui/react";
-import {useTranslations} from 'next-intl';
-import {Icon} from "@iconify/react";
-import {useSearchParams, useRouter} from 'next/navigation';
-import {kratos} from '@/lib/kratos';
+'use client';
+import React from 'react';
+import { Button, Input, Checkbox, Link, Divider, Form, Spinner } from '@heroui/react';
+import { useTranslations } from 'next-intl';
+import { Icon } from '@iconify/react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { kratos } from '@/lib/kratos';
 
 export default function Login() {
   const t = useTranslations('loginPage');
@@ -15,18 +15,21 @@ export default function Login() {
 
   React.useEffect(() => {
     if (!flow) {
-      kratos.createBrowserLoginFlow({
-        returnTo: window.location.origin + '/dashboard',
-      }).then(({ data }) => {
-        console.log(data);
-        router.push(`/login?flow=${data.id}`);
-      }).catch((error) => {
-        console.error('Error creating login flow:', error);
-        if (error?.response?.data?.error?.id === "session_already_available") {
-          router.push('/dashboard');
-          return;
-        }
-      });
+      kratos
+        .createBrowserLoginFlow({
+          returnTo: window.location.origin + '/dashboard',
+        })
+        .then(({ data }) => {
+          console.log(data);
+          router.push(`/login?flow=${data.id}`);
+        })
+        .catch(error => {
+          console.error('Error creating login flow:', error);
+          if (error?.response?.data?.error?.id === 'session_already_available') {
+            router.push('/dashboard');
+            return;
+          }
+        });
     }
   }, [flow, router]);
 
@@ -38,11 +41,11 @@ export default function Login() {
 
   if (!flow) {
     return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 p-2 sm:p-4 lg:p-8">
-        <div className="rounded-large bg-content1 shadow-large flex w-full max-w-sm flex-col gap-4 px-8 pt-6 pb-10">
+      <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
+        <div className="rounded-xl bg-content1 border border-divider flex w-full max-w-sm flex-col gap-4 px-8 pt-6 pb-10">
           <div className="flex flex-col items-center justify-center py-8 gap-4">
-            <Spinner size="lg" />
-            <p className="text-default-500">Redirecting to login...</p>
+            <Spinner size="lg" color="primary" />
+            <p className="text-sm text-default-500">{t('redirecting')}</p>
           </div>
         </div>
       </div>
@@ -50,16 +53,19 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 p-2 sm:p-4 lg:p-8">
-      <div className="rounded-large bg-content1 shadow-large flex w-full max-w-sm flex-col gap-4 px-8 pt-6 pb-10">
-        <p className="pb-2 text-xl font-medium">{t("logIn")}</p>
+    <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
+      <div className="rounded-xl bg-content1 border border-divider flex w-full max-w-sm flex-col gap-4 px-8 pt-6 pb-10">
+        <div className="flex flex-col gap-1 pb-2">
+          <p className="text-xl font-semibold text-foreground">{t('logIn')}</p>
+          <p className="text-sm text-default-500">{t('welcomeBack')}</p>
+        </div>
         <Form className="flex flex-col gap-3" validationBehavior="native" onSubmit={handleSubmit}>
           <Input
             isRequired
             isDisabled
-            label={t("emailAddress")}
+            label={t('emailAddress')}
             name="email"
-            placeholder={t("enterYourEmail")}
+            placeholder={t('enterYourEmail')}
             type="email"
             variant="bordered"
           />
@@ -81,36 +87,27 @@ export default function Login() {
                 )}
               </button>
             }
-            label={t("password")}
+            label={t('password')}
             name="password"
-            placeholder={t("enterYourPassword")}
-            type={isVisible ? "text" : "password"}
+            placeholder={t('enterYourPassword')}
+            type={isVisible ? 'text' : 'password'}
             variant="bordered"
           />
           <div className="flex w-full items-center justify-between px-1 py-2">
-            <Checkbox 
-              isDisabled
-              name="remember" size="sm"
-            >
-              {t("rememberMe")}
+            <Checkbox isDisabled name="remember" size="sm">
+              {t('rememberMe')}
             </Checkbox>
-            <Link 
-              isDisabled
-              className="text-default-500" href="#" size="sm"
-            >
-              {t("forgotPassword")}
+            <Link isDisabled className="text-default-500" href="#" size="sm">
+              {t('forgotPassword')}
             </Link>
           </div>
-          <Button 
-            isDisabled
-            className="w-full" color="primary" type="submit"
-          >
-            {t("logIn")}
+          <Button isDisabled className="w-full" color="primary" type="submit">
+            {t('logIn')}
           </Button>
         </Form>
         <div className="flex items-center gap-4 py-2">
           <Divider className="flex-1" />
-          <p className="text-tiny text-default-500 shrink-0">{t("or")}</p>
+          <p className="text-tiny text-default-500 shrink-0">{t('or')}</p>
           <Divider className="flex-1" />
         </div>
         <div className="flex flex-col gap-2">
@@ -119,34 +116,31 @@ export default function Login() {
             variant="bordered"
             onPress={() => {
               if (flow) {
-                kratos.updateLoginFlow({
-                  flow: flow,
-                  updateLoginFlowBody: {
-                    method: 'oidc',
-                    provider: 'discord'
-                  }
-                }).then((response) => {
-                  console.log('Login flow updated:', response);
-                }).catch((error) => {
-                  if (error.response?.data?.redirect_browser_to) {
-                    window.location.href = error.response.data.redirect_browser_to;
-                  } else {
-                    console.error('Login flow error:', error);
-                  }
-                });
+                kratos
+                  .updateLoginFlow({
+                    flow: flow,
+                    updateLoginFlowBody: {
+                      method: 'oidc',
+                      provider: 'discord',
+                    },
+                  })
+                  .then(response => {
+                    console.log('Login flow updated:', response);
+                  })
+                  .catch(error => {
+                    if (error.response?.data?.redirect_browser_to) {
+                      window.location.href = error.response.data.redirect_browser_to;
+                    } else {
+                      console.error('Login flow error:', error);
+                    }
+                  });
               }
             }}
           >
-            {t("loginWithDiscord")}
+            {t('loginWithDiscord')}
           </Button>
         </div>
-        {/* <p className="text-small text-center">
-          {t("DontHaveAccount")}&nbsp;
-          <Link href="#" size="sm">
-            {t("Register")}
-          </Link>
-        </p> */}
       </div>
     </div>
-  )
+  );
 }
