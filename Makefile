@@ -11,27 +11,22 @@ setup: ## Setup development environment
 	@chmod +x scripts/setup-dev.sh
 	@./scripts/setup-dev.sh
 
-dev: ## Start development servers
-	@echo "Starting backend and frontend..."
-	@make docker-up
-	@sleep 3
-	@make migrate-up
-	@echo "Backend will start on :8080"
-	@echo "Frontend will start on :3000"
-	@echo ""
-	@echo "Run in separate terminals:"
-	@echo "  make serve"
-	@echo "  make web-dev"
+devcontainer: ## Build and start devcontainer
+	@echo "Building and starting devcontainer..."
+	@devcontainer up --workspace-folder .
 
-serve: ## Start backend server
-	@go run cmd/server/main.go
+serve-debug: ## Start backend with debugger (dlv headless)
+	@echo "Starting backend with Delve debugger on :2345..."
+	@dlv debug ./cmd/serve.go --headless --listen=:2345 --api-version=2
 
 web-dev: ## Start frontend development server
 	@cd web && npm run dev
 
-build: ## Build the application
-	@chmod +x scripts/build.sh
-	@./scripts/build.sh
+build-backend: ## Build the application
+	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/guma .
+
+build-frontend: ## Build the frontend
+	@cd web && npm run build && npm run export
 
 test: ## Run tests
 	@echo "Running Go tests..."
