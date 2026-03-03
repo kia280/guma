@@ -12,6 +12,9 @@
       "name": "GumaService"
     },
     {
+      "name": "HealthService"
+    },
+    {
       "name": "MemberService"
     }
   ],
@@ -22,6 +25,52 @@
     "application/json"
   ],
   "paths": {
+    "/health/alive": {
+      "get": {
+        "summary": "CheckLive checks if the application process is responsive.\nPerforms minimal check without dependency verification.\nReturns 200 if alive, 500 if unresponsive.",
+        "operationId": "HealthService_CheckLive",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "HealthService"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "CheckReady checks if the application is ready to serve traffic.\nVerifies all critical dependencies (database, cache) are available.\nReturns 200 if ready, 503 if not ready.",
+        "operationId": "HealthService_CheckReady",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "HealthService"
+        ]
+      }
+    },
     "/v1/config": {
       "get": {
         "summary": "Application configuration",
@@ -980,6 +1029,33 @@
         }
       }
     },
+    "v1CheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/v1StatusCode",
+          "title": "status is the overall health status"
+        },
+        "database": {
+          "type": "boolean",
+          "title": "database indicates if PostgreSQL is connected and responsive"
+        },
+        "redis": {
+          "type": "boolean",
+          "title": "redis indicates if Redis cache is connected and responsive"
+        },
+        "startupComplete": {
+          "type": "boolean",
+          "title": "startup_complete indicates if application startup initialization is done"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64",
+          "title": "timestamp is the time the health check was performed (Unix nanoseconds)"
+        }
+      },
+      "title": "CheckResponse is the response from a health check"
+    },
     "v1CreateGuildRequest": {
       "type": "object",
       "properties": {
@@ -1524,6 +1600,18 @@
           "format": "int32"
         }
       }
+    },
+    "v1StatusCode": {
+      "type": "string",
+      "enum": [
+        "STATUS_CODE_UNSPECIFIED",
+        "STATUS_CODE_SERVING",
+        "STATUS_CODE_NOT_READY",
+        "STATUS_CODE_UNKNOWN"
+      ],
+      "default": "STATUS_CODE_UNSPECIFIED",
+      "description": "- STATUS_CODE_SERVING: SERVING indicates the application is ready to accept traffic\n - STATUS_CODE_NOT_READY: NOT_READY indicates the application is not ready to accept traffic\n - STATUS_CODE_UNKNOWN: UNKNOWN indicates the health status could not be determined",
+      "title": "StatusCode represents the overall health status of the application"
     },
     "v1UpdateGuildResponse": {
       "type": "object",
