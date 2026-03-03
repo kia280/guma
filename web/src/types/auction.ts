@@ -25,6 +25,7 @@ export interface AuctionItem {
     avatar?: string;
   };
   bidHistory: Bid[];
+  isBlind?: boolean;
   createdAt: string;
   updatedAt: string;
 }
