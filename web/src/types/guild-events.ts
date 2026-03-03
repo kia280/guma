@@ -16,7 +16,7 @@ export interface GuildEvent {
   updatedAt: string;
 }
 
-export type EventType = 
+export type EventType =
   | 'boss_respawn'
   | 'guild_war'
   | 'guild_meeting'
@@ -29,8 +29,9 @@ export type EventType =
 export type EventPriority = 'low' | 'medium' | 'high' | 'critical';
 
 export interface RecurringPattern {
-  type: 'daily' | 'weekly' | 'monthly';
+  type: 'daily' | 'weekly' | 'monthly' | 'custom';
   interval: number; // every N days/weeks/months
+  customInterval?: { hours: number; minutes: number; seconds: number };
   daysOfWeek?: number[]; // 0-6 (Sunday to Saturday)
   endDate?: string;
   occurrences?: number;
