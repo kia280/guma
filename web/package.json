@@ -38,6 +38,7 @@
     "react-apexcharts": "^1.8.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.66.1",
+    "recharts": "^3.7.0",
     "usehooks-ts": "^3.1.1",
     "zustand": "^5.0.8"
   },
@@ -50,6 +51,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.22",
+    "baseline-browser-mapping": "^2.10.0",
     "cypress": "^15.7.0",
     "eslint": "^9",
     "eslint-config-next": "^16.0.3",
