@@ -1,0 +1,150 @@
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { Button, Card, CardBody, CardHeader } from '@heroui/react';
+import { Icon } from '@iconify/react';
+import { useTranslations } from 'next-intl';
+import { Suspense } from 'react';
+
+function ErrorPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const t = useTranslations('errorPage');
+
+  const ERROR_MESSAGES: Record<string, { title: string; description: string; statusCode: number }> =
+    {
+      '401': { title: t('err401Title'), description: t('err401Desc'), statusCode: 401 },
+      '403': { title: t('err403Title'), description: t('err403Desc'), statusCode: 403 },
+      '404': { title: t('err404Title'), description: t('err404Desc'), statusCode: 404 },
+      '429': { title: t('err429Title'), description: t('err429Desc'), statusCode: 429 },
+      '500': { title: t('err500Title'), description: t('err500Desc'), statusCode: 500 },
+      '503': { title: t('err503Title'), description: t('err503Desc'), statusCode: 503 },
+      session_inactive: {
+        title: t('errSessionInactiveTitle'),
+        description: t('errSessionInactiveDesc'),
+        statusCode: 401,
+      },
+      invalid_session: {
+        title: t('errInvalidSessionTitle'),
+        description: t('errInvalidSessionDesc'),
+        statusCode: 401,
+      },
+    };
+
+  const errorId = searchParams.get('id') || 'unknown';
+  const returnUrl = searchParams.get('return') || '/';
+
+  const error = ERROR_MESSAGES[errorId] || {
+    title: t('unknownTitle'),
+    description: t('description'),
+    statusCode: 500,
+  };
+
+  const getErrorIcon = (statusCode: number) => {
+    switch (statusCode) {
+      case 401:
+      case 403:
+        return 'solar:lock-line-duotone';
+      case 404:
+        return 'solar:map-line-duotone';
+      case 429:
+        return 'solar:clock-line-duotone';
+      case 500:
+      case 503:
+        return 'solar:bug-line-duotone';
+      default:
+        return 'solar:info-circle-line-duotone';
+    }
+  };
+
+  const getStatusColor = (statusCode: number) => {
+    if (statusCode === 404) return 'warning';
+    if (statusCode >= 500) return 'danger';
+    if (statusCode >= 400) return 'danger';
+    return 'default';
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="flex flex-col items-center gap-2">
+          <div className={`p-4 rounded-full`}>
+            <Icon
+              icon={getErrorIcon(error.statusCode)}
+              width={48}
+              height={48}
+              className={
+                getStatusColor(error.statusCode) === 'danger' ? 'text-danger' : 'text-warning'
+              }
+            />
+          </div>
+          <h1 className="text-3xl font-bold">{error.statusCode}</h1>
+        </CardHeader>
+
+        <CardBody className="gap-6 py-8">
+          <div className="text-center space-y-2">
+            <h2 className="text-xl font-semibold">{error.title}</h2>
+            <p className="text-default-500">{error.description}</p>
+          </div>
+
+          {errorId !== 'unknown' && (
+            <div className="bg-default-100 rounded-lg p-3">
+              <p className="text-xs text-default-600 font-mono">
+                {t('errorIdLabel')}{' '}
+                <span className="text-default-900 font-semibold">{errorId}</span>
+              </p>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <Button
+              fullWidth
+              color="primary"
+              size="lg"
+              onPress={() => router.push(returnUrl)}
+              startContent={<Icon icon="solar:arrow-left-line-duotone" />}
+            >
+              {t('goBack')}
+            </Button>
+            <Button
+              fullWidth
+              variant="bordered"
+              size="lg"
+              onPress={() => router.push('/')}
+              startContent={<Icon icon="solar:home-line-duotone" />}
+            >
+              {t('goHome')}
+            </Button>
+          </div>
+
+          {process.env.NODE_ENV === 'development' && (
+            <div className="bg-default-100 rounded-lg p-3 border border-dashed border-default-200">
+              <p className="text-xs text-default-600 mb-1">
+                <span className="font-semibold">{t('debugInfoLabel')}</span>
+              </p>
+              <p className="text-xs text-default-600 font-mono break-all">
+                {t('errorLabel')} {errorId}
+              </p>
+              <p className="text-xs text-default-600 font-mono break-all">
+                {t('returnUrlLabel')} {returnUrl}
+              </p>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+    </div>
+  );
+}
+
+export default function ErrorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">{/* loading */}</div>
+      }
+    >
+      <ErrorPageContent />
+    </Suspense>
+  );
+}
