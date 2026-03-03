@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Modal,
   ModalContent,
@@ -17,11 +18,7 @@ import {
   Divider,
   Chip,
 } from '@heroui/react';
-import {
-  PlusIcon,
-  CurrencyDollarIcon,
-  ClockIcon,
-} from '@heroicons/react/24/outline';
+import { Icon } from '@iconify/react';
 import { ItemCategory, ItemRarity, CreateAuctionRequest } from '@/types/auction';
 
 interface CreateAuctionModalProps {
@@ -39,6 +36,7 @@ const CreateAuctionModal = ({
   isLoading = false,
   guildId,
 }: CreateAuctionModalProps) => {
+  const t = useTranslations('createAuctionModal');
   const [formData, setFormData] = useState<Partial<CreateAuctionRequest>>({
     name: '',
     description: '',
@@ -46,27 +44,27 @@ const CreateAuctionModal = ({
     rarity: ItemRarity.COMMON,
     startingBid: 100,
     minBidIncrement: 25,
-    duration: 24, // 24 hours default
+    duration: 24,
     guildId,
   });
 
   const categoryOptions = Object.values(ItemCategory).map(category => ({
     key: category,
-    label: category.replace('_', ' ').toUpperCase()
+    label: category.replace('_', ' ').toUpperCase(),
   }));
 
   const rarityOptions = Object.values(ItemRarity).map(rarity => ({
     key: rarity,
-    label: rarity.toUpperCase()
+    label: rarity.toUpperCase(),
   }));
 
   const durationOptions = [
-    { key: '6', label: '6 Hours' },
-    { key: '12', label: '12 Hours' },
-    { key: '24', label: '1 Day' },
-    { key: '48', label: '2 Days' },
-    { key: '72', label: '3 Days' },
-    { key: '168', label: '1 Week' },
+    { key: '6', label: t('6hours') },
+    { key: '12', label: t('12hours') },
+    { key: '24', label: t('1day') },
+    { key: '48', label: t('2days') },
+    { key: '72', label: t('3days') },
+    { key: '168', label: t('1week') },
   ];
 
   const handleSubmit = () => {
@@ -116,77 +114,73 @@ const CreateAuctionModal = ({
       onOpenChange={onOpenChange}
       size="2xl"
       scrollBehavior="inside"
-      placement="center"
+      placement="top-center"
     >
       <ModalContent>
-        {(onClose) => (
+        {onClose => (
           <>
             <ModalHeader className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <PlusIcon className="w-5 h-5" />
-                Create New Auction
+                <Icon icon="solar:add-circle-linear" width={20} />
+                {t('createNewAuction')}
               </div>
-              <p className="text-small text-default-500 font-normal">
-                List an item for other guild members to bid on
-              </p>
+              <p className="text-small text-default-500 font-normal">{t('subtitle')}</p>
             </ModalHeader>
 
             <ModalBody>
               <div className="space-y-6">
                 {/* Basic Information */}
-                <Card>
+                <Card className="border border-divider shadow-none bg-content1">
                   <CardBody className="space-y-4">
-                    <h4 className="text-medium font-semibold">Item Information</h4>
-                    
+                    <h4 className="text-medium font-semibold">{t('itemInformation')}</h4>
+
                     <Input
-                      label="Item Name"
-                      placeholder="Enter the name of your item"
+                      label={t('itemName')}
+                      placeholder={t('itemNamePlaceholder')}
                       value={formData.name || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       isRequired
                     />
 
                     <Textarea
-                      label="Description"
-                      placeholder="Describe your item's features and benefits"
+                      label={t('description')}
+                      placeholder={t('descriptionPlaceholder')}
                       value={formData.description || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      onChange={e =>
+                        setFormData(prev => ({ ...prev, description: e.target.value }))
+                      }
                       minRows={3}
                       isRequired
                     />
 
                     <div className="flex gap-4">
                       <Select
-                        label="Category"
+                        label={t('category')}
                         selectedKeys={formData.category ? [formData.category] : []}
-                        onSelectionChange={(keys) => {
+                        onSelectionChange={keys => {
                           const selected = Array.from(keys)[0] as ItemCategory;
                           setFormData(prev => ({ ...prev, category: selected }));
                         }}
                         isRequired
                         className="flex-1"
                       >
-                        {categoryOptions.map((option) => (
-                          <SelectItem key={option.key}>
-                            {option.label}
-                          </SelectItem>
+                        {categoryOptions.map(option => (
+                          <SelectItem key={option.key}>{option.label}</SelectItem>
                         ))}
                       </Select>
 
                       <Select
-                        label="Rarity"
+                        label={t('rarity')}
                         selectedKeys={formData.rarity ? [formData.rarity] : []}
-                        onSelectionChange={(keys) => {
+                        onSelectionChange={keys => {
                           const selected = Array.from(keys)[0] as ItemRarity;
                           setFormData(prev => ({ ...prev, rarity: selected }));
                         }}
                         isRequired
                         className="flex-1"
                       >
-                        {rarityOptions.map((option) => (
-                          <SelectItem key={option.key}>
-                            {option.label}
-                          </SelectItem>
+                        {rarityOptions.map(option => (
+                          <SelectItem key={option.key}>{option.label}</SelectItem>
                         ))}
                       </Select>
                     </div>
@@ -194,54 +188,74 @@ const CreateAuctionModal = ({
                 </Card>
 
                 {/* Auction Settings */}
-                <Card>
+                <Card className="border border-divider shadow-none bg-content1">
                   <CardBody className="space-y-4">
-                    <h4 className="text-medium font-semibold">Auction Settings</h4>
-                    
+                    <h4 className="text-medium font-semibold">{t('auctionSettings')}</h4>
+
                     <div className="flex gap-4">
                       <Input
                         type="number"
-                        label="Starting Bid"
+                        label={t('startingBid')}
                         placeholder="100"
                         value={formData.startingBid?.toString() || ''}
-                        onChange={(e) => setFormData(prev => ({ 
-                          ...prev, 
-                          startingBid: Number(e.target.value) 
-                        }))}
-                        startContent={<CurrencyDollarIcon className="w-4 h-4 text-default-400" />}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            startingBid: Number(e.target.value),
+                          }))
+                        }
+                        startContent={
+                          <Icon
+                            icon="solar:dollar-minimalistic-linear"
+                            width={16}
+                            className="text-default-400"
+                          />
+                        }
                         isRequired
                         className="flex-1"
                       />
 
                       <Input
                         type="number"
-                        label="Min Bid Increment"
+                        label={t('minBidIncrement')}
                         placeholder="25"
                         value={formData.minBidIncrement?.toString() || ''}
-                        onChange={(e) => setFormData(prev => ({ 
-                          ...prev, 
-                          minBidIncrement: Number(e.target.value) 
-                        }))}
-                        startContent={<CurrencyDollarIcon className="w-4 h-4 text-default-400" />}
+                        onChange={e =>
+                          setFormData(prev => ({
+                            ...prev,
+                            minBidIncrement: Number(e.target.value),
+                          }))
+                        }
+                        startContent={
+                          <Icon
+                            icon="solar:dollar-minimalistic-linear"
+                            width={16}
+                            className="text-default-400"
+                          />
+                        }
                         isRequired
                         className="flex-1"
                       />
                     </div>
 
                     <Select
-                      label="Auction Duration"
+                      label={t('auctionDuration')}
                       selectedKeys={formData.duration ? [formData.duration.toString()] : []}
-                      onSelectionChange={(keys) => {
+                      onSelectionChange={keys => {
                         const selected = Array.from(keys)[0] as string;
                         setFormData(prev => ({ ...prev, duration: Number(selected) }));
                       }}
-                      startContent={<ClockIcon className="w-4 h-4 text-default-400" />}
+                      startContent={
+                        <Icon
+                          icon="solar:clock-circle-linear"
+                          width={16}
+                          className="text-default-400"
+                        />
+                      }
                       isRequired
                     >
-                      {durationOptions.map((option) => (
-                        <SelectItem key={option.key}>
-                          {option.label}
-                        </SelectItem>
+                      {durationOptions.map(option => (
+                        <SelectItem key={option.key}>{option.label}</SelectItem>
                       ))}
                     </Select>
                   </CardBody>
@@ -249,9 +263,9 @@ const CreateAuctionModal = ({
 
                 {/* Preview */}
                 {formData.name && (
-                  <Card>
+                  <Card className="border border-divider shadow-none bg-content1">
                     <CardBody>
-                      <h4 className="text-medium font-semibold mb-3">Preview</h4>
+                      <h4 className="text-medium font-semibold mb-3">{t('preview')}</h4>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{formData.name}</span>
@@ -262,17 +276,22 @@ const CreateAuctionModal = ({
                           )}
                         </div>
                         {formData.description && (
-                          <p className="text-small text-default-600">{formData.description}</p>
+                          <p className="text-small text-default-500">{formData.description}</p>
                         )}
                         <Divider className="my-2" />
                         <div className="flex justify-between text-small">
-                          <span>Starting Bid:</span>
-                          <span className="font-medium">${formData.startingBid?.toLocaleString()}</span>
+                          <span>{t('startingBidLabel')}</span>
+                          <span className="font-medium">
+                            ${formData.startingBid?.toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex justify-between text-small">
-                          <span>Duration:</span>
+                          <span>{t('durationLabel')}</span>
                           <span className="font-medium">
-                            {durationOptions.find(d => d.key === formData.duration?.toString())?.label}
+                            {
+                              durationOptions.find(d => d.key === formData.duration?.toString())
+                                ?.label
+                            }
                           </span>
                         </div>
                       </div>
@@ -283,16 +302,16 @@ const CreateAuctionModal = ({
             </ModalBody>
 
             <ModalFooter>
-              <Button color="danger" variant="light" onPress={handleClose}>
-                Cancel
+              <Button variant="flat" onPress={handleClose}>
+                {t('cancel')}
               </Button>
               <Button
                 color="primary"
                 onPress={handleSubmit}
-                disabled={!isFormValid() || isLoading}
+                isDisabled={!isFormValid() || isLoading}
                 isLoading={isLoading}
               >
-                Create Auction
+                {t('createAuction')}
               </Button>
             </ModalFooter>
           </>
