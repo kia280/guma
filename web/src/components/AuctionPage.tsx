@@ -1,32 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Select,
-  SelectItem,
-  Input,
-  Button,
-  Tabs,
-  Tab,
-  Chip,
-  Spinner,
-  useDisclosure,
-} from '@heroui/react';
-import {
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  PlusIcon,
-} from '@heroicons/react/24/outline';
+import { useTranslations } from 'next-intl';
+import { Card, CardBody, Select, SelectItem, Input, Tabs, Tab, Chip } from '@heroui/react';
+import { Icon } from '@iconify/react';
 import AuctionItemCard from '@/components/AuctionItemCard';
-import CreateAuctionModal from '@/components/CreateAuctionModal';
-import { AuctionItem, ItemCategory, ItemRarity, AuctionStatus, CreateAuctionRequest } from '@/types/auction';
+import { AuctionItem, ItemCategory, ItemRarity, AuctionStatus } from '@/types/auction';
 
-// Mock data for demonstration
 const mockAuctionItems: AuctionItem[] = [
   {
     id: '1',
@@ -42,8 +22,8 @@ const mockAuctionItems: AuctionItem[] = [
       avatar: undefined,
     },
     minBidIncrement: 100,
-    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-    endTime: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(), // 6 hours from now
+    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    endTime: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
     status: AuctionStatus.ACTIVE,
     guildId: 'guild1',
     sellerId: 'seller1',
@@ -112,7 +92,7 @@ const mockAuctionItems: AuctionItem[] = [
       avatar: undefined,
     },
     minBidIncrement: 25,
-    startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+    startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     endTime: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(),
     status: AuctionStatus.UPCOMING,
     guildId: 'guild1',
@@ -151,7 +131,7 @@ const mockAuctionItems: AuctionItem[] = [
     },
     minBidIncrement: 25,
     startTime: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // ended 30 minutes ago
+    endTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
     status: AuctionStatus.ENDED,
     guildId: 'guild1',
     sellerId: 'seller4',
@@ -178,10 +158,10 @@ const mockAuctionItems: AuctionItem[] = [
 
 interface AuctionPageProps {
   userBalance?: number;
-  guildId?: string;
 }
 
-const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProps) => {
+const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
+  const t = useTranslations('auctionPage');
   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>(mockAuctionItems);
   const [filteredItems, setFilteredItems] = useState<AuctionItem[]>(mockAuctionItems);
   const [searchTerm, setSearchTerm] = useState('');
@@ -189,48 +169,42 @@ const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProp
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(false);
-  
-  const { isOpen: isCreateModalOpen, onOpen: onCreateModalOpen, onOpenChange: onCreateModalOpenChange } = useDisclosure();
 
   const categoryOptions = [
-    { key: 'all', label: 'All Categories' },
+    { key: 'all', label: t('allCategories') },
     ...Object.values(ItemCategory).map(category => ({
       key: category,
-      label: category.replace('_', ' ').toUpperCase()
-    }))
+      label: category.replace('_', ' ').toUpperCase(),
+    })),
   ];
 
   const rarityOptions = [
-    { key: 'all', label: 'All Rarities' },
+    { key: 'all', label: t('allRarities') },
     ...Object.values(ItemRarity).map(rarity => ({
       key: rarity,
-      label: rarity.toUpperCase()
-    }))
+      label: rarity.toUpperCase(),
+    })),
   ];
 
-  // Filter items based on search and filters
   useEffect(() => {
     let filtered = auctionItems;
 
-    // Filter by tab (status)
     if (activeTab !== 'all') {
       filtered = filtered.filter(item => item.status === activeTab);
     }
 
-    // Filter by search term
     if (searchTerm) {
-      filtered = filtered.filter(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        item =>
+          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Filter by category
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(item => item.category === selectedCategory);
     }
 
-    // Filter by rarity
     if (selectedRarity !== 'all') {
       filtered = filtered.filter(item => item.rarity === selectedRarity);
     }
@@ -238,46 +212,11 @@ const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProp
     setFilteredItems(filtered);
   }, [auctionItems, searchTerm, selectedCategory, selectedRarity, activeTab]);
 
-  const handleCreateAuction = async (auctionData: CreateAuctionRequest) => {
-    setIsLoading(true);
-    
-    // Simulate API call to create auction
-    setTimeout(() => {
-      const newAuction: AuctionItem = {
-        id: `auction-${Date.now()}`,
-        name: auctionData.name,
-        description: auctionData.description,
-        category: auctionData.category,
-        rarity: auctionData.rarity,
-        startingBid: auctionData.startingBid,
-        currentBid: auctionData.startingBid,
-        minBidIncrement: auctionData.minBidIncrement,
-        startTime: new Date().toISOString(),
-        endTime: new Date(Date.now() + auctionData.duration * 60 * 60 * 1000).toISOString(),
-        status: AuctionStatus.ACTIVE,
-        guildId: auctionData.guildId,
-        sellerId: 'current-user',
-        seller: {
-          id: 'current-user',
-          username: 'You',
-          avatar: undefined,
-        },
-        bidHistory: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      setAuctionItems(prevItems => [newAuction, ...prevItems]);
-      setIsLoading(false);
-    }, 1000);
-  };
-
   const handlePlaceBid = async (itemId: string, amount: number) => {
     setIsLoading(true);
-    
-    // Simulate API call
+
     setTimeout(() => {
-      setAuctionItems(prevItems => 
+      setAuctionItems(prevItems =>
         prevItems.map(item => {
           if (item.id === itemId) {
             const newBid = {
@@ -290,7 +229,6 @@ const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProp
               isWinning: true,
             };
 
-            // Update existing bids to not be winning
             const updatedBidHistory = item.bidHistory.map(bid => ({
               ...bid,
               isWinning: false,
@@ -311,94 +249,60 @@ const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProp
     }, 1000);
   };
 
-  const getStatusCounts = () => {
-    const counts = {
-      all: auctionItems.length,
-      active: auctionItems.filter(item => item.status === AuctionStatus.ACTIVE).length,
-      upcoming: auctionItems.filter(item => item.status === AuctionStatus.UPCOMING).length,
-      ended: auctionItems.filter(item => item.status === AuctionStatus.ENDED).length,
-    };
-    return counts;
-  };
+  const getStatusCounts = () => ({
+    all: auctionItems.length,
+    active: auctionItems.filter(item => item.status === AuctionStatus.ACTIVE).length,
+    upcoming: auctionItems.filter(item => item.status === AuctionStatus.UPCOMING).length,
+    ended: auctionItems.filter(item => item.status === AuctionStatus.ENDED).length,
+  });
 
   const statusCounts = getStatusCounts();
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      {/* Header */}
+    <div className="space-y-5">
+      {/* Search and Filters */}
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Guild Auction House</h1>
-            <p className="text-default-600 mt-1">
-              Bid on rare items and resources from guild members
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <Button
-              color="primary"
-              variant="solid"
-              startContent={<PlusIcon className="w-4 h-4" />}
-              onPress={onCreateModalOpen}
-            >
-              Create Auction
-            </Button>
-            <Card className="p-3">
-              <div className="flex items-center gap-2">
-                <CurrencyDollarIcon className="w-5 h-5 text-warning" />
-                <div>
-                  <div className="text-tiny text-default-500">Your Balance</div>
-                  <div className="text-lg font-bold text-warning">
-                    ${userBalance.toLocaleString()}
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-
-        {/* Search and Filters */}
-        <Card>
-          <CardBody>
-            <div className="flex flex-col lg:flex-row gap-4">
+        <Card className="border border-divider shadow-none bg-content1">
+          <CardBody className="py-3">
+            <div className="flex flex-col lg:flex-row gap-3">
               <Input
-                placeholder="Search items..."
+                placeholder={t('searchItems')}
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                startContent={<MagnifyingGlassIcon className="w-4 h-4" />}
+                onChange={e => setSearchTerm(e.target.value)}
+                startContent={
+                  <Icon icon="solar:magnifer-linear" width={16} className="text-default-400" />
+                }
                 className="lg:flex-1"
+                variant="bordered"
               />
-              
+
               <Select
-                placeholder="All Categories"
+                placeholder={t('allCategories')}
                 selectedKeys={selectedCategory ? [selectedCategory] : []}
-                onSelectionChange={(keys) => {
+                onSelectionChange={keys => {
                   const selected = Array.from(keys)[0] as string;
                   setSelectedCategory(selected || 'all');
                 }}
                 className="lg:max-w-xs"
-                startContent={<FunnelIcon className="w-4 h-4" />}
+                variant="bordered"
               >
-                {categoryOptions.map((option) => (
-                  <SelectItem key={option.key}>
-                    {option.label}
-                  </SelectItem>
+                {categoryOptions.map(option => (
+                  <SelectItem key={option.key}>{option.label}</SelectItem>
                 ))}
               </Select>
 
               <Select
-                placeholder="All Rarities"
+                placeholder={t('allRarities')}
                 selectedKeys={selectedRarity ? [selectedRarity] : []}
-                onSelectionChange={(keys) => {
+                onSelectionChange={keys => {
                   const selected = Array.from(keys)[0] as string;
                   setSelectedRarity(selected || 'all');
                 }}
                 className="lg:max-w-xs"
+                variant="bordered"
               >
-                {rarityOptions.map((option) => (
-                  <SelectItem key={option.key}>
-                    {option.label}
-                  </SelectItem>
+                {rarityOptions.map(option => (
+                  <SelectItem key={option.key}>{option.label}</SelectItem>
                 ))}
               </Select>
             </div>
@@ -409,16 +313,17 @@ const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProp
       {/* Status Tabs */}
       <Tabs
         selectedKey={activeTab}
-        onSelectionChange={(key) => setActiveTab(key as string)}
-        size="lg"
-        radius="full"
+        onSelectionChange={key => setActiveTab(key as string)}
+        size="md"
       >
         <Tab
           key="all"
           title={
             <div className="flex items-center gap-2">
-              <span>All</span>
-              <Chip size="sm" variant="flat">{statusCounts.all}</Chip>
+              <span>{t('all')}</span>
+              <Chip size="sm" variant="flat">
+                {statusCounts.all}
+              </Chip>
             </div>
           }
         />
@@ -426,8 +331,10 @@ const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProp
           key={AuctionStatus.ACTIVE}
           title={
             <div className="flex items-center gap-2">
-              <span>Active</span>
-              <Chip size="sm" color="success" variant="flat">{statusCounts.active}</Chip>
+              <span>{t('active')}</span>
+              <Chip size="sm" color="success" variant="flat">
+                {statusCounts.active}
+              </Chip>
             </div>
           }
         />
@@ -435,8 +342,10 @@ const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProp
           key={AuctionStatus.UPCOMING}
           title={
             <div className="flex items-center gap-2">
-              <span>Upcoming</span>
-              <Chip size="sm" color="warning" variant="flat">{statusCounts.upcoming}</Chip>
+              <span>{t('upcoming')}</span>
+              <Chip size="sm" color="warning" variant="flat">
+                {statusCounts.upcoming}
+              </Chip>
             </div>
           }
         />
@@ -444,27 +353,31 @@ const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProp
           key={AuctionStatus.ENDED}
           title={
             <div className="flex items-center gap-2">
-              <span>Ended</span>
-              <Chip size="sm" color="default" variant="flat">{statusCounts.ended}</Chip>
+              <span>{t('ended')}</span>
+              <Chip size="sm" variant="flat">
+                {statusCounts.ended}
+              </Chip>
             </div>
           }
         />
       </Tabs>
 
-      {/* Auction Items Grid */}
+      {/* Items Grid */}
       {filteredItems.length === 0 ? (
-        <Card>
+        <Card className="border border-divider shadow-none">
           <CardBody className="text-center py-12">
-            <div className="text-default-500">
-              <ClockIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">No auctions found</h3>
-              <p>Try adjusting your search criteria or check back later.</p>
-            </div>
+            <Icon
+              icon="solar:clock-circle-linear"
+              width={40}
+              className="mx-auto mb-3 text-default-300"
+            />
+            <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
+            <p className="text-sm text-default-500">{t('noAuctionsHint')}</p>
           </CardBody>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredItems.map(item => (
             <AuctionItemCard
               key={item.id}
               item={item}
@@ -475,27 +388,6 @@ const AuctionPage = ({ userBalance = 5000, guildId = 'guild1' }: AuctionPageProp
           ))}
         </div>
       )}
-
-      {/* Loading Spinner */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-          <Card>
-            <CardBody className="flex items-center gap-3 py-6">
-              <Spinner size="sm" />
-              <span>Placing bid...</span>
-            </CardBody>
-          </Card>
-        </div>
-      )}
-
-      {/* Create Auction Modal */}
-      <CreateAuctionModal
-        isOpen={isCreateModalOpen}
-        onOpenChange={onCreateModalOpenChange}
-        onCreateAuction={handleCreateAuction}
-        isLoading={isLoading}
-        guildId={guildId}
-      />
     </div>
   );
 };
