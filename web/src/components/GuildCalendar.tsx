@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardBody, Button, ButtonGroup, Chip, Tooltip } from '@heroui/react';
+import { Card, Button, ButtonGroup, Chip, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import {
@@ -26,12 +26,12 @@ const HOUR_PX = 60; // pixels per hour
 const TOTAL_HEIGHT = 24 * HOUR_PX; // 1440px
 
 const TIMELINE_COLORS: Record<string, { border: string; bg: string }> = {
-  danger: { border: '#f31260', bg: 'rgba(243, 18, 96, 0.12)' },
-  warning: { border: '#f5a524', bg: 'rgba(245, 165, 36, 0.12)' },
-  primary: { border: '#006FEE', bg: 'rgba(0, 111, 238, 0.12)' },
-  secondary: { border: '#7828c8', bg: 'rgba(120, 40, 200, 0.12)' },
-  success: { border: '#17c964', bg: 'rgba(23, 201, 100, 0.12)' },
-  default: { border: '#71717a', bg: 'rgba(113, 113, 122, 0.12)' },
+  danger: { border: 'rgb(var(--heroui-danger))', bg: 'color-mix(in oklab, rgb(var(--heroui-danger)) 12%, transparent)' },
+  warning: { border: 'rgb(var(--heroui-warning))', bg: 'color-mix(in oklab, rgb(var(--heroui-warning)) 12%, transparent)' },
+  primary: { border: 'rgb(var(--heroui-accent))', bg: 'color-mix(in oklab, rgb(var(--heroui-accent)) 12%, transparent)' },
+  secondary: { border: 'rgb(var(--heroui-accent))', bg: 'color-mix(in oklab, rgb(var(--heroui-accent)) 12%, transparent)' },
+  success: { border: 'rgb(var(--heroui-success))', bg: 'color-mix(in oklab, rgb(var(--heroui-success)) 12%, transparent)' },
+  default: { border: 'rgb(var(--heroui-default-500))', bg: 'color-mix(in oklab, rgb(var(--heroui-default-500)) 12%, transparent)' },
 };
 
 export const GuildCalendar: React.FC<GuildCalendarProps> = ({
@@ -139,14 +139,14 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   // --- Shared timeline sub-renderers ---
 
   const renderHourLabels = () => (
-    <div className="w-14 shrink-0 relative bg-content1 z-10" style={{ height: TOTAL_HEIGHT }}>
+    <div className="w-14 shrink-0 relative bg-surface z-10" style={{ height: TOTAL_HEIGHT }}>
       {Array.from({ length: 24 }, (_, h) => (
         <div
           key={h}
           style={{ top: h * HOUR_PX, height: HOUR_PX }}
           className="absolute w-full flex items-start justify-end pr-2 pt-1"
         >
-          <span className="text-xs text-default-400 leading-none select-none">
+          <span className="text-xs text-foreground/40 leading-none select-none">
             {String(h).padStart(2, '0')}:00
           </span>
         </div>
@@ -199,12 +199,15 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               }}
               className="absolute rounded-r-md overflow-hidden cursor-pointer z-20 hover:opacity-80 transition-opacity px-1.5 py-0.5"
               onClick={() => onEventClick(event)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && onEventClick(event)}
             >
               <p className="text-xs font-medium text-foreground truncate leading-tight">
                 {event.title}
               </p>
               {height >= 40 && (
-                <p className="text-xs text-default-500 leading-tight">
+                <p className="text-xs text-foreground/50 leading-tight">
                   {formatTime(event.startDate)}
                 </p>
               )}
@@ -224,7 +227,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     return (
       <div className="grid grid-cols-7 gap-1">
         {(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const).map(day => (
-          <div key={day} className="p-2 text-center text-xs font-medium text-default-400">
+          <div key={day} className="p-2 text-center text-xs font-medium text-foreground/40">
             {t(day)}
           </div>
         ))}
@@ -238,16 +241,18 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           return (
             <Card
               key={index}
-              isPressable
-              onPress={() => handleDateClick(day)}
-              className={`
+              onClick={() => handleDateClick(day)}
+              onKeyDown={e => e.key === 'Enter' && handleDateClick(day)}
+              role="button"
+              tabIndex={0}
+              className={`cursor-pointer
                 min-h-[80px] border shadow-none transition-colors
                 ${!isCurrentMonth ? 'opacity-30' : ''}
-                ${isToday ? 'border-primary/50 bg-primary/5' : 'border-divider bg-content1'}
-                ${isSelected && !isToday ? 'border-default-400 bg-content2' : ''}
+                ${isToday ? 'border-primary/50 bg-primary/5' : 'border-divider bg-surface'}
+                ${isSelected && !isToday ? 'border-default-400 bg-surface-secondary' : ''}
               `}
             >
-              <CardBody className="p-1.5">
+              <Card.Content className="p-1.5">
                 <div className="flex flex-col h-full">
                   <div
                     className={`text-xs text-center mb-1 font-medium ${isToday ? 'text-primary' : 'text-foreground'}`}
@@ -257,37 +262,45 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
 
                   <div className="flex-1 space-y-0.5">
                     {dayEvents.slice(0, 2).map(event => (
-                      <Tooltip
-                        key={event.id}
-                        content={`${event.title} - ${formatTime(event.startDate)}`}
-                      >
+                      <Tooltip key={event.id}>
                         <div
                           onClick={e => {
                             e.stopPropagation();
                             onEventClick(event);
                           }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.stopPropagation();
+                              onEventClick(event);
+                            }
+                          }}
+                          role="button"
+                          tabIndex={0}
                           className="cursor-pointer"
                         >
                           <Chip
-                            color={EVENT_TYPE_COLORS[event.type] as any}
+                            color={EVENT_TYPE_COLORS[event.type]}
                             size="sm"
-                            variant="flat"
+                            variant="secondary"
                             className="text-xs truncate max-w-full"
                           >
                             {event.title.length > 8 ? `${event.title.slice(0, 8)}...` : event.title}
                           </Chip>
                         </div>
+                        <Tooltip.Content>
+                          {`${event.title} - ${formatTime(event.startDate)}`}
+                        </Tooltip.Content>
                       </Tooltip>
                     ))}
 
                     {dayEvents.length > 2 && (
-                      <div className="text-xs text-default-400 text-center">
+                      <div className="text-xs text-foreground/40 text-center">
                         +{dayEvents.length - 2}
                       </div>
                     )}
                   </div>
                 </div>
-              </CardBody>
+              </Card.Content>
             </Card>
           );
         })}
@@ -301,7 +314,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     const allDayEvents = dayEvents.filter(e => e.isAllDay);
 
     return (
-      <div className="border border-divider rounded-xl overflow-hidden bg-content1">
+      <div className="border border-divider rounded-xl overflow-hidden bg-surface">
         {/* Day header */}
         <div className={`px-4 py-3 border-b border-divider ${isToday ? 'bg-primary/5' : ''}`}>
           <h3 className={`text-sm font-medium ${isToday ? 'text-primary' : 'text-foreground'}`}>
@@ -310,16 +323,18 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           {allDayEvents.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {allDayEvents.map(event => (
-                <Chip
+                <div
                   key={event.id}
-                  size="sm"
-                  color={EVENT_TYPE_COLORS[event.type] as any}
-                  variant="flat"
                   className="cursor-pointer"
                   onClick={() => onEventClick(event)}
+                  onKeyDown={e => e.key === 'Enter' && onEventClick(event)}
+                  role="button"
+                  tabIndex={0}
                 >
-                  {event.title}
-                </Chip>
+                  <Chip size="sm" color={EVENT_TYPE_COLORS[event.type]} variant="secondary">
+                    {event.title}
+                  </Chip>
+                </div>
               ))}
             </div>
           )}
@@ -341,7 +356,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     const today = new Date();
 
     return (
-      <div className="border border-divider rounded-xl overflow-hidden bg-content1">
+      <div className="border border-divider rounded-xl overflow-hidden bg-surface">
         {/* Day column headers */}
         <div className="flex border-b border-divider">
           <div className="w-14 shrink-0 border-r border-divider" />
@@ -353,8 +368,11 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 key={index}
                 className={`flex-1 px-1 py-2 text-center border-l border-divider cursor-pointer transition-colors ${isToday ? 'bg-primary/5' : 'hover:bg-default-50'}`}
                 onClick={() => handleDateClick(day)}
+                onKeyDown={e => e.key === 'Enter' && handleDateClick(day)}
+                role="button"
+                tabIndex={0}
               >
-                <div className="text-xs font-medium text-default-400">
+                <div className="text-xs font-medium text-foreground/40">
                   {day.toLocaleDateString('en-US', { weekday: 'short' })}
                 </div>
                 <div
@@ -370,7 +388,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                         className="w-1.5 h-1.5 rounded-full"
                         style={{
                           backgroundColor:
-                            TIMELINE_COLORS[EVENT_TYPE_COLORS[e.type]]?.border ?? '#71717a',
+                            TIMELINE_COLORS[EVENT_TYPE_COLORS[e.type]]?.border ?? 'var(--muted)',
                         }}
                       />
                     ))}
@@ -422,13 +440,13 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   return (
     <div className="space-y-4">
       {/* Calendar Header */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardBody className="p-4">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Content className="p-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <Button
                 isIconOnly
-                variant="flat"
+                variant="secondary"
                 size="sm"
                 aria-label={t('previous')}
                 onPress={() => onNavigate('prev')}
@@ -442,7 +460,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
 
               <Button
                 isIconOnly
-                variant="flat"
+                variant="secondary"
                 size="sm"
                 aria-label={t('next')}
                 onPress={() => onNavigate('next')}
@@ -454,7 +472,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                variant="flat"
+                variant="secondary"
                 onPress={() => {
                   onDateChange(new Date());
                   onViewChange('day');
@@ -465,22 +483,19 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
 
               <ButtonGroup size="sm">
                 <Button
-                  variant={view === 'day' ? 'solid' : 'flat'}
-                  color={view === 'day' ? 'primary' : 'default'}
+                  variant={view === 'day' ? 'primary' : 'secondary'}
                   onPress={() => onViewChange('day')}
                 >
                   {t('day')}
                 </Button>
                 <Button
-                  variant={view === 'week' ? 'solid' : 'flat'}
-                  color={view === 'week' ? 'primary' : 'default'}
+                  variant={view === 'week' ? 'primary' : 'secondary'}
                   onPress={() => onViewChange('week')}
                 >
                   {t('week')}
                 </Button>
                 <Button
-                  variant={view === 'month' ? 'solid' : 'flat'}
-                  color={view === 'month' ? 'primary' : 'default'}
+                  variant={view === 'month' ? 'primary' : 'secondary'}
                   onPress={() => onViewChange('month')}
                 >
                   {t('month')}
@@ -488,7 +503,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               </ButtonGroup>
             </div>
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Calendar Content */}
