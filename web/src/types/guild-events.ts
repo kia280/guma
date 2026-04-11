@@ -59,11 +59,14 @@ export interface CalendarViewOptions {
   currentDate: Date;
 }
 
-export const EVENT_TYPE_COLORS: Record<EventType, string> = {
+export const EVENT_TYPE_COLORS: Record<
+  EventType,
+  'danger' | 'warning' | 'accent' | 'success' | 'default'
+> = {
   boss_respawn: 'danger',
   guild_war: 'warning',
-  guild_meeting: 'primary',
-  raid: 'secondary',
+  guild_meeting: 'accent',
+  raid: 'accent',
   training: 'success',
   tournament: 'warning',
   social: 'default',
