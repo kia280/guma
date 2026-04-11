@@ -1,17 +1,9 @@
 'use client';
 
 import React from 'react';
-import {
-  Button,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Input,
-  Textarea,
-  useDisclosure,
-} from '@heroui/react';
+import { Button, Modal, Input, TextArea, TextField, Label, Description, DatePicker, DateField, Calendar } from '@heroui/react';
+import type { DateValue } from '@internationalized/date';
+import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
 import { CheckinCard } from './CheckinCard';
 import { CheckinStatus, CheckinEntry, mockCheckins } from './data';
 import { useTranslations } from 'next-intl';
@@ -44,25 +36,10 @@ export default function CheckinPage() {
   const t = useTranslations('checkIn');
   const router = useRouter();
 
-  const { isOpen: isNewOpen, onOpen: onNewOpen, onOpenChange: onNewOpenChange } = useDisclosure();
-
   const [checkins, setCheckins] = React.useState<CheckinEntry[]>(mockCheckins);
   const [draft, setDraft] = React.useState<CheckinDraft>(emptyDraft);
 
   const draftTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Restore draft from localStorage when modal opens
-  const handleNewOpen = () => {
-    const saved = localStorage.getItem(DRAFT_KEY);
-    if (saved) {
-      try {
-        setDraft({ ...emptyDraft, ...JSON.parse(saved) });
-      } catch {
-        setDraft(emptyDraft);
-      }
-    }
-    onNewOpen();
-  };
 
   const updateDraft = (updates: Partial<CheckinDraft>) => {
     const newDraft = { ...draft, ...updates };
@@ -100,13 +77,11 @@ export default function CheckinPage() {
     setCheckins(prev => [newEntry, ...prev]);
     setDraft(emptyDraft);
     localStorage.removeItem(DRAFT_KEY);
-    onNewOpenChange();
   };
 
   const handleNewCancel = () => {
     setDraft(emptyDraft);
     localStorage.removeItem(DRAFT_KEY);
-    onNewOpenChange();
   };
 
   const handleCardClick = (item: CheckinEntry) => {
@@ -114,15 +89,217 @@ export default function CheckinPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex justify-end">
-        <Button
-          color="primary"
-          startContent={<Icon icon="solar:add-circle-linear" width={16} />}
-          onPress={handleNewOpen}
-        >
-          {t('addCheckIn')}
-        </Button>
+        <Modal>
+          <Button>
+            <Icon icon="solar:add-circle-linear" width={16} />
+            {t('addCheckIn')}
+          </Button>
+          <Modal.Backdrop>
+            <Modal.Container size="md">
+              <Modal.Dialog>
+                <Modal.CloseTrigger />
+                <Modal.Header className="text-center items-center">
+                  <Icon icon="solar:add-circle-linear" width={18} />
+                  {t('addCheckIn')}
+                </Modal.Header>
+                <Modal.Body className="p-1">
+                  <form className="flex flex-col gap-4">
+                    <TextField>
+                      <Label>{t('title')}</Label>
+                      <Input
+                        placeholder={t('titlePlaceholder')}
+                        value={draft.title}
+                        onChange={e => updateDraft({ title: e.target.value })}
+                        variant="secondary"
+                        autoFocus
+                      />
+                    </TextField>
+                    <TextField>
+                      <Label>{t('description')}</Label>
+                      <TextArea
+                        placeholder={t('descriptionPlaceholder')}
+                        value={draft.description}
+                        onChange={e => updateDraft({ description: e.target.value })}
+                        variant="secondary"
+                        rows={2}
+                      />
+                    </TextField>
+                    <DatePicker
+                      granularity="minute"
+                      hourCycle={24}
+                      value={draft.datetime ? parseAbsoluteToLocal(new Date(draft.datetime).toISOString()) : null}
+                      onChange={(val: DateValue | null) => {
+                        updateDraft({ datetime: val ? val.toDate(getLocalTimeZone()).toISOString() : '' });
+                      }}
+                    >
+                      <Label>{t('eventDateTime')}</Label>
+                      <DateField.Group fullWidth>
+                        <DateField.Input>
+                          {(segment) => <DateField.Segment segment={segment} />}
+                        </DateField.Input>
+                        <DateField.Suffix>
+                          <DatePicker.Trigger>
+                            <DatePicker.TriggerIndicator />
+                          </DatePicker.Trigger>
+                        </DateField.Suffix>
+                      </DateField.Group>
+                      <DatePicker.Popover>
+                        <Calendar aria-label={t('eventDateTime')}>
+                          <Calendar.Header>
+                            <Calendar.YearPickerTrigger>
+                              <Calendar.YearPickerTriggerHeading />
+                              <Calendar.YearPickerTriggerIndicator />
+                            </Calendar.YearPickerTrigger>
+                            <Calendar.NavButton slot="previous" />
+                            <Calendar.NavButton slot="next" />
+                          </Calendar.Header>
+                          <Calendar.Grid>
+                            <Calendar.GridHeader>
+                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+                            </Calendar.GridHeader>
+                            <Calendar.GridBody>
+                              {(date) => <Calendar.Cell date={date} />}
+                            </Calendar.GridBody>
+                          </Calendar.Grid>
+                          <Calendar.YearPickerGrid>
+                            <Calendar.YearPickerGridBody>
+                              {({ year }) => <Calendar.YearPickerCell year={year} />}
+                            </Calendar.YearPickerGridBody>
+                          </Calendar.YearPickerGrid>
+                        </Calendar>
+                      </DatePicker.Popover>
+                    </DatePicker>
+                    <DatePicker
+                      granularity="minute"
+                      hourCycle={24}
+                      value={draft.expireTime ? parseAbsoluteToLocal(new Date(draft.expireTime).toISOString()) : null}
+                      onChange={(val: DateValue | null) => {
+                        updateDraft({ expireTime: val ? val.toDate(getLocalTimeZone()).toISOString() : '' });
+                      }}
+                    >
+                      <Label>{t('expireTime')}</Label>
+                      <DateField.Group fullWidth>
+                        <DateField.Input>
+                          {(segment) => <DateField.Segment segment={segment} />}
+                        </DateField.Input>
+                        <DateField.Suffix>
+                          <DatePicker.Trigger>
+                            <DatePicker.TriggerIndicator />
+                          </DatePicker.Trigger>
+                        </DateField.Suffix>
+                      </DateField.Group>
+                      <Description>{t('expirePlaceholder')}</Description>
+                      <DatePicker.Popover>
+                        <Calendar aria-label={t('expireTime')}>
+                          <Calendar.Header>
+                            <Calendar.YearPickerTrigger>
+                              <Calendar.YearPickerTriggerHeading />
+                              <Calendar.YearPickerTriggerIndicator />
+                            </Calendar.YearPickerTrigger>
+                            <Calendar.NavButton slot="previous" />
+                            <Calendar.NavButton slot="next" />
+                          </Calendar.Header>
+                          <Calendar.Grid>
+                            <Calendar.GridHeader>
+                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+                            </Calendar.GridHeader>
+                            <Calendar.GridBody>
+                              {(date) => <Calendar.Cell date={date} />}
+                            </Calendar.GridBody>
+                          </Calendar.Grid>
+                          <Calendar.YearPickerGrid>
+                            <Calendar.YearPickerGridBody>
+                              {({ year }) => <Calendar.YearPickerCell year={year} />}
+                            </Calendar.YearPickerGridBody>
+                          </Calendar.YearPickerGrid>
+                        </Calendar>
+                      </DatePicker.Popover>
+                    </DatePicker>
+
+                    {/* Loot list */}
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm font-medium text-foreground">{t('lootList')}</p>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder={t('itemNamePlaceholder')}
+                          value={draft.lootInput}
+                          onChange={e => updateDraft({ lootInput: e.target.value })}
+                          variant="secondary"
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddLoot();
+                            }
+                          }}
+                          className="flex-1"
+                        />
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          isIconOnly
+                          onPress={handleAddLoot}
+                          isDisabled={!draft.lootInput.trim()}
+                        >
+                          <Icon icon="solar:add-circle-linear" width={16} />
+                        </Button>
+                      </div>
+                      {draft.lootList.length > 0 && (
+                        <div className="flex flex-col gap-1">
+                          {draft.lootList.map((name, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-surface-secondary border border-divider"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Icon icon="solar:box-linear" width={14} className="text-foreground/40" />
+                                <span className="text-sm text-foreground">{name}</span>
+                              </div>
+                              <Button
+                                size="sm"
+                                isIconOnly
+                                variant="tertiary"
+                                className="text-foreground/40 hover:text-danger"
+                                onPress={() => handleRemoveLoot(idx)}
+                              >
+                                <Icon icon="solar:close-circle-linear" width={14} />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <TextField>
+                      <Label>{t('imageUrlPlaceholder')}</Label>
+                      <Input
+                        placeholder="https://..."
+                        value={draft.imageUrl}
+                        onChange={e => updateDraft({ imageUrl: e.target.value })}
+                        variant="secondary"
+                      />
+                    </TextField>
+                    <p className="text-xs text-foreground/40 px-1">{t('draftSaved')}</p>
+                  </form>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button slot="close" variant="secondary" onPress={handleNewCancel}>
+                    {t('cancel')}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    slot="close"
+                    onPress={handleNewSubmit}
+                    isDisabled={!draft.title.trim()}
+                  >
+                    {t('create')}
+                  </Button>
+                </Modal.Footer>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -141,130 +318,6 @@ export default function CheckinPage() {
         ))}
       </div>
 
-      {/* New CheckIn Modal */}
-      <Modal
-        isOpen={isNewOpen}
-        onOpenChange={onNewOpenChange}
-        placement="top-center"
-        size="md"
-        hideCloseButton
-        scrollBehavior="inside"
-      >
-        <ModalContent>
-          {() => (
-            <>
-              <ModalHeader className="flex items-center gap-2">
-                <Icon icon="solar:add-circle-linear" width={18} />
-                {t('addCheckIn')}
-              </ModalHeader>
-              <ModalBody>
-                <Input
-                  label={t('title')}
-                  placeholder={t('titlePlaceholder')}
-                  value={draft.title}
-                  onValueChange={v => updateDraft({ title: v })}
-                  variant="bordered"
-                  autoFocus
-                />
-                <Textarea
-                  label={t('description')}
-                  placeholder={t('descriptionPlaceholder')}
-                  value={draft.description}
-                  onValueChange={v => updateDraft({ description: v })}
-                  variant="bordered"
-                  minRows={2}
-                />
-                <Input
-                  label={t('eventDateTime')}
-                  type="datetime-local"
-                  value={draft.datetime}
-                  onValueChange={v => updateDraft({ datetime: v })}
-                  variant="bordered"
-                />
-                <Input
-                  label={t('expireTime')}
-                  type="datetime-local"
-                  value={draft.expireTime}
-                  onValueChange={v => updateDraft({ expireTime: v })}
-                  variant="bordered"
-                  description={t('expirePlaceholder')}
-                />
-
-                {/* Loot list */}
-                <div className="flex flex-col gap-2">
-                  <p className="text-sm font-medium text-foreground">{t('lootList')}</p>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder={t('itemNamePlaceholder')}
-                      value={draft.lootInput}
-                      onValueChange={v => updateDraft({ lootInput: v })}
-                      variant="bordered"
-                      size="sm"
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddLoot();
-                        }
-                      }}
-                      className="flex-1"
-                    />
-                    <Button
-                      size="sm"
-                      variant="flat"
-                      isIconOnly
-                      onPress={handleAddLoot}
-                      isDisabled={!draft.lootInput.trim()}
-                    >
-                      <Icon icon="solar:add-circle-linear" width={16} />
-                    </Button>
-                  </div>
-                  {draft.lootList.length > 0 && (
-                    <div className="flex flex-col gap-1">
-                      {draft.lootList.map((name, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-content2 border border-divider"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Icon icon="solar:box-linear" width={14} className="text-default-400" />
-                            <span className="text-sm text-foreground">{name}</span>
-                          </div>
-                          <Button
-                            size="sm"
-                            isIconOnly
-                            variant="light"
-                            className="text-default-400 hover:text-danger"
-                            onPress={() => handleRemoveLoot(idx)}
-                          >
-                            <Icon icon="solar:close-circle-linear" width={14} />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <Input
-                  label={t('imageUrlPlaceholder')}
-                  placeholder="https://..."
-                  value={draft.imageUrl}
-                  onValueChange={v => updateDraft({ imageUrl: v })}
-                  variant="bordered"
-                />
-                <p className="text-xs text-default-400 px-1">{t('draftSaved')}</p>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={handleNewCancel}>
-                  {t('cancel')}
-                </Button>
-                <Button color="primary" onPress={handleNewSubmit} isDisabled={!draft.title.trim()}>
-                  {t('create')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
     </div>
   );
 }

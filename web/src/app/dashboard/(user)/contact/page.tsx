@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardHeader, CardBody, Button, Input, Textarea, Select, SelectItem } from '@heroui/react';
+import { Card, Button, Input, TextArea, Select, TextField, Label, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 
@@ -24,12 +24,13 @@ export default function ContactPage() {
   const contactChannels = [
     {
       icon: 'ic:baseline-discord',
-      iconColor: 'text-[#5865F2]',
-      bgColor: 'bg-[#5865F2]/10',
+      iconColor: 'text-accent',
+      bgColor: 'bg-accent/10',
       label: t('discordLabel'),
       description: t('discordDesc'),
       action: t('discordAction'),
       href: 'https://discord.gg/',
+      color: 'accent' as const,
     },
     {
       icon: 'solar:letter-bold-duotone',
@@ -39,6 +40,7 @@ export default function ContactPage() {
       description: t('emailDesc'),
       action: t('emailAction'),
       href: 'mailto:support@guma.app',
+      color: 'primary' as const,
     },
   ];
 
@@ -51,14 +53,14 @@ export default function ContactPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-sm text-default-500 mt-0.5">{t('subtitle')}</p>
+        <p className="text-sm text-foreground/50 mt-0.5">{t('subtitle')}</p>
       </div>
 
       {/* Contact channels */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {contactChannels.map(channel => (
-          <Card key={channel.label} className="border border-divider shadow-none bg-content1">
-            <CardBody className="flex flex-col gap-3 p-4">
+          <Card key={channel.label} className="border border-divider shadow-none bg-surface">
+            <Card.Content className="flex flex-col gap-3 p-4">
               <div className="flex items-center gap-3">
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-lg ${channel.bgColor} shrink-0`}
@@ -67,35 +69,38 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">{channel.label}</p>
-                  <p className="text-xs text-default-400">{channel.description}</p>
+                  <p className="text-xs text-foreground/40">{channel.description}</p>
                 </div>
               </div>
               <Button
                 size="sm"
-                variant="flat"
-                color="primary"
+                variant="tertiary"
                 onPress={() => window.open(channel.href, '_blank')}
-                endContent={<Icon icon="solar:arrow-right-up-linear" width={14} />}
               >
                 {channel.action}
+                <Icon icon="solar:arrow-right-up-linear" width={14} />
               </Button>
-            </CardBody>
+            </Card.Content>
           </Card>
         ))}
       </div>
 
       {/* Contact form */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
-            <Icon className="text-default-500" icon="solar:chat-round-dots-bold-duotone" width={20} />
+            <Icon
+              className="text-foreground/50"
+              icon="solar:chat-round-dots-bold-duotone"
+              width={20}
+            />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('sendMessageTitle')}</p>
-            <p className="text-xs text-default-400">{t('sendMessageDesc')}</p>
+            <p className="text-xs text-foreground/40">{t('sendMessageDesc')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0">
+        </Card.Header>
+        <Card.Content className="pt-0">
           {submitted ? (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/10">
@@ -103,57 +108,75 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">{t('messageSent')}</p>
-                <p className="text-xs text-default-400 mt-0.5">{t('messageSentDesc')}</p>
+                <p className="text-xs text-foreground/40 mt-0.5">{t('messageSentDesc')}</p>
               </div>
-              <Button size="sm" variant="flat" onPress={() => setSubmitted(false)}>
+              <Button size="sm" variant="tertiary" onPress={() => setSubmitted(false)}>
                 {t('sendAnother')}
               </Button>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label={t('name')}
-                  placeholder={t('namePlaceholder')}
-                  variant="bordered"
-                  value={name}
-                  onValueChange={setName}
-                />
-                <Input
-                  label={t('email')}
-                  placeholder={t('emailPlaceholder')}
-                  type="email"
-                  variant="bordered"
-                  value={email}
-                  onValueChange={setEmail}
-                />
+                <TextField>
+                  <Label>{t('name')}</Label>
+                  <Input
+                    placeholder={t('namePlaceholder')}
+                    variant="secondary"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                  />
+                </TextField>
+                <TextField>
+                  <Label>{t('email')}</Label>
+                  <Input
+                    placeholder={t('emailPlaceholder')}
+                    type="email"
+                    variant="secondary"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                  />
+                </TextField>
               </div>
-              <Select label={t('topic')} placeholder={t('topicPlaceholder')} variant="bordered">
-                {topics.map(topic => (
-                  <SelectItem key={topic.key}>{topic.label}</SelectItem>
-                ))}
+              <Select placeholder={t('topicPlaceholder')}>
+                <Label>{t('topic')}</Label>
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {topics.map(topic => (
+                      <ListBox.Item key={topic.key} id={topic.key} textValue={topic.label}>
+                        {topic.label}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
               </Select>
-              <Textarea
-                label={t('message')}
-                placeholder={t('messagePlaceholder')}
-                variant="bordered"
-                minRows={4}
-                value={message}
-                onValueChange={setMessage}
-              />
+              <TextField>
+                <Label>{t('message')}</Label>
+                <TextArea
+                  placeholder={t('messagePlaceholder')}
+                  variant="secondary"
+                  rows={4}
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                />
+              </TextField>
               <div className="flex justify-end">
                 <Button
-                  color="primary"
+                  variant="primary"
                   onPress={handleSubmit}
                   isDisabled={!name || !email || !message}
-                  startContent={<Icon icon="solar:letter-linear" width={16} />}
                 >
+                  <Icon icon="solar:letter-linear" width={16} />
                   {t('sendMessage')}
                 </Button>
               </div>
             </div>
           )}
-        </CardBody>
+        </Card.Content>
       </Card>
     </div>
   );

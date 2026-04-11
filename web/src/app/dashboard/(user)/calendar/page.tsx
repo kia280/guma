@@ -1,24 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Card,
-  CardBody,
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Chip,
-  Spinner,
-  useDisclosure,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Divider,
-} from '@heroui/react';
+import { Card, Button, Dropdown, Chip, Spinner, Modal, Separator, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { useGuildEvents } from '@/hooks/useGuildEvents';
@@ -52,31 +35,31 @@ export default function CalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState<GuildEvent | null>(null);
 
   // Modal controls
-  const { isOpen: isFormOpen, onOpen: onFormOpen, onClose: onFormClose } = useDisclosure();
-  const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
-  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
+  const formModalState = useOverlayState();
+  const detailModalState = useOverlayState();
+  const deleteModalState = useOverlayState();
 
   const handleCreateEvent = () => {
     setSelectedEvent(null);
-    onFormOpen();
+    formModalState.open();
   };
 
   const handleEditEvent = (event: GuildEvent) => {
     setSelectedEvent(event);
-    onFormOpen();
+    formModalState.open();
   };
 
   const handleEventClick = (event: GuildEvent) => {
     setSelectedEvent(event);
-    onDetailOpen();
+    detailModalState.open();
   };
 
   const handleDeleteEvent = async () => {
     if (selectedEvent) {
       try {
         await deleteEvent(selectedEvent.id);
-        onDeleteClose();
-        onDetailClose();
+        deleteModalState.close();
+        detailModalState.close();
       } catch (error) {
         console.error('Error deleting event:', error);
       }
@@ -90,7 +73,7 @@ export default function CalendarPage() {
       } else {
         await createEvent(data);
       }
-      onFormClose();
+      formModalState.close();
     } catch (error) {
       console.error('Error saving event:', error);
     }
@@ -146,22 +129,19 @@ export default function CalendarPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
-          <Spinner size="lg" color="primary" />
-          <p className="text-sm text-default-500">{t('loadingEvents')}</p>
+          <Spinner size="lg" color="current" />
+          <p className="text-sm text-foreground/50">{t('loadingEvents')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex justify-end">
-        <Button
-          color="primary"
-          startContent={<Icon icon="solar:add-circle-linear" width={16} />}
-          onPress={handleCreateEvent}
-        >
+        <Button variant="primary" onPress={handleCreateEvent}>
+          <Icon icon="solar:add-circle-linear" width={16} />
           {t('createEvent')}
         </Button>
       </div>
@@ -179,147 +159,167 @@ export default function CalendarPage() {
 
       {/* Event Form Modal */}
       <EventFormModal
-        isOpen={isFormOpen}
-        onClose={onFormClose}
+        state={formModalState}
         onSubmit={handleFormSubmit}
         event={selectedEvent}
         isLoading={isCreating || isUpdating}
       />
 
       {/* Event Detail Modal */}
-      {selectedEvent && (
-        <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="lg" placement="top-center">
-          <ModalContent>
-            <ModalHeader className="flex items-center justify-between gap-3">
-              <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                <p className="text-base font-semibold text-foreground truncate">
-                  {selectedEvent.title}
-                </p>
-                <div className="flex items-center gap-2">
-                  <Chip
-                    color={EVENT_TYPE_COLORS[selectedEvent.type] as any}
-                    size="sm"
-                    variant="flat"
-                  >
-                    {EVENT_TYPE_LABELS[selectedEvent.type]}
-                  </Chip>
-                  <Chip
-                    color={PRIORITY_COLORS[selectedEvent.priority] as any}
-                    size="sm"
-                    variant="dot"
-                  >
-                    {PRIORITY_LABELS[selectedEvent.priority]}
-                  </Chip>
-                </div>
-              </div>
-
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button isIconOnly variant="light" size="sm" aria-label="Event actions">
-                    <Icon icon="solar:menu-dots-bold" width={16} />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    key="edit"
-                    startContent={<Icon icon="solar:pen-linear" width={16} />}
-                    onPress={() => {
-                      onDetailClose();
-                      handleEditEvent(selectedEvent);
-                    }}
-                  >
-                    {t('editEvent')}
-                  </DropdownItem>
-                  <DropdownItem
-                    key="delete"
-                    color="danger"
-                    startContent={<Icon icon="solar:trash-bin-trash-linear" width={16} />}
-                    onPress={onDeleteOpen}
-                  >
-                    {t('deleteEvent')}
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </ModalHeader>
-
-            <ModalBody className="pb-6">
-              <div className="space-y-4">
-                {selectedEvent.description && (
-                  <div>
-                    <p className="text-default-500">{selectedEvent.description}</p>
-                  </div>
-                )}
-
-                <Divider />
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-small">
-                    <Icon
-                      icon="solar:clock-circle-linear"
-                      width={16}
-                      className="text-default-400"
-                    />
-                    <div>
-                      <div className="font-medium">{formatEventDate(selectedEvent)}</div>
-                      <div className="text-default-500">{formatEventTime(selectedEvent)}</div>
+      <Modal state={detailModalState}>
+      <Modal.Backdrop>
+        <Modal.Container size="md">
+          <Modal.Dialog>
+            <Modal.CloseTrigger />
+            {selectedEvent && (
+              <>
+                <Modal.Header className="text-center items-center">
+                  <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                    <p className="text-base font-semibold text-foreground truncate">
+                      {selectedEvent.title}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Chip
+                        color={EVENT_TYPE_COLORS[selectedEvent.type] as any}
+                        size="sm"
+                        variant="tertiary"
+                      >
+                        {EVENT_TYPE_LABELS[selectedEvent.type]}
+                      </Chip>
+                      <Chip
+                        color={PRIORITY_COLORS[selectedEvent.priority] as any}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        {PRIORITY_LABELS[selectedEvent.priority]}
+                      </Chip>
                     </div>
                   </div>
 
-                  {selectedEvent.location && (
-                    <div className="flex items-center gap-3 text-small">
-                      <Icon icon="solar:map-point-linear" width={16} className="text-default-400" />
-                      <span>{selectedEvent.location}</span>
-                    </div>
-                  )}
+                  <Dropdown>
+                    <Button isIconOnly variant="secondary" size="sm" aria-label="Event actions">
+                      <Icon icon="solar:menu-dots-bold" width={16} />
+                    </Button>
+                    <Dropdown.Popover>
+                      <Dropdown.Menu
+                        onAction={key => {
+                          if (key === 'edit') {
+                            detailModalState.close();
+                            handleEditEvent(selectedEvent);
+                          } else if (key === 'delete') {
+                            deleteModalState.open();
+                          }
+                        }}
+                      >
+                        <Dropdown.Item key="edit" textValue="Edit">
+                          <Icon icon="solar:pen-linear" width={16} />
+                          {t('editEvent')}
+                        </Dropdown.Item>
+                        <Dropdown.Item key="delete" textValue="Delete" className="text-danger">
+                          <Icon icon="solar:trash-bin-trash-linear" width={16} />
+                          {t('deleteEvent')}
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
+                </Modal.Header>
 
-                  {selectedEvent.isRecurring && (
-                    <div className="flex items-center gap-3 text-small">
-                      <Icon icon="solar:refresh-linear" width={16} className="text-default-400" />
-                      <span>
-                        {t('repeats')} {selectedEvent.recurringPattern?.type}
-                        {selectedEvent.recurringPattern?.interval &&
-                        selectedEvent.recurringPattern.interval > 1
-                          ? ` (${t('every')} ${selectedEvent.recurringPattern.interval} ${selectedEvent.recurringPattern.type}s)`
-                          : ''}
-                      </span>
-                    </div>
-                  )}
+                <Modal.Body className="p-1">
+                  <div className="space-y-4">
+                    {selectedEvent.description && (
+                      <div>
+                        <p className="text-foreground/50">{selectedEvent.description}</p>
+                      </div>
+                    )}
 
-                  <div className="flex items-center gap-3 text-small text-default-500">
-                    <Icon icon="solar:users-group-rounded-linear" width={16} />
-                    <span>
-                      {t('createdBy')} {selectedEvent.createdBy}
-                    </span>
+                    <Separator />
+
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 text-small">
+                        <Icon
+                          icon="solar:clock-circle-linear"
+                          width={16}
+                          className="text-foreground/40"
+                        />
+                        <div>
+                          <div className="font-medium">{formatEventDate(selectedEvent)}</div>
+                          <div className="text-foreground/50">{formatEventTime(selectedEvent)}</div>
+                        </div>
+                      </div>
+
+                      {selectedEvent.location && (
+                        <div className="flex items-center gap-3 text-small">
+                          <Icon
+                            icon="solar:map-point-linear"
+                            width={16}
+                            className="text-foreground/40"
+                          />
+                          <span>{selectedEvent.location}</span>
+                        </div>
+                      )}
+
+                      {selectedEvent.isRecurring && (
+                        <div className="flex items-center gap-3 text-small">
+                          <Icon
+                            icon="solar:refresh-linear"
+                            width={16}
+                            className="text-foreground/40"
+                          />
+                          <span>
+                            {t('repeats')} {selectedEvent.recurringPattern?.type}
+                            {selectedEvent.recurringPattern?.interval &&
+                            selectedEvent.recurringPattern.interval > 1
+                              ? ` (${t('every')} ${selectedEvent.recurringPattern.interval} ${selectedEvent.recurringPattern.type}s)`
+                              : ''}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-3 text-small text-foreground/50">
+                        <Icon icon="solar:users-group-rounded-linear" width={16} />
+                        <span>
+                          {t('createdBy')} {selectedEvent.createdBy}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
-      )}
+                </Modal.Body>
+              </>
+            )}
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={isDeleteOpen} onClose={onDeleteClose} size="sm" placement="top-center">
-        <ModalContent>
-          <ModalHeader>{t('deleteEvent')}</ModalHeader>
-          <ModalBody>
-            <p>{t('deleteConfirm')}</p>
-            {selectedEvent && (
-              <div className="mt-3 p-3 bg-danger/10 border border-danger/20 rounded-lg">
-                <p className="text-sm font-medium text-danger">{selectedEvent.title}</p>
-                <p className="text-xs text-danger/60 mt-0.5">{formatEventDate(selectedEvent)}</p>
-              </div>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="flat" onPress={onDeleteClose}>
-              {t('cancel')}
-            </Button>
-            <Button color="danger" onPress={handleDeleteEvent} isLoading={isDeleting}>
-              {t('deleteEvent')}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+      <Modal state={deleteModalState}>
+      <Modal.Backdrop>
+        <Modal.Container size="sm">
+          <Modal.Dialog>
+            <Modal.CloseTrigger />
+            <Modal.Header className="text-center items-center">
+              <Modal.Heading>{t('deleteEvent')}</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className="flex flex-col gap-3">
+              <p>{t('deleteConfirm')}</p>
+              {selectedEvent && (
+                <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg">
+                  <p className="text-sm font-medium text-danger">{selectedEvent.title}</p>
+                  <p className="text-xs text-danger/60 mt-0.5">{formatEventDate(selectedEvent)}</p>
+                </div>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button slot="close" variant="secondary">
+                {t('cancel')}
+              </Button>
+              <Button variant="danger" onPress={handleDeleteEvent} isPending={isDeleting}>
+                {t('deleteEvent')}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
       </Modal>
     </div>
   );

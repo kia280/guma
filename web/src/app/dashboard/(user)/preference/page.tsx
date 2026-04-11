@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, CardHeader, CardBody, Switch, Select, SelectItem, Divider } from '@heroui/react';
+import { Card, Switch, Select, Separator, Label, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
@@ -26,25 +26,25 @@ export default function PreferencePage() {
   const [checkinReminders, setCheckinReminders] = React.useState(true);
 
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl">
+    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
       {/* Header */}
       <div>
         <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-sm text-default-500 mt-0.5">{t('subtitle')}</p>
+        <p className="text-sm text-foreground/50 mt-0.5">{t('subtitle')}</p>
       </div>
 
       {/* Appearance */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
             <Icon className="text-primary" icon="solar:palette-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('appearance')}</p>
-            <p className="text-xs text-default-400">{t('appearanceSubtitle')}</p>
+            <p className="text-xs text-foreground/40">{t('appearanceSubtitle')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0 flex flex-col gap-4">
+        </Card.Header>
+        <Card.Content className="pt-0 flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-3">
             {(['light', 'dark', 'system'] as const).map(themeKey => (
               <button
@@ -53,7 +53,7 @@ export default function PreferencePage() {
                 className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
                   theme === themeKey
                     ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-divider bg-content2 text-default-500 hover:border-default-400'
+                    : 'border-divider bg-surface-secondary text-foreground/50 hover:border-default-400'
                 }`}
               >
                 <Icon
@@ -70,46 +70,53 @@ export default function PreferencePage() {
               </button>
             ))}
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Language */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
-            <Icon className="text-default-500" icon="solar:global-bold-duotone" width={20} />
+            <Icon className="text-foreground/50" icon="solar:global-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('language')}</p>
-            <p className="text-xs text-default-400">{t('languageSubtitle')}</p>
+            <p className="text-xs text-foreground/40">{t('languageSubtitle')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0">
-          <Select
-            label={t('displayLanguage')}
-            defaultSelectedKeys={['en']}
-            variant="bordered"
-            className="max-w-xs"
-          >
-            {languages.map(lang => (
-              <SelectItem key={lang.key}>{lang.label}</SelectItem>
-            ))}
+        </Card.Header>
+        <Card.Content className="pt-0">
+          <Select defaultValue="en" className="max-w-xs">
+            <Label>{t('displayLanguage')}</Label>
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {languages.map(lang => (
+                  <ListBox.Item key={lang.key} id={lang.key} textValue={lang.label}>
+                    {lang.label}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
           </Select>
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Notifications */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
-            <Icon className="text-default-500" icon="solar:bell-bold-duotone" width={20} />
+            <Icon className="text-foreground/50" icon="solar:bell-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('notifications')}</p>
-            <p className="text-xs text-default-400">{t('notificationsSubtitle')}</p>
+            <p className="text-xs text-foreground/40">{t('notificationsSubtitle')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0 flex flex-col gap-1">
+        </Card.Header>
+        <Card.Content className="pt-0 flex flex-col gap-1">
           {[
             {
               key: 'email',
@@ -155,23 +162,22 @@ export default function PreferencePage() {
             <React.Fragment key={item.key}>
               <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3">
-                  <Icon icon={item.icon} width={16} className="text-default-400 shrink-0" />
+                  <Icon icon={item.icon} width={16} className="text-foreground/40 shrink-0" />
                   <div>
                     <p className="text-sm text-foreground">{item.label}</p>
-                    <p className="text-xs text-default-400">{item.description}</p>
+                    <p className="text-xs text-foreground/40">{item.description}</p>
                   </div>
                 </div>
-                <Switch
-                  isSelected={item.value}
-                  onValueChange={item.onChange}
-                  size="sm"
-                  color="primary"
-                />
+                <Switch isSelected={item.value} onChange={item.onChange} size="sm">
+                  <Switch.Control>
+                    <Switch.Thumb />
+                  </Switch.Control>
+                </Switch>
               </div>
-              {idx < arr.length - 1 && <Divider />}
+              {idx < arr.length - 1 && <Separator />}
             </React.Fragment>
           ))}
-        </CardBody>
+        </Card.Content>
       </Card>
     </div>
   );

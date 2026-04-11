@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Tabs, Tab, Chip } from '@heroui/react';
+import { Tabs, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import LotteryCard from '@/components/LotteryCard';
@@ -74,75 +74,140 @@ export default function LotteryPage() {
   return (
     <div className="space-y-5">
       {/* Status Tabs */}
-      <Tabs
-        selectedKey={activeTab}
-        onSelectionChange={key => setActiveTab(key as string)}
-        size="md"
-      >
-        <Tab
-          key="all"
-          title={
-            <div className="flex items-center gap-2">
-              <span>{t('all')}</span>
-              <Chip size="sm" variant="flat">
-                {counts.all}
-              </Chip>
+      <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="Lottery status">
+            <Tabs.Tab id="all">
+              <div className="flex items-center gap-2">
+                <span>{t('all')}</span>
+                <Chip size="sm" variant="secondary">
+                  {counts.all}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="active">
+              <div className="flex items-center gap-2">
+                <span>{t('active')}</span>
+                <Chip size="sm" color="success" variant="secondary">
+                  {counts.active}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="upcoming">
+              <div className="flex items-center gap-2">
+                <span>{t('upcoming')}</span>
+                <Chip size="sm" color="warning" variant="secondary">
+                  {counts.upcoming}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="ended">
+              <div className="flex items-center gap-2">
+                <span>{t('ended')}</span>
+                <Chip size="sm" variant="secondary">
+                  {counts.ended}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
+        <Tabs.Panel id="all" className="pt-4">
+          {filtered.length === 0 ? (
+            <div className="text-center py-12 text-foreground/40">
+              <Icon
+                icon="solar:ticket-linear"
+                width={40}
+                className="mx-auto mb-3 text-foreground/30"
+              />
+              <p className="text-sm">{t('noLotteries')}</p>
             </div>
-          }
-        />
-        <Tab
-          key="active"
-          title={
-            <div className="flex items-center gap-2">
-              <span>{t('active')}</span>
-              <Chip size="sm" color="success" variant="flat">
-                {counts.active}
-              </Chip>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map(lottery => (
+                <LotteryCard
+                  key={lottery.id}
+                  {...lottery}
+                  onBuyTicket={id => console.log('Buy ticket for lottery:', id)}
+                  onViewWinners={id => console.log('View winners for lottery:', id)}
+                />
+              ))}
             </div>
-          }
-        />
-        <Tab
-          key="upcoming"
-          title={
-            <div className="flex items-center gap-2">
-              <span>{t('upcoming')}</span>
-              <Chip size="sm" color="warning" variant="flat">
-                {counts.upcoming}
-              </Chip>
+          )}
+        </Tabs.Panel>
+        <Tabs.Panel id="active" className="pt-4">
+          {filtered.length === 0 ? (
+            <div className="text-center py-12 text-foreground/40">
+              <Icon
+                icon="solar:ticket-linear"
+                width={40}
+                className="mx-auto mb-3 text-foreground/30"
+              />
+              <p className="text-sm">{t('noLotteries')}</p>
             </div>
-          }
-        />
-        <Tab
-          key="ended"
-          title={
-            <div className="flex items-center gap-2">
-              <span>{t('ended')}</span>
-              <Chip size="sm" variant="flat">
-                {counts.ended}
-              </Chip>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map(lottery => (
+                <LotteryCard
+                  key={lottery.id}
+                  {...lottery}
+                  onBuyTicket={id => console.log('Buy ticket for lottery:', id)}
+                  onViewWinners={id => console.log('View winners for lottery:', id)}
+                />
+              ))}
             </div>
-          }
-        />
+          )}
+        </Tabs.Panel>
+        <Tabs.Panel id="upcoming" className="pt-4">
+          {filtered.length === 0 ? (
+            <div className="text-center py-12 text-foreground/40">
+              <Icon
+                icon="solar:ticket-linear"
+                width={40}
+                className="mx-auto mb-3 text-foreground/30"
+              />
+              <p className="text-sm">{t('noLotteries')}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map(lottery => (
+                <LotteryCard
+                  key={lottery.id}
+                  {...lottery}
+                  onBuyTicket={id => console.log('Buy ticket for lottery:', id)}
+                  onViewWinners={id => console.log('View winners for lottery:', id)}
+                />
+              ))}
+            </div>
+          )}
+        </Tabs.Panel>
+        <Tabs.Panel id="ended" className="pt-4">
+          {filtered.length === 0 ? (
+            <div className="text-center py-12 text-foreground/40">
+              <Icon
+                icon="solar:ticket-linear"
+                width={40}
+                className="mx-auto mb-3 text-foreground/30"
+              />
+              <p className="text-sm">{t('noLotteries')}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map(lottery => (
+                <LotteryCard
+                  key={lottery.id}
+                  {...lottery}
+                  onBuyTicket={id => console.log('Buy ticket for lottery:', id)}
+                  onViewWinners={id => console.log('View winners for lottery:', id)}
+                />
+              ))}
+            </div>
+          )}
+        </Tabs.Panel>
       </Tabs>
-
-      {/* Lottery Grid */}
-      {filtered.length === 0 ? (
-        <div className="text-center py-12 text-default-400">
-          <Icon icon="solar:ticket-linear" width={40} className="mx-auto mb-3 text-default-300" />
-          <p className="text-sm">{t('noLotteries')}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map(lottery => (
-            <LotteryCard
-              key={lottery.id}
-              {...lottery}
-              onBuyTicket={id => console.log('Buy ticket for lottery:', id)}
-              onViewWinners={id => console.log('View winners for lottery:', id)}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
