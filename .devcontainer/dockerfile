@@ -5,7 +5,7 @@ FROM mcr.microsoft.com/devcontainers/go:1.25
 RUN go install github.com/bufbuild/buf/cmd/buf@latest \
     && go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest \
     && go install google.golang.org/protobuf/cmd/protoc-gen-go@latest \
-    && go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+    && go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 # Add vscode user to sudoers with no password
 ARG USERNAME=vscode

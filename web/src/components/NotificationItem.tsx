@@ -30,10 +30,8 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
       default: null,
       request: (
         <div className="flex gap-2 pt-2">
-          <Button color="primary" size="sm">
-            {t('accept')}
-          </Button>
-          <Button size="sm" variant="flat">
+          <Button size="sm">{t('accept')}</Button>
+          <Button size="sm" variant="secondary">
             {t('decline')}
           </Button>
         </div>
@@ -43,7 +41,7 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
           <Icon className="text-secondary" icon="solar:figma-file-linear" width={30} />
           <div className="flex flex-col">
             <strong className="text-small font-medium">Brand_Logo_v1.2.fig</strong>
-            <p className="text-tiny text-default-400">3.4 MB</p>
+            <p className="text-tiny text-foreground/40">3.4 MB</p>
           </div>
         </div>
       ),
@@ -62,21 +60,19 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
         {...props}
       >
         <div className="relative flex-none">
-          <Badge
-            color="primary"
-            content=""
-            isInvisible={isRead}
-            placement="bottom-right"
-            shape="circle"
-          >
-            <Avatar src={avatar} />
-          </Badge>
+          <Badge.Anchor>
+            <Avatar>
+              <Avatar.Image src={avatar} alt={name} />
+              <Avatar.Fallback>{name?.slice(0, 2).toUpperCase()}</Avatar.Fallback>
+            </Avatar>
+            {!isRead && <Badge color="danger" placement="bottom-right" size="sm" />}
+          </Badge.Anchor>
         </div>
         <div className="flex flex-col gap-1">
           <p className="text-small text-foreground">
             <strong className="font-medium">{name}</strong> {description || children}
           </p>
-          <time className="text-tiny text-default-400">{time}</time>
+          <time className="text-tiny text-foreground/40">{time}</time>
           {type && contentByType[type]}
         </div>
       </div>

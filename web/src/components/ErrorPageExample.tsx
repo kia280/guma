@@ -10,7 +10,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Button, Card, CardBody, CardHeader, Divider } from '@heroui/react';
+import { Button, Card, Separator } from '@heroui/react';
 import { ErrorIds, getErrorPageUrl } from '@/lib/error-handler';
 import { useErrorRedirect } from '@/hooks/useErrorRedirect';
 
@@ -23,17 +23,22 @@ export function ErrorLinkExample() {
 
   return (
     <Card>
-      <CardHeader>
+      <Card.Header>
         <h3>Error Links Example</h3>
-      </CardHeader>
-      <Divider />
-      <CardBody className="gap-4">
+      </Card.Header>
+      <Separator />
+      <Card.Content className="gap-4 flex flex-col">
         <p>You can generate error page URLs directly:</p>
         <ul className="text-sm space-y-2">
-          <li>Not Found: <code className="bg-default-100 px-2 py-1 rounded">{notFoundUrl}</code></li>
-          <li>Unauthorized: <code className="bg-default-100 px-2 py-1 rounded">{unauthorizedUrl}</code></li>
+          <li>
+            Not Found: <code className="bg-default-100 px-2 py-1 rounded">{notFoundUrl}</code>
+          </li>
+          <li>
+            Unauthorized:{' '}
+            <code className="bg-default-100 px-2 py-1 rounded">{unauthorizedUrl}</code>
+          </li>
         </ul>
-      </CardBody>
+      </Card.Content>
     </Card>
   );
 }
@@ -58,33 +63,21 @@ export function ErrorRedirectExample() {
 
   return (
     <Card>
-      <CardHeader>
+      <Card.Header>
         <h3>Error Redirect Examples</h3>
-      </CardHeader>
-      <Divider />
-      <CardBody className="gap-3">
-        <Button
-          onPress={handleUnauthorized}
-          color="warning"
-          variant="flat"
-        >
+      </Card.Header>
+      <Separator />
+      <Card.Content className="gap-3 flex flex-col">
+        <Button onPress={handleUnauthorized} variant="secondary">
           Redirect to 401 Error
         </Button>
-        <Button
-          onPress={handleServerError}
-          color="danger"
-          variant="flat"
-        >
+        <Button onPress={handleServerError} variant="danger">
           Redirect to 500 Error
         </Button>
-        <Button
-          onPress={handleSessionInactive}
-          color="danger"
-          variant="flat"
-        >
+        <Button onPress={handleSessionInactive} variant="danger">
           Redirect to Session Inactive
         </Button>
-      </CardBody>
+      </Card.Content>
     </Card>
   );
 }
@@ -95,14 +88,14 @@ export function ErrorRedirectExample() {
 export function ErrorServerActionExample() {
   return (
     <Card>
-      <CardHeader>
+      <Card.Header>
         <h3>Server-Side Usage Example</h3>
-      </CardHeader>
-      <Divider />
-      <CardBody className="gap-2 text-sm">
+      </Card.Header>
+      <Separator />
+      <Card.Content className="gap-2 text-sm">
         <p>In a server action or API route:</p>
         <pre className="bg-default-100 p-3 rounded overflow-auto text-xs">
-{`import { getErrorPageUrl, ErrorIds } from '@/lib/error-handler';
+          {`import { getErrorPageUrl, ErrorIds } from '@/lib/error-handler';
 import { redirect } from 'next/navigation';
 
 export async function myServerAction() {
@@ -114,7 +107,7 @@ export async function myServerAction() {
   }
 }`}
         </pre>
-      </CardBody>
+      </Card.Content>
     </Card>
   );
 }
@@ -136,23 +129,23 @@ export function ErrorCodesReference() {
 
   return (
     <Card>
-      <CardHeader>
+      <Card.Header>
         <h3>Available Error Codes</h3>
-      </CardHeader>
-      <Divider />
-      <CardBody>
+      </Card.Header>
+      <Separator />
+      <Card.Content>
         <div className="space-y-2 text-sm">
           {errorCodes.map(({ code, name, desc }) => (
             <div key={code} className="flex justify-between items-start p-2 bg-default-100 rounded">
               <div>
                 <code className="font-semibold">{code}</code>
-                <p className="text-default-600 text-xs">{desc}</p>
+                <p className="text-foreground/60 text-xs">{desc}</p>
               </div>
-              <code className="text-xs text-default-600">ErrorIds.{name}</code>
+              <code className="text-xs text-foreground/60">ErrorIds.{name}</code>
             </div>
           ))}
         </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   );
 }

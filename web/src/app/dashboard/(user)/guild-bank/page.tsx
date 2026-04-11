@@ -3,26 +3,16 @@
 import React from 'react';
 import {
   Card,
-  CardHeader,
-  CardBody,
   Button,
   Chip,
   Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
+  useOverlayState,
   Input,
-  Textarea,
-  useDisclosure,
   Avatar,
-  Progress,
+  TextArea,
+  TextField,
+  Label,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
@@ -150,13 +140,7 @@ const mockGuildItems: GuildBankItem[] = [
   },
 ];
 
-const topContributors = [
-  { name: 'GuildMaster', amount: 3500, rank: 1 },
-  { name: 'DragonHunter', amount: 2100, rank: 2 },
-  { name: 'Warrior123', amount: 1800, rank: 3 },
-  { name: 'Enchanter', amount: 950, rank: 4 },
-  { name: 'Healer', amount: 600, rank: 5 },
-];
+
 
 const getCategoryIcon = (category: ItemCategory) => {
   const icons: Record<ItemCategory, string> = {
@@ -176,9 +160,9 @@ const getRarityColor = (rarity: ItemRarity) => {
     case ItemRarity.COMMON:
       return 'default';
     case ItemRarity.UNCOMMON:
-      return 'primary';
+      return 'accent';
     case ItemRarity.RARE:
-      return 'secondary';
+      return 'success';
     case ItemRarity.EPIC:
       return 'warning';
     case ItemRarity.LEGENDARY:
@@ -217,37 +201,11 @@ const getStatusColor = (status: GuildContribution['status']) => {
   }
 };
 
-const getRankColor = (rank: number) => {
-  switch (rank) {
-    case 1:
-      return 'text-yellow-500';
-    case 2:
-      return 'text-slate-400';
-    case 3:
-      return 'text-amber-600';
-    default:
-      return 'text-default-400';
-  }
-};
 
 export default function GuildBankPage() {
   const t = useTranslations('guildBankPage');
 
-  const {
-    isOpen: isContributeOpen,
-    onOpen: onContributeOpen,
-    onOpenChange: onContributeOpenChange,
-  } = useDisclosure();
-  const {
-    isOpen: isRequestOpen,
-    onOpen: onRequestOpen,
-    onOpenChange: onRequestOpenChange,
-  } = useDisclosure();
-  const {
-    isOpen: isRequestItemOpen,
-    onOpen: onRequestItemOpen,
-    onOpenChange: onRequestItemOpenChange,
-  } = useDisclosure();
+  const requestItemModalState = useOverlayState();
 
   const [contributeAmount, setContributeAmount] = React.useState('');
   const [contributeNote, setContributeNote] = React.useState('');
@@ -278,282 +236,363 @@ export default function GuildBankPage() {
     setGuildBalance(prev => prev + amount);
     setContributeAmount('');
     setContributeNote('');
-    onContributeOpenChange();
   };
 
   const handleRequest = () => {
     console.log('Request funds:', { amount: requestAmount, reason: requestReason });
     setRequestAmount('');
     setRequestReason('');
-    onRequestOpenChange();
   };
 
   const handleRequestItem = () => {
     console.log('Request item:', { item: selectedItem?.name, reason: requestItemReason });
     setSelectedItem(null);
     setRequestItemReason('');
-    onRequestItemOpenChange();
+    requestItemModalState.close();
   };
 
   const openItemRequest = (item: GuildBankItem) => {
     setSelectedItem(item);
-    onRequestItemOpen();
+    requestItemModalState.open();
   };
 
   return (
-    <div className="flex flex-col gap-5 w-full">
+    <div className="space-y-5">
       {/* Guild Treasury */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 shrink-0">
             <Icon className="text-warning" icon="solar:safe-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('treasury')}</p>
-            <p className="text-xs text-default-400">{t('treasuryDesc')}</p>
+            <p className="text-xs text-foreground/40">{t('treasuryDesc')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0 flex flex-col gap-6">
+        </Card.Header>
+        <Card.Content className="pt-0 flex flex-col gap-6">
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-3xl font-semibold text-foreground">${guildBalance.toFixed(2)}</p>
-              <p className="text-xs text-default-400 mt-0.5">{t('guildGold')}</p>
+              <p className="text-xs text-foreground/40 mt-0.5">{t('guildGold')}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button
-                color="warning"
-                variant="flat"
-                startContent={<Icon icon="solar:arrow-down-linear" width={16} />}
-                onPress={onContributeOpen}
-                className="w-full sm:w-auto"
-              >
-                {t('contribute')}
-              </Button>
-              <Button
-                variant="bordered"
-                startContent={<Icon icon="solar:arrow-up-linear" width={16} />}
-                onPress={onRequestOpen}
-                className="w-full sm:w-auto"
-              >
-                {t('requestFunds')}
-              </Button>
+              <Modal>
+                <Button
+                  variant="tertiary"
+                  className="w-full sm:w-auto"
+                >
+                  <Icon icon="solar:arrow-down-linear" width={16} />
+                  {t('contribute')}
+                </Button>
+                <Modal.Backdrop>
+                  <Modal.Container size="sm">
+                    <Modal.Dialog>
+                      <Modal.CloseTrigger />
+                      <Modal.Header className="text-center items-center">
+                        <Modal.Heading>{t('contributeTitle')}</Modal.Heading>
+                      </Modal.Header>
+                      <Modal.Body className="p-1 flex flex-col gap-3">
+                        <TextField>
+                          <Label>{t('amountLabel')}</Label>
+                          <Input
+                            autoFocus
+                            placeholder="0.00"
+                            type="number"
+                            value={contributeAmount}
+                            variant="secondary"
+                            onChange={e => setContributeAmount(e.target.value)}
+                          />
+                        </TextField>
+                        <TextField>
+                          <Label>{t('noteOptional')}</Label>
+                          <TextArea
+                            placeholder={t('notePlaceholder')}
+                            value={contributeNote}
+                            variant="secondary"
+                            rows={2}
+                            onChange={e => setContributeNote(e.target.value)}
+                          />
+                        </TextField>
+                        <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+                          <div className="flex items-start gap-2">
+                            <Icon
+                              className="text-warning shrink-0 mt-0.5"
+                              icon="solar:info-circle-bold"
+                              width={14}
+                            />
+                            <p className="text-xs text-warning">{t('contributeNote')}</p>
+                          </div>
+                        </div>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button slot="close" variant="secondary">
+                          {t('cancel')}
+                        </Button>
+                        <Button
+                          variant="tertiary"
+                          onPress={handleContribute}
+                          isDisabled={!contributeAmount || parseFloat(contributeAmount) <= 0}
+                        >
+                          {t('contribute')}
+                        </Button>
+                      </Modal.Footer>
+                    </Modal.Dialog>
+                  </Modal.Container>
+                </Modal.Backdrop>
+              </Modal>
+              <Modal>
+                <Button
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                >
+                  <Icon icon="solar:arrow-up-linear" width={16} />
+                  {t('requestFunds')}
+                </Button>
+                <Modal.Backdrop>
+                  <Modal.Container size="sm">
+                    <Modal.Dialog>
+                      <Modal.CloseTrigger />
+                      <Modal.Header className="text-center items-center">
+                        <Modal.Heading>{t('requestFundsTitle')}</Modal.Heading>
+                      </Modal.Header>
+                      <Modal.Body className="p-1 flex flex-col gap-3">
+                        <TextField>
+                          <Label>{t('amountLabel')}</Label>
+                          <Input
+                            autoFocus
+                            placeholder="0.00"
+                            type="number"
+                            value={requestAmount}
+                            variant="secondary"
+                            onChange={e => setRequestAmount(e.target.value)}
+                          />
+                        </TextField>
+                        <TextField>
+                          <Label>{t('reason')}</Label>
+                          <TextArea
+                            placeholder={t('reasonPlaceholder')}
+                            value={requestReason}
+                            variant="secondary"
+                            rows={3}
+                            onChange={e => setRequestReason(e.target.value)}
+                          />
+                        </TextField>
+                        <div className="bg-default-100 rounded-lg p-3">
+                          <div className="flex items-start gap-2">
+                            <Icon
+                              className="text-foreground/50 shrink-0 mt-0.5"
+                              icon="solar:info-circle-bold"
+                              width={14}
+                            />
+                            <p className="text-xs text-foreground/50">{t('fundRequestNote')}</p>
+                          </div>
+                        </div>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button slot="close" variant="secondary">
+                          {t('cancel')}
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onPress={handleRequest}
+                          isDisabled={!requestAmount || !requestReason.trim()}
+                        >
+                          {t('submitRequest')}
+                        </Button>
+                      </Modal.Footer>
+                    </Modal.Dialog>
+                  </Modal.Container>
+                </Modal.Backdrop>
+              </Modal>
             </div>
           </div>
 
           {/* Fund Goal Progress */}
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center">
-              <p className="text-xs text-default-500">{t('monthlyGoal')}</p>
-              <p className="text-xs text-default-500">
+              <p className="text-xs text-foreground/50">{t('monthlyGoal')}</p>
+              <p className="text-xs text-foreground/50">
                 ${guildBalance.toFixed(0)} / ${guildFundGoal.toLocaleString()}
               </p>
             </div>
-            <Progress
-              value={(guildBalance / guildFundGoal) * 100}
-              color="warning"
-              size="sm"
-              classNames={{ indicator: 'bg-warning' }}
-            />
-          </div>
-
-          <div className="border-t border-divider" />
-
-          {/* Top Contributors */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <Icon icon="solar:cup-star-linear" width={16} className="text-default-500" />
-              <p className="text-sm font-medium text-foreground">{t('topContributors')}</p>
-            </div>
-            <div className="flex flex-col gap-2">
-              {topContributors.map(contributor => (
-                <div key={contributor.rank} className="flex items-center gap-3">
-                  <span className={`text-xs font-bold w-4 text-center ${getRankColor(contributor.rank)}`}>
-                    {contributor.rank === 1 ? '🥇' : contributor.rank === 2 ? '🥈' : contributor.rank === 3 ? '🥉' : `#${contributor.rank}`}
-                  </span>
-                  <Avatar
-                    size="sm"
-                    src={`https://i.pravatar.cc/150?u=${contributor.name}`}
-                    className="shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-foreground truncate">{contributor.name}</p>
-                  </div>
-                  <Chip size="sm" variant="flat" color="warning" className="shrink-0">
-                    ${contributor.amount.toLocaleString()}
-                  </Chip>
-                </div>
-              ))}
+            <div className="w-full bg-default-200 rounded-full overflow-hidden h-2">
+              <div
+                className="h-full bg-warning transition-all"
+                style={{ width: `${Math.min(100, (guildBalance / guildFundGoal) * 100)}%` }}
+              />
             </div>
           </div>
-        </CardBody>
+
+        </Card.Content>
       </Card>
 
       {/* Guild Item Storage */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10 shrink-0">
             <Icon className="text-secondary" icon="solar:chest-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-foreground">{t('storage')}</p>
-              <Chip size="sm" variant="flat">
+              <Chip size="sm" variant="tertiary">
                 {mockGuildItems.length} {t('items')}
               </Chip>
             </div>
-            <p className="text-xs text-default-400">{t('storageDesc')}</p>
+            <p className="text-xs text-foreground/40">{t('storageDesc')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0">
+        </Card.Header>
+        <Card.Content className="pt-0">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {mockGuildItems.map(item => (
               <Card
                 key={item.id}
-                className="border border-divider shadow-none bg-content2 hover:border-default-400 transition-colors"
+                className="border border-divider shadow-none bg-surface-secondary hover:border-default-400 transition-colors"
               >
-                <CardHeader className="pb-2">
+                <Card.Header className="pb-2">
                   <div className="flex items-start gap-3 w-full">
                     <div className="p-2 rounded-lg bg-default-100 shrink-0">
                       <Icon
                         icon={getCategoryIcon(item.category)}
                         width={20}
-                        className="text-default-500"
+                        className="text-foreground/50"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-medium text-foreground truncate">{item.name}</h4>
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        <Chip size="sm" color={getRarityColor(item.rarity) as any} variant="flat">
+                        <Chip
+                          size="sm"
+                          color={getRarityColor(item.rarity)}
+                          variant="tertiary"
+                        >
                           {item.rarity.toUpperCase()}
                         </Chip>
                         {item.quantity > 1 && (
-                          <Chip size="sm" variant="flat">
+                          <Chip size="sm" variant="tertiary">
                             x{item.quantity}
                           </Chip>
                         )}
                       </div>
                     </div>
                   </div>
-                </CardHeader>
-                <CardBody className="pt-0 flex flex-col gap-3">
-                  <p className="text-xs text-default-500 line-clamp-2">{item.description}</p>
+                </Card.Header>
+                <Card.Content className="pt-0 flex flex-col gap-3">
+                  <p className="text-xs text-foreground/50 line-clamp-2">{item.description}</p>
                   <div className="flex items-center gap-1.5 border-t border-divider pt-2">
-                    <Avatar
-                      size="sm"
-                      src={`https://i.pravatar.cc/150?u=${item.donatedBy}`}
-                      className="w-4 h-4"
-                    />
-                    <p className="text-xs text-default-400 truncate flex-1">
+                    <Avatar size="sm" className="w-4 h-4">
+                      <Avatar.Image src={`https://i.pravatar.cc/150?u=${item.donatedBy}`} />
+                      <Avatar.Fallback>{item.donatedBy.slice(0, 2).toUpperCase()}</Avatar.Fallback>
+                    </Avatar>
+                    <p className="text-xs text-foreground/40 truncate flex-1">
                       {t('by')} {item.donatedBy} · {new Date(item.donatedAt).toLocaleDateString()}
                     </p>
                   </div>
                   <Button
                     size="sm"
-                    variant="flat"
-                    color="secondary"
+                    variant="secondary"
                     className="w-full"
-                    startContent={<Icon icon="solar:hand-shake-linear" width={14} />}
                     onPress={() => openItemRequest(item)}
                   >
+                    <Icon icon="solar:hand-shake-linear" width={14} />
                     {t('requestItem')}
                   </Button>
-                </CardBody>
+                </Card.Content>
               </Card>
             ))}
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Contribution History */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
-            <Icon className="text-default-500" icon="solar:history-line-duotone" width={20} />
+            <Icon className="text-foreground/50" icon="solar:history-line-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('activityHistory')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0">
+        </Card.Header>
+        <Card.Content className="pt-0">
           {/* Desktop Table */}
           <div className="hidden md:block">
-            <Table
-              aria-label="Guild bank activity table"
-              classNames={{
-                wrapper: 'shadow-none p-0',
-                th: 'bg-content2 text-default-500 text-xs font-medium',
-              }}
-            >
-              <TableHeader>
-                <TableColumn>{t('activity')}</TableColumn>
-                <TableColumn>{t('member')}</TableColumn>
-                <TableColumn>{t('amountItem')}</TableColumn>
-                <TableColumn>{t('date')}</TableColumn>
-                <TableColumn>{t('status')}</TableColumn>
-              </TableHeader>
-              <TableBody>
-                {mockContributions.map(entry => (
-                  <TableRow key={entry.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100">
-                          <Icon
-                            className="text-default-500"
-                            icon={getContributionIcon(entry.type)}
-                            width={16}
-                          />
-                        </div>
-                        <div className="flex flex-col">
-                          <p className="text-sm font-medium text-foreground">
-                            {getContributionLabel(entry.type)}
-                          </p>
-                          {entry.note && (
-                            <p className="text-xs text-default-400 truncate max-w-[180px]">
-                              {entry.note}
-                            </p>
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="Guild bank activity table" className="min-w-[700px]">
+                  <Table.Header>
+                    <Table.Column>{t('activity')}</Table.Column>
+                    <Table.Column>{t('member')}</Table.Column>
+                    <Table.Column>{t('amountItem')}</Table.Column>
+                    <Table.Column>{t('date')}</Table.Column>
+                    <Table.Column>{t('status')}</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {mockContributions.map(entry => (
+                      <Table.Row key={entry.id}>
+                        <Table.Cell>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100">
+                              <Icon
+                                className="text-foreground/50"
+                                icon={getContributionIcon(entry.type)}
+                                width={16}
+                              />
+                            </div>
+                            <div className="flex flex-col">
+                              <p className="text-sm font-medium text-foreground">
+                                {getContributionLabel(entry.type)}
+                              </p>
+                              {entry.note && (
+                                <p className="text-xs text-foreground/40 truncate max-w-[180px]">
+                                  {entry.note}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <div className="flex items-center gap-2">
+                            <Avatar size="sm" className="w-6 h-6">
+                              <Avatar.Image src={`https://i.pravatar.cc/150?u=${entry.member}`} />
+                              <Avatar.Fallback>
+                                {entry.member.slice(0, 2).toUpperCase()}
+                              </Avatar.Fallback>
+                            </Avatar>
+                            <p className="text-sm text-foreground">{entry.member}</p>
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell>
+                          {entry.amount !== undefined ? (
+                            <span
+                              className={`text-sm font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
+                            >
+                              {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-foreground/50">{entry.itemName}</span>
                           )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar
-                          size="sm"
-                          src={`https://i.pravatar.cc/150?u=${entry.member}`}
-                          className="w-6 h-6"
-                        />
-                        <p className="text-sm text-foreground">{entry.member}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {entry.amount !== undefined ? (
-                        <span
-                          className={`text-sm font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
-                        >
-                          {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
-                        </span>
-                      ) : (
-                        <span className="text-sm text-default-500">{entry.itemName}</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-sm text-default-500">
-                        {new Date(entry.date).toLocaleDateString()}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        color={getStatusColor(entry.status) as any}
-                        size="sm"
-                        variant="flat"
-                      >
-                        {t(entry.status)}
-                      </Chip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <p className="text-sm text-foreground/50">
+                            {new Date(entry.date).toLocaleDateString()}
+                          </p>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Chip
+                            color={getStatusColor(entry.status)}
+                            size="sm"
+                            variant="tertiary"
+                          >
+                            {t(entry.status)}
+                          </Chip>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
             </Table>
           </div>
 
@@ -565,7 +604,7 @@ export default function GuildBankPage() {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100 shrink-0">
                       <Icon
-                        className="text-default-500"
+                        className="text-foreground/50"
                         icon={getContributionIcon(entry.type)}
                         width={16}
                       />
@@ -577,15 +616,11 @@ export default function GuildBankPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <p className="text-xs text-default-400">{entry.member}</p>
-                        <p className="text-xs text-default-400">
+                        <p className="text-xs text-foreground/40">{entry.member}</p>
+                        <p className="text-xs text-foreground/40">
                           {new Date(entry.date).toLocaleDateString()}
                         </p>
-                        <Chip
-                          color={getStatusColor(entry.status) as any}
-                          size="sm"
-                          variant="flat"
-                        >
+                        <Chip size="sm" variant="secondary">
                           {t(entry.status)}
                         </Chip>
                       </div>
@@ -599,212 +634,83 @@ export default function GuildBankPage() {
                         {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
                       </span>
                     ) : (
-                      <span className="text-xs text-default-500">{entry.itemName}</span>
+                      <span className="text-xs text-foreground/50">{entry.itemName}</span>
                     )}
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
 
-      {/* Contribute Modal */}
-      <Modal
-        isOpen={isContributeOpen}
-        onOpenChange={onContributeOpenChange}
-        placement="top-center"
-        size="sm"
-      >
-        <ModalContent>
-          {onClose => (
-            <>
-              <ModalHeader>{t('contributeTitle')}</ModalHeader>
-              <ModalBody>
-                <Input
-                  autoFocus
-                  endContent={
-                    <div className="pointer-events-none flex items-center">
-                      <span className="text-default-400 text-small">{t('gold')}</span>
-                    </div>
-                  }
-                  label={t('amountLabel')}
-                  placeholder="0.00"
-                  type="number"
-                  value={contributeAmount}
-                  variant="bordered"
-                  onValueChange={setContributeAmount}
-                />
-                <Textarea
-                  label={t('noteOptional')}
-                  placeholder={t('notePlaceholder')}
-                  value={contributeNote}
-                  variant="bordered"
-                  minRows={2}
-                  maxRows={4}
-                  onValueChange={setContributeNote}
-                />
-                <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
-                  <div className="flex items-start gap-2">
-                    <Icon
-                      className="text-warning shrink-0 mt-0.5"
-                      icon="solar:info-circle-bold"
-                      width={14}
-                    />
-                    <p className="text-xs text-warning">{t('contributeNote')}</p>
-                  </div>
-                </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {t('cancel')}
-                </Button>
-                <Button
-                  color="warning"
-                  onPress={handleContribute}
-                  isDisabled={!contributeAmount || parseFloat(contributeAmount) <= 0}
-                >
-                  {t('contribute')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-
-      {/* Request Funds Modal */}
-      <Modal
-        isOpen={isRequestOpen}
-        onOpenChange={onRequestOpenChange}
-        placement="top-center"
-        size="sm"
-      >
-        <ModalContent>
-          {onClose => (
-            <>
-              <ModalHeader>{t('requestFundsTitle')}</ModalHeader>
-              <ModalBody>
-                <Input
-                  autoFocus
-                  endContent={
-                    <div className="pointer-events-none flex items-center">
-                      <span className="text-default-400 text-small">{t('gold')}</span>
-                    </div>
-                  }
-                  label={t('amountLabel')}
-                  placeholder="0.00"
-                  type="number"
-                  value={requestAmount}
-                  variant="bordered"
-                  onValueChange={setRequestAmount}
-                />
-                <Textarea
-                  label={t('reason')}
-                  placeholder={t('reasonPlaceholder')}
-                  value={requestReason}
-                  variant="bordered"
-                  minRows={3}
-                  maxRows={5}
-                  onValueChange={setRequestReason}
-                  isRequired
-                />
-                <div className="bg-default-100 rounded-lg p-3">
-                  <div className="flex items-start gap-2">
-                    <Icon
-                      className="text-default-500 shrink-0 mt-0.5"
-                      icon="solar:info-circle-bold"
-                      width={14}
-                    />
-                    <p className="text-xs text-default-500">{t('fundRequestNote')}</p>
-                  </div>
-                </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {t('cancel')}
-                </Button>
-                <Button
-                  color="primary"
-                  onPress={handleRequest}
-                  isDisabled={!requestAmount || !requestReason.trim()}
-                >
-                  {t('submitRequest')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-
       {/* Request Item Modal */}
-      <Modal
-        isOpen={isRequestItemOpen}
-        onOpenChange={onRequestItemOpenChange}
-        placement="top-center"
-        size="sm"
-      >
-        <ModalContent>
-          {onClose => (
-            <>
-              <ModalHeader>{t('requestItemTitle')}</ModalHeader>
-              <ModalBody>
-                {selectedItem && (
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-content2">
-                      <div className="p-2 rounded-lg bg-default-100">
-                        <Icon
-                          icon={getCategoryIcon(selectedItem.category)}
-                          width={20}
-                          className="text-default-500"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">{selectedItem.name}</p>
-                        <p className="text-xs text-default-400 capitalize">
-                          {selectedItem.rarity} · {selectedItem.category} · x{selectedItem.quantity}{' '}
-                          {t('available')}
-                        </p>
-                      </div>
+      <Modal state={requestItemModalState}>
+      <Modal.Backdrop>
+        <Modal.Container size="sm">
+          <Modal.Dialog>
+            <Modal.CloseTrigger />
+            <Modal.Header className="text-center items-center">
+              <Modal.Heading>{t('requestItemTitle')}</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className="p-1 flex flex-col gap-3">
+              {selectedItem && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary">
+                    <div className="p-2 rounded-lg bg-default-100">
+                      <Icon
+                        icon={getCategoryIcon(selectedItem.category)}
+                        width={20}
+                        className="text-foreground/50"
+                      />
                     </div>
-                    <Textarea
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{selectedItem.name}</p>
+                      <p className="text-xs text-foreground/40 capitalize">
+                        {selectedItem.rarity} · {selectedItem.category} · x{selectedItem.quantity}{' '}
+                        {t('available')}
+                      </p>
+                    </div>
+                  </div>
+                  <TextField>
+                    <Label>{t('reason')}</Label>
+                    <TextArea
                       autoFocus
-                      label={t('reason')}
                       placeholder={t('itemReasonPlaceholder')}
                       value={requestItemReason}
-                      variant="bordered"
-                      minRows={3}
-                      maxRows={5}
-                      onValueChange={setRequestItemReason}
-                      isRequired
+                      variant="secondary"
+                      rows={3}
+                      onChange={e => setRequestItemReason(e.target.value)}
                     />
-                    <div className="bg-default-100 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <Icon
-                          className="text-default-500 shrink-0 mt-0.5"
-                          icon="solar:info-circle-bold"
-                          width={14}
-                        />
-                        <p className="text-xs text-default-500">{t('itemRequestNote')}</p>
-                      </div>
+                  </TextField>
+                  <div className="bg-default-100 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <Icon
+                        className="text-foreground/50 shrink-0 mt-0.5"
+                        icon="solar:info-circle-bold"
+                        width={14}
+                      />
+                      <p className="text-xs text-foreground/50">{t('itemRequestNote')}</p>
                     </div>
                   </div>
-                )}
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {t('cancel')}
-                </Button>
-                <Button
-                  color="secondary"
-                  onPress={handleRequestItem}
-                  isDisabled={!requestItemReason.trim()}
-                >
-                  {t('submitRequest')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
+                </div>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button slot="close" variant="secondary">
+                {t('cancel')}
+              </Button>
+              <Button
+                variant="primary"
+                onPress={handleRequestItem}
+                isDisabled={!requestItemReason.trim()}
+              >
+                {t('submitRequest')}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
       </Modal>
     </div>
   );

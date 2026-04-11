@@ -3,28 +3,25 @@
 import React from 'react';
 import {
   Card,
-  CardHeader,
-  CardBody,
   Button,
   Chip,
   Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
+  useOverlayState,
   Input,
-  useDisclosure,
   Autocomplete,
-  AutocompleteItem,
+  Label,
+  ListBox,
+  SearchField,
+  EmptyState,
+  Description,
+  TextField,
+  Pagination,
+  useFilter,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import BackpackItemCard from '@/components/BackpackItemCard';
 import { BackpackItem } from '@/types/backpack';
 import { ItemCategory, ItemRarity } from '@/types/auction';
@@ -98,79 +95,133 @@ const mockBackpackItems: BackpackItem[] = [
   },
 ];
 
+const balanceTrend = [
+  { day: 'Jan 1', balance: 800 },
+  { day: 'Jan 5', balance: 950 },
+  { day: 'Jan 9', balance: 870 },
+  { day: 'Jan 13', balance: 1100 },
+  { day: 'Jan 17', balance: 1050 },
+  { day: 'Jan 21', balance: 1200 },
+  { day: 'Jan 25', balance: 1150 },
+  { day: 'Jan 29', balance: 1300 },
+  { day: 'Feb 2', balance: 1250 },
+];
+
 export default function WalletPage() {
   const t = useTranslations('walletPage');
-  const {
-    isOpen: isTransferOpen,
-    onOpen: onTransferOpen,
-    onOpenChange: onTransferOpenChange,
-  } = useDisclosure();
-  const {
-    isOpen: isWithdrawOpen,
-    onOpen: onWithdrawOpen,
-    onOpenChange: onWithdrawOpenChange,
-  } = useDisclosure();
-  const {
-    isOpen: isItemWithdrawOpen,
-    onOpen: onItemWithdrawOpen,
-    onOpenChange: onItemWithdrawOpenChange,
-  } = useDisclosure();
-  const {
-    isOpen: isDepositOpen,
-    onOpen: onDepositOpen,
-    onOpenChange: onDepositOpenChange,
-  } = useDisclosure();
+  const itemWithdrawModalState = useOverlayState();
 
   const [transferAmount, setTransferAmount] = React.useState('');
   const [transferRecipient, setTransferRecipient] = React.useState('');
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
   const [depositAmount, setDepositAmount] = React.useState('');
-  const [recipientSearch, setRecipientSearch] = React.useState('');
+  const { contains } = useFilter({ sensitivity: 'base' });
   const [selectedItem, setSelectedItem] = React.useState<BackpackItem | null>(null);
   const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>(mockBackpackItems);
   const [balance, setBalance] = React.useState(1250.75);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const rowsPerPage = 5;
   const [transactions, setTransactions] = React.useState<Transaction[]>([
     {
       id: '1',
-      type: 'transfer',
-      amount: -100.0,
-      recipient: 'DragonHunter',
-      date: '2024-01-15',
-      status: 'completed',
-      description: 'Transfer to DragonHunter',
-    },
-    {
-      id: '2',
       type: 'deposit',
       amount: 500.0,
-      date: '2024-01-14',
+      date: '2024-01-20',
       status: 'completed',
       description: 'Account deposit',
     },
     {
+      id: '2',
+      type: 'transfer',
+      amount: -100.0,
+      recipient: 'DragonHunter',
+      date: '2024-01-19',
+      status: 'completed',
+      description: 'Transfer to DragonHunter',
+    },
+    {
       id: '3',
       type: 'withdraw',
-      amount: -250.0,
-      date: '2024-01-13',
-      status: 'completed',
-      description: 'Withdrawal to bank account',
+      amount: -500.0,
+      date: '2024-01-18',
+      status: 'pending',
+      description: 'Withdrawal request',
     },
     {
       id: '4',
       type: 'transfer',
       amount: -75.5,
       recipient: 'Healer',
-      date: '2024-01-12',
-      status: 'pending',
+      date: '2024-01-17',
+      status: 'completed',
       description: 'Transfer to Healer',
     },
     {
       id: '5',
-      type: 'withdraw',
-      amount: -500.0,
+      type: 'deposit',
+      amount: 1000.0,
       date: '2024-01-16',
-      status: 'pending',
-      description: 'Withdrawal Request',
+      status: 'completed',
+      description: 'Guild reward payout',
+    },
+    {
+      id: '6',
+      type: 'transfer',
+      amount: -200.0,
+      recipient: 'Warrior123',
+      date: '2024-01-15',
+      status: 'completed',
+      description: 'Transfer to Warrior123',
+    },
+    {
+      id: '7',
+      type: 'withdraw',
+      amount: -250.0,
+      date: '2024-01-14',
+      status: 'completed',
+      description: 'Withdrawal to bank account',
+    },
+    {
+      id: '8',
+      type: 'deposit',
+      amount: 300.0,
+      date: '2024-01-13',
+      status: 'completed',
+      description: 'Auction sale proceeds',
+    },
+    {
+      id: '9',
+      type: 'transfer',
+      amount: -50.0,
+      recipient: 'Enchanter',
+      date: '2024-01-12',
+      status: 'failed',
+      description: 'Transfer to Enchanter',
+    },
+    {
+      id: '10',
+      type: 'deposit',
+      amount: 150.0,
+      date: '2024-01-11',
+      status: 'completed',
+      description: 'Lottery winnings',
+    },
+    {
+      id: '11',
+      type: 'transfer',
+      amount: -80.0,
+      recipient: 'Blacksmith',
+      date: '2024-01-10',
+      status: 'completed',
+      description: 'Transfer to Blacksmith',
+    },
+    {
+      id: '12',
+      type: 'withdraw',
+      amount: -100.0,
+      date: '2024-01-09',
+      status: 'completed',
+      description: 'Withdrawal to bank account',
     },
   ]);
 
@@ -178,14 +229,11 @@ export default function WalletPage() {
     console.log('Transfer:', { amount: transferAmount, recipient: transferRecipient });
     setTransferAmount('');
     setTransferRecipient('');
-    setRecipientSearch('');
-    onTransferOpenChange();
   };
 
   const handleWithdraw = () => {
     console.log('Withdraw:', withdrawAmount);
     setWithdrawAmount('');
-    onWithdrawOpenChange();
   };
 
   const handleDeposit = () => {
@@ -204,23 +252,19 @@ export default function WalletPage() {
       ...prev,
     ]);
     setDepositAmount('');
-    onDepositOpenChange();
   };
 
   const handleItemWithdraw = () => {
     console.log('Withdraw item:', selectedItem?.name);
     setSelectedItem(null);
-    onItemWithdrawOpenChange();
+    itemWithdrawModalState.close();
   };
 
   const openItemWithdraw = (item: BackpackItem) => {
     setSelectedItem(item);
-    onItemWithdrawOpen();
+    itemWithdrawModalState.open();
   };
 
-  const handleNoteChange = (item: BackpackItem, note: string) => {
-    setBackpackItems(prev => prev.map(i => (i.id === item.id ? { ...i, note } : i)));
-  };
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
@@ -248,179 +292,368 @@ export default function WalletPage() {
     }
   };
 
-  const filteredUsers = mockUsers.filter(
-    u =>
-      recipientSearch.length >= 2 &&
-      (u.username.toLowerCase().includes(recipientSearch.toLowerCase()) ||
-        u.email.toLowerCase().includes(recipientSearch.toLowerCase()))
-  );
-
   return (
-    <div className="flex flex-col gap-5 w-full">
+    <div className="space-y-5">
       {/* Balance + Backpack Section */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
             <Icon className="text-primary" icon="solar:wallet-money-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('balanceAndBackpack')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0 flex flex-col gap-6">
+        </Card.Header>
+        <Card.Content className="pt-0 flex flex-col gap-6">
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-3xl font-semibold text-foreground">${balance.toFixed(2)}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button
-                color="success"
-                variant="flat"
-                startContent={<Icon icon="solar:arrow-down-linear" width={16} />}
-                onPress={onDepositOpen}
-                className="w-full sm:w-auto"
-              >
+              <Modal>
+              <Button variant="tertiary" className="w-full sm:w-auto">
+                <Icon icon="solar:arrow-down-linear" width={16} />
                 {t('deposit')}
               </Button>
-              <Button
-                color="primary"
-                startContent={<Icon icon="solar:arrow-right-linear" width={16} />}
-                onPress={onTransferOpen}
-                className="w-full sm:w-auto"
-              >
+              <Modal.Backdrop>
+                <Modal.Container size="sm">
+                  <Modal.Dialog>
+                    <Modal.CloseTrigger />
+                    <Modal.Header className="text-center items-center">
+                      <Modal.Heading>{t('depositMoney')}</Modal.Heading>
+                    </Modal.Header>
+                    <Modal.Body className="p-1 flex flex-col gap-3">
+                      <TextField>
+                        <Label>{t('amountLabel')}</Label>
+                        <Input
+                          autoFocus
+                          placeholder="0.00"
+                          type="number"
+                          value={depositAmount}
+                          variant="secondary"
+                          onChange={e => setDepositAmount(e.target.value)}
+                        />
+                      </TextField>
+                      <p className="text-xs text-foreground/40 px-1">
+                        {t('currentBalanceLabel')} ${balance.toFixed(2)}
+                      </p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button slot="close" variant="secondary">
+                        {t('cancel')}
+                      </Button>
+                      <Button
+                        variant="tertiary"
+                        onPress={handleDeposit}
+                        isDisabled={!depositAmount || parseFloat(depositAmount) <= 0}
+                      >
+                        {t('deposit')}
+                      </Button>
+                    </Modal.Footer>
+                  </Modal.Dialog>
+                </Modal.Container>
+              </Modal.Backdrop>
+              </Modal>
+              <Modal>
+              <Button variant="primary" className="w-full sm:w-auto">
+                <Icon icon="solar:arrow-right-linear" width={16} />
                 {t('transfer')}
               </Button>
-              <Button
-                variant="bordered"
-                startContent={<Icon icon="solar:arrow-up-linear" width={16} />}
-                onPress={onWithdrawOpen}
-                className="w-full sm:w-auto"
-              >
+              <Modal.Backdrop>
+                <Modal.Container size="sm">
+                  <Modal.Dialog>
+                    <Modal.CloseTrigger />
+                    <Modal.Header className="text-center items-center">
+                      <Modal.Heading>{t('transferMoney')}</Modal.Heading>
+                    </Modal.Header>
+                    <Modal.Body className="p-1 flex flex-col gap-3">
+                      <TextField>
+                        <Label>{t('amountLabel')}</Label>
+                        <Input
+                          autoFocus
+                          placeholder="0.00"
+                          type="number"
+                          value={transferAmount}
+                          variant="secondary"
+                          onChange={e => setTransferAmount(e.target.value)}
+                        />
+                      </TextField>
+                      <Autocomplete
+                        className="w-full"
+                        placeholder={t('searchRecipient')}
+                        selectionMode="single"
+                        value={transferRecipient}
+                        onChange={key => setTransferRecipient(key as string)}
+                      >
+                        <Label>{t('recipient')}</Label>
+                        <Autocomplete.Trigger>
+                          <Autocomplete.Value />
+                          <Autocomplete.Indicator />
+                        </Autocomplete.Trigger>
+                        <Autocomplete.Popover>
+                          <Autocomplete.Filter filter={contains}>
+                            <SearchField autoFocus name="search" variant="secondary">
+                              <SearchField.Group>
+                                <SearchField.SearchIcon />
+                                <SearchField.Input placeholder={t('searchRecipient')} />
+                                <SearchField.ClearButton />
+                              </SearchField.Group>
+                            </SearchField>
+                            <ListBox renderEmptyState={() => <EmptyState>{t('noResults')}</EmptyState>}>
+                              {mockUsers.map(user => (
+                                <ListBox.Item key={user.id} id={user.id} textValue={user.username}>
+                                  <div className="flex flex-col">
+                                    <Label>{user.username}</Label>
+                                    <Description>{user.email}</Description>
+                                  </div>
+                                  <ListBox.ItemIndicator />
+                                </ListBox.Item>
+                              ))}
+                            </ListBox>
+                          </Autocomplete.Filter>
+                        </Autocomplete.Popover>
+                      </Autocomplete>
+                      <p className="text-xs text-foreground/40 px-1">
+                        {t('available')} ${balance.toFixed(2)}
+                      </p>
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button slot="close" variant="secondary">
+                        {t('cancel')}
+                      </Button>
+                      <Button variant="primary" onPress={handleTransfer}>
+                        {t('transfer')}
+                      </Button>
+                    </Modal.Footer>
+                  </Modal.Dialog>
+                </Modal.Container>
+              </Modal.Backdrop>
+              </Modal>
+              <Modal>
+              <Button variant="secondary" className="w-full sm:w-auto">
+                <Icon icon="solar:arrow-up-linear" width={16} />
                 {t('withdraw')}
               </Button>
+              <Modal.Backdrop>
+                <Modal.Container size="sm">
+                  <Modal.Dialog>
+                    <Modal.CloseTrigger />
+                    <Modal.Header className="text-center items-center">
+                      <Modal.Heading>{t('withdrawMoney')}</Modal.Heading>
+                    </Modal.Header>
+                    <Modal.Body className="p-1 flex flex-col gap-3">
+                      <TextField>
+                        <Label>{t('amountLabel')}</Label>
+                        <Input
+                          autoFocus
+                          placeholder="0.00"
+                          type="number"
+                          value={withdrawAmount}
+                          variant="secondary"
+                          onChange={e => setWithdrawAmount(e.target.value)}
+                        />
+                      </TextField>
+                      <p className="text-xs text-foreground/40 px-1">
+                        {t('available')} ${balance.toFixed(2)}
+                      </p>
+                      <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+                          <Icon
+                            className="text-warning shrink-0 mt-0.5"
+                            icon="solar:info-circle-bold"
+                            width={14}
+                          />
+                          <p className="text-xs text-warning">{t('withdrawNote')}</p>
+                        </div>
+                      </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button slot="close" variant="secondary">
+                        {t('cancel')}
+                      </Button>
+                      <Button variant="primary" onPress={handleWithdraw}>
+                        {t('withdraw')}
+                      </Button>
+                    </Modal.Footer>
+                  </Modal.Dialog>
+                </Modal.Container>
+              </Modal.Backdrop>
+              </Modal>
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="border-t border-divider" />
+          {/* Balance Chart */}
+          <div>
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={balanceTrend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="walletBalanceFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--separator)" vertical={false} />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fontSize: 10, fill: 'var(--muted)' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: 'var(--muted)' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={v => `$${v}`}
+                />
+                <Tooltip
+                  formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, 'Balance']}
+                  contentStyle={{
+                    background: 'var(--overlay)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: 'var(--foreground)',
+                  }}
+                  labelStyle={{ color: 'var(--muted)' }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="balance"
+                  stroke="var(--accent)"
+                  strokeWidth={2}
+                  fill="url(#walletBalanceFill)"
+                  dot={false}
+                  activeDot={{ r: 4, fill: 'var(--accent)' }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
 
-          {/* Backpack Items */}
-          <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Icon icon="solar:backpack-linear" width={16} className="text-default-500" />
-                <p className="text-sm font-medium text-foreground">{t('yourItems')}</p>
-              </div>
-              <Chip size="sm" variant="flat">
-                {mockBackpackItems.length} {t('items')}
+        </Card.Content>
+      </Card>
+
+      {/* Backpack Items */}
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
+            <Icon className="text-accent" icon="solar:backpack-bold-duotone" width={20} />
+          </div>
+          <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-foreground">{t('yourItems')}</p>
+              <Chip size="sm" variant="tertiary">
+                {backpackItems.length} {t('items')}
               </Chip>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {backpackItems.map(item => (
-                <BackpackItemCard
-                  key={item.id}
-                  item={item}
-                  onPutToAuction={i => console.log('Put to auction:', i.name)}
-                  onPutToLottery={i => console.log('Put to lottery:', i.name)}
-                  onTransfer={i => console.log('Transfer:', i.name)}
-                  onWithdraw={openItemWithdraw}
-                  onNoteChange={handleNoteChange}
-                />
-              ))}
-            </div>
           </div>
-        </CardBody>
+        </Card.Header>
+        <Card.Content className="pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {backpackItems.map(item => (
+              <BackpackItemCard
+                key={item.id}
+                item={item}
+                onPutToAuction={i => console.log('Put to auction:', i.name)}
+                onPutToLottery={i => console.log('Put to lottery:', i.name)}
+                onTransfer={i => console.log('Transfer:', i.name)}
+                onWithdraw={openItemWithdraw}
+
+              />
+            ))}
+          </div>
+        </Card.Content>
       </Card>
 
       {/* Transaction History */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
-            <Icon className="text-default-500" icon="solar:history-line-duotone" width={20} />
+            <Icon className="text-foreground/50" icon="solar:history-line-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('transactionHistory')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0">
+        </Card.Header>
+        <Card.Content className="pt-0">
+          {(() => {
+            const totalPages = Math.ceil(transactions.length / rowsPerPage);
+            const pagedTransactions = transactions.slice(
+              (currentPage - 1) * rowsPerPage,
+              currentPage * rowsPerPage
+            );
+            return (
+              <>
           {/* Desktop Table View */}
           <div className="hidden md:block">
-            <Table
-              aria-label="Transaction history table"
-              classNames={{
-                wrapper: 'shadow-none p-0',
-                th: 'bg-content2 text-default-500 text-xs font-medium',
-              }}
-            >
-              <TableHeader>
-                <TableColumn>{t('transaction')}</TableColumn>
-                <TableColumn>{t('amount')}</TableColumn>
-                <TableColumn>{t('date')}</TableColumn>
-                <TableColumn>{t('status')}</TableColumn>
-              </TableHeader>
-              <TableBody>
-                {transactions.map(transaction => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100">
-                          <Icon
-                            className="text-default-500"
-                            icon={getTransactionIcon(transaction.type)}
-                            width={16}
-                          />
-                        </div>
-                        <div className="flex flex-col">
-                          <p className="text-sm font-medium text-foreground">
-                            {transaction.description}
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content aria-label="Transaction history table" className="min-w-[600px]">
+                  <Table.Header>
+                    <Table.Column className="w-[45%]">{t('transaction')}</Table.Column>
+                    <Table.Column className="w-[20%]">{t('amount')}</Table.Column>
+                    <Table.Column className="w-[20%]">{t('date')}</Table.Column>
+                    <Table.Column className="w-[15%]">{t('status')}</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    {pagedTransactions.map(transaction => (
+                      <Table.Row key={transaction.id}>
+                        <Table.Cell>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100">
+                              <Icon
+                                className="text-foreground/50"
+                                icon={getTransactionIcon(transaction.type)}
+                                width={16}
+                              />
+                            </div>
+                            <div className="flex flex-col">
+                              <p className="text-sm font-medium text-foreground">
+                                {transaction.description}
+                              </p>
+                              {transaction.recipient && (
+                                <p className="text-xs text-foreground/40">
+                                  {t('to')} {transaction.recipient}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <span
+                            className={`text-sm font-medium ${transaction.amount > 0 ? 'text-success' : 'text-foreground'}`}
+                          >
+                            {transaction.amount > 0 ? '+' : ''}$
+                            {Math.abs(transaction.amount).toFixed(2)}
+                          </span>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <p className="text-sm text-foreground/50">
+                            {new Date(transaction.date).toLocaleDateString()}
                           </p>
-                          {transaction.recipient && (
-                            <p className="text-xs text-default-400">
-                              {t('to')} {transaction.recipient}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`text-sm font-medium ${transaction.amount > 0 ? 'text-success' : 'text-foreground'}`}
-                      >
-                        {transaction.amount > 0 ? '+' : ''}$
-                        {Math.abs(transaction.amount).toFixed(2)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-sm text-default-500">
-                        {new Date(transaction.date).toLocaleDateString()}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        className="capitalize"
-                        color={getStatusColor(transaction.status) as any}
-                        size="sm"
-                        variant="flat"
-                      >
-                        {t(transaction.status)}
-                      </Chip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Chip className="capitalize" size="sm" variant="secondary">
+                            {t(transaction.status)}
+                          </Chip>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
             </Table>
           </div>
 
           {/* Mobile Card View */}
           <div className="block md:hidden divide-y divide-divider">
-            {transactions.map(transaction => (
+            {pagedTransactions.map(transaction => (
               <div key={transaction.id} className="py-3 first:pt-0 last:pb-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100 shrink-0">
                       <Icon
-                        className="text-default-500"
+                        className="text-foreground/50"
                         icon={getTransactionIcon(transaction.type)}
                         width={16}
                       />
@@ -430,14 +663,14 @@ export default function WalletPage() {
                         {transaction.description}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-xs text-default-400">
+                        <p className="text-xs text-foreground/40">
                           {new Date(transaction.date).toLocaleDateString()}
                         </p>
                         <Chip
                           className="capitalize"
-                          color={getStatusColor(transaction.status) as any}
+                          color={getStatusColor(transaction.status)}
                           size="sm"
-                          variant="flat"
+                          variant="tertiary"
                         >
                           {t(transaction.status)}
                         </Chip>
@@ -455,216 +688,100 @@ export default function WalletPage() {
               </div>
             ))}
           </div>
-        </CardBody>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center pt-4">
+              <Pagination className="justify-center">
+                <Pagination.Content>
+                  <Pagination.Item>
+                    <Pagination.Previous
+                      isDisabled={currentPage === 1}
+                      onPress={() => setCurrentPage(p => p - 1)}
+                    >
+                      <Pagination.PreviousIcon />
+                    </Pagination.Previous>
+                  </Pagination.Item>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                    <Pagination.Item key={p}>
+                      <Pagination.Link
+                        isActive={p === currentPage}
+                        onPress={() => setCurrentPage(p)}
+                      >
+                        {p}
+                      </Pagination.Link>
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Item>
+                    <Pagination.Next
+                      isDisabled={currentPage === totalPages}
+                      onPress={() => setCurrentPage(p => p + 1)}
+                    >
+                      <Pagination.NextIcon />
+                    </Pagination.Next>
+                  </Pagination.Item>
+                </Pagination.Content>
+              </Pagination>
+            </div>
+          )}
+              </>
+            );
+          })()}
+        </Card.Content>
       </Card>
 
-      {/* Transfer Modal */}
-      <Modal
-        isOpen={isTransferOpen}
-        onOpenChange={onTransferOpenChange}
-        placement="top-center"
-        size="sm"
-      >
-        <ModalContent>
-          {onClose => (
-            <>
-              <ModalHeader>{t('transferMoney')}</ModalHeader>
-              <ModalBody>
-                <Input
-                  autoFocus
-                  endContent={undefined}
-                  label={t('amountLabel')}
-                  placeholder="0.00"
-                  type="number"
-                  value={transferAmount}
-                  variant="bordered"
-                  onValueChange={setTransferAmount}
-                />
-                <Autocomplete
-                  label={t('recipient')}
-                  placeholder={t('searchRecipient')}
-                  variant="bordered"
-                  inputValue={recipientSearch}
-                  onInputChange={setRecipientSearch}
-                  onSelectionChange={key => setTransferRecipient(key as string)}
-                  defaultItems={filteredUsers}
-                >
-                  {user => (
-                    <AutocompleteItem key={user.id} textValue={user.username}>
-                      <div className="flex flex-col">
-                        <span className="text-sm">{user.username}</span>
-                        <span className="text-xs text-default-400">{user.email}</span>
-                      </div>
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-                <p className="text-xs text-default-400 px-1">
-                  {t('available')} ${balance.toFixed(2)}
-                </p>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {t('cancel')}
-                </Button>
-                <Button color="primary" onPress={handleTransfer}>
-                  {t('transfer')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-
-      {/* Deposit Modal */}
-      <Modal
-        isOpen={isDepositOpen}
-        onOpenChange={onDepositOpenChange}
-        placement="top-center"
-        size="sm"
-      >
-        <ModalContent>
-          {onClose => (
-            <>
-              <ModalHeader>{t('depositMoney')}</ModalHeader>
-              <ModalBody>
-                <Input
-                  autoFocus
-                  endContent={undefined}
-                  label={t('amountLabel')}
-                  placeholder="0.00"
-                  type="number"
-                  value={depositAmount}
-                  variant="bordered"
-                  onValueChange={setDepositAmount}
-                />
-                <p className="text-xs text-default-400 px-1">
-                  {t('currentBalanceLabel')} ${balance.toFixed(2)}
-                </p>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {t('cancel')}
-                </Button>
-                <Button
-                  color="success"
-                  onPress={handleDeposit}
-                  isDisabled={!depositAmount || parseFloat(depositAmount) <= 0}
-                >
-                  {t('deposit')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-
-      {/* Withdraw Money Modal */}
-      <Modal
-        isOpen={isWithdrawOpen}
-        onOpenChange={onWithdrawOpenChange}
-        placement="top-center"
-        size="sm"
-      >
-        <ModalContent>
-          {onClose => (
-            <>
-              <ModalHeader>{t('withdrawMoney')}</ModalHeader>
-              <ModalBody>
-                <Input
-                  autoFocus
-                  endContent={undefined}
-                  label={t('amountLabel')}
-                  placeholder="0.00"
-                  type="number"
-                  value={withdrawAmount}
-                  variant="bordered"
-                  onValueChange={setWithdrawAmount}
-                />
-                <p className="text-xs text-default-400 px-1">
-                  {t('available')} ${balance.toFixed(2)}
-                </p>
-                <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
-                  <div className="flex items-start gap-2">
-                    <Icon
-                      className="text-warning shrink-0 mt-0.5"
-                      icon="solar:info-circle-bold"
-                      width={14}
-                    />
-                    <p className="text-xs text-warning">{t('withdrawNote')}</p>
+      {/* Withdraw Item Modal */}
+      <Modal state={itemWithdrawModalState}>
+      <Modal.Backdrop>
+        <Modal.Container size="sm">
+          <Modal.Dialog>
+            <Modal.CloseTrigger />
+            <Modal.Header className="text-center items-center">
+              <Modal.Heading>{t('withdrawItem')}</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className="p-1 flex flex-col gap-3">
+              {selectedItem && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary">
+                    <div className="p-2 rounded-lg bg-default-100">
+                      <Icon icon="solar:backpack-linear" width={20} className="text-foreground/50" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{selectedItem.name}</p>
+                      <p className="text-xs text-foreground/40 capitalize">
+                        {selectedItem.rarity} · {selectedItem.category}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-foreground/60">
+                    {t('withdrawItemConfirm')}{' '}
+                    <span className="font-medium text-foreground">{selectedItem.name}</span>{' '}
+                    {t('withdrawItemConfirmSuffix')}
+                  </p>
+                  <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <Icon
+                        className="text-warning shrink-0 mt-0.5"
+                        icon="solar:info-circle-bold"
+                        width={14}
+                      />
+                      <p className="text-xs text-warning">{t('withdrawItemNote')}</p>
+                    </div>
                   </div>
                 </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {t('cancel')}
-                </Button>
-                <Button color="primary" onPress={handleWithdraw}>
-                  {t('withdraw')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-
-      {/* Withdraw Item Modal */}
-      <Modal
-        isOpen={isItemWithdrawOpen}
-        onOpenChange={onItemWithdrawOpenChange}
-        placement="top-center"
-        size="sm"
-      >
-        <ModalContent>
-          {onClose => (
-            <>
-              <ModalHeader>{t('withdrawItem')}</ModalHeader>
-              <ModalBody>
-                {selectedItem && (
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-content2">
-                      <div className="p-2 rounded-lg bg-default-100">
-                        <Icon
-                          icon="solar:backpack-linear"
-                          width={20}
-                          className="text-default-500"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{selectedItem.name}</p>
-                        <p className="text-xs text-default-400 capitalize">
-                          {selectedItem.rarity} · {selectedItem.category}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-default-600">
-                      {t('withdrawItemConfirm')}{' '}
-                      <span className="font-medium text-foreground">{selectedItem.name}</span>{' '}
-                      {t('withdrawItemConfirmSuffix')}
-                    </p>
-                    <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <Icon
-                          className="text-warning shrink-0 mt-0.5"
-                          icon="solar:info-circle-bold"
-                          width={14}
-                        />
-                        <p className="text-xs text-warning">{t('withdrawItemNote')}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {t('cancel')}
-                </Button>
-                <Button color="danger" onPress={handleItemWithdraw}>
-                  {t('withdrawItem')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button slot="close" variant="secondary">
+                {t('cancel')}
+              </Button>
+              <Button variant="danger" onPress={handleItemWithdraw}>
+                {t('withdrawItem')}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
       </Modal>
     </div>
   );

@@ -1,19 +1,7 @@
 'use client';
 
-import React from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Chip,
-  Button,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-  Textarea,
-} from '@heroui/react';
+import { Card, Chip, Button, Dropdown } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { BackpackItem } from '@/types/backpack';
 import { ItemCategory, ItemRarity } from '@/types/auction';
@@ -36,9 +24,9 @@ const getRarityColor = (rarity: ItemRarity) => {
     case ItemRarity.COMMON:
       return 'default';
     case ItemRarity.UNCOMMON:
-      return 'primary';
+      return 'accent';
     case ItemRarity.RARE:
-      return 'secondary';
+      return 'default';
     case ItemRarity.EPIC:
       return 'warning';
     case ItemRarity.LEGENDARY:
@@ -57,9 +45,9 @@ const getAcquiredColor = (acquiredFrom: BackpackItem['acquiredFrom']) => {
     case 'lottery':
       return 'success';
     case 'transfer':
-      return 'primary';
+      return 'accent';
     case 'admin':
-      return 'secondary';
+      return 'default';
     default:
       return 'default';
   }
@@ -71,7 +59,6 @@ interface BackpackItemCardProps {
   onPutToLottery?: (item: BackpackItem) => void;
   onTransfer?: (item: BackpackItem) => void;
   onWithdraw?: (item: BackpackItem) => void;
-  onNoteChange?: (item: BackpackItem, note: string) => void;
 }
 
 const BackpackItemCard = ({
@@ -80,157 +67,72 @@ const BackpackItemCard = ({
   onPutToLottery,
   onTransfer,
   onWithdraw,
-  onNoteChange,
 }: BackpackItemCardProps) => {
   const t = useTranslations('backpackItemCard');
-  const [isEditingNote, setIsEditingNote] = React.useState(false);
-  const [noteValue, setNoteValue] = React.useState(item.note ?? '');
-
-  const handleSaveNote = () => {
-    onNoteChange?.(item, noteValue);
-    setIsEditingNote(false);
-  };
-
-  const handleCancelNote = () => {
-    setNoteValue(item.note ?? '');
-    setIsEditingNote(false);
-  };
 
   return (
-    <Card className="border border-divider shadow-none bg-content1 hover:border-default-400 transition-colors">
-      <CardHeader className="pb-2">
+    <Card className="border border-divider shadow-none bg-surface-secondary hover:border-default-400 transition-colors">
+      <Card.Header className="pb-2">
         <div className="flex justify-between items-start w-full">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-default-100">
-              <Icon icon={getCategoryIcon(item.category)} width={20} className="text-default-500" />
+              <Icon icon={getCategoryIcon(item.category)} width={20} className="text-foreground/50" />
             </div>
             <div>
               <h4 className="text-sm font-medium text-foreground">{item.name}</h4>
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                <Chip size="sm" color={getRarityColor(item.rarity) as any} variant="flat">
+                <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
                   {item.rarity.toUpperCase()}
                 </Chip>
-                <Chip size="sm" color={getAcquiredColor(item.acquiredFrom) as any} variant="dot">
+                <Chip size="sm" color={getAcquiredColor(item.acquiredFrom)} variant="secondary">
                   {item.acquiredFrom.charAt(0).toUpperCase() + item.acquiredFrom.slice(1)}
                 </Chip>
               </div>
             </div>
           </div>
 
-          <Dropdown placement="bottom-end">
-            <DropdownTrigger>
-              <Button isIconOnly variant="light" size="sm" className="text-default-400">
-                <Icon icon="solar:menu-dots-bold" width={16} />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="Item actions">
-              <DropdownItem
-                key="note"
-                startContent={<Icon icon="solar:pen-2-linear" width={16} />}
-                onPress={() => setIsEditingNote(true)}
+          <Dropdown>
+            <Button isIconOnly variant="ghost" size="sm" className="text-foreground/40">
+              <Icon icon="solar:menu-dots-bold" width={16} />
+            </Button>
+            <Dropdown.Popover>
+              <Dropdown.Menu
+                aria-label="Item actions"
+                onAction={key => {
+                  if (key === 'auction') onPutToAuction?.(item);
+                  if (key === 'lottery') onPutToLottery?.(item);
+                  if (key === 'transfer') onTransfer?.(item);
+                  if (key === 'withdraw') onWithdraw?.(item);
+                }}
               >
-                {t('editNote')}
-              </DropdownItem>
-              <DropdownItem
-                key="auction"
-                startContent={<Icon icon="solar:hammer-linear" width={16} />}
-                onPress={() => onPutToAuction?.(item)}
-              >
-                {t('putToAuction')}
-              </DropdownItem>
-              <DropdownItem
-                key="lottery"
-                startContent={<Icon icon="solar:ticket-linear" width={16} />}
-                onPress={() => onPutToLottery?.(item)}
-              >
-                {t('putToLottery')}
-              </DropdownItem>
-              <DropdownItem
-                key="transfer"
-                startContent={<Icon icon="solar:arrow-right-linear" width={16} />}
-                onPress={() => onTransfer?.(item)}
-              >
-                {t('transfer')}
-              </DropdownItem>
-              <DropdownItem
-                key="withdraw"
-                startContent={<Icon icon="solar:arrow-up-linear" width={16} />}
-                className="text-danger"
-                color="danger"
-                onPress={() => onWithdraw?.(item)}
-              >
-                {t('withdraw')}
-              </DropdownItem>
-            </DropdownMenu>
+                <Dropdown.Item id="auction" textValue={t('putToAuction')}>
+                  <Icon icon="solar:hammer-linear" width={16} />
+                  <span>{t('putToAuction')}</span>
+                </Dropdown.Item>
+                <Dropdown.Item id="lottery" textValue={t('putToLottery')}>
+                  <Icon icon="solar:ticket-linear" width={16} />
+                  <span>{t('putToLottery')}</span>
+                </Dropdown.Item>
+                <Dropdown.Item id="transfer" textValue={t('transfer')}>
+                  <Icon icon="solar:arrow-right-linear" width={16} />
+                  <span>{t('transfer')}</span>
+                </Dropdown.Item>
+                <Dropdown.Item id="withdraw" variant="danger" textValue={t('withdraw')}>
+                  <Icon icon="solar:arrow-up-linear" width={16} />
+                  <span>{t('withdraw')}</span>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
           </Dropdown>
         </div>
-      </CardHeader>
+      </Card.Header>
 
-      <CardBody className="pt-0 flex flex-col gap-2">
-        <p className="text-xs text-default-500 line-clamp-2">{item.description}</p>
-        <p className="text-xs text-default-400">
+      <Card.Content className="pt-0 flex flex-col gap-2">
+        <p className="text-xs text-foreground/50 line-clamp-2">{item.description}</p>
+        <p className="text-xs text-foreground/40">
           {t('acquired')} {new Date(item.acquiredAt).toLocaleDateString()}
         </p>
-
-        {/* Note section */}
-        <div className="border-t border-divider pt-2 mt-1">
-          {isEditingNote ? (
-            <div className="flex flex-col gap-2">
-              <Textarea
-                autoFocus
-                size="sm"
-                placeholder={t('addNote')}
-                value={noteValue}
-                onValueChange={setNoteValue}
-                minRows={2}
-                maxRows={4}
-                classNames={{
-                  input: 'text-xs',
-                  inputWrapper: 'bg-content2 shadow-none border border-divider',
-                }}
-              />
-              <div className="flex gap-1.5 justify-end">
-                <Button
-                  size="sm"
-                  variant="flat"
-                  onPress={handleCancelNote}
-                  className="h-6 text-xs px-2 min-w-0"
-                >
-                  {t('cancel')}
-                </Button>
-                <Button
-                  size="sm"
-                  color="primary"
-                  onPress={handleSaveNote}
-                  className="h-6 text-xs px-2 min-w-0"
-                >
-                  {t('save')}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <button
-              className="flex items-start gap-1.5 w-full text-left group"
-              onClick={() => setIsEditingNote(true)}
-            >
-              <Icon
-                icon="solar:pen-2-linear"
-                width={12}
-                className="text-default-300 group-hover:text-default-400 shrink-0 mt-0.5 transition-colors"
-              />
-              {noteValue ? (
-                <p className="text-xs text-default-500 group-hover:text-default-600 transition-colors line-clamp-3">
-                  {noteValue}
-                </p>
-              ) : (
-                <p className="text-xs text-default-300 group-hover:text-default-400 italic transition-colors">
-                  {t('addNote')}
-                </p>
-              )}
-            </button>
-          )}
-        </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   );
 };

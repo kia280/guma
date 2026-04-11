@@ -14,9 +14,5 @@ services:
       - minio
       - kratos
     environment:
-      - DATABASE_URL=postgres://guma:password@localhost:5432/guma?sslmode=disable
-      - REDIS_URL=redis://localhost:6379/0
-      - MINIO_ENDPOINT=localhost:9000
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
+      - DATABASE_URL=postgres://guma:password@postgres:5432/guma?sslmode=disable
       - KRATOS_ADMIN_URL=http://kratos:4434

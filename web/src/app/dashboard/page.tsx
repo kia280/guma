@@ -3,21 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import {
-  Card,
-  CardBody,
-  Chip,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-} from '@heroui/react';
+import { Card, Chip, Modal, Button, useOverlayState } from '@heroui/react';
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -38,6 +28,7 @@ const GUILD_STATS = {
 const PERSONAL_STATS = {
   balance: 5_000,
   checkinsThisMonth: 7,
+  activeAuctions: 3,
   activityPoints: 340,
 };
 
@@ -146,18 +137,20 @@ const ANNOUNCEMENTS: Announcement[] = [
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+type ChipColor = 'danger' | 'warning' | 'success' | 'accent' | 'default';
+
 const KIND_META: Record<
   EventKind,
   {
     icon: string;
     labelKey: string;
-    color: 'danger' | 'warning' | 'success' | 'primary' | 'secondary' | 'default';
+    color: ChipColor;
   }
 > = {
   auction: { icon: 'solar:hammer-linear', labelKey: 'kindAuction', color: 'warning' },
   checkin: { icon: 'solar:check-circle-linear', labelKey: 'kindCheckin', color: 'success' },
-  lottery: { icon: 'solar:ticket-linear', labelKey: 'kindLottery', color: 'secondary' },
-  calendar: { icon: 'solar:calendar-linear', labelKey: 'kindCalendar', color: 'primary' },
+  lottery: { icon: 'solar:ticket-linear', labelKey: 'kindLottery', color: 'accent' },
+  calendar: { icon: 'solar:calendar-linear', labelKey: 'kindCalendar', color: 'accent' },
 };
 
 const URGENCY_DOT: Record<FeedEvent['urgency'], string> = {
@@ -182,13 +175,13 @@ function StatCard({
   value: string | number;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className={`${iconBg} p-2.5 rounded-lg shrink-0`}>
+    <div className="flex items-center flex-1 min-w-0 gap-3 p-3 rounded-xl border border-divider bg-surface-secondary">
+      <div className={`${iconBg} p-2 sm:p-2.5 rounded-lg shrink-0`}>
         <Icon icon={icon} width={18} className={iconClass} />
       </div>
-      <div className="min-w-0">
-        <p className="text-xs text-default-400 uppercase tracking-wide truncate">{label}</p>
-        <p className="text-xl font-semibold text-foreground leading-none mt-0.5">{value}</p>
+      <div className="flex flex-col min-w-0">
+        <p className="text-[10px] sm:text-xs text-foreground/40 uppercase tracking-wide truncate">{label}</p>
+        <p className="text-xl sm:text-2xl font-semibold text-foreground leading-none mt-0.5">{value}</p>
       </div>
     </div>
   );
@@ -236,8 +229,8 @@ function OverviewCarousel() {
 
   return (
     <div ref={containerRef}>
-      <Card className="border border-divider shadow-none bg-content1 overflow-hidden">
-        <CardBody className="p-0">
+      <Card className="border border-divider shadow-none bg-surface overflow-hidden">
+        <Card.Content className="p-0">
           {/* Slide track */}
           <div
             className="flex transition-transform duration-300 ease-in-out"
@@ -245,12 +238,12 @@ function OverviewCarousel() {
           >
             {/* ── Slide 0: Personal Overview ── */}
             <div className="min-w-full p-5 space-y-5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-default-400">
+              <p className="text-xs font-semibold uppercase tracking-widest text-foreground/40">
                 {t('personalOverview')}
               </p>
 
               {/* Stat row */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="flex gap-4">
                 <StatCard
                   icon="solar:wallet-linear"
                   iconClass="text-primary"
@@ -266,71 +259,82 @@ function OverviewCarousel() {
                   value={PERSONAL_STATS.checkinsThisMonth}
                 />
                 <StatCard
-                  icon="solar:star-linear"
+                  icon="solar:hammer-linear"
                   iconClass="text-warning"
                   iconBg="bg-warning/10"
+                  label={t('activeAuctions')}
+                  value={PERSONAL_STATS.activeAuctions}
+                />
+                <StatCard
+                  icon="solar:star-linear"
+                  iconClass="text-accent"
+                  iconBg="bg-accent/10"
                   label={t('activityPts')}
                   value={PERSONAL_STATS.activityPoints}
                 />
               </div>
 
               {/* Wallet balance chart */}
-              <div className="rounded-xl p-3 -mx-3 transition-colors hover:bg-content2">
-                <p className="text-xs text-default-400 mb-2">{t('balanceLast30')}</p>
-                <ResponsiveContainer width="100%" height={140}>
-                  <LineChart data={balanceTrend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+              <div className="rounded-xl p-3 -mx-3 transition-colors hover:bg-surface-secondary">
+                <p className="text-xs text-foreground/40 mb-2">{t('balanceLast30')}</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <AreaChart data={balanceTrend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="balanceFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.02} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="var(--heroui-divider)"
+                      stroke="var(--separator)"
                       vertical={false}
                     />
                     <XAxis
                       dataKey="day"
-                      tick={{ fontSize: 10, fill: 'var(--heroui-default-500)' }}
+                      tick={{ fontSize: 10, fill: 'var(--muted)' }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <YAxis
-                      tick={{ fontSize: 10, fill: 'var(--heroui-default-500)' }}
+                      tick={{ fontSize: 10, fill: 'var(--muted)' }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={v => `$${(v / 1000).toFixed(0)}k`}
                     />
                     <Tooltip
-                      formatter={(v: number | undefined) => [
-                        `$${(v ?? 0).toLocaleString()}`,
-                        'Balance',
-                      ]}
+                      formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, 'Balance']}
                       contentStyle={{
-                        background: 'var(--heroui-content3)',
-                        border: '1px solid var(--heroui-divider)',
+                        background: 'var(--overlay)',
+                        border: '1px solid var(--border)',
                         borderRadius: 8,
                         fontSize: 12,
-                        color: 'var(--heroui-foreground)',
+                        color: 'var(--foreground)',
                       }}
-                      labelStyle={{ color: 'var(--heroui-default-500)' }}
+                      labelStyle={{ color: 'var(--muted)' }}
                     />
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="balance"
-                      stroke="var(--heroui-primary)"
+                      stroke="var(--accent)"
                       strokeWidth={2}
+                      fill="url(#balanceFill)"
                       dot={false}
-                      activeDot={{ r: 4, fill: 'var(--heroui-primary)' }}
+                      activeDot={{ r: 4, fill: 'var(--accent)' }}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
             {/* ── Slide 1: Guild Overview ── */}
             <div className="min-w-full p-5 space-y-5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-default-400">
+              <p className="text-xs font-semibold uppercase tracking-widest text-foreground/40">
                 {t('guildOverview')}
               </p>
 
               {/* Stat row */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="flex gap-4">
                 <StatCard
                   icon="solar:users-group-rounded-linear"
                   iconClass="text-primary"
@@ -355,7 +359,7 @@ function OverviewCarousel() {
               </div>
 
               {/* Extra metrics row */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="flex gap-4">
                 <StatCard
                   icon="solar:check-square-linear"
                   iconClass="text-success"
@@ -386,15 +390,15 @@ function OverviewCarousel() {
             {SLIDES.map((slide, i) => (
               <button
                 key={slide}
-                onClick={() => setActive(slide)}
+                onPointerDown={() => setActive(slide)}
                 aria-label={slide === 'personal' ? t('personalOverview') : t('guildOverview')}
-                className={`h-1.5 rounded-full transition-all duration-200 ${
-                  i === idx ? 'w-5 bg-primary' : 'w-1.5 bg-default-300 hover:bg-default-400'
+                className={`h-2.5 rounded-full transition-all duration-200 ${
+                  i === idx ? 'w-6 bg-accent' : 'w-2.5 bg-muted/30 hover:bg-muted/50'
                 }`}
               />
             ))}
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
     </div>
   );
@@ -405,9 +409,14 @@ function OverviewCarousel() {
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const [selectedAnn, setSelectedAnn] = useState<Announcement | null>(null);
+  const annModalState = useOverlayState({
+    onOpenChange: (isOpen) => {
+      if (!isOpen) setSelectedAnn(null);
+    },
+  });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Overview Carousel */}
       <OverviewCarousel />
 
@@ -416,17 +425,17 @@ export default function DashboardPage() {
         {/* ── Announcements ── */}
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Icon icon="solar:megaphone-linear" width={18} className="text-default-400" />
+            <Icon icon="solar:megaphone-linear" width={18} className="text-foreground/40" />
             <h2 className="text-base font-semibold text-foreground">{t('news')}</h2>
           </div>
-          <Card className="border border-divider shadow-none bg-content1">
-            <CardBody className="p-0">
+          <Card className="border border-divider shadow-none bg-surface">
+            <Card.Content className="p-0">
               <div className="divide-y divide-divider">
                 {ANNOUNCEMENTS.map(ann => (
                   <div
                     key={ann.id}
-                    className="px-4 py-3 hover:bg-content2 transition-colors cursor-pointer"
-                    onClick={() => setSelectedAnn(ann)}
+                    className="px-4 py-3 hover:bg-surface-secondary transition-colors cursor-pointer"
+                    onPointerDown={() => { setSelectedAnn(ann); annModalState.open(); }}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -439,30 +448,32 @@ export default function DashboardPage() {
                         )}
                         <p className="text-sm text-foreground truncate">{ann.title}</p>
                       </div>
-                      <span className="text-xs text-default-400 shrink-0">{ann.date}</span>
+                      <span className="text-xs text-foreground/40 shrink-0">{ann.date}</span>
                     </div>
                   </div>
                 ))}
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
         </section>
 
         {/* ── Upcoming Events ── */}
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Icon icon="solar:bell-linear" width={18} className="text-default-400" />
+            <Icon icon="solar:bell-linear" width={18} className="text-foreground/40" />
             <h2 className="text-base font-semibold text-foreground">{t('upcomingEvents')}</h2>
           </div>
-          <Card className="border border-divider shadow-none bg-content1">
-            <CardBody className="p-0">
+          <Card className="border border-divider shadow-none bg-surface">
+            <Card.Content className="p-0">
               <div className="divide-y divide-divider">
                 {INCOMING_EVENTS.map(event => {
                   const meta = KIND_META[event.kind];
                   return (
                     <div
                       key={event.id}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-content2 transition-colors cursor-pointer"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-surface-secondary transition-colors cursor-pointer"
+                      role="button"
+                      tabIndex={0}
                     >
                       {/* Urgency dot */}
                       <span
@@ -471,7 +482,7 @@ export default function DashboardPage() {
 
                       {/* Kind icon */}
                       <div className="p-1.5 rounded-md bg-default-100 shrink-0">
-                        <Icon icon={meta.icon} width={14} className="text-default-500" />
+                        <Icon icon={meta.icon} width={14} className="text-foreground/50" />
                       </div>
 
                       {/* Text */}
@@ -479,64 +490,57 @@ export default function DashboardPage() {
                         <p className="text-sm font-medium text-foreground truncate">
                           {event.title}
                         </p>
-                        <p className="text-xs text-default-400 truncate">{event.subtitle}</p>
+                        <p className="text-xs text-foreground/40 truncate">{event.subtitle}</p>
                       </div>
 
                       {/* Meta */}
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        <Chip size="sm" color={meta.color} variant="flat">
+                        <Chip size="sm" variant="secondary" color={meta.color}>
                           {t(meta.labelKey as any)}
                         </Chip>
-                        <span className="text-xs text-default-400">{event.timeLabel}</span>
+                        <span className="text-xs text-foreground/40">{event.timeLabel}</span>
                       </div>
                     </div>
                   );
                 })}
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
         </section>
       </div>
 
       {/* ── Announcement modal ── */}
-      <Modal
-        isOpen={selectedAnn !== null}
-        onOpenChange={open => {
-          if (!open) setSelectedAnn(null);
-        }}
-        classNames={{
-          base: 'bg-content1 border border-divider',
-          header: 'border-b border-divider pb-3',
-          footer: 'border-t border-divider pt-3',
-        }}
-      >
-        <ModalContent>
-          {onClose => (
-            <>
-              <ModalHeader className="flex items-start gap-3 pr-10">
+      <Modal state={annModalState}>
+      <Modal.Backdrop>
+        <Modal.Container size="md">
+          <Modal.Dialog className="bg-surface border border-divider">
+            <Modal.CloseTrigger />
+            <Modal.Header className="text-center items-center border-b border-divider pb-3">
+              <div className="flex items-start gap-3 pr-10">
                 {selectedAnn?.pinned && (
                   <Icon icon="solar:pin-bold" width={16} className="text-danger shrink-0 mt-0.5" />
                 )}
-                <span className="text-base font-semibold text-foreground leading-snug">
+                <Modal.Heading className="text-base font-semibold text-foreground leading-snug">
                   {selectedAnn?.title}
-                </span>
-              </ModalHeader>
+                </Modal.Heading>
+              </div>
+            </Modal.Header>
 
-              <ModalBody>
-                <p className="text-sm text-default-500 mb-1">{selectedAnn?.date}</p>
-                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                  {selectedAnn?.content}
-                </p>
-              </ModalBody>
+            <Modal.Body className="flex flex-col gap-3">
+              <p className="text-sm text-foreground/50">{selectedAnn?.date}</p>
+              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                {selectedAnn?.content}
+              </p>
+            </Modal.Body>
 
-              <ModalFooter>
-                <Button variant="flat" size="sm" onPress={onClose}>
-                  {t('close')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
+            <Modal.Footer className="border-t border-divider pt-3">
+              <Button slot="close" variant="secondary" size="sm">
+                {t('close')}
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
       </Modal>
     </div>
   );

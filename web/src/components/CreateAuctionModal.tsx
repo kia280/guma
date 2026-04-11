@@ -4,34 +4,31 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Button,
   Input,
-  Textarea,
+  TextArea,
   Select,
-  SelectItem,
   Card,
-  CardBody,
-  Divider,
+  Separator,
   Chip,
+  TextField,
+  Label,
+  InputGroup,
+  ListBox,
+  type UseOverlayStateReturn,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { ItemCategory, ItemRarity, CreateAuctionRequest } from '@/types/auction';
 
 interface CreateAuctionModalProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  state: UseOverlayStateReturn;
   onCreateAuction: (auctionData: CreateAuctionRequest) => void;
   isLoading?: boolean;
   guildId: string;
 }
 
 const CreateAuctionModal = ({
-  isOpen,
-  onOpenChange,
+  state,
   onCreateAuction,
   isLoading = false,
   guildId,
@@ -70,7 +67,7 @@ const CreateAuctionModal = ({
   const handleSubmit = () => {
     if (isFormValid()) {
       onCreateAuction(formData as CreateAuctionRequest);
-      onOpenChange(false);
+      state.close();
       resetForm();
     }
   };
@@ -104,219 +101,245 @@ const CreateAuctionModal = ({
   };
 
   const handleClose = () => {
-    onOpenChange(false);
+    state.close();
     resetForm();
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      size="2xl"
-      scrollBehavior="inside"
-      placement="top-center"
-    >
-      <ModalContent>
-        {onClose => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">
+    <Modal state={state}>
+    <Modal.Backdrop>
+      <Modal.Container size="lg">
+        <Modal.Dialog>
+          <Modal.CloseTrigger />
+          <Modal.Header className="text-center items-center">
+            <Modal.Heading>
               <div className="flex items-center gap-2">
                 <Icon icon="solar:add-circle-linear" width={20} />
                 {t('createNewAuction')}
               </div>
-              <p className="text-small text-default-500 font-normal">{t('subtitle')}</p>
-            </ModalHeader>
+            </Modal.Heading>
+            <p className="text-small text-foreground/50 font-normal">{t('subtitle')}</p>
+          </Modal.Header>
 
-            <ModalBody>
-              <div className="space-y-6">
-                {/* Basic Information */}
-                <Card className="border border-divider shadow-none bg-content1">
-                  <CardBody className="space-y-4">
-                    <h4 className="text-medium font-semibold">{t('itemInformation')}</h4>
+          <Modal.Body className="p-1">
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <Card className="border border-divider shadow-none bg-surface">
+                <Card.Content className="space-y-4">
+                  <h4 className="text-medium font-semibold">{t('itemInformation')}</h4>
 
+                  <TextField isRequired>
+                    <Label>{t('itemName')}</Label>
                     <Input
-                      label={t('itemName')}
                       placeholder={t('itemNamePlaceholder')}
                       value={formData.name || ''}
                       onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      isRequired
                     />
+                  </TextField>
 
-                    <Textarea
-                      label={t('description')}
+                  <TextField isRequired>
+                    <Label>{t('description')}</Label>
+                    <TextArea
                       placeholder={t('descriptionPlaceholder')}
                       value={formData.description || ''}
                       onChange={e =>
                         setFormData(prev => ({ ...prev, description: e.target.value }))
                       }
-                      minRows={3}
-                      isRequired
+                      rows={3}
                     />
+                  </TextField>
 
-                    <div className="flex gap-4">
-                      <Select
-                        label={t('category')}
-                        selectedKeys={formData.category ? [formData.category] : []}
-                        onSelectionChange={keys => {
-                          const selected = Array.from(keys)[0] as ItemCategory;
-                          setFormData(prev => ({ ...prev, category: selected }));
-                        }}
-                        isRequired
-                        className="flex-1"
-                      >
-                        {categoryOptions.map(option => (
-                          <SelectItem key={option.key}>{option.label}</SelectItem>
-                        ))}
-                      </Select>
-
-                      <Select
-                        label={t('rarity')}
-                        selectedKeys={formData.rarity ? [formData.rarity] : []}
-                        onSelectionChange={keys => {
-                          const selected = Array.from(keys)[0] as ItemRarity;
-                          setFormData(prev => ({ ...prev, rarity: selected }));
-                        }}
-                        isRequired
-                        className="flex-1"
-                      >
-                        {rarityOptions.map(option => (
-                          <SelectItem key={option.key}>{option.label}</SelectItem>
-                        ))}
-                      </Select>
-                    </div>
-                  </CardBody>
-                </Card>
-
-                {/* Auction Settings */}
-                <Card className="border border-divider shadow-none bg-content1">
-                  <CardBody className="space-y-4">
-                    <h4 className="text-medium font-semibold">{t('auctionSettings')}</h4>
-
-                    <div className="flex gap-4">
-                      <Input
-                        type="number"
-                        label={t('startingBid')}
-                        placeholder="100"
-                        value={formData.startingBid?.toString() || ''}
-                        onChange={e =>
-                          setFormData(prev => ({
-                            ...prev,
-                            startingBid: Number(e.target.value),
-                          }))
-                        }
-                        startContent={
-                          <Icon
-                            icon="solar:dollar-minimalistic-linear"
-                            width={16}
-                            className="text-default-400"
-                          />
-                        }
-                        isRequired
-                        className="flex-1"
-                      />
-
-                      <Input
-                        type="number"
-                        label={t('minBidIncrement')}
-                        placeholder="25"
-                        value={formData.minBidIncrement?.toString() || ''}
-                        onChange={e =>
-                          setFormData(prev => ({
-                            ...prev,
-                            minBidIncrement: Number(e.target.value),
-                          }))
-                        }
-                        startContent={
-                          <Icon
-                            icon="solar:dollar-minimalistic-linear"
-                            width={16}
-                            className="text-default-400"
-                          />
-                        }
-                        isRequired
-                        className="flex-1"
-                      />
-                    </div>
+                  <div className="flex gap-4">
+                    <Select
+                      isRequired
+                      className="flex-1"
+                      value={formData.category || ''}
+                      onChange={value => {
+                        setFormData(prev => ({ ...prev, category: value as ItemCategory }));
+                      }}
+                    >
+                      <Label>{t('category')}</Label>
+                      <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox>
+                          {categoryOptions.map(option => (
+                            <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
+                              {option.label}
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                          ))}
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
 
                     <Select
-                      label={t('auctionDuration')}
-                      selectedKeys={formData.duration ? [formData.duration.toString()] : []}
-                      onSelectionChange={keys => {
-                        const selected = Array.from(keys)[0] as string;
-                        setFormData(prev => ({ ...prev, duration: Number(selected) }));
-                      }}
-                      startContent={
-                        <Icon
-                          icon="solar:clock-circle-linear"
-                          width={16}
-                          className="text-default-400"
-                        />
-                      }
                       isRequired
+                      className="flex-1"
+                      value={formData.rarity || ''}
+                      onChange={value => {
+                        setFormData(prev => ({ ...prev, rarity: value as ItemRarity }));
+                      }}
                     >
-                      {durationOptions.map(option => (
-                        <SelectItem key={option.key}>{option.label}</SelectItem>
-                      ))}
+                      <Label>{t('rarity')}</Label>
+                      <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox>
+                          {rarityOptions.map(option => (
+                            <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
+                              {option.label}
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                          ))}
+                        </ListBox>
+                      </Select.Popover>
                     </Select>
-                  </CardBody>
-                </Card>
+                  </div>
+                </Card.Content>
+              </Card>
 
-                {/* Preview */}
-                {formData.name && (
-                  <Card className="border border-divider shadow-none bg-content1">
-                    <CardBody>
-                      <h4 className="text-medium font-semibold mb-3">{t('preview')}</h4>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{formData.name}</span>
-                          {formData.rarity && (
-                            <Chip size="sm" color="primary" variant="flat">
-                              {formData.rarity.toUpperCase()}
-                            </Chip>
-                          )}
-                        </div>
-                        {formData.description && (
-                          <p className="text-small text-default-500">{formData.description}</p>
+              {/* Auction Settings */}
+              <Card className="border border-divider shadow-none bg-surface">
+                <Card.Content className="space-y-4">
+                  <h4 className="text-medium font-semibold">{t('auctionSettings')}</h4>
+
+                  <div className="flex gap-4">
+                    <TextField isRequired className="flex-1">
+                      <Label>{t('startingBid')}</Label>
+                      <InputGroup>
+                        <InputGroup.Prefix>
+                          <Icon
+                            icon="solar:dollar-minimalistic-linear"
+                            width={16}
+                            className="text-foreground/40"
+                          />
+                        </InputGroup.Prefix>
+                        <InputGroup.Input
+                          type="number"
+                          placeholder="100"
+                          value={formData.startingBid?.toString() || ''}
+                          onChange={e =>
+                            setFormData(prev => ({
+                              ...prev,
+                              startingBid: Number(e.target.value),
+                            }))
+                          }
+                        />
+                      </InputGroup>
+                    </TextField>
+
+                    <TextField isRequired className="flex-1">
+                      <Label>{t('minBidIncrement')}</Label>
+                      <InputGroup>
+                        <InputGroup.Prefix>
+                          <Icon
+                            icon="solar:dollar-minimalistic-linear"
+                            width={16}
+                            className="text-foreground/40"
+                          />
+                        </InputGroup.Prefix>
+                        <InputGroup.Input
+                          type="number"
+                          placeholder="25"
+                          value={formData.minBidIncrement?.toString() || ''}
+                          onChange={e =>
+                            setFormData(prev => ({
+                              ...prev,
+                              minBidIncrement: Number(e.target.value),
+                            }))
+                          }
+                        />
+                      </InputGroup>
+                    </TextField>
+                  </div>
+
+                  <Select
+                    isRequired
+                    value={formData.duration?.toString() || ''}
+                    onChange={value => {
+                      setFormData(prev => ({ ...prev, duration: Number(value) }));
+                    }}
+                  >
+                    <Label>{t('auctionDuration')}</Label>
+                    <Select.Trigger>
+                      <Select.Value />
+                      <Select.Indicator />
+                    </Select.Trigger>
+                    <Select.Popover>
+                      <ListBox>
+                        {durationOptions.map(option => (
+                          <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
+                            {option.label}
+                            <ListBox.ItemIndicator />
+                          </ListBox.Item>
+                        ))}
+                      </ListBox>
+                    </Select.Popover>
+                  </Select>
+                </Card.Content>
+              </Card>
+
+              {/* Preview */}
+              {formData.name && (
+                <Card className="border border-divider shadow-none bg-surface">
+                  <Card.Content>
+                    <h4 className="text-medium font-semibold mb-3">{t('preview')}</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{formData.name}</span>
+                        {formData.rarity && (
+                          <Chip size="sm" color="accent" variant="secondary">
+                            {formData.rarity.toUpperCase()}
+                          </Chip>
                         )}
-                        <Divider className="my-2" />
-                        <div className="flex justify-between text-small">
-                          <span>{t('startingBidLabel')}</span>
-                          <span className="font-medium">
-                            ${formData.startingBid?.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-small">
-                          <span>{t('durationLabel')}</span>
-                          <span className="font-medium">
-                            {
-                              durationOptions.find(d => d.key === formData.duration?.toString())
-                                ?.label
-                            }
-                          </span>
-                        </div>
                       </div>
-                    </CardBody>
-                  </Card>
-                )}
-              </div>
-            </ModalBody>
+                      {formData.description && (
+                        <p className="text-small text-foreground/50">{formData.description}</p>
+                      )}
+                      <Separator className="my-2" />
+                      <div className="flex justify-between text-small">
+                        <span>{t('startingBidLabel')}</span>
+                        <span className="font-medium">
+                          ${formData.startingBid?.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-small">
+                        <span>{t('durationLabel')}</span>
+                        <span className="font-medium">
+                          {
+                            durationOptions.find(d => d.key === formData.duration?.toString())
+                              ?.label
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  </Card.Content>
+                </Card>
+              )}
+            </div>
+          </Modal.Body>
 
-            <ModalFooter>
-              <Button variant="flat" onPress={handleClose}>
-                {t('cancel')}
-              </Button>
-              <Button
-                color="primary"
-                onPress={handleSubmit}
-                isDisabled={!isFormValid() || isLoading}
-                isLoading={isLoading}
-              >
-                {t('createAuction')}
-              </Button>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
+          <Modal.Footer>
+            <Button variant="secondary" slot="close">
+              {t('cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              onPress={handleSubmit}
+              isDisabled={!isFormValid() || isLoading}
+              isPending={isLoading}
+            >
+              {t('createAuction')}
+            </Button>
+          </Modal.Footer>
+        </Modal.Dialog>
+      </Modal.Container>
+    </Modal.Backdrop>
     </Modal>
   );
 };

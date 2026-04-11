@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardHeader, CardBody, Image, Chip } from '@heroui/react';
+import { Card, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { CheckinStatus } from './data';
@@ -39,56 +39,62 @@ export function CheckinCard({
   const statusConfig = {
     [CheckinStatus.OPEN]: { label: t('statusActive'), color: 'success' as const },
     [CheckinStatus.CLOSED]: { label: t('statusClosed'), color: 'default' as const },
-    [CheckinStatus.FINISHED]: { label: t('statusCompleted'), color: 'primary' as const },
+    [CheckinStatus.FINISHED]: { label: t('statusCompleted'), color: 'accent' as const },
   };
   const { label, color } = statusConfig[status];
   const timeLeft = expireTime ? formatExpire(expireTime) : null;
 
   return (
     <Card
-      className="border border-divider shadow-none bg-content1"
-      isDisabled={isDisabled}
-      isPressable={!isDisabled}
-      onPress={onClick}
+      className={`border border-divider shadow-none bg-surface ${!isDisabled ? 'cursor-pointer hover:border-default-400 transition-colors' : 'opacity-50'}`}
+      role={!isDisabled ? 'button' : undefined}
+      tabIndex={!isDisabled ? 0 : undefined}
+      onClick={!isDisabled ? onClick : undefined}
+      onKeyDown={
+        !isDisabled
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
     >
-      <CardHeader className="pb-0 pt-4 px-4 flex-col items-start gap-1">
+      <Card.Header className="pb-0 pt-4 px-4 flex-col items-start gap-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <Chip size="sm" color={color} variant="flat">
+          <Chip size="sm" color={color} variant="secondary">
             {label}
           </Chip>
           {status === CheckinStatus.OPEN && timeLeft && (
-            <Chip
-              size="sm"
-              color="warning"
-              variant="flat"
-              startContent={<Icon icon="solar:clock-circle-linear" width={10} />}
-            >
+            <Chip size="sm" color="warning" variant="secondary">
+              <Icon icon="solar:clock-circle-linear" width={10} />
               {timeLeft}
             </Chip>
           )}
         </div>
-        <p className="text-xs text-default-400 mt-1">{date}</p>
+        <p className="text-xs text-foreground/40 mt-1">{date}</p>
         <h4 className="font-medium text-base text-foreground">{description}</h4>
         {(attendanceCount !== undefined || lootCount !== undefined) && (
           <div className="flex items-center gap-3 mt-1">
             {attendanceCount !== undefined && (
-              <span className="flex items-center gap-1 text-xs text-default-400">
+              <span className="flex items-center gap-1 text-xs text-foreground/40">
                 <Icon icon="solar:users-group-rounded-linear" width={12} />
                 {attendanceCount}
               </span>
             )}
             {lootCount !== undefined && (
-              <span className="flex items-center gap-1 text-xs text-default-400">
+              <span className="flex items-center gap-1 text-xs text-foreground/40">
                 <Icon icon="solar:box-linear" width={12} />
                 {lootCount}
               </span>
             )}
           </div>
         )}
-      </CardHeader>
-      <CardBody className="pb-4 pt-3">
+      </Card.Header>
+      <Card.Content className="pb-4 pt-3">
         <div className="overflow-hidden rounded-lg z-0">
-          <Image
+          <img
             alt="Card background"
             className={
               'object-cover w-full' +
@@ -96,10 +102,10 @@ export function CheckinCard({
                 ? ' grayscale opacity-50'
                 : ' hover:scale-105 transition-transform duration-300')
             }
-            src="https://media.discordapp.net/attachments/1371110249561587798/1371112013320683671/1840.png?ex=68c81012&is=68c6be92&hm=42429a5409faa6a50fcb822d55aebc868887368ac9735087c43665d7dd05cf04&=&format=webp&quality=lossless&width=825&height=464"
+            src="https://media.discordapp.net/attachments/1366759949568446566/1366760017662967859/image.png?ex=69daedb5&is=69d99c35&hm=1c1b07ce1a88e61b1c8aee25e712d6f8b4bb5880bd31b5958aab57462f2ca28d&=&format=webp&quality=lossless&width=1919&height=917"
           />
         </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   );
 }

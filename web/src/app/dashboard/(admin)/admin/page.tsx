@@ -3,29 +3,18 @@
 import React from 'react';
 import {
   Tabs,
-  Tab,
   Card,
-  CardBody,
-  CardHeader,
   Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Chip,
   Avatar,
   Button,
   Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Input,
-  Textarea,
+  TextArea,
   Switch,
-  useDisclosure,
-  Divider,
+  Separator,
+  TextField,
+  Label,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
@@ -197,7 +186,7 @@ const getActivityColor = (type: string) => {
     case 'join':
       return 'text-secondary';
     default:
-      return 'text-default-400';
+      return 'text-foreground/40';
   }
 };
 
@@ -213,7 +202,6 @@ const formatTimeAgo = (timestamp: string) => {
 
 export default function AdminPage() {
   const t = useTranslations('adminPage');
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [announcements, setAnnouncements] = React.useState(mockAnnouncements);
   const [newTitle, setNewTitle] = React.useState('');
   const [newContent, setNewContent] = React.useState('');
@@ -233,104 +221,108 @@ export default function AdminPage() {
     setNewTitle('');
     setNewContent('');
     setIsPinned(false);
-    onOpenChange();
   };
 
   return (
     <div className="space-y-5">
-      <Tabs aria-label="Admin sections" size="md">
-        {/* Users Tab */}
-        <Tab
-          key="users"
-          title={
-            <div className="flex items-center gap-2">
-              <Icon icon="solar:users-group-rounded-linear" width={16} />
-              <span>{t('users')}</span>
-              <Chip size="sm" variant="flat">
-                {mockUsers.length}
-              </Chip>
-            </div>
-          }
-        >
-          <Card className="border border-divider shadow-none bg-content1 mt-3">
-            <CardBody className="p-0">
-              <Table
-                aria-label="Users table"
-                classNames={{
-                  wrapper: 'shadow-none',
-                  th: 'bg-content2 text-default-500 text-xs font-medium',
-                }}
-              >
-                <TableHeader>
-                  <TableColumn>{t('user')}</TableColumn>
-                  <TableColumn>{t('role')}</TableColumn>
-                  <TableColumn>{t('status')}</TableColumn>
-                  <TableColumn>{t('lastActive')}</TableColumn>
-                </TableHeader>
-                <TableBody>
-                  {mockUsers.map(user => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar
-                            src={user.avatar}
-                            name={user.username}
-                            size="sm"
-                            isBordered
-                            color={getStatusColor(user.status) as any}
-                          />
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{user.username}</p>
-                            <p className="text-xs text-default-400">{user.email}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="sm"
-                          color={getRoleColor(user.role) as any}
-                          variant="flat"
-                          className="capitalize"
-                        >
-                          {user.role}
-                        </Chip>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size="sm"
-                          color={getStatusColor(user.status) as any}
-                          variant="dot"
-                          className="capitalize"
-                        >
-                          {user.status}
-                        </Chip>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm text-default-500">{user.lastActive}</p>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardBody>
-          </Card>
-        </Tab>
+      <Tabs aria-label="Admin sections">
+        <Tabs.ListContainer>
+          <Tabs.List>
+            <Tabs.Tab id="users">
+              <div className="flex items-center gap-2">
+                <span>{t('users')}</span>
+                <Chip size="sm" variant="secondary">
+                  {mockUsers.length}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="activity">
+              <div className="flex items-center gap-2">
+                <span>{t('activity')}</span>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="guild">
+              <div className="flex items-center gap-2">
+                <span>{t('guild')}</span>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="announcements">
+              <div className="flex items-center gap-2">
+                <span>{t('announcements')}</span>
+                <Chip size="sm" variant="secondary">
+                  {announcements.length}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
 
-        {/* Activity Tab */}
-        <Tab
-          key="activity"
-          title={
-            <div className="flex items-center gap-2">
-              <Icon icon="solar:chart-2-linear" width={16} />
-              <span>{t('activity')}</span>
-            </div>
-          }
-        >
-          <Card className="border border-divider shadow-none bg-content1 mt-3">
-            <CardHeader>
+        {/* Users Panel */}
+        <Tabs.Panel id="users" className="pt-4">
+          <Card className="border border-divider shadow-none bg-surface">
+            <Card.Content className="p-0">
+              <Table>
+                <Table.ScrollContainer>
+                  <Table.Content aria-label="Users table">
+                    <Table.Header>
+                      <Table.Column>{t('user')}</Table.Column>
+                      <Table.Column>{t('role')}</Table.Column>
+                      <Table.Column>{t('status')}</Table.Column>
+                      <Table.Column>{t('lastActive')}</Table.Column>
+                    </Table.Header>
+                    <Table.Body>
+                      {mockUsers.map(user => (
+                        <Table.Row key={user.id}>
+                          <Table.Cell>
+                            <div className="flex items-center gap-3">
+                              <Avatar size="sm">
+                                <Avatar.Image src={user.avatar} />
+                                <Avatar.Fallback>
+                                  {user.username.slice(0, 2).toUpperCase()}
+                                </Avatar.Fallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-sm font-medium text-foreground">
+                                  {user.username}
+                                </p>
+                                <p className="text-xs text-foreground/40">{user.email}</p>
+                              </div>
+                            </div>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Chip size="sm" variant="secondary" className="capitalize">
+                              {user.role}
+                            </Chip>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Chip size="sm" variant="secondary" className="capitalize">
+                              {user.status}
+                            </Chip>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <p className="text-sm text-foreground/50">{user.lastActive}</p>
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table.Body>
+                  </Table.Content>
+                </Table.ScrollContainer>
+              </Table>
+            </Card.Content>
+          </Card>
+        </Tabs.Panel>
+
+        {/* Activity Panel */}
+        <Tabs.Panel id="activity" className="pt-4">
+          <Card className="border border-divider shadow-none bg-surface">
+            <Card.Header>
               <p className="text-sm font-medium text-foreground">{t('recentActivity')}</p>
-            </CardHeader>
-            <CardBody className="pt-0">
+            </Card.Header>
+            <Card.Content className="pt-0">
               <div className="space-y-1">
                 {mockActivity.map((item, i) => (
                   <div key={item.id}>
@@ -341,32 +333,24 @@ export default function AdminPage() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-foreground">
                           <span className="font-medium">{item.actor}</span>{' '}
-                          <span className="text-default-500">{item.action}</span>
+                          <span className="text-foreground/50">{item.action}</span>
                         </p>
-                        <p className="text-xs text-default-400 mt-0.5">
+                        <p className="text-xs text-foreground/40 mt-0.5">
                           {formatTimeAgo(item.timestamp)}
                         </p>
                       </div>
                     </div>
-                    {i < mockActivity.length - 1 && <Divider />}
+                    {i < mockActivity.length - 1 && <Separator />}
                   </div>
                 ))}
               </div>
-            </CardBody>
+            </Card.Content>
           </Card>
-        </Tab>
+        </Tabs.Panel>
 
-        {/* Guild Tab */}
-        <Tab
-          key="guild"
-          title={
-            <div className="flex items-center gap-2">
-              <Icon icon="solar:buildings-linear" width={16} />
-              <span>{t('guild')}</span>
-            </div>
-          }
-        >
-          <div className="mt-3 space-y-4">
+        {/* Guild Panel */}
+        <Tabs.Panel id="guild" className="pt-4">
+          <div className="space-y-4">
             {/* Overview stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
@@ -399,31 +383,31 @@ export default function AdminPage() {
                   bg: 'bg-secondary/10',
                 },
               ].map(stat => (
-                <Card key={stat.label} className="border border-divider shadow-none bg-content1">
-                  <CardBody className="p-4">
+                <Card key={stat.label} className="border border-divider shadow-none bg-surface">
+                  <Card.Content className="p-4">
                     <div className="flex items-center gap-3">
                       <div className={`${stat.bg} p-2 rounded-lg`}>
                         <Icon icon={stat.icon} width={18} className={stat.color} />
                       </div>
                       <div>
-                        <p className="text-xs text-default-400">{stat.label}</p>
+                        <p className="text-xs text-foreground/40">{stat.label}</p>
                         <p className="text-xl font-semibold text-foreground">{stat.value}</p>
                       </div>
                     </div>
-                  </CardBody>
+                  </Card.Content>
                 </Card>
               ))}
             </div>
 
             {/* Guild Settings placeholder */}
-            <Card className="border border-divider shadow-none bg-content1">
-              <CardHeader>
+            <Card className="border border-divider shadow-none bg-surface">
+              <Card.Header>
                 <div className="flex items-center gap-2">
-                  <Icon icon="solar:settings-linear" width={18} className="text-default-400" />
+                  <Icon icon="solar:settings-linear" width={18} className="text-foreground/40" />
                   <p className="text-sm font-medium text-foreground">{t('guildSettings')}</p>
                 </div>
-              </CardHeader>
-              <CardBody className="pt-0">
+              </Card.Header>
+              <Card.Content className="pt-0">
                 <div className="space-y-3">
                   {[
                     { label: t('guildName'), value: 'Sunbaby Guild', editable: true },
@@ -433,49 +417,93 @@ export default function AdminPage() {
                   ].map(setting => (
                     <div key={setting.label} className="flex items-center justify-between py-2">
                       <div>
-                        <p className="text-sm text-default-500">{setting.label}</p>
+                        <p className="text-sm text-foreground/50">{setting.label}</p>
                         <p className="text-sm font-medium text-foreground">{setting.value}</p>
                       </div>
                       {setting.editable && (
-                        <Button size="sm" variant="flat">
+                        <Button size="sm" variant="secondary">
                           {t('edit')}
                         </Button>
                       )}
                     </div>
                   ))}
                 </div>
-              </CardBody>
+              </Card.Content>
             </Card>
           </div>
-        </Tab>
+        </Tabs.Panel>
 
-        {/* Announcements Tab */}
-        <Tab
-          key="announcements"
-          title={
-            <div className="flex items-center gap-2">
-              <Icon icon="solar:megaphone-linear" width={16} />
-              <span>{t('announcements')}</span>
-            </div>
-          }
-        >
-          <div className="mt-3 space-y-4">
+        {/* Announcements Panel */}
+        <Tabs.Panel id="announcements" className="pt-4">
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <p className="text-sm text-default-500">{announcements.length}</p>
-              <Button
-                color="primary"
-                size="sm"
-                startContent={<Icon icon="solar:add-circle-linear" width={16} />}
-                onPress={onOpen}
-              >
+              <p className="text-sm text-foreground/50">{announcements.length}</p>
+              <Modal>
+              <Button variant="primary" size="sm">
+                <Icon icon="solar:add-circle-linear" width={16} />
                 {t('postAnnouncement')}
               </Button>
+              <Modal.Backdrop>
+                <Modal.Container size="md">
+                  <Modal.Dialog>
+                    <Modal.CloseTrigger />
+                    <Modal.Header className="text-center items-center">
+                      <Modal.Heading>{t('postAnnouncement')}</Modal.Heading>
+                    </Modal.Header>
+                    <Modal.Body className="p-1 flex flex-col gap-3">
+                      <TextField>
+                        <Label>{t('announcementTitle')}</Label>
+                        <Input
+                          placeholder={t('announcementTitle')}
+                          value={newTitle}
+                          onChange={e => setNewTitle(e.target.value)}
+                          variant="secondary"
+                        />
+                      </TextField>
+                      <TextField>
+                        <Label>{t('announcementContent')}</Label>
+                        <TextArea
+                          placeholder={t('announcementContent')}
+                          value={newContent}
+                          onChange={e => setNewContent(e.target.value)}
+                          variant="secondary"
+                          rows={3}
+                        />
+                      </TextField>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-foreground">{t('pinAnnouncement')}</p>
+                          <p className="text-xs text-foreground/40">{t('pinNote')}</p>
+                        </div>
+                        <Switch isSelected={isPinned} onChange={setIsPinned} size="sm">
+                          <Switch.Control>
+                            <Switch.Thumb />
+                          </Switch.Control>
+                        </Switch>
+                      </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button variant="secondary" slot="close">
+                        {t('cancel')}
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onPress={handlePostAnnouncement}
+                        isDisabled={!newTitle.trim() || !newContent.trim()}
+                      >
+                        {t('post')}
+                      </Button>
+                    </Modal.Footer>
+                  </Modal.Dialog>
+                </Modal.Container>
+              </Modal.Backdrop>
+              </Modal>
             </div>
 
             <div className="space-y-3">
               {announcements.map(ann => (
-                <Card key={ann.id} className="border border-divider shadow-none bg-content1">
-                  <CardBody className="p-4">
+                <Card key={ann.id} className="border border-divider shadow-none bg-surface">
+                  <Card.Content className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -484,75 +512,29 @@ export default function AdminPage() {
                           )}
                           <h4 className="text-sm font-medium text-foreground">{ann.title}</h4>
                         </div>
-                        <p className="text-sm text-default-500">{ann.content}</p>
+                        <p className="text-sm text-foreground/50">{ann.content}</p>
                         <div className="flex items-center gap-2 mt-2">
-                          <p className="text-xs text-default-400">
+                          <p className="text-xs text-foreground/40">
                             {t('by')} {ann.author}
                           </p>
-                          <span className="text-xs text-default-300">·</span>
-                          <p className="text-xs text-default-400">{formatTimeAgo(ann.createdAt)}</p>
+                          <span className="text-xs text-foreground/30">·</span>
+                          <p className="text-xs text-foreground/40">{formatTimeAgo(ann.createdAt)}</p>
                         </div>
                       </div>
                       {ann.pinned && (
-                        <Chip size="sm" color="warning" variant="flat">
+                        <Chip size="sm" variant="secondary">
                           {t('pinned')}
                         </Chip>
                       )}
                     </div>
-                  </CardBody>
+                  </Card.Content>
                 </Card>
               ))}
             </div>
           </div>
-        </Tab>
+        </Tabs.Panel>
       </Tabs>
 
-      {/* Post Announcement Modal */}
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="top-center" size="md">
-        <ModalContent>
-          {onClose => (
-            <>
-              <ModalHeader>{t('postAnnouncement')}</ModalHeader>
-              <ModalBody>
-                <Input
-                  label={t('announcementTitle')}
-                  placeholder={t('announcementTitle')}
-                  value={newTitle}
-                  onValueChange={setNewTitle}
-                  variant="bordered"
-                />
-                <Textarea
-                  label={t('announcementContent')}
-                  placeholder={t('announcementContent')}
-                  value={newContent}
-                  onValueChange={setNewContent}
-                  variant="bordered"
-                  minRows={3}
-                />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-foreground">{t('pinAnnouncement')}</p>
-                    <p className="text-xs text-default-400">{t('pinNote')}</p>
-                  </div>
-                  <Switch isSelected={isPinned} onValueChange={setIsPinned} size="sm" />
-                </div>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="flat" onPress={onClose}>
-                  {t('cancel')}
-                </Button>
-                <Button
-                  color="primary"
-                  onPress={handlePostAnnouncement}
-                  isDisabled={!newTitle.trim() || !newContent.trim()}
-                >
-                  {t('post')}
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
     </div>
   );
 }

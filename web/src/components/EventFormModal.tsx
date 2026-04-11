@@ -4,18 +4,23 @@ import React, { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Button,
   Input,
-  Textarea,
+  TextArea,
   Select,
-  SelectItem,
   Switch,
   Chip,
+  TextField,
+  Label,
+  FieldError,
+  ListBox,
+  DateField,
+  TimeField,
+  type UseOverlayStateReturn,
 } from '@heroui/react';
+import type { DateValue } from '@internationalized/date';
+import type { TimeValue } from '@heroui/react';
+import { parseDate, Time } from '@internationalized/date';
 import { useForm, Controller } from 'react-hook-form';
 import {
   GuildEvent,
@@ -30,8 +35,7 @@ import {
 } from '@/types/guild-events';
 
 interface EventFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  state: UseOverlayStateReturn;
   onSubmit: (data: CreateEventData | UpdateEventData) => Promise<void>;
   event?: GuildEvent | null;
   isLoading?: boolean;
@@ -57,8 +61,7 @@ interface FormData {
 }
 
 export const EventFormModal: React.FC<EventFormModalProps> = ({
-  isOpen,
-  onClose,
+  state,
   onSubmit,
   event,
   isLoading = false,
@@ -182,7 +185,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       };
 
       await onSubmit(eventData);
-      onClose();
+      state.close();
     } catch (error) {
       console.error('Error submitting event:', error);
     }
@@ -201,344 +204,393 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   }));
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      size="2xl"
-      scrollBehavior="inside"
-      placement="top-center"
-      classNames={{
-        base: 'max-h-[90vh]',
-        body: 'py-4 overflow-y-auto',
-        header: 'pb-2 border-b border-divider',
-        footer: 'pt-2 border-t border-divider',
-      }}
-    >
-      <ModalContent>
-        <form onSubmit={handleSubmit(onFormSubmit)} className="contents">
-          <ModalHeader>
-            <h3 className="text-base font-semibold">
-              {event ? t('editEvent') : t('createNewEvent')}
-            </h3>
-          </ModalHeader>
+    <Modal state={state}>
+    <Modal.Backdrop>
+      <Modal.Container size="lg">
+        <Modal.Dialog>
+          <Modal.CloseTrigger />
+          <form onSubmit={handleSubmit(onFormSubmit)} className="contents">
+            <Modal.Header className="text-center items-center pb-2 border-b border-divider">
+              <Modal.Heading>{event ? t('editEvent') : t('createNewEvent')}</Modal.Heading>
+            </Modal.Header>
 
-          <ModalBody className="gap-4">
-            {/* Title */}
-            <Controller
-              name="title"
-              control={control}
-              rules={{ required: t('titleRequired') }}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  label={t('title')}
-                  placeholder={t('titlePlaceholder')}
-                  isRequired
-                  errorMessage={errors.title?.message}
-                  isInvalid={!!errors.title}
-                />
-              )}
-            />
-
-            {/* Description */}
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <Textarea
-                  {...field}
-                  label={t('description')}
-                  placeholder={t('descriptionPlaceholder')}
-                  minRows={2}
-                  maxRows={4}
-                />
-              )}
-            />
-
-            {/* Type + Priority */}
-            <div className="flex gap-3">
+            <Modal.Body className="p-1 gap-4 flex flex-col">
+              {/* Title */}
               <Controller
-                name="type"
+                name="title"
                 control={control}
+                rules={{ required: t('titleRequired') }}
                 render={({ field }) => (
-                  <Select
-                    {...field}
-                    label={t('eventType')}
-                    placeholder={t('selectType')}
-                    selectedKeys={field.value ? [field.value] : []}
-                    onSelectionChange={keys => {
-                      const selectedKey = Array.from(keys)[0] as EventType;
-                      field.onChange(selectedKey);
-                    }}
-                    className="flex-1"
-                    renderValue={items =>
-                      items.map(item => (
-                        <Chip
-                          key={item.key}
-                          color={EVENT_TYPE_COLORS[item.key as EventType] as any}
-                          size="sm"
-                          variant="flat"
-                        >
-                          {EVENT_TYPE_LABELS[item.key as EventType]}
-                        </Chip>
-                      ))
-                    }
-                  >
-                    {eventTypeOptions.map(option => (
-                      <SelectItem key={option.key}>
-                        <Chip color={option.color as any} size="sm" variant="flat">
-                          {option.label}
-                        </Chip>
-                      </SelectItem>
-                    ))}
-                  </Select>
+                  <TextField isRequired isInvalid={!!errors.title}>
+                    <Label>{t('title')}</Label>
+                    <Input {...field} placeholder={t('titlePlaceholder')} />
+                    <FieldError>{errors.title?.message}</FieldError>
+                  </TextField>
                 )}
               />
 
+              {/* Description */}
               <Controller
-                name="priority"
+                name="description"
                 control={control}
                 render={({ field }) => (
-                  <Select
-                    {...field}
-                    label={t('priority')}
-                    placeholder={t('selectPriority')}
-                    selectedKeys={field.value ? [field.value] : []}
-                    onSelectionChange={keys => {
-                      const selectedKey = Array.from(keys)[0] as EventPriority;
-                      field.onChange(selectedKey);
-                    }}
-                    className="flex-1"
-                    renderValue={items =>
-                      items.map(item => (
-                        <Chip
-                          key={item.key}
-                          color={PRIORITY_COLORS[item.key as EventPriority] as any}
-                          size="sm"
-                          variant="flat"
-                        >
-                          {PRIORITY_LABELS[item.key as EventPriority]}
-                        </Chip>
-                      ))
-                    }
-                  >
-                    {priorityOptions.map(option => (
-                      <SelectItem key={option.key}>
-                        <Chip color={option.color as any} size="sm" variant="flat">
-                          {option.label}
-                        </Chip>
-                      </SelectItem>
-                    ))}
-                  </Select>
+                  <TextField>
+                    <Label>{t('description')}</Label>
+                    <TextArea {...field} placeholder={t('descriptionPlaceholder')} rows={3} />
+                  </TextField>
                 )}
               />
-            </div>
 
-            {/* All Day Toggle */}
-            <Controller
-              name="isAllDay"
-              control={control}
-              render={({ field }) => (
-                <Switch isSelected={field.value} onValueChange={field.onChange} color="primary">
-                  {t('allDayEvent')}
-                </Switch>
-              )}
-            />
-
-            {/* Start Date/Time */}
-            <div className="flex gap-3">
-              <Controller
-                name="startDate"
-                control={control}
-                rules={{ required: t('startDateRequired') }}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    type="date"
-                    label={t('startDate')}
-                    isRequired
-                    errorMessage={errors.startDate?.message}
-                    isInvalid={!!errors.startDate}
-                    className="flex-1"
-                  />
-                )}
-              />
-              {!isAllDay && (
+              {/* Type + Priority */}
+              <div className="flex gap-3">
                 <Controller
-                  name="startTime"
+                  name="type"
                   control={control}
                   render={({ field }) => (
-                    <Input {...field} type="time" label={t('startTime')} className="flex-1" />
-                  )}
-                />
-              )}
-            </div>
-
-            {/* End Date/Time */}
-            <div className="flex gap-3">
-              <Controller
-                name="endDate"
-                control={control}
-                render={({ field }) => (
-                  <Input {...field} type="date" label={t('endDateOptional')} className="flex-1" />
-                )}
-              />
-              {!isAllDay && (
-                <Controller
-                  name="endTime"
-                  control={control}
-                  render={({ field }) => (
-                    <Input {...field} type="time" label={t('endTime')} className="flex-1" />
-                  )}
-                />
-              )}
-            </div>
-
-            {/* Location */}
-            <Controller
-              name="location"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} label={t('location')} placeholder={t('locationPlaceholder')} />
-              )}
-            />
-
-            {/* Recurring Toggle */}
-            <Controller
-              name="isRecurring"
-              control={control}
-              render={({ field }) => (
-                <Switch isSelected={field.value} onValueChange={field.onChange} color="primary">
-                  {t('recurringEvent')}
-                </Switch>
-              )}
-            />
-
-            {/* Recurring Options */}
-            {isRecurring && (
-              <div className="flex flex-col gap-3 pl-1">
-                {/* Repeat type */}
-                <Controller
-                  name="recurringType"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      label={t('repeat')}
-                      selectedKeys={field.value ? [field.value] : []}
-                      onSelectionChange={keys => {
-                        const selectedKey = Array.from(keys)[0] as FormData['recurringType'];
-                        field.onChange(selectedKey);
-                      }}
-                    >
-                      <SelectItem key="daily">{t('daily')}</SelectItem>
-                      <SelectItem key="weekly">{t('weekly')}</SelectItem>
-                      <SelectItem key="monthly">{t('monthly')}</SelectItem>
-                      <SelectItem key="custom">{t('customInterval')}</SelectItem>
+                    <Select className="flex-1" value={field.value} onChange={field.onChange}>
+                      <Label>{t('eventType')}</Label>
+                      <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox>
+                          {eventTypeOptions.map(option => (
+                            <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
+                              <Chip color={option.color as any} size="sm" variant="secondary">
+                                {option.label}
+                              </Chip>
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                          ))}
+                        </ListBox>
+                      </Select.Popover>
                     </Select>
                   )}
                 />
 
-                {/* Interval: N for daily/weekly/monthly */}
-                {recurringType !== 'custom' && (
+                <Controller
+                  name="priority"
+                  control={control}
+                  render={({ field }) => (
+                    <Select className="flex-1" value={field.value} onChange={field.onChange}>
+                      <Label>{t('priority')}</Label>
+                      <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox>
+                          {priorityOptions.map(option => (
+                            <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
+                              <Chip color={option.color as any} size="sm" variant="secondary">
+                                {option.label}
+                              </Chip>
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                          ))}
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              {/* All Day Toggle */}
+              <Controller
+                name="isAllDay"
+                control={control}
+                render={({ field }) => (
+                  <Switch isSelected={field.value} onChange={field.onChange}>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                    <Switch.Content>
+                      <Label>{t('allDayEvent')}</Label>
+                    </Switch.Content>
+                  </Switch>
+                )}
+              />
+
+              {/* Start Date/Time */}
+              <div className="flex gap-3">
+                <Controller
+                  name="startDate"
+                  control={control}
+                  rules={{ required: t('startDateRequired') }}
+                  render={({ field }) => (
+                    <DateField
+                      className="flex-1"
+                      isRequired
+                      isInvalid={!!errors.startDate}
+                      value={field.value ? parseDate(field.value) : null}
+                      onChange={(val: DateValue | null) => field.onChange(val ? val.toString() : '')}
+                    >
+                      <Label>{t('startDate')}</Label>
+                      <DateField.Group>
+                        <DateField.Input>
+                          {(segment) => <DateField.Segment segment={segment} />}
+                        </DateField.Input>
+                      </DateField.Group>
+                      <FieldError>{errors.startDate?.message}</FieldError>
+                    </DateField>
+                  )}
+                />
+                {!isAllDay && (
                   <Controller
-                    name="recurringInterval"
+                    name="startTime"
                     control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        type="number"
-                        label={
-                          recurringType === 'daily'
-                            ? t('everyNDays')
-                            : recurringType === 'weekly'
-                              ? t('everyNWeeks')
-                              : t('everyNMonths')
-                        }
-                        min={1}
-                        max={365}
-                        value={field.value?.toString() || '1'}
-                        onChange={e => field.onChange(parseInt(e.target.value) || 1)}
-                      />
-                    )}
+                    render={({ field }) => {
+                      const [h, m] = (field.value || '00:00').split(':').map(Number);
+                      return (
+                        <TimeField
+                          className="flex-1"
+                          hourCycle={24}
+                          value={new Time(h, m)}
+                          onChange={(val: TimeValue | null) => {
+                            if (val) {
+                              field.onChange(`${String(val.hour).padStart(2, '0')}:${String(val.minute).padStart(2, '0')}`);
+                            }
+                          }}
+                        >
+                          <Label>{t('startTime')}</Label>
+                          <TimeField.Group>
+                            <TimeField.Input>
+                              {(segment) => <TimeField.Segment segment={segment} />}
+                            </TimeField.Input>
+                          </TimeField.Group>
+                        </TimeField>
+                      );
+                    }}
                   />
                 )}
+              </div>
 
-                {/* Custom hh:mm:ss interval */}
-                {recurringType === 'custom' && (
-                  <div className="flex gap-3 items-end">
-                    <Controller
-                      name="recurringHours"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          type="number"
-                          label={t('hours')}
-                          min={0}
-                          max={23}
-                          value={field.value?.toString() ?? '0'}
-                          onChange={e =>
-                            field.onChange(Math.min(23, Math.max(0, parseInt(e.target.value) || 0)))
-                          }
+              {/* End Date/Time */}
+              <div className="flex gap-3">
+                <Controller
+                  name="endDate"
+                  control={control}
+                  render={({ field }) => (
+                    <DateField
+                      className="flex-1"
+                      value={field.value ? parseDate(field.value) : null}
+                      onChange={(val: DateValue | null) => field.onChange(val ? val.toString() : '')}
+                    >
+                      <Label>{t('endDateOptional')}</Label>
+                      <DateField.Group>
+                        <DateField.Input>
+                          {(segment) => <DateField.Segment segment={segment} />}
+                        </DateField.Input>
+                      </DateField.Group>
+                    </DateField>
+                  )}
+                />
+                {!isAllDay && (
+                  <Controller
+                    name="endTime"
+                    control={control}
+                    render={({ field }) => {
+                      const [h, m] = (field.value || '00:00').split(':').map(Number);
+                      return (
+                        <TimeField
                           className="flex-1"
-                        />
-                      )}
-                    />
-                    <span className="pb-3 text-default-400 text-lg font-semibold">:</span>
-                    <Controller
-                      name="recurringMinutes"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          type="number"
-                          label={t('minutes')}
-                          min={0}
-                          max={59}
-                          value={field.value?.toString() ?? '30'}
-                          onChange={e =>
-                            field.onChange(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))
-                          }
-                          className="flex-1"
-                        />
-                      )}
-                    />
-                    <span className="pb-3 text-default-400 text-lg font-semibold">:</span>
-                    <Controller
-                      name="recurringSeconds"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          type="number"
-                          label={t('seconds')}
-                          min={0}
-                          max={59}
-                          value={field.value?.toString() ?? '0'}
-                          onChange={e =>
-                            field.onChange(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))
-                          }
-                          className="flex-1"
-                        />
-                      )}
-                    />
-                  </div>
+                          hourCycle={24}
+                          value={new Time(h, m)}
+                          onChange={(val: TimeValue | null) => {
+                            if (val) {
+                              field.onChange(`${String(val.hour).padStart(2, '0')}:${String(val.minute).padStart(2, '0')}`);
+                            }
+                          }}
+                        >
+                          <Label>{t('endTime')}</Label>
+                          <TimeField.Group>
+                            <TimeField.Input>
+                              {(segment) => <TimeField.Segment segment={segment} />}
+                            </TimeField.Input>
+                          </TimeField.Group>
+                        </TimeField>
+                      );
+                    }}
+                  />
                 )}
               </div>
-            )}
-          </ModalBody>
 
-          <ModalFooter>
-            <Button color="danger" variant="light" onPress={onClose} isDisabled={isLoading}>
-              {t('cancel')}
-            </Button>
-            <Button color="primary" type="submit" isLoading={isLoading}>
-              {event ? t('updateEvent') : t('createEvent')}
-            </Button>
-          </ModalFooter>
-        </form>
-      </ModalContent>
+              {/* Location */}
+              <Controller
+                name="location"
+                control={control}
+                render={({ field }) => (
+                  <TextField>
+                    <Label>{t('location')}</Label>
+                    <Input {...field} placeholder={t('locationPlaceholder')} />
+                  </TextField>
+                )}
+              />
+
+              {/* Recurring Toggle */}
+              <Controller
+                name="isRecurring"
+                control={control}
+                render={({ field }) => (
+                  <Switch isSelected={field.value} onChange={field.onChange}>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                    <Switch.Content>
+                      <Label>{t('recurringEvent')}</Label>
+                    </Switch.Content>
+                  </Switch>
+                )}
+              />
+
+              {/* Recurring Options */}
+              {isRecurring && (
+                <div className="flex flex-col gap-3 pl-1">
+                  {/* Repeat type */}
+                  <Controller
+                    name="recurringType"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onChange={field.onChange}>
+                        <Label>{t('repeat')}</Label>
+                        <Select.Trigger>
+                          <Select.Value />
+                          <Select.Indicator />
+                        </Select.Trigger>
+                        <Select.Popover>
+                          <ListBox>
+                            <ListBox.Item id="daily" textValue={t('daily')}>
+                              {t('daily')}
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                            <ListBox.Item id="weekly" textValue={t('weekly')}>
+                              {t('weekly')}
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                            <ListBox.Item id="monthly" textValue={t('monthly')}>
+                              {t('monthly')}
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                            <ListBox.Item id="custom" textValue={t('customInterval')}>
+                              {t('customInterval')}
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                          </ListBox>
+                        </Select.Popover>
+                      </Select>
+                    )}
+                  />
+
+                  {/* Interval: N for daily/weekly/monthly */}
+                  {recurringType !== 'custom' && (
+                    <Controller
+                      name="recurringInterval"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField>
+                          <Label>
+                            {recurringType === 'daily'
+                              ? t('everyNDays')
+                              : recurringType === 'weekly'
+                                ? t('everyNWeeks')
+                                : t('everyNMonths')}
+                          </Label>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={365}
+                            value={field.value?.toString() || '1'}
+                            onChange={e => field.onChange(parseInt(e.target.value) || 1)}
+                          />
+                        </TextField>
+                      )}
+                    />
+                  )}
+
+                  {/* Custom hh:mm:ss interval */}
+                  {recurringType === 'custom' && (
+                    <div className="flex gap-3 items-end">
+                      <Controller
+                        name="recurringHours"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField className="flex-1">
+                            <Label>{t('hours')}</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={23}
+                              value={field.value?.toString() ?? '0'}
+                              onChange={e =>
+                                field.onChange(
+                                  Math.min(23, Math.max(0, parseInt(e.target.value) || 0))
+                                )
+                              }
+                            />
+                          </TextField>
+                        )}
+                      />
+                      <span className="pb-3 text-foreground/40 text-lg font-semibold">:</span>
+                      <Controller
+                        name="recurringMinutes"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField className="flex-1">
+                            <Label>{t('minutes')}</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={59}
+                              value={field.value?.toString() ?? '30'}
+                              onChange={e =>
+                                field.onChange(
+                                  Math.min(59, Math.max(0, parseInt(e.target.value) || 0))
+                                )
+                              }
+                            />
+                          </TextField>
+                        )}
+                      />
+                      <span className="pb-3 text-foreground/40 text-lg font-semibold">:</span>
+                      <Controller
+                        name="recurringSeconds"
+                        control={control}
+                        render={({ field }) => (
+                          <TextField className="flex-1">
+                            <Label>{t('seconds')}</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={59}
+                              value={field.value?.toString() ?? '0'}
+                              onChange={e =>
+                                field.onChange(
+                                  Math.min(59, Math.max(0, parseInt(e.target.value) || 0))
+                                )
+                              }
+                            />
+                          </TextField>
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </Modal.Body>
+
+            <Modal.Footer className="pt-2 border-t border-divider">
+              <Button variant="secondary" slot="close" isDisabled={isLoading}>
+                {t('cancel')}
+              </Button>
+              <Button variant="primary" type="submit" isPending={isLoading}>
+                {event ? t('updateEvent') : t('createEvent')}
+              </Button>
+            </Modal.Footer>
+          </form>
+        </Modal.Dialog>
+      </Modal.Container>
+    </Modal.Backdrop>
     </Modal>
   );
 };

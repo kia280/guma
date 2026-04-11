@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  CardFooter,
-  Chip,
-  Button,
-  Progress,
-  Avatar,
-} from '@heroui/react';
+import { Card, Chip, Button, ProgressBar, Avatar } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 
@@ -37,7 +28,7 @@ interface LotteryCardProps {
 const getStatusColor = (status: LotteryCardProps['status']) => {
   switch (status) {
     case 'active':
-      return 'success';
+      return 'accent';
     case 'upcoming':
       return 'warning';
     case 'ended':
@@ -72,15 +63,17 @@ const LotteryCard = ({
     return `${mins}m ${suffix}`;
   };
 
+  const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
+
   return (
-    <Card className="border border-divider shadow-none bg-content1 hover:border-default-400 transition-colors">
-      <CardHeader className="pb-2">
+    <Card className="border border-divider shadow-none bg-surface hover:border-default-400 transition-colors">
+      <Card.Header className="pb-2">
         <div className="flex justify-between items-start w-full">
           <div>
             <Chip
               size="sm"
               color={getStatusColor(status)}
-              variant="flat"
+              variant="secondary"
               className="capitalize mb-1"
             >
               {status}
@@ -89,31 +82,31 @@ const LotteryCard = ({
           </div>
           <Icon icon="solar:ticket-bold-duotone" width={28} className="text-primary/60 shrink-0" />
         </div>
-      </CardHeader>
+      </Card.Header>
 
-      <CardBody className="py-3">
+      <Card.Content className="py-3">
         <div className="space-y-4">
           {/* Prize Pool */}
           <div className="text-center py-2">
-            <p className="text-xs text-default-400 uppercase tracking-wide">{t('prizePool')}</p>
+            <p className="text-xs text-foreground/40 uppercase tracking-wide">{t('prizePool')}</p>
             <p className="text-3xl font-bold text-foreground mt-1">${prizePool.toLocaleString()}</p>
           </div>
 
           {/* Details */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-default-500">{t('ticketPrice')}</span>
+              <span className="text-foreground/50">{t('ticketPrice')}</span>
               <span className="font-medium text-foreground">${ticketPrice}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-default-500">{t('drawDate')}</span>
+              <span className="text-foreground/50">{t('drawDate')}</span>
               <span className="font-medium text-foreground">
                 {new Date(drawDate).toLocaleDateString()}
               </span>
             </div>
             {status === 'active' && (
               <div className="flex justify-between text-sm">
-                <span className="text-default-500">{t('timeLeft')}</span>
+                <span className="text-foreground/50">{t('timeLeft')}</span>
                 <span className="font-medium text-primary">{formatCountdown(drawDate)}</span>
               </div>
             )}
@@ -121,7 +114,7 @@ const LotteryCard = ({
 
           {/* Tickets Progress */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-xs text-default-400">
+            <div className="flex justify-between text-xs text-foreground/40">
               <span>
                 {ticketsSold.toLocaleString()} {t('ticketsSold')}
               </span>
@@ -129,12 +122,17 @@ const LotteryCard = ({
                 {maxTickets.toLocaleString()} {t('max')}
               </span>
             </div>
-            <Progress
+            <ProgressBar
+              aria-label="Tickets sold"
+              className="w-full"
               value={soldPercent}
-              color={soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'primary'}
-              size="sm"
-            />
-            <p className="text-xs text-default-400 text-right">
+              color={progressColor}
+            >
+              <ProgressBar.Track>
+                <ProgressBar.Fill />
+              </ProgressBar.Track>
+            </ProgressBar>
+            <p className="text-xs text-foreground/40 text-right">
               {soldPercent}% {t('filled')}
             </p>
           </div>
@@ -142,10 +140,13 @@ const LotteryCard = ({
           {/* Winners section for ended lotteries */}
           {status === 'ended' && winners && winners.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs text-default-400 uppercase tracking-wide">{t('winners')}</p>
+              <p className="text-xs text-foreground/40 uppercase tracking-wide">{t('winners')}</p>
               {winners.slice(0, 3).map(winner => (
                 <div key={winner.id} className="flex items-center gap-2">
-                  <Avatar src={winner.avatar} name={winner.username} size="sm" />
+                  <Avatar size="sm">
+                    <Avatar.Image src={winner.avatar} />
+                    <Avatar.Fallback>{winner.username?.slice(0, 2).toUpperCase()}</Avatar.Fallback>
+                  </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-foreground truncate">
                       {winner.username}
@@ -157,31 +158,23 @@ const LotteryCard = ({
             </div>
           )}
         </div>
-      </CardBody>
+      </Card.Content>
 
-      <CardFooter className="pt-0">
+      <Card.Footer className="pt-0">
         {status === 'active' && (
-          <Button
-            color="primary"
-            fullWidth
-            startContent={<Icon icon="solar:ticket-linear" width={16} />}
-            onPress={() => onBuyTicket?.(id)}
-          >
+          <Button variant="primary" className="w-full" onPress={() => onBuyTicket?.(id)}>
+            <Icon icon="solar:ticket-linear" width={16} />
             {t('buyTicket')}
           </Button>
         )}
         {status === 'ended' && (
-          <Button
-            variant="flat"
-            fullWidth
-            startContent={<Icon icon="solar:trophy-linear" width={16} />}
-            onPress={() => onViewWinners?.(id)}
-          >
+          <Button variant="secondary" className="w-full" onPress={() => onViewWinners?.(id)}>
+            <Icon icon="solar:trophy-linear" width={16} />
             {t('viewWinners')}
           </Button>
         )}
         {status === 'upcoming' && (
-          <Chip color="warning" variant="flat" className="w-full justify-center py-2">
+          <Chip color="warning" variant="secondary" className="w-full justify-center py-2">
             <div className="flex items-center gap-1.5">
               <Icon icon="solar:clock-circle-linear" width={14} />
               <span>
@@ -190,7 +183,7 @@ const LotteryCard = ({
             </div>
           </Chip>
         )}
-      </CardFooter>
+      </Card.Footer>
     </Card>
   );
 };

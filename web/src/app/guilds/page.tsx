@@ -5,19 +5,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import {
   Card,
-  CardBody,
-  CardHeader,
   Button,
-  Input,
+  InputGroup,
+  TextField,
+  Label,
   Avatar,
   Chip,
   Spinner,
   Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
+  useOverlayState,
+  type UseOverlayStateReturn,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { Guild, PaginatedResponse } from '@/types/api';
@@ -25,7 +22,7 @@ import { api } from '@/lib/api';
 
 export default function GuildsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const createGuildState = useOverlayState();
   const t = useTranslations('guildsPage');
 
   const { data: currentGuild, isLoading: currentGuildLoading } = useQuery({
@@ -74,7 +71,7 @@ export default function GuildsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Spinner size="lg" color="primary" />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -88,13 +85,13 @@ export default function GuildsPage() {
               <Icon icon="solar:stars-linear" width={40} className="text-primary" />
             </div>
             <h1 className="text-3xl font-semibold mb-3 text-foreground">{t('welcomeTitle')}</h1>
-            <p className="text-default-500 mb-1">{t('notJoined')}</p>
-            <p className="text-default-400 text-sm">{t('createFirst')}</p>
+            <p className="text-foreground/50 mb-1">{t('notJoined')}</p>
+            <p className="text-foreground/40 text-sm">{t('createFirst')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 w-full">
-            <Card className="border border-divider shadow-none bg-content1">
-              <CardBody className="text-center py-6">
+            <Card className="border border-divider shadow-none bg-surface">
+              <Card.Content className="text-center py-6">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mx-auto mb-3">
                   <Icon
                     icon="solar:users-group-rounded-linear"
@@ -103,73 +100,70 @@ export default function GuildsPage() {
                   />
                 </div>
                 <h3 className="font-medium mb-1 text-sm">{t('buildCommunity')}</h3>
-                <p className="text-xs text-default-500">{t('buildCommunityDesc')}</p>
-              </CardBody>
+                <p className="text-xs text-foreground/50">{t('buildCommunityDesc')}</p>
+              </Card.Content>
             </Card>
 
-            <Card className="border border-divider shadow-none bg-content1">
-              <CardBody className="text-center py-6">
+            <Card className="border border-divider shadow-none bg-surface">
+              <Card.Content className="text-center py-6">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10 mx-auto mb-3">
                   <Icon icon="solar:settings-linear" width={20} className="text-success" />
                 </div>
                 <h3 className="font-medium mb-1 text-sm">{t('fullControl')}</h3>
-                <p className="text-xs text-default-500">{t('fullControlDesc')}</p>
-              </CardBody>
+                <p className="text-xs text-foreground/50">{t('fullControlDesc')}</p>
+              </Card.Content>
             </Card>
 
-            <Card className="border border-divider shadow-none bg-content1">
-              <CardBody className="text-center py-6">
+            <Card className="border border-divider shadow-none bg-surface">
+              <Card.Content className="text-center py-6">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10 mx-auto mb-3">
                   <Icon icon="solar:calendar-linear" width={20} className="text-secondary" />
                 </div>
                 <h3 className="font-medium mb-1 text-sm">{t('planEvents')}</h3>
-                <p className="text-xs text-default-500">{t('planEventsDesc')}</p>
-              </CardBody>
+                <p className="text-xs text-foreground/50">{t('planEventsDesc')}</p>
+              </Card.Content>
             </Card>
           </div>
 
-          <Button
-            color="primary"
-            size="lg"
-            startContent={<Icon icon="solar:add-circle-linear" width={20} />}
-            onPress={onOpen}
-            className="mb-6"
-          >
+          <Button size="lg" variant="primary" onPress={createGuildState.open} className="mb-6">
+            <Icon icon="solar:add-circle-linear" width={20} />
             {t('createFirstGuild')}
           </Button>
 
-          <p className="text-default-400 text-sm">{t('exploreExisting')}</p>
+          <p className="text-foreground/40 text-sm">{t('exploreExisting')}</p>
         </div>
 
         <div className="mt-12">
           <h2 className="text-xl font-semibold mb-5 text-foreground">{t('exploreGuilds')}</h2>
 
           <div className="mb-5">
-            <Input
-              placeholder={t('searchGuilds')}
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              startContent={
-                <Icon icon="solar:magnifer-linear" width={16} className="text-default-400" />
-              }
-              className="max-w-md"
-              variant="bordered"
-            />
+            <TextField className="max-w-md">
+              <InputGroup>
+                <InputGroup.Prefix>
+                  <Icon icon="solar:magnifer-linear" width={16} className="text-foreground/40" />
+                </InputGroup.Prefix>
+                <InputGroup.Input
+                  placeholder={t('searchGuilds')}
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                />
+              </InputGroup>
+            </TextField>
           </div>
 
           {guilds.length === 0 ? (
-            <Card className="border border-divider shadow-none bg-content1">
-              <CardBody className="text-center py-12">
+            <Card className="border border-divider shadow-none bg-surface">
+              <Card.Content className="text-center py-12">
                 <Icon
                   icon="solar:users-group-rounded-linear"
                   width={40}
-                  className="text-default-300 mx-auto mb-3"
+                  className="text-foreground/30 mx-auto mb-3"
                 />
                 <h3 className="text-base font-medium mb-1">{t('noOtherGuilds')}</h3>
-                <p className="text-sm text-default-500">
+                <p className="text-sm text-foreground/50">
                   {searchQuery ? t('adjustSearch') : t('beFirst')}
                 </p>
-              </CardBody>
+              </Card.Content>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -181,11 +175,10 @@ export default function GuildsPage() {
         </div>
 
         <CreateGuildModal
-          isOpen={isOpen}
-          onOpenChange={onOpenChange}
+          state={createGuildState}
           onSuccess={() => {
             refetch();
-            onOpenChange();
+            createGuildState.close();
           }}
         />
       </div>
@@ -196,12 +189,12 @@ export default function GuildsPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-md mx-auto border border-divider shadow-none">
-          <CardBody className="text-center py-8">
+          <Card.Content className="text-center py-8">
             <p className="text-danger mb-4">{t('failedToLoad')}</p>
-            <Button onPress={() => refetch()} variant="flat">
+            <Button onPress={() => refetch()} variant="secondary">
               {t('retry')}
             </Button>
-          </CardBody>
+          </Card.Content>
         </Card>
       </div>
     );
@@ -212,44 +205,43 @@ export default function GuildsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">{t('guilds')}</h1>
-          <p className="text-default-500 text-sm mt-1">{t('discoverGuilds')}</p>
+          <p className="text-foreground/50 text-sm mt-1">{t('discoverGuilds')}</p>
         </div>
 
-        <Button
-          color="primary"
-          startContent={<Icon icon="solar:add-circle-linear" width={16} />}
-          onPress={onOpen}
-        >
+        <Button variant="primary" onPress={createGuildState.open}>
+          <Icon icon="solar:add-circle-linear" width={16} />
           {t('createGuild')}
         </Button>
       </div>
 
       <div className="mb-5">
-        <Input
-          placeholder={t('searchGuilds')}
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          startContent={
-            <Icon icon="solar:magnifer-linear" width={16} className="text-default-400" />
-          }
-          className="max-w-md"
-          variant="bordered"
-        />
+        <TextField className="max-w-md">
+          <InputGroup>
+            <InputGroup.Prefix>
+              <Icon icon="solar:magnifer-linear" width={16} className="text-foreground/40" />
+            </InputGroup.Prefix>
+            <InputGroup.Input
+              placeholder={t('searchGuilds')}
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </InputGroup>
+        </TextField>
       </div>
 
       {guilds.length === 0 ? (
         <Card className="max-w-md mx-auto border border-divider shadow-none">
-          <CardBody className="text-center py-12">
+          <Card.Content className="text-center py-12">
             <Icon
               icon="solar:users-group-rounded-linear"
               width={40}
-              className="text-default-300 mx-auto mb-3"
+              className="text-foreground/30 mx-auto mb-3"
             />
             <h3 className="text-base font-medium mb-1">{t('noGuildsFound')}</h3>
-            <p className="text-sm text-default-500">
+            <p className="text-sm text-foreground/50">
               {searchQuery ? t('adjustSearch') : t('beFirstCreate')}
             </p>
-          </CardBody>
+          </Card.Content>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -260,11 +252,10 @@ export default function GuildsPage() {
       )}
 
       <CreateGuildModal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
+        state={createGuildState}
         onSuccess={() => {
           refetch();
-          onOpenChange();
+          createGuildState.close();
         }}
       />
     </div>
@@ -281,13 +272,16 @@ function GuildCard({ guild, onJoin, isUserMember = false }: GuildCardProps) {
   const t = useTranslations('guildsPage');
 
   return (
-    <Card className="border border-divider shadow-none bg-content1 hover:border-default-400 transition-colors">
-      <CardHeader className="pb-3">
+    <Card className="border border-divider shadow-none bg-surface hover:border-default-400 transition-colors">
+      <Card.Header className="pb-3">
         <div className="flex items-center gap-3">
-          <Avatar src={guild.icon} name={guild.name} size="md" className="flex-shrink-0" />
+          <Avatar className="flex-shrink-0" size="md">
+            <Avatar.Image src={guild.icon} />
+            <Avatar.Fallback>{guild.name.slice(0, 2).toUpperCase()}</Avatar.Fallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-base truncate text-foreground">{guild.name}</h3>
-            <div className="flex items-center gap-1.5 text-xs text-default-500 mt-0.5">
+            <div className="flex items-center gap-1.5 text-xs text-foreground/50 mt-0.5">
               <Icon icon="solar:users-group-rounded-linear" width={14} />
               <span>
                 {guild.memberCount} {t('members')}
@@ -295,26 +289,26 @@ function GuildCard({ guild, onJoin, isUserMember = false }: GuildCardProps) {
             </div>
           </div>
         </div>
-      </CardHeader>
+      </Card.Header>
 
-      <CardBody className="pt-0">
+      <Card.Content className="pt-0">
         {guild.description && (
-          <p className="text-default-500 text-sm mb-4 line-clamp-2">{guild.description}</p>
+          <p className="text-foreground/50 text-sm mb-4 line-clamp-2">{guild.description}</p>
         )}
 
         <div className="flex flex-wrap gap-1 mb-4">
           {guild.settings.features.economy && (
-            <Chip size="sm" variant="flat" color="default">
+            <Chip size="sm" variant="secondary">
               {t('economy')}
             </Chip>
           )}
           {guild.settings.features.events && (
-            <Chip size="sm" variant="flat" color="default">
+            <Chip size="sm" variant="secondary">
               {t('events')}
             </Chip>
           )}
           {guild.settings.features.raids && (
-            <Chip size="sm" variant="flat" color="default">
+            <Chip size="sm" variant="secondary">
               {t('raids')}
             </Chip>
           )}
@@ -322,32 +316,27 @@ function GuildCard({ guild, onJoin, isUserMember = false }: GuildCardProps) {
 
         <div className="flex gap-2">
           {isUserMember ? (
-            <Button
-              variant="flat"
-              color="default"
-              className="flex-1"
-              startContent={<Icon icon="solar:settings-linear" width={16} />}
-            >
+            <Button variant="secondary" className="flex-1">
+              <Icon icon="solar:settings-linear" width={16} />
               {t('manage')}
             </Button>
           ) : (
-            <Button color="primary" className="flex-1" onPress={onJoin}>
+            <Button variant="primary" className="flex-1" onPress={onJoin}>
               {t('joinGuild')}
             </Button>
           )}
         </div>
-      </CardBody>
+      </Card.Content>
     </Card>
   );
 }
 
 interface CreateGuildModalProps {
-  isOpen: boolean;
-  onOpenChange: () => void;
+  state: UseOverlayStateReturn;
   onSuccess: () => void;
 }
 
-function CreateGuildModal({ isOpen, onOpenChange, onSuccess }: CreateGuildModalProps) {
+function CreateGuildModal({ state, onSuccess }: CreateGuildModalProps) {
   const t = useTranslations('guildsPage');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -374,44 +363,47 @@ function CreateGuildModal({ isOpen, onOpenChange, onSuccess }: CreateGuildModalP
   };
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="top-center">
-      <ModalContent>
-        {onClose => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">{t('createNewGuild')}</ModalHeader>
-            <ModalBody>
-              <Input
-                label={t('guildName')}
-                placeholder={t('guildNamePlaceholder')}
-                value={name}
-                onChange={e => setName(e.target.value)}
-                isRequired
-                variant="bordered"
-              />
-              <Input
-                label={t('descriptionLabel')}
-                placeholder={t('descriptionPlaceholder')}
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                variant="bordered"
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Button variant="flat" onPress={onClose}>
-                {t('cancel')}
-              </Button>
-              <Button
-                color="primary"
-                onPress={handleSubmit}
-                isLoading={isLoading}
-                isDisabled={!name.trim()}
-              >
-                {t('createGuild')}
-              </Button>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
+    <Modal state={state}>
+    <Modal.Backdrop>
+      <Modal.Container size="md">
+        <Modal.Dialog>
+          <Modal.CloseTrigger />
+          <Modal.Header className="text-center items-center">
+            <Modal.Heading>{t('createNewGuild')}</Modal.Heading>
+          </Modal.Header>
+          <Modal.Body className="flex flex-col gap-3">
+            <TextField isRequired>
+              <Label>{t('guildName')}</Label>
+              <InputGroup>
+                <InputGroup.Input
+                  placeholder={t('guildNamePlaceholder')}
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                />
+              </InputGroup>
+            </TextField>
+            <TextField>
+              <Label>{t('descriptionLabel')}</Label>
+              <InputGroup>
+                <InputGroup.Input
+                  placeholder={t('descriptionPlaceholder')}
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                />
+              </InputGroup>
+            </TextField>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" slot="close">
+              {t('cancel')}
+            </Button>
+            <Button variant="primary" onPress={handleSubmit} isPending={isLoading} isDisabled={!name.trim()}>
+              {t('createGuild')}
+            </Button>
+          </Modal.Footer>
+        </Modal.Dialog>
+      </Modal.Container>
+    </Modal.Backdrop>
     </Modal>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardBody } from '@heroui/react';
+import { Card } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 
@@ -25,28 +25,28 @@ export default function TermsPage() {
       {/* Header */}
       <div>
         <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-sm text-default-500 mt-0.5">{t('lastUpdated')}</p>
+        <p className="text-sm text-foreground/50 mt-0.5">{t('lastUpdated')}</p>
       </div>
 
       {/* Intro banner */}
       <Card className="border border-primary/20 shadow-none bg-primary/5">
-        <CardBody className="flex flex-row items-start gap-3 py-4">
+        <Card.Content className="flex flex-row items-start gap-3 py-4">
           <Icon icon="solar:info-circle-bold" width={18} className="text-primary shrink-0 mt-0.5" />
-          <p className="text-sm text-default-600">{t('bannerText')}</p>
-        </CardBody>
+          <p className="text-sm text-foreground/60">{t('bannerText')}</p>
+        </Card.Content>
       </Card>
 
       {/* Sections */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardBody className="flex flex-col gap-5 p-6">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Content className="flex flex-col gap-5 p-6">
           {sections.map((section, idx) => (
             <div key={idx} className="flex flex-col gap-1.5">
               <h2 className="text-sm font-semibold text-foreground">{section.title}</h2>
-              <p className="text-sm text-default-500 leading-relaxed">{section.content}</p>
+              <p className="text-sm text-foreground/50 leading-relaxed">{section.content}</p>
               {idx < sections.length - 1 && <div className="border-b border-divider mt-3" />}
             </div>
           ))}
-        </CardBody>
+        </Card.Content>
       </Card>
     </div>
   );

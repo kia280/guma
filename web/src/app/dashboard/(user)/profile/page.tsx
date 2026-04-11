@@ -3,14 +3,15 @@
 import React from 'react';
 import {
   Card,
-  CardHeader,
-  CardBody,
   Button,
   Input,
   Avatar,
   Chip,
-  Textarea,
-  Divider,
+  TextArea,
+  Separator,
+  TextField,
+  Label,
+  InputGroup,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
@@ -23,171 +24,157 @@ export default function ProfilePage() {
   const [bio, setBio] = React.useState('Guild veteran. Raid leader on weekends.');
 
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl">
+    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
       {/* Header */}
       <div>
         <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-sm text-default-500 mt-0.5">{t('subtitle')}</p>
+        <p className="text-sm text-foreground/50 mt-0.5">{t('subtitle')}</p>
       </div>
 
       {/* Avatar */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardBody className="flex flex-row items-center gap-5 p-5">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Content className="flex flex-row items-center gap-5 p-5">
           <div className="relative shrink-0">
-            <Avatar
-              src="https://i.pravatar.cc/150?u=a04258114e29526708c"
-              className="w-20 h-20 text-large"
-            />
-            <button className="absolute bottom-0 right-0 flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white shadow-sm hover:bg-primary/90 transition-colors">
+            <Avatar className="w-20 h-20 text-large">
+              <Avatar.Image src="https://i.pravatar.cc/150?u=a04258114e29526708c" />
+              <Avatar.Fallback>JD</Avatar.Fallback>
+            </Avatar>
+            <button className="absolute bottom-0 right-0 flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors">
               <Icon icon="solar:camera-linear" width={14} />
             </button>
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-base font-semibold text-foreground">{displayName}</p>
-            <p className="text-sm text-default-500">@{username}</p>
-            <Chip size="sm" variant="flat" color="primary" className="w-fit mt-0.5">
+            <Chip size="sm" variant="secondary" className="w-fit mt-0.5">
               {t('guildMember')}
             </Chip>
           </div>
           <div className="ml-auto">
             <Button
               size="sm"
-              variant={isEditing ? 'flat' : 'bordered'}
+              variant="secondary"
               onPress={() => setIsEditing(e => !e)}
             >
               {isEditing ? t('cancel') : t('editProfile')}
             </Button>
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Profile Details */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
             <Icon className="text-primary" icon="solar:user-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('profileDetails')}</p>
-            <p className="text-xs text-default-400">{t('publicInfo')}</p>
+            <p className="text-xs text-foreground/40">{t('publicInfo')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0 flex flex-col gap-4">
+        </Card.Header>
+        <Card.Content className="pt-0 flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label={t('displayName')}
-              value={displayName}
-              onValueChange={setDisplayName}
-              isReadOnly={!isEditing}
-              variant={isEditing ? 'bordered' : 'flat'}
-              classNames={{ inputWrapper: !isEditing ? 'bg-transparent shadow-none' : '' }}
-            />
-            <Input
-              label={t('username')}
-              value={username}
-              onValueChange={setUsername}
-              isReadOnly={!isEditing}
-              variant={isEditing ? 'bordered' : 'flat'}
-              startContent={<span className="text-default-400 text-sm">@</span>}
-              classNames={{ inputWrapper: !isEditing ? 'bg-transparent shadow-none' : '' }}
-            />
+            <TextField isReadOnly={!isEditing}>
+              <Label>{t('displayName')}</Label>
+              <Input value={displayName} onChange={e => setDisplayName(e.target.value)} />
+            </TextField>
+            <TextField isReadOnly={!isEditing}>
+              <Label>{t('username')}</Label>
+              <InputGroup>
+                <InputGroup.Prefix>
+                  <span className="text-foreground/40 text-sm">@</span>
+                </InputGroup.Prefix>
+                <InputGroup.Input value={username} onChange={e => setUsername(e.target.value)} />
+              </InputGroup>
+            </TextField>
           </div>
-          <Textarea
-            label={t('bio')}
-            value={bio}
-            onValueChange={setBio}
-            isReadOnly={!isEditing}
-            variant={isEditing ? 'bordered' : 'flat'}
-            minRows={2}
-            classNames={{ inputWrapper: !isEditing ? 'bg-transparent shadow-none' : '' }}
-          />
+          <TextField isReadOnly={!isEditing}>
+            <Label>{t('bio')}</Label>
+            <TextArea value={bio} onChange={e => setBio(e.target.value)} rows={2} />
+          </TextField>
           {isEditing && (
             <div className="flex justify-end">
-              <Button
-                color="primary"
-                size="sm"
-                onPress={() => setIsEditing(false)}
-                startContent={<Icon icon="solar:check-circle-linear" width={16} />}
-              >
+              <Button size="sm" variant="primary" onPress={() => setIsEditing(false)}>
+                <Icon icon="solar:check-circle-linear" width={16} />
                 {t('saveChanges')}
               </Button>
             </div>
           )}
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Account Info */}
-      <Card className="border border-divider shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-divider shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
-            <Icon className="text-default-500" icon="solar:shield-user-bold-duotone" width={20} />
+            <Icon className="text-foreground/50" icon="solar:shield-user-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('account')}</p>
-            <p className="text-xs text-default-400">{t('accountSubtitle')}</p>
+            <p className="text-xs text-foreground/40">{t('accountSubtitle')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0 flex flex-col gap-3">
+        </Card.Header>
+        <Card.Content className="pt-0 flex flex-col gap-3">
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
-              <Icon icon="solar:letter-linear" width={16} className="text-default-400 shrink-0" />
+              <Icon icon="solar:letter-linear" width={16} className="text-foreground/40 shrink-0" />
               <div>
                 <p className="text-sm text-foreground">{t('emailAddress')}</p>
-                <p className="text-xs text-default-400">johndoe@example.com</p>
+                <p className="text-xs text-foreground/40">johndoe@example.com</p>
               </div>
             </div>
-            <Chip size="sm" variant="flat" color="success">
+            <Chip size="sm" variant="secondary">
               {t('verified')}
             </Chip>
           </div>
-          <Divider />
+          <Separator />
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
-              <Icon icon="ic:baseline-discord" width={16} className="text-default-400 shrink-0" />
+              <Icon icon="ic:baseline-discord" width={16} className="text-foreground/40 shrink-0" />
               <div>
                 <p className="text-sm text-foreground">{t('discord')}</p>
-                <p className="text-xs text-default-400">johndoe#1234</p>
+                <p className="text-xs text-foreground/40">johndoe#1234</p>
               </div>
             </div>
-            <Chip size="sm" variant="flat" color="secondary">
+            <Chip size="sm" variant="secondary">
               {t('connected')}
             </Chip>
           </div>
-          <Divider />
+          <Separator />
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
-              <Icon icon="solar:calendar-linear" width={16} className="text-default-400 shrink-0" />
+              <Icon icon="solar:calendar-linear" width={16} className="text-foreground/40 shrink-0" />
               <div>
                 <p className="text-sm text-foreground">{t('memberSince')}</p>
-                <p className="text-xs text-default-400">January 2024</p>
+                <p className="text-xs text-foreground/40">January 2024</p>
               </div>
             </div>
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
 
       {/* Danger Zone */}
-      <Card className="border border-danger/20 shadow-none bg-content1">
-        <CardHeader className="flex gap-3 pb-2">
+      <Card className="border border-danger/20 shadow-none bg-surface">
+        <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-danger/10 shrink-0">
             <Icon className="text-danger" icon="solar:danger-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('dangerZone')}</p>
-            <p className="text-xs text-default-400">{t('dangerZoneSubtitle')}</p>
+            <p className="text-xs text-foreground/40">{t('dangerZoneSubtitle')}</p>
           </div>
-        </CardHeader>
-        <CardBody className="pt-0">
+        </Card.Header>
+        <Card.Content className="pt-0">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-foreground">{t('deleteAccount')}</p>
-              <p className="text-xs text-default-400">{t('deleteAccountDesc')}</p>
+              <p className="text-xs text-foreground/40">{t('deleteAccountDesc')}</p>
             </div>
-            <Button size="sm" color="danger" variant="flat">
+            <Button size="sm" variant="danger">
               {t('deleteAccountBtn')}
             </Button>
           </div>
-        </CardBody>
+        </Card.Content>
       </Card>
     </div>
   );

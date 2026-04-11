@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Card, CardBody, Select, SelectItem, Input, Tabs, Tab, Chip } from '@heroui/react';
+import { Card, Select, Chip, Tabs, TextField, Label, InputGroup, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import AuctionItemCard from '@/components/AuctionItemCard';
 import { AuctionItem, ItemCategory, ItemRarity, AuctionStatus } from '@/types/auction';
@@ -162,6 +162,7 @@ interface AuctionPageProps {
 
 const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
   const t = useTranslations('auctionPage');
+
   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>(mockAuctionItems);
   const [filteredItems, setFilteredItems] = useState<AuctionItem[]>(mockAuctionItems);
   const [searchTerm, setSearchTerm] = useState('');
@@ -261,133 +262,222 @@ const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
   return (
     <div className="space-y-5">
       {/* Search and Filters */}
-      <div className="flex flex-col gap-4">
-        <Card className="border border-divider shadow-none bg-content1">
-          <CardBody className="py-3">
-            <div className="flex flex-col lg:flex-row gap-3">
-              <Input
-                placeholder={t('searchItems')}
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                startContent={
-                  <Icon icon="solar:magnifer-linear" width={16} className="text-default-400" />
-                }
-                className="lg:flex-1"
-                variant="bordered"
-              />
+      <div className="flex flex-col lg:flex-row gap-3">
+        <TextField className="lg:flex-1">
+          <Label className="sr-only">{t('searchItems')}</Label>
+          <InputGroup>
+            <InputGroup.Prefix>
+              <Icon icon="solar:magnifer-linear" width={16} className="text-foreground/40" />
+            </InputGroup.Prefix>
+            <InputGroup.Input
+              placeholder={t('searchItems')}
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </InputGroup>
+        </TextField>
 
               <Select
-                placeholder={t('allCategories')}
-                selectedKeys={selectedCategory ? [selectedCategory] : []}
-                onSelectionChange={keys => {
-                  const selected = Array.from(keys)[0] as string;
-                  setSelectedCategory(selected || 'all');
-                }}
                 className="lg:max-w-xs"
-                variant="bordered"
+                value={selectedCategory}
+                onChange={value => setSelectedCategory(String(value) || 'all')}
               >
-                {categoryOptions.map(option => (
-                  <SelectItem key={option.key}>{option.label}</SelectItem>
-                ))}
+                <Label className="sr-only">{t('allCategories')}</Label>
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {categoryOptions.map(option => (
+                      <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
+                        {option.label}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
               </Select>
 
               <Select
-                placeholder={t('allRarities')}
-                selectedKeys={selectedRarity ? [selectedRarity] : []}
-                onSelectionChange={keys => {
-                  const selected = Array.from(keys)[0] as string;
-                  setSelectedRarity(selected || 'all');
-                }}
                 className="lg:max-w-xs"
-                variant="bordered"
+                value={selectedRarity}
+                onChange={value => setSelectedRarity(String(value) || 'all')}
               >
-                {rarityOptions.map(option => (
-                  <SelectItem key={option.key}>{option.label}</SelectItem>
-                ))}
-              </Select>
-            </div>
-          </CardBody>
-        </Card>
+                <Label className="sr-only">{t('allRarities')}</Label>
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {rarityOptions.map(option => (
+                      <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
+                        {option.label}
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+        </Select>
       </div>
 
       {/* Status Tabs */}
-      <Tabs
-        selectedKey={activeTab}
-        onSelectionChange={key => setActiveTab(key as string)}
-        size="md"
-      >
-        <Tab
-          key="all"
-          title={
-            <div className="flex items-center gap-2">
-              <span>{t('all')}</span>
-              <Chip size="sm" variant="flat">
-                {statusCounts.all}
-              </Chip>
+      <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="Auction status">
+            <Tabs.Tab id="all">
+              <div className="flex items-center gap-2">
+                <span>{t('all')}</span>
+                <Chip size="sm" variant="secondary">
+                  {statusCounts.all}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id={AuctionStatus.ACTIVE}>
+              <div className="flex items-center gap-2">
+                <span>{t('active')}</span>
+                <Chip size="sm" color="success" variant="secondary">
+                  {statusCounts.active}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id={AuctionStatus.UPCOMING}>
+              <div className="flex items-center gap-2">
+                <span>{t('upcoming')}</span>
+                <Chip size="sm" color="warning" variant="secondary">
+                  {statusCounts.upcoming}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id={AuctionStatus.ENDED}>
+              <div className="flex items-center gap-2">
+                <span>{t('ended')}</span>
+                <Chip size="sm" variant="secondary">
+                  {statusCounts.ended}
+                </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          </Tabs.List>
+        </Tabs.ListContainer>
+        <Tabs.Panel id="all" className="pt-4">
+          {filteredItems.length === 0 ? (
+            <Card className="border border-divider shadow-none">
+              <Card.Content className="text-center py-12">
+                <Icon
+                  icon="solar:clock-circle-linear"
+                  width={40}
+                  className="mx-auto mb-3 text-foreground/30"
+                />
+                <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
+                <p className="text-sm text-foreground/50">{t('noAuctionsHint')}</p>
+              </Card.Content>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredItems.map(item => (
+                <AuctionItemCard
+                  key={item.id}
+                  item={item}
+                  onPlaceBid={handlePlaceBid}
+                  isLoading={isLoading}
+                  userBalance={userBalance}
+                  
+                />
+              ))}
             </div>
-          }
-        />
-        <Tab
-          key={AuctionStatus.ACTIVE}
-          title={
-            <div className="flex items-center gap-2">
-              <span>{t('active')}</span>
-              <Chip size="sm" color="success" variant="flat">
-                {statusCounts.active}
-              </Chip>
+          )}
+        </Tabs.Panel>
+        <Tabs.Panel id={AuctionStatus.ACTIVE} className="pt-4">
+          {filteredItems.length === 0 ? (
+            <Card className="border border-divider shadow-none">
+              <Card.Content className="text-center py-12">
+                <Icon
+                  icon="solar:clock-circle-linear"
+                  width={40}
+                  className="mx-auto mb-3 text-foreground/30"
+                />
+                <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
+                <p className="text-sm text-foreground/50">{t('noAuctionsHint')}</p>
+              </Card.Content>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredItems.map(item => (
+                <AuctionItemCard
+                  key={item.id}
+                  item={item}
+                  onPlaceBid={handlePlaceBid}
+                  isLoading={isLoading}
+                  userBalance={userBalance}
+                  
+                />
+              ))}
             </div>
-          }
-        />
-        <Tab
-          key={AuctionStatus.UPCOMING}
-          title={
-            <div className="flex items-center gap-2">
-              <span>{t('upcoming')}</span>
-              <Chip size="sm" color="warning" variant="flat">
-                {statusCounts.upcoming}
-              </Chip>
+          )}
+        </Tabs.Panel>
+        <Tabs.Panel id={AuctionStatus.UPCOMING} className="pt-4">
+          {filteredItems.length === 0 ? (
+            <Card className="border border-divider shadow-none">
+              <Card.Content className="text-center py-12">
+                <Icon
+                  icon="solar:clock-circle-linear"
+                  width={40}
+                  className="mx-auto mb-3 text-foreground/30"
+                />
+                <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
+                <p className="text-sm text-foreground/50">{t('noAuctionsHint')}</p>
+              </Card.Content>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredItems.map(item => (
+                <AuctionItemCard
+                  key={item.id}
+                  item={item}
+                  onPlaceBid={handlePlaceBid}
+                  isLoading={isLoading}
+                  userBalance={userBalance}
+                  
+                />
+              ))}
             </div>
-          }
-        />
-        <Tab
-          key={AuctionStatus.ENDED}
-          title={
-            <div className="flex items-center gap-2">
-              <span>{t('ended')}</span>
-              <Chip size="sm" variant="flat">
-                {statusCounts.ended}
-              </Chip>
+          )}
+        </Tabs.Panel>
+        <Tabs.Panel id={AuctionStatus.ENDED} className="pt-4">
+          {filteredItems.length === 0 ? (
+            <Card className="border border-divider shadow-none">
+              <Card.Content className="text-center py-12">
+                <Icon
+                  icon="solar:clock-circle-linear"
+                  width={40}
+                  className="mx-auto mb-3 text-foreground/30"
+                />
+                <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
+                <p className="text-sm text-foreground/50">{t('noAuctionsHint')}</p>
+              </Card.Content>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredItems.map(item => (
+                <AuctionItemCard
+                  key={item.id}
+                  item={item}
+                  onPlaceBid={handlePlaceBid}
+                  isLoading={isLoading}
+                  userBalance={userBalance}
+                  
+                />
+              ))}
             </div>
-          }
-        />
+          )}
+        </Tabs.Panel>
       </Tabs>
 
-      {/* Items Grid */}
-      {filteredItems.length === 0 ? (
-        <Card className="border border-divider shadow-none">
-          <CardBody className="text-center py-12">
-            <Icon
-              icon="solar:clock-circle-linear"
-              width={40}
-              className="mx-auto mb-3 text-default-300"
-            />
-            <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
-            <p className="text-sm text-default-500">{t('noAuctionsHint')}</p>
-          </CardBody>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredItems.map(item => (
-            <AuctionItemCard
-              key={item.id}
-              item={item}
-              onPlaceBid={handlePlaceBid}
-              isLoading={isLoading}
-              userBalance={userBalance}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 };

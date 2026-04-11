@@ -26,18 +26,19 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  allowedDevOrigins: ['192.168.88.169'],
   // // Enable React Strict Mode for development
   // reactStrictMode: true,
-  
+
   // // Optimize images
   // images: {
   //   domains: ['cdn.discordapp.com', 'avatars.githubusercontent.com'],
   //   formats: ['image/webp', 'image/avif'],
   // },
-  
+
   // // Enable SWC minification
   // swcMinify: true,
-  
+
   // // Experimental features
   // experimental: {
   //   // Enable app directory
@@ -45,7 +46,7 @@ const nextConfig: NextConfig = {
   //   // Enable server components
   //   serverComponentsExternalPackages: [],
   // },
-  
+
   // // Webpack configuration
   // webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
   //   // Add support for importing SVG as React components
@@ -53,10 +54,10 @@ const nextConfig: NextConfig = {
   //     test: /\.svg$/,
   //     use: ['@svgr/webpack'],
   //   });
-    
+
   //   return config;
   // },
-  
+
   // // Security headers
   // async headers() {
   //   return [
@@ -83,13 +84,13 @@ const nextConfig: NextConfig = {
   //     },
   //   ];
   // },
-  
+
   // // Content Security Policy (development mode)
   // async headers() {
   //   if (process.env.NODE_ENV === 'development') {
   //     return [];
   //   }
-    
+
   //   return [
   //     {
   //       source: '/(.*)',
@@ -110,18 +111,18 @@ const nextConfig: NextConfig = {
   //     },
   //   ];
   // },
-  
+
   // // Environment variables
   // env: {
   //   CUSTOM_KEY: 'my-value',
   // },
-  
+
   // // TypeScript configuration
   // typescript: {
   //   // Type checking is handled by the build process
   //   ignoreBuildErrors: false,
   // },
-  
+
   // // ESLint configuration
   // eslint: {
   //   // ESLint is handled by the build process
