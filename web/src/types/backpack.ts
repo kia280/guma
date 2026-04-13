@@ -1,15 +1,11 @@
-import { ItemCategory, ItemRarity } from './auction';
+import type { Item } from './item';
 
 export interface BackpackItem {
   id: string;
-  name: string;
-  description: string;
-  category: ItemCategory;
-  rarity: ItemRarity;
+  item: Item;
   acquiredFrom: 'auction' | 'lottery' | 'transfer' | 'admin';
   acquiredAt: string;
   ownerId: string;
   guildId: string;
-  imageUrl?: string;
   note?: string;
 }

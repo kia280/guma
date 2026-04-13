@@ -1,4 +1,7 @@
 // Auction types
+
+import type { ItemCategory, ItemRarity } from './item';
+
 export interface AuctionItem {
   id: string;
   name: string;
@@ -28,25 +31,6 @@ export interface AuctionItem {
   isBlind?: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-export enum ItemCategory {
-  WEAPON = 'weapon',
-  ARMOR = 'armor',
-  ACCESSORY = 'accessory',
-  CONSUMABLE = 'consumable',
-  SKILL_SCROLL = 'skill_scroll',
-  MATERIAL = 'material',
-  MISC = 'misc',
-}
-
-export enum ItemRarity {
-  COMMON = 'common',
-  UNCOMMON = 'uncommon',
-  RARE = 'rare',
-  EPIC = 'epic',
-  LEGENDARY = 'legendary',
-  MYTHIC = 'mythic',
 }
 
 export enum AuctionStatus {
