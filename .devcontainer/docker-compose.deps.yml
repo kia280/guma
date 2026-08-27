@@ -3,9 +3,6 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/dockerfile.dev.backend
-    ports:
-      - "8080:8080"
-      - "2345:2345"  # Delve debugger
     volumes:
       - ..:/workspace
       - go-mod-cache:/go/pkg/mod:rw
@@ -26,8 +23,6 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/dockerfile.dev.frontend
-    ports:
-      - "3000:3000"
     volumes:
       - ..:/workspace
       - node-modules-cache:/workspace/web/node_modules:rw
@@ -62,8 +57,6 @@ services:
       POSTGRES_DB: guma
       POSTGRES_USER: guma
       POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -74,8 +67,6 @@ services:
 
   redis:
     image: redis:8.2.3
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -90,9 +81,6 @@ services:
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - "9000:9000"
-      - "9001:9001"
     volumes:
       - minio_data:/data
     healthcheck:
@@ -105,9 +93,6 @@ services:
     image: oryd/kratos:v25.4.0
     environment:
       - DSN=postgres://guma:password@postgres:5432/guma?sslmode=disable&max_conns=20&max_idle_conns=4
-    ports:
-      - "4433:4433" # Public API
-      - "4434:4434" # Admin API
     depends_on:
       postgres:
         condition: service_healthy
@@ -122,8 +107,6 @@ services:
 
   keto:
     image: oryd/keto:v25.4.0
-    ports:
-      - "4466:4466"
     depends_on:
       postgres:
         condition: service_healthy
