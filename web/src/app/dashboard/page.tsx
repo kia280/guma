@@ -17,6 +17,7 @@ import {
 
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { LIST_ROW_CLASS } from '@/lib/list-row';
 import type {
   Announcement,
   DashboardData,
@@ -37,14 +38,11 @@ const KIND_META: Record<
     href: string;
   }
 > = {
-  auction: { icon: 'solar:hammer-linear', labelKey: 'kindAuction', color: 'warning', href: '/dashboard/auction' },
+  auction: { icon: 'solar:sledgehammer-linear', labelKey: 'kindAuction', color: 'warning', href: '/dashboard/auction' },
   checkin: { icon: 'solar:check-circle-linear', labelKey: 'kindCheckin', color: 'success', href: '/dashboard/attendance' },
   lottery: { icon: 'solar:ticket-linear', labelKey: 'kindLottery', color: 'accent', href: '/dashboard/lottery' },
   calendar: { icon: 'solar:calendar-linear', labelKey: 'kindCalendar', color: 'accent', href: '/dashboard/calendar' },
 };
-
-const LIST_ROW_CLASS =
-  'rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
 const URGENCY_DOT: Record<FeedEvent['urgency'], string> = {
   high: 'bg-danger',
@@ -160,7 +158,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                   value={PERSONAL_STATS.checkinsThisMonth}
                 />
                 <StatCard
-                  icon="solar:hammer-linear"
+                  icon="solar:sledgehammer-linear"
                   iconClass="text-warning"
                   iconBg="bg-warning/10"
                   label={t('activeAuctions')}
@@ -269,7 +267,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                   value={GUILD_STATS.checkinsThisWeek}
                 />
                 <StatCard
-                  icon="solar:hammer-linear"
+                  icon="solar:sledgehammer-linear"
                   iconClass="text-warning"
                   iconBg="bg-warning/10"
                   label={t('activeAuctions')}

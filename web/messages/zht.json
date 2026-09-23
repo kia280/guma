@@ -338,10 +338,10 @@
     "markAllRead": "全部標為已讀",
     "all": "全部",
     "unread": "未讀",
-    "archive": "封存",
     "noNotifications": "目前沒有通知。",
-    "settings": "設置",
-    "archiveAll": "全部封存"
+    "allCaughtUp": "所有通知都已讀取。",
+    "settings": "通知設定",
+    "bellLabel": "{count, plural, =0 {通知} other {通知，# 則未讀}}"
   },
   "createAuctionModal": {
     "createNewAuction": "建立新競拍",
@@ -466,7 +466,18 @@
   },
   "notificationItem": {
     "accept": "接受",
-    "decline": "拒絕"
+    "decline": "拒絕",
+    "accepted": "你已接受這筆交易。",
+    "declined": "你已拒絕這筆交易。",
+    "unread": "未讀",
+    "tradeOffer": "<b>{actor}</b> 提出交易：以 {give} 交換你的 {want}",
+    "transferReceived": "<b>{actor}</b> 轉給你 <b>${amount, number}</b>",
+    "attendanceSettled": "<b>{event}</b> 點名已結單，你獲得 <b>${reward, number}</b>",
+    "lootWon": "你在 <b>{event}</b> 獲得 <b>{item} ×{quantity}</b>",
+    "auctionOutbid": "<b>{actor}</b> 以 ${amount, number} 超過你在 <b>{item}</b> 的出價",
+    "auctionWon": "你以 ${amount, number} 得標 <b>{item}</b>",
+    "lotteryWon": "你在 <b>{lottery}</b> 抽中 <b>{prize}</b>",
+    "bankRequestApproved": "<b>{actor}</b> 核准了你 ${amount, number} 的公會銀行申請"
   },
   "profilePage": {
     "title": "個人資料",

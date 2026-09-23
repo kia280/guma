@@ -338,10 +338,10 @@
     "markAllRead": "Mark all as read",
     "all": "All",
     "unread": "Unread",
-    "archive": "Archive",
     "noNotifications": "No notifications yet.",
-    "settings": "Settings",
-    "archiveAll": "Archive All"
+    "allCaughtUp": "You're all caught up.",
+    "settings": "Notification settings",
+    "bellLabel": "{count, plural, =0 {Notifications} one {Notifications, # unread} other {Notifications, # unread}}"
   },
   "createAuctionModal": {
     "createNewAuction": "Create New Auction",
@@ -466,7 +466,18 @@
   },
   "notificationItem": {
     "accept": "Accept",
-    "decline": "Decline"
+    "decline": "Decline",
+    "accepted": "You accepted this trade.",
+    "declined": "You declined this trade.",
+    "unread": "Unread",
+    "tradeOffer": "<b>{actor}</b> proposed a trade: {give} for your {want}",
+    "transferReceived": "<b>{actor}</b> sent you <b>${amount, number}</b>",
+    "attendanceSettled": "Attendance for <b>{event}</b> has closed. You earned <b>${reward, number}</b>",
+    "lootWon": "You received <b>{item} ×{quantity}</b> from <b>{event}</b>",
+    "auctionOutbid": "<b>{actor}</b> outbid you on <b>{item}</b> with ${amount, number}",
+    "auctionWon": "You won <b>{item}</b> for ${amount, number}",
+    "lotteryWon": "You won <b>{prize}</b> in <b>{lottery}</b>",
+    "bankRequestApproved": "<b>{actor}</b> approved your guild bank request for ${amount, number}"
   },
   "profilePage": {
     "title": "Personal Information",

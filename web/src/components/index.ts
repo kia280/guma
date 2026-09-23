@@ -1,5 +1,6 @@
 export { Logo, LogoIcon, LogoWithText } from './Logo';
 export { Navigation } from './Navigation';
+export { NotificationBell } from './NotificationBell';
 export { NotificationsCard } from './NotificationsCard';
 export { NotificationItem } from './NotificationItem';
 export { Sidebar } from './Sidebar';

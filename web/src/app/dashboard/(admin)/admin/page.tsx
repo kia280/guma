@@ -55,7 +55,7 @@ const getRoleColor = (role: string) => {
 const getActivityIcon = (type: string) => {
   switch (type) {
     case 'auction':
-      return 'solar:hammer-linear';
+      return 'solar:sledgehammer-linear';
     case 'checkin':
       return 'solar:clipboard-check-linear';
     case 'lottery':
