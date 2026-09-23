@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { Card, Chip, Modal, Button, useOverlayState } from '@heroui/react';
 import {
   ResponsiveContainer,
@@ -33,13 +34,17 @@ const KIND_META: Record<
     icon: string;
     labelKey: string;
     color: ChipColor;
+    href: string;
   }
 > = {
-  auction: { icon: 'solar:hammer-linear', labelKey: 'kindAuction', color: 'warning' },
-  checkin: { icon: 'solar:check-circle-linear', labelKey: 'kindCheckin', color: 'success' },
-  lottery: { icon: 'solar:ticket-linear', labelKey: 'kindLottery', color: 'accent' },
-  calendar: { icon: 'solar:calendar-linear', labelKey: 'kindCalendar', color: 'accent' },
+  auction: { icon: 'solar:hammer-linear', labelKey: 'kindAuction', color: 'warning', href: '/dashboard/auction' },
+  checkin: { icon: 'solar:check-circle-linear', labelKey: 'kindCheckin', color: 'success', href: '/dashboard/attendance' },
+  lottery: { icon: 'solar:ticket-linear', labelKey: 'kindLottery', color: 'accent', href: '/dashboard/lottery' },
+  calendar: { icon: 'solar:calendar-linear', labelKey: 'kindCalendar', color: 'accent', href: '/dashboard/calendar' },
 };
+
+const LIST_ROW_CLASS =
+  'rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
 const URGENCY_DOT: Record<FeedEvent['urgency'], string> = {
   high: 'bg-danger',
@@ -349,30 +354,32 @@ export default function DashboardPage() {
             <h2 className="type-heading text-foreground">{t('news')}</h2>
           </div>
           <Card className="border border-divider shadow-none bg-surface">
-            <Card.Content className="p-0">
-              <div className="divide-y divide-divider">
+            <Card.Content className="p-1.5">
+              <ul className="flex flex-col gap-0.5">
                 {announcements.map(ann => (
-                  <div
-                    key={ann.id}
-                    className="px-4 py-3 hover:bg-surface-secondary transition-colors cursor-pointer"
-                    onPointerDown={() => { setSelectedAnn(ann); annModalState.open(); }}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-2 flex-1 min-w-0">
-                        {ann.pinned && (
-                          <Icon
-                            icon="solar:pin-linear"
-                            width={14}
-                            className="text-danger shrink-0 mt-0.5"
-                          />
-                        )}
-                        <p className="type-body text-foreground truncate">{ann.title}</p>
+                  <li key={ann.id}>
+                    <button
+                      type="button"
+                      className={`w-full text-left ${LIST_ROW_CLASS}`}
+                      onClick={() => { setSelectedAnn(ann); annModalState.open(); }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-2 flex-1 min-w-0">
+                          {ann.pinned && (
+                            <Icon
+                              icon="solar:pin-linear"
+                              width={14}
+                              className="text-danger shrink-0 mt-0.5"
+                            />
+                          )}
+                          <p className="type-body text-foreground truncate">{ann.title}</p>
+                        </div>
+                        <span className="type-caption text-hint shrink-0">{ann.date}</span>
                       </div>
-                      <span className="type-caption text-hint shrink-0">{ann.date}</span>
-                    </div>
-                  </div>
+                    </button>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </Card.Content>
           </Card>
         </section>
@@ -384,46 +391,43 @@ export default function DashboardPage() {
             <h2 className="type-heading text-foreground">{t('upcomingEvents')}</h2>
           </div>
           <Card className="border border-divider shadow-none bg-surface">
-            <Card.Content className="p-0">
-              <div className="divide-y divide-divider">
+            <Card.Content className="p-1.5">
+              <ul className="flex flex-col gap-0.5">
                 {incomingEvents.map(event => {
                   const meta = KIND_META[event.kind];
                   return (
-                    <div
-                      key={event.id}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-surface-secondary transition-colors cursor-pointer"
-                      role="button"
-                      tabIndex={0}
-                    >
-                      {/* Urgency dot */}
-                      <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${URGENCY_DOT[event.urgency]}`}
-                      />
+                    <li key={event.id}>
+                      <Link href={meta.href} className={`flex items-center gap-3 ${LIST_ROW_CLASS}`}>
+                        {/* Urgency dot */}
+                        <span
+                          className={`w-2 h-2 rounded-full shrink-0 ${URGENCY_DOT[event.urgency]}`}
+                        />
 
-                      {/* Kind icon */}
-                      <div className="p-1.5 rounded-md bg-default shrink-0">
-                        <Icon icon={meta.icon} width={14} className="text-subtle" />
-                      </div>
+                        {/* Kind icon */}
+                        <div className="p-1.5 rounded-md bg-default shrink-0">
+                          <Icon icon={meta.icon} width={14} className="text-subtle" />
+                        </div>
 
-                      {/* Text */}
-                      <div className="flex-1 min-w-0">
-                        <p className="type-body font-medium text-foreground truncate">
-                          {event.title}
-                        </p>
-                        <p className="type-caption text-hint truncate">{event.subtitle}</p>
-                      </div>
+                        {/* Text */}
+                        <div className="flex-1 min-w-0">
+                          <p className="type-body font-medium text-foreground truncate">
+                            {event.title}
+                          </p>
+                          <p className="type-caption text-hint truncate">{event.subtitle}</p>
+                        </div>
 
-                      {/* Meta */}
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        <Chip size="sm" variant="secondary" color={meta.color}>
-                          {t(meta.labelKey as any)}
-                        </Chip>
-                        <span className="type-caption text-hint">{event.timeLabel}</span>
-                      </div>
-                    </div>
+                        {/* Meta */}
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <Chip size="sm" variant="secondary" color={meta.color}>
+                            {t(meta.labelKey as any)}
+                          </Chip>
+                          <span className="type-caption text-hint">{event.timeLabel}</span>
+                        </div>
+                      </Link>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             </Card.Content>
           </Card>
         </section>
