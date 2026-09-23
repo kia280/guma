@@ -41,7 +41,7 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 
 	// Initialize service handlers
 	gumaHandler := handlers.NewGumaService(logger)
-	guildHandler := handlers.NewGuildService(logger)
+	guildHandler := handlers.NewGuildService(db, logger)
 	memberHandler := handlers.NewMemberService(logger)
 
 	healthService := health.NewService(db)

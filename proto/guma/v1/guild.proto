@@ -21,6 +21,13 @@ service GuildService {
     };
   }
 
+  // Returns the guild the authenticated user is currently active in
+  rpc GetCurrentGuild(GetCurrentGuildRequest) returns (GetCurrentGuildResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/current"
+    };
+  }
+
   rpc UpdateGuild(UpdateGuildRequest) returns (UpdateGuildResponse) {
     option (google.api.http) = {
       put: "/v1/guilds/{guild_id}"
@@ -37,6 +44,20 @@ service GuildService {
   rpc ListGuilds(ListGuildsRequest) returns (ListGuildsResponse) {
     option (google.api.http) = {
       get: "/v1/guilds"
+    };
+  }
+
+  rpc JoinGuildById(JoinGuildByIdRequest) returns (JoinGuildByIdResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/join"
+      body: "*"
+    };
+  }
+
+  rpc LeaveGuild(LeaveGuildRequest) returns (LeaveGuildResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/leave"
+      body: "*"
     };
   }
 
@@ -79,6 +100,8 @@ message UpdateGuildRequest {
   string name = 2;
   string description = 3;
   repeated string tags = 4;
+  string icon_url = 5;
+  string banner_url = 6;
 }
 
 message UpdateGuildResponse {
@@ -96,7 +119,7 @@ message DeleteGuildResponse {
 message ListGuildsRequest {
   int32 page_size = 1;
   string page_token = 2;
-  string filter = 3;
+  string search = 3;   // Free-text search on name/description
   string order_by = 4;
 }
 
@@ -123,6 +146,28 @@ message UpdateGuildSettingsResponse {
   GuildSettings settings = 1;
 }
 
+message GetCurrentGuildRequest {}
+
+message GetCurrentGuildResponse {
+  Guild guild = 1; // null/empty if user is not in any guild
+}
+
+message JoinGuildByIdRequest {
+  string guild_id = 1;
+}
+
+message JoinGuildByIdResponse {
+  Guild guild = 1;
+}
+
+message LeaveGuildRequest {
+  string guild_id = 1;
+}
+
+message LeaveGuildResponse {
+  bool success = 1;
+}
+
 // Data structures
 message Guild {
   string id = 1;
@@ -135,6 +180,8 @@ message Guild {
   google.protobuf.Timestamp updated_at = 8;
   int32 member_count = 9;
   repeated Plugin plugins = 10;
+  string icon_url = 11;
+  string banner_url = 12;
 }
 
 message Plugin {
