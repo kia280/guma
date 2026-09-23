@@ -130,7 +130,7 @@ export function CheckinCard({
         {status === CheckinStatus.OPEN && (
           <Button variant="primary" className="w-full" isDisabled={isDisabled} onPress={onClick}>
             <Icon icon="solar:check-circle-linear" width={16} />
-            {t('checkIn')}
+            {t('markPresent')}
           </Button>
         )}
         {status === CheckinStatus.FINISHED && (
