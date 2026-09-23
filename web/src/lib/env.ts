@@ -3,13 +3,21 @@
 export const env = {
   // API Configuration
   api: {
-    url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api',
+    url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
     wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws',
   },
+
+  // When true, the frontend uses mock data from mock-client.ts instead of
+  // hitting the backend. Useful for local UI development without a running server.
+  useMock: process.env.NEXT_PUBLIC_USE_MOCK === 'true',
 
   // Kratos (Authentication) Configuration
   kratos: {
     publicUrl: process.env.NEXT_PUBLIC_KRATOS_URL || 'http://localhost:8081',
+    internalUrl:
+      process.env.KRATOS_INTERNAL_URL ||
+      process.env.NEXT_PUBLIC_KRATOS_URL ||
+      'http://localhost:8081',
   },
 
   // App Configuration
@@ -22,7 +30,8 @@ export const env = {
   // OAuth Configuration
   oauth: {
     discordClientId: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID || '',
-    redirectUri: process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI || 'http://localhost:3000/auth/callback',
+    redirectUri:
+      process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI || 'http://localhost:3000/auth/callback',
   },
 
   // Feature Flags

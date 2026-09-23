@@ -1,15 +1,15 @@
 // User, auth, and stats types
 
-import type { Guild } from './guild';
-
 export interface User {
   id: string;
   username: string;
+  displayName: string;
   email: string;
-  avatar?: string;
-  roles: string[];
-  permissions: string[];
-  guilds: Guild[];
+  avatarUrl: string;
+  bio: string;
+  guildIds: string[];
+  currentGuildId: string;
+  balance: number;
   createdAt: string;
   updatedAt: string;
 }
