@@ -80,7 +80,7 @@ const LotteryCard = ({
             </Chip>
             <h4 className="text-base font-medium text-foreground">{title}</h4>
           </div>
-          <Icon icon="solar:ticket-bold-duotone" width={28} className="text-primary/60 shrink-0" />
+          <Icon icon="solar:ticket-bold-duotone" width={28} className="text-accent/60 shrink-0" />
         </div>
       </Card.Header>
 
@@ -107,7 +107,7 @@ const LotteryCard = ({
             {status === 'active' && (
               <div className="flex justify-between text-sm">
                 <span className="text-foreground/50">{t('timeLeft')}</span>
-                <span className="font-medium text-primary">{formatCountdown(drawDate)}</span>
+                <span className="font-medium text-accent">{formatCountdown(drawDate)}</span>
               </div>
             )}
           </div>

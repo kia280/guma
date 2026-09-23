@@ -25,7 +25,7 @@ All text colors use `text-foreground` with opacity levels:
 | `text-warning` | Warning states |
 | `text-danger` | Error / destructive states |
 | `text-danger-foreground` | Text on danger backgrounds |
-| `text-primary-foreground` | Text on primary backgrounds |
+| `text-accent-foreground` | Text on accent backgrounds |
 
 ## Background Colors
 
@@ -59,11 +59,10 @@ Use semantic colors with opacity for subtle tinted backgrounds:
 
 | Pattern | Usage |
 |---------|-------|
-| `bg-primary/10` | Primary icon background |
+| `bg-accent/10` | Accent icon background, selected state |
 | `bg-success/10` | Success icon background |
 | `bg-warning/10` | Warning icon background |
 | `bg-danger/10` | Danger icon / alert background |
-| `bg-accent/10` | Accent tinted background |
 
 ## Border Colors
 
@@ -104,3 +103,5 @@ When using CSS variables in inline styles (e.g. Recharts), use `var(--variable)`
 - Old HeroUI v2 variables (`--heroui-*`, `bg-content1`, `bg-content2`)
 - `text-white` / `text-black` (use `text-foreground` or semantic foreground tokens)
 - `text-default-*` (use `text-foreground/*` with opacity instead)
+- `primary` colors (`bg-primary`, `text-primary`, ...) do not exist in HeroUI v3; use `accent`
+- Numbered default scales (`bg-default-100`, `border-default-400`) do not exist in HeroUI v3; use `bg-default`, `bg-surface-*`, or `border-divider`

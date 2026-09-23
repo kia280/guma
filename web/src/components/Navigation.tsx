@@ -88,7 +88,7 @@ export function Navigation() {
                   href={item.href}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
                     isActive
-                      ? 'bg-primary/10 text-primary'
+                      ? 'bg-accent/10 text-accent'
                       : 'text-foreground/50 hover:text-foreground hover:bg-surface-secondary'
                   }`}
                 >
@@ -152,7 +152,7 @@ export function Navigation() {
                 href={item.href}
                 className={`flex items-center gap-3 w-full py-2.5 px-3 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-accent/10 text-accent'
                     : 'text-foreground/50 hover:text-foreground hover:bg-surface-secondary'
                 }`}
                 onClick={() => setIsMenuOpen(false)}

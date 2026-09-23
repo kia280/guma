@@ -37,7 +37,7 @@ export default function ProfilePage() {
               <Avatar.Image src="https://i.pravatar.cc/150?u=a04258114e29526708c" />
               <Avatar.Fallback>JD</Avatar.Fallback>
             </Avatar>
-            <button className="absolute bottom-0 right-0 flex items-center justify-center w-7 h-7 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors">
+            <button className="absolute bottom-0 right-0 flex items-center justify-center w-7 h-7 rounded-full bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 transition-colors">
               <Icon icon="solar:camera-linear" width={14} />
             </button>
           </div>
@@ -62,8 +62,8 @@ export default function ProfilePage() {
       {/* Profile Details */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-            <Icon className="text-primary" icon="solar:user-bold-duotone" width={20} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
+            <Icon className="text-accent" icon="solar:user-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('profileDetails')}</p>

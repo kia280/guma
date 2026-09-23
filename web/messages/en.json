@@ -658,6 +658,32 @@
     "login": "Log in",
     "mockData": "Use mock data",
     "mockDataDescription": "Serve all API calls from the in-memory mock client. Dashboard pages open without logging in. The page reloads when toggled.",
-    "mockDataForcedByEnv": "Forced on by NEXT_PUBLIC_USE_MOCK."
+    "mockDataForcedByEnv": "Forced on by NEXT_PUBLIC_USE_MOCK.",
+    "paletteTab": "Palette",
+    "paletteDescription": "Preview candidate palettes, each with its own font pairing. Only this browser is affected, and the choice is kept across reloads.",
+    "paletteLightOnly": "Colors only change the light theme; fonts apply in both. Switch to the light theme to see the colors.",
+    "palettes": {
+      "current": {
+        "name": "Current",
+        "description": "The palette in globals.css"
+      },
+      "sun-gold": {
+        "name": "Sun Gold",
+        "description": "Bright logo gold with dark text, warm neutrals, readable status colors",
+        "font": "Nunito + LXGW WenKai TC"
+      },
+      "ink-gold": {
+        "name": "Ink & Gold",
+        "description": "Near-black buttons, gold focus ring, warm neutrals",
+        "font": "Inter + Noto Sans TC"
+      },
+      "indigo": {
+        "name": "Indigo",
+        "description": "Neutral blue accent with cool greys",
+        "font": "Plus Jakarta Sans + Chiron Hei HK"
+      }
+    },
+    "fontSample": "Aa 公會出席 123",
+    "fontCurrent": "Noto Sans TC (current)"
   }
 }

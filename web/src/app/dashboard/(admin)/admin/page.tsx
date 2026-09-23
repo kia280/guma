@@ -72,7 +72,7 @@ const getActivityColor = (type: string) => {
     case 'checkin':
       return 'text-success';
     case 'lottery':
-      return 'text-primary';
+      return 'text-accent';
     case 'join':
       return 'text-secondary';
     default:
@@ -262,8 +262,8 @@ export default function AdminPage() {
                   label: t('totalMembers'),
                   value: '24',
                   icon: 'solar:users-group-rounded-linear',
-                  color: 'text-primary',
-                  bg: 'bg-primary/10',
+                  color: 'text-accent',
+                  bg: 'bg-accent/10',
                 },
                 {
                   label: t('guildBalance'),

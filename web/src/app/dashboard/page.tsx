@@ -142,8 +142,8 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
               <div className="flex gap-4">
                 <StatCard
                   icon="solar:wallet-linear"
-                  iconClass="text-primary"
-                  iconBg="bg-primary/10"
+                  iconClass="text-accent"
+                  iconBg="bg-accent/10"
                   label={t('balance')}
                   value={`$${PERSONAL_STATS.balance.toLocaleString()}`}
                 />
@@ -233,8 +233,8 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
               <div className="flex gap-4">
                 <StatCard
                   icon="solar:users-group-rounded-linear"
-                  iconClass="text-primary"
-                  iconBg="bg-primary/10"
+                  iconClass="text-accent"
+                  iconBg="bg-accent/10"
                   label={t('members')}
                   value={GUILD_STATS.members}
                 />

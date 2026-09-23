@@ -87,8 +87,8 @@ export default function GuildsPage() {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
           <div className="mb-8">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 mx-auto mb-6">
-              <Icon icon="solar:stars-linear" width={40} className="text-primary" />
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-accent/10 mx-auto mb-6">
+              <Icon icon="solar:stars-linear" width={40} className="text-accent" />
             </div>
             <h1 className="text-3xl font-semibold mb-3 text-foreground">{t('welcomeTitle')}</h1>
             <p className="text-foreground/50 mb-1">{t('notJoined')}</p>
@@ -98,11 +98,11 @@ export default function GuildsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 w-full">
             <Card className="border border-divider shadow-none bg-surface">
               <Card.Content className="text-center py-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mx-auto mb-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 mx-auto mb-3">
                   <Icon
                     icon="solar:users-group-rounded-linear"
                     width={20}
-                    className="text-primary"
+                    className="text-accent"
                   />
                 </div>
                 <h3 className="font-medium mb-1 text-sm">{t('buildCommunity')}</h3>

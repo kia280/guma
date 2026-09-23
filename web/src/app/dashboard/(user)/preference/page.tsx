@@ -56,8 +56,8 @@ export default function PreferencePage() {
       {/* Appearance */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-            <Icon className="text-primary" icon="solar:palette-bold-duotone" width={20} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
+            <Icon className="text-accent" icon="solar:palette-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('appearance')}</p>
@@ -72,7 +72,7 @@ export default function PreferencePage() {
                 onClick={() => setTheme(themeKey)}
                 className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
                   theme === themeKey
-                    ? 'border-primary bg-primary/10 text-primary'
+                    ? 'border-accent bg-accent/10 text-accent'
                     : 'border-divider bg-surface-secondary text-foreground/50 hover:border-foreground/20'
                 }`}
               >
@@ -101,7 +101,7 @@ export default function PreferencePage() {
                   onClick={() => handleFontSizeChange(size)}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${
                     fontSize === size
-                      ? 'border-primary bg-primary/10 text-primary'
+                      ? 'border-accent bg-accent/10 text-accent'
                       : 'border-divider bg-surface-secondary text-foreground/50 hover:border-foreground/20'
                   }`}
                 >

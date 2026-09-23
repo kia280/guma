@@ -35,8 +35,8 @@ export default function ContactPage() {
     },
     {
       icon: 'solar:letter-bold-duotone',
-      iconColor: 'text-primary',
-      bgColor: 'bg-primary/10',
+      iconColor: 'text-accent',
+      bgColor: 'bg-accent/10',
       label: t('emailLabel'),
       description: t('emailDesc'),
       action: t('emailAction'),

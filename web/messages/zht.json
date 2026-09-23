@@ -658,6 +658,32 @@
     "login": "登入",
     "mockData": "使用模擬資料",
     "mockDataDescription": "所有 API 呼叫改用記憶體中的模擬資料,不登入也能開啟 dashboard 頁面。切換後頁面會重新載入。",
-    "mockDataForcedByEnv": "已由 NEXT_PUBLIC_USE_MOCK 強制開啟。"
+    "mockDataForcedByEnv": "已由 NEXT_PUBLIC_USE_MOCK 強制開啟。",
+    "paletteTab": "配色",
+    "paletteDescription": "預覽候選配色,每種配色都搭配自己的字體。只影響這個瀏覽器,重新整理後仍會保留。",
+    "paletteLightOnly": "顏色只會改變淺色主題,字體則在兩種主題都會套用。請切換到淺色主題查看顏色。",
+    "palettes": {
+      "current": {
+        "name": "目前",
+        "description": "globals.css 中的配色"
+      },
+      "sun-gold": {
+        "name": "太陽金",
+        "description": "Logo 的亮金色搭配深色文字、暖灰色與易讀的狀態色",
+        "font": "Nunito + 霞鶩文楷 TC"
+      },
+      "ink-gold": {
+        "name": "墨黑與金",
+        "description": "近黑色按鈕、金色焦點框、暖灰色",
+        "font": "Inter + Noto Sans TC"
+      },
+      "indigo": {
+        "name": "靛藍",
+        "description": "中性的藍色主色搭配冷灰色",
+        "font": "Plus Jakarta Sans + 昭源黑體 HK"
+      }
+    },
+    "fontSample": "Aa 公會出席 123",
+    "fontCurrent": "Noto Sans TC(目前)"
   }
 }

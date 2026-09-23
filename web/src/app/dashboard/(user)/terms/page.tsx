@@ -27,9 +27,9 @@ export default function TermsPage() {
       <PageHeader title={t('title')} description={t('lastUpdated')} />
 
       {/* Intro banner */}
-      <Card className="border border-primary/20 shadow-none bg-primary/5">
+      <Card className="border border-accent/20 shadow-none bg-accent/5">
         <Card.Content className="flex flex-row items-start gap-3 py-4">
-          <Icon icon="solar:info-circle-bold" width={18} className="text-primary shrink-0 mt-0.5" />
+          <Icon icon="solar:info-circle-bold" width={18} className="text-accent shrink-0 mt-0.5" />
           <p className="text-sm text-foreground/60">{t('bannerText')}</p>
         </Card.Content>
       </Card>

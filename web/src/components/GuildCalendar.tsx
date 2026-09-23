@@ -248,14 +248,14 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               className={`cursor-pointer
                 min-h-[80px] border shadow-none transition-colors
                 ${!isCurrentMonth ? 'opacity-30' : ''}
-                ${isToday ? 'border-primary/50 bg-primary/5' : 'border-divider bg-surface'}
+                ${isToday ? 'border-accent/50 bg-accent/5' : 'border-divider bg-surface'}
                 ${isSelected && !isToday ? 'border-foreground/20 bg-surface-secondary' : ''}
               `}
             >
               <Card.Content className="p-1.5">
                 <div className="flex flex-col h-full">
                   <div
-                    className={`text-xs text-center mb-1 font-medium ${isToday ? 'text-primary' : 'text-foreground'}`}
+                    className={`text-xs text-center mb-1 font-medium ${isToday ? 'text-accent' : 'text-foreground'}`}
                   >
                     {day.getDate()}
                   </div>
@@ -316,8 +316,8 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     return (
       <div className="border border-divider rounded-xl overflow-hidden bg-surface">
         {/* Day header */}
-        <div className={`px-4 py-3 border-b border-divider ${isToday ? 'bg-primary/5' : ''}`}>
-          <h3 className={`text-sm font-medium ${isToday ? 'text-primary' : 'text-foreground'}`}>
+        <div className={`px-4 py-3 border-b border-divider ${isToday ? 'bg-accent/5' : ''}`}>
+          <h3 className={`text-sm font-medium ${isToday ? 'text-accent' : 'text-foreground'}`}>
             {formatDate(currentDate)}
           </h3>
           {allDayEvents.length > 0 && (
@@ -366,7 +366,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
             return (
               <div
                 key={index}
-                className={`flex-1 px-1 py-2 text-center border-l border-divider cursor-pointer transition-colors ${isToday ? 'bg-primary/5' : 'hover:bg-surface-secondary'}`}
+                className={`flex-1 px-1 py-2 text-center border-l border-divider cursor-pointer transition-colors ${isToday ? 'bg-accent/5' : 'hover:bg-surface-secondary'}`}
                 onClick={() => handleDateClick(day)}
                 onKeyDown={e => e.key === 'Enter' && handleDateClick(day)}
                 role="button"
@@ -376,7 +376,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                   {day.toLocaleDateString('en-US', { weekday: 'short' })}
                 </div>
                 <div
-                  className={`text-base font-semibold mt-0.5 ${isToday ? 'text-primary' : 'text-foreground'}`}
+                  className={`text-base font-semibold mt-0.5 ${isToday ? 'text-accent' : 'text-foreground'}`}
                 >
                   {day.getDate()}
                 </div>
@@ -408,7 +408,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
             return (
               <div
                 key={index}
-                className={`flex-1 border-l border-divider ${isToday ? 'bg-primary/5' : ''}`}
+                className={`flex-1 border-l border-divider ${isToday ? 'bg-accent/5' : ''}`}
               >
                 {renderDayColumn(dayEvents, isToday)}
               </div>

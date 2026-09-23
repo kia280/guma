@@ -140,8 +140,8 @@ export default function WalletPage() {
       {/* Balance + Backpack Section */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-            <Icon className="text-primary" icon="solar:wallet-money-bold-duotone" width={20} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
+            <Icon className="text-accent" icon="solar:wallet-money-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="text-sm font-medium text-foreground">{t('balanceAndBackpack')}</p>
