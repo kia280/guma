@@ -10,6 +10,9 @@ import { Logo, NotificationsCard, SidebarDrawer, Sidebar } from '@/components';
 import { cn } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
+import { clearSession } from '@/lib/session';
+import { useUserStore } from '@/lib/store';
+import { CurrentGuildProvider } from '@/lib/current-guild';
 
 interface SidebarItem {
   key: string;
@@ -94,8 +97,10 @@ export default function DashboardLayout({ children, modal }: { children: React.R
     setIsCollapsed(prev => !prev);
   }, []);
 
-  // Hardcoded balance for navbar display
-  const userBalance = 1250.75;
+  const me = useUserStore(s => s.user);
+  const userBalance = me?.balance ?? 0;
+  const displayName = me?.displayName || me?.username || '';
+  const avatarFallback = (displayName || me?.email || '?').slice(0, 2).toUpperCase();
 
   return (
     <>
@@ -211,7 +216,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
               <div className="hidden sm:flex items-center">
                 <Chip size="lg" className="cursor-default text-sm font-semibold">
                   <Icon icon="solar:wallet-linear" width={16} className="inline mr-1.5" />$
-                  {userBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  {userBalance.toLocaleString('en-US')}
                 </Chip>
               </div>
 
@@ -245,8 +250,8 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                   >
                     <Badge.Anchor>
                       <Avatar size="md">
-                        <Avatar.Image src="https://i.pravatar.cc/150?u=a04258114e29526708c" />
-                        <Avatar.Fallback>JD</Avatar.Fallback>
+                        {me?.avatarUrl && <Avatar.Image src={me.avatarUrl} />}
+                        <Avatar.Fallback>{avatarFallback}</Avatar.Fallback>
                       </Avatar>
                       <Badge color="success" placement="bottom-right" size="sm" />
                     </Badge.Anchor>
@@ -265,15 +270,15 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                             window.open('https://github.com/', '_blank');
                             break;
                           case 'logout':
-                            router.push('/login');
+                            void clearSession();
                             break;
                         }
                       }}
                     >
                       <Dropdown.Section>
                         <Dropdown.Item id="user-info" textValue={t('signedInAs')}>
-                          <p className="font-semibold">{t('signedInAs')}</p>
-                          <p className="font-semibold text-foreground/50">johndoe@example.com</p>
+                          <p className="font-semibold">{displayName || t('signedInAs')}</p>
+                          <p className="font-semibold text-foreground/50">{me?.email ?? ''}</p>
                         </Dropdown.Item>
                       </Dropdown.Section>
                       <Dropdown.Section>
@@ -314,10 +319,12 @@ export default function DashboardLayout({ children, modal }: { children: React.R
           </header>
 
           {/* Main Content Area */}
-          <div className="flex-1 overflow-auto p-6 bg-background">{children}</div>
+          <div className="flex-1 overflow-auto p-6 bg-background">
+            <CurrentGuildProvider>{children}</CurrentGuildProvider>
+          </div>
         </div>
       </div>
-      {modal}
+      <CurrentGuildProvider>{modal}</CurrentGuildProvider>
     </>
   );
 }

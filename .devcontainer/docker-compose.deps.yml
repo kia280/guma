@@ -34,6 +34,8 @@ services:
       kratos:
         condition: service_healthy
     working_dir: /workspace/web
+    environment:
+      - KRATOS_INTERNAL_URL=http://kratos:4433
 
   nginx:
     image: nginx:stable
