@@ -106,7 +106,7 @@ const BackpackItemCard = ({
                 }}
               >
                 <Dropdown.Item id="auction" textValue={t('putToAuction')}>
-                  <Icon icon="solar:hammer-linear" width={16} />
+                  <Icon icon="solar:sledgehammer-linear" width={16} />
                   <span>{t('putToAuction')}</span>
                 </Dropdown.Item>
                 <Dropdown.Item id="lottery" textValue={t('putToLottery')}>

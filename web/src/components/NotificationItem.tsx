@@ -1,85 +1,87 @@
 'use client';
 
 import React from 'react';
-import { Avatar, Badge, Button } from '@heroui/react';
+import Link from 'next/link';
+import { Button, cn } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { cn } from '@heroui/react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useNow, useTranslations } from 'next-intl';
 
-export type NotificationType = 'default' | 'request' | 'file';
+import { LIST_ROW_CLASS } from '@/lib/list-row';
+import type { GuildNotification, NotificationKind, TradeResponse } from '@/types/notification';
 
-export type NotificationItem = {
-  id: string;
-  isRead?: boolean;
-  avatar: string;
-  description: string;
-  name: string;
-  time: string;
-  type?: NotificationType;
+const KIND_META: Record<NotificationKind, { icon: string; tint: string }> = {
+  tradeOffer: { icon: 'solar:transfer-horizontal-linear', tint: 'bg-accent/10 text-accent' },
+  transferReceived: { icon: 'solar:wallet-money-linear', tint: 'bg-success/10 text-success' },
+  attendanceSettled: { icon: 'solar:check-circle-linear', tint: 'bg-success/10 text-success' },
+  lootWon: { icon: 'solar:gift-linear', tint: 'bg-warning/10 text-warning' },
+  auctionOutbid: { icon: 'solar:sledgehammer-linear', tint: 'bg-danger/10 text-danger' },
+  auctionWon: { icon: 'solar:cup-star-linear', tint: 'bg-warning/10 text-warning' },
+  lotteryWon: { icon: 'solar:ticket-linear', tint: 'bg-accent/10 text-accent' },
+  bankRequestApproved: { icon: 'solar:safe-2-linear', tint: 'bg-success/10 text-success' },
 };
 
-export type NotificationItemProps = React.HTMLAttributes<HTMLDivElement> & NotificationItem;
+export type NotificationItemProps = {
+  notification: GuildNotification;
+  onOpen: (id: string) => void;
+  onRespond: (id: string, response: TradeResponse) => void;
+};
 
-const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>(
-  ({ children, avatar, name, description, type, time, isRead, className, ...props }, ref) => {
-    const t = useTranslations('notificationItem');
-    /**
-     * Defines the content for different types of notifications.
-     */
-    const contentByType: Record<NotificationType, React.ReactNode> = {
-      default: null,
-      request: (
-        <div className="flex gap-2 pt-2">
-          <Button size="sm">{t('accept')}</Button>
-          <Button size="sm" variant="secondary">
-            {t('decline')}
-          </Button>
-        </div>
-      ),
-      file: (
-        <div className="flex items-center gap-2">
-          <Icon className="text-secondary" icon="solar:figma-file-linear" width={30} />
-          <div className="flex flex-col">
-            <strong className="type-body font-medium">Brand_Logo_v1.2.fig</strong>
-            <p className="type-caption text-hint">3.4 MB</p>
-          </div>
-        </div>
-      ),
-    };
+export function NotificationItem({ notification, onOpen, onRespond }: NotificationItemProps) {
+  const t = useTranslations('notificationItem');
+  const format = useFormatter();
+  const now = useNow({ updateInterval: 60 * 1000 });
+  const { id, kind, params, createdAt, isRead, href, response } = notification;
+  const meta = KIND_META[kind];
 
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'border-divider flex gap-3 border-b px-6 py-4',
-          {
-            'bg-accent/5': !isRead,
-          },
-          className
-        )}
-        {...props}
-      >
-        <div className="relative flex-none">
-          <Badge.Anchor>
-            <Avatar>
-              <Avatar.Image src={avatar} alt={name} />
-              <Avatar.Fallback>{name?.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-            </Avatar>
-            {!isRead && <Badge color="danger" placement="bottom-right" size="sm" />}
-          </Badge.Anchor>
-        </div>
-        <div className="flex flex-col gap-1">
-          <p className="type-body text-foreground">
-            <strong className="font-medium">{name}</strong> {description || children}
-          </p>
-          <time className="type-caption text-hint">{time}</time>
-          {type && contentByType[type]}
-        </div>
+  const body = (
+    <>
+      <div className={cn('flex size-8 shrink-0 items-center justify-center rounded-md', meta.tint)}>
+        <Icon icon={meta.icon} width={16} />
       </div>
+      <div className="flex-1 min-w-0">
+        <p className={cn('type-body', isRead ? 'text-subtle' : 'text-foreground')}>
+          {t.rich(kind, {
+            ...params,
+            b: chunks => <span className="font-medium text-foreground">{chunks}</span>,
+          })}
+        </p>
+        <time dateTime={createdAt} className="type-caption text-hint">
+          {format.relativeTime(new Date(createdAt), now)}
+        </time>
+      </div>
+      {!isRead && (
+        <span aria-label={t('unread')} className="mt-1.5 size-2 shrink-0 rounded-full bg-accent" />
+      )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} onClick={() => onOpen(id)} className={cn('flex items-start gap-3', LIST_ROW_CLASS)}>
+        {body}
+      </Link>
     );
   }
-);
 
-NotificationItem.displayName = 'NotificationItem';
-
-export { NotificationItem };
+  return (
+    <div className="flex flex-col gap-2 rounded-lg px-3 py-2.5">
+      <div className="flex items-start gap-3">{body}</div>
+      {kind === 'tradeOffer' && (
+        <div className="flex items-center gap-2 pl-11">
+          {response ? (
+            <span className="type-caption text-hint">{t(response)}</span>
+          ) : (
+            <>
+              <Button size="sm" onPress={() => onRespond(id, 'accepted')}>
+                {t('accept')}
+              </Button>
+              <Button size="sm" variant="secondary" onPress={() => onRespond(id, 'declined')}>
+                {t('decline')}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

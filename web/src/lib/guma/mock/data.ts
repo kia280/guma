@@ -24,6 +24,7 @@ import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
 import type { Transaction } from '@/types/wallet';
 import type { Lottery } from '@/types/lottery';
 import type { GuildContribution, GuildBankItem } from '@/types/guild-bank';
+import type { GuildNotification } from '@/types/notification';
 
 export type {
   MockUser,
@@ -645,3 +646,81 @@ export const mockGuildEventsApi = {
     localStorage.setItem(`guild-events-${guildId}`, JSON.stringify(filteredEvents));
   },
 };
+
+// ─── Notifications ───────────────────────────────────────────────────────────
+
+const MINUTE = 60 * 1000;
+
+export const mockNotifications: GuildNotification[] = [
+  {
+    id: 'n1',
+    kind: 'tradeOffer',
+    params: { actor: member(7).username, give: 'Fire Crystal ×2', want: 'Venom Fang ×1' },
+    createdAt: new Date(Date.now() - 4 * MINUTE).toISOString(),
+    isRead: false,
+  },
+  {
+    id: 'n2',
+    kind: 'transferReceived',
+    params: { actor: member(12).username, amount: 250 },
+    createdAt: new Date(Date.now() - 18 * MINUTE).toISOString(),
+    isRead: false,
+    href: '/dashboard/wallet',
+  },
+  {
+    id: 'n3',
+    kind: 'attendanceSettled',
+    params: { event: mockCheckins[3].description, reward: 120 },
+    createdAt: new Date(Date.now() - 55 * MINUTE).toISOString(),
+    isRead: false,
+    href: `/dashboard/attendance/${mockCheckins[3].id}`,
+  },
+  {
+    id: 'n4',
+    kind: 'lootWon',
+    params: { event: mockCheckins[5].description, item: 'Shadow Essence', quantity: 3 },
+    createdAt: new Date(Date.now() - 2 * 60 * MINUTE).toISOString(),
+    isRead: false,
+    href: `/dashboard/attendance/${mockCheckins[5].id}`,
+  },
+  {
+    id: 'n5',
+    kind: 'auctionOutbid',
+    params: { actor: member(23).username, item: 'Dragon Slayer Sword', amount: 2600 },
+    createdAt: new Date(Date.now() - 3 * 60 * MINUTE).toISOString(),
+    isRead: false,
+    href: '/dashboard/auction/1',
+  },
+  {
+    id: 'n6',
+    kind: 'tradeOffer',
+    params: { actor: member(31).username, give: 'Ancient Rune ×1', want: 'Frost Core ×4' },
+    createdAt: new Date(Date.now() - 9 * 60 * MINUTE).toISOString(),
+    isRead: true,
+    response: 'declined',
+  },
+  {
+    id: 'n7',
+    kind: 'auctionWon',
+    params: { item: 'Rare Mithril Ore', amount: 350 },
+    createdAt: new Date(Date.now() - 26 * 60 * MINUTE).toISOString(),
+    isRead: true,
+    href: '/dashboard/auction/4',
+  },
+  {
+    id: 'n8',
+    kind: 'lotteryWon',
+    params: { lottery: 'Monthly Mega Draw', prize: 'Lucky Charm' },
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * MINUTE).toISOString(),
+    isRead: true,
+    href: '/dashboard/lottery',
+  },
+  {
+    id: 'n9',
+    kind: 'bankRequestApproved',
+    params: { actor: member(1).username, amount: 200 },
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * MINUTE).toISOString(),
+    isRead: true,
+    href: '/dashboard/guild-bank',
+  },
+];

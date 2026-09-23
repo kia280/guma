@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Button, Dropdown, Avatar, Badge, Tooltip, Chip, Popover, Label } from '@heroui/react';
+import { Button, Dropdown, Avatar, Badge, Tooltip, Chip, Label } from '@heroui/react';
 import { useMediaQuery } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
 import { useTheme } from 'next-themes';
 
-import { Logo, NotificationsCard, SidebarDrawer, Sidebar } from '@/components';
+import { Logo, NotificationBell, SidebarDrawer, Sidebar } from '@/components';
 import { cn } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
@@ -221,24 +221,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
               </div>
 
               {/* Notifications */}
-              <Popover>
-                <Button
-                  isIconOnly
-                  size="lg"
-                  className="rounded-full text-subtle relative overflow-visible"
-                  variant="ghost"
-                >
-                  <Icon icon="solar:bell-linear" width={24} />
-                  <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-0.5 text-danger-foreground text-[11px] font-bold">
-                    5
-                  </span>
-                </Button>
-                <Popover.Content className="max-w-[90vw] p-0 sm:max-w-[380px]">
-                  <Popover.Dialog className="p-0 m-0">
-                    <NotificationsCard className="w-full shadow-none" />
-                  </Popover.Dialog>
-                </Popover.Content>
-              </Popover>
+              <NotificationBell />
 
               {/* User Menu */}
               <div className="px-2">
