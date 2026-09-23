@@ -210,7 +210,8 @@
     "acquired": "取得時間",
     "addNote": "新增備注…",
     "cancel": "取消",
-    "save": "儲存"
+    "save": "儲存",
+    "actions": "物品操作"
   },
   "calendarPage": {
     "loadingEvents": "載入活動中...",
