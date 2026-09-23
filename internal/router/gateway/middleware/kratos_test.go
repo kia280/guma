@@ -16,7 +16,7 @@ func TestKratosSessionMiddleware_Success(t *testing.T) {
 		if r.URL.Path != "/sessions/whoami" {
 			t.Fatalf("unexpected path: %s", r.URL.Path)
 		}
-		if !strings.Contains(r.Header.Get("Cookie"), "guma_session=valid") {
+		if !strings.Contains(r.Header.Get("Cookie"), "guma_sess=valid") {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -58,7 +58,7 @@ func TestKratosSessionMiddleware_Success(t *testing.T) {
 	}))
 
 	req := httptest.NewRequest(http.MethodGet, "/v1/navigation", nil)
-	req.AddCookie(&http.Cookie{Name: "guma_session", Value: "valid"})
+	req.AddCookie(&http.Cookie{Name: "guma_sess", Value: "valid"})
 	rr := httptest.NewRecorder()
 
 	handler.ServeHTTP(rr, req)
@@ -101,7 +101,7 @@ func TestKratosSessionMiddleware_InvalidSession(t *testing.T) {
 	}))
 
 	req := httptest.NewRequest(http.MethodGet, "/v1/navigation", nil)
-	req.AddCookie(&http.Cookie{Name: "guma_session", Value: "invalid"})
+	req.AddCookie(&http.Cookie{Name: "guma_sess", Value: "invalid"})
 	rr := httptest.NewRecorder()
 
 	handler.ServeHTTP(rr, req)

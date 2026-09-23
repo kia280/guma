@@ -17,6 +17,7 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/config"
 	"github.com/kia280/guma/internal/router/gateway/middleware"
+	"github.com/kia280/guma/internal/session"
 )
 
 // Gateway wraps the HTTP gateway server
@@ -45,6 +46,7 @@ func NewGateway(ctx context.Context, cfg *config.Config, grpcAddr string, logger
 		}),
 		runtime.WithIncomingHeaderMatcher(customHeaderMatcher),
 		runtime.WithOutgoingHeaderMatcher(outgoingHeaderMatcher),
+		runtime.WithMetadata(session.Annotator),
 	)
 
 	// gRPC connection options

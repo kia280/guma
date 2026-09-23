@@ -9,6 +9,8 @@ import (
 
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/rs/zerolog"
+
+	"github.com/kia280/guma/internal/session"
 )
 
 type sessionContextKey struct{}
@@ -16,10 +18,14 @@ type sessionContextKey struct{}
 // KratosIdentity represents a subset of identity data returned by Ory Kratos.
 type KratosIdentity struct {
 	ID     string         `json:"id"`
-	Traits map[string]any `json:"traits"`
+	Traits map[string]any `json:"traits,omitempty"`
+	Avatar string         `json:"avatar,omitempty"`
 }
 
-// KratosSession is the subset of session data we care about from the Kratos whoami endpoint.
+// KratosSession is the subset of session data attached to the HTTP request context.
+// Downstream HTTP-only consumers can read it via SessionFromContext; gRPC handlers
+// should use session.UserIDFromContext(ctx) and session.CookieFromContext(ctx)
+// instead — only those two fields cross the HTTP → gRPC boundary.
 type KratosSession struct {
 	ID              string         `json:"id"`
 	Active          bool           `json:"active"`
@@ -34,9 +40,8 @@ func SessionFromContext(ctx context.Context) (*KratosSession, bool) {
 	if ctx == nil {
 		return nil, false
 	}
-
-	session, ok := ctx.Value(sessionContextKey{}).(*KratosSession)
-	return session, ok
+	s, ok := ctx.Value(sessionContextKey{}).(*KratosSession)
+	return s, ok
 }
 
 // KratosSessionMiddleware validates incoming requests against the Kratos whoami endpoint using the
@@ -76,17 +81,21 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 				return
 			}
 
-			cookie, err := r.Cookie("guma_session")
+			cookie, err := r.Cookie(session.CookieName)
 			if err != nil {
 				writeAuthError(w, http.StatusUnauthorized, "authentication required")
 				return
 			}
 
-			session, resp, err := client.FrontendAPI.ToSession(context.Background()).
+			kratosSession, resp, err := client.FrontendAPI.ToSession(context.Background()).
 				Cookie(cookie.String()).
 				Execute()
 			if resp != nil && resp.Body != nil {
 				defer resp.Body.Close()
+			}
+
+			if sessionJSON, mErr := json.Marshal(kratosSession); mErr == nil {
+				logger.Debug().RawJSON("session", sessionJSON).Str("path", r.URL.Path).Msg("kratos to_session")
 			}
 
 			if err != nil {
@@ -108,30 +117,41 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 				return
 			}
 
-			if session == nil || !session.GetActive() {
+			if kratosSession == nil || !kratosSession.GetActive() {
 				logger.Debug().Msg("kratos session inactive")
 				writeAuthError(w, http.StatusUnauthorized, "inactive session")
 				return
 			}
 
 			identity := KratosIdentity{}
-			if ident, ok := session.GetIdentityOk(); ok && ident != nil {
+			if ident, ok := kratosSession.GetIdentityOk(); ok && ident != nil {
 				identity.ID = ident.GetId()
 				if traits, ok := ident.GetTraitsOk(); ok && traits != nil {
 					if traitMap, ok := (*traits).(map[string]any); ok {
 						identity.Traits = traitMap
 					}
 				}
+				if meta, ok := ident.GetMetadataPublicOk(); ok && meta != nil {
+					if metaMap, ok := (*meta).(map[string]any); ok {
+						if avatar, ok := metaMap["avatar"].(string); ok {
+							identity.Avatar = avatar
+						}
+					}
+				}
 			}
 
-			ctx := context.WithValue(r.Context(), sessionContextKey{}, &KratosSession{
-				ID:              session.GetId(),
-				Active:          session.GetActive(),
+			sess := &KratosSession{
+				ID:              kratosSession.GetId(),
+				Active:          kratosSession.GetActive(),
 				Identity:        identity,
-				ExpiresAt:       session.GetExpiresAt(),
-				AuthenticatedAt: session.GetAuthenticatedAt(),
-				IssuedAt:        session.GetIssuedAt(),
-			})
+				ExpiresAt:       kratosSession.GetExpiresAt(),
+				AuthenticatedAt: kratosSession.GetAuthenticatedAt(),
+				IssuedAt:        kratosSession.GetIssuedAt(),
+			}
+
+			ctx := context.WithValue(r.Context(), sessionContextKey{}, sess)
+			ctx = session.WithUserID(ctx, identity.ID)
+			ctx = session.WithCookie(ctx, cookie.Name+"="+cookie.Value)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
