@@ -40,21 +40,65 @@ export type {
 
 // ─── Shared user list ────────────────────────────────────────────────────────
 
-export const mockUsers: MockUser[] = [
-  { id: 'u1', username: 'GuildMaster', email: 'master@example.com', role: 'admin', status: 'online', lastActive: '2 min ago' },
-  { id: 'u2', username: 'DragonHunter', email: 'dragon@example.com', role: 'member', status: 'offline', lastActive: '1h ago' },
-  { id: 'u3', username: 'Healer', email: 'healer@example.com', role: 'member', status: 'online', lastActive: 'just now' },
-  { id: 'u4', username: 'Blacksmith', email: 'blacksmith@example.com', role: 'moderator', status: 'offline', lastActive: '3h ago' },
-  { id: 'u5', username: 'ShadowRogue', email: 'rogue@example.com', role: 'member', status: 'banned', lastActive: '2d ago' },
-  { id: 'u6', username: 'Enchanter', email: 'enchanter@example.com' },
-  { id: 'u7', username: 'ScrollMaster', email: 'scroll@example.com' },
-  { id: 'u8', username: 'Warrior123', email: 'warrior@example.com' },
+const MEMBER_COUNT = 300;
+
+const NAME_PREFIXES = [
+  '熊', '桑', '夜', '星', '月', '風', '雪', '影', '龍', '貓',
+  'Shadow', 'Storm', 'Frost', 'Iron', 'Silver', 'Night', 'Moon', 'Sun', 'Blood', 'Crystal',
+  '달빛', '그림자', '폭풍', '별빛', '불꽃', '하늘', '용', '검은',
 ];
+
+const NAME_SUFFIXES = [
+  '寶寶', '小隊長', '劍士', '法師', '射手', '不睡', '吃貨', '大俠',
+  'Blade', 'Hunter', 'Knight', 'Mage', 'Wolf', 'Fox', 'Rider', 'Walker',
+  '전사', '기사', '마법사', '궁수', '도적', '사냥꾼',
+];
+
+const LAST_ACTIVE = ['just now', '2 min ago', '15 min ago', '1h ago', '3h ago', '8h ago', '1d ago', '3d ago', '1w ago'];
+
+function seededRandom(seed: number): () => number {
+  let state = seed;
+  return () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function roleFor(n: number): string {
+  if (n === 1) return 'owner';
+  if (n <= 4) return 'admin';
+  if (n % 40 === 0) return 'moderator';
+  return 'member';
+}
+
+function generateMembers(): MockUser[] {
+  const random = seededRandom(20260923);
+  const pick = <T,>(items: readonly T[]) => items[Math.floor(random() * items.length)];
+  const names = NAME_PREFIXES.flatMap(prefix => NAME_SUFFIXES.map(suffix => prefix + suffix))
+    .sort(() => random() - 0.5);
+
+  return Array.from({ length: MEMBER_COUNT }, (_, i) => {
+    const n = i + 1;
+    const roll = random();
+    return {
+      id: `u${n}`,
+      username: names[i] ?? `Member${n}`,
+      email: `member${n}@example.com`,
+      role: roleFor(n),
+      status: roll < 0.02 ? 'banned' : roll < 0.27 ? 'online' : 'offline',
+      lastActive: pick(LAST_ACTIVE),
+    };
+  });
+}
+
+export const mockUsers: MockUser[] = generateMembers();
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export const GUILD_STATS: GuildStats = {
-  members: 42,
+  members: mockUsers.length,
   activeEvents: 5,
   balance: 128_450,
   checkinsThisWeek: 31,
