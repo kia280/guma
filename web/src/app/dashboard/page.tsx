@@ -436,8 +436,8 @@ export default function DashboardPage() {
       {/* ── Announcement modal ── */}
       <Modal state={annModalState}>
       <Modal.Backdrop>
-        <Modal.Container size="md">
-          <Modal.Dialog className="bg-surface border border-divider">
+        <Modal.Container size="lg">
+          <Modal.Dialog className="bg-surface border border-divider max-w-2xl">
             <Modal.CloseTrigger />
             <Modal.Header className="text-center items-center border-b border-divider pb-3">
               <div className="flex items-start gap-3 pr-10">
