@@ -6,8 +6,8 @@
 
   // Configure Features
   "features": {
-    "ghcr.io/devcontainers/features/node:1.6.3": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2.12.4": {
+    "ghcr.io/devcontainers/features/node:1.7.1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2.16.1": {
       "moby": false
     },
     "ghcr.io/devcontainers/features/github-cli:1.0.15": {},
