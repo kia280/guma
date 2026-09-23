@@ -16,25 +16,10 @@ database:
   max_open_conns: 25
   max_idle_conns: 5
 
-# Redis configuration
-redis:
-  url: redis://localhost:6379/0
-
 # Authentication configuration
 auth:
-  jwt_secret: your-jwt-secret-key-here
-  oauth_client_id: your-oauth-client-id
-  oauth_client_secret: your-oauth-client-secret
   kratos_public_url: http://localhost:8081
   kratos_admin_url: http://localhost:4434
-
-# File storage configuration (MinIO/S3)
-storage:
-  endpoint: localhost:9000
-  access_key: minioadmin
-  secret_key: minioadmin
-  use_ssl: false
-  bucket: guma
 
 # Logging configuration
 logging:
