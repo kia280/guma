@@ -35,6 +35,9 @@ PostgreSQL is accessed through `pgx` and generated `sqlc` queries.
 - Keep API changes synchronized across protobuf definitions, generated clients,
   gateway registration, handlers, services, and frontend types as applicable.
 - Add or update focused tests with behavior changes.
+- Do not write code comments unless the user explicitly asks for them. Leave
+  existing comments in place. Good code should be self-contained: clear names and
+  structure should make it understandable without comments.
 - Use `gofmt` for Go and follow the existing TypeScript/React style.
 - Never commit secrets or local values from `config.yaml` or environment files.
 
