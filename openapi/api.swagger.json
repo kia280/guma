@@ -1,10 +1,22 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/guma/v1/guild.proto",
+    "title": "proto/guma/v1/item.proto",
     "version": "version not set"
   },
   "tags": [
+    {
+      "name": "AuctionService"
+    },
+    {
+      "name": "BankService"
+    },
+    {
+      "name": "CheckInService"
+    },
+    {
+      "name": "EventService"
+    },
     {
       "name": "GuildService"
     },
@@ -15,7 +27,16 @@
       "name": "HealthService"
     },
     {
+      "name": "LotteryService"
+    },
+    {
       "name": "MemberService"
+    },
+    {
+      "name": "UserService"
+    },
+    {
+      "name": "WalletService"
     }
   ],
   "consumes": [
@@ -156,7 +177,8 @@
             "type": "string"
           },
           {
-            "name": "filter",
+            "name": "search",
+            "description": "Free-text search on name/description",
             "in": "query",
             "required": false,
             "type": "string"
@@ -198,6 +220,29 @@
             }
           }
         ],
+        "tags": [
+          "GuildService"
+        ]
+      }
+    },
+    "/v1/guilds/current": {
+      "get": {
+        "summary": "Returns the guild the authenticated user is currently active in",
+        "operationId": "GuildService_GetCurrentGuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetCurrentGuildResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
         "tags": [
           "GuildService"
         ]
@@ -359,6 +404,1376 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/auctions": {
+      "get": {
+        "operationId": "AuctionService_ListAuctions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListAuctionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "AuctionStatus filter; empty = all",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "category",
+            "description": "Item.category filter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "rarity",
+            "description": "Item.rarity filter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AuctionService"
+        ]
+      },
+      "post": {
+        "operationId": "AuctionService_CreateAuction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateAuctionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuctionServiceCreateAuctionBody"
+            }
+          }
+        ],
+        "tags": [
+          "AuctionService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/auctions/{auctionId}": {
+      "get": {
+        "operationId": "AuctionService_GetAuction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetAuctionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "auctionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AuctionService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/auctions/{auctionId}/bids": {
+      "get": {
+        "summary": "Returns the full ordered bid history for an auction",
+        "operationId": "AuctionService_GetBidHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetBidHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "auctionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AuctionService"
+        ]
+      },
+      "post": {
+        "operationId": "AuctionService_PlaceBid",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PlaceBidResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "auctionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuctionServicePlaceBidBody"
+            }
+          }
+        ],
+        "tags": [
+          "AuctionService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/auctions/{auctionId}/cancel": {
+      "post": {
+        "operationId": "AuctionService_CancelAuction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelAuctionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "auctionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuctionServiceCancelAuctionBody"
+            }
+          }
+        ],
+        "tags": [
+          "AuctionService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/backpack": {
+      "get": {
+        "summary": "Backpack: items owned by the current user within this guild",
+        "operationId": "WalletService_ListBackpackItems",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListBackpackItemsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/backpack/{itemId}/withdraw": {
+      "post": {
+        "operationId": "WalletService_WithdrawBackpackItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1WithdrawBackpackItemResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceWithdrawBackpackItemBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/bank": {
+      "get": {
+        "summary": "Get the guild bank summary (balance, goal, top contributors)",
+        "operationId": "BankService_GetBank",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetBankResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/bank/contribute": {
+      "post": {
+        "summary": "Contribute funds from personal wallet to guild bank",
+        "operationId": "BankService_ContributeFunds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ContributeFundsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BankServiceContributeFundsBody"
+            }
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/bank/contributions": {
+      "get": {
+        "operationId": "BankService_ListContributions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListContributionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/bank/fund-requests": {
+      "get": {
+        "operationId": "BankService_ListFundRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListFundRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "\"pending\" | \"approved\" | \"rejected\" | \"\" (all)",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/bank/fund-requests/{requestId}": {
+      "patch": {
+        "summary": "Approve or reject a pending fund request (admin)",
+        "operationId": "BankService_ReviewFundRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReviewFundRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BankServiceReviewFundRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/bank/item-requests": {
+      "post": {
+        "summary": "Request an item from guild bank (requires approval)",
+        "operationId": "BankService_RequestItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RequestItemResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BankServiceRequestItemBody"
+            }
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/bank/item-requests/{requestId}": {
+      "patch": {
+        "operationId": "BankService_ReviewItemRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReviewItemRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BankServiceReviewItemRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/bank/items": {
+      "get": {
+        "operationId": "BankService_ListBankItems",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListBankItemsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "rarity",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      },
+      "post": {
+        "summary": "Donate an item from personal backpack to guild bank",
+        "operationId": "BankService_DonateItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DonateItemResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BankServiceDonateItemBody"
+            }
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/bank/request-funds": {
+      "post": {
+        "summary": "Request withdrawal from guild bank (requires approval)",
+        "operationId": "BankService_RequestFunds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RequestFundsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BankServiceRequestFundsBody"
+            }
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkins": {
+      "get": {
+        "operationId": "CheckInService_ListCheckIns",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListCheckInsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "\"active\" | \"expired\" | \"\" (all)",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      },
+      "post": {
+        "operationId": "CheckInService_CreateCheckIn",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateCheckInResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInServiceCreateCheckInBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkins/{checkinId}": {
+      "get": {
+        "operationId": "CheckInService_GetCheckIn",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetCheckInResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      },
+      "delete": {
+        "operationId": "CheckInService_DeleteCheckIn",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteCheckInResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      },
+      "patch": {
+        "operationId": "CheckInService_UpdateCheckIn",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateCheckInResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInServiceUpdateCheckInBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkins/{checkinId}/attend": {
+      "post": {
+        "summary": "Member submits their attendance for a check-in",
+        "operationId": "CheckInService_SubmitAttendance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SubmitAttendanceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInServiceSubmitAttendanceBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkins/{checkinId}/attendees": {
+      "get": {
+        "summary": "List who attended a check-in",
+        "operationId": "CheckInService_ListAttendees",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListAttendeesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/events": {
+      "get": {
+        "operationId": "EventService_ListEvents",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListEventsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "view",
+            "description": "\"month\" | \"week\" | \"day\"",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date",
+            "description": "ISO 8601 date anchor for the view",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      },
+      "post": {
+        "operationId": "EventService_CreateEvent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateEventResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EventServiceCreateEventBody"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/events/range": {
+      "get": {
+        "summary": "Query events across a date range (for calendar views)",
+        "operationId": "EventService_ListEventsByRange",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListEventsByRangeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "startDate",
+            "description": "ISO 8601",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "endDate",
+            "description": "ISO 8601",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/events/upcoming": {
+      "get": {
+        "summary": "List upcoming events (for dashboard feed)",
+        "operationId": "EventService_ListUpcomingEvents",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListUpcomingEventsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "description": "Default: 10",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/events/{eventId}": {
+      "get": {
+        "operationId": "EventService_GetEvent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetEventResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      },
+      "delete": {
+        "operationId": "EventService_DeleteEvent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteEventResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      },
+      "patch": {
+        "operationId": "EventService_UpdateEvent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateEventResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/EventServiceUpdateEventBody"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/invites": {
       "get": {
         "operationId": "MemberService_ListInvites",
@@ -472,6 +1887,329 @@
         ],
         "tags": [
           "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/join": {
+      "post": {
+        "operationId": "GuildService_JoinGuildById",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1JoinGuildByIdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GuildServiceJoinGuildByIdBody"
+            }
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/leave": {
+      "post": {
+        "operationId": "GuildService_LeaveGuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1LeaveGuildResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GuildServiceLeaveGuildBody"
+            }
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/lotteries": {
+      "get": {
+        "operationId": "LotteryService_ListLotteries",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListLotteriesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "\"active\" | \"upcoming\" | \"ended\" | \"\" (all)",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LotteryService"
+        ]
+      },
+      "post": {
+        "operationId": "LotteryService_CreateLottery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateLotteryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LotteryServiceCreateLotteryBody"
+            }
+          }
+        ],
+        "tags": [
+          "LotteryService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/lotteries/{lotteryId}": {
+      "get": {
+        "operationId": "LotteryService_GetLottery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetLotteryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lotteryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LotteryService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/lotteries/{lotteryId}/draw": {
+      "post": {
+        "summary": "Draw the lottery manually (admin action)",
+        "operationId": "LotteryService_DrawLottery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DrawLotteryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lotteryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LotteryServiceDrawLotteryBody"
+            }
+          }
+        ],
+        "tags": [
+          "LotteryService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/lotteries/{lotteryId}/tickets": {
+      "post": {
+        "operationId": "LotteryService_PurchaseTickets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PurchaseTicketsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lotteryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LotteryServicePurchaseTicketsBody"
+            }
+          }
+        ],
+        "tags": [
+          "LotteryService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/lotteries/{lotteryId}/winners": {
+      "get": {
+        "operationId": "LotteryService_GetLotteryWinners",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetLotteryWinnersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lotteryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LotteryService"
         ]
       }
     },
@@ -741,6 +2479,356 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/wallet": {
+      "get": {
+        "summary": "Get the current user's wallet for a specific guild",
+        "operationId": "WalletService_GetWallet",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetWalletResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/wallet/deposit": {
+      "post": {
+        "operationId": "WalletService_DepositFunds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TransactionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceDepositFundsBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/wallet/transactions": {
+      "get": {
+        "operationId": "WalletService_ListTransactions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListTransactionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "description": "TransactionType filter; empty = all",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/wallet/transfer": {
+      "post": {
+        "operationId": "WalletService_TransferFunds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TransactionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceTransferFundsBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/wallet/withdraw": {
+      "post": {
+        "operationId": "WalletService_WithdrawFunds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TransactionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceWithdrawFundsBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "summary": "Get authenticated user's profile",
+        "operationId": "UserService_GetMe",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "UserService"
+        ]
+      },
+      "patch": {
+        "summary": "Update authenticated user's profile",
+        "operationId": "UserService_UpdateMe",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/v1/me/balance-trend": {
+      "get": {
+        "summary": "Get balance history for charts",
+        "operationId": "UserService_GetBalanceTrend",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetBalanceTrendResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "days",
+            "description": "Default: 30",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/v1/me/lottery-tickets": {
+      "get": {
+        "summary": "List tickets owned by the current user",
+        "operationId": "LotteryService_ListMyTickets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyTicketsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "description": "Optional: filter by guild",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LotteryService"
+        ]
+      }
+    },
+    "/v1/me/stats": {
+      "get": {
+        "summary": "Get authenticated user's aggregate stats",
+        "operationId": "UserService_GetUserStats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserStatsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
     "/v1/navigation": {
       "get": {
         "summary": "Navigation and UI",
@@ -871,9 +2959,295 @@
           "GumaService"
         ]
       }
+    },
+    "/v1/users/{userId}": {
+      "get": {
+        "summary": "Get any user's public profile",
+        "operationId": "UserService_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
     }
   },
   "definitions": {
+    "AuctionServiceCancelAuctionBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "AuctionServiceCreateAuctionBody": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1Item"
+        },
+        "startingBid": {
+          "type": "string",
+          "format": "int64"
+        },
+        "minBidIncrement": {
+          "type": "string",
+          "format": "int64"
+        },
+        "durationHours": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "isBlind": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "title": "\"UPCOMING\" (scheduled) or \"ACTIVE\" (starts immediately)"
+        }
+      }
+    },
+    "AuctionServicePlaceBidBody": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "BankServiceContributeFundsBody": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "BankServiceDonateItemBody": {
+      "type": "object",
+      "properties": {
+        "backpackItemId": {
+          "type": "string",
+          "title": "Item from user's backpack"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "BankServiceRequestFundsBody": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "BankServiceRequestItemBody": {
+      "type": "object",
+      "properties": {
+        "bankItemId": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "BankServiceReviewFundRequestBody": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "\"approved\" | \"rejected\""
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "BankServiceReviewItemRequestBody": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "\"approved\" | \"rejected\""
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "CheckInServiceCreateCheckInBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "datetime": {
+          "type": "string",
+          "title": "ISO 8601 datetime of the check-in event"
+        },
+        "expireTime": {
+          "type": "string",
+          "title": "ISO 8601 datetime when the window closes"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          },
+          "title": "Items distributed to attendees"
+        }
+      }
+    },
+    "CheckInServiceSubmitAttendanceBody": {
+      "type": "object"
+    },
+    "CheckInServiceUpdateCheckInBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "datetime": {
+          "type": "string"
+        },
+        "expireTime": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        }
+      }
+    },
+    "EventServiceCreateEventBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "title": "EventType"
+        },
+        "startDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime"
+        },
+        "endDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime"
+        },
+        "isAllDay": {
+          "type": "boolean"
+        },
+        "location": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "title": "\"low\" | \"medium\" | \"high\" | \"critical\""
+        },
+        "isRecurring": {
+          "type": "boolean"
+        },
+        "recurringPattern": {
+          "$ref": "#/definitions/v1RecurringPattern"
+        }
+      }
+    },
+    "EventServiceUpdateEventBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string"
+        },
+        "endDate": {
+          "type": "string"
+        },
+        "isAllDay": {
+          "type": "boolean"
+        },
+        "location": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string"
+        },
+        "isRecurring": {
+          "type": "boolean"
+        },
+        "recurringPattern": {
+          "$ref": "#/definitions/v1RecurringPattern"
+        }
+      }
+    },
+    "GuildServiceJoinGuildByIdBody": {
+      "type": "object"
+    },
+    "GuildServiceLeaveGuildBody": {
+      "type": "object"
+    },
     "GuildServiceUpdateGuildBody": {
       "type": "object",
       "properties": {
@@ -888,6 +3262,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "iconUrl": {
+          "type": "string"
+        },
+        "bannerUrl": {
+          "type": "string"
         }
       }
     },
@@ -896,6 +3276,54 @@
       "properties": {
         "settings": {
           "$ref": "#/definitions/v1GuildSettings"
+        }
+      }
+    },
+    "LotteryServiceCreateLotteryBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ticketPrice": {
+          "type": "string",
+          "format": "int64"
+        },
+        "maxTickets": {
+          "type": "integer",
+          "format": "int32",
+          "title": "0 = unlimited"
+        },
+        "maxTicketsPerUser": {
+          "type": "integer",
+          "format": "int32",
+          "title": "0 = unlimited"
+        },
+        "drawDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime"
+        },
+        "prizes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LotteryPrize"
+          }
+        }
+      }
+    },
+    "LotteryServiceDrawLotteryBody": {
+      "type": "object"
+    },
+    "LotteryServicePurchaseTicketsBody": {
+      "type": "object",
+      "properties": {
+        "quantity": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -945,6 +3373,48 @@
           "additionalProperties": {
             "type": "string"
           }
+        }
+      }
+    },
+    "WalletServiceDepositFundsBody": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "WalletServiceTransferFundsBody": {
+      "type": "object",
+      "properties": {
+        "toUserId": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "WalletServiceWithdrawBackpackItemBody": {
+      "type": "object"
+    },
+    "WalletServiceWithdrawFundsBody": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "note": {
+          "type": "string"
         }
       }
     },
@@ -1029,6 +3499,278 @@
         }
       }
     },
+    "v1AuctionItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "sellerId": {
+          "type": "string"
+        },
+        "item": {
+          "$ref": "#/definitions/v1Item"
+        },
+        "startingBid": {
+          "type": "string",
+          "format": "int64"
+        },
+        "currentBid": {
+          "type": "string",
+          "format": "int64"
+        },
+        "currentBidderId": {
+          "type": "string"
+        },
+        "minBidIncrement": {
+          "type": "string",
+          "format": "int64"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string"
+        },
+        "isBlind": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1BackpackItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "item": {
+          "$ref": "#/definitions/v1Item"
+        },
+        "source": {
+          "type": "string",
+          "title": "ItemSource"
+        },
+        "sourceId": {
+          "type": "string",
+          "title": "ID of the originating auction/lottery"
+        },
+        "note": {
+          "type": "string"
+        },
+        "acquiredAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1BalancePoint": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "title": "ISO 8601 date"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1BankContribution": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1BankItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "donorId": {
+          "type": "string"
+        },
+        "donorName": {
+          "type": "string"
+        },
+        "item": {
+          "$ref": "#/definitions/v1Item"
+        },
+        "quantity": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "note": {
+          "type": "string"
+        },
+        "donatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1Bid": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "auctionId": {
+          "type": "string"
+        },
+        "bidderId": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "isWinning": {
+          "type": "boolean"
+        },
+        "placedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "bidderUsername": {
+          "type": "string"
+        },
+        "bidderAvatarUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CancelAuctionResponse": {
+      "type": "object",
+      "properties": {
+        "auction": {
+          "$ref": "#/definitions/v1AuctionItem"
+        }
+      }
+    },
+    "v1CheckIn": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "datetime": {
+          "type": "string"
+        },
+        "expireTime": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        },
+        "attendanceCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "isExpired": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1CheckInAttendee": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "checkinId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "attendedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "v1CheckResponse": {
       "type": "object",
       "properties": {
@@ -1055,6 +3797,41 @@
         }
       },
       "title": "CheckResponse is the response from a health check"
+    },
+    "v1ContributeFundsResponse": {
+      "type": "object",
+      "properties": {
+        "contribution": {
+          "$ref": "#/definitions/v1BankContribution"
+        },
+        "updatedBank": {
+          "$ref": "#/definitions/v1GuildBank"
+        }
+      }
+    },
+    "v1CreateAuctionResponse": {
+      "type": "object",
+      "properties": {
+        "auction": {
+          "$ref": "#/definitions/v1AuctionItem"
+        }
+      }
+    },
+    "v1CreateCheckInResponse": {
+      "type": "object",
+      "properties": {
+        "checkin": {
+          "$ref": "#/definitions/v1CheckIn"
+        }
+      }
+    },
+    "v1CreateEventResponse": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "$ref": "#/definitions/v1GuildEvent"
+        }
+      }
     },
     "v1CreateGuildRequest": {
       "type": "object",
@@ -1088,6 +3865,14 @@
         }
       }
     },
+    "v1CreateLotteryResponse": {
+      "type": "object",
+      "properties": {
+        "lottery": {
+          "$ref": "#/definitions/v1Lottery"
+        }
+      }
+    },
     "v1DashboardData": {
       "type": "object",
       "properties": {
@@ -1110,11 +3895,92 @@
         }
       }
     },
+    "v1DeleteCheckInResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteEventResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1DeleteGuildResponse": {
       "type": "object",
       "properties": {
         "success": {
           "type": "boolean"
+        }
+      }
+    },
+    "v1DonateItemResponse": {
+      "type": "object",
+      "properties": {
+        "bankItem": {
+          "$ref": "#/definitions/v1BankItem"
+        }
+      }
+    },
+    "v1DrawLotteryResponse": {
+      "type": "object",
+      "properties": {
+        "lottery": {
+          "$ref": "#/definitions/v1Lottery"
+        },
+        "winners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LotteryWinner"
+          }
+        }
+      }
+    },
+    "v1FundRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "requesterId": {
+          "type": "string"
+        },
+        "requesterName": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "title": "\"pending\" | \"approved\" | \"rejected\""
+        },
+        "reviewerId": {
+          "type": "string"
+        },
+        "reviewNote": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -1134,11 +4000,83 @@
         }
       }
     },
+    "v1GetAuctionResponse": {
+      "type": "object",
+      "properties": {
+        "auction": {
+          "$ref": "#/definitions/v1AuctionItem"
+        }
+      }
+    },
+    "v1GetBalanceTrendResponse": {
+      "type": "object",
+      "properties": {
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BalancePoint"
+          }
+        }
+      }
+    },
+    "v1GetBankResponse": {
+      "type": "object",
+      "properties": {
+        "bank": {
+          "$ref": "#/definitions/v1GuildBank"
+        }
+      }
+    },
+    "v1GetBidHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "bids": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Bid"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1GetCheckInResponse": {
+      "type": "object",
+      "properties": {
+        "checkin": {
+          "$ref": "#/definitions/v1CheckIn"
+        }
+      }
+    },
+    "v1GetCurrentGuildResponse": {
+      "type": "object",
+      "properties": {
+        "guild": {
+          "$ref": "#/definitions/v1Guild",
+          "title": "null/empty if user is not in any guild"
+        }
+      }
+    },
     "v1GetDashboardDataResponse": {
       "type": "object",
       "properties": {
         "data": {
           "$ref": "#/definitions/v1DashboardData"
+        }
+      }
+    },
+    "v1GetEventResponse": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "$ref": "#/definitions/v1GuildEvent"
         }
       }
     },
@@ -1155,6 +4093,34 @@
       "properties": {
         "settings": {
           "$ref": "#/definitions/v1GuildSettings"
+        }
+      }
+    },
+    "v1GetLotteryResponse": {
+      "type": "object",
+      "properties": {
+        "lottery": {
+          "$ref": "#/definitions/v1Lottery"
+        }
+      }
+    },
+    "v1GetLotteryWinnersResponse": {
+      "type": "object",
+      "properties": {
+        "winners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LotteryWinner"
+          }
+        }
+      }
+    },
+    "v1GetMeResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
         }
       }
     },
@@ -1183,6 +4149,30 @@
       "properties": {
         "preferences": {
           "$ref": "#/definitions/v1UserPreferences"
+        }
+      }
+    },
+    "v1GetUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1GetUserStatsResponse": {
+      "type": "object",
+      "properties": {
+        "stats": {
+          "$ref": "#/definitions/v1UserStats"
+        }
+      }
+    },
+    "v1GetWalletResponse": {
+      "type": "object",
+      "properties": {
+        "wallet": {
+          "$ref": "#/definitions/v1Wallet"
         }
       }
     },
@@ -1228,9 +4218,112 @@
             "type": "object",
             "$ref": "#/definitions/v1Plugin"
           }
+        },
+        "iconUrl": {
+          "type": "string"
+        },
+        "bannerUrl": {
+          "type": "string"
         }
       },
       "title": "Data structures"
+    },
+    "v1GuildBank": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "goal": {
+          "type": "string",
+          "format": "int64"
+        },
+        "topContributors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1TopContributor"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1GuildEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime"
+        },
+        "endDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime"
+        },
+        "isAllDay": {
+          "type": "boolean"
+        },
+        "location": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string"
+        },
+        "isRecurring": {
+          "type": "boolean"
+        },
+        "recurringPattern": {
+          "$ref": "#/definitions/v1RecurringPattern"
+        },
+        "participantIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     },
     "v1GuildSettings": {
       "type": "object",
@@ -1302,6 +4395,76 @@
         }
       }
     },
+    "v1Item": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "rarity": {
+          "type": "string"
+        }
+      },
+      "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, check-in loot, lotteries).\n\nItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC\nItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC"
+    },
+    "v1ItemRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "bankItemId": {
+          "type": "string"
+        },
+        "requesterId": {
+          "type": "string"
+        },
+        "requesterName": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "title": "\"pending\" | \"approved\" | \"rejected\""
+        },
+        "reviewerId": {
+          "type": "string"
+        },
+        "reviewNote": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1JoinGuildByIdResponse": {
+      "type": "object",
+      "properties": {
+        "guild": {
+          "$ref": "#/definitions/v1Guild"
+        }
+      }
+    },
     "v1JoinGuildRequest": {
       "type": "object",
       "properties": {
@@ -1315,6 +4478,14 @@
       "properties": {
         "member": {
           "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
+    "v1LeaveGuildResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
         }
       }
     },
@@ -1332,6 +4503,177 @@
         "maxFileSizeBytes": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "v1ListAttendeesResponse": {
+      "type": "object",
+      "properties": {
+        "attendees": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CheckInAttendee"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListAuctionsResponse": {
+      "type": "object",
+      "properties": {
+        "auctions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1AuctionItem"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListBackpackItemsResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BackpackItem"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListBankItemsResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BankItem"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListCheckInsResponse": {
+      "type": "object",
+      "properties": {
+        "checkins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CheckIn"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListContributionsResponse": {
+      "type": "object",
+      "properties": {
+        "contributions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BankContribution"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListEventsByRangeResponse": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GuildEvent"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListEventsResponse": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GuildEvent"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListFundRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FundRequest"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -1369,6 +4711,25 @@
         }
       }
     },
+    "v1ListLotteriesResponse": {
+      "type": "object",
+      "properties": {
+        "lotteries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Lottery"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "v1ListMembersResponse": {
       "type": "object",
       "properties": {
@@ -1385,6 +4746,198 @@
         "totalCount": {
           "type": "integer",
           "format": "int32"
+        }
+      }
+    },
+    "v1ListMyTicketsResponse": {
+      "type": "object",
+      "properties": {
+        "tickets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LotteryTicket"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListTransactionsResponse": {
+      "type": "object",
+      "properties": {
+        "transactions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Transaction"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListUpcomingEventsResponse": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GuildEvent"
+          }
+        }
+      }
+    },
+    "v1Lottery": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ticketPrice": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ticketsSold": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxTickets": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxTicketsPerUser": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "status": {
+          "type": "string"
+        },
+        "drawDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime"
+        },
+        "prizes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LotteryPrize"
+          }
+        },
+        "winners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LotteryWinner"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1LotteryPrize": {
+      "type": "object",
+      "properties": {
+        "rank": {
+          "type": "integer",
+          "format": "int32",
+          "title": "1st, 2nd, 3rd place"
+        },
+        "description": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "title": "Currency prize; 0 if item prize"
+        },
+        "item": {
+          "$ref": "#/definitions/v1Item",
+          "title": "Item prize; unset if currency prize"
+        }
+      }
+    },
+    "v1LotteryTicket": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "lotteryId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "ticketNumber": {
+          "type": "string"
+        },
+        "purchasedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1LotteryWinner": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "lotteryId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "prizeAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "prizeDescription": {
+          "type": "string"
+        },
+        "ticketNumber": {
+          "type": "string"
         }
       }
     },
@@ -1490,6 +5043,17 @@
         }
       }
     },
+    "v1PlaceBidResponse": {
+      "type": "object",
+      "properties": {
+        "auction": {
+          "$ref": "#/definitions/v1AuctionItem"
+        },
+        "bid": {
+          "$ref": "#/definitions/v1Bid"
+        }
+      }
+    },
     "v1Plugin": {
       "type": "object",
       "properties": {
@@ -1507,6 +5071,22 @@
         },
         "description": {
           "type": "string"
+        }
+      }
+    },
+    "v1PurchaseTicketsResponse": {
+      "type": "object",
+      "properties": {
+        "tickets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LotteryTicket"
+          }
+        },
+        "totalCost": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1534,11 +5114,82 @@
         }
       }
     },
+    "v1RecurringPattern": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "\"daily\" | \"weekly\" | \"monthly\" | \"custom\""
+        },
+        "interval": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "daysOfWeek": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "title": "0=Mon … 6=Sun"
+        },
+        "endDate": {
+          "type": "string",
+          "title": "ISO 8601 date; empty means no end"
+        },
+        "occurrences": {
+          "type": "integer",
+          "format": "int32",
+          "title": "0 means unlimited"
+        },
+        "customHours": {
+          "type": "integer",
+          "format": "int32",
+          "title": "for type=\"custom\""
+        },
+        "customMinutes": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "v1RemoveMemberResponse": {
       "type": "object",
       "properties": {
         "success": {
           "type": "boolean"
+        }
+      }
+    },
+    "v1RequestFundsResponse": {
+      "type": "object",
+      "properties": {
+        "fundRequest": {
+          "$ref": "#/definitions/v1FundRequest"
+        }
+      }
+    },
+    "v1RequestItemResponse": {
+      "type": "object",
+      "properties": {
+        "itemRequest": {
+          "$ref": "#/definitions/v1ItemRequest"
+        }
+      }
+    },
+    "v1ReviewFundRequestResponse": {
+      "type": "object",
+      "properties": {
+        "fundRequest": {
+          "$ref": "#/definitions/v1FundRequest"
+        }
+      }
+    },
+    "v1ReviewItemRequestResponse": {
+      "type": "object",
+      "properties": {
+        "itemRequest": {
+          "$ref": "#/definitions/v1ItemRequest"
         }
       }
     },
@@ -1613,6 +5264,99 @@
       "description": "- STATUS_CODE_SERVING: SERVING indicates the application is ready to accept traffic\n - STATUS_CODE_NOT_READY: NOT_READY indicates the application is not ready to accept traffic\n - STATUS_CODE_UNKNOWN: UNKNOWN indicates the health status could not be determined",
       "title": "StatusCode represents the overall health status of the application"
     },
+    "v1SubmitAttendanceResponse": {
+      "type": "object",
+      "properties": {
+        "attendee": {
+          "$ref": "#/definitions/v1CheckInAttendee"
+        }
+      }
+    },
+    "v1TopContributor": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "totalContributed": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1Transaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "balanceAfter": {
+          "type": "string",
+          "format": "int64"
+        },
+        "description": {
+          "type": "string"
+        },
+        "referenceId": {
+          "type": "string",
+          "title": "Linked entity ID (auction_id, lottery_id, etc.)"
+        },
+        "referenceType": {
+          "type": "string",
+          "title": "\"auction\" | \"lottery\" | \"checkin\" | \"manual\""
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1TransactionResponse": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "$ref": "#/definitions/v1Transaction"
+        },
+        "updatedWallet": {
+          "$ref": "#/definitions/v1Wallet"
+        }
+      }
+    },
+    "v1UpdateCheckInResponse": {
+      "type": "object",
+      "properties": {
+        "checkin": {
+          "$ref": "#/definitions/v1CheckIn"
+        }
+      }
+    },
+    "v1UpdateEventResponse": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "$ref": "#/definitions/v1GuildEvent"
+        }
+      }
+    },
     "v1UpdateGuildResponse": {
       "type": "object",
       "properties": {
@@ -1626,6 +5370,31 @@
       "properties": {
         "settings": {
           "$ref": "#/definitions/v1GuildSettings"
+        }
+      }
+    },
+    "v1UpdateMeRequest": {
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdateMeResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
         }
       }
     },
@@ -1650,6 +5419,50 @@
       "properties": {
         "preferences": {
           "$ref": "#/definitions/v1UserPreferences"
+        }
+      }
+    },
+    "v1User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "guildIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "currentGuildId": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1685,6 +5498,39 @@
         }
       }
     },
+    "v1UserStats": {
+      "type": "object",
+      "properties": {
+        "guildsJoined": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "eventsAttended": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "auctionsWon": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "lotteriesWon": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "totalEarned": {
+          "type": "string",
+          "format": "int64"
+        },
+        "totalSpent": {
+          "type": "string",
+          "format": "int64"
+        },
+        "checkinsCompleted": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "v1ValidateInviteCodeResponse": {
       "type": "object",
       "properties": {
@@ -1696,6 +5542,41 @@
         },
         "guildName": {
           "type": "string"
+        }
+      }
+    },
+    "v1Wallet": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "title": "user_id serves as the wallet identifier within a guild"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1WithdrawBackpackItemResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1BackpackItem"
         }
       }
     }
