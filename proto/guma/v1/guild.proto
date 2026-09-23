@@ -80,7 +80,8 @@ message CreateGuildRequest {
   string name = 1;
   string description = 2;
   map<string, string> settings = 3;
-  repeated string tags = 4;
+  reserved 4;
+  reserved "tags";
 }
 
 message CreateGuildResponse {
@@ -99,7 +100,8 @@ message UpdateGuildRequest {
   string guild_id = 1;
   string name = 2;
   string description = 3;
-  repeated string tags = 4;
+  reserved 4;
+  reserved "tags";
   string icon_url = 5;
   string banner_url = 6;
 }
@@ -174,7 +176,8 @@ message Guild {
   string name = 2;
   string description = 3;
   string owner_id = 4;
-  repeated string tags = 5;
+  reserved 5;
+  reserved "tags";
   GuildSettings settings = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;

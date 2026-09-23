@@ -1,13 +1,12 @@
 -- name: CreateGuild :one
 INSERT INTO guilds (
-    name, description, owner_id, tags,
+    name, description, owner_id,
     timezone, language, public, allow_invites, custom_settings,
     icon_url, banner_url
 ) VALUES (
     sqlc.arg(name)::text,
     NULLIF(sqlc.arg(description)::text, ''),
     sqlc.arg(owner_id),
-    sqlc.arg(tags)::text[],
     'UTC', 'en', false, true,
     sqlc.arg(custom_settings)::jsonb,
     NULLIF(sqlc.arg(icon_url)::text, ''),
@@ -16,7 +15,6 @@ INSERT INTO guilds (
 RETURNING id, name,
           COALESCE(description, '') AS description,
           owner_id,
-          tags,
           timezone, language, public, allow_invites,
           custom_settings,
           COALESCE(icon_url, '')   AS icon_url,
@@ -27,7 +25,6 @@ RETURNING id, name,
 SELECT id, name,
        COALESCE(description, '') AS description,
        owner_id,
-       tags,
        timezone, language, public, allow_invites,
        custom_settings,
        COALESCE(icon_url, '')   AS icon_url,
@@ -40,7 +37,6 @@ WHERE id = $1;
 UPDATE guilds SET
     name        = CASE WHEN sqlc.arg(name)::text        != '' THEN sqlc.arg(name)::text        ELSE name        END,
     description = CASE WHEN sqlc.arg(description)::text != '' THEN sqlc.arg(description)::text ELSE description END,
-    tags        = CASE WHEN array_length(sqlc.arg(tags)::text[], 1) > 0 THEN sqlc.arg(tags)::text[] ELSE tags END,
     icon_url    = CASE WHEN sqlc.arg(icon_url)::text    != '' THEN sqlc.arg(icon_url)::text    ELSE icon_url    END,
     banner_url  = CASE WHEN sqlc.arg(banner_url)::text  != '' THEN sqlc.arg(banner_url)::text  ELSE banner_url  END,
     updated_at  = NOW()
@@ -48,7 +44,6 @@ WHERE id = sqlc.arg(id)
 RETURNING id, name,
           COALESCE(description, '') AS description,
           owner_id,
-          tags,
           timezone, language, public, allow_invites,
           custom_settings,
           COALESCE(icon_url, '')   AS icon_url,
@@ -62,7 +57,6 @@ DELETE FROM guilds WHERE id = $1;
 SELECT id, name,
        COALESCE(description, '') AS description,
        owner_id,
-       tags,
        timezone, language, public, allow_invites,
        custom_settings,
        COALESCE(icon_url, '')   AS icon_url,
@@ -82,7 +76,6 @@ WHERE (sqlc.arg(search)::text = '%%' OR name ILIKE sqlc.arg(search)::text OR des
 SELECT g.id, g.name,
        COALESCE(g.description, '') AS description,
        g.owner_id,
-       g.tags,
        g.timezone, g.language, g.public, g.allow_invites,
        g.custom_settings,
        COALESCE(g.icon_url, '')   AS icon_url,

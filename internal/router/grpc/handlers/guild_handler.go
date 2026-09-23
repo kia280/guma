@@ -43,7 +43,6 @@ func (h *GuildHandler) CreateGuild(ctx context.Context, req *guildv1.CreateGuild
 	g, err := h.svc.Create(ctx, guildsvc.CreateParams{
 		Name:           req.Name,
 		Description:    req.Description,
-		Tags:           req.Tags,
 		CustomSettings: req.Settings,
 		OwnerID:        userID,
 	})
@@ -82,7 +81,6 @@ func (h *GuildHandler) UpdateGuild(ctx context.Context, req *guildv1.UpdateGuild
 		UserID:      userID,
 		Name:        req.Name,
 		Description: req.Description,
-		Tags:        req.Tags,
 		IconURL:     req.IconUrl,
 		BannerURL:   req.BannerUrl,
 	})
@@ -221,7 +219,6 @@ func guildToProto(g *guildsvc.Guild) *guildv1.Guild {
 		Name:        g.Name,
 		Description: g.Description,
 		OwnerId:     g.OwnerID,
-		Tags:        g.Tags,
 		Settings:    settingsToProto(&g.Settings),
 		IconUrl:     g.IconURL,
 		BannerUrl:   g.BannerURL,

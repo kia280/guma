@@ -24,7 +24,8 @@
       "name": "GumaService"
     },
     {
-      "name": "HealthService"
+      "name": "HealthService",
+      "description": "HealthService provides Kubernetes probe endpoints for pod lifecycle management"
     },
     {
       "name": "LotteryService"
@@ -33,7 +34,8 @@
       "name": "MemberService"
     },
     {
-      "name": "UserService"
+      "name": "UserService",
+      "description": "The authenticated-principal resource (/v1/me) is kept separate from the\n/v1/users collection so the wildcard {user_id} path does not collide\nwith the literal \"me\" segment."
     },
     {
       "name": "WalletService"
@@ -3257,12 +3259,6 @@
         "description": {
           "type": "string"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "iconUrl": {
           "type": "string"
         },
@@ -3847,12 +3843,6 @@
           "additionalProperties": {
             "type": "string"
           }
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "title": "Request/Response messages"
@@ -4190,12 +4180,6 @@
         },
         "ownerId": {
           "type": "string"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         },
         "settings": {
           "$ref": "#/definitions/v1GuildSettings"

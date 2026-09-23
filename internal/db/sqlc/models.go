@@ -123,7 +123,6 @@ type Guild struct {
 	Name           string
 	Description    pgtype.Text
 	OwnerID        uuid.UUID
-	Tags           []string
 	Timezone       string
 	Language       string
 	Public         bool

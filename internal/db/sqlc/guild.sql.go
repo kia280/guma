@@ -37,23 +37,21 @@ func (q *Queries) CountGuilds(ctx context.Context, search string) (int64, error)
 
 const createGuild = `-- name: CreateGuild :one
 INSERT INTO guilds (
-    name, description, owner_id, tags,
+    name, description, owner_id,
     timezone, language, public, allow_invites, custom_settings,
     icon_url, banner_url
 ) VALUES (
     $1::text,
     NULLIF($2::text, ''),
     $3,
-    $4::text[],
     'UTC', 'en', false, true,
-    $5::jsonb,
-    NULLIF($6::text, ''),
-    NULLIF($7::text, '')
+    $4::jsonb,
+    NULLIF($5::text, ''),
+    NULLIF($6::text, '')
 )
 RETURNING id, name,
           COALESCE(description, '') AS description,
           owner_id,
-          tags,
           timezone, language, public, allow_invites,
           custom_settings,
           COALESCE(icon_url, '')   AS icon_url,
@@ -65,7 +63,6 @@ type CreateGuildParams struct {
 	Name           string
 	Description    string
 	OwnerID        uuid.UUID
-	Tags           []string
 	CustomSettings []byte
 	IconUrl        string
 	BannerUrl      string
@@ -76,7 +73,6 @@ type CreateGuildRow struct {
 	Name           string
 	Description    string
 	OwnerID        uuid.UUID
-	Tags           []string
 	Timezone       string
 	Language       string
 	Public         bool
@@ -93,7 +89,6 @@ func (q *Queries) CreateGuild(ctx context.Context, arg CreateGuildParams) (Creat
 		arg.Name,
 		arg.Description,
 		arg.OwnerID,
-		arg.Tags,
 		arg.CustomSettings,
 		arg.IconUrl,
 		arg.BannerUrl,
@@ -104,7 +99,6 @@ func (q *Queries) CreateGuild(ctx context.Context, arg CreateGuildParams) (Creat
 		&i.Name,
 		&i.Description,
 		&i.OwnerID,
-		&i.Tags,
 		&i.Timezone,
 		&i.Language,
 		&i.Public,
@@ -145,7 +139,6 @@ const getGuild = `-- name: GetGuild :one
 SELECT id, name,
        COALESCE(description, '') AS description,
        owner_id,
-       tags,
        timezone, language, public, allow_invites,
        custom_settings,
        COALESCE(icon_url, '')   AS icon_url,
@@ -160,7 +153,6 @@ type GetGuildRow struct {
 	Name           string
 	Description    string
 	OwnerID        uuid.UUID
-	Tags           []string
 	Timezone       string
 	Language       string
 	Public         bool
@@ -180,7 +172,6 @@ func (q *Queries) GetGuild(ctx context.Context, id uuid.UUID) (GetGuildRow, erro
 		&i.Name,
 		&i.Description,
 		&i.OwnerID,
-		&i.Tags,
 		&i.Timezone,
 		&i.Language,
 		&i.Public,
@@ -277,7 +268,6 @@ const getUserCurrentGuild = `-- name: GetUserCurrentGuild :one
 SELECT g.id, g.name,
        COALESCE(g.description, '') AS description,
        g.owner_id,
-       g.tags,
        g.timezone, g.language, g.public, g.allow_invites,
        g.custom_settings,
        COALESCE(g.icon_url, '')   AS icon_url,
@@ -295,7 +285,6 @@ type GetUserCurrentGuildRow struct {
 	Name           string
 	Description    string
 	OwnerID        uuid.UUID
-	Tags           []string
 	Timezone       string
 	Language       string
 	Public         bool
@@ -315,7 +304,6 @@ func (q *Queries) GetUserCurrentGuild(ctx context.Context, userID uuid.UUID) (Ge
 		&i.Name,
 		&i.Description,
 		&i.OwnerID,
-		&i.Tags,
 		&i.Timezone,
 		&i.Language,
 		&i.Public,
@@ -350,7 +338,6 @@ const listGuilds = `-- name: ListGuilds :many
 SELECT id, name,
        COALESCE(description, '') AS description,
        owner_id,
-       tags,
        timezone, language, public, allow_invites,
        custom_settings,
        COALESCE(icon_url, '')   AS icon_url,
@@ -374,7 +361,6 @@ type ListGuildsRow struct {
 	Name           string
 	Description    string
 	OwnerID        uuid.UUID
-	Tags           []string
 	Timezone       string
 	Language       string
 	Public         bool
@@ -400,7 +386,6 @@ func (q *Queries) ListGuilds(ctx context.Context, arg ListGuildsParams) ([]ListG
 			&i.Name,
 			&i.Description,
 			&i.OwnerID,
-			&i.Tags,
 			&i.Timezone,
 			&i.Language,
 			&i.Public,
@@ -425,15 +410,13 @@ const updateGuild = `-- name: UpdateGuild :one
 UPDATE guilds SET
     name        = CASE WHEN $1::text        != '' THEN $1::text        ELSE name        END,
     description = CASE WHEN $2::text != '' THEN $2::text ELSE description END,
-    tags        = CASE WHEN array_length($3::text[], 1) > 0 THEN $3::text[] ELSE tags END,
-    icon_url    = CASE WHEN $4::text    != '' THEN $4::text    ELSE icon_url    END,
-    banner_url  = CASE WHEN $5::text  != '' THEN $5::text  ELSE banner_url  END,
+    icon_url    = CASE WHEN $3::text    != '' THEN $3::text    ELSE icon_url    END,
+    banner_url  = CASE WHEN $4::text  != '' THEN $4::text  ELSE banner_url  END,
     updated_at  = NOW()
-WHERE id = $6
+WHERE id = $5
 RETURNING id, name,
           COALESCE(description, '') AS description,
           owner_id,
-          tags,
           timezone, language, public, allow_invites,
           custom_settings,
           COALESCE(icon_url, '')   AS icon_url,
@@ -444,7 +427,6 @@ RETURNING id, name,
 type UpdateGuildParams struct {
 	Name        string
 	Description string
-	Tags        []string
 	IconUrl     string
 	BannerUrl   string
 	ID          uuid.UUID
@@ -455,7 +437,6 @@ type UpdateGuildRow struct {
 	Name           string
 	Description    string
 	OwnerID        uuid.UUID
-	Tags           []string
 	Timezone       string
 	Language       string
 	Public         bool
@@ -471,7 +452,6 @@ func (q *Queries) UpdateGuild(ctx context.Context, arg UpdateGuildParams) (Updat
 	row := q.db.QueryRow(ctx, updateGuild,
 		arg.Name,
 		arg.Description,
-		arg.Tags,
 		arg.IconUrl,
 		arg.BannerUrl,
 		arg.ID,
@@ -482,7 +462,6 @@ func (q *Queries) UpdateGuild(ctx context.Context, arg UpdateGuildParams) (Updat
 		&i.Name,
 		&i.Description,
 		&i.OwnerID,
-		&i.Tags,
 		&i.Timezone,
 		&i.Language,
 		&i.Public,

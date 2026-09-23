@@ -23,7 +23,6 @@ type Guild struct {
 	Name        string
 	Description string
 	OwnerID     string
-	Tags        []string
 	Settings    GuildSettings
 	IconURL     string
 	BannerURL   string
@@ -45,7 +44,6 @@ type GuildSettings struct {
 type CreateParams struct {
 	Name           string
 	Description    string
-	Tags           []string
 	CustomSettings map[string]string
 	IconURL        string
 	BannerURL      string
@@ -58,7 +56,6 @@ type UpdateParams struct {
 	UserID      string
 	Name        string
 	Description string
-	Tags        []string
 	IconURL     string
 	BannerURL   string
 }
@@ -99,7 +96,6 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 func mkGuild(
 	id, ownerID uuid.UUID,
 	name, description string,
-	tags []string,
 	timezone, language string,
 	public, allowInvites bool,
 	customSettings []byte,
@@ -110,15 +106,11 @@ func mkGuild(
 	if len(customSettings) > 0 {
 		_ = json.Unmarshal(customSettings, &cs)
 	}
-	if tags == nil {
-		tags = []string{}
-	}
 	return &Guild{
 		ID:          id.String(),
 		Name:        name,
 		Description: description,
 		OwnerID:     ownerID.String(),
-		Tags:        tags,
 		Settings: GuildSettings{
 			Timezone:       timezone,
 			Language:       language,
@@ -149,16 +141,10 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Guild, error) {
 		return nil, fmt.Errorf("%w: encode custom_settings: %v", errs.ErrInternal, err)
 	}
 
-	tags := p.Tags
-	if tags == nil {
-		tags = []string{}
-	}
-
 	row, err := s.q.CreateGuild(ctx, db.CreateGuildParams{
 		Name:           p.Name,
 		Description:    p.Description,
 		OwnerID:        ownerID,
-		Tags:           tags,
 		CustomSettings: csJSON,
 		IconUrl:        p.IconURL,
 		BannerUrl:      p.BannerURL,
@@ -170,7 +156,6 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Guild, error) {
 	g := mkGuild(
 		row.ID, row.OwnerID,
 		row.Name, row.Description,
-		row.Tags,
 		row.Timezone, row.Language, row.Public, row.AllowInvites,
 		row.CustomSettings,
 		row.IconUrl, row.BannerUrl,
@@ -213,15 +198,9 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Guild, error) {
 		return nil, err
 	}
 
-	tags := p.Tags
-	if tags == nil {
-		tags = []string{}
-	}
-
 	row, err := s.q.UpdateGuild(ctx, db.UpdateGuildParams{
 		Name:        p.Name,
 		Description: p.Description,
-		Tags:        tags,
 		IconUrl:     p.IconURL,
 		BannerUrl:   p.BannerURL,
 		ID:          guildID,
@@ -236,7 +215,6 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Guild, error) {
 	g := mkGuild(
 		row.ID, row.OwnerID,
 		row.Name, row.Description,
-		row.Tags,
 		row.Timezone, row.Language, row.Public, row.AllowInvites,
 		row.CustomSettings,
 		row.IconUrl, row.BannerUrl,
@@ -289,7 +267,6 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 		g := mkGuild(
 			row.ID, row.OwnerID,
 			row.Name, row.Description,
-			row.Tags,
 			row.Timezone, row.Language, row.Public, row.AllowInvites,
 			row.CustomSettings,
 			row.IconUrl, row.BannerUrl,
@@ -325,7 +302,6 @@ func (s *Service) GetCurrent(ctx context.Context, userIDStr string) (*Guild, err
 	g := mkGuild(
 		row.ID, row.OwnerID,
 		row.Name, row.Description,
-		row.Tags,
 		row.Timezone, row.Language, row.Public, row.AllowInvites,
 		row.CustomSettings,
 		row.IconUrl, row.BannerUrl,
@@ -463,7 +439,6 @@ func (s *Service) fetch(ctx context.Context, guildID uuid.UUID) (*Guild, error) 
 	g := mkGuild(
 		row.ID, row.OwnerID,
 		row.Name, row.Description,
-		row.Tags,
 		row.Timezone, row.Language, row.Public, row.AllowInvites,
 		row.CustomSettings,
 		row.IconUrl, row.BannerUrl,
