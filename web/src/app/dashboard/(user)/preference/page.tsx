@@ -4,9 +4,11 @@ import React from 'react';
 import { Card, Switch, Select, Separator, Label, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTheme } from 'next-themes';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/PageHeader';
 import { FONT_SIZES, getFontSize, setFontSize, type FontSize } from '@/lib/font-size';
+import { HTML_LANG, LOCALE_COOKIE, LOCALE_LABELS, LOCALES, isLocale } from '@/i18n/locales';
 
 const fontSizePreviewClass: Record<FontSize, string> = {
   default: 'text-sm',
@@ -14,14 +16,18 @@ const fontSizePreviewClass: Record<FontSize, string> = {
   'x-large': 'text-lg',
 };
 
-const languages = [
-  { key: 'en', label: 'English' },
-  { key: 'zht', label: '繁體中文' },
-];
+const LOCALE_COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
 
 export default function PreferencePage() {
   const { theme, setTheme } = useTheme();
   const t = useTranslations('preferencePage');
+  const locale = useLocale();
+  const router = useRouter();
+  const handleLocaleChange = (value: unknown) => {
+    if (!isLocale(value) || value === locale) return;
+    document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=${LOCALE_COOKIE_MAX_AGE_SECONDS}; samesite=lax`;
+    router.refresh();
+  };
   const themeLabels: Record<string, string> = {
     light: t('themeLight'),
     dark: t('themeDark'),
@@ -128,7 +134,7 @@ export default function PreferencePage() {
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
-          <Select defaultValue="en" className="max-w-xs">
+          <Select value={locale} onChange={handleLocaleChange} className="max-w-xs">
             <Label>{t('displayLanguage')}</Label>
             <Select.Trigger>
               <Select.Value />
@@ -136,9 +142,9 @@ export default function PreferencePage() {
             </Select.Trigger>
             <Select.Popover>
               <ListBox>
-                {languages.map(lang => (
-                  <ListBox.Item key={lang.key} id={lang.key} textValue={lang.label}>
-                    {lang.label}
+                {LOCALES.map(code => (
+                  <ListBox.Item key={code} id={code} textValue={LOCALE_LABELS[code]} lang={HTML_LANG[code]}>
+                    {LOCALE_LABELS[code]}
                     <ListBox.ItemIndicator />
                   </ListBox.Item>
                 ))}
