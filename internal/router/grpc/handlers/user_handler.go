@@ -23,9 +23,9 @@ type UserHandler struct {
 
 // NewUserService creates a new User gRPC handler. kratosPublicURL is used
 // by the service's GetMe to refresh the profile from Kratos.
-func NewUserService(db *database.Pool, kratosPublicURL string, logger zerolog.Logger) *UserHandler {
+func NewUserService(db *database.Pool, kratosPublicURL string, logger zerolog.Logger, opts ...usersvc.Option) *UserHandler {
 	return &UserHandler{
-		svc:    usersvc.New(db, kratosPublicURL, logger),
+		svc:    usersvc.New(db, kratosPublicURL, logger, opts...),
 		logger: logger.With().Str("handler", "user").Logger(),
 	}
 }

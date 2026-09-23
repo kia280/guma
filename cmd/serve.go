@@ -78,7 +78,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	grpcAddr := grpcServer.Address()
 
 	// Create HTTP gateway
-	gw, err := gateway.NewGateway(ctx, cfg, grpcAddr, logger)
+	gw, err := gateway.NewGateway(ctx, cfg, db, grpcAddr, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to create HTTP gateway")
 		return

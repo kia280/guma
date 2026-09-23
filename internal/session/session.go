@@ -26,6 +26,9 @@ const (
 
 	// CookieName is the Kratos session cookie name used by this project.
 	CookieName = "guma_sess"
+
+	// DevCookieName carries the impersonated user ID when dev auth is enabled.
+	DevCookieName = "guma_dev_user"
 )
 
 type contextKey int
@@ -88,8 +91,8 @@ func Annotator(_ context.Context, r *http.Request) metadata.MD {
 	if id := UserIDFromContext(r.Context()); id != "" {
 		md.Set(UserIDMetadataKey, id)
 	}
-	if c, err := r.Cookie(CookieName); err == nil {
-		md.Set(CookieMetadataKey, c.Name+"="+c.Value)
+	if c := CookieFromContext(r.Context()); c != "" {
+		md.Set(CookieMetadataKey, c)
 	}
 	return md
 }

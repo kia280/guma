@@ -279,6 +279,52 @@ func (q *Queries) ListUserGuildIDs(ctx context.Context, userID uuid.UUID) ([]uui
 	return items, nil
 }
 
+const listUsers = `-- name: ListUsers :many
+SELECT id, email, username,
+       COALESCE(display_name, '') AS display_name,
+       COALESCE(avatar_url, '')   AS avatar_url,
+       created_at
+FROM users
+ORDER BY created_at DESC
+LIMIT $1
+`
+
+type ListUsersRow struct {
+	ID          uuid.UUID
+	Email       string
+	Username    string
+	DisplayName string
+	AvatarUrl   string
+	CreatedAt   time.Time
+}
+
+func (q *Queries) ListUsers(ctx context.Context, limit int32) ([]ListUsersRow, error) {
+	rows, err := q.db.Query(ctx, listUsers, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListUsersRow{}
+	for rows.Next() {
+		var i ListUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Username,
+			&i.DisplayName,
+			&i.AvatarUrl,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const sumUserEarnedSpent = `-- name: SumUserEarnedSpent :one
 SELECT
     COALESCE(SUM(CASE WHEN amount > 0 THEN amount       ELSE 0 END), 0)::bigint AS total_earned,

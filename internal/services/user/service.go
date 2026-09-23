@@ -64,11 +64,24 @@ type Service struct {
 	q      *db.Queries
 	kratos *kratos.APIClient
 	logger zerolog.Logger
+
+	devAuth bool
+}
+
+// Option configures optional Service behavior.
+type Option func(*Service)
+
+// WithDevAuth lets GetMe serve users that have no Kratos session by reading
+// the existing users row. Only enable it for development impersonation.
+func WithDevAuth(enabled bool) Option {
+	return func(s *Service) {
+		s.devAuth = enabled
+	}
 }
 
 // New creates a new user Service. kratosPublicURL is used by GetMe to
 // whoami-refresh the user profile from Kratos on every call.
-func New(pool *database.Pool, kratosPublicURL string, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, kratosPublicURL string, logger zerolog.Logger, opts ...Option) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -80,12 +93,16 @@ func New(pool *database.Pool, kratosPublicURL string, logger zerolog.Logger) *Se
 		cfg.HTTPClient = &http.Client{Timeout: 5 * time.Second}
 		client = kratos.NewAPIClient(cfg)
 	}
-	return &Service{
+	s := &Service{
 		pool:   pool,
 		q:      q,
 		kratos: client,
 		logger: logger.With().Str("service", "user").Logger(),
 	}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
 }
 
 // GetMe returns the full profile for the authenticated user. It first
@@ -104,23 +121,9 @@ func (s *Service) GetMe(ctx context.Context, userID, kratosCookie string) (*User
 		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
 	}
 
-	ident, err := s.fetchKratosIdentity(ctx, kratosCookie)
+	row, err := s.loadProfile(ctx, id, kratosCookie)
 	if err != nil {
 		return nil, err
-	}
-	if ident.email == "" {
-		return nil, fmt.Errorf("%w: kratos identity missing email", errs.ErrFailedPrecondition)
-	}
-
-	row, err := s.q.UpsertUserFromKratos(ctx, db.UpsertUserFromKratosParams{
-		ID:          id,
-		Email:       ident.email,
-		Username:    ident.username,
-		DisplayName: ident.username,
-		AvatarUrl:   ident.avatarURL,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("%w: upsert user: %v", errs.ErrInternal, err)
 	}
 
 	if err := s.autoJoinSingletonGuild(ctx, id); err != nil {
@@ -150,6 +153,39 @@ func (s *Service) GetMe(ctx context.Context, userID, kratosCookie string) (*User
 		CreatedAt:      row.CreatedAt,
 		UpdatedAt:      row.UpdatedAt,
 	}, nil
+}
+
+func (s *Service) loadProfile(ctx context.Context, id uuid.UUID, kratosCookie string) (db.GetUserByIDRow, error) {
+	if kratosCookie == "" && s.devAuth {
+		row, err := s.q.GetUserByID(ctx, id)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return db.GetUserByIDRow{}, fmt.Errorf("%w: user", errs.ErrNotFound)
+			}
+			return db.GetUserByIDRow{}, fmt.Errorf("%w: get user: %v", errs.ErrInternal, err)
+		}
+		return row, nil
+	}
+
+	ident, err := s.fetchKratosIdentity(ctx, kratosCookie)
+	if err != nil {
+		return db.GetUserByIDRow{}, err
+	}
+	if ident.email == "" {
+		return db.GetUserByIDRow{}, fmt.Errorf("%w: kratos identity missing email", errs.ErrFailedPrecondition)
+	}
+
+	row, err := s.q.UpsertUserFromKratos(ctx, db.UpsertUserFromKratosParams{
+		ID:          id,
+		Email:       ident.email,
+		Username:    ident.username,
+		DisplayName: ident.username,
+		AvatarUrl:   ident.avatarURL,
+	})
+	if err != nil {
+		return db.GetUserByIDRow{}, fmt.Errorf("%w: upsert user: %v", errs.ErrInternal, err)
+	}
+	return db.GetUserByIDRow(row), nil
 }
 
 // kratosIdentity is the subset of Kratos whoami output the user service cares about.

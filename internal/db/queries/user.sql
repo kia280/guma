@@ -109,3 +109,12 @@ WHERE user_id = sqlc.arg(user_id)
   AND created_at >= NOW() - make_interval(days => sqlc.arg(days)::int)
 GROUP BY DATE(created_at)
 ORDER BY day ASC;
+
+-- name: ListUsers :many
+SELECT id, email, username,
+       COALESCE(display_name, '') AS display_name,
+       COALESCE(avatar_url, '')   AS avatar_url,
+       created_at
+FROM users
+ORDER BY created_at DESC
+LIMIT $1;

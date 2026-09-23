@@ -76,7 +76,7 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == http.MethodOptions || shouldSkipPath(r.URL.Path, skipPaths) {
+			if r.Method == http.MethodOptions || shouldSkipPath(r.URL.Path, skipPaths) || session.UserIDFromContext(r.Context()) != "" {
 				next.ServeHTTP(w, r)
 				return
 			}

@@ -15,6 +15,7 @@ import (
 	"github.com/kia280/guma/internal/router/grpc/handlers"
 	"github.com/kia280/guma/internal/router/grpc/interceptors"
 	"github.com/kia280/guma/internal/services/health"
+	usersvc "github.com/kia280/guma/internal/services/user"
 )
 
 // Server wraps the gRPC server with configuration
@@ -43,7 +44,7 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 	gumaHandler := handlers.NewGumaService(logger)
 	guildHandler := handlers.NewGuildService(db, logger)
 	memberHandler := handlers.NewMemberService(logger)
-	userHandler := handlers.NewUserService(db, cfg.Auth.KratosPublicURL, logger)
+	userHandler := handlers.NewUserService(db, cfg.Auth.KratosPublicURL, logger, usersvc.WithDevAuth(cfg.Dev.AuthEnabled))
 	checkinHandler := handlers.NewCheckInService(db, logger)
 	walletHandler := handlers.NewWalletService(db, logger)
 	auctionHandler := handlers.NewAuctionService(db, logger)

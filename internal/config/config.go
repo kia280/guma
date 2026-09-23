@@ -26,6 +26,9 @@ type Config struct {
 
 	// Rate limiting configuration
 	RateLimit RateLimitConfig `mapstructure:"rate_limit"`
+
+	// Development tooling configuration
+	Dev DevConfig `mapstructure:"dev"`
 }
 
 // ServerConfig holds server-specific configuration
@@ -47,6 +50,11 @@ type DatabaseConfig struct {
 type AuthConfig struct {
 	KratosPublicURL string `mapstructure:"kratos_public_url"`
 	KratosAdminURL  string `mapstructure:"kratos_admin_url"`
+}
+
+// DevConfig holds development-only tooling configuration
+type DevConfig struct {
+	AuthEnabled bool `mapstructure:"auth_enabled"`
 }
 
 // LoggingConfig holds logging configuration
@@ -94,6 +102,7 @@ func Load() (*Config, error) {
 	v.BindEnv("cors.allowed_headers", "CORS_ALLOWED_HEADERS")
 	v.BindEnv("rate_limit.requests_per_minute", "RATE_LIMIT_REQUESTS_PER_MINUTE")
 	v.BindEnv("rate_limit.burst", "RATE_LIMIT_BURST")
+	v.BindEnv("dev.auth_enabled", "DEV_AUTH_ENABLED")
 
 	// Try to read config file
 	v.SetConfigName("config")
@@ -160,6 +169,10 @@ func (c *Config) Validate() error {
 
 	if c.Server.GRPCPort < 1 || c.Server.GRPCPort > 65535 {
 		return fmt.Errorf("invalid gRPC port: %d", c.Server.GRPCPort)
+	}
+
+	if c.Dev.AuthEnabled && !c.IsDevelopment() {
+		return fmt.Errorf("dev auth can only be enabled when server.env is development, got %q", c.Server.Environment)
 	}
 
 	return nil

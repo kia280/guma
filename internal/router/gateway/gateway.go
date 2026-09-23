@@ -16,7 +16,9 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/config"
+	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/router/gateway/middleware"
+	"github.com/kia280/guma/internal/services/devauth"
 	"github.com/kia280/guma/internal/session"
 )
 
@@ -28,7 +30,7 @@ type Gateway struct {
 }
 
 // NewGateway creates and configures a new HTTP gateway
-func NewGateway(ctx context.Context, cfg *config.Config, grpcAddr string, logger zerolog.Logger) (*Gateway, error) {
+func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpcAddr string, logger zerolog.Logger) (*Gateway, error) {
 	logger = logger.With().Str("component", "http-gateway").Logger()
 
 	// Create gRPC-Gateway mux
@@ -111,6 +113,15 @@ func NewGateway(ctx context.Context, cfg *config.Config, grpcAddr string, logger
 
 	// Apply middleware
 	handler = middleware.KratosSessionMiddleware(cfg.Auth.KratosPublicURL, logger)(handler)
+	if cfg.Dev.AuthEnabled {
+		logger.Warn().Msg("DEV AUTH ENABLED: requests can impersonate any user; never enable this outside local development")
+		handler = middleware.DevSessionMiddleware()(handler)
+
+		devMux := http.NewServeMux()
+		devMux.Handle(devRoutePrefix, newDevAuthHandler(devauth.New(db), logger))
+		devMux.Handle("/", handler)
+		handler = devMux
+	}
 	handler = middleware.SecurityHeadersMiddleware()(handler)
 	handler = middleware.CORSMiddleware(
 		cfg.CORS.AllowedOrigins,
