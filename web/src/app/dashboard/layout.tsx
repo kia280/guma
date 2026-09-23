@@ -319,7 +319,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
           </header>
 
           {/* Main Content Area */}
-          <div className="flex-1 overflow-auto p-6 bg-background">
+          <div className="flex-1 overflow-auto p-4 sm:p-6 bg-background">
             <CurrentGuildProvider>{children}</CurrentGuildProvider>
           </div>
         </div>

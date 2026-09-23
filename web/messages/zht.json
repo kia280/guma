@@ -268,7 +268,6 @@
     "totalItems": "總物品數",
     "guildSettings": "公會設置",
     "guildName": "公會名稱",
-    "guildTag": "公會標籤",
     "recruitment": "招募狀態",
     "serverRegion": "伺服器區域",
     "edit": "編輯",
@@ -508,7 +507,11 @@
     "eventsLabel": "活動提醒",
     "eventsDesc": "即將到來的公會活動提醒",
     "checkinLabel": "出席登記提醒",
-    "checkinDesc": "每日出席登記提醒通知"
+    "checkinDesc": "每日出席登記提醒通知",
+    "fontSize": "字體大小",
+    "fontSizeDefault": "標準",
+    "fontSizeLarge": "大",
+    "fontSizeXLarge": "特大"
   },
   "termsPage": {
     "title": "服務條款",

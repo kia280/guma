@@ -86,7 +86,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
           textValue={item.title}
           className={cn(
             'flex items-center rounded-large px-2 py-3.5 cursor-pointer min-h-[52px] h-[52px]',
-            'transition-colors hover:bg-default-100',
+            'transition-colors hover:bg-default',
             isSelected && 'bg-default',
             isCompact && 'h-[44px]',
             itemClasses?.base
@@ -152,7 +152,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
               </Accordion.Heading>
               <Accordion.Panel>
                 <Accordion.Body className="pl-4">
-                  <ListBox aria-label={item.title} className="border-l border-default-200 pl-2">
+                  <ListBox aria-label={item.title} className="border-l border-divider pl-2">
                     {item.items.map(renderItem)}
                   </ListBox>
                 </Accordion.Body>

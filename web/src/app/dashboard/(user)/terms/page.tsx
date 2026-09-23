@@ -3,6 +3,7 @@
 import { Card } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function TermsPage() {
   const t = useTranslations('termsPage');
@@ -21,12 +22,9 @@ export default function TermsPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl">
+    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-sm text-foreground/50 mt-0.5">{t('lastUpdated')}</p>
-      </div>
+      <PageHeader title={t('title')} description={t('lastUpdated')} />
 
       {/* Intro banner */}
       <Card className="border border-primary/20 shadow-none bg-primary/5">
@@ -41,7 +39,7 @@ export default function TermsPage() {
         <Card.Content className="flex flex-col gap-5 p-6">
           {sections.map((section, idx) => (
             <div key={idx} className="flex flex-col gap-1.5">
-              <h2 className="text-sm font-semibold text-foreground">{section.title}</h2>
+              <h2 className="text-sm font-medium text-foreground">{section.title}</h2>
               <p className="text-sm text-foreground/50 leading-relaxed">{section.content}</p>
               {idx < sections.length - 1 && <div className="border-b border-divider mt-3" />}
             </div>

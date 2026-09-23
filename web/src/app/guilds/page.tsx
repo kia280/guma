@@ -278,7 +278,7 @@ function GuildCard({ guild, onJoin, isUserMember = false }: GuildCardProps) {
   const t = useTranslations('guildsPage');
 
   return (
-    <Card className="border border-divider shadow-none bg-surface hover:border-default-400 transition-colors">
+    <Card className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors">
       <Card.Header className="pb-3">
         <div className="flex items-center gap-3">
           <Avatar className="flex-shrink-0" size="md">

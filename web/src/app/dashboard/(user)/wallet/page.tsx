@@ -411,7 +411,7 @@ export default function WalletPage() {
       {/* Transaction History */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-foreground/50" icon="solar:history-line-duotone" width={20} />
           </div>
           <div className="flex flex-col">
@@ -433,7 +433,7 @@ export default function WalletPage() {
               <Table.ScrollContainer>
                 <Table.Content aria-label="Transaction history table" className="min-w-[600px]">
                   <Table.Header>
-                    <Table.Column className="w-[45%]">{t('transaction')}</Table.Column>
+                    <Table.Column isRowHeader className="w-[45%]">{t('transaction')}</Table.Column>
                     <Table.Column className="w-[20%]">{t('amount')}</Table.Column>
                     <Table.Column className="w-[20%]">{t('date')}</Table.Column>
                     <Table.Column className="w-[15%]">{t('status')}</Table.Column>
@@ -443,7 +443,7 @@ export default function WalletPage() {
                       <Table.Row key={transaction.id}>
                         <Table.Cell>
                           <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default">
                               <Icon
                                 className="text-foreground/50"
                                 icon={getTransactionIcon(transaction.type)}
@@ -494,7 +494,7 @@ export default function WalletPage() {
               <div key={transaction.id} className="py-3 first:pt-0 last:pb-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100 shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">
                       <Icon
                         className="text-foreground/50"
                         icon={getTransactionIcon(transaction.type)}
@@ -586,7 +586,7 @@ export default function WalletPage() {
               {selectedItem && (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary">
-                    <div className="p-2 rounded-lg bg-default-100">
+                    <div className="p-2 rounded-lg bg-default">
                       <Icon icon="solar:backpack-linear" width={20} className="text-foreground/50" />
                     </div>
                     <div>

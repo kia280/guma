@@ -286,7 +286,7 @@ export default function GuildBankPage() {
                             onChange={e => setRequestReason(e.target.value)}
                           />
                         </TextField>
-                        <div className="bg-default-100 rounded-lg p-3">
+                        <div className="bg-surface-secondary rounded-lg p-3">
                           <div className="flex items-start gap-2">
                             <Icon
                               className="text-foreground/50 shrink-0 mt-0.5"
@@ -324,7 +324,7 @@ export default function GuildBankPage() {
                 ${guildBalance.toFixed(0)} / ${guildFundGoal.toLocaleString()}
               </p>
             </div>
-            <div className="w-full bg-default-200 rounded-full overflow-hidden h-2">
+            <div className="w-full bg-default rounded-full overflow-hidden h-2">
               <div
                 className="h-full bg-warning transition-all"
                 style={{ width: `${Math.min(100, (guildBalance / guildFundGoal) * 100)}%` }}
@@ -356,11 +356,11 @@ export default function GuildBankPage() {
             {mockGuildItems.map(item => (
               <Card
                 key={item.id}
-                className="border border-divider shadow-none bg-surface-secondary hover:border-default-400 transition-colors"
+                className="border border-divider shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors"
               >
                 <Card.Header className="pb-2">
                   <div className="flex items-start gap-3 w-full">
-                    <div className="p-2 rounded-lg bg-default-100 shrink-0">
+                    <div className="p-2 rounded-lg bg-default shrink-0">
                       <Icon
                         icon={getCategoryIcon(item.category)}
                         width={20}
@@ -416,7 +416,7 @@ export default function GuildBankPage() {
       {/* Contribution History */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-foreground/50" icon="solar:history-line-duotone" width={20} />
           </div>
           <div className="flex flex-col">
@@ -430,7 +430,7 @@ export default function GuildBankPage() {
               <Table.ScrollContainer>
                 <Table.Content aria-label="Guild bank activity table" className="min-w-[700px]">
                   <Table.Header>
-                    <Table.Column>{t('activity')}</Table.Column>
+                    <Table.Column isRowHeader>{t('activity')}</Table.Column>
                     <Table.Column>{t('member')}</Table.Column>
                     <Table.Column>{t('amountItem')}</Table.Column>
                     <Table.Column>{t('date')}</Table.Column>
@@ -441,7 +441,7 @@ export default function GuildBankPage() {
                       <Table.Row key={entry.id}>
                         <Table.Cell>
                           <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default">
                               <Icon
                                 className="text-foreground/50"
                                 icon={getContributionIcon(entry.type)}
@@ -510,7 +510,7 @@ export default function GuildBankPage() {
               <div key={entry.id} className="py-3 first:pt-0 last:pb-0">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default-100 shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">
                       <Icon
                         className="text-foreground/50"
                         icon={getContributionIcon(entry.type)}
@@ -565,7 +565,7 @@ export default function GuildBankPage() {
               {selectedItem && (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary">
-                    <div className="p-2 rounded-lg bg-default-100">
+                    <div className="p-2 rounded-lg bg-default">
                       <Icon
                         icon={getCategoryIcon(selectedItem.category)}
                         width={20}
@@ -591,7 +591,7 @@ export default function GuildBankPage() {
                       onChange={e => setRequestItemReason(e.target.value)}
                     />
                   </TextField>
-                  <div className="bg-default-100 rounded-lg p-3">
+                  <div className="bg-surface-secondary rounded-lg p-3">
                     <div className="flex items-start gap-2">
                       <Icon
                         className="text-foreground/50 shrink-0 mt-0.5"

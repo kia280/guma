@@ -2,6 +2,8 @@ import type {Metadata, Viewport} from "next";
 import {Noto_Sans_TC} from "next/font/google";
 import {NextIntlClientProvider} from 'next-intl';
 import {Providers} from "./providers";
+import Script from "next/script";
+import {fontSizeInitScript} from "@/lib/font-size";
 import "./globals.css";
 
 const font = Noto_Sans_TC({
@@ -29,6 +31,9 @@ export default async function RootLayout({
   return (
     <html suppressHydrationWarning>
       <head>
+        <Script id="font-size-init" strategy="beforeInteractive">
+          {fontSizeInitScript}
+        </Script>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Guma" />

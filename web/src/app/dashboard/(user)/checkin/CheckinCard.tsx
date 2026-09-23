@@ -48,7 +48,7 @@ export function CheckinCard({
 
   return (
     <Card
-      className={`border border-divider shadow-none bg-surface ${!isDisabled ? 'cursor-pointer hover:border-default-400 transition-colors' : 'opacity-50'}`}
+      className={`border border-divider shadow-none bg-surface ${!isDisabled ? 'cursor-pointer hover:border-foreground/20 transition-colors' : 'opacity-50'}`}
       role={!isDisabled ? 'button' : undefined}
       tabIndex={!isDisabled ? 0 : undefined}
       onClick={!isDisabled ? onClick : undefined}

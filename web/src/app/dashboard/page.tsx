@@ -44,7 +44,7 @@ const KIND_META: Record<
 const URGENCY_DOT: Record<FeedEvent['urgency'], string> = {
   high: 'bg-danger',
   medium: 'bg-warning',
-  low: 'bg-default-300',
+  low: 'bg-muted',
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ function StatCard({
         <Icon icon={icon} width={18} className={iconClass} />
       </div>
       <div className="flex flex-col min-w-0">
-        <p className="text-[10px] sm:text-xs text-foreground/40 uppercase tracking-wide truncate">{label}</p>
+        <p className="text-xs text-foreground/40 uppercase tracking-wide truncate">{label}</p>
         <p className="text-xl sm:text-2xl font-semibold text-foreground leading-none mt-0.5">{value}</p>
       </div>
     </div>
@@ -341,12 +341,12 @@ export default function DashboardPage() {
       />
 
       {/* Bottom two-column grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* ── Announcements ── */}
         <section>
           <div className="flex items-center gap-2 mb-3">
             <Icon icon="solar:megaphone-linear" width={18} className="text-foreground/40" />
-            <h2 className="text-base font-semibold text-foreground">{t('news')}</h2>
+            <h2 className="text-sm font-medium text-foreground">{t('news')}</h2>
           </div>
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-0">
@@ -381,7 +381,7 @@ export default function DashboardPage() {
         <section>
           <div className="flex items-center gap-2 mb-3">
             <Icon icon="solar:bell-linear" width={18} className="text-foreground/40" />
-            <h2 className="text-base font-semibold text-foreground">{t('upcomingEvents')}</h2>
+            <h2 className="text-sm font-medium text-foreground">{t('upcomingEvents')}</h2>
           </div>
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-0">
@@ -401,7 +401,7 @@ export default function DashboardPage() {
                       />
 
                       {/* Kind icon */}
-                      <div className="p-1.5 rounded-md bg-default-100 shrink-0">
+                      <div className="p-1.5 rounded-md bg-default shrink-0">
                         <Icon icon={meta.icon} width={14} className="text-foreground/50" />
                       </div>
 
@@ -440,7 +440,7 @@ export default function DashboardPage() {
                 {selectedAnn?.pinned && (
                   <Icon icon="solar:pin-bold" width={16} className="text-danger shrink-0 mt-0.5" />
                 )}
-                <Modal.Heading className="text-base font-semibold text-foreground leading-snug">
+                <Modal.Heading>
                   {selectedAnn?.title}
                 </Modal.Heading>
               </div>

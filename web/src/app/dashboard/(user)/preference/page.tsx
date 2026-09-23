@@ -5,6 +5,14 @@ import { Card, Switch, Select, Separator, Label, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
+import { PageHeader } from '@/components/PageHeader';
+import { FONT_SIZES, getFontSize, setFontSize, type FontSize } from '@/lib/font-size';
+
+const fontSizePreviewClass: Record<FontSize, string> = {
+  default: 'text-sm',
+  large: 'text-base',
+  'x-large': 'text-lg',
+};
 
 const languages = [
   { key: 'en', label: 'English' },
@@ -24,14 +32,26 @@ export default function PreferencePage() {
   const [lotteryAlerts, setLotteryAlerts] = React.useState(true);
   const [eventReminders, setEventReminders] = React.useState(false);
   const [checkinReminders, setCheckinReminders] = React.useState(true);
+  const [fontSize, setFontSizeState] = React.useState<FontSize>('default');
+  const fontSizeLabels: Record<FontSize, string> = {
+    default: t('fontSizeDefault'),
+    large: t('fontSizeLarge'),
+    'x-large': t('fontSizeXLarge'),
+  };
+
+  React.useEffect(() => {
+    setFontSizeState(getFontSize());
+  }, []);
+
+  const handleFontSizeChange = (size: FontSize) => {
+    setFontSize(size);
+    setFontSizeState(size);
+  };
 
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
+    <div className="flex flex-col gap-5 w-full">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-sm text-foreground/50 mt-0.5">{t('subtitle')}</p>
-      </div>
+      <PageHeader title={t('title')} description={t('subtitle')} />
 
       {/* Appearance */}
       <Card className="border border-divider shadow-none bg-surface">
@@ -53,7 +73,7 @@ export default function PreferencePage() {
                 className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
                   theme === themeKey
                     ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-divider bg-surface-secondary text-foreground/50 hover:border-default-400'
+                    : 'border-divider bg-surface-secondary text-foreground/50 hover:border-foreground/20'
                 }`}
               >
                 <Icon
@@ -70,13 +90,36 @@ export default function PreferencePage() {
               </button>
             ))}
           </div>
+          <div className="flex flex-col gap-2">
+            <p id="font-size-label" className="text-sm text-foreground">{t('fontSize')}</p>
+            <div role="group" aria-labelledby="font-size-label" className="grid grid-cols-3 gap-3">
+              {FONT_SIZES.map(size => (
+                <button
+                  key={size}
+                  type="button"
+                  aria-pressed={fontSize === size}
+                  onClick={() => handleFontSizeChange(size)}
+                  className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${
+                    fontSize === size
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-divider bg-surface-secondary text-foreground/50 hover:border-foreground/20'
+                  }`}
+                >
+                  <span className={`${fontSizePreviewClass[size]} font-semibold`} aria-hidden="true">
+                    Aa
+                  </span>
+                  <span className="text-xs font-medium">{fontSizeLabels[size]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </Card.Content>
       </Card>
 
       {/* Language */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-foreground/50" icon="solar:global-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
@@ -108,7 +151,7 @@ export default function PreferencePage() {
       {/* Notifications */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-foreground/50" icon="solar:bell-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">

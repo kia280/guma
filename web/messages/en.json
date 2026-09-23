@@ -268,7 +268,6 @@
     "totalItems": "Total Items",
     "guildSettings": "Guild Settings",
     "guildName": "Guild Name",
-    "guildTag": "Guild Tag",
     "recruitment": "Recruitment",
     "serverRegion": "Server Region",
     "edit": "Edit",
@@ -508,7 +507,11 @@
     "eventsLabel": "Event reminders",
     "eventsDesc": "Reminders for upcoming guild events",
     "checkinLabel": "Check-in reminders",
-    "checkinDesc": "Daily check-in reminder notifications"
+    "checkinDesc": "Daily check-in reminder notifications",
+    "fontSize": "Font size",
+    "fontSizeDefault": "Default",
+    "fontSizeLarge": "Large",
+    "fontSizeXLarge": "Extra large"
   },
   "termsPage": {
     "title": "Terms of Service",

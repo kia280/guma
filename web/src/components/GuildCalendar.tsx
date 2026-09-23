@@ -249,7 +249,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 min-h-[80px] border shadow-none transition-colors
                 ${!isCurrentMonth ? 'opacity-30' : ''}
                 ${isToday ? 'border-primary/50 bg-primary/5' : 'border-divider bg-surface'}
-                ${isSelected && !isToday ? 'border-default-400 bg-surface-secondary' : ''}
+                ${isSelected && !isToday ? 'border-foreground/20 bg-surface-secondary' : ''}
               `}
             >
               <Card.Content className="p-1.5">
@@ -366,7 +366,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
             return (
               <div
                 key={index}
-                className={`flex-1 px-1 py-2 text-center border-l border-divider cursor-pointer transition-colors ${isToday ? 'bg-primary/5' : 'hover:bg-default-50'}`}
+                className={`flex-1 px-1 py-2 text-center border-l border-divider cursor-pointer transition-colors ${isToday ? 'bg-primary/5' : 'hover:bg-surface-secondary'}`}
                 onClick={() => handleDateClick(day)}
                 onKeyDown={e => e.key === 'Enter' && handleDateClick(day)}
                 role="button"

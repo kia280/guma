@@ -89,7 +89,7 @@ function ErrorPageContent() {
           </div>
 
           {errorId !== 'unknown' && (
-            <div className="bg-default-100 rounded-lg p-3">
+            <div className="bg-surface-secondary rounded-lg p-3">
               <p className="text-xs text-foreground/60 font-mono">
                 {t('errorIdLabel')}{' '}
                 <span className="text-foreground/90 font-semibold">{errorId}</span>
@@ -114,7 +114,7 @@ function ErrorPageContent() {
           </div>
 
           {process.env.NODE_ENV === 'development' && (
-            <div className="bg-default-100 rounded-lg p-3 border border-dashed border-default-200">
+            <div className="bg-surface-secondary rounded-lg p-3 border border-dashed border-divider">
               <p className="text-xs text-foreground/60 mb-1">
                 <span className="font-semibold">{t('debugInfoLabel')}</span>
               </p>

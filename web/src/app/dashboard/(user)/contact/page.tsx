@@ -4,6 +4,7 @@ import React from 'react';
 import { Card, Button, Input, TextArea, Select, TextField, Label, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function ContactPage() {
   const t = useTranslations('contactPage');
@@ -49,12 +50,9 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl">
+    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-sm text-foreground/50 mt-0.5">{t('subtitle')}</p>
-      </div>
+      <PageHeader title={t('title')} description={t('subtitle')} />
 
       {/* Contact channels */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -88,7 +86,7 @@ export default function ContactPage() {
       {/* Contact form */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon
               className="text-foreground/50"
               icon="solar:chat-round-dots-bold-duotone"

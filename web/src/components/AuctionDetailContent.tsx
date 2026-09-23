@@ -154,7 +154,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
 
       {/* Item header */}
       <div className="flex flex-col sm:flex-row items-start gap-4 p-5 rounded-xl border border-divider bg-surface">
-        <div className="p-4 rounded-xl bg-default-100 shrink-0">
+        <div className="p-4 rounded-xl bg-default shrink-0">
           <Icon icon={CATEGORY_ICONS[item.category]} width={36} className="text-foreground/50" />
         </div>
         <div className="flex-1 min-w-0">
@@ -192,7 +192,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         <div className="lg:col-span-3 space-y-4">
           {/* Auction status */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
-            <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">
+            <h2 className="text-sm font-medium text-foreground">
               {t('auctionStatus')}
             </h2>
 
@@ -226,14 +226,14 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
 
           {/* Bid section */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
-            <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">
+            <h2 className="text-sm font-medium text-foreground">
               {t('bidding')}
             </h2>
 
             {item.isBlind ? (
               /* ── Blind auction ── */
               <div className="space-y-4">
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-default-50 border border-divider">
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-surface-secondary border border-divider">
                   <Icon
                     icon="solar:eye-closed-linear"
                     width={20}
@@ -272,7 +272,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-foreground/50 text-sm">{t('currentBid')}</span>
-                  <span className="text-2xl font-bold text-foreground">
+                  <span className="text-2xl font-semibold text-foreground">
                     ${item.currentBid.toLocaleString()}
                   </span>
                 </div>
@@ -292,13 +292,13 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 )}
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="p-3 rounded-lg bg-default-50 border border-divider space-y-0.5">
+                  <div className="p-3 rounded-lg bg-surface-secondary border border-divider space-y-0.5">
                     <p className="text-xs text-foreground/40">{t('startingBid')}</p>
                     <p className="font-semibold text-foreground">
                       ${item.startingBid.toLocaleString()}
                     </p>
                   </div>
-                  <div className="p-3 rounded-lg bg-default-50 border border-divider space-y-0.5">
+                  <div className="p-3 rounded-lg bg-surface-secondary border border-divider space-y-0.5">
                     <p className="text-xs text-foreground/40">{t('minIncrement')}</p>
                     <p className="font-semibold text-foreground">
                       ${item.minBidIncrement.toLocaleString()}
@@ -374,7 +374,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         <div className="lg:col-span-2 space-y-4">
           {/* Seller info */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
-            <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">
+            <h2 className="text-sm font-medium text-foreground">
               {t('seller')}
             </h2>
             <div className="flex items-center gap-3">
@@ -390,7 +390,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
 
           {/* Item metadata */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
-            <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">
+            <h2 className="text-sm font-medium text-foreground">
               {t('itemDetails')}
             </h2>
             <div className="space-y-2 text-sm">

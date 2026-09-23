@@ -66,7 +66,7 @@ const LotteryCard = ({
   const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
 
   return (
-    <Card className="border border-divider shadow-none bg-surface hover:border-default-400 transition-colors">
+    <Card className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors">
       <Card.Header className="pb-2">
         <div className="flex justify-between items-start w-full">
           <div>
@@ -89,7 +89,7 @@ const LotteryCard = ({
           {/* Prize Pool */}
           <div className="text-center py-2">
             <p className="text-xs text-foreground/40 uppercase tracking-wide">{t('prizePool')}</p>
-            <p className="text-3xl font-bold text-foreground mt-1">${prizePool.toLocaleString()}</p>
+            <p className="text-3xl font-semibold text-foreground mt-1">${prizePool.toLocaleString()}</p>
           </div>
 
           {/* Details */}

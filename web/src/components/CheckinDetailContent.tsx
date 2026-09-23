@@ -179,7 +179,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           {/* Attendance List */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">
+              <h2 className="text-sm font-medium text-foreground">
                 {t('attendance')}
               </h2>
               <Chip size="sm" variant="secondary">
@@ -220,7 +220,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           {/* Loot List */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">
+              <h2 className="text-sm font-medium text-foreground">
                 {t('loot')}
               </h2>
               <Chip size="sm" variant="secondary">
@@ -264,7 +264,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         <div className="lg:col-span-2 space-y-4">
           {/* Timing */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
-            <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">
+            <h2 className="text-sm font-medium text-foreground">
               {t('timing')}
             </h2>
             <div className="space-y-2 text-sm">
@@ -299,7 +299,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
 
           {/* Summary */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
-            <h2 className="text-sm font-semibold text-foreground/60 uppercase tracking-wide">
+            <h2 className="text-sm font-medium text-foreground">
               {t('summary')}
             </h2>
             <div className="space-y-2 text-sm">

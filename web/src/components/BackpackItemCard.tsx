@@ -71,11 +71,11 @@ const BackpackItemCard = ({
   const t = useTranslations('backpackItemCard');
 
   return (
-    <Card className="border border-divider shadow-none bg-surface-secondary hover:border-default-400 transition-colors">
+    <Card className="border border-divider shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors">
       <Card.Header className="pb-2">
         <div className="flex justify-between items-start w-full">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-default-100">
+            <div className="p-2 rounded-lg bg-default">
               <Icon icon={getCategoryIcon(item.item.category)} width={20} className="text-foreground/50" />
             </div>
             <div>

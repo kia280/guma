@@ -15,6 +15,7 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { PageHeader } from '@/components/PageHeader';
 
 export default function ProfilePage() {
   const t = useTranslations('profilePage');
@@ -24,12 +25,9 @@ export default function ProfilePage() {
   const [bio, setBio] = React.useState('Guild veteran. Raid leader on weekends.');
 
   return (
-    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
+    <div className="flex flex-col gap-5 w-full">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-sm text-foreground/50 mt-0.5">{t('subtitle')}</p>
-      </div>
+      <PageHeader title={t('title')} description={t('subtitle')} />
 
       {/* Avatar */}
       <Card className="border border-divider shadow-none bg-surface">
@@ -106,7 +104,7 @@ export default function ProfilePage() {
       {/* Account Info */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default-100 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-foreground/50" icon="solar:shield-user-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">

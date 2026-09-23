@@ -173,7 +173,7 @@ export default function AdminPage() {
                 <Table.ScrollContainer>
                   <Table.Content aria-label="Users table">
                     <Table.Header>
-                      <Table.Column>{t('user')}</Table.Column>
+                      <Table.Column isRowHeader>{t('user')}</Table.Column>
                       <Table.Column>{t('role')}</Table.Column>
                       <Table.Column>{t('status')}</Table.Column>
                       <Table.Column>{t('lastActive')}</Table.Column>
@@ -315,7 +315,6 @@ export default function AdminPage() {
                 <div className="space-y-3">
                   {[
                     { label: t('guildName'), value: 'Sunbaby Guild', editable: true },
-                    { label: t('guildTag'), value: '[SB]', editable: true },
                     { label: t('recruitment'), value: 'Open', editable: false },
                     { label: t('serverRegion'), value: 'Asia Pacific', editable: false },
                   ].map(setting => (

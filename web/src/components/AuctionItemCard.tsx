@@ -131,7 +131,7 @@ const AuctionItemCard = ({
   return (
     <>
       <div
-        className="border border-divider shadow-none bg-surface hover:border-default-400 transition-colors cursor-pointer rounded-lg"
+        className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors cursor-pointer rounded-lg"
         role="button"
         tabIndex={0}
         onClick={handleCardClick}
@@ -141,7 +141,7 @@ const AuctionItemCard = ({
           <Card.Header className="pb-2">
             <div className="flex justify-between items-start w-full">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-default-100">
+                <div className="p-2 rounded-lg bg-default">
                   <Icon
                     icon={getCategoryIcon(item.category)}
                     width={20}
@@ -185,7 +185,7 @@ const AuctionItemCard = ({
                     <span>{t('timeRemaining')}</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
-                  <div className="w-full bg-default-200 rounded-full overflow-hidden h-2">
+                  <div className="w-full bg-default rounded-full overflow-hidden h-2">
                     <div
                       className="h-full transition-all"
                       style={{

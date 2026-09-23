@@ -82,3 +82,11 @@
   --warning: oklch(82.03% 0.1388 58.30);
   --warning-foreground: oklch(21.03% 0.0059 58.30);
 }
+
+html[data-font-size='large'] {
+  font-size: 112.5%;
+}
+
+html[data-font-size='x-large'] {
+  font-size: 125%;
+}
