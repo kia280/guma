@@ -74,9 +74,6 @@ func runServe(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	// Wait for gRPC server to start
-	time.Sleep(100 * time.Millisecond)
-
 	// Get gRPC address for gateway
 	grpcAddr := grpcServer.Address()
 
