@@ -13,47 +13,16 @@ import {
   TextArea,
   TextField,
   Label,
+  Tooltip,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
 import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-bank';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 
 
-
-const getCategoryIcon = (category: ItemCategory) => {
-  const icons: Record<ItemCategory, string> = {
-    [ItemCategory.WEAPON]: 'solar:wrench-linear',
-    [ItemCategory.ARMOR]: 'solar:shield-check-linear',
-    [ItemCategory.SKILL_SCROLL]: 'solar:book-open-linear',
-    [ItemCategory.CONSUMABLE]: 'solar:test-tube-linear',
-    [ItemCategory.ACCESSORY]: 'solar:stars-linear',
-    [ItemCategory.MATERIAL]: 'solar:box-linear',
-    [ItemCategory.MISC]: 'solar:box-linear',
-  };
-  return icons[category] ?? 'solar:box-linear';
-};
-
-const getRarityColor = (rarity: ItemRarity) => {
-  switch (rarity) {
-    case ItemRarity.COMMON:
-      return 'default';
-    case ItemRarity.UNCOMMON:
-      return 'accent';
-    case ItemRarity.RARE:
-      return 'success';
-    case ItemRarity.EPIC:
-      return 'warning';
-    case ItemRarity.LEGENDARY:
-      return 'danger';
-    case ItemRarity.MYTHIC:
-      return 'success';
-    default:
-      return 'default';
-  }
-};
 
 const getContributionIcon = (type: GuildContribution['type']) => {
   switch (type) {
@@ -170,7 +139,7 @@ export default function GuildBankPage() {
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 shrink-0">
-            <Icon className="text-warning" icon="solar:safe-bold-duotone" width={20} />
+            <Icon className="text-warning" icon="solar:safe-2-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="type-subheading text-foreground">{t('treasury')}</p>
@@ -338,8 +307,8 @@ export default function GuildBankPage() {
       {/* Guild Item Storage */}
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10 shrink-0">
-            <Icon className="text-secondary" icon="solar:chest-bold-duotone" width={20} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
+            <Icon className="text-accent" icon="solar:box-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col flex-1 min-w-0">
             <div className="flex items-center justify-between">
@@ -352,60 +321,40 @@ export default function GuildBankPage() {
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {mockGuildItems.map(item => (
               <Card
                 key={item.id}
-                className="border border-divider shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors"
+                className="border border-divider shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors p-2.5 rounded-xl"
               >
-                <Card.Header className="pb-2">
-                  <div className="flex items-start gap-3 w-full">
-                    <div className="p-2 rounded-lg bg-default shrink-0">
-                      <Icon
-                        icon={getCategoryIcon(item.category)}
-                        width={20}
-                        className="text-subtle"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="type-subheading text-foreground truncate">{item.name}</h4>
-                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        <Chip
-                          size="sm"
-                          color={getRarityColor(item.rarity)}
-                          variant="tertiary"
-                        >
-                          {item.rarity.toUpperCase()}
-                        </Chip>
-                        {item.quantity > 1 && (
-                          <Chip size="sm" variant="tertiary">
-                            x{item.quantity}
-                          </Chip>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Card.Header>
-                <Card.Content className="pt-0 flex flex-col gap-3">
-                  <p className="type-caption text-subtle line-clamp-2">{item.description}</p>
-                  <div className="flex items-center gap-1.5 border-t border-divider pt-2">
-                    <Avatar size="sm" className="w-4 h-4">
-                      <Avatar.Image src={`https://i.pravatar.cc/150?u=${item.donatedBy}`} />
-                      <Avatar.Fallback>{item.donatedBy.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-                    </Avatar>
-                    <p className="type-caption text-hint truncate flex-1">
-                      {t('by')} {item.donatedBy} · {new Date(item.donatedAt).toLocaleDateString()}
+                <Card.Content className="flex flex-row items-center gap-3 p-0">
+                  <ItemThumbnail category={item.category} rarity={item.rarity} />
+                  <div className="flex-1 min-w-0">
+                    <p className="type-body font-medium text-foreground truncate">
+                      {item.name}
+                      {item.quantity > 1 && (
+                        <span className="text-hint tabular-nums"> ×{item.quantity}</span>
+                      )}
                     </p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary" className="capitalize">
+                        {item.rarity}
+                      </Chip>
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="w-full"
-                    onPress={() => openItemRequest(item)}
-                  >
-                    <Icon icon="solar:hand-shake-linear" width={14} />
-                    {t('requestItem')}
-                  </Button>
+                  <Tooltip delay={0}>
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="ghost"
+                      className="text-hint shrink-0"
+                      aria-label={t('requestItem')}
+                      onPress={() => openItemRequest(item)}
+                    >
+                      <Icon icon="solar:hand-shake-linear" width={16} />
+                    </Button>
+                    <Tooltip.Content>{t('requestItem')}</Tooltip.Content>
+                  </Tooltip>
                 </Card.Content>
               </Card>
             ))}

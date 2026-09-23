@@ -4,47 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Card, Chip, Button, Dropdown } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { BackpackItem } from '@/types/backpack';
-import { ItemCategory, ItemRarity } from '@/types/item';
-
-const getCategoryIcon = (category: ItemCategory) => {
-  const icons: Record<ItemCategory, string> = {
-    [ItemCategory.WEAPON]: 'tabler:sword',
-    [ItemCategory.ARMOR]: 'solar:shield-check-linear',
-    [ItemCategory.SKILL_SCROLL]: 'solar:book-2-linear',
-    [ItemCategory.CONSUMABLE]: 'solar:test-tube-linear',
-    [ItemCategory.ACCESSORY]: 'solar:stars-linear',
-    [ItemCategory.MATERIAL]: 'solar:box-linear',
-    [ItemCategory.MISC]: 'solar:box-linear',
-  };
-  return icons[category] ?? 'solar:box-linear';
-};
-
-const getRarityColor = (rarity: ItemRarity) => {
-  switch (rarity) {
-    case ItemRarity.COMMON:
-      return 'default';
-    case ItemRarity.UNCOMMON:
-      return 'accent';
-    case ItemRarity.RARE:
-      return 'default';
-    case ItemRarity.EPIC:
-      return 'warning';
-    case ItemRarity.LEGENDARY:
-      return 'danger';
-    case ItemRarity.MYTHIC:
-      return 'success';
-    default:
-      return 'default';
-  }
-};
-
-const TINT_BY_COLOR: Record<ReturnType<typeof getRarityColor>, string> = {
-  default: 'bg-default text-subtle',
-  accent: 'bg-accent/10 text-accent',
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
-  danger: 'bg-danger/10 text-danger',
-};
+import { ItemThumbnail, getRarityColor } from './ItemThumbnail';
 
 const getAcquiredColor = (acquiredFrom: BackpackItem['acquiredFrom']) => {
   switch (acquiredFrom) {
@@ -81,15 +41,7 @@ const BackpackItemCard = ({
   return (
     <Card className="border border-divider shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors p-2.5 rounded-xl">
       <Card.Content className="flex flex-row items-center gap-3 p-0">
-        <div
-          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg ${TINT_BY_COLOR[getRarityColor(item.item.rarity)]}`}
-        >
-          {item.item.imageUrl ? (
-            <img src={item.item.imageUrl} alt="" className="size-full object-cover" />
-          ) : (
-            <Icon icon={getCategoryIcon(item.item.category)} width={20} />
-          )}
-        </div>
+        <ItemThumbnail category={item.item.category} rarity={item.item.rarity} imageUrl={item.item.imageUrl} />
         <div className="flex-1 min-w-0">
           <p className="type-body font-medium text-foreground truncate">{item.item.name}</p>
           <div className="flex items-center gap-1 mt-0.5">
