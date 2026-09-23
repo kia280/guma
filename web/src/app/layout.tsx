@@ -1,6 +1,8 @@
 import type {Metadata, Viewport} from "next";
 import {Noto_Sans_TC} from "next/font/google";
 import {NextIntlClientProvider} from 'next-intl';
+import {getLocale} from 'next-intl/server';
+import {HTML_LANG, isLocale, DEFAULT_LOCALE} from "@/i18n/locales";
 import {Providers} from "./providers";
 import Script from "next/script";
 import {fontSizeInitScript} from "@/lib/font-size";
@@ -28,8 +30,9 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
   return (
-    <html suppressHydrationWarning>
+    <html lang={HTML_LANG[isLocale(locale) ? locale : DEFAULT_LOCALE]} suppressHydrationWarning>
       <head>
         <Script id="font-size-init" strategy="beforeInteractive">
           {fontSizeInitScript}
