@@ -11,7 +11,6 @@ import {
   DEFAULT_PALETTE_ID,
   DEV_PALETTES,
   getDevPaletteId,
-  loadPaletteFont,
   saveDevPaletteId,
   type DevPalette,
 } from '@/lib/dev-palette';
@@ -53,30 +52,12 @@ function Swatches({ palette }: { palette: DevPalette }) {
   );
 }
 
-function FontSample({ palette }: { palette: DevPalette }) {
-  const t = useTranslations('devTools');
-  return (
-    <div className="flex items-baseline justify-between gap-2">
-      <span className="text-lg" style={palette.font ? { fontFamily: palette.font.stack } : undefined}>
-        {t('fontSample')}
-      </span>
-      <span className="truncate type-caption text-soft">
-        {palette.font ? t(`palettes.${palette.id}.font`) : t('fontCurrent')}
-      </span>
-    </div>
-  );
-}
-
 export function DevPalettePanel() {
   const t = useTranslations('devTools');
   const { resolvedTheme } = useTheme();
   const paletteId = useDevPaletteStore((s) => s.paletteId);
   const setPaletteId = useDevPaletteStore((s) => s.setPaletteId);
   const isLight = resolvedTheme === 'light';
-
-  useEffect(() => {
-    DEV_PALETTES.forEach(loadPaletteFont);
-  }, []);
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto bg-background p-4 text-foreground">
@@ -109,7 +90,6 @@ export function DevPalettePanel() {
                 )}
               </div>
               <span className="type-caption text-soft">{t(`palettes.${palette.id}.description`)}</span>
-              <FontSample palette={palette} />
               <Swatches palette={palette} />
             </button>
           );

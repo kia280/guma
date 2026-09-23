@@ -1,14 +1,8 @@
 export type PaletteTokens = Record<`--${string}`, string>;
 
-export interface PaletteFont {
-  googleFamilies: string[];
-  stack: string;
-}
-
 export interface DevPalette {
   id: string;
   tokens: PaletteTokens;
-  font?: PaletteFont;
 }
 
 const warmNeutrals: PaletteTokens = {
@@ -55,10 +49,6 @@ export const DEV_PALETTES: DevPalette[] = [
       '--accent-foreground': 'oklch(21% 0.02 85)',
       '--focus': 'oklch(62% 0.14 75)',
     },
-    font: {
-      googleFamilies: ['Nunito:wght@400;500;600;700', 'LXGW WenKai TC:wght@400;700'],
-      stack: "'Nunito', 'LXGW WenKai TC', sans-serif",
-    },
   },
   {
     id: 'ink-gold',
@@ -69,10 +59,6 @@ export const DEV_PALETTES: DevPalette[] = [
       '--accent-foreground': 'oklch(99% 0 0)',
       '--focus': 'oklch(78% 0.16 85)',
     },
-    font: {
-      googleFamilies: ['Inter:wght@400;500;600;700', 'Noto Sans TC:wght@400;500;600;700'],
-      stack: "'Inter', 'Noto Sans TC', sans-serif",
-    },
   },
   {
     id: 'indigo',
@@ -82,10 +68,6 @@ export const DEV_PALETTES: DevPalette[] = [
       '--accent': 'oklch(52% 0.19 275)',
       '--accent-foreground': 'oklch(99% 0 0)',
       '--focus': 'oklch(52% 0.19 275)',
-    },
-    font: {
-      googleFamilies: ['Plus Jakarta Sans:wght@400;500;600;700', 'Chiron Hei HK:wght@400;500;600;700'],
-      stack: "'Plus Jakarta Sans', 'Chiron Hei HK', sans-serif",
     },
   },
 ];
@@ -115,20 +97,6 @@ export function saveDevPaletteId(id: string): void {
   }
 }
 
-export function loadPaletteFont(palette: DevPalette): void {
-  if (!palette.font) return;
-  const linkId = `guma-dev-palette-font-${palette.id}`;
-  if (document.getElementById(linkId)) return;
-  const query = palette.font.googleFamilies
-    .map((family) => `family=${encodeURIComponent(family).replace(/%20/g, '+')}`)
-    .join('&');
-  const link = document.createElement('link');
-  link.id = linkId;
-  link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?${query}&display=swap`;
-  document.head.appendChild(link);
-}
-
 export function applyDevPalette(id: string, isLight: boolean): void {
   const palette = DEV_PALETTES.find((p) => p.id === id);
   const style = document.documentElement.style;
@@ -139,12 +107,5 @@ export function applyDevPalette(id: string, isLight: boolean): void {
     for (const [name, value] of Object.entries(palette?.tokens ?? {})) {
       style.setProperty(name, value);
     }
-  }
-
-  if (palette?.font) {
-    loadPaletteFont(palette);
-    document.body.style.fontFamily = palette.font.stack;
-  } else {
-    document.body.style.removeProperty('font-family');
   }
 }

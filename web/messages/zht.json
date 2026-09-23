@@ -667,8 +667,8 @@
     "mockDataDescription": "所有 API 呼叫改用記憶體中的模擬資料,不登入也能開啟 dashboard 頁面。切換後頁面會重新載入。",
     "mockDataForcedByEnv": "已由 NEXT_PUBLIC_USE_MOCK 強制開啟。",
     "paletteTab": "配色",
-    "paletteDescription": "預覽候選配色,每種配色都搭配自己的字體。只影響這個瀏覽器,重新整理後仍會保留。",
-    "paletteLightOnly": "顏色只會改變淺色主題,字體則在兩種主題都會套用。請切換到淺色主題查看顏色。",
+    "paletteDescription": "預覽淺色主題的候選配色。只影響這個瀏覽器,重新整理後仍會保留。",
+    "paletteLightOnly": "配色只會改變淺色主題,請切換到淺色主題查看。",
     "palettes": {
       "current": {
         "name": "目前",
@@ -676,21 +676,37 @@
       },
       "sun-gold": {
         "name": "太陽金",
-        "description": "Logo 的亮金色搭配深色文字、暖灰色與易讀的狀態色",
-        "font": "Nunito + 霞鶩文楷 TC"
+        "description": "Logo 的亮金色搭配深色文字、暖灰色與易讀的狀態色"
       },
       "ink-gold": {
         "name": "墨黑與金",
-        "description": "近黑色按鈕、金色焦點框、暖灰色",
-        "font": "Inter + Noto Sans TC"
+        "description": "近黑色按鈕、金色焦點框、暖灰色"
       },
       "indigo": {
         "name": "靛藍",
-        "description": "中性的藍色主色搭配冷灰色",
-        "font": "Plus Jakarta Sans + 昭源黑體 HK"
+        "description": "中性的藍色主色搭配冷灰色"
       }
     },
     "fontSample": "Aa 公會出席 123",
-    "fontCurrent": "Noto Sans TC(目前)"
+    "fontTab": "字體",
+    "fontDescription": "預覽字體組合,與配色互相獨立。每組都是英文字體搭配繁體中文備用字體,兩種主題都會套用。",
+    "fonts": {
+      "current": {
+        "name": "目前",
+        "description": "next/font 載入的 Noto Sans TC"
+      },
+      "nunito-wenkai": {
+        "name": "Nunito + 霞鶩文楷 TC",
+        "description": "溫暖親切,圓體英文搭配楷體中文"
+      },
+      "inter-noto": {
+        "name": "Inter + Noto Sans TC",
+        "description": "俐落中性"
+      },
+      "jakarta-chiron": {
+        "name": "Plus Jakarta Sans + 昭源黑體 HK",
+        "description": "現代幾何風格,部分字形採香港寫法"
+      }
+    }
   }
 }
