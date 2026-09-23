@@ -16,129 +16,10 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import { ItemCategory, ItemRarity } from '@/types/auction';
-
-interface GuildContribution {
-  id: string;
-  type: 'contribute' | 'request' | 'item_donate' | 'item_distribute';
-  amount?: number;
-  itemName?: string;
-  member: string;
-  memberAvatar?: string;
-  date: string;
-  status: 'completed' | 'pending' | 'approved' | 'rejected';
-  note?: string;
-}
-
-interface GuildBankItem {
-  id: string;
-  name: string;
-  description: string;
-  category: ItemCategory;
-  rarity: ItemRarity;
-  donatedBy: string;
-  donatedAt: string;
-  quantity: number;
-}
-
-const mockContributions: GuildContribution[] = [
-  {
-    id: '1',
-    type: 'contribute',
-    amount: 500,
-    member: 'DragonHunter',
-    date: '2024-01-15',
-    status: 'completed',
-    note: 'Weekly contribution',
-  },
-  {
-    id: '2',
-    type: 'request',
-    amount: 200,
-    member: 'Healer',
-    date: '2024-01-14',
-    status: 'approved',
-    note: 'Potion supplies for raid',
-  },
-  {
-    id: '3',
-    type: 'item_donate',
-    itemName: 'Dragon Scale',
-    member: 'Warrior123',
-    date: '2024-01-13',
-    status: 'completed',
-  },
-  {
-    id: '4',
-    type: 'contribute',
-    amount: 1000,
-    member: 'GuildMaster',
-    date: '2024-01-12',
-    status: 'completed',
-    note: 'Initial guild fund',
-  },
-  {
-    id: '5',
-    type: 'request',
-    amount: 350,
-    member: 'Enchanter',
-    date: '2024-01-16',
-    status: 'pending',
-    note: 'Enchanting materials',
-  },
-  {
-    id: '6',
-    type: 'item_distribute',
-    itemName: 'Ancient Sword',
-    member: 'Blacksmith',
-    date: '2024-01-11',
-    status: 'completed',
-    note: 'Distributed by admin',
-  },
-];
-
-const mockGuildItems: GuildBankItem[] = [
-  {
-    id: 'gi1',
-    name: 'Dragon Scale',
-    description: 'A durable scale from a defeated dragon. Used for crafting high-tier armor.',
-    category: ItemCategory.MATERIAL,
-    rarity: ItemRarity.RARE,
-    donatedBy: 'Warrior123',
-    donatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    quantity: 5,
-  },
-  {
-    id: 'gi2',
-    name: 'Elixir of Strength',
-    description: 'Grants a powerful temporary boost to physical abilities.',
-    category: ItemCategory.CONSUMABLE,
-    rarity: ItemRarity.UNCOMMON,
-    donatedBy: 'GuildMaster',
-    donatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    quantity: 12,
-  },
-  {
-    id: 'gi3',
-    name: 'Tome of Arcane Secrets',
-    description: 'An ancient spellbook containing forgotten knowledge of arcane arts.',
-    category: ItemCategory.SKILL_SCROLL,
-    rarity: ItemRarity.EPIC,
-    donatedBy: 'Enchanter',
-    donatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    quantity: 1,
-  },
-  {
-    id: 'gi4',
-    name: 'Iron Ore Bundle',
-    description: 'A bulk bundle of iron ore for crafting basic equipment.',
-    category: ItemCategory.MATERIAL,
-    rarity: ItemRarity.COMMON,
-    donatedBy: 'Blacksmith',
-    donatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    quantity: 50,
-  },
-];
+import { ItemCategory, ItemRarity } from '@/types/item';
+import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-bank';
+import { apiClient } from '@/lib/guma';
+import { useCurrentGuildId } from '@/lib/current-guild';
 
 
 
@@ -204,6 +85,7 @@ const getStatusColor = (status: GuildContribution['status']) => {
 
 export default function GuildBankPage() {
   const t = useTranslations('guildBankPage');
+  const guildId = useCurrentGuildId();
 
   const requestItemModalState = useOverlayState();
 
@@ -213,9 +95,23 @@ export default function GuildBankPage() {
   const [requestReason, setRequestReason] = React.useState('');
   const [selectedItem, setSelectedItem] = React.useState<GuildBankItem | null>(null);
   const [requestItemReason, setRequestItemReason] = React.useState('');
-  const [guildBalance, setGuildBalance] = React.useState(8750.0);
 
-  const guildFundGoal = 10000;
+  const [bank, setBank] = React.useState<GuildBank | null>(null);
+  const [mockContributions, setMockContributions] = React.useState<GuildContribution[]>([]);
+  const [mockGuildItems, setMockGuildItems] = React.useState<GuildBankItem[]>([]);
+
+  const refetchBank = React.useCallback(() => {
+    apiClient.getGuildBank(guildId).then(setBank).catch(() => {});
+    apiClient.listContributions(guildId).then(setMockContributions).catch(() => {});
+    apiClient.listBankItems(guildId).then(setMockGuildItems).catch(() => {});
+  }, [guildId]);
+
+  React.useEffect(() => {
+    refetchBank();
+  }, [refetchBank]);
+
+  const guildBalance = bank?.balance ?? 0;
+  const guildFundGoal = bank?.goal || 10000;
 
   const getContributionLabel = (type: GuildContribution['type']) => {
     switch (type) {
@@ -230,22 +126,34 @@ export default function GuildBankPage() {
     }
   };
 
-  const handleContribute = () => {
+  const handleContribute = async () => {
     const amount = parseFloat(contributeAmount);
     if (!amount || amount <= 0) return;
-    setGuildBalance(prev => prev + amount);
+    try {
+      await apiClient.contributeFunds(guildId, { amount, note: contributeNote || undefined });
+      refetchBank();
+    } catch (err) { console.error(err); }
     setContributeAmount('');
     setContributeNote('');
   };
 
-  const handleRequest = () => {
-    console.log('Request funds:', { amount: requestAmount, reason: requestReason });
+  const handleRequest = async () => {
+    const amount = parseFloat(requestAmount);
+    if (!amount || !requestReason.trim()) return;
+    try {
+      await apiClient.requestFunds(guildId, { amount, reason: requestReason });
+      refetchBank();
+    } catch (err) { console.error(err); }
     setRequestAmount('');
     setRequestReason('');
   };
 
-  const handleRequestItem = () => {
-    console.log('Request item:', { item: selectedItem?.name, reason: requestItemReason });
+  const handleRequestItem = async () => {
+    if (!selectedItem || !requestItemReason.trim()) return;
+    try {
+      await apiClient.requestItem(guildId, selectedItem.id, requestItemReason);
+      refetchBank();
+    } catch (err) { console.error(err); }
     setSelectedItem(null);
     setRequestItemReason('');
     requestItemModalState.close();
