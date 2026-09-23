@@ -5,61 +5,21 @@ import { Tabs, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import LotteryCard from '@/components/LotteryCard';
-
-const mockLotteries = [
-  {
-    id: 'l1',
-    title: 'Grand Guild Lottery',
-    prizePool: 10000,
-    ticketPrice: 50,
-    drawDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    ticketsSold: 142,
-    maxTickets: 200,
-    status: 'active' as const,
-    winners: undefined,
-  },
-  {
-    id: 'l2',
-    title: 'Weekly Mini Draw',
-    prizePool: 1500,
-    ticketPrice: 10,
-    drawDate: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(),
-    ticketsSold: 88,
-    maxTickets: 100,
-    status: 'active' as const,
-    winners: undefined,
-  },
-  {
-    id: 'l3',
-    title: 'Legendary Item Raffle',
-    prizePool: 5000,
-    ticketPrice: 100,
-    drawDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    ticketsSold: 15,
-    maxTickets: 50,
-    status: 'upcoming' as const,
-    winners: undefined,
-  },
-  {
-    id: 'l4',
-    title: 'Monthly Mega Draw',
-    prizePool: 25000,
-    ticketPrice: 200,
-    drawDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    ticketsSold: 125,
-    maxTickets: 125,
-    status: 'ended' as const,
-    winners: [
-      { id: 'w1', username: 'DragonHunter', prize: '$12,500 (1st place)' },
-      { id: 'w2', username: 'Healer', prize: '$7,500 (2nd place)' },
-      { id: 'w3', username: 'Warrior123', prize: '$5,000 (3rd place)' },
-    ],
-  },
-];
+import { apiClient } from '@/lib/guma';
+import { useCurrentGuildId } from '@/lib/current-guild';
+import type { Lottery } from '@/types/lottery';
 
 export default function LotteryPage() {
   const t = useTranslations('lotteryPage');
+  const guildId = useCurrentGuildId();
   const [activeTab, setActiveTab] = React.useState('all');
+  const [mockLotteries, setMockLotteries] = React.useState<Lottery[]>([]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    apiClient.listLotteries(guildId).then(d => { if (!cancelled) setMockLotteries(d); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [guildId]);
 
   const filtered =
     activeTab === 'all' ? mockLotteries : mockLotteries.filter(l => l.status === activeTab);
