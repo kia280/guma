@@ -17,8 +17,8 @@ export default function AuctionModalPage({ params }: { params: Promise<{ id: str
   return (
     <Modal state={modalState}>
     <Modal.Backdrop>
-      <Modal.Container size="cover" scroll="outside">
-        <Modal.Dialog>
+      <Modal.Container size="lg">
+        <Modal.Dialog className="max-w-6xl">
           <Modal.CloseTrigger />
           <Modal.Body>
             <AuctionDetailContent id={id} onClose={() => router.back()} />
