@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
 import { DEV_SESSION_COOKIE } from '@/lib/dev-auth';
+import { DEV_MOCK_COOKIE } from '@/lib/dev-mock';
 
 const PUBLIC_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password', '/error'];
 
@@ -52,7 +53,10 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isProtectedRoute(pathname)) {
-    if (env.devTools && request.cookies.has(DEV_SESSION_COOKIE)) {
+    if (
+      env.devTools &&
+      (request.cookies.has(DEV_SESSION_COOKIE) || request.cookies.get(DEV_MOCK_COOKIE)?.value === '1')
+    ) {
       return NextResponse.next();
     }
     const cookieHeader = request.headers.get('cookie') ?? '';

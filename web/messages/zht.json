@@ -652,6 +652,9 @@
     "search": "以名稱、Email 或 ID 搜尋",
     "empty": "找不到使用者",
     "active": "目前",
-    "login": "登入"
+    "login": "登入",
+    "mockData": "使用模擬資料",
+    "mockDataDescription": "所有 API 呼叫改用記憶體中的模擬資料,不登入也能開啟 dashboard 頁面。切換後頁面會重新載入。",
+    "mockDataForcedByEnv": "已由 NEXT_PUBLIC_USE_MOCK 強制開啟。"
   }
 }

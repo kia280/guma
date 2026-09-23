@@ -1,6 +1,17 @@
 'use client';
 
-import { Avatar, Button, Chip, Input, Label, SearchField, Spinner, TextField } from '@heroui/react';
+import {
+  Avatar,
+  Button,
+  Chip,
+  Description,
+  Input,
+  Label,
+  SearchField,
+  Spinner,
+  Switch,
+  TextField,
+} from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -13,6 +24,8 @@ import {
   listDevUsers,
   type DevUser,
 } from '@/lib/dev-auth';
+import { isDevMockEnabled, setDevMockEnabled } from '@/lib/dev-mock';
+import { env } from '@/lib/env';
 
 const AFTER_LOGIN_PATH = '/dashboard';
 
@@ -30,6 +43,7 @@ export function DevAuthPanel() {
   const [isLoading, setIsLoading] = useState(true);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isMock] = useState(() => env.useMock || isDevMockEnabled());
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
@@ -80,6 +94,11 @@ export function DevAuthPanel() {
       window.location.assign(AFTER_LOGIN_PATH);
     });
 
+  const toggleMock = (enabled: boolean) => {
+    setDevMockEnabled(enabled);
+    window.location.reload();
+  };
+
   const logout = () =>
     run('logout', async () => {
       await devLogout();
@@ -88,6 +107,18 @@ export function DevAuthPanel() {
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto bg-background p-4 text-foreground">
+      <section className="rounded-xl border border-divider bg-surface p-3">
+        <Switch isSelected={isMock} isDisabled={env.useMock} onChange={toggleMock}>
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.Content>
+            <Label className="text-sm">{t('mockData')}</Label>
+            <Description>{env.useMock ? t('mockDataForcedByEnv') : t('mockDataDescription')}</Description>
+          </Switch.Content>
+        </Switch>
+      </section>
+
       <section className="flex items-center justify-between gap-3 rounded-xl border border-divider bg-surface p-3">
         <div className="flex min-w-0 items-center gap-3">
           {current ? (
