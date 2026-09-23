@@ -210,7 +210,8 @@
     "acquired": "Acquired",
     "addNote": "Add a note…",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "actions": "Item actions"
   },
   "calendarPage": {
     "loadingEvents": "Loading events...",
