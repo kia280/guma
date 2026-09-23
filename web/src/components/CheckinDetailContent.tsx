@@ -92,7 +92,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     <div className="space-y-5">
       {/* Back button - only show if not in modal mode */}
       {!onClose && (
-        <Button variant="secondary" size="sm" onPress={() => router.push('/dashboard/checkin')}>
+        <Button variant="secondary" size="sm" onPress={() => router.push('/dashboard/attendance')}>
           <Icon icon="solar:arrow-left-linear" width={16} />
           {t('backToCheckins')}
         </Button>

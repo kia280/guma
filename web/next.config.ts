@@ -4,6 +4,16 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/checkin/:path*',
+        destination: '/dashboard/attendance/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {

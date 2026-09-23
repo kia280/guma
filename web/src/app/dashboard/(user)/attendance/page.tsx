@@ -115,7 +115,7 @@ export default function CheckinPage() {
   };
 
   const handleCardClick = (item: CheckinEntry) => {
-    router.push(`/dashboard/checkin/${item.id}`);
+    router.push(`/dashboard/attendance/${item.id}`);
   };
 
   return (
