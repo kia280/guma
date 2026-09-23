@@ -1,0 +1,167 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "proto/guma/v1/item.proto";
+
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
+
+// TransactionType values: DEPOSIT, WITHDRAWAL, TRANSFER_IN, TRANSFER_OUT,
+//   REWARD, PENALTY, AUCTION_BID, AUCTION_WIN, LOTTERY_TICKET, LOTTERY_WIN
+// ItemSource values: auction, lottery, transfer, admin
+
+service WalletService {
+  // Get the current user's wallet for a specific guild
+  rpc GetWallet(GetWalletRequest) returns (GetWalletResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/wallet"
+    };
+  }
+
+  rpc DepositFunds(DepositFundsRequest) returns (TransactionResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/wallet/deposit"
+      body: "*"
+    };
+  }
+
+  rpc WithdrawFunds(WithdrawFundsRequest) returns (TransactionResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/wallet/withdraw"
+      body: "*"
+    };
+  }
+
+  rpc TransferFunds(TransferFundsRequest) returns (TransactionResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/wallet/transfer"
+      body: "*"
+    };
+  }
+
+  rpc ListTransactions(ListTransactionsRequest) returns (ListTransactionsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/wallet/transactions"
+    };
+  }
+
+  // Backpack: items owned by the current user within this guild
+  rpc ListBackpackItems(ListBackpackItemsRequest) returns (ListBackpackItemsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/backpack"
+    };
+  }
+
+  rpc WithdrawBackpackItem(WithdrawBackpackItemRequest) returns (WithdrawBackpackItemResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/backpack/{item_id}/withdraw"
+      body: "*"
+    };
+  }
+}
+
+// Request/Response messages
+
+message GetWalletRequest {
+  string guild_id = 1;
+}
+
+message GetWalletResponse {
+  Wallet wallet = 1;
+}
+
+message DepositFundsRequest {
+  string guild_id = 1;
+  int64 amount = 2;
+  string note = 3;
+}
+
+message WithdrawFundsRequest {
+  string guild_id = 1;
+  int64 amount = 2;
+  string note = 3;
+}
+
+message TransferFundsRequest {
+  string guild_id = 1;
+  string to_user_id = 2;
+  int64 amount = 3;
+  string note = 4;
+}
+
+message TransactionResponse {
+  Transaction transaction = 1;
+  Wallet updated_wallet = 2;
+}
+
+message ListTransactionsRequest {
+  string guild_id = 1;
+  string type = 2;      // TransactionType filter; empty = all
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListTransactionsResponse {
+  repeated Transaction transactions = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message ListBackpackItemsRequest {
+  string guild_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListBackpackItemsResponse {
+  repeated BackpackItem items = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message WithdrawBackpackItemRequest {
+  string guild_id = 1;
+  string item_id = 2;
+}
+
+message WithdrawBackpackItemResponse {
+  BackpackItem item = 1;
+}
+
+// Data structures
+
+message Wallet {
+  // user_id serves as the wallet identifier within a guild
+  string user_id = 1;
+  string guild_id = 2;
+  int64 balance = 3;
+  string currency = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message Transaction {
+  string id = 1;
+  string user_id = 2;
+  string guild_id = 3;
+  string type = 4;
+  int64 amount = 5;
+  int64 balance_after = 6;
+  string description = 7;
+  string reference_id = 8;    // Linked entity ID (auction_id, lottery_id, etc.)
+  string reference_type = 9;  // "auction" | "lottery" | "checkin" | "manual"
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message BackpackItem {
+  string id = 1;
+  string owner_id = 2;
+  string guild_id = 3;
+  Item item = 4;
+  string source = 5;      // ItemSource
+  string source_id = 6;   // ID of the originating auction/lottery
+  string note = 7;
+  google.protobuf.Timestamp acquired_at = 8;
+}
