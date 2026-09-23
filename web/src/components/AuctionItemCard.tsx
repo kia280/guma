@@ -15,7 +15,8 @@ import {
   InputGroup,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { AuctionItem, ItemCategory, ItemRarity, AuctionStatus } from '@/types/auction';
+import { AuctionItem, AuctionStatus } from '@/types/auction';
+import { ItemCategory, ItemRarity } from '@/types/item';
 
 const getCategoryIcon = (category: ItemCategory) => {
   const icons: Record<ItemCategory, string> = {

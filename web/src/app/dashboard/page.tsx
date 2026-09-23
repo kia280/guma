@@ -14,126 +14,14 @@ import {
   Tooltip,
 } from 'recharts';
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const GUILD_STATS = {
-  members: 42,
-  activeEvents: 5,
-  balance: 128_450,
-  checkinsThisWeek: 31,
-  activeAuctions: 3,
-  openLotteries: 2,
-};
-
-const PERSONAL_STATS = {
-  balance: 5_000,
-  checkinsThisMonth: 7,
-  activeAuctions: 3,
-  activityPoints: 340,
-};
-
-// Last 30 days wallet balance (sampled every 3 days)
-const balanceTrend = [
-  { day: 'Feb 1', balance: 3200 },
-  { day: 'Feb 4', balance: 3800 },
-  { day: 'Feb 7', balance: 3500 },
-  { day: 'Feb 10', balance: 4100 },
-  { day: 'Feb 13', balance: 3900 },
-  { day: 'Feb 16', balance: 4400 },
-  { day: 'Feb 19', balance: 4200 },
-  { day: 'Feb 22', balance: 4750 },
-  { day: 'Feb 25', balance: 5000 },
-];
-
-// Upcoming events feed (mixed sources)
-type EventKind = 'checkin' | 'auction' | 'lottery' | 'calendar';
-
-interface FeedEvent {
-  id: string;
-  kind: EventKind;
-  title: string;
-  subtitle: string;
-  timeLabel: string;
-  urgency: 'high' | 'medium' | 'low';
-}
-
-const INCOMING_EVENTS: FeedEvent[] = [
-  {
-    id: '1',
-    kind: 'auction',
-    title: 'Dragon Slayer Sword',
-    subtitle: 'Auction ending soon',
-    timeLabel: '6h remaining',
-    urgency: 'high',
-  },
-  {
-    id: '2',
-    kind: 'checkin',
-    title: 'Weekly Guild Check-in',
-    subtitle: 'Open — awaiting your check-in',
-    timeLabel: 'Open now',
-    urgency: 'high',
-  },
-  {
-    id: '3',
-    kind: 'lottery',
-    title: 'Spring Giveaway Draw',
-    subtitle: '$2,500 prize pool',
-    timeLabel: 'Draws in 2d 4h',
-    urgency: 'medium',
-  },
-  {
-    id: '4',
-    kind: 'auction',
-    title: 'Mystic Shield of Protection',
-    subtitle: 'Active auction',
-    timeLabel: '12h remaining',
-    urgency: 'medium',
-  },
-  {
-    id: '5',
-    kind: 'calendar',
-    title: 'Guild Strategy Meeting',
-    subtitle: 'Recurring weekly event',
-    timeLabel: 'Tomorrow 20:00',
-    urgency: 'low',
-  },
-  {
-    id: '6',
-    kind: 'lottery',
-    title: 'Monthly Mega Draw',
-    subtitle: 'You have 3 tickets',
-    timeLabel: 'Draws in 5d',
-    urgency: 'low',
-  },
-];
-
-interface Announcement {
-  id: number;
-  title: string;
-  date: string;
-  pinned: boolean;
-  content: string;
-}
-
-const ANNOUNCEMENTS: Announcement[] = [
-  {
-    id: 1,
-    title: '有任何問題，請回報給抽貝比',
-    date: '2024/07/24',
-    pinned: true,
-    content:
-      '公會成員若遇到任何系統問題、功能錯誤或其他疑問，請直接私訊抽貝比。回報時請附上問題描述與截圖，以便快速處理。感謝大家的配合！',
-  },
-  {
-    id: 2,
-    title: 'Guild raid night every Friday at 21:00',
-    date: '2024/07/20',
-    pinned: false,
-    content:
-      'All guild members are welcome to join our weekly raid night every Friday starting at 21:00 server time. Please ensure your gear is up to date and bring consumables. Loot will be distributed via the in-guild auction system. See you there!',
-  },
-];
+import { apiClient } from '@/lib/guma';
+import { useCurrentGuildId } from '@/lib/current-guild';
+import type {
+  Announcement,
+  DashboardData,
+  EventKind,
+  FeedEvent,
+} from '@/types/dashboard';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -192,7 +80,15 @@ function StatCard({
 const SLIDES = ['personal', 'guild'] as const;
 type Slide = (typeof SLIDES)[number];
 
-function OverviewCarousel() {
+interface OverviewCarouselProps {
+  guildStats: import('@/types/dashboard').GuildStats;
+  personalStats: import('@/types/user').UserStats;
+  balanceTrend: import('@/types/user').BalancePoint[];
+}
+
+function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewCarouselProps) {
+  const GUILD_STATS = guildStats;
+  const PERSONAL_STATS = personalStats;
   const t = useTranslations('dashboard');
   const [active, setActive] = useState<Slide>('personal');
   const idx = SLIDES.indexOf(active);
@@ -408,6 +304,7 @@ function OverviewCarousel() {
 
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
+  const guildId = useCurrentGuildId();
   const [selectedAnn, setSelectedAnn] = useState<Announcement | null>(null);
   const annModalState = useOverlayState({
     onOpenChange: (isOpen) => {
@@ -415,10 +312,33 @@ export default function DashboardPage() {
     },
   });
 
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    apiClient.getDashboardData(guildId).then(d => {
+      if (!cancelled) setDashboard(d);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [guildId]);
+
+  const guildStats = dashboard?.guildStats ?? {
+    members: 0, activeEvents: 0, balance: 0, checkinsThisWeek: 0, activeAuctions: 0, openLotteries: 0,
+  };
+  const personalStats = dashboard?.personalStats ?? {
+    balance: 0, checkinsThisMonth: 0, activeAuctions: 0, activityPoints: 0,
+  };
+  const balanceTrend = dashboard?.balanceTrend ?? [];
+  const announcements = dashboard?.announcements ?? [];
+  const incomingEvents = dashboard?.incomingEvents ?? [];
+
   return (
     <div className="space-y-5">
       {/* Overview Carousel */}
-      <OverviewCarousel />
+      <OverviewCarousel
+        guildStats={guildStats}
+        personalStats={personalStats}
+        balanceTrend={balanceTrend}
+      />
 
       {/* Bottom two-column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -431,7 +351,7 @@ export default function DashboardPage() {
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-0">
               <div className="divide-y divide-divider">
-                {ANNOUNCEMENTS.map(ann => (
+                {announcements.map(ann => (
                   <div
                     key={ann.id}
                     className="px-4 py-3 hover:bg-surface-secondary transition-colors cursor-pointer"
@@ -466,7 +386,7 @@ export default function DashboardPage() {
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-0">
               <div className="divide-y divide-divider">
-                {INCOMING_EVENTS.map(event => {
+                {incomingEvents.map(event => {
                   const meta = KIND_META[event.kind];
                   return (
                     <div

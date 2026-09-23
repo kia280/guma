@@ -1,0 +1,264 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "proto/guma/v1/item.proto";
+
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
+
+service BankService {
+  // Get the guild bank summary (balance, goal, top contributors)
+  rpc GetBank(GetBankRequest) returns (GetBankResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/bank"
+    };
+  }
+
+  // Contribute funds from personal wallet to guild bank
+  rpc ContributeFunds(ContributeFundsRequest) returns (ContributeFundsResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/bank/contribute"
+      body: "*"
+    };
+  }
+
+  // Request withdrawal from guild bank (requires approval)
+  rpc RequestFunds(RequestFundsRequest) returns (RequestFundsResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/bank/request-funds"
+      body: "*"
+    };
+  }
+
+  // Approve or reject a pending fund request (admin)
+  rpc ReviewFundRequest(ReviewFundRequestRequest) returns (ReviewFundRequestResponse) {
+    option (google.api.http) = {
+      patch: "/v1/guilds/{guild_id}/bank/fund-requests/{request_id}"
+      body: "*"
+    };
+  }
+
+  rpc ListFundRequests(ListFundRequestsRequest) returns (ListFundRequestsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/bank/fund-requests"
+    };
+  }
+
+  rpc ListContributions(ListContributionsRequest) returns (ListContributionsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/bank/contributions"
+    };
+  }
+
+  // Donate an item from personal backpack to guild bank
+  rpc DonateItem(DonateItemRequest) returns (DonateItemResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/bank/items"
+      body: "*"
+    };
+  }
+
+  rpc ListBankItems(ListBankItemsRequest) returns (ListBankItemsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/bank/items"
+    };
+  }
+
+  // Request an item from guild bank (requires approval)
+  rpc RequestItem(RequestItemRequest) returns (RequestItemResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/bank/item-requests"
+      body: "*"
+    };
+  }
+
+  rpc ReviewItemRequest(ReviewItemRequestRequest) returns (ReviewItemRequestResponse) {
+    option (google.api.http) = {
+      patch: "/v1/guilds/{guild_id}/bank/item-requests/{request_id}"
+      body: "*"
+    };
+  }
+}
+
+// Request/Response messages
+
+message GetBankRequest {
+  string guild_id = 1;
+}
+
+message GetBankResponse {
+  GuildBank bank = 1;
+}
+
+message ContributeFundsRequest {
+  string guild_id = 1;
+  int64 amount = 2;
+  string note = 3;
+}
+
+message ContributeFundsResponse {
+  BankContribution contribution = 1;
+  GuildBank updated_bank = 2;
+}
+
+message RequestFundsRequest {
+  string guild_id = 1;
+  int64 amount = 2;
+  string reason = 3;
+}
+
+message RequestFundsResponse {
+  FundRequest fund_request = 1;
+}
+
+message ReviewFundRequestRequest {
+  string guild_id = 1;
+  string request_id = 2;
+  string status = 3;  // "approved" | "rejected"
+  string note = 4;
+}
+
+message ReviewFundRequestResponse {
+  FundRequest fund_request = 1;
+}
+
+message ListFundRequestsRequest {
+  string guild_id = 1;
+  string status = 2; // "pending" | "approved" | "rejected" | "" (all)
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListFundRequestsResponse {
+  repeated FundRequest requests = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message ListContributionsRequest {
+  string guild_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message ListContributionsResponse {
+  repeated BankContribution contributions = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message DonateItemRequest {
+  string guild_id = 1;
+  string backpack_item_id = 2; // Item from user's backpack
+  string note = 3;
+}
+
+message DonateItemResponse {
+  BankItem bank_item = 1;
+}
+
+message ListBankItemsRequest {
+  string guild_id = 1;
+  string category = 2;
+  string rarity = 3;
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message ListBankItemsResponse {
+  repeated BankItem items = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message RequestItemRequest {
+  string guild_id = 1;
+  string bank_item_id = 2;
+  string reason = 3;
+}
+
+message RequestItemResponse {
+  ItemRequest item_request = 1;
+}
+
+message ReviewItemRequestRequest {
+  string guild_id = 1;
+  string request_id = 2;
+  string status = 3; // "approved" | "rejected"
+  string note = 4;
+}
+
+message ReviewItemRequestResponse {
+  ItemRequest item_request = 1;
+}
+
+// Data structures
+
+message GuildBank {
+  string id = 1;
+  string guild_id = 2;
+  int64 balance = 3;
+  string currency = 4;
+  int64 goal = 5;
+  repeated TopContributor top_contributors = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message TopContributor {
+  string user_id = 1;
+  string username = 2;
+  string avatar_url = 3;
+  int64 total_contributed = 4;
+}
+
+message BankContribution {
+  string id = 1;
+  string guild_id = 2;
+  string user_id = 3;
+  string username = 4;
+  int64 amount = 5;
+  string note = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message FundRequest {
+  string id = 1;
+  string guild_id = 2;
+  string requester_id = 3;
+  string requester_name = 4;
+  int64 amount = 5;
+  string reason = 6;
+  string status = 7; // "pending" | "approved" | "rejected"
+  string reviewer_id = 8;
+  string review_note = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp reviewed_at = 11;
+}
+
+message BankItem {
+  string id = 1;
+  string guild_id = 2;
+  string donor_id = 3;
+  string donor_name = 4;
+  Item item = 5;
+  int32 quantity = 6;
+  string note = 7;
+  google.protobuf.Timestamp donated_at = 8;
+}
+
+message ItemRequest {
+  string id = 1;
+  string guild_id = 2;
+  string bank_item_id = 3;
+  string requester_id = 4;
+  string requester_name = 5;
+  string reason = 6;
+  string status = 7; // "pending" | "approved" | "rejected"
+  string reviewer_id = 8;
+  string review_note = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp reviewed_at = 11;
+}

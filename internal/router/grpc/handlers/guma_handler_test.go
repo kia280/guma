@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/kia280/guma/internal/session"
+
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 )
 
@@ -44,7 +46,7 @@ func TestGumaService_GetNavigation(t *testing.T) {
 		},
 		{
 			name:      "successful navigation retrieval without guild_id",
-			ctx:       context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:       session.WithUserID(context.Background(), "test-user"),
 			req:       &gumav1.GetNavigationRequest{},
 			wantErr:   false,
 			wantItems: 2,
@@ -58,7 +60,7 @@ func TestGumaService_GetNavigation(t *testing.T) {
 		},
 		{
 			name:      "successful navigation retrieval with guild_id",
-			ctx:       context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:       session.WithUserID(context.Background(), "test-user"),
 			req:       &gumav1.GetNavigationRequest{GuildId: "guild-123"},
 			wantErr:   false,
 			wantItems: 2,
@@ -106,7 +108,7 @@ func TestGumaService_GetDashboardData(t *testing.T) {
 		},
 		{
 			name:    "successful dashboard data retrieval",
-			ctx:     context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:     session.WithUserID(context.Background(), "test-user"),
 			req:     &gumav1.GetDashboardDataRequest{GuildId: "guild-123"},
 			wantErr: false,
 		},
@@ -154,7 +156,7 @@ func TestGumaService_GetUserPreferences(t *testing.T) {
 		},
 		{
 			name:    "successful preferences retrieval",
-			ctx:     context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:     session.WithUserID(context.Background(), "test-user"),
 			req:     &gumav1.GetUserPreferencesRequest{},
 			wantErr: false,
 			checkResult: func(t *testing.T, resp *gumav1.GetUserPreferencesResponse) {
@@ -206,14 +208,14 @@ func TestGumaService_UpdateUserPreferences(t *testing.T) {
 		},
 		{
 			name:     "missing preferences",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &gumav1.UpdateUserPreferencesRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},
 		{
 			name: "successful preferences update",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:  session.WithUserID(context.Background(), "test-user"),
 			req: &gumav1.UpdateUserPreferencesRequest{
 				Preferences: &gumav1.UserPreferences{
 					Theme:      "dark",
@@ -303,7 +305,7 @@ func TestGumaService_SearchGlobal(t *testing.T) {
 	}{
 		{
 			name:     "empty query",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &gumav1.SearchGlobalRequest{Query: ""},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -317,13 +319,13 @@ func TestGumaService_SearchGlobal(t *testing.T) {
 		},
 		{
 			name:    "successful search without guild_id",
-			ctx:     context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:     session.WithUserID(context.Background(), "test-user"),
 			req:     &gumav1.SearchGlobalRequest{Query: "test query"},
 			wantErr: false,
 		},
 		{
 			name: "successful search with guild_id and limit",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:  session.WithUserID(context.Background(), "test-user"),
 			req: &gumav1.SearchGlobalRequest{
 				Query:   "test query",
 				GuildId: "guild-123",

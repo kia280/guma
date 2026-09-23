@@ -24,91 +24,15 @@ import { useTranslations } from 'next-intl';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import BackpackItemCard from '@/components/BackpackItemCard';
 import { BackpackItem } from '@/types/backpack';
-import { ItemCategory, ItemRarity } from '@/types/auction';
-
-interface Transaction {
-  id: string;
-  type: 'transfer' | 'withdraw' | 'deposit';
-  amount: number;
-  recipient?: string;
-  date: string;
-  status: 'completed' | 'pending' | 'failed';
-  description?: string;
-}
-
-// Mock users for recipient search
-const mockUsers = [
-  { id: 'u1', username: 'DragonHunter', email: 'dragon@example.com' },
-  { id: 'u2', username: 'Warrior123', email: 'warrior@example.com' },
-  { id: 'u3', username: 'Healer', email: 'healer@example.com' },
-  { id: 'u4', username: 'Blacksmith', email: 'blacksmith@example.com' },
-  { id: 'u5', username: 'GuildMaster', email: 'master@example.com' },
-  { id: 'u6', username: 'Enchanter', email: 'enchanter@example.com' },
-  { id: 'u7', username: 'ScrollMaster', email: 'scroll@example.com' },
-];
-
-// Mock backpack items
-const mockBackpackItems: BackpackItem[] = [
-  {
-    id: 'bp1',
-    name: 'Ancient Sword',
-    description: 'A blade passed down through generations, still sharp as ever.',
-    category: ItemCategory.WEAPON,
-    rarity: ItemRarity.RARE,
-    acquiredFrom: 'auction',
-    acquiredAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    ownerId: 'current-user',
-    guildId: 'guild1',
-  },
-  {
-    id: 'bp2',
-    name: 'Lucky Charm',
-    description: 'A small trinket said to bring good fortune in battle.',
-    category: ItemCategory.ACCESSORY,
-    rarity: ItemRarity.UNCOMMON,
-    acquiredFrom: 'lottery',
-    acquiredAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    ownerId: 'current-user',
-    guildId: 'guild1',
-  },
-  {
-    id: 'bp3',
-    name: 'Iron Shield',
-    description: 'Standard issue protective gear for guild members.',
-    category: ItemCategory.ARMOR,
-    rarity: ItemRarity.COMMON,
-    acquiredFrom: 'admin',
-    acquiredAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    ownerId: 'current-user',
-    guildId: 'guild1',
-  },
-  {
-    id: 'bp4',
-    name: 'Health Potion',
-    description: 'Restores 50% maximum health when consumed.',
-    category: ItemCategory.CONSUMABLE,
-    rarity: ItemRarity.COMMON,
-    acquiredFrom: 'transfer',
-    acquiredAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    ownerId: 'current-user',
-    guildId: 'guild1',
-  },
-];
-
-const balanceTrend = [
-  { day: 'Jan 1', balance: 800 },
-  { day: 'Jan 5', balance: 950 },
-  { day: 'Jan 9', balance: 870 },
-  { day: 'Jan 13', balance: 1100 },
-  { day: 'Jan 17', balance: 1050 },
-  { day: 'Jan 21', balance: 1200 },
-  { day: 'Jan 25', balance: 1150 },
-  { day: 'Jan 29', balance: 1300 },
-  { day: 'Feb 2', balance: 1250 },
-];
+import type { Transaction, Wallet as WalletType } from '@/types/wallet';
+import type { MockUser } from '@/types/user';
+import { apiClient } from '@/lib/guma';
+import { useCurrentGuildId } from '@/lib/current-guild';
+import { walletBalanceTrend as balanceTrend } from '@/lib/guma/mock/data';
 
 export default function WalletPage() {
   const t = useTranslations('walletPage');
+  const guildId = useCurrentGuildId();
   const itemWithdrawModalState = useOverlayState();
 
   const [transferAmount, setTransferAmount] = React.useState('');
@@ -117,145 +41,64 @@ export default function WalletPage() {
   const [depositAmount, setDepositAmount] = React.useState('');
   const { contains } = useFilter({ sensitivity: 'base' });
   const [selectedItem, setSelectedItem] = React.useState<BackpackItem | null>(null);
-  const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>(mockBackpackItems);
-  const [balance, setBalance] = React.useState(1250.75);
   const [currentPage, setCurrentPage] = React.useState(1);
   const rowsPerPage = 5;
-  const [transactions, setTransactions] = React.useState<Transaction[]>([
-    {
-      id: '1',
-      type: 'deposit',
-      amount: 500.0,
-      date: '2024-01-20',
-      status: 'completed',
-      description: 'Account deposit',
-    },
-    {
-      id: '2',
-      type: 'transfer',
-      amount: -100.0,
-      recipient: 'DragonHunter',
-      date: '2024-01-19',
-      status: 'completed',
-      description: 'Transfer to DragonHunter',
-    },
-    {
-      id: '3',
-      type: 'withdraw',
-      amount: -500.0,
-      date: '2024-01-18',
-      status: 'pending',
-      description: 'Withdrawal request',
-    },
-    {
-      id: '4',
-      type: 'transfer',
-      amount: -75.5,
-      recipient: 'Healer',
-      date: '2024-01-17',
-      status: 'completed',
-      description: 'Transfer to Healer',
-    },
-    {
-      id: '5',
-      type: 'deposit',
-      amount: 1000.0,
-      date: '2024-01-16',
-      status: 'completed',
-      description: 'Guild reward payout',
-    },
-    {
-      id: '6',
-      type: 'transfer',
-      amount: -200.0,
-      recipient: 'Warrior123',
-      date: '2024-01-15',
-      status: 'completed',
-      description: 'Transfer to Warrior123',
-    },
-    {
-      id: '7',
-      type: 'withdraw',
-      amount: -250.0,
-      date: '2024-01-14',
-      status: 'completed',
-      description: 'Withdrawal to bank account',
-    },
-    {
-      id: '8',
-      type: 'deposit',
-      amount: 300.0,
-      date: '2024-01-13',
-      status: 'completed',
-      description: 'Auction sale proceeds',
-    },
-    {
-      id: '9',
-      type: 'transfer',
-      amount: -50.0,
-      recipient: 'Enchanter',
-      date: '2024-01-12',
-      status: 'failed',
-      description: 'Transfer to Enchanter',
-    },
-    {
-      id: '10',
-      type: 'deposit',
-      amount: 150.0,
-      date: '2024-01-11',
-      status: 'completed',
-      description: 'Lottery winnings',
-    },
-    {
-      id: '11',
-      type: 'transfer',
-      amount: -80.0,
-      recipient: 'Blacksmith',
-      date: '2024-01-10',
-      status: 'completed',
-      description: 'Transfer to Blacksmith',
-    },
-    {
-      id: '12',
-      type: 'withdraw',
-      amount: -100.0,
-      date: '2024-01-09',
-      status: 'completed',
-      description: 'Withdrawal to bank account',
-    },
-  ]);
 
-  const handleTransfer = () => {
-    console.log('Transfer:', { amount: transferAmount, recipient: transferRecipient });
+  const [wallet, setWallet] = React.useState<WalletType | null>(null);
+  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+  const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>([]);
+  const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
+
+  const refetchWallet = React.useCallback(() => {
+    apiClient.getWallet(guildId).then(setWallet).catch(() => {});
+    apiClient.listTransactions(guildId).then(setTransactions).catch(() => {});
+    apiClient.listBackpack(guildId).then(setBackpackItems).catch(() => {});
+  }, [guildId]);
+
+  React.useEffect(() => {
+    refetchWallet();
+    apiClient.listMembers(guildId).then(setMockUsers).catch(() => {});
+  }, [guildId, refetchWallet]);
+
+  const balance = wallet?.balance ?? 0;
+
+  const handleTransfer = async () => {
+    const amount = parseFloat(transferAmount);
+    if (!amount || !transferRecipient) return;
+    try {
+      await apiClient.transfer(guildId, { recipientId: transferRecipient, amount });
+      refetchWallet();
+    } catch (err) { console.error(err); }
     setTransferAmount('');
     setTransferRecipient('');
   };
 
-  const handleWithdraw = () => {
-    console.log('Withdraw:', withdrawAmount);
+  const handleWithdraw = async () => {
+    const amount = parseFloat(withdrawAmount);
+    if (!amount || amount <= 0) return;
+    try {
+      await apiClient.withdraw(guildId, amount);
+      refetchWallet();
+    } catch (err) { console.error(err); }
     setWithdrawAmount('');
   };
 
-  const handleDeposit = () => {
+  const handleDeposit = async () => {
     const amount = parseFloat(depositAmount);
     if (!amount || amount <= 0) return;
-    setBalance(prev => prev + amount);
-    setTransactions(prev => [
-      {
-        id: Date.now().toString(),
-        type: 'deposit',
-        amount,
-        date: new Date().toISOString().split('T')[0],
-        status: 'completed',
-        description: 'Account deposit',
-      },
-      ...prev,
-    ]);
+    try {
+      await apiClient.deposit(guildId, amount);
+      refetchWallet();
+    } catch (err) { console.error(err); }
     setDepositAmount('');
   };
 
-  const handleItemWithdraw = () => {
-    console.log('Withdraw item:', selectedItem?.name);
+  const handleItemWithdraw = async () => {
+    if (!selectedItem) return;
+    try {
+      await apiClient.withdrawBackpackItem(guildId, selectedItem.id);
+      refetchWallet();
+    } catch (err) { console.error(err); }
     setSelectedItem(null);
     itemWithdrawModalState.close();
   };
@@ -554,9 +397,9 @@ export default function WalletPage() {
               <BackpackItemCard
                 key={item.id}
                 item={item}
-                onPutToAuction={i => console.log('Put to auction:', i.name)}
-                onPutToLottery={i => console.log('Put to lottery:', i.name)}
-                onTransfer={i => console.log('Transfer:', i.name)}
+                onPutToAuction={i => console.log('Put to auction:', i.item.name)}
+                onPutToLottery={i => console.log('Put to lottery:', i.item.name)}
+                onTransfer={i => console.log('Transfer:', i.item.name)}
                 onWithdraw={openItemWithdraw}
 
               />
@@ -747,15 +590,15 @@ export default function WalletPage() {
                       <Icon icon="solar:backpack-linear" width={20} className="text-foreground/50" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{selectedItem.name}</p>
+                      <p className="text-sm font-medium text-foreground">{selectedItem.item.name}</p>
                       <p className="text-xs text-foreground/40 capitalize">
-                        {selectedItem.rarity} · {selectedItem.category}
+                        {selectedItem.item.rarity} · {selectedItem.item.category}
                       </p>
                     </div>
                   </div>
                   <p className="text-sm text-foreground/60">
                     {t('withdrawItemConfirm')}{' '}
-                    <span className="font-medium text-foreground">{selectedItem.name}</span>{' '}
+                    <span className="font-medium text-foreground">{selectedItem.item.name}</span>{' '}
                     {t('withdrawItemConfirmSuffix')}
                   </p>
                   <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">

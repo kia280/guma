@@ -56,19 +56,23 @@ docker-logs: ## View Docker service logs
 
 migrate-up: ## Run database migrations up
 	@echo "Running database migrations..."
-	@go run cmd/migrate/main.go -direction=up
+	@migrate -path ./migrations -database "$(DATABASE_URL)" up
 
 migrate-down: ## Run database migrations down
 	@echo "Rolling back database migrations..."
-	@go run cmd/migrate/main.go -direction=down
+	@migrate -path ./migrations -database "$(DATABASE_URL)" down 1
 
 migrate-reset: ## Reset database (down then up)
 	@make migrate-down
 	@make migrate-up
 
 proto: ## Generate protobuf files
-	@chmod +x scripts/generate-proto.sh
-	@./scripts/generate-proto.sh
+	@echo "Generating protobuf files..."
+	@buf generate
+
+sqlc: ## Generate sqlc typed queries from internal/db/queries
+	@echo "Generating sqlc code..."
+	@sqlc generate
 
 proto-lint: ## Lint protobuf files
 	@echo "Linting protobuf files..."

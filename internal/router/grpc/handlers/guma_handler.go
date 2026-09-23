@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/session"
 )
 
 // GumaService implements the GumaService gRPC service
@@ -28,8 +29,8 @@ func (s *GumaService) GetNavigation(ctx context.Context, req *gumav1.GetNavigati
 	logger := s.logger.With().Str("operation", "get_navigation").Logger()
 
 	// Get user ID from context
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		logger.Warn().Msg("user_id not found in context")
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
@@ -66,8 +67,8 @@ func (s *GumaService) GetNavigation(ctx context.Context, req *gumav1.GetNavigati
 func (s *GumaService) GetDashboardData(ctx context.Context, req *gumav1.GetDashboardDataRequest) (*gumav1.GetDashboardDataResponse, error) {
 	logger := s.logger.With().Str("operation", "get_dashboard_data").Logger()
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -91,8 +92,8 @@ func (s *GumaService) GetDashboardData(ctx context.Context, req *gumav1.GetDashb
 
 // GetUserPreferences retrieves user preferences
 func (s *GumaService) GetUserPreferences(ctx context.Context, req *gumav1.GetUserPreferencesRequest) (*gumav1.GetUserPreferencesResponse, error) {
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -116,8 +117,8 @@ func (s *GumaService) GetUserPreferences(ctx context.Context, req *gumav1.GetUse
 
 // UpdateUserPreferences updates user preferences
 func (s *GumaService) UpdateUserPreferences(ctx context.Context, req *gumav1.UpdateUserPreferencesRequest) (*gumav1.UpdateUserPreferencesResponse, error) {
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -169,8 +170,8 @@ func (s *GumaService) SearchGlobal(ctx context.Context, req *gumav1.SearchGlobal
 		return nil, status.Error(codes.InvalidArgument, "search query cannot be empty")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 

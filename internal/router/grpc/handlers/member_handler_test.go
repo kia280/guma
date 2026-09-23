@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/kia280/guma/internal/session"
+
 	memberv1 "github.com/kia280/guma/gen/proto/guma/v1"
 )
 
@@ -35,14 +37,14 @@ func TestMemberService_InviteMember(t *testing.T) {
 	}{
 		{
 			name:     "missing guild_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.InviteMemberRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},
 		{
 			name:     "missing email",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.InviteMemberRequest{GuildId: "guild-123"},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -59,7 +61,7 @@ func TestMemberService_InviteMember(t *testing.T) {
 		},
 		{
 			name: "successful member invitation",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:  session.WithUserID(context.Background(), "test-user"),
 			req: &memberv1.InviteMemberRequest{
 				GuildId: "guild-123",
 				Email:   "test@example.com",
@@ -102,7 +104,7 @@ func TestMemberService_JoinGuild(t *testing.T) {
 	}{
 		{
 			name:     "missing invite_code",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.JoinGuildRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -116,7 +118,7 @@ func TestMemberService_JoinGuild(t *testing.T) {
 		},
 		{
 			name:    "successful guild join",
-			ctx:     context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:     session.WithUserID(context.Background(), "test-user"),
 			req:     &memberv1.JoinGuildRequest{InviteCode: "ABC123"},
 			wantErr: false,
 		},
@@ -153,14 +155,14 @@ func TestMemberService_UpdateMember(t *testing.T) {
 	}{
 		{
 			name:     "missing guild_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.UpdateMemberRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},
 		{
 			name:     "missing member_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.UpdateMemberRequest{GuildId: "guild-123"},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -177,7 +179,7 @@ func TestMemberService_UpdateMember(t *testing.T) {
 		},
 		{
 			name: "successful member update",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:  session.WithUserID(context.Background(), "test-user"),
 			req: &memberv1.UpdateMemberRequest{
 				GuildId:     "guild-123",
 				MemberId:    "member-456",
@@ -220,14 +222,14 @@ func TestMemberService_RemoveMember(t *testing.T) {
 	}{
 		{
 			name:     "missing guild_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.RemoveMemberRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},
 		{
 			name:     "missing member_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.RemoveMemberRequest{GuildId: "guild-123"},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -244,7 +246,7 @@ func TestMemberService_RemoveMember(t *testing.T) {
 		},
 		{
 			name: "successful member removal",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:  session.WithUserID(context.Background(), "test-user"),
 			req: &memberv1.RemoveMemberRequest{
 				GuildId:  "guild-123",
 				MemberId: "member-456",
@@ -284,7 +286,7 @@ func TestMemberService_ListMembers(t *testing.T) {
 	}{
 		{
 			name:     "missing guild_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.ListMembersRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -298,13 +300,13 @@ func TestMemberService_ListMembers(t *testing.T) {
 		},
 		{
 			name:    "successful member listing",
-			ctx:     context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:     session.WithUserID(context.Background(), "test-user"),
 			req:     &memberv1.ListMembersRequest{GuildId: "guild-123"},
 			wantErr: false,
 		},
 		{
 			name: "successful member listing with filters",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:  session.WithUserID(context.Background(), "test-user"),
 			req: &memberv1.ListMembersRequest{
 				GuildId:   "guild-123",
 				PageSize:  10,
@@ -346,14 +348,14 @@ func TestMemberService_GetMember(t *testing.T) {
 	}{
 		{
 			name:     "missing guild_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.GetMemberRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},
 		{
 			name:     "missing member_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.GetMemberRequest{GuildId: "guild-123"},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -370,7 +372,7 @@ func TestMemberService_GetMember(t *testing.T) {
 		},
 		{
 			name: "successful member retrieval",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:  session.WithUserID(context.Background(), "test-user"),
 			req: &memberv1.GetMemberRequest{
 				GuildId:  "guild-123",
 				MemberId: "member-456",
@@ -410,7 +412,7 @@ func TestMemberService_GenerateInviteCode(t *testing.T) {
 	}{
 		{
 			name:     "missing guild_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.GenerateInviteCodeRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -424,7 +426,7 @@ func TestMemberService_GenerateInviteCode(t *testing.T) {
 		},
 		{
 			name:    "successful invite code generation",
-			ctx:     context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:     session.WithUserID(context.Background(), "test-user"),
 			req:     &memberv1.GenerateInviteCodeRequest{GuildId: "guild-123"},
 			wantErr: false,
 		},
@@ -507,7 +509,7 @@ func TestMemberService_ListInvites(t *testing.T) {
 	}{
 		{
 			name:     "missing guild_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.ListInvitesRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -521,7 +523,7 @@ func TestMemberService_ListInvites(t *testing.T) {
 		},
 		{
 			name:    "successful invite listing",
-			ctx:     context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:     session.WithUserID(context.Background(), "test-user"),
 			req:     &memberv1.ListInvitesRequest{GuildId: "guild-123"},
 			wantErr: false,
 		},
@@ -558,14 +560,14 @@ func TestMemberService_RevokeInvite(t *testing.T) {
 	}{
 		{
 			name:     "missing guild_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.RevokeInviteRequest{},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},
 		{
 			name:     "missing invite_id",
-			ctx:      context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:      session.WithUserID(context.Background(), "test-user"),
 			req:      &memberv1.RevokeInviteRequest{GuildId: "guild-123"},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -582,7 +584,7 @@ func TestMemberService_RevokeInvite(t *testing.T) {
 		},
 		{
 			name: "successful invite revocation",
-			ctx:  context.WithValue(context.Background(), "user_id", "test-user"),
+			ctx:  session.WithUserID(context.Background(), "test-user"),
 			req: &memberv1.RevokeInviteRequest{
 				GuildId:  "guild-123",
 				InviteId: "invite-789",

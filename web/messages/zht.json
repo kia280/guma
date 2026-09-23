@@ -20,6 +20,9 @@
     "forgotPassword": "忘記密碼？",
     "or": "或",
     "redirecting": "正在跳轉至登入頁面...",
+    "loginUnavailable": "Login is unavailable",
+    "loginUnavailableDescription": "The authentication service could not be reached. Check that it is running, then try again.",
+    "retry": "Try again",
     "welcomeBack": "歡迎回來"
   },
   "sidebar": {

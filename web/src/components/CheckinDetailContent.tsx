@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Button, Chip, Avatar, Separator, Modal, TextArea, TextField, Label } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import { mockCheckins, CheckinStatus, CheckinEntry } from '@/app/dashboard/(user)/checkin/data';
+import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
+import { apiClient } from '@/lib/guma';
+import { useCurrentGuildId } from '@/lib/current-guild';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,9 +40,18 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     return `${minutes}m ${t('remaining')}`;
   };
 
-  const [entry, setEntry] = useState<CheckinEntry | null>(
-    () => mockCheckins.find(c => c.id === id) ?? null
-  );
+  const guildId = useCurrentGuildId();
+
+  const [entry, setEntry] = useState<CheckinEntry | null>(null);
+  const refetchEntry = () => {
+    if (!id) return;
+    apiClient.getCheckin(guildId, id).then(setEntry).catch(() => setEntry(null));
+  };
+  useEffect(() => {
+    refetchEntry();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guildId, id]);
+
   const [notes, setNotes] = useState('');
   const [timeRemaining, setTimeRemaining] = useState('');
 
@@ -67,23 +78,13 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const { label: statusLabel, color: statusColor } = statusConfig[entry.status];
   const isOpen_ = entry.status === CheckinStatus.OPEN;
 
-  const handleCheckinConfirm = () => {
-    setEntry(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        status: CheckinStatus.FINISHED,
-        attendanceList: [
-          ...prev.attendanceList,
-          {
-            id: `a-${Date.now()}`,
-            username: 'You',
-            checkedInAt: new Date().toISOString(),
-            notes: notes.trim() || undefined,
-          },
-        ],
-      };
-    });
+  const handleCheckinConfirm = async () => {
+    try {
+      await apiClient.submitAttendance(guildId, id);
+      refetchEntry();
+    } catch (err) {
+      console.error(err);
+    }
     setNotes('');
   };
 

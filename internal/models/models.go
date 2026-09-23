@@ -6,6 +6,15 @@ import (
 	"github.com/google/uuid"
 )
 
+// Item represents a shared in-game item used across auctions, backpack, bank, check-ins, and lotteries
+type Item struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Category    string `json:"category,omitempty"`
+	Rarity      string `json:"rarity,omitempty"`
+}
+
 // User represents a user in the system
 type User struct {
 	ID        uuid.UUID         `json:"id"`
@@ -18,15 +27,15 @@ type User struct {
 
 // Guild represents a guild/organization
 type Guild struct {
-	ID          uuid.UUID         `json:"id"`
-	Name        string            `json:"name"`
-	Description string            `json:"description,omitempty"`
-	OwnerID     uuid.UUID         `json:"owner_id"`
-	Tags        []string          `json:"tags,omitempty"`
-	Settings    GuildSettings     `json:"settings"`
-	CreatedAt   time.Time         `json:"created_at"`
-	UpdatedAt   time.Time         `json:"updated_at"`
-	MemberCount int32             `json:"member_count"`
+	ID          uuid.UUID     `json:"id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description,omitempty"`
+	OwnerID     uuid.UUID     `json:"owner_id"`
+	Tags        []string      `json:"tags,omitempty"`
+	Settings    GuildSettings `json:"settings"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+	MemberCount int32         `json:"member_count"`
 }
 
 // GuildSettings represents guild configuration
@@ -90,18 +99,6 @@ type Event struct {
 	Metadata    map[string]string `json:"metadata,omitempty"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
-}
-
-// EventRSVP represents an RSVP to an event
-type EventRSVP struct {
-	ID         uuid.UUID `json:"id"`
-	EventID    uuid.UUID `json:"event_id"`
-	MemberID   uuid.UUID `json:"member_id"`
-	Status     string    `json:"status"` // attending, declined, tentative
-	Comment    string    `json:"comment,omitempty"`
-	RSVPedAt   time.Time `json:"rsvped_at"`
-	CheckedIn  bool      `json:"checked_in"`
-	CheckedInAt *time.Time `json:"checked_in_at,omitempty"`
 }
 
 // Activity represents user/guild activity

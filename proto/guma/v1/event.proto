@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
+
+service EventService {
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/events"
+    };
+  }
+
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/events/{event_id}"
+    };
+  }
+
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/events"
+      body: "*"
+    };
+  }
+
+  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse) {
+    option (google.api.http) = {
+      patch: "/v1/guilds/{guild_id}/events/{event_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/events/{event_id}"
+    };
+  }
+
+  // Query events across a date range (for calendar views)
+  rpc ListEventsByRange(ListEventsByRangeRequest) returns (ListEventsByRangeResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/events/range"
+    };
+  }
+
+  // List upcoming events (for dashboard feed)
+  rpc ListUpcomingEvents(ListUpcomingEventsRequest) returns (ListUpcomingEventsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/events/upcoming"
+    };
+  }
+}
+
+// Request/Response messages
+
+message ListEventsRequest {
+  string guild_id = 1;
+  string view = 2;  // "month" | "week" | "day"
+  string date = 3;  // ISO 8601 date anchor for the view
+  int32 page_size = 4;
+  string page_token = 5;
+}
+
+message ListEventsResponse {
+  repeated GuildEvent events = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message GetEventRequest {
+  string guild_id = 1;
+  string event_id = 2;
+}
+
+message GetEventResponse {
+  GuildEvent event = 1;
+}
+
+message CreateEventRequest {
+  string guild_id = 1;
+  string title = 2;
+  string description = 3;
+  string type = 4;         // EventType
+  string start_date = 5;   // ISO 8601 datetime
+  string end_date = 6;     // ISO 8601 datetime
+  bool is_all_day = 7;
+  string location = 8;
+  string priority = 9;     // "low" | "medium" | "high" | "critical"
+  bool is_recurring = 10;
+  RecurringPattern recurring_pattern = 11;
+}
+
+message CreateEventResponse {
+  GuildEvent event = 1;
+}
+
+message UpdateEventRequest {
+  string guild_id = 1;
+  string event_id = 2;
+  string title = 3;
+  string description = 4;
+  string type = 5;
+  string start_date = 6;
+  string end_date = 7;
+  bool is_all_day = 8;
+  string location = 9;
+  string priority = 10;
+  bool is_recurring = 11;
+  RecurringPattern recurring_pattern = 12;
+}
+
+message UpdateEventResponse {
+  GuildEvent event = 1;
+}
+
+message DeleteEventRequest {
+  string guild_id = 1;
+  string event_id = 2;
+}
+
+message DeleteEventResponse {
+  bool success = 1;
+}
+
+message ListEventsByRangeRequest {
+  string guild_id = 1;
+  string start_date = 2; // ISO 8601
+  string end_date = 3;   // ISO 8601
+}
+
+message ListEventsByRangeResponse {
+  repeated GuildEvent events = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message ListUpcomingEventsRequest {
+  string guild_id = 1;
+  int32 limit = 2; // Default: 10
+}
+
+message ListUpcomingEventsResponse {
+  repeated GuildEvent events = 1;
+}
+
+// Data structures
+
+// EventType values: boss_respawn, guild_war, guild_meeting, raid, training, tournament, social, other
+
+message GuildEvent {
+  string id = 1;
+  string guild_id = 2;
+  string created_by = 3;
+  string title = 4;
+  string description = 5;
+  string type = 6;
+  string start_date = 7;  // ISO 8601 datetime
+  string end_date = 8;    // ISO 8601 datetime
+  bool is_all_day = 9;
+  string location = 10;
+  string priority = 11;
+  bool is_recurring = 12;
+  RecurringPattern recurring_pattern = 13;
+  repeated string participant_ids = 14;
+  google.protobuf.Timestamp created_at = 15;
+  google.protobuf.Timestamp updated_at = 16;
+}
+
+message RecurringPattern {
+  string type = 1;             // "daily" | "weekly" | "monthly" | "custom"
+  int32 interval = 2;
+  repeated int32 days_of_week = 3; // 0=Mon … 6=Sun
+  string end_date = 4;         // ISO 8601 date; empty means no end
+  int32 occurrences = 5;       // 0 means unlimited
+  int32 custom_hours = 6;      // for type="custom"
+  int32 custom_minutes = 7;
+}

@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	memberv1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/session"
 )
 
 // MemberService implements the MemberService gRPC service
@@ -37,8 +38,8 @@ func (s *MemberService) InviteMember(ctx context.Context, req *memberv1.InviteMe
 		return nil, status.Error(codes.InvalidArgument, "email is required")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -75,8 +76,8 @@ func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRe
 		return nil, status.Error(codes.InvalidArgument, "invite_code is required")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -115,8 +116,8 @@ func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMe
 		return nil, status.Error(codes.InvalidArgument, "member_id is required")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -155,8 +156,8 @@ func (s *MemberService) RemoveMember(ctx context.Context, req *memberv1.RemoveMe
 		return nil, status.Error(codes.InvalidArgument, "member_id is required")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -180,8 +181,8 @@ func (s *MemberService) ListMembers(ctx context.Context, req *memberv1.ListMembe
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -211,8 +212,8 @@ func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRe
 		return nil, status.Error(codes.InvalidArgument, "member_id is required")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -246,8 +247,8 @@ func (s *MemberService) GenerateInviteCode(ctx context.Context, req *memberv1.Ge
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -309,8 +310,8 @@ func (s *MemberService) ListInvites(ctx context.Context, req *memberv1.ListInvit
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
@@ -339,8 +340,8 @@ func (s *MemberService) RevokeInvite(ctx context.Context, req *memberv1.RevokeIn
 		return nil, status.Error(codes.InvalidArgument, "invite_id is required")
 	}
 
-	userID, ok := ctx.Value("user_id").(string)
-	if !ok {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 

@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from '@/lib/env';
 
-const PUBLIC_ROUTES = [
-  '/login',
-  '/signup',
-  '/forgot-password',
-  '/reset-password',
-  '/error'
-];
+const PUBLIC_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password', '/error'];
 
 const PROTECTED_ROUTE_PREFIXES = ['/dashboard'];
 
@@ -15,15 +10,37 @@ function isPublicRoute(pathname: string): boolean {
     return true;
   }
 
-  return PUBLIC_ROUTES.some((route) => {
+  return PUBLIC_ROUTES.some(route => {
     return pathname === route || pathname.startsWith(`${route}/`);
   });
 }
 
 function isProtectedRoute(pathname: string): boolean {
-  return PROTECTED_ROUTE_PREFIXES.some((route) => {
+  return PROTECTED_ROUTE_PREFIXES.some(route => {
     return pathname === route || pathname.startsWith(`${route}/`);
   });
+}
+
+// Validates the session by forwarding the incoming Cookie header to Kratos
+// /sessions/whoami. Returns true only if Kratos confirms an active session.
+async function hasValidSession(cookieHeader: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${env.kratos.internalUrl}/sessions/whoami`, {
+      headers: { cookie: cookieHeader },
+      cache: 'no-store',
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+function redirectToLoginAndClearSession(request: NextRequest): NextResponse {
+  const response = NextResponse.redirect(new URL('/login', request.url));
+  // Best-effort client-cookie cleanup. Kratos's own session cookie is
+  // httpOnly on its domain, but any same-site alias we've set should go.
+  response.cookies.delete('guma_sess');
+  return response;
 }
 
 export async function proxy(request: NextRequest) {
@@ -34,13 +51,10 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isProtectedRoute(pathname)) {
-    const sessionCookie = request.cookies.get('guma_sess')?.value;
-    
-    // TODO: Validate session cookie with backend if necessary
-    if (!sessionCookie) {
-      return NextResponse.redirect(new URL(`/login`, request.url));
+    const cookieHeader = request.headers.get('cookie') ?? '';
+    if (!cookieHeader || !(await hasValidSession(cookieHeader))) {
+      return redirectToLoginAndClearSession(request);
     }
-
     return NextResponse.next();
   }
 

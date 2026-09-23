@@ -20,6 +20,9 @@
     "forgotPassword": "Forgot password?",
     "or": "or",
     "redirecting": "Redirecting to login...",
+    "loginUnavailable": "Login is unavailable",
+    "loginUnavailableDescription": "The authentication service could not be reached. Check that it is running, then try again.",
+    "retry": "Try again",
     "welcomeBack": "Welcome back"
   },
   "sidebar": {

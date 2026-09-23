@@ -11,11 +11,13 @@ import {
   Separator,
   Form,
   Spinner,
+  Alert,
 } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { kratos } from '@/lib/kratos';
+import { checkSession } from '@/lib/session';
 
 export default function LoginPage() {
   return (
@@ -30,27 +32,41 @@ function Login() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isVisible, setIsVisible] = React.useState(false);
+  const [loginFlowError, setLoginFlowError] = React.useState(false);
+  const [isCreatingFlow, setIsCreatingFlow] = React.useState(false);
   const flow = searchParams.get('flow');
 
-  React.useEffect(() => {
-    if (!flow) {
-      kratos
-        .createBrowserLoginFlow({
-          returnTo: window.location.origin + '/dashboard',
-        })
-        .then(({ data }) => {
-          console.log(data);
-          router.push(`/login?flow=${data.id}`);
-        })
-        .catch(error => {
+  const createLoginFlow = React.useCallback(
+    async (signal?: AbortSignal) => {
+      setLoginFlowError(false);
+      setIsCreatingFlow(true);
+
+      if (await checkSession()) {
+        if (!signal?.aborted) router.replace('/dashboard');
+        return;
+      }
+
+      try {
+        const { data } = await kratos.createBrowserLoginFlow();
+        if (!signal?.aborted) router.replace('/login?flow=' + data.id);
+      } catch (error) {
+        if (!signal?.aborted) {
           console.error('Error creating login flow:', error);
-          if (error?.response?.data?.error?.id === 'session_already_available') {
-            router.push('/dashboard');
-            return;
-          }
-        });
-    }
-  }, [flow, router]);
+          setLoginFlowError(true);
+          setIsCreatingFlow(false);
+        }
+      }
+    },
+    [router]
+  );
+
+  React.useEffect(() => {
+    if (flow) return;
+
+    const controller = new AbortController();
+    void createLoginFlow(controller.signal);
+    return () => controller.abort();
+  }, [createLoginFlow, flow]);
 
   const toggleVisibility = () => setIsVisible(!isVisible);
 
@@ -62,10 +78,30 @@ function Login() {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
         <div className="rounded-xl bg-surface flex w-full max-w-sm flex-col gap-4 px-8 pt-6 pb-10">
-          <div className="flex flex-col items-center justify-center py-8 gap-4">
-            <Spinner size="lg" />
-            <p className="text-sm text-foreground/50">{t('redirecting')}</p>
-          </div>
+          {loginFlowError ? (
+            <div className="flex flex-col gap-4 py-8">
+              <Alert status="danger">
+                <Alert.Indicator />
+                <Alert.Content>
+                  <Alert.Title>{t('loginUnavailable')}</Alert.Title>
+                  <Alert.Description>{t('loginUnavailableDescription')}</Alert.Description>
+                </Alert.Content>
+              </Alert>
+              <Button
+                fullWidth
+                isPending={isCreatingFlow}
+                variant="primary"
+                onPress={() => void createLoginFlow()}
+              >
+                {t('retry')}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 gap-4">
+              <Spinner size="lg" />
+              <p className="text-sm text-foreground/50">{t('redirecting')}</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -137,7 +173,11 @@ function Login() {
                 {t('forgotPassword')}
               </Link>
             </div>
-            <Button variant="primary" className="w-full font-semibold h-12 text-base text-accent-foreground/90" type="submit">
+            <Button
+              variant="primary"
+              className="w-full font-semibold h-12 text-base text-accent-foreground/90"
+              type="submit"
+            >
               {t('logIn')}
             </Button>
           </Form>

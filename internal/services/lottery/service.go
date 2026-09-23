@@ -1,0 +1,563 @@
+package lottery
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math/rand"
+	"strconv"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog"
+
+	"github.com/kia280/guma/internal/database"
+	db "github.com/kia280/guma/internal/db/sqlc"
+	"github.com/kia280/guma/internal/models"
+	"github.com/kia280/guma/internal/services/errs"
+)
+
+// LotteryPrize is a prize tier in a lottery.
+type LotteryPrize struct {
+	Rank        int32
+	Description string
+	Amount      int64
+	Item        *models.Item
+}
+
+// Lottery is the domain model for a lottery.
+type Lottery struct {
+	ID                string
+	GuildID           string
+	CreatedBy         string
+	Title             string
+	Description       string
+	TicketPrice       int64
+	TicketsSold       int32
+	MaxTickets        int32
+	MaxTicketsPerUser int32
+	Status            string
+	DrawDate          string
+	Prizes            []LotteryPrize
+	Winners           []*LotteryWinner
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+}
+
+// LotteryTicket is the domain model for a lottery ticket.
+type LotteryTicket struct {
+	ID           string
+	LotteryID    string
+	UserID       string
+	TicketNumber string
+	PurchasedAt  time.Time
+}
+
+// LotteryWinner is the domain model for a lottery winner.
+type LotteryWinner struct {
+	ID               string
+	LotteryID        string
+	UserID           string
+	Username         string
+	AvatarURL        string
+	Rank             int32
+	PrizeAmount      int64
+	PrizeDescription string
+	TicketNumber     string
+}
+
+// ListParams holds the inputs for List.
+type ListParams struct {
+	GuildID  string
+	Status   string
+	PageSize int
+	Offset   int
+}
+
+// ListResult is returned by List.
+type ListResult struct {
+	Lotteries  []*Lottery
+	TotalCount int32
+	NextOffset int
+}
+
+// CreateParams holds the inputs for Create.
+type CreateParams struct {
+	GuildID           string
+	CreatedBy         string
+	Title             string
+	Description       string
+	TicketPrice       int64
+	MaxTickets        int32
+	MaxTicketsPerUser int32
+	DrawDate          string
+	Prizes            []LotteryPrize
+}
+
+// ListTicketsResult is returned by ListMyTickets.
+type ListTicketsResult struct {
+	Tickets    []*LotteryTicket
+	TotalCount int32
+	NextOffset int
+}
+
+// lotteryRow is the common subset of fields from lottery queries.
+type lotteryRow struct {
+	ID                uuid.UUID
+	GuildID           uuid.UUID
+	CreatedBy         uuid.UUID
+	Title             string
+	Description       string
+	TicketPrice       int64
+	TicketsSold       int32
+	MaxTickets        int32
+	MaxTicketsPerUser int32
+	Status            string
+	DrawDate          string
+	Prizes            []byte
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+}
+
+// Service handles lottery business logic.
+type Service struct {
+	pool   *database.Pool
+	q      *db.Queries
+	logger zerolog.Logger
+}
+
+// New creates a new lottery Service.
+func New(pool *database.Pool, logger zerolog.Logger) *Service {
+	var q *db.Queries
+	if pool != nil {
+		q = db.New(pool.Pool)
+	}
+	return &Service{
+		pool:   pool,
+		q:      q,
+		logger: logger.With().Str("service", "lottery").Logger(),
+	}
+}
+
+// List returns paginated lotteries for a guild.
+func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
+	pageSize := p.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 20
+	}
+	guildID, err := uuid.Parse(p.GuildID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
+	}
+
+	rows, err := s.q.ListLotteries(ctx, db.ListLotteriesParams{
+		GuildID: guildID, StatusFilter: p.Status,
+		PageSize: int32(pageSize), PageOffset: int32(p.Offset),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: list lotteries: %v", errs.ErrInternal, err)
+	}
+
+	lotteries := make([]*Lottery, 0, len(rows))
+	for _, r := range rows {
+		l := toLottery(lotteryRow(r))
+		l.Winners, _ = s.getWinners(ctx, r.ID)
+		lotteries = append(lotteries, l)
+	}
+
+	total, _ := s.q.CountLotteries(ctx, db.CountLotteriesParams{GuildID: guildID, StatusFilter: p.Status})
+
+	nextOffset := 0
+	if len(lotteries) == pageSize {
+		nextOffset = p.Offset + pageSize
+	}
+	return &ListResult{Lotteries: lotteries, TotalCount: int32(total), NextOffset: nextOffset}, nil
+}
+
+// Get fetches a single lottery by ID.
+func (s *Service) Get(ctx context.Context, guildIDStr, lotteryIDStr string) (*Lottery, error) {
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	lotteryID, err := uuid.Parse(lotteryIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	r, err := s.q.GetLottery(ctx, db.GetLotteryParams{ID: lotteryID, GuildID: guildID})
+	if err != nil {
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	l := toLottery(lotteryRow(r))
+	l.Winners, _ = s.getWinners(ctx, lotteryID)
+	return l, nil
+}
+
+// Create inserts a new lottery. Requires admin role.
+func (s *Service) Create(ctx context.Context, p CreateParams) (*Lottery, error) {
+	guildID, err := uuid.Parse(p.GuildID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
+	}
+	createdBy, err := uuid.Parse(p.CreatedBy)
+	if err != nil {
+		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, createdBy, "owner", "admin"); err != nil {
+		return nil, err
+	}
+
+	prizesJSON, err := json.Marshal(p.Prizes)
+	if err != nil {
+		return nil, fmt.Errorf("%w: encode prizes: %v", errs.ErrInternal, err)
+	}
+
+	r, err := s.q.CreateLottery(ctx, db.CreateLotteryParams{
+		GuildID: guildID, CreatedBy: createdBy,
+		Title: p.Title, Description: p.Description,
+		TicketPrice: p.TicketPrice, MaxTickets: p.MaxTickets, MaxTicketsPerUser: p.MaxTicketsPerUser,
+		DrawDate: p.DrawDate, Prizes: prizesJSON,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: create lottery: %v", errs.ErrInternal, err)
+	}
+	l := toLottery(lotteryRow(r))
+	s.logger.Info().Str("lottery_id", l.ID).Str("guild_id", p.GuildID).Msg("lottery created")
+	return l, nil
+}
+
+// PurchaseTickets deducts cost from wallet and issues tickets.
+func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, lotteryIDStr, userIDStr string, quantity int32) ([]*LotteryTicket, int64, error) {
+	if quantity <= 0 {
+		return nil, 0, fmt.Errorf("%w: quantity must be positive", errs.ErrFailedPrecondition)
+	}
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return nil, 0, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	lotteryID, err := uuid.Parse(lotteryIDStr)
+	if err != nil {
+		return nil, 0, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return nil, 0, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+
+	info, err := s.q.GetLotteryForPurchase(ctx, db.GetLotteryForPurchaseParams{ID: lotteryID, GuildID: guildID})
+	if err != nil {
+		return nil, 0, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	if info.Status != "active" && info.Status != "upcoming" {
+		return nil, 0, fmt.Errorf("%w: lottery is not open for ticket purchase", errs.ErrFailedPrecondition)
+	}
+	if info.MaxTickets > 0 && info.TicketsSold+quantity > info.MaxTickets {
+		return nil, 0, fmt.Errorf("%w: not enough tickets available", errs.ErrFailedPrecondition)
+	}
+
+	if info.MaxTicketsPerUser > 0 {
+		n, _ := s.q.CountUserTicketsForLottery(ctx, db.CountUserTicketsForLotteryParams{LotteryID: lotteryID, UserID: userID})
+		if int32(n)+quantity > info.MaxTicketsPerUser {
+			return nil, 0, fmt.Errorf("%w: ticket limit per user exceeded", errs.ErrFailedPrecondition)
+		}
+	}
+
+	totalCost := info.TicketPrice * int64(quantity)
+
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, 0, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	if err := qtx.EnsureWalletDefault(ctx, db.EnsureWalletDefaultParams{UserID: userID, GuildID: guildID}); err != nil {
+		return nil, 0, fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
+	}
+	balance, err := qtx.GetWalletBalanceForUpdate(ctx, db.GetWalletBalanceForUpdateParams{UserID: userID, GuildID: guildID})
+	if err != nil {
+		return nil, 0, fmt.Errorf("%w: wallet", errs.ErrNotFound)
+	}
+	if balance < totalCost {
+		return nil, 0, fmt.Errorf("%w: insufficient funds", errs.ErrFailedPrecondition)
+	}
+	newBalance := balance - totalCost
+	if err := qtx.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{Balance: newBalance, UserID: userID, GuildID: guildID}); err != nil {
+		return nil, 0, fmt.Errorf("%w: deduct: %v", errs.ErrInternal, err)
+	}
+	if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
+		UserID: userID, GuildID: guildID, Type: "LOTTERY_TICKET",
+		Amount: -totalCost, BalanceAfter: newBalance,
+		Description: "Lottery ticket purchase", ReferenceID: lotteryIDStr, ReferenceType: "lottery",
+	}); err != nil {
+		return nil, 0, fmt.Errorf("%w: record transaction: %v", errs.ErrInternal, err)
+	}
+
+	tickets := make([]*LotteryTicket, 0, quantity)
+	for i := int32(0); i < quantity; i++ {
+		ticketNum := fmt.Sprintf("%s-%06d", lotteryIDStr[:8], rand.Intn(1000000))
+		tr, err := qtx.InsertLotteryTicket(ctx, db.InsertLotteryTicketParams{
+			LotteryID: lotteryID, UserID: userID, TicketNumber: ticketNum,
+		})
+		if err != nil {
+			return nil, 0, fmt.Errorf("%w: insert ticket: %v", errs.ErrInternal, err)
+		}
+		tickets = append(tickets, &LotteryTicket{
+			ID: tr.ID.String(), LotteryID: lotteryIDStr, UserID: userIDStr,
+			TicketNumber: ticketNum, PurchasedAt: tr.PurchasedAt,
+		})
+	}
+
+	if err := qtx.IncrementTicketsSold(ctx, db.IncrementTicketsSoldParams{N: quantity, ID: lotteryID}); err != nil {
+		return nil, 0, fmt.Errorf("%w: update tickets_sold: %v", errs.ErrInternal, err)
+	}
+
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, 0, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	return tickets, totalCost, nil
+}
+
+// GetWinners returns the winners for a lottery.
+func (s *Service) GetWinners(ctx context.Context, guildIDStr, lotteryIDStr string) ([]*LotteryWinner, error) {
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	lotteryID, err := uuid.Parse(lotteryIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	exists, err := s.q.LotteryExists(ctx, db.LotteryExistsParams{ID: lotteryID, GuildID: guildID})
+	if err != nil || !exists {
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	return s.getWinners(ctx, lotteryID)
+}
+
+// Draw randomly selects winners and distributes prizes.
+func (s *Service) Draw(ctx context.Context, guildIDStr, lotteryIDStr, callerIDStr string) (*Lottery, []*LotteryWinner, error) {
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	lotteryID, err := uuid.Parse(lotteryIDStr)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	callerID, err := uuid.Parse(callerIDStr)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
+		return nil, nil, err
+	}
+
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	info, err := qtx.GetLotteryForDraw(ctx, db.GetLotteryForDrawParams{ID: lotteryID, GuildID: guildID})
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	if info.Status == "ended" {
+		return nil, nil, fmt.Errorf("%w: lottery already drawn", errs.ErrFailedPrecondition)
+	}
+
+	var prizeList []LotteryPrize
+	if len(info.Prizes) > 0 {
+		_ = json.Unmarshal(info.Prizes, &prizeList)
+	}
+
+	allTickets, err := qtx.ListAllLotteryTickets(ctx, lotteryID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: fetch tickets: %v", errs.ErrInternal, err)
+	}
+	if len(allTickets) == 0 {
+		return nil, nil, fmt.Errorf("%w: no tickets sold", errs.ErrFailedPrecondition)
+	}
+
+	rand.Shuffle(len(allTickets), func(i, j int) { allTickets[i], allTickets[j] = allTickets[j], allTickets[i] })
+
+	numPrizes := len(prizeList)
+	if numPrizes == 0 {
+		numPrizes = 1
+	}
+
+	var winners []*LotteryWinner
+	usedUsers := map[uuid.UUID]bool{}
+	prizeIdx := 0
+
+	for _, t := range allTickets {
+		if prizeIdx >= numPrizes {
+			break
+		}
+		if usedUsers[t.UserID] {
+			continue
+		}
+		usedUsers[t.UserID] = true
+
+		prize := LotteryPrize{}
+		if prizeIdx < len(prizeList) {
+			prize = prizeList[prizeIdx]
+		}
+
+		info, _ := qtx.GetUserUsernameAndAvatar(ctx, t.UserID)
+
+		winnerID, err := qtx.InsertLotteryWinner(ctx, db.InsertLotteryWinnerParams{
+			LotteryID: lotteryID, UserID: t.UserID,
+			Rank: int32(prizeIdx + 1), PrizeAmount: prize.Amount,
+			PrizeDescription: prize.Description, TicketNumber: t.TicketNumber,
+		})
+		if err != nil {
+			return nil, nil, fmt.Errorf("%w: insert winner: %v", errs.ErrInternal, err)
+		}
+
+		if prize.Amount > 0 {
+			_ = qtx.EnsureWalletDefault(ctx, db.EnsureWalletDefaultParams{UserID: t.UserID, GuildID: guildID})
+			bal, _ := qtx.GetWalletBalanceForUpdate(ctx, db.GetWalletBalanceForUpdateParams{UserID: t.UserID, GuildID: guildID})
+			newBal := bal + prize.Amount
+			_ = qtx.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{Balance: newBal, UserID: t.UserID, GuildID: guildID})
+			_, _ = qtx.InsertTransaction(ctx, db.InsertTransactionParams{
+				UserID: t.UserID, GuildID: guildID, Type: "LOTTERY_WIN",
+				Amount: prize.Amount, BalanceAfter: newBal,
+				Description: "Lottery prize", ReferenceID: lotteryIDStr, ReferenceType: "lottery",
+			})
+		}
+
+		winners = append(winners, &LotteryWinner{
+			ID: winnerID.String(), LotteryID: lotteryIDStr, UserID: t.UserID.String(),
+			Username: info.Username, AvatarURL: info.AvatarUrl,
+			Rank: int32(prizeIdx + 1), PrizeAmount: prize.Amount,
+			PrizeDescription: prize.Description, TicketNumber: t.TicketNumber,
+		})
+		prizeIdx++
+	}
+
+	if err := qtx.EndLottery(ctx, lotteryID); err != nil {
+		return nil, nil, fmt.Errorf("%w: end lottery: %v", errs.ErrInternal, err)
+	}
+
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+
+	l, err := s.Get(ctx, guildIDStr, lotteryIDStr)
+	if err != nil {
+		return nil, nil, err
+	}
+	s.logger.Info().Str("lottery_id", lotteryIDStr).Int("winners", len(winners)).Msg("lottery drawn")
+	return l, winners, nil
+}
+
+// ListMyTickets returns tickets owned by a user across all guilds (or filtered by guild).
+func (s *Service) ListMyTickets(ctx context.Context, userIDStr, guildIDStr string, pageSize, offset int) (*ListTicketsResult, error) {
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 20
+	}
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+
+	rows, err := s.q.ListUserTickets(ctx, db.ListUserTicketsParams{
+		UserID: userID, GuildFilter: guildIDStr,
+		PageSize: int32(pageSize), PageOffset: int32(offset),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: list tickets: %v", errs.ErrInternal, err)
+	}
+
+	tickets := make([]*LotteryTicket, 0, len(rows))
+	for _, r := range rows {
+		tickets = append(tickets, &LotteryTicket{
+			ID: r.ID.String(), LotteryID: r.LotteryID.String(), UserID: r.UserID.String(),
+			TicketNumber: r.TicketNumber, PurchasedAt: r.PurchasedAt,
+		})
+	}
+
+	total, _ := s.q.CountUserTickets(ctx, db.CountUserTicketsParams{UserID: userID, GuildFilter: guildIDStr})
+
+	nextOffset := 0
+	if len(tickets) == pageSize {
+		nextOffset = offset + pageSize
+	}
+	return &ListTicketsResult{Tickets: tickets, TotalCount: int32(total), NextOffset: nextOffset}, nil
+}
+
+// --- helpers ---
+
+func toLottery(r lotteryRow) *Lottery {
+	l := &Lottery{
+		ID: r.ID.String(), GuildID: r.GuildID.String(), CreatedBy: r.CreatedBy.String(),
+		Title: r.Title, Description: r.Description,
+		TicketPrice: r.TicketPrice, TicketsSold: r.TicketsSold,
+		MaxTickets: r.MaxTickets, MaxTicketsPerUser: r.MaxTicketsPerUser,
+		Status: r.Status, DrawDate: r.DrawDate,
+		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
+		Prizes: []LotteryPrize{},
+	}
+	if len(r.Prizes) > 0 {
+		_ = json.Unmarshal(r.Prizes, &l.Prizes)
+	}
+	if l.Prizes == nil {
+		l.Prizes = []LotteryPrize{}
+	}
+	return l
+}
+
+func (s *Service) getWinners(ctx context.Context, lotteryID uuid.UUID) ([]*LotteryWinner, error) {
+	rows, err := s.q.ListLotteryWinners(ctx, lotteryID)
+	if err != nil {
+		return nil, err
+	}
+	winners := make([]*LotteryWinner, 0, len(rows))
+	for _, r := range rows {
+		winners = append(winners, &LotteryWinner{
+			ID: r.ID.String(), LotteryID: r.LotteryID.String(), UserID: r.UserID.String(),
+			Username: r.Username, AvatarURL: r.AvatarUrl,
+			Rank: r.Rank, PrizeAmount: r.PrizeAmount,
+			PrizeDescription: r.PrizeDescription, TicketNumber: r.TicketNumber,
+		})
+	}
+	return winners, nil
+}
+
+func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
+	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
+		}
+		return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
+	}
+	for _, r := range roles {
+		if role == r {
+			return nil
+		}
+	}
+	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, roles)
+}
+
+// NextPageToken encodes the offset as a page token string.
+func NextPageToken(offset int) string {
+	if offset == 0 {
+		return ""
+	}
+	return strconv.Itoa(offset)
+}
+
+// ParsePageToken decodes a page token string to an offset.
+func ParsePageToken(token string) int {
+	if token == "" {
+		return 0
+	}
+	n, _ := strconv.Atoi(token)
+	return n
+}

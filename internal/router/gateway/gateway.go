@@ -17,6 +17,7 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/config"
 	"github.com/kia280/guma/internal/router/gateway/middleware"
+	"github.com/kia280/guma/internal/session"
 )
 
 // Gateway wraps the HTTP gateway server
@@ -45,6 +46,7 @@ func NewGateway(ctx context.Context, cfg *config.Config, grpcAddr string, logger
 		}),
 		runtime.WithIncomingHeaderMatcher(customHeaderMatcher),
 		runtime.WithOutgoingHeaderMatcher(outgoingHeaderMatcher),
+		runtime.WithMetadata(session.Annotator),
 	)
 
 	// gRPC connection options
@@ -67,6 +69,34 @@ func NewGateway(ctx context.Context, cfg *config.Config, grpcAddr string, logger
 
 	if err := gumav1.RegisterHealthServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
 		return nil, fmt.Errorf("failed to register health gateway: %w", err)
+	}
+
+	if err := gumav1.RegisterUserServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register user gateway: %w", err)
+	}
+
+	if err := gumav1.RegisterWalletServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register wallet gateway: %w", err)
+	}
+
+	if err := gumav1.RegisterAuctionServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register auction gateway: %w", err)
+	}
+
+	if err := gumav1.RegisterEventServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register event gateway: %w", err)
+	}
+
+	if err := gumav1.RegisterCheckInServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register checkin gateway: %w", err)
+	}
+
+	if err := gumav1.RegisterLotteryServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register lottery gateway: %w", err)
+	}
+
+	if err := gumav1.RegisterBankServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register bank gateway: %w", err)
 	}
 
 	logger.Info().Msg("gRPC-Gateway handlers registered")

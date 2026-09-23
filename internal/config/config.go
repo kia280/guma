@@ -15,14 +15,8 @@ type Config struct {
 	// Database configuration
 	Database DatabaseConfig `mapstructure:"database"`
 
-	// Redis configuration
-	Redis RedisConfig `mapstructure:"redis"`
-
 	// Authentication configuration
 	Auth AuthConfig `mapstructure:"auth"`
-
-	// Storage configuration
-	Storage StorageConfig `mapstructure:"storage"`
 
 	// Logging configuration
 	Logging LoggingConfig `mapstructure:"logging"`
@@ -49,27 +43,10 @@ type DatabaseConfig struct {
 	MaxIdleConns int    `mapstructure:"max_idle_conns"`
 }
 
-// RedisConfig holds Redis connection configuration
-type RedisConfig struct {
-	URL string `mapstructure:"url"`
-}
-
 // AuthConfig holds authentication configuration
 type AuthConfig struct {
-	JWTSecret       string `mapstructure:"jwt_secret"`
-	OAuthClientID   string `mapstructure:"oauth_client_id"`
-	OAuthSecret     string `mapstructure:"oauth_client_secret"`
 	KratosPublicURL string `mapstructure:"kratos_public_url"`
 	KratosAdminURL  string `mapstructure:"kratos_admin_url"`
-}
-
-// StorageConfig holds file storage configuration
-type StorageConfig struct {
-	Endpoint  string `mapstructure:"endpoint"`
-	AccessKey string `mapstructure:"access_key"`
-	SecretKey string `mapstructure:"secret_key"`
-	UseSSL    bool   `mapstructure:"use_ssl"`
-	Bucket    string `mapstructure:"bucket"`
 }
 
 // LoggingConfig holds logging configuration
@@ -107,17 +84,9 @@ func Load() (*Config, error) {
 	v.BindEnv("database.url", "DATABASE_URL")
 	v.BindEnv("database.max_open_conns", "DATABASE_MAX_OPEN_CONNS")
 	v.BindEnv("database.max_idle_conns", "DATABASE_MAX_IDLE_CONNS")
-	v.BindEnv("redis.url", "REDIS_URL")
 	v.BindEnv("server.port", "PORT")
 	v.BindEnv("server.host", "HOST")
 	v.BindEnv("server.env", "ENV")
-	v.BindEnv("auth.jwt_secret", "JWT_SECRET")
-	v.BindEnv("auth.oauth_client_id", "OAUTH_CLIENT_ID")
-	v.BindEnv("auth.oauth_client_secret", "OAUTH_CLIENT_SECRET")
-	v.BindEnv("storage.endpoint", "MINIO_ENDPOINT")
-	v.BindEnv("storage.access_key", "MINIO_ACCESS_KEY")
-	v.BindEnv("storage.secret_key", "MINIO_SECRET_KEY")
-	v.BindEnv("storage.use_ssl", "MINIO_USE_SSL")
 	v.BindEnv("logging.level", "LOG_LEVEL")
 	v.BindEnv("logging.format", "LOG_FORMAT")
 	v.BindEnv("cors.allowed_origins", "CORS_ALLOWED_ORIGINS")
@@ -177,24 +146,12 @@ func setDefaults(v *viper.Viper) {
 	// Rate limit defaults
 	v.SetDefault("rate_limit.requests_per_minute", 60)
 	v.SetDefault("rate_limit.burst", 10)
-
-	// Storage defaults
-	v.SetDefault("storage.use_ssl", false)
-	v.SetDefault("storage.bucket", "guma")
 }
 
 // Validate validates the configuration
 func (c *Config) Validate() error {
 	if c.Database.URL == "" {
 		return fmt.Errorf("database URL is required")
-	}
-
-	if c.Redis.URL == "" {
-		return fmt.Errorf("redis URL is required")
-	}
-
-	if c.Auth.JWTSecret == "" {
-		return fmt.Errorf("JWT secret is required")
 	}
 
 	if c.Server.Port < 1 || c.Server.Port > 65535 {

@@ -1,10 +1,8 @@
-import { Configuration, FrontendApi } from "@ory/client";
-import { env } from "@/lib/env";
-
-console.log("Kratos Public URL:", env.kratos.publicUrl);
+import { Configuration, FrontendApi } from '@ory/client';
+import { env } from '@/lib/env';
 
 export const kratosConfig = new Configuration({
-  basePath: env.kratos.publicUrl,
+  basePath: typeof window === 'undefined' ? env.kratos.publicUrl : window.location.origin,
 });
 
 export const kratos = new FrontendApi(kratosConfig);

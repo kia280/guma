@@ -3,6 +3,54 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
+import { apiClient } from '@/lib/guma';
+import type { User } from '@/types/user';
+
+interface UserState {
+  user: User | null;
+  status: 'idle' | 'loading' | 'ready' | 'error';
+  error: string | null;
+  fetchMe: () => Promise<User | null>;
+  reset: () => void;
+}
+
+let mePromise: Promise<User | null> | null = null;
+
+export const useUserStore = create<UserState>((set, get) => ({
+  user: null,
+  status: 'idle',
+  error: null,
+  fetchMe: () => {
+    if (mePromise) return mePromise;
+    if (get().status === 'ready' && get().user) {
+      return Promise.resolve(get().user);
+    }
+    set({ status: 'loading', error: null });
+    mePromise = apiClient
+      .getMe()
+      .then(u => {
+        set({ user: u, status: 'ready', error: null });
+        return u;
+      })
+      .catch(err => {
+        set({ status: 'error', error: err?.message ?? 'failed to load user' });
+        return null;
+      })
+      .finally(() => {
+        mePromise = null;
+      });
+    return mePromise;
+  },
+  reset: () => {
+    mePromise = null;
+    set({ user: null, status: 'idle', error: null });
+  },
+}));
+
+if (typeof window !== 'undefined') {
+  void useUserStore.getState().fetchMe();
+}
+
 // UI State Store
 interface UIState {
   // Theme

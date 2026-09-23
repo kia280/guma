@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Card,
@@ -17,51 +16,58 @@ import {
   type UseOverlayStateReturn,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { Guild, PaginatedResponse } from '@/types/api';
-import { api } from '@/lib/api';
+import type { Guild } from '@/types/guild';
+import { apiClient } from '@/lib/guma';
 
 export default function GuildsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const createGuildState = useOverlayState();
   const t = useTranslations('guildsPage');
 
-  const { data: currentGuild, isLoading: currentGuildLoading } = useQuery({
-    queryKey: ['currentGuild'],
-    queryFn: async () => {
-      try {
-        const response = await api.get<Guild>('/guilds/current');
-        return response.data.data;
-      } catch (error) {
-        return null;
-      }
-    },
-  });
+  const [currentGuild, setCurrentGuild] = useState<Guild | null>(null);
+  const [currentGuildLoading, setCurrentGuildLoading] = useState(true);
+  const [guilds, setGuilds] = useState<Guild[]>([]);
+  const [guildsLoading, setGuildsLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
 
-  const {
-    data: guildsData,
-    isLoading: guildsLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ['guilds', searchQuery],
-    queryFn: async () => {
-      const response = await api.get<PaginatedResponse<Guild>>('/guilds', {
-        params: {
-          search: searchQuery || undefined,
-          limit: 20,
-        },
+  useEffect(() => {
+    let cancelled = false;
+    setCurrentGuildLoading(true);
+    apiClient
+      .getCurrentGuild()
+      .then(g => { if (!cancelled) setCurrentGuild(g); })
+      .catch(() => { if (!cancelled) setCurrentGuild(null); })
+      .finally(() => { if (!cancelled) setCurrentGuildLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const refetch = async () => {
+    setGuildsLoading(true);
+    setError(null);
+    try {
+      const list = await apiClient.listGuilds({
+        search: searchQuery || undefined,
+        limit: 20,
       });
-      return response.data.data;
-    },
-  });
+      setGuilds(list);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setGuildsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const isLoading = currentGuildLoading || guildsLoading;
-  const guilds = guildsData?.data || [];
   const hasCurrentGuild = !!currentGuild;
 
   const handleJoinGuild = async (guildId: string) => {
     try {
-      await api.post(`/guilds/${guildId}/join`);
+      await apiClient.joinGuild(guildId);
       refetch();
     } catch (error) {
       console.error('Failed to join guild:', error);
@@ -347,7 +353,7 @@ function CreateGuildModal({ state, onSuccess }: CreateGuildModalProps) {
 
     try {
       setIsLoading(true);
-      await api.post('/guilds', {
+      await apiClient.createGuild({
         name: name.trim(),
         description: description.trim() || undefined,
       });
