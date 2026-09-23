@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Card, Chip, Button, Dropdown } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { BackpackItem } from '@/types/backpack';
-import { ItemCategory, ItemRarity } from '@/types/auction';
+import { ItemCategory, ItemRarity } from '@/types/item';
 
 const getCategoryIcon = (category: ItemCategory) => {
   const icons: Record<ItemCategory, string> = {
@@ -76,13 +76,13 @@ const BackpackItemCard = ({
         <div className="flex justify-between items-start w-full">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-default-100">
-              <Icon icon={getCategoryIcon(item.category)} width={20} className="text-foreground/50" />
+              <Icon icon={getCategoryIcon(item.item.category)} width={20} className="text-foreground/50" />
             </div>
             <div>
-              <h4 className="text-sm font-medium text-foreground">{item.name}</h4>
+              <h4 className="text-sm font-medium text-foreground">{item.item.name}</h4>
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
-                  {item.rarity.toUpperCase()}
+                <Chip size="sm" color={getRarityColor(item.item.rarity)} variant="secondary">
+                  {item.item.rarity.toUpperCase()}
                 </Chip>
                 <Chip size="sm" color={getAcquiredColor(item.acquiredFrom)} variant="secondary">
                   {item.acquiredFrom.charAt(0).toUpperCase() + item.acquiredFrom.slice(1)}
@@ -128,7 +128,7 @@ const BackpackItemCard = ({
       </Card.Header>
 
       <Card.Content className="pt-0 flex flex-col gap-2">
-        <p className="text-xs text-foreground/50 line-clamp-2">{item.description}</p>
+        <p className="text-xs text-foreground/50 line-clamp-2">{item.item.description}</p>
         <p className="text-xs text-foreground/40">
           {t('acquired')} {new Date(item.acquiredAt).toLocaleDateString()}
         </p>
