@@ -8,6 +8,9 @@ lint:
     - FIELD_NOT_REQUIRED
     - PACKAGE_NO_IMPORT_CYCLE
     - UNARY_RPC
+    - PACKAGE_DIRECTORY_MATCH
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - RPC_RESPONSE_STANDARD_NAME
   disallow_comment_ignores: true
 breaking:
   use:
