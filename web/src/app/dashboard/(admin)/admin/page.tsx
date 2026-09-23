@@ -19,120 +19,10 @@ import {
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 
-// Mock data
-const mockUsers = [
-  {
-    id: 'u1',
-    username: 'GuildMaster',
-    email: 'master@example.com',
-    role: 'admin',
-    status: 'online',
-    lastActive: '2 min ago',
-    avatar: undefined,
-  },
-  {
-    id: 'u2',
-    username: 'DragonHunter',
-    email: 'dragon@example.com',
-    role: 'member',
-    status: 'offline',
-    lastActive: '1h ago',
-    avatar: undefined,
-  },
-  {
-    id: 'u3',
-    username: 'Healer',
-    email: 'healer@example.com',
-    role: 'member',
-    status: 'online',
-    lastActive: 'just now',
-    avatar: undefined,
-  },
-  {
-    id: 'u4',
-    username: 'Blacksmith',
-    email: 'blacksmith@example.com',
-    role: 'moderator',
-    status: 'offline',
-    lastActive: '3h ago',
-    avatar: undefined,
-  },
-  {
-    id: 'u5',
-    username: 'ShadowRogue',
-    email: 'rogue@example.com',
-    role: 'member',
-    status: 'banned',
-    lastActive: '2d ago',
-    avatar: undefined,
-  },
-];
-
-const mockActivity = [
-  {
-    id: 'a1',
-    actor: 'DragonHunter',
-    action: 'placed a bid on Dragon Slayer Sword',
-    actionType: 'auction',
-    timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'a2',
-    actor: 'Healer',
-    action: 'checked in to weekly guild check-in',
-    actionType: 'checkin',
-    timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'a3',
-    actor: 'Warrior123',
-    action: 'purchased 2 lottery tickets',
-    actionType: 'lottery',
-    timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'a4',
-    actor: 'Blacksmith',
-    action: 'joined the guild',
-    actionType: 'join',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'a5',
-    actor: 'GuildMaster',
-    action: 'created auction for Mystic Shield',
-    actionType: 'auction',
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'a6',
-    actor: 'ScrollMaster',
-    action: 'checked in to raid preparation',
-    actionType: 'checkin',
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-  },
-];
-
-const mockAnnouncements = [
-  {
-    id: 'ann1',
-    title: 'Weekly Raid Night - Friday 8PM',
-    content:
-      'This Friday we will be tackling the Ancient Dragon. All members level 50+ are encouraged to join.',
-    pinned: true,
-    author: 'GuildMaster',
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'ann2',
-    title: 'Guild Treasury Update',
-    content:
-      'The guild treasury has been updated. Auction proceeds for this month have been distributed.',
-    pinned: false,
-    author: 'GuildMaster',
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-];
+import { apiClient } from '@/lib/guma';
+import { useCurrentGuildId } from '@/lib/current-guild';
+import type { MockUser } from '@/types/user';
+import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -202,25 +92,39 @@ const formatTimeAgo = (timestamp: string) => {
 
 export default function AdminPage() {
   const t = useTranslations('adminPage');
-  const [announcements, setAnnouncements] = React.useState(mockAnnouncements);
+  const guildId = useCurrentGuildId();
+
+  const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
+  const [mockActivity, setMockActivity] = React.useState<AdminActivity[]>([]);
+  const [announcements, setAnnouncements] = React.useState<AdminAnnouncement[]>([]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    apiClient.listMembers(guildId).then(d => { if (!cancelled) setMockUsers(d); }).catch(() => {});
+    apiClient.getAdminActivity().then(d => { if (!cancelled) setMockActivity(d); }).catch(() => {});
+    apiClient.getAdminAnnouncements().then(d => { if (!cancelled) setAnnouncements(d); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [guildId]);
+
   const [newTitle, setNewTitle] = React.useState('');
   const [newContent, setNewContent] = React.useState('');
   const [isPinned, setIsPinned] = React.useState(false);
 
-  const handlePostAnnouncement = () => {
+  const handlePostAnnouncement = async () => {
     if (!newTitle.trim() || !newContent.trim()) return;
-    const newAnn = {
-      id: `ann-${Date.now()}`,
-      title: newTitle,
-      content: newContent,
-      pinned: isPinned,
-      author: 'GuildMaster',
-      createdAt: new Date().toISOString(),
-    };
-    setAnnouncements(prev => [newAnn, ...prev]);
-    setNewTitle('');
-    setNewContent('');
-    setIsPinned(false);
+    try {
+      const ann = await apiClient.createAnnouncement({
+        title: newTitle,
+        content: newContent,
+        pinned: isPinned,
+      });
+      setAnnouncements(prev => [ann, ...prev]);
+      setNewTitle('');
+      setNewContent('');
+      setIsPinned(false);
+    } catch (err) {
+      console.error('Failed to post announcement', err);
+    }
   };
 
   return (
