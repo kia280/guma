@@ -5,156 +5,10 @@ import { useTranslations } from 'next-intl';
 import { Card, Select, Chip, Tabs, TextField, Label, InputGroup, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import AuctionItemCard from '@/components/AuctionItemCard';
-import { AuctionItem, ItemCategory, ItemRarity, AuctionStatus } from '@/types/auction';
-
-const mockAuctionItems: AuctionItem[] = [
-  {
-    id: '1',
-    name: 'Dragon Slayer Sword',
-    description: 'A legendary blade forged from dragon scales. Increases critical hit rate by 25%.',
-    category: ItemCategory.WEAPON,
-    rarity: ItemRarity.LEGENDARY,
-    startingBid: 1000,
-    currentBid: 2500,
-    currentBidder: {
-      id: 'user1',
-      username: 'DragonHunter',
-      avatar: undefined,
-    },
-    minBidIncrement: 100,
-    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
-    status: AuctionStatus.ACTIVE,
-    guildId: 'guild1',
-    sellerId: 'seller1',
-    seller: {
-      id: 'seller1',
-      username: 'GuildMaster',
-      avatar: undefined,
-    },
-    bidHistory: [
-      {
-        id: 'bid1',
-        auctionItemId: '1',
-        bidderId: 'user2',
-        bidder: { id: 'user2', username: 'Warrior123' },
-        amount: 1000,
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        isWinning: false,
-      },
-      {
-        id: 'bid2',
-        auctionItemId: '1',
-        bidderId: 'user1',
-        bidder: { id: 'user1', username: 'DragonHunter' },
-        amount: 2500,
-        timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-        isWinning: true,
-      },
-    ],
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Mystic Shield of Protection',
-    description: 'An enchanted shield that provides magical protection and reflects 15% damage.',
-    category: ItemCategory.ARMOR,
-    rarity: ItemRarity.EPIC,
-    startingBid: 800,
-    currentBid: 800,
-    minBidIncrement: 50,
-    startTime: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
-    status: AuctionStatus.ACTIVE,
-    guildId: 'guild1',
-    sellerId: 'seller2',
-    seller: {
-      id: 'seller2',
-      username: 'Enchanter',
-      avatar: undefined,
-    },
-    bidHistory: [],
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Ancient Healing Scroll',
-    description: 'A powerful healing spell that restores 80% of maximum health instantly.',
-    category: ItemCategory.SKILL_SCROLL,
-    rarity: ItemRarity.RARE,
-    startingBid: 500,
-    currentBid: 750,
-    currentBidder: {
-      id: 'user3',
-      username: 'Healer',
-      avatar: undefined,
-    },
-    minBidIncrement: 25,
-    startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(),
-    status: AuctionStatus.UPCOMING,
-    guildId: 'guild1',
-    sellerId: 'seller3',
-    seller: {
-      id: 'seller3',
-      username: 'ScrollMaster',
-      avatar: undefined,
-    },
-    bidHistory: [
-      {
-        id: 'bid3',
-        auctionItemId: '3',
-        bidderId: 'user3',
-        bidder: { id: 'user3', username: 'Healer' },
-        amount: 750,
-        timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-        isWinning: true,
-      },
-    ],
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '4',
-    name: 'Rare Mithril Ore',
-    description: 'High-quality crafting material used to forge superior weapons and armor.',
-    category: ItemCategory.MATERIAL,
-    rarity: ItemRarity.UNCOMMON,
-    startingBid: 200,
-    currentBid: 350,
-    currentBidder: {
-      id: 'user4',
-      username: 'Blacksmith',
-      avatar: undefined,
-    },
-    minBidIncrement: 25,
-    startTime: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    endTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    status: AuctionStatus.ENDED,
-    guildId: 'guild1',
-    sellerId: 'seller4',
-    seller: {
-      id: 'seller4',
-      username: 'Miner',
-      avatar: undefined,
-    },
-    bidHistory: [
-      {
-        id: 'bid4',
-        auctionItemId: '4',
-        bidderId: 'user4',
-        bidder: { id: 'user4', username: 'Blacksmith' },
-        amount: 350,
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        isWinning: true,
-      },
-    ],
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-];
+import { AuctionItem, AuctionStatus } from '@/types/auction';
+import { ItemCategory, ItemRarity } from '@/types/item';
+import { apiClient } from '@/lib/guma';
+import { useCurrentGuildId } from '@/lib/current-guild';
 
 interface AuctionPageProps {
   userBalance?: number;
@@ -162,14 +16,24 @@ interface AuctionPageProps {
 
 const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
   const t = useTranslations('auctionPage');
+  const guildId = useCurrentGuildId();
 
-  const [auctionItems, setAuctionItems] = useState<AuctionItem[]>(mockAuctionItems);
-  const [filteredItems, setFilteredItems] = useState<AuctionItem[]>(mockAuctionItems);
+  const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const refetchAuctions = () => {
+    apiClient.listAuctions(guildId).then(setAuctionItems).catch(() => {});
+  };
+  useEffect(() => {
+    refetchAuctions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guildId]);
+
+  const [filteredItems, setFilteredItems] = useState<AuctionItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(false);
 
   const categoryOptions = [
     { key: 'all', label: t('allCategories') },
@@ -215,39 +79,14 @@ const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
 
   const handlePlaceBid = async (itemId: string, amount: number) => {
     setIsLoading(true);
-
-    setTimeout(() => {
-      setAuctionItems(prevItems =>
-        prevItems.map(item => {
-          if (item.id === itemId) {
-            const newBid = {
-              id: `bid-${Date.now()}`,
-              auctionItemId: itemId,
-              bidderId: 'current-user',
-              bidder: { id: 'current-user', username: 'You' },
-              amount,
-              timestamp: new Date().toISOString(),
-              isWinning: true,
-            };
-
-            const updatedBidHistory = item.bidHistory.map(bid => ({
-              ...bid,
-              isWinning: false,
-            }));
-
-            return {
-              ...item,
-              currentBid: amount,
-              currentBidder: { id: 'current-user', username: 'You' },
-              bidHistory: [...updatedBidHistory, newBid],
-              updatedAt: new Date().toISOString(),
-            };
-          }
-          return item;
-        })
-      );
+    try {
+      await apiClient.placeBid(guildId, itemId, amount);
+      refetchAuctions();
+    } catch (err) {
+      console.error(err);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const getStatusCounts = () => ({
