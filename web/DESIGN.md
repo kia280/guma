@@ -124,6 +124,20 @@ All cards must follow this pattern:
 <Card className="border border-divider shadow-none bg-surface">
 ```
 
+## Interactive Rows
+
+Clickable rows in a list (announcements, events, navigation items) use inset, rounded rows instead of full-width rows with dividers:
+
+```tsx
+<Card.Content className="p-1.5">
+  <ul className="flex flex-col gap-0.5">
+    <li>
+      <button className="w-full text-left rounded-lg px-3 py-2.5 transition-colors hover:bg-surface-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+```
+
+- Use `<button>` for rows that open something and `<Link>` for rows that navigate, so they work with the keyboard.
+- Cards themselves use `hover:border-foreground/20` instead of a background change.
+
 ## Chart / Inline Style Colors
 
 When using CSS variables in inline styles (e.g. Recharts), use `var(--variable)`:
