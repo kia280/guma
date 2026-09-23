@@ -100,8 +100,22 @@ that was already present.
 
 - Create forward migrations for schema changes; do not rewrite an applied
   migration unless the task explicitly requires it.
-- The `migrate` executable may only exist inside the devcontainer. Refer to
-  `CLAUDE.md` for the current Docker Compose migration commands.
+- The `migrate` executable only exists inside the devcontainer, so the
+  `make migrate-*` targets fail on the host. Run migrations from the host through
+  the devcontainer:
+
+  ```bash
+  docker compose -p guma_devcontainer exec devcontainer \
+      sh -c 'migrate -path ./migrations -database "$DATABASE_URL" up'
+
+  docker compose -p guma_devcontainer exec devcontainer \
+      sh -c 'migrate -path ./migrations -database "$DATABASE_URL" down 1'
+
+  # Full reset: drops everything and re-applies all migrations, including seeds
+  docker compose -p guma_devcontainer exec devcontainer \
+      sh -c 'migrate -path ./migrations -database "$DATABASE_URL" down -all \
+          && migrate -path ./migrations -database "$DATABASE_URL" up'
+  ```
 - After editing `.proto` files, run `make proto` and include the required generated
   outputs.
 - After editing `internal/db/queries/*.sql` or the schema used by sqlc, run
