@@ -18,6 +18,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - KRATOS_ADMIN_URL=http://kratos:4434
       - ENV=development
+      - DEV_AUTH_ENABLED=true
 
   frontend:
     build:
@@ -36,6 +37,7 @@ services:
     working_dir: /workspace/web
     environment:
       - KRATOS_INTERNAL_URL=http://kratos:4433
+      - NEXT_PUBLIC_DEV_TOOLS=true
 
   nginx:
     image: nginx:stable

@@ -635,5 +635,23 @@
     "statusFinished": "Finished",
     "expired": "Expired",
     "remaining": "remaining"
+  },
+  "devTools": {
+    "authTab": "Dev Auth",
+    "currentUser": "Signed in as (dev)",
+    "noDevSession": "No dev session. Using normal Kratos login.",
+    "refresh": "Refresh",
+    "logout": "Log out",
+    "error": "Error: {message}",
+    "createUser": "Create test user",
+    "displayName": "Display name",
+    "displayNamePlaceholder": "e.g. Test Member",
+    "createAndLogin": "Create & log in",
+    "loginAs": "Log in as",
+    "userCount": "{count} users",
+    "search": "Search by name, email, or ID",
+    "empty": "No users found",
+    "active": "Current",
+    "login": "Log in"
   }
 }

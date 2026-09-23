@@ -1,5 +1,7 @@
 import type { Session } from '@ory/client';
 import { kratos } from '@/lib/kratos';
+import { devLogout } from '@/lib/dev-auth';
+import { env } from '@/lib/env';
 
 const LOGIN_PATH = '/login';
 
@@ -24,6 +26,10 @@ export async function clearSession(): Promise<void> {
   if (typeof window === 'undefined') return;
 
   localStorage.removeItem('auth_token');
+
+  if (env.devTools) {
+    await devLogout().catch(() => undefined);
+  }
 
   try {
     const { data } = await kratos.createBrowserLogoutFlow();

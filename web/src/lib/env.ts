@@ -11,6 +11,8 @@ export const env = {
   // hitting the backend. Useful for local UI development without a running server.
   useMock: process.env.NEXT_PUBLIC_USE_MOCK === 'true',
 
+  devTools: process.env.NEXT_PUBLIC_DEV_TOOLS === 'true',
+
   // Kratos (Authentication) Configuration
   kratos: {
     publicUrl: process.env.NEXT_PUBLIC_KRATOS_URL || 'http://localhost:8081',

@@ -635,5 +635,23 @@
     "statusFinished": "已完成",
     "expired": "已過期",
     "remaining": "剩餘"
+  },
+  "devTools": {
+    "authTab": "開發登入",
+    "currentUser": "目前登入(開發)",
+    "noDevSession": "沒有開發登入,使用一般 Kratos 登入。",
+    "refresh": "重新整理",
+    "logout": "登出",
+    "error": "錯誤:{message}",
+    "createUser": "建立測試使用者",
+    "displayName": "顯示名稱",
+    "displayNamePlaceholder": "例如 測試成員",
+    "createAndLogin": "建立並登入",
+    "loginAs": "登入為",
+    "userCount": "{count} 位使用者",
+    "search": "以名稱、Email 或 ID 搜尋",
+    "empty": "找不到使用者",
+    "active": "目前",
+    "login": "登入"
   }
 }
