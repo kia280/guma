@@ -120,7 +120,7 @@ export function NotificationsCard(props: CardProps) {
       <Card.Header className="flex flex-col px-0 pb-0">
         <div className="flex w-full items-center justify-between px-5 py-2">
           <div className="inline-flex items-center gap-1">
-            <h4 className="text-large inline-block align-middle font-medium">
+            <h4 className="type-subheading inline-block align-middle">
               {t('notifications')}
             </h4>
             <Chip size="sm" variant="secondary">
@@ -174,7 +174,7 @@ export function NotificationsCard(props: CardProps) {
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2">
               <Icon className="text-hint" icon="solar:bell-off-linear" width={40} />
-              <p className="text-small text-hint">{t('noNotifications')}</p>
+              <p className="type-body text-hint">{t('noNotifications')}</p>
             </div>
           )}
         </ScrollShadow>
