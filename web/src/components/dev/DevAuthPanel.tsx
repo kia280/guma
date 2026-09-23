@@ -113,7 +113,7 @@ export function DevAuthPanel() {
             <Switch.Thumb />
           </Switch.Control>
           <Switch.Content>
-            <Label className="text-sm">{t('mockData')}</Label>
+            <Label className="type-body">{t('mockData')}</Label>
             <Description>{env.useMock ? t('mockDataForcedByEnv') : t('mockDataDescription')}</Description>
           </Switch.Content>
         </Switch>
@@ -128,13 +128,13 @@ export function DevAuthPanel() {
                 <Avatar.Fallback>{initials(current)}</Avatar.Fallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="text-xs text-foreground/50">{t('currentUser')}</p>
-                <p className="truncate text-sm font-medium">{current.displayName || current.username}</p>
-                <p className="truncate text-xs text-foreground/40">{current.email}</p>
+                <p className="type-caption text-subtle">{t('currentUser')}</p>
+                <p className="truncate type-body font-medium">{current.displayName || current.username}</p>
+                <p className="truncate type-caption text-hint">{current.email}</p>
               </div>
             </>
           ) : (
-            <p className="text-sm text-foreground/50">{t('noDevSession')}</p>
+            <p className="type-body text-subtle">{t('noDevSession')}</p>
           )}
         </div>
         <div className="flex shrink-0 gap-2">
@@ -150,13 +150,13 @@ export function DevAuthPanel() {
       </section>
 
       {error && (
-        <p role="alert" className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
+        <p role="alert" className="rounded-lg bg-danger/10 px-3 py-2 type-body text-danger">
           {t('error', { message: error })}
         </p>
       )}
 
       <section className="flex flex-col gap-2 rounded-xl border border-divider bg-surface p-3">
-        <h3 className="text-sm font-medium text-foreground/60">{t('createUser')}</h3>
+        <h3 className="type-subheading text-soft">{t('createUser')}</h3>
         <form
           className="flex items-end gap-2"
           onSubmit={(e) => {
@@ -176,7 +176,7 @@ export function DevAuthPanel() {
 
       <section className="flex min-h-0 flex-col gap-2 rounded-xl border border-divider bg-surface p-3">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-medium text-foreground/60">{t('loginAs')}</h3>
+          <h3 className="type-subheading text-soft">{t('loginAs')}</h3>
           <Chip size="sm">{t('userCount', { count: users.length })}</Chip>
         </div>
         <SearchField value={query} onChange={setQuery} aria-label={t('search')}>
@@ -192,7 +192,7 @@ export function DevAuthPanel() {
             <Spinner size="sm" />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="py-6 text-center text-sm text-foreground/30">{t('empty')}</p>
+          <p className="py-6 text-center type-body text-disabled">{t('empty')}</p>
         ) : (
           <ul className="flex flex-col gap-1">
             {filtered.map((user) => {
@@ -208,8 +208,8 @@ export function DevAuthPanel() {
                       <Avatar.Fallback>{initials(user)}</Avatar.Fallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{user.displayName || user.username}</p>
-                      <p className="truncate text-xs text-foreground/40">{user.email}</p>
+                      <p className="truncate type-body font-medium">{user.displayName || user.username}</p>
+                      <p className="truncate type-caption text-hint">{user.email}</p>
                     </div>
                   </div>
                   {isCurrent ? (

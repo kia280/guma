@@ -60,7 +60,7 @@ function FontSample({ palette }: { palette: DevPalette }) {
       <span className="text-lg" style={palette.font ? { fontFamily: palette.font.stack } : undefined}>
         {t('fontSample')}
       </span>
-      <span className="truncate text-xs text-foreground/60">
+      <span className="truncate type-caption text-soft">
         {palette.font ? t(`palettes.${palette.id}.font`) : t('fontCurrent')}
       </span>
     </div>
@@ -80,9 +80,9 @@ export function DevPalettePanel() {
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto bg-background p-4 text-foreground">
-      <p className="text-sm text-foreground/60">{t('paletteDescription')}</p>
+      <p className="type-body text-soft">{t('paletteDescription')}</p>
       {!isLight && (
-        <p role="status" className="rounded-lg bg-warning/10 px-3 py-2 text-sm text-foreground">
+        <p role="status" className="rounded-lg bg-warning/10 px-3 py-2 type-body text-foreground">
           {t('paletteLightOnly')}
         </p>
       )}
@@ -101,14 +101,14 @@ export function DevPalettePanel() {
               }`}
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium">{t(`palettes.${palette.id}.name`)}</span>
+                <span className="type-body font-medium">{t(`palettes.${palette.id}.name`)}</span>
                 {isSelected && (
                   <Chip size="sm" color="accent">
                     {t('active')}
                   </Chip>
                 )}
               </div>
-              <span className="text-xs text-foreground/60">{t(`palettes.${palette.id}.description`)}</span>
+              <span className="type-caption text-soft">{t(`palettes.${palette.id}.description`)}</span>
               <FontSample palette={palette} />
               <Swatches palette={palette} />
             </button>

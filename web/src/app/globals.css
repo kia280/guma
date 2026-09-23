@@ -38,6 +38,12 @@
   --warning: oklch(78.19% 0.1585 54.29);
   --warning-foreground: oklch(21.03% 0.0059 54.29);
 
+  /* Text hierarchy (Light Mode) */
+  --fg-soft: color-mix(in oklab, var(--foreground) 80%, transparent);
+  --fg-subtle: color-mix(in oklab, var(--foreground) 70%, transparent);
+  --fg-hint: color-mix(in oklab, var(--foreground) 62%, transparent);
+  --fg-disabled: color-mix(in oklab, var(--foreground) 45%, transparent);
+
   /* Border Radius */
   --radius: 0.5rem;
   --field-radius: 0.75rem;
@@ -81,6 +87,19 @@
   --surface-tertiary-foreground: oklch(99.11% 0.0000 103.46);
   --warning: oklch(82.03% 0.1388 58.30);
   --warning-foreground: oklch(21.03% 0.0059 58.30);
+
+  /* Text hierarchy (Dark Mode) */
+  --fg-soft: color-mix(in oklab, var(--foreground) 60%, transparent);
+  --fg-subtle: color-mix(in oklab, var(--foreground) 50%, transparent);
+  --fg-hint: color-mix(in oklab, var(--foreground) 40%, transparent);
+  --fg-disabled: color-mix(in oklab, var(--foreground) 30%, transparent);
+}
+
+@theme inline {
+  --color-soft: var(--fg-soft);
+  --color-subtle: var(--fg-subtle);
+  --color-hint: var(--fg-hint);
+  --color-disabled: var(--fg-disabled);
 }
 
 html[data-font-size='large'] {
@@ -89,4 +108,51 @@ html[data-font-size='large'] {
 
 html[data-font-size='x-large'] {
   font-size: 125%;
+}
+
+@utility type-display {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-title {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+}
+
+@utility type-heading {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+}
+
+@utility type-subheading {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+}
+
+@utility type-prose {
+  font-size: 0.9375rem;
+  line-height: 1.625rem;
+}
+
+@utility type-body {
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+}
+
+@utility type-caption {
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
+@utility type-label {
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  font-weight: 500;
 }

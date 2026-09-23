@@ -79,18 +79,18 @@ function ErrorPageContent() {
               }
             />
           </div>
-          <h1 className="text-3xl font-bold">{error.statusCode}</h1>
+          <h1 className="type-display">{error.statusCode}</h1>
         </Card.Header>
 
         <Card.Content className="gap-6 py-8">
           <div className="text-center space-y-2">
-            <h2 className="text-xl font-semibold">{error.title}</h2>
-            <p className="text-foreground/50">{error.description}</p>
+            <h2 className="type-heading">{error.title}</h2>
+            <p className="text-subtle">{error.description}</p>
           </div>
 
           {errorId !== 'unknown' && (
             <div className="bg-surface-secondary rounded-lg p-3">
-              <p className="text-xs text-foreground/60 font-mono">
+              <p className="type-caption text-soft font-mono">
                 {t('errorIdLabel')}{' '}
                 <span className="text-foreground/90 font-semibold">{errorId}</span>
               </p>
@@ -115,13 +115,13 @@ function ErrorPageContent() {
 
           {process.env.NODE_ENV === 'development' && (
             <div className="bg-surface-secondary rounded-lg p-3 border border-dashed border-divider">
-              <p className="text-xs text-foreground/60 mb-1">
+              <p className="type-caption text-soft mb-1">
                 <span className="font-semibold">{t('debugInfoLabel')}</span>
               </p>
-              <p className="text-xs text-foreground/60 font-mono break-all">
+              <p className="type-caption text-soft font-mono break-all">
                 {t('errorLabel')} {errorId}
               </p>
-              <p className="text-xs text-foreground/60 font-mono break-all">
+              <p className="type-caption text-soft font-mono break-all">
                 {t('returnUrlLabel')} {returnUrl}
               </p>
             </div>

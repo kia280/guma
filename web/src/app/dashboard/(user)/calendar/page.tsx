@@ -130,7 +130,7 @@ export default function CalendarPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <Spinner size="lg" color="current" />
-          <p className="text-sm text-foreground/50">{t('loadingEvents')}</p>
+          <p className="type-body text-subtle">{t('loadingEvents')}</p>
         </div>
       </div>
     );
@@ -175,7 +175,7 @@ export default function CalendarPage() {
               <>
                 <Modal.Header className="text-center items-center">
                   <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                    <p className="text-base font-semibold text-foreground truncate">
+                    <p className="type-subheading text-foreground truncate">
                       {selectedEvent.title}
                     </p>
                     <div className="flex items-center gap-2">
@@ -228,7 +228,7 @@ export default function CalendarPage() {
                   <div className="space-y-4">
                     {selectedEvent.description && (
                       <div>
-                        <p className="text-foreground/50">{selectedEvent.description}</p>
+                        <p className="text-subtle">{selectedEvent.description}</p>
                       </div>
                     )}
 
@@ -239,11 +239,11 @@ export default function CalendarPage() {
                         <Icon
                           icon="solar:clock-circle-linear"
                           width={16}
-                          className="text-foreground/40"
+                          className="text-hint"
                         />
                         <div>
                           <div className="font-medium">{formatEventDate(selectedEvent)}</div>
-                          <div className="text-foreground/50">{formatEventTime(selectedEvent)}</div>
+                          <div className="text-subtle">{formatEventTime(selectedEvent)}</div>
                         </div>
                       </div>
 
@@ -252,7 +252,7 @@ export default function CalendarPage() {
                           <Icon
                             icon="solar:map-point-linear"
                             width={16}
-                            className="text-foreground/40"
+                            className="text-hint"
                           />
                           <span>{selectedEvent.location}</span>
                         </div>
@@ -263,7 +263,7 @@ export default function CalendarPage() {
                           <Icon
                             icon="solar:refresh-linear"
                             width={16}
-                            className="text-foreground/40"
+                            className="text-hint"
                           />
                           <span>
                             {t('repeats')} {selectedEvent.recurringPattern?.type}
@@ -275,7 +275,7 @@ export default function CalendarPage() {
                         </div>
                       )}
 
-                      <div className="flex items-center gap-3 text-small text-foreground/50">
+                      <div className="flex items-center gap-3 text-small text-subtle">
                         <Icon icon="solar:users-group-rounded-linear" width={16} />
                         <span>
                           {t('createdBy')} {selectedEvent.createdBy}
@@ -304,8 +304,8 @@ export default function CalendarPage() {
               <p>{t('deleteConfirm')}</p>
               {selectedEvent && (
                 <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg">
-                  <p className="text-sm font-medium text-danger">{selectedEvent.title}</p>
-                  <p className="text-xs text-danger/60 mt-0.5">{formatEventDate(selectedEvent)}</p>
+                  <p className="type-body font-medium text-danger">{selectedEvent.title}</p>
+                  <p className="type-caption text-danger/60 mt-0.5">{formatEventDate(selectedEvent)}</p>
                 </div>
               )}
             </Modal.Body>

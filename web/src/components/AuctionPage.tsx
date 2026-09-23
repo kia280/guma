@@ -106,7 +106,7 @@ const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
           <Label className="sr-only">{t('searchItems')}</Label>
           <InputGroup>
             <InputGroup.Prefix>
-              <Icon icon="solar:magnifer-linear" width={16} className="text-foreground/40" />
+              <Icon icon="solar:magnifer-linear" width={16} className="text-hint" />
             </InputGroup.Prefix>
             <InputGroup.Input
               placeholder={t('searchItems')}
@@ -210,10 +210,10 @@ const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
                 <Icon
                   icon="solar:clock-circle-linear"
                   width={40}
-                  className="mx-auto mb-3 text-foreground/30"
+                  className="mx-auto mb-3 text-disabled"
                 />
-                <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
-                <p className="text-sm text-foreground/50">{t('noAuctionsHint')}</p>
+                <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
+                <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
               </Card.Content>
             </Card>
           ) : (
@@ -238,10 +238,10 @@ const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
                 <Icon
                   icon="solar:clock-circle-linear"
                   width={40}
-                  className="mx-auto mb-3 text-foreground/30"
+                  className="mx-auto mb-3 text-disabled"
                 />
-                <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
-                <p className="text-sm text-foreground/50">{t('noAuctionsHint')}</p>
+                <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
+                <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
               </Card.Content>
             </Card>
           ) : (
@@ -266,10 +266,10 @@ const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
                 <Icon
                   icon="solar:clock-circle-linear"
                   width={40}
-                  className="mx-auto mb-3 text-foreground/30"
+                  className="mx-auto mb-3 text-disabled"
                 />
-                <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
-                <p className="text-sm text-foreground/50">{t('noAuctionsHint')}</p>
+                <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
+                <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
               </Card.Content>
             </Card>
           ) : (
@@ -294,10 +294,10 @@ const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
                 <Icon
                   icon="solar:clock-circle-linear"
                   width={40}
-                  className="mx-auto mb-3 text-foreground/30"
+                  className="mx-auto mb-3 text-disabled"
                 />
-                <h3 className="text-base font-medium mb-1 text-foreground">{t('noAuctions')}</h3>
-                <p className="text-sm text-foreground/50">{t('noAuctionsHint')}</p>
+                <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
+                <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
               </Card.Content>
             </Card>
           ) : (

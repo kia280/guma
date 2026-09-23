@@ -60,7 +60,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
       if (!item.icon) return item.startContent ?? null;
       const iconEl = (
         <Icon
-          className={cn('text-foreground/40', selected === item.key && 'text-foreground', iconClassName)}
+          className={cn('text-hint', selected === item.key && 'text-foreground', iconClassName)}
           icon={item.icon}
           width={24}
         />
@@ -100,7 +100,7 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
               <>
                 <span
                   className={cn(
-                    'text-small font-medium text-foreground/40',
+                    'text-small font-medium text-hint',
                     isSelected && 'text-foreground font-semibold',
                     itemClasses?.title
                   )}
@@ -139,13 +139,13 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(
                     <div className="w-11 flex items-center justify-center shrink-0">
                       {item.icon && (
                         <Icon
-                          className={cn('text-foreground/50', iconClassName)}
+                          className={cn('text-subtle', iconClassName)}
                           icon={item.icon}
                           width={24}
                         />
                       )}
                     </div>
-                    <span className="text-small font-medium text-foreground/50">{item.title}</span>
+                    <span className="text-small font-medium text-subtle">{item.title}</span>
                   </div>
                   <Accordion.Indicator />
                 </Accordion.Trigger>

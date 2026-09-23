@@ -173,16 +173,16 @@ export default function GuildBankPage() {
             <Icon className="text-warning" icon="solar:safe-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('treasury')}</p>
-            <p className="text-xs text-foreground/40">{t('treasuryDesc')}</p>
+            <p className="type-subheading text-foreground">{t('treasury')}</p>
+            <p className="type-caption text-hint">{t('treasuryDesc')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-6">
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-3xl font-semibold text-foreground">${guildBalance.toFixed(2)}</p>
-              <p className="text-xs text-foreground/40 mt-0.5">{t('guildGold')}</p>
+              <p className="type-display text-foreground">${guildBalance.toFixed(2)}</p>
+              <p className="type-caption text-hint mt-0.5">{t('guildGold')}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Modal>
@@ -229,7 +229,7 @@ export default function GuildBankPage() {
                               icon="solar:info-circle-bold"
                               width={14}
                             />
-                            <p className="text-xs text-warning">{t('contributeNote')}</p>
+                            <p className="type-caption text-warning">{t('contributeNote')}</p>
                           </div>
                         </div>
                       </Modal.Body>
@@ -289,11 +289,11 @@ export default function GuildBankPage() {
                         <div className="bg-surface-secondary rounded-lg p-3">
                           <div className="flex items-start gap-2">
                             <Icon
-                              className="text-foreground/50 shrink-0 mt-0.5"
+                              className="text-subtle shrink-0 mt-0.5"
                               icon="solar:info-circle-bold"
                               width={14}
                             />
-                            <p className="text-xs text-foreground/50">{t('fundRequestNote')}</p>
+                            <p className="type-caption text-subtle">{t('fundRequestNote')}</p>
                           </div>
                         </div>
                       </Modal.Body>
@@ -319,8 +319,8 @@ export default function GuildBankPage() {
           {/* Fund Goal Progress */}
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center">
-              <p className="text-xs text-foreground/50">{t('monthlyGoal')}</p>
-              <p className="text-xs text-foreground/50">
+              <p className="type-caption text-subtle">{t('monthlyGoal')}</p>
+              <p className="type-caption text-subtle">
                 ${guildBalance.toFixed(0)} / ${guildFundGoal.toLocaleString()}
               </p>
             </div>
@@ -343,12 +343,12 @@ export default function GuildBankPage() {
           </div>
           <div className="flex flex-col flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-foreground">{t('storage')}</p>
+              <p className="type-subheading text-foreground">{t('storage')}</p>
               <Chip size="sm" variant="tertiary">
                 {mockGuildItems.length} {t('items')}
               </Chip>
             </div>
-            <p className="text-xs text-foreground/40">{t('storageDesc')}</p>
+            <p className="type-caption text-hint">{t('storageDesc')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
@@ -364,11 +364,11 @@ export default function GuildBankPage() {
                       <Icon
                         icon={getCategoryIcon(item.category)}
                         width={20}
-                        className="text-foreground/50"
+                        className="text-subtle"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-foreground truncate">{item.name}</h4>
+                      <h4 className="type-subheading text-foreground truncate">{item.name}</h4>
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                         <Chip
                           size="sm"
@@ -387,13 +387,13 @@ export default function GuildBankPage() {
                   </div>
                 </Card.Header>
                 <Card.Content className="pt-0 flex flex-col gap-3">
-                  <p className="text-xs text-foreground/50 line-clamp-2">{item.description}</p>
+                  <p className="type-caption text-subtle line-clamp-2">{item.description}</p>
                   <div className="flex items-center gap-1.5 border-t border-divider pt-2">
                     <Avatar size="sm" className="w-4 h-4">
                       <Avatar.Image src={`https://i.pravatar.cc/150?u=${item.donatedBy}`} />
                       <Avatar.Fallback>{item.donatedBy.slice(0, 2).toUpperCase()}</Avatar.Fallback>
                     </Avatar>
-                    <p className="text-xs text-foreground/40 truncate flex-1">
+                    <p className="type-caption text-hint truncate flex-1">
                       {t('by')} {item.donatedBy} · {new Date(item.donatedAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -417,10 +417,10 @@ export default function GuildBankPage() {
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
-            <Icon className="text-foreground/50" icon="solar:history-line-duotone" width={20} />
+            <Icon className="text-subtle" icon="solar:history-line-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('activityHistory')}</p>
+            <p className="type-subheading text-foreground">{t('activityHistory')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
@@ -443,17 +443,17 @@ export default function GuildBankPage() {
                           <div className="flex items-center gap-3">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default">
                               <Icon
-                                className="text-foreground/50"
+                                className="text-subtle"
                                 icon={getContributionIcon(entry.type)}
                                 width={16}
                               />
                             </div>
                             <div className="flex flex-col">
-                              <p className="text-sm font-medium text-foreground">
+                              <p className="type-body font-medium text-foreground">
                                 {getContributionLabel(entry.type)}
                               </p>
                               {entry.note && (
-                                <p className="text-xs text-foreground/40 truncate max-w-[180px]">
+                                <p className="type-caption text-hint truncate max-w-[180px]">
                                   {entry.note}
                                 </p>
                               )}
@@ -468,22 +468,22 @@ export default function GuildBankPage() {
                                 {entry.member.slice(0, 2).toUpperCase()}
                               </Avatar.Fallback>
                             </Avatar>
-                            <p className="text-sm text-foreground">{entry.member}</p>
+                            <p className="type-body text-foreground">{entry.member}</p>
                           </div>
                         </Table.Cell>
                         <Table.Cell>
                           {entry.amount !== undefined ? (
                             <span
-                              className={`text-sm font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
+                              className={`type-body font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
                             >
                               {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
                             </span>
                           ) : (
-                            <span className="text-sm text-foreground/50">{entry.itemName}</span>
+                            <span className="type-body text-subtle">{entry.itemName}</span>
                           )}
                         </Table.Cell>
                         <Table.Cell>
-                          <p className="text-sm text-foreground/50">
+                          <p className="type-body text-subtle">
                             {new Date(entry.date).toLocaleDateString()}
                           </p>
                         </Table.Cell>
@@ -512,20 +512,20 @@ export default function GuildBankPage() {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">
                       <Icon
-                        className="text-foreground/50"
+                        className="text-subtle"
                         icon={getContributionIcon(entry.type)}
                         width={16}
                       />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-foreground truncate">
+                        <p className="type-body font-medium text-foreground truncate">
                           {getContributionLabel(entry.type)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <p className="text-xs text-foreground/40">{entry.member}</p>
-                        <p className="text-xs text-foreground/40">
+                        <p className="type-caption text-hint">{entry.member}</p>
+                        <p className="type-caption text-hint">
                           {new Date(entry.date).toLocaleDateString()}
                         </p>
                         <Chip size="sm" variant="secondary">
@@ -537,12 +537,12 @@ export default function GuildBankPage() {
                   <div className="text-right shrink-0 ml-3">
                     {entry.amount !== undefined ? (
                       <span
-                        className={`text-sm font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
+                        className={`type-body font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
                       >
                         {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
                       </span>
                     ) : (
-                      <span className="text-xs text-foreground/50">{entry.itemName}</span>
+                      <span className="type-caption text-subtle">{entry.itemName}</span>
                     )}
                   </div>
                 </div>
@@ -569,12 +569,12 @@ export default function GuildBankPage() {
                       <Icon
                         icon={getCategoryIcon(selectedItem.category)}
                         width={20}
-                        className="text-foreground/50"
+                        className="text-subtle"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{selectedItem.name}</p>
-                      <p className="text-xs text-foreground/40 capitalize">
+                      <p className="type-body font-medium text-foreground">{selectedItem.name}</p>
+                      <p className="type-caption text-hint capitalize">
                         {selectedItem.rarity} · {selectedItem.category} · x{selectedItem.quantity}{' '}
                         {t('available')}
                       </p>
@@ -594,11 +594,11 @@ export default function GuildBankPage() {
                   <div className="bg-surface-secondary rounded-lg p-3">
                     <div className="flex items-start gap-2">
                       <Icon
-                        className="text-foreground/50 shrink-0 mt-0.5"
+                        className="text-subtle shrink-0 mt-0.5"
                         icon="solar:info-circle-bold"
                         width={14}
                       />
-                      <p className="text-xs text-foreground/50">{t('itemRequestNote')}</p>
+                      <p className="type-caption text-subtle">{t('itemRequestNote')}</p>
                     </div>
                   </div>
                 </div>

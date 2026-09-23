@@ -42,7 +42,7 @@ export default function ProfilePage() {
             </button>
           </div>
           <div className="flex flex-col gap-1">
-            <p className="text-base font-semibold text-foreground">{displayName}</p>
+            <p className="type-subheading text-foreground">{displayName}</p>
             <Chip size="sm" variant="secondary" className="w-fit mt-0.5">
               {t('guildMember')}
             </Chip>
@@ -66,8 +66,8 @@ export default function ProfilePage() {
             <Icon className="text-accent" icon="solar:user-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('profileDetails')}</p>
-            <p className="text-xs text-foreground/40">{t('publicInfo')}</p>
+            <p className="type-subheading text-foreground">{t('profileDetails')}</p>
+            <p className="type-caption text-hint">{t('publicInfo')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-4">
@@ -80,7 +80,7 @@ export default function ProfilePage() {
               <Label>{t('username')}</Label>
               <InputGroup>
                 <InputGroup.Prefix>
-                  <span className="text-foreground/40 text-sm">@</span>
+                  <span className="text-hint type-body">@</span>
                 </InputGroup.Prefix>
                 <InputGroup.Input value={username} onChange={e => setUsername(e.target.value)} />
               </InputGroup>
@@ -105,20 +105,20 @@ export default function ProfilePage() {
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
-            <Icon className="text-foreground/50" icon="solar:shield-user-bold-duotone" width={20} />
+            <Icon className="text-subtle" icon="solar:shield-user-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('account')}</p>
-            <p className="text-xs text-foreground/40">{t('accountSubtitle')}</p>
+            <p className="type-subheading text-foreground">{t('account')}</p>
+            <p className="type-caption text-hint">{t('accountSubtitle')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-3">
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
-              <Icon icon="solar:letter-linear" width={16} className="text-foreground/40 shrink-0" />
+              <Icon icon="solar:letter-linear" width={16} className="text-hint shrink-0" />
               <div>
-                <p className="text-sm text-foreground">{t('emailAddress')}</p>
-                <p className="text-xs text-foreground/40">johndoe@example.com</p>
+                <p className="type-body text-foreground">{t('emailAddress')}</p>
+                <p className="type-caption text-hint">johndoe@example.com</p>
               </div>
             </div>
             <Chip size="sm" variant="secondary">
@@ -128,10 +128,10 @@ export default function ProfilePage() {
           <Separator />
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
-              <Icon icon="ic:baseline-discord" width={16} className="text-foreground/40 shrink-0" />
+              <Icon icon="ic:baseline-discord" width={16} className="text-hint shrink-0" />
               <div>
-                <p className="text-sm text-foreground">{t('discord')}</p>
-                <p className="text-xs text-foreground/40">johndoe#1234</p>
+                <p className="type-body text-foreground">{t('discord')}</p>
+                <p className="type-caption text-hint">johndoe#1234</p>
               </div>
             </div>
             <Chip size="sm" variant="secondary">
@@ -141,10 +141,10 @@ export default function ProfilePage() {
           <Separator />
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
-              <Icon icon="solar:calendar-linear" width={16} className="text-foreground/40 shrink-0" />
+              <Icon icon="solar:calendar-linear" width={16} className="text-hint shrink-0" />
               <div>
-                <p className="text-sm text-foreground">{t('memberSince')}</p>
-                <p className="text-xs text-foreground/40">January 2024</p>
+                <p className="type-body text-foreground">{t('memberSince')}</p>
+                <p className="type-caption text-hint">January 2024</p>
               </div>
             </div>
           </div>
@@ -158,15 +158,15 @@ export default function ProfilePage() {
             <Icon className="text-danger" icon="solar:danger-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('dangerZone')}</p>
-            <p className="text-xs text-foreground/40">{t('dangerZoneSubtitle')}</p>
+            <p className="type-subheading text-foreground">{t('dangerZone')}</p>
+            <p className="type-caption text-hint">{t('dangerZoneSubtitle')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-foreground">{t('deleteAccount')}</p>
-              <p className="text-xs text-foreground/40">{t('deleteAccountDesc')}</p>
+              <p className="type-body text-foreground">{t('deleteAccount')}</p>
+              <p className="type-caption text-hint">{t('deleteAccountDesc')}</p>
             </div>
             <Button size="sm" variant="danger">
               {t('deleteAccountBtn')}

@@ -68,8 +68,8 @@ function StatCard({
         <Icon icon={icon} width={18} className={iconClass} />
       </div>
       <div className="flex flex-col min-w-0">
-        <p className="text-xs text-foreground/40 uppercase tracking-wide truncate">{label}</p>
-        <p className="text-xl sm:text-2xl font-semibold text-foreground leading-none mt-0.5">{value}</p>
+        <p className="type-caption text-hint truncate">{label}</p>
+        <p className="type-title tabular-nums text-foreground mt-0.5">{value}</p>
       </div>
     </div>
   );
@@ -134,7 +134,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
           >
             {/* ── Slide 0: Personal Overview ── */}
             <div className="min-w-full p-5 space-y-5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-foreground/40">
+              <p className="type-label text-hint">
                 {t('personalOverview')}
               </p>
 
@@ -172,7 +172,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
               {/* Wallet balance chart */}
               <div className="rounded-xl p-3 -mx-3 transition-colors hover:bg-surface-secondary">
-                <p className="text-xs text-foreground/40 mb-2">{t('balanceLast30')}</p>
+                <p className="type-caption text-hint mb-2">{t('balanceLast30')}</p>
                 <ResponsiveContainer width="100%" height={240}>
                   <AreaChart data={balanceTrend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                     <defs>
@@ -188,12 +188,12 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                     />
                     <XAxis
                       dataKey="day"
-                      tick={{ fontSize: 10, fill: 'var(--muted)' }}
+                      tick={{ fontSize: 12, fill: 'var(--muted)' }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <YAxis
-                      tick={{ fontSize: 10, fill: 'var(--muted)' }}
+                      tick={{ fontSize: 12, fill: 'var(--muted)' }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={v => `$${(v / 1000).toFixed(0)}k`}
@@ -225,7 +225,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
             {/* ── Slide 1: Guild Overview ── */}
             <div className="min-w-full p-5 space-y-5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-foreground/40">
+              <p className="type-label text-hint">
                 {t('guildOverview')}
               </p>
 
@@ -345,8 +345,8 @@ export default function DashboardPage() {
         {/* ── Announcements ── */}
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Icon icon="solar:megaphone-linear" width={18} className="text-foreground/40" />
-            <h2 className="text-sm font-medium text-foreground">{t('news')}</h2>
+            <Icon icon="solar:megaphone-linear" width={18} className="text-hint" />
+            <h2 className="type-heading text-foreground">{t('news')}</h2>
           </div>
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-0">
@@ -366,9 +366,9 @@ export default function DashboardPage() {
                             className="text-danger shrink-0 mt-0.5"
                           />
                         )}
-                        <p className="text-sm text-foreground truncate">{ann.title}</p>
+                        <p className="type-body text-foreground truncate">{ann.title}</p>
                       </div>
-                      <span className="text-xs text-foreground/40 shrink-0">{ann.date}</span>
+                      <span className="type-caption text-hint shrink-0">{ann.date}</span>
                     </div>
                   </div>
                 ))}
@@ -380,8 +380,8 @@ export default function DashboardPage() {
         {/* ── Upcoming Events ── */}
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Icon icon="solar:bell-linear" width={18} className="text-foreground/40" />
-            <h2 className="text-sm font-medium text-foreground">{t('upcomingEvents')}</h2>
+            <Icon icon="solar:bell-linear" width={18} className="text-hint" />
+            <h2 className="type-heading text-foreground">{t('upcomingEvents')}</h2>
           </div>
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-0">
@@ -402,15 +402,15 @@ export default function DashboardPage() {
 
                       {/* Kind icon */}
                       <div className="p-1.5 rounded-md bg-default shrink-0">
-                        <Icon icon={meta.icon} width={14} className="text-foreground/50" />
+                        <Icon icon={meta.icon} width={14} className="text-subtle" />
                       </div>
 
                       {/* Text */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
+                        <p className="type-body font-medium text-foreground truncate">
                           {event.title}
                         </p>
-                        <p className="text-xs text-foreground/40 truncate">{event.subtitle}</p>
+                        <p className="type-caption text-hint truncate">{event.subtitle}</p>
                       </div>
 
                       {/* Meta */}
@@ -418,7 +418,7 @@ export default function DashboardPage() {
                         <Chip size="sm" variant="secondary" color={meta.color}>
                           {t(meta.labelKey as any)}
                         </Chip>
-                        <span className="text-xs text-foreground/40">{event.timeLabel}</span>
+                        <span className="type-caption text-hint">{event.timeLabel}</span>
                       </div>
                     </div>
                   );
@@ -447,8 +447,8 @@ export default function DashboardPage() {
             </Modal.Header>
 
             <Modal.Body className="flex flex-col gap-3">
-              <p className="text-sm text-foreground/50">{selectedAnn?.date}</p>
-              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+              <p className="type-body text-subtle">{selectedAnn?.date}</p>
+              <p className="type-prose text-foreground whitespace-pre-wrap">
                 {selectedAnn?.content}
               </p>
             </Modal.Body>

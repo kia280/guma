@@ -41,7 +41,7 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
           <Icon className="text-secondary" icon="solar:figma-file-linear" width={30} />
           <div className="flex flex-col">
             <strong className="text-small font-medium">Brand_Logo_v1.2.fig</strong>
-            <p className="text-tiny text-foreground/40">3.4 MB</p>
+            <p className="text-tiny text-hint">3.4 MB</p>
           </div>
         </div>
       ),
@@ -72,7 +72,7 @@ const NotificationItem = React.forwardRef<HTMLDivElement, NotificationItemProps>
           <p className="text-small text-foreground">
             <strong className="font-medium">{name}</strong> {description || children}
           </p>
-          <time className="text-tiny text-foreground/40">{time}</time>
+          <time className="text-tiny text-hint">{time}</time>
           {type && contentByType[type]}
         </div>
       </div>

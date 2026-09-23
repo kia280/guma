@@ -75,18 +75,18 @@ export function CheckinCard({
             </Chip>
           )}
         </div>
-        <p className="text-xs text-foreground/40 mt-1">{date}</p>
-        <h4 className="font-medium text-base text-foreground">{description}</h4>
+        <p className="type-caption text-hint mt-1">{date}</p>
+        <h4 className="type-subheading text-foreground">{description}</h4>
         {(attendanceCount !== undefined || lootCount !== undefined) && (
           <div className="flex items-center gap-3 mt-1">
             {attendanceCount !== undefined && (
-              <span className="flex items-center gap-1 text-xs text-foreground/40">
+              <span className="flex items-center gap-1 type-caption text-hint">
                 <Icon icon="solar:users-group-rounded-linear" width={12} />
                 {attendanceCount}
               </span>
             )}
             {lootCount !== undefined && (
-              <span className="flex items-center gap-1 text-xs text-foreground/40">
+              <span className="flex items-center gap-1 type-caption text-hint">
                 <Icon icon="solar:box-linear" width={12} />
                 {lootCount}
               </span>
@@ -110,7 +110,7 @@ export function CheckinCard({
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
-              <Icon icon="solar:gallery-linear" width={32} className="text-foreground/30" />
+              <Icon icon="solar:gallery-linear" width={32} className="text-disabled" />
             </div>
           )}
         </div>

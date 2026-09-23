@@ -173,8 +173,8 @@ export function NotificationsCard(props: CardProps) {
             ))
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2">
-              <Icon className="text-foreground/40" icon="solar:bell-off-linear" width={40} />
-              <p className="text-small text-foreground/40">{t('noNotifications')}</p>
+              <Icon className="text-hint" icon="solar:bell-off-linear" width={40} />
+              <p className="text-small text-hint">{t('noNotifications')}</p>
             </div>
           )}
         </ScrollShadow>

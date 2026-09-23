@@ -60,7 +60,7 @@ export function Navigation() {
         <div className="sm:hidden flex items-center gap-2">
           <button
             aria-label={isMenuOpen ? t('closeMenu') : t('openMenu')}
-            className="p-2 rounded-lg text-foreground/50 hover:bg-surface-secondary"
+            className="p-2 rounded-lg text-subtle hover:bg-surface-secondary"
             onClick={() => setIsMenuOpen(prev => !prev)}
           >
             <Icon icon="solar:hamburger-menu-outline" width={20} />
@@ -86,10 +86,10 @@ export function Navigation() {
                 <Link
                   key={item.key}
                   href={item.href}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg type-body transition-colors ${
                     isActive
                       ? 'bg-accent/10 text-accent'
-                      : 'text-foreground/50 hover:text-foreground hover:bg-surface-secondary'
+                      : 'text-subtle hover:text-foreground hover:bg-surface-secondary'
                   }`}
                 >
                   <Icon icon={item.icon} width={16} />
@@ -105,7 +105,7 @@ export function Navigation() {
           <Button
             isIconOnly
             variant="ghost"
-            className="text-foreground/50"
+            className="text-subtle"
             onPress={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label={t('toggleTheme')}
           >
@@ -150,10 +150,10 @@ export function Navigation() {
               <Link
                 key={item.key}
                 href={item.href}
-                className={`flex items-center gap-3 w-full py-2.5 px-3 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-3 w-full py-2.5 px-3 rounded-lg type-body transition-colors ${
                   isActive
                     ? 'bg-accent/10 text-accent'
-                    : 'text-foreground/50 hover:text-foreground hover:bg-surface-secondary'
+                    : 'text-subtle hover:text-foreground hover:bg-surface-secondary'
                 }`}
                 onClick={() => setIsMenuOpen(false)}
               >

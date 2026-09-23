@@ -233,7 +233,7 @@ export default function CheckinPage() {
 
                     {/* Loot list */}
                     <div className="flex flex-col gap-2">
-                      <p className="text-sm font-medium text-foreground">{t('lootList')}</p>
+                      <p className="type-body font-medium text-foreground">{t('lootList')}</p>
                       <div className="flex gap-2">
                         <Input
                           placeholder={t('itemNamePlaceholder')}
@@ -266,14 +266,14 @@ export default function CheckinPage() {
                               className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-surface-secondary border border-divider"
                             >
                               <div className="flex items-center gap-2">
-                                <Icon icon="solar:box-linear" width={14} className="text-foreground/40" />
-                                <span className="text-sm text-foreground">{name}</span>
+                                <Icon icon="solar:box-linear" width={14} className="text-hint" />
+                                <span className="type-body text-foreground">{name}</span>
                               </div>
                               <Button
                                 size="sm"
                                 isIconOnly
                                 variant="tertiary"
-                                className="text-foreground/40 hover:text-danger"
+                                className="text-hint hover:text-danger"
                                 onPress={() => handleRemoveLoot(idx)}
                               >
                                 <Icon icon="solar:close-circle-linear" width={14} />
@@ -293,7 +293,7 @@ export default function CheckinPage() {
                         variant="secondary"
                       />
                     </TextField>
-                    <p className="text-xs text-foreground/40 px-1">{t('draftSaved')}</p>
+                    <p className="type-caption text-hint px-1">{t('draftSaved')}</p>
                   </form>
                 </Modal.Body>
                 <Modal.Footer>

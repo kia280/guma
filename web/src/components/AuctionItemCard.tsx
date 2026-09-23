@@ -145,11 +145,11 @@ const AuctionItemCard = ({
                   <Icon
                     icon={getCategoryIcon(item.category)}
                     width={20}
-                    className="text-foreground/50"
+                    className="text-subtle"
                   />
                 </div>
                 <div className="flex flex-col">
-                  <h4 className="text-base font-medium text-foreground">{item.name}</h4>
+                  <h4 className="type-subheading text-foreground">{item.name}</h4>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
                       {item.rarity.toUpperCase()}
@@ -166,7 +166,7 @@ const AuctionItemCard = ({
                   {item.status.toUpperCase()}
                 </Chip>
                 {isActive && (
-                  <div className="flex items-center gap-1 text-xs text-foreground/40">
+                  <div className="flex items-center gap-1 type-caption text-hint">
                     <Icon icon="solar:clock-circle-linear" width={12} />
                     <span>{timeRemaining}</span>
                   </div>
@@ -177,11 +177,11 @@ const AuctionItemCard = ({
 
           <Card.Content className="pt-0">
             <div className="space-y-4">
-              <p className="text-sm text-foreground/50">{item.description}</p>
+              <p className="type-body text-subtle">{item.description}</p>
 
               {isActive && (
                 <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs text-foreground/40">
+                  <div className="flex justify-between type-caption text-hint">
                     <span>{t('timeRemaining')}</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
@@ -204,15 +204,15 @@ const AuctionItemCard = ({
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-foreground/50">{t('currentBid')}</span>
-                  <span className="text-lg font-semibold text-foreground">
+                  <span className="type-body text-subtle">{t('currentBid')}</span>
+                  <span className="type-heading tabular-nums text-foreground">
                     ${item.currentBid.toLocaleString()}
                   </span>
                 </div>
 
                 {item.currentBidder && (
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-foreground/40">{t('leadingBidder')}</span>
+                    <span className="type-caption text-hint">{t('leadingBidder')}</span>
                     <div className="flex items-center gap-2">
                       <Avatar size="sm">
                         <Avatar.Image src={item.currentBidder.avatar} />
@@ -220,7 +220,7 @@ const AuctionItemCard = ({
                           {item.currentBidder.username?.slice(0, 2).toUpperCase()}
                         </Avatar.Fallback>
                       </Avatar>
-                      <span className="text-sm text-foreground">{item.currentBidder.username}</span>
+                      <span className="type-body text-foreground">{item.currentBidder.username}</span>
                     </div>
                   </div>
                 )}
@@ -229,7 +229,7 @@ const AuctionItemCard = ({
               <Separator />
 
               <div className="flex items-center justify-between">
-                <span className="text-xs text-foreground/40">{t('soldBy')}</span>
+                <span className="type-caption text-hint">{t('soldBy')}</span>
                 <div className="flex items-center gap-2">
                   <Avatar size="sm">
                     <Avatar.Image src={item.seller.avatar} />
@@ -237,7 +237,7 @@ const AuctionItemCard = ({
                       {item.seller.username?.slice(0, 2).toUpperCase()}
                     </Avatar.Fallback>
                   </Avatar>
-                  <span className="text-sm text-foreground">{item.seller.username}</span>
+                  <span className="type-body text-foreground">{item.seller.username}</span>
                 </div>
               </div>
 
@@ -262,7 +262,7 @@ const AuctionItemCard = ({
                     <Icon
                       icon={getCategoryIcon(item.category)}
                       width={18}
-                      className="text-foreground/50"
+                      className="text-subtle"
                     />
                     <span>
                       {t('placeBidTitle')} {item.name}
@@ -273,20 +273,20 @@ const AuctionItemCard = ({
               <Modal.Body className="p-1">
                 <div className="space-y-4">
                   <div className="bg-surface-secondary rounded-lg p-4 space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-foreground/50">{t('currentBid')}</span>
+                    <div className="flex justify-between type-body">
+                      <span className="text-subtle">{t('currentBid')}</span>
                       <span className="font-medium text-foreground">
                         ${item.currentBid.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-foreground/50">{t('minIncrement')}</span>
+                    <div className="flex justify-between type-body">
+                      <span className="text-subtle">{t('minIncrement')}</span>
                       <span className="font-medium text-foreground">
                         ${item.minBidIncrement.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-foreground/50">{t('yourBalance')}</span>
+                    <div className="flex justify-between type-body">
+                      <span className="text-subtle">{t('yourBalance')}</span>
                       <span className="font-medium text-foreground">
                         ${userBalance.toLocaleString()}
                       </span>
@@ -300,7 +300,7 @@ const AuctionItemCard = ({
                         <Icon
                           icon="solar:dollar-minimalistic-linear"
                           width={14}
-                          className="text-foreground/40"
+                          className="text-hint"
                         />
                       </InputGroup.Prefix>
                       <InputGroup.Input
@@ -310,7 +310,7 @@ const AuctionItemCard = ({
                         onChange={e => setBidAmount(Number(e.target.value))}
                       />
                     </InputGroup>
-                    <p className="text-xs text-foreground/40 mt-1">
+                    <p className="type-caption text-hint mt-1">
                       {bidAmount > userBalance
                         ? t('insufficientBalance')
                         : bidAmount < item.currentBid + item.minBidIncrement
@@ -356,7 +356,7 @@ const AuctionItemCard = ({
               <Modal.Body className="p-1">
                 <div className="space-y-2 overflow-y-auto max-h-[60vh]">
                   {item.bidHistory.length === 0 ? (
-                    <div className="text-center py-8 text-foreground/40 text-sm">
+                    <div className="text-center py-8 text-hint type-body">
                       {t('noBidsYet')}
                     </div>
                   ) : (
@@ -381,16 +381,16 @@ const AuctionItemCard = ({
                               </Avatar.Fallback>
                             </Avatar>
                             <div>
-                              <div className="text-sm font-medium text-foreground">
+                              <div className="type-body font-medium text-foreground">
                                 {bid.bidder.username}
                               </div>
-                              <div className="text-xs text-foreground/40">
+                              <div className="type-caption text-hint">
                                 {new Date(bid.timestamp).toLocaleString()}
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-base font-semibold text-foreground">
+                            <span className="type-subheading tabular-nums text-foreground">
                               ${bid.amount.toLocaleString()}
                             </span>
                             {bid.isWinning && (

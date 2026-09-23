@@ -77,13 +77,13 @@ export default function LotteryPage() {
         </Tabs.ListContainer>
         <Tabs.Panel id="all" className="pt-4">
           {filtered.length === 0 ? (
-            <div className="text-center py-12 text-foreground/40">
+            <div className="text-center py-12 text-hint">
               <Icon
                 icon="solar:ticket-linear"
                 width={40}
-                className="mx-auto mb-3 text-foreground/30"
+                className="mx-auto mb-3 text-disabled"
               />
-              <p className="text-sm">{t('noLotteries')}</p>
+              <p className="type-body">{t('noLotteries')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -100,13 +100,13 @@ export default function LotteryPage() {
         </Tabs.Panel>
         <Tabs.Panel id="active" className="pt-4">
           {filtered.length === 0 ? (
-            <div className="text-center py-12 text-foreground/40">
+            <div className="text-center py-12 text-hint">
               <Icon
                 icon="solar:ticket-linear"
                 width={40}
-                className="mx-auto mb-3 text-foreground/30"
+                className="mx-auto mb-3 text-disabled"
               />
-              <p className="text-sm">{t('noLotteries')}</p>
+              <p className="type-body">{t('noLotteries')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -123,13 +123,13 @@ export default function LotteryPage() {
         </Tabs.Panel>
         <Tabs.Panel id="upcoming" className="pt-4">
           {filtered.length === 0 ? (
-            <div className="text-center py-12 text-foreground/40">
+            <div className="text-center py-12 text-hint">
               <Icon
                 icon="solar:ticket-linear"
                 width={40}
-                className="mx-auto mb-3 text-foreground/30"
+                className="mx-auto mb-3 text-disabled"
               />
-              <p className="text-sm">{t('noLotteries')}</p>
+              <p className="type-body">{t('noLotteries')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -146,13 +146,13 @@ export default function LotteryPage() {
         </Tabs.Panel>
         <Tabs.Panel id="ended" className="pt-4">
           {filtered.length === 0 ? (
-            <div className="text-center py-12 text-foreground/40">
+            <div className="text-center py-12 text-hint">
               <Icon
                 icon="solar:ticket-linear"
                 width={40}
-                className="mx-auto mb-3 text-foreground/30"
+                className="mx-auto mb-3 text-disabled"
               />
-              <p className="text-sm">{t('noLotteries')}</p>
+              <p className="type-body">{t('noLotteries')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

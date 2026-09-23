@@ -531,7 +531,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                           </TextField>
                         )}
                       />
-                      <span className="pb-3 text-foreground/40 text-lg font-semibold">:</span>
+                      <span className="pb-3 text-hint type-heading tabular-nums">:</span>
                       <Controller
                         name="recurringMinutes"
                         control={control}
@@ -552,7 +552,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                           </TextField>
                         )}
                       />
-                      <span className="pb-3 text-foreground/40 text-lg font-semibold">:</span>
+                      <span className="pb-3 text-hint type-heading tabular-nums">:</span>
                       <Controller
                         name="recurringSeconds"
                         control={control}

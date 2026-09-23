@@ -111,8 +111,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   if (!item) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
-        <Icon icon="solar:ghost-linear" width={48} className="text-foreground/30" />
-        <p className="text-foreground/50">{t('notFound')}</p>
+        <Icon icon="solar:ghost-linear" width={48} className="text-disabled" />
+        <p className="text-subtle">{t('notFound')}</p>
         <Button variant="secondary" onPress={() => onClose ? onClose() : router.back()}>
           {t('goBack')}
         </Button>
@@ -155,7 +155,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
       {/* Item header */}
       <div className="flex flex-col sm:flex-row items-start gap-4 p-5 rounded-xl border border-divider bg-surface">
         <div className="p-4 rounded-xl bg-default shrink-0">
-          <Icon icon={CATEGORY_ICONS[item.category]} width={36} className="text-foreground/50" />
+          <Icon icon={CATEGORY_ICONS[item.category]} width={36} className="text-subtle" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -182,8 +182,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               </Chip>
             )}
           </div>
-          <h1 className="text-2xl font-semibold text-foreground">{item.name}</h1>
-          <p className="text-sm text-foreground/50 mt-1">{item.description}</p>
+          <h1 className="type-title text-foreground">{item.name}</h1>
+          <p className="type-body text-subtle mt-1">{item.description}</p>
         </div>
       </div>
 
@@ -192,13 +192,13 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         <div className="lg:col-span-3 space-y-4">
           {/* Auction status */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
-            <h2 className="text-sm font-medium text-foreground">
+            <h2 className="type-subheading text-foreground">
               {t('auctionStatus')}
             </h2>
 
             {isActive && (
               <div className="space-y-2">
-                <div className="flex justify-between text-xs text-foreground/40">
+                <div className="flex justify-between type-caption text-hint">
                   <span>{t('timeElapsed')}</span>
                   <span className="font-medium text-foreground">
                     {timeRemaining} {t('remaining')}
@@ -212,13 +212,13 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-2 gap-3 type-body">
               <div className="space-y-0.5">
-                <p className="text-xs text-foreground/40">{t('startTime')}</p>
+                <p className="type-caption text-hint">{t('startTime')}</p>
                 <p className="text-foreground">{new Date(item.startTime).toLocaleString()}</p>
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs text-foreground/40">{t('endTime')}</p>
+                <p className="type-caption text-hint">{t('endTime')}</p>
                 <p className="text-foreground">{new Date(item.endTime).toLocaleString()}</p>
               </div>
             </div>
@@ -226,7 +226,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
 
           {/* Bid section */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
-            <h2 className="text-sm font-medium text-foreground">
+            <h2 className="type-subheading text-foreground">
               {t('bidding')}
             </h2>
 
@@ -240,18 +240,18 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     className="text-secondary shrink-0"
                   />
                   <div>
-                    <p className="text-sm font-medium text-foreground">{t('blindAuction')}</p>
-                    <p className="text-xs text-foreground/50">{t('blindAuctionDesc')}</p>
+                    <p className="type-body font-medium text-foreground">{t('blindAuction')}</p>
+                    <p className="type-caption text-subtle">{t('blindAuctionDesc')}</p>
                   </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-foreground/50">{t('startingBid')}</span>
+                <div className="flex justify-between type-body">
+                  <span className="text-subtle">{t('startingBid')}</span>
                   <span className="font-semibold text-foreground">
                     ${item.startingBid.toLocaleString()}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-foreground/50">{t('minIncrement')}</span>
+                <div className="flex justify-between type-body">
+                  <span className="text-subtle">{t('minIncrement')}</span>
                   <span className="font-semibold text-foreground">
                     ${item.minBidIncrement.toLocaleString()}
                   </span>
@@ -271,35 +271,35 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               /* ── Standard auction ── */
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-foreground/50 text-sm">{t('currentBid')}</span>
-                  <span className="text-2xl font-semibold text-foreground">
+                  <span className="text-subtle type-body">{t('currentBid')}</span>
+                  <span className="type-display text-foreground">
                     ${item.currentBid.toLocaleString()}
                   </span>
                 </div>
 
                 {item.currentBidder && (
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-foreground/40">{t('leadingBidder')}</span>
+                    <span className="type-caption text-hint">{t('leadingBidder')}</span>
                     <div className="flex items-center gap-2">
                       <Avatar size="sm">
                         <Avatar.Fallback>
                           {item.currentBidder.username.slice(0, 2).toUpperCase()}
                         </Avatar.Fallback>
                       </Avatar>
-                      <span className="text-sm text-foreground">{item.currentBidder.username}</span>
+                      <span className="type-body text-foreground">{item.currentBidder.username}</span>
                     </div>
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-2 gap-3 type-body">
                   <div className="p-3 rounded-lg bg-surface-secondary border border-divider space-y-0.5">
-                    <p className="text-xs text-foreground/40">{t('startingBid')}</p>
+                    <p className="type-caption text-hint">{t('startingBid')}</p>
                     <p className="font-semibold text-foreground">
                       ${item.startingBid.toLocaleString()}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-surface-secondary border border-divider space-y-0.5">
-                    <p className="text-xs text-foreground/40">{t('minIncrement')}</p>
+                    <p className="type-caption text-hint">{t('minIncrement')}</p>
                     <p className="font-semibold text-foreground">
                       ${item.minBidIncrement.toLocaleString()}
                     </p>
@@ -321,11 +321,11 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
 
                 {/* Bid history */}
                 <div className="space-y-2">
-                  <h3 className="text-xs font-semibold text-foreground/50 uppercase tracking-wide">
+                  <h3 className="type-label text-subtle">
                     {t('bidHistoryTitle')} ({item.bidHistory.length})
                   </h3>
                   {sortedHistory.length === 0 ? (
-                    <p className="text-sm text-foreground/40 text-center py-4">{t('noBidsYet')}</p>
+                    <p className="type-body text-hint text-center py-4">{t('noBidsYet')}</p>
                   ) : (
                     sortedHistory.map(bid => (
                       <div
@@ -343,16 +343,16 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                             </Avatar.Fallback>
                           </Avatar>
                           <div>
-                            <p className="text-sm font-medium text-foreground">
+                            <p className="type-body font-medium text-foreground">
                               {bid.bidder.username}
                             </p>
-                            <p className="text-xs text-foreground/40">
+                            <p className="type-caption text-hint">
                               {new Date(bid.timestamp).toLocaleString()}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-base font-semibold text-foreground">
+                          <span className="type-subheading tabular-nums text-foreground">
                             ${bid.amount.toLocaleString()}
                           </span>
                           {bid.isWinning && (
@@ -374,7 +374,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         <div className="lg:col-span-2 space-y-4">
           {/* Seller info */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
-            <h2 className="text-sm font-medium text-foreground">
+            <h2 className="type-subheading text-foreground">
               {t('seller')}
             </h2>
             <div className="flex items-center gap-3">
@@ -383,39 +383,39 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               </Avatar>
               <div>
                 <p className="font-medium text-foreground">{item.seller.username}</p>
-                <p className="text-xs text-foreground/40">{t('guildMember')}</p>
+                <p className="type-caption text-hint">{t('guildMember')}</p>
               </div>
             </div>
           </div>
 
           {/* Item metadata */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
-            <h2 className="text-sm font-medium text-foreground">
+            <h2 className="type-subheading text-foreground">
               {t('itemDetails')}
             </h2>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 type-body">
               <div className="flex justify-between">
-                <span className="text-foreground/40">{t('category')}</span>
+                <span className="text-hint">{t('category')}</span>
                 <span className="text-foreground capitalize">
                   {item.category.replace('_', ' ')}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-foreground/40">{t('rarity')}</span>
+                <span className="text-hint">{t('rarity')}</span>
                 <Chip size="sm" color={RARITY_COLOR[item.rarity]} variant="tertiary">
                   {item.rarity.toUpperCase()}
                 </Chip>
               </div>
               <div className="flex justify-between">
-                <span className="text-foreground/40">{t('auctionType')}</span>
+                <span className="text-hint">{t('auctionType')}</span>
                 <span className="text-foreground">{item.isBlind ? t('blind') : t('standard')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-foreground/40">{t('totalBids')}</span>
+                <span className="text-hint">{t('totalBids')}</span>
                 <span className="text-foreground">{item.bidHistory.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-foreground/40">{t('listed')}</span>
+                <span className="text-hint">{t('listed')}</span>
                 <span className="text-foreground">
                   {new Date(item.createdAt).toLocaleDateString()}
                 </span>
@@ -426,9 +426,9 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           {/* Your balance */}
           <div className="p-4 rounded-xl border border-divider bg-surface">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-foreground/50">
+              <div className="flex items-center gap-2 text-subtle">
                 <Icon icon="solar:wallet-linear" width={16} />
-                <span className="text-sm">{t('yourBalance')}</span>
+                <span className="type-body">{t('yourBalance')}</span>
               </div>
               <span className="font-semibold text-foreground">
                 ${USER_BALANCE.toLocaleString()}
@@ -450,7 +450,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <Icon
                     icon={CATEGORY_ICONS[item.category]}
                     width={18}
-                    className="text-foreground/50"
+                    className="text-subtle"
                   />
                   <span>
                     {item.isBlind ? t('submitBid') : t('placeBid')} — {item.name}
@@ -462,27 +462,27 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               <div className="space-y-4">
                 <div className="bg-surface-secondary rounded-lg p-4 space-y-2">
                   {!item.isBlind && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-foreground/50">{t('currentBid')}</span>
+                    <div className="flex justify-between type-body">
+                      <span className="text-subtle">{t('currentBid')}</span>
                       <span className="font-medium text-foreground">
                         ${item.currentBid.toLocaleString()}
                       </span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-foreground/50">{t('minIncrement')}</span>
+                  <div className="flex justify-between type-body">
+                    <span className="text-subtle">{t('minIncrement')}</span>
                     <span className="font-medium text-foreground">
                       ${item.minBidIncrement.toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-foreground/50">{t('yourBalance')}</span>
+                  <div className="flex justify-between type-body">
+                    <span className="text-subtle">{t('yourBalance')}</span>
                     <span className="font-medium text-foreground">
                       ${USER_BALANCE.toLocaleString()}
                     </span>
                   </div>
                   {item.isBlind && (
-                    <div className="flex items-center gap-2 pt-1 text-xs text-secondary">
+                    <div className="flex items-center gap-2 pt-1 type-caption text-secondary">
                       <Icon icon="solar:eye-closed-linear" width={12} />
                       <span>{t('blindAuctionNote')}</span>
                     </div>

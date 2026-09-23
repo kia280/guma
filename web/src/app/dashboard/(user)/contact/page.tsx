@@ -66,8 +66,8 @@ export default function ContactPage() {
                   <Icon className={channel.iconColor} icon={channel.icon} width={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{channel.label}</p>
-                  <p className="text-xs text-foreground/40">{channel.description}</p>
+                  <p className="type-body font-medium text-foreground">{channel.label}</p>
+                  <p className="type-caption text-hint">{channel.description}</p>
                 </div>
               </div>
               <Button
@@ -88,14 +88,14 @@ export default function ContactPage() {
         <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon
-              className="text-foreground/50"
+              className="text-subtle"
               icon="solar:chat-round-dots-bold-duotone"
               width={20}
             />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('sendMessageTitle')}</p>
-            <p className="text-xs text-foreground/40">{t('sendMessageDesc')}</p>
+            <p className="type-subheading text-foreground">{t('sendMessageTitle')}</p>
+            <p className="type-caption text-hint">{t('sendMessageDesc')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
@@ -105,8 +105,8 @@ export default function ContactPage() {
                 <Icon icon="solar:check-circle-bold" width={28} className="text-success" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">{t('messageSent')}</p>
-                <p className="text-xs text-foreground/40 mt-0.5">{t('messageSentDesc')}</p>
+                <p className="type-subheading text-foreground">{t('messageSent')}</p>
+                <p className="type-caption text-hint mt-0.5">{t('messageSentDesc')}</p>
               </div>
               <Button size="sm" variant="tertiary" onPress={() => setSubmitted(false)}>
                 {t('sendAnother')}

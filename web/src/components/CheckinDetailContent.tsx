@@ -66,8 +66,8 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   if (!entry) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
-        <Icon icon="solar:ghost-linear" width={48} className="text-foreground/30" />
-        <p className="text-foreground/50">{t('notFound')}</p>
+        <Icon icon="solar:ghost-linear" width={48} className="text-disabled" />
+        <p className="text-subtle">{t('notFound')}</p>
         <Button variant="secondary" onPress={() => onClose ? onClose() : router.back()}>
           {t('goBack')}
         </Button>
@@ -107,7 +107,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             {/* Header */}
       <div className="flex flex-col sm:flex-row items-start gap-4 p-5 rounded-xl border border-divider bg-surface">
         <div className="p-4 rounded-xl bg-default shrink-0">
-          <Icon icon="heroicons:clipboard-document-check" width={36} className="text-foreground/50" />
+          <Icon icon="heroicons:clipboard-document-check" width={36} className="text-subtle" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -121,8 +121,8 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
               </Chip>
             )}
           </div>
-          <h1 className="text-2xl font-semibold text-foreground">{entry.description}</h1>
-          <p className="text-sm text-foreground/50 mt-1">{entry.date}</p>
+          <h1 className="type-title text-foreground">{entry.description}</h1>
+          <p className="type-body text-subtle mt-1">{entry.date}</p>
         </div>
         {isOpen_ && (
           <Modal>
@@ -139,14 +139,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                       <Icon
                         icon="heroicons:clipboard-document-check"
                         width={18}
-                        className="text-foreground/50"
+                        className="text-subtle"
                       />
                       {t('checkIn')} — {entry.description}
                     </div>
                   </Modal.Heading>
                 </Modal.Header>
                 <Modal.Body className="flex flex-col gap-3">
-                  <p className="text-sm text-foreground/50">{entry.date}</p>
+                  <p className="type-body text-subtle">{entry.date}</p>
                   <TextField>
                     <Label>{t('notesOptional')}</Label>
                     <TextArea
@@ -179,7 +179,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           {/* Attendance List */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-foreground">
+              <h2 className="type-subheading text-foreground">
                 {t('attendance')}
               </h2>
               <Chip size="sm" variant="secondary">
@@ -188,7 +188,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             </div>
 
             {entry.attendanceList.length === 0 ? (
-              <p className="text-sm text-foreground/50 text-center py-4">{t('noCheckinsYet')}</p>
+              <p className="type-body text-subtle text-center py-4">{t('noCheckinsYet')}</p>
             ) : (
               <div className="space-y-2">
                 {entry.attendanceList.map((member, idx) => (
@@ -196,19 +196,19 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     key={member.id}
                     className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-divider bg-surface-secondary"
                   >
-                    <span className="text-xs text-foreground/40 w-5 text-right shrink-0">
+                    <span className="type-caption text-hint w-5 text-right shrink-0">
                       {idx + 1}
                     </span>
                     <Avatar size="sm">
                       <Avatar.Fallback>{member.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{member.username}</p>
+                      <p className="type-body font-medium text-foreground">{member.username}</p>
                       {member.notes && (
-                        <p className="text-xs text-foreground/40 truncate">{member.notes}</p>
+                        <p className="type-caption text-hint truncate">{member.notes}</p>
                       )}
                     </div>
-                    <span className="text-xs text-foreground/40 shrink-0">
+                    <span className="type-caption text-hint shrink-0">
                       {formatDateTime(member.checkedInAt)}
                     </span>
                   </div>
@@ -220,7 +220,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           {/* Loot List */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-foreground">
+              <h2 className="type-subheading text-foreground">
                 {t('loot')}
               </h2>
               <Chip size="sm" variant="secondary">
@@ -229,7 +229,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             </div>
 
             {entry.lootList.length === 0 ? (
-              <p className="text-sm text-foreground/50 text-center py-4">{t('noLootItems')}</p>
+              <p className="type-body text-subtle text-center py-4">{t('noLootItems')}</p>
             ) : (
               <div className="space-y-2">
                 {entry.lootList.map(item => (
@@ -238,12 +238,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-divider bg-surface-secondary"
                   >
                     <div className="p-1.5 rounded-lg bg-default shrink-0">
-                      <Icon icon="solar:box-linear" width={16} className="text-foreground/50" />
+                      <Icon icon="solar:box-linear" width={16} className="text-subtle" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{item.name}</p>
+                      <p className="type-body font-medium text-foreground">{item.name}</p>
                       {item.winner && (
-                        <p className="text-xs text-foreground/40">
+                        <p className="type-caption text-hint">
                           {t('wonBy')} {item.winner}
                         </p>
                       )}
@@ -264,19 +264,19 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         <div className="lg:col-span-2 space-y-4">
           {/* Timing */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
-            <h2 className="text-sm font-medium text-foreground">
+            <h2 className="type-subheading text-foreground">
               {t('timing')}
             </h2>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 type-body">
               <div className="flex justify-between gap-2">
-                <span className="text-foreground/50 shrink-0">{t('eventDate')}</span>
+                <span className="text-subtle shrink-0">{t('eventDate')}</span>
                 <span className="text-foreground text-right">{entry.date}</span>
               </div>
               {entry.expireTime && (
                 <>
                   <Separator />
                   <div className="flex justify-between gap-2">
-                    <span className="text-foreground/50 shrink-0">{t('expires')}</span>
+                    <span className="text-subtle shrink-0">{t('expires')}</span>
                     <span className="text-foreground text-right">
                       {new Date(entry.expireTime).toLocaleString(undefined, {
                         month: 'short',
@@ -287,7 +287,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     </span>
                   </div>
                   {isOpen_ && (
-                    <div className="flex items-center gap-1.5 text-warning text-xs">
+                    <div className="flex items-center gap-1.5 text-warning type-caption">
                       <Icon icon="solar:clock-circle-linear" width={12} />
                       <span>{timeRemaining}</span>
                     </div>
@@ -299,26 +299,26 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
 
           {/* Summary */}
           <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
-            <h2 className="text-sm font-medium text-foreground">
+            <h2 className="type-subheading text-foreground">
               {t('summary')}
             </h2>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2 type-body">
               <div className="flex justify-between">
-                <span className="text-foreground/50">{t('status')}</span>
+                <span className="text-subtle">{t('status')}</span>
                 <Chip size="sm" color={statusColor} variant="secondary">
                   {statusLabel}
                 </Chip>
               </div>
               <div className="flex justify-between">
-                <span className="text-foreground/50">{t('attendees')}</span>
+                <span className="text-subtle">{t('attendees')}</span>
                 <span className="text-foreground">{entry.attendanceList.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-foreground/50">{t('lootItems')}</span>
+                <span className="text-subtle">{t('lootItems')}</span>
                 <span className="text-foreground">{entry.lootList.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-foreground/50">{t('awarded')}</span>
+                <span className="text-subtle">{t('awarded')}</span>
                 <span className="text-foreground">
                   {entry.lootList.filter(l => l.winner).length}
                 </span>

@@ -76,10 +76,10 @@ const BackpackItemCard = ({
         <div className="flex justify-between items-start w-full">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-default">
-              <Icon icon={getCategoryIcon(item.item.category)} width={20} className="text-foreground/50" />
+              <Icon icon={getCategoryIcon(item.item.category)} width={20} className="text-subtle" />
             </div>
             <div>
-              <h4 className="text-sm font-medium text-foreground">{item.item.name}</h4>
+              <h4 className="type-subheading text-foreground">{item.item.name}</h4>
               <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                 <Chip size="sm" color={getRarityColor(item.item.rarity)} variant="secondary">
                   {item.item.rarity.toUpperCase()}
@@ -92,7 +92,7 @@ const BackpackItemCard = ({
           </div>
 
           <Dropdown>
-            <Button isIconOnly variant="ghost" size="sm" className="text-foreground/40">
+            <Button isIconOnly variant="ghost" size="sm" className="text-hint">
               <Icon icon="solar:menu-dots-bold" width={16} />
             </Button>
             <Dropdown.Popover>
@@ -128,8 +128,8 @@ const BackpackItemCard = ({
       </Card.Header>
 
       <Card.Content className="pt-0 flex flex-col gap-2">
-        <p className="text-xs text-foreground/50 line-clamp-2">{item.item.description}</p>
-        <p className="text-xs text-foreground/40">
+        <p className="type-caption text-subtle line-clamp-2">{item.item.description}</p>
+        <p className="type-caption text-hint">
           {t('acquired')} {new Date(item.acquiredAt).toLocaleDateString()}
         </p>
       </Card.Content>

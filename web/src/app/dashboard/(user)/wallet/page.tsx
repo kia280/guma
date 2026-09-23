@@ -144,14 +144,14 @@ export default function WalletPage() {
             <Icon className="text-accent" icon="solar:wallet-money-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('balanceAndBackpack')}</p>
+            <p className="type-subheading text-foreground">{t('balanceAndBackpack')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-6">
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-3xl font-semibold text-foreground">${balance.toFixed(2)}</p>
+              <p className="type-display text-foreground">${balance.toFixed(2)}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Modal>
@@ -178,7 +178,7 @@ export default function WalletPage() {
                           onChange={e => setDepositAmount(e.target.value)}
                         />
                       </TextField>
-                      <p className="text-xs text-foreground/40 px-1">
+                      <p className="type-caption text-hint px-1">
                         {t('currentBalanceLabel')} ${balance.toFixed(2)}
                       </p>
                     </Modal.Body>
@@ -257,7 +257,7 @@ export default function WalletPage() {
                           </Autocomplete.Filter>
                         </Autocomplete.Popover>
                       </Autocomplete>
-                      <p className="text-xs text-foreground/40 px-1">
+                      <p className="type-caption text-hint px-1">
                         {t('available')} ${balance.toFixed(2)}
                       </p>
                     </Modal.Body>
@@ -297,7 +297,7 @@ export default function WalletPage() {
                           onChange={e => setWithdrawAmount(e.target.value)}
                         />
                       </TextField>
-                      <p className="text-xs text-foreground/40 px-1">
+                      <p className="type-caption text-hint px-1">
                         {t('available')} ${balance.toFixed(2)}
                       </p>
                       <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
@@ -307,7 +307,7 @@ export default function WalletPage() {
                             icon="solar:info-circle-bold"
                             width={14}
                           />
-                          <p className="text-xs text-warning">{t('withdrawNote')}</p>
+                          <p className="type-caption text-warning">{t('withdrawNote')}</p>
                         </div>
                       </div>
                     </Modal.Body>
@@ -339,12 +339,12 @@ export default function WalletPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--separator)" vertical={false} />
                 <XAxis
                   dataKey="day"
-                  tick={{ fontSize: 10, fill: 'var(--muted)' }}
+                  tick={{ fontSize: 12, fill: 'var(--muted)' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: 'var(--muted)' }}
+                  tick={{ fontSize: 12, fill: 'var(--muted)' }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={v => `$${v}`}
@@ -384,7 +384,7 @@ export default function WalletPage() {
           </div>
           <div className="flex flex-col flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-foreground">{t('yourItems')}</p>
+              <p className="type-subheading text-foreground">{t('yourItems')}</p>
               <Chip size="sm" variant="tertiary">
                 {backpackItems.length} {t('items')}
               </Chip>
@@ -412,10 +412,10 @@ export default function WalletPage() {
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
-            <Icon className="text-foreground/50" icon="solar:history-line-duotone" width={20} />
+            <Icon className="text-subtle" icon="solar:history-line-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('transactionHistory')}</p>
+            <p className="type-subheading text-foreground">{t('transactionHistory')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
@@ -445,17 +445,17 @@ export default function WalletPage() {
                           <div className="flex items-center gap-3">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default">
                               <Icon
-                                className="text-foreground/50"
+                                className="text-subtle"
                                 icon={getTransactionIcon(transaction.type)}
                                 width={16}
                               />
                             </div>
                             <div className="flex flex-col">
-                              <p className="text-sm font-medium text-foreground">
+                              <p className="type-body font-medium text-foreground">
                                 {transaction.description}
                               </p>
                               {transaction.recipient && (
-                                <p className="text-xs text-foreground/40">
+                                <p className="type-caption text-hint">
                                   {t('to')} {transaction.recipient}
                                 </p>
                               )}
@@ -464,14 +464,14 @@ export default function WalletPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <span
-                            className={`text-sm font-medium ${transaction.amount > 0 ? 'text-success' : 'text-foreground'}`}
+                            className={`type-body font-medium ${transaction.amount > 0 ? 'text-success' : 'text-foreground'}`}
                           >
                             {transaction.amount > 0 ? '+' : ''}$
                             {Math.abs(transaction.amount).toFixed(2)}
                           </span>
                         </Table.Cell>
                         <Table.Cell>
-                          <p className="text-sm text-foreground/50">
+                          <p className="type-body text-subtle">
                             {new Date(transaction.date).toLocaleDateString()}
                           </p>
                         </Table.Cell>
@@ -496,17 +496,17 @@ export default function WalletPage() {
                   <div className="flex items-center gap-3 flex-1">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">
                       <Icon
-                        className="text-foreground/50"
+                        className="text-subtle"
                         icon={getTransactionIcon(transaction.type)}
                         width={16}
                       />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
-                      <p className="text-sm font-medium text-foreground truncate">
+                      <p className="type-body font-medium text-foreground truncate">
                         {transaction.description}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <p className="text-xs text-foreground/40">
+                        <p className="type-caption text-hint">
                           {new Date(transaction.date).toLocaleDateString()}
                         </p>
                         <Chip
@@ -522,7 +522,7 @@ export default function WalletPage() {
                   </div>
                   <div className="text-right shrink-0 ml-3">
                     <span
-                      className={`text-sm font-medium ${transaction.amount > 0 ? 'text-success' : 'text-foreground'}`}
+                      className={`type-body font-medium ${transaction.amount > 0 ? 'text-success' : 'text-foreground'}`}
                     >
                       {transaction.amount > 0 ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}
                     </span>
@@ -587,16 +587,16 @@ export default function WalletPage() {
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary">
                     <div className="p-2 rounded-lg bg-default">
-                      <Icon icon="solar:backpack-linear" width={20} className="text-foreground/50" />
+                      <Icon icon="solar:backpack-linear" width={20} className="text-subtle" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{selectedItem.item.name}</p>
-                      <p className="text-xs text-foreground/40 capitalize">
+                      <p className="type-body font-medium text-foreground">{selectedItem.item.name}</p>
+                      <p className="type-caption text-hint capitalize">
                         {selectedItem.item.rarity} · {selectedItem.item.category}
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm text-foreground/60">
+                  <p className="type-body text-soft">
                     {t('withdrawItemConfirm')}{' '}
                     <span className="font-medium text-foreground">{selectedItem.item.name}</span>{' '}
                     {t('withdrawItemConfirmSuffix')}
@@ -608,7 +608,7 @@ export default function WalletPage() {
                         icon="solar:info-circle-bold"
                         width={14}
                       />
-                      <p className="text-xs text-warning">{t('withdrawItemNote')}</p>
+                      <p className="type-caption text-warning">{t('withdrawItemNote')}</p>
                     </div>
                   </div>
                 </div>

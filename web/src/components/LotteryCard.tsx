@@ -78,7 +78,7 @@ const LotteryCard = ({
             >
               {status}
             </Chip>
-            <h4 className="text-base font-medium text-foreground">{title}</h4>
+            <h4 className="type-subheading text-foreground">{title}</h4>
           </div>
           <Icon icon="solar:ticket-bold-duotone" width={28} className="text-accent/60 shrink-0" />
         </div>
@@ -88,25 +88,25 @@ const LotteryCard = ({
         <div className="space-y-4">
           {/* Prize Pool */}
           <div className="text-center py-2">
-            <p className="text-xs text-foreground/40 uppercase tracking-wide">{t('prizePool')}</p>
-            <p className="text-3xl font-semibold text-foreground mt-1">${prizePool.toLocaleString()}</p>
+            <p className="type-caption text-hint">{t('prizePool')}</p>
+            <p className="type-display text-foreground mt-1">${prizePool.toLocaleString()}</p>
           </div>
 
           {/* Details */}
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-foreground/50">{t('ticketPrice')}</span>
+            <div className="flex justify-between type-body">
+              <span className="text-subtle">{t('ticketPrice')}</span>
               <span className="font-medium text-foreground">${ticketPrice}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-foreground/50">{t('drawDate')}</span>
+            <div className="flex justify-between type-body">
+              <span className="text-subtle">{t('drawDate')}</span>
               <span className="font-medium text-foreground">
                 {new Date(drawDate).toLocaleDateString()}
               </span>
             </div>
             {status === 'active' && (
-              <div className="flex justify-between text-sm">
-                <span className="text-foreground/50">{t('timeLeft')}</span>
+              <div className="flex justify-between type-body">
+                <span className="text-subtle">{t('timeLeft')}</span>
                 <span className="font-medium text-accent">{formatCountdown(drawDate)}</span>
               </div>
             )}
@@ -114,7 +114,7 @@ const LotteryCard = ({
 
           {/* Tickets Progress */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-xs text-foreground/40">
+            <div className="flex justify-between type-caption text-hint">
               <span>
                 {ticketsSold.toLocaleString()} {t('ticketsSold')}
               </span>
@@ -132,7 +132,7 @@ const LotteryCard = ({
                 <ProgressBar.Fill />
               </ProgressBar.Track>
             </ProgressBar>
-            <p className="text-xs text-foreground/40 text-right">
+            <p className="type-caption text-hint text-right">
               {soldPercent}% {t('filled')}
             </p>
           </div>
@@ -140,7 +140,7 @@ const LotteryCard = ({
           {/* Winners section for ended lotteries */}
           {status === 'ended' && winners && winners.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs text-foreground/40 uppercase tracking-wide">{t('winners')}</p>
+              <p className="type-caption text-hint">{t('winners')}</p>
               {winners.slice(0, 3).map(winner => (
                 <div key={winner.id} className="flex items-center gap-2">
                   <Avatar size="sm">
@@ -148,10 +148,10 @@ const LotteryCard = ({
                     <Avatar.Fallback>{winner.username?.slice(0, 2).toUpperCase()}</Avatar.Fallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-foreground truncate">
+                    <p className="type-label text-foreground truncate">
                       {winner.username}
                     </p>
-                    <p className="text-xs text-success">{winner.prize}</p>
+                    <p className="type-caption text-success">{winner.prize}</p>
                   </div>
                 </div>
               ))}

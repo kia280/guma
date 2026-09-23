@@ -99,7 +99,7 @@ function Login() {
           ) : (
             <div className="flex flex-col items-center justify-center py-8 gap-4">
               <Spinner size="lg" />
-              <p className="text-sm text-foreground/50">{t('redirecting')}</p>
+              <p className="text-sm text-subtle">{t('redirecting')}</p>
             </div>
           )}
         </div>
@@ -112,15 +112,15 @@ function Login() {
       <Card className="w-full max-w-lg h-[600px] border border-divider shadow-none bg-surface">
         <Card.Header className="flex flex-col items-center gap-2 px-4 pt-2 pb-0">
           <img src="/assets/logo/sunbaby-96x96.png" alt="Guma" width={60} height={60} />
-          <Card.Title className="text-2xl font-bold pt-2">{t('logIn')}</Card.Title>
-          <Card.Description className="text-base font-medium text-foreground/50">
+          <Card.Title className="type-title pt-2">{t('logIn')}</Card.Title>
+          <Card.Description className="type-prose text-subtle">
             {t('welcomeBack')}
           </Card.Description>
         </Card.Header>
         <Card.Content className="flex flex-col gap-3 flex-1 justify-center px-4 pb-0">
           <Form className="flex flex-col gap-3" validationBehavior="native" onSubmit={handleSubmit}>
             <TextField isRequired className="w-full">
-              <Label className="text-foreground/60 font-medium text-base">
+              <Label className="type-body font-medium text-soft">
                 {t('emailAddress')}
               </Label>
               <InputGroup variant="secondary" className="h-12 text-base">
@@ -133,7 +133,7 @@ function Login() {
               </InputGroup>
             </TextField>
             <TextField isRequired className="w-full">
-              <Label className="text-foreground/60 font-medium text-base">{t('password')}</Label>
+              <Label className="type-body font-medium text-soft">{t('password')}</Label>
               <InputGroup variant="secondary" className="h-12 text-base">
                 <InputGroup.Input
                   name="password"
@@ -150,9 +150,9 @@ function Login() {
                     onPress={toggleVisibility}
                   >
                     {isVisible ? (
-                      <Icon className="text-foreground/50 text-lg" icon="bi:eye-slash-fill" />
+                      <Icon className="text-subtle text-lg" icon="bi:eye-slash-fill" />
                     ) : (
-                      <Icon className="text-foreground/50 text-lg" icon="bi:eye-fill" />
+                      <Icon className="text-subtle text-lg" icon="bi:eye-fill" />
                     )}
                   </Button>
                 </InputGroup.Suffix>
@@ -164,12 +164,12 @@ function Login() {
                   <Checkbox.Indicator />
                 </Checkbox.Control>
                 <Checkbox.Content>
-                  <Label htmlFor="remember" className="text-base font-medium text-foreground/60">
+                  <Label htmlFor="remember" className="type-body font-medium text-soft">
                     {t('rememberMe')}
                   </Label>
                 </Checkbox.Content>
               </Checkbox>
-              <Link className="text-foreground/40 text-base font-medium" href="#">
+              <Link className="type-body font-medium text-hint" href="#">
                 {t('forgotPassword')}
               </Link>
             </div>
@@ -183,13 +183,13 @@ function Login() {
           </Form>
           <div className="flex items-center gap-4 py-2">
             <Separator className="flex-1" />
-            <p className="text-sm text-foreground/40 shrink-0">{t('or')}</p>
+            <p className="type-body text-hint shrink-0">{t('or')}</p>
             <Separator className="flex-1" />
           </div>
           <div className="flex flex-col gap-2">
             <Button
               variant="tertiary"
-              className="w-full h-12 text-base text-foreground/60"
+              className="w-full h-12 text-base text-soft"
               onPress={() => {
                 if (flow) {
                   kratos

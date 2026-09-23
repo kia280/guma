@@ -90,9 +90,9 @@ export default function GuildsPage() {
             <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-accent/10 mx-auto mb-6">
               <Icon icon="solar:stars-linear" width={40} className="text-accent" />
             </div>
-            <h1 className="text-3xl font-semibold mb-3 text-foreground">{t('welcomeTitle')}</h1>
-            <p className="text-foreground/50 mb-1">{t('notJoined')}</p>
-            <p className="text-foreground/40 text-sm">{t('createFirst')}</p>
+            <h1 className="type-display mb-3 text-foreground">{t('welcomeTitle')}</h1>
+            <p className="text-subtle mb-1">{t('notJoined')}</p>
+            <p className="text-hint type-body">{t('createFirst')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8 w-full">
@@ -105,8 +105,8 @@ export default function GuildsPage() {
                     className="text-accent"
                   />
                 </div>
-                <h3 className="font-medium mb-1 text-sm">{t('buildCommunity')}</h3>
-                <p className="text-xs text-foreground/50">{t('buildCommunityDesc')}</p>
+                <h3 className="type-subheading mb-1">{t('buildCommunity')}</h3>
+                <p className="type-caption text-subtle">{t('buildCommunityDesc')}</p>
               </Card.Content>
             </Card>
 
@@ -115,8 +115,8 @@ export default function GuildsPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10 mx-auto mb-3">
                   <Icon icon="solar:settings-linear" width={20} className="text-success" />
                 </div>
-                <h3 className="font-medium mb-1 text-sm">{t('fullControl')}</h3>
-                <p className="text-xs text-foreground/50">{t('fullControlDesc')}</p>
+                <h3 className="type-subheading mb-1">{t('fullControl')}</h3>
+                <p className="type-caption text-subtle">{t('fullControlDesc')}</p>
               </Card.Content>
             </Card>
 
@@ -125,8 +125,8 @@ export default function GuildsPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10 mx-auto mb-3">
                   <Icon icon="solar:calendar-linear" width={20} className="text-secondary" />
                 </div>
-                <h3 className="font-medium mb-1 text-sm">{t('planEvents')}</h3>
-                <p className="text-xs text-foreground/50">{t('planEventsDesc')}</p>
+                <h3 className="type-subheading mb-1">{t('planEvents')}</h3>
+                <p className="type-caption text-subtle">{t('planEventsDesc')}</p>
               </Card.Content>
             </Card>
           </div>
@@ -136,17 +136,17 @@ export default function GuildsPage() {
             {t('createFirstGuild')}
           </Button>
 
-          <p className="text-foreground/40 text-sm">{t('exploreExisting')}</p>
+          <p className="text-hint type-body">{t('exploreExisting')}</p>
         </div>
 
         <div className="mt-12">
-          <h2 className="text-xl font-semibold mb-5 text-foreground">{t('exploreGuilds')}</h2>
+          <h2 className="type-heading mb-5 text-foreground">{t('exploreGuilds')}</h2>
 
           <div className="mb-5">
             <TextField className="max-w-md">
               <InputGroup>
                 <InputGroup.Prefix>
-                  <Icon icon="solar:magnifer-linear" width={16} className="text-foreground/40" />
+                  <Icon icon="solar:magnifer-linear" width={16} className="text-hint" />
                 </InputGroup.Prefix>
                 <InputGroup.Input
                   placeholder={t('searchGuilds')}
@@ -163,10 +163,10 @@ export default function GuildsPage() {
                 <Icon
                   icon="solar:users-group-rounded-linear"
                   width={40}
-                  className="text-foreground/30 mx-auto mb-3"
+                  className="text-disabled mx-auto mb-3"
                 />
-                <h3 className="text-base font-medium mb-1">{t('noOtherGuilds')}</h3>
-                <p className="text-sm text-foreground/50">
+                <h3 className="type-subheading mb-1">{t('noOtherGuilds')}</h3>
+                <p className="type-body text-subtle">
                   {searchQuery ? t('adjustSearch') : t('beFirst')}
                 </p>
               </Card.Content>
@@ -210,8 +210,8 @@ export default function GuildsPage() {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">{t('guilds')}</h1>
-          <p className="text-foreground/50 text-sm mt-1">{t('discoverGuilds')}</p>
+          <h1 className="type-title text-foreground">{t('guilds')}</h1>
+          <p className="text-subtle type-body mt-1">{t('discoverGuilds')}</p>
         </div>
 
         <Button variant="primary" onPress={createGuildState.open}>
@@ -224,7 +224,7 @@ export default function GuildsPage() {
         <TextField className="max-w-md">
           <InputGroup>
             <InputGroup.Prefix>
-              <Icon icon="solar:magnifer-linear" width={16} className="text-foreground/40" />
+              <Icon icon="solar:magnifer-linear" width={16} className="text-hint" />
             </InputGroup.Prefix>
             <InputGroup.Input
               placeholder={t('searchGuilds')}
@@ -241,10 +241,10 @@ export default function GuildsPage() {
             <Icon
               icon="solar:users-group-rounded-linear"
               width={40}
-              className="text-foreground/30 mx-auto mb-3"
+              className="text-disabled mx-auto mb-3"
             />
-            <h3 className="text-base font-medium mb-1">{t('noGuildsFound')}</h3>
-            <p className="text-sm text-foreground/50">
+            <h3 className="type-subheading mb-1">{t('noGuildsFound')}</h3>
+            <p className="type-body text-subtle">
               {searchQuery ? t('adjustSearch') : t('beFirstCreate')}
             </p>
           </Card.Content>
@@ -286,8 +286,8 @@ function GuildCard({ guild, onJoin, isUserMember = false }: GuildCardProps) {
             <Avatar.Fallback>{guild.name.slice(0, 2).toUpperCase()}</Avatar.Fallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-base truncate text-foreground">{guild.name}</h3>
-            <div className="flex items-center gap-1.5 text-xs text-foreground/50 mt-0.5">
+            <h3 className="type-subheading truncate text-foreground">{guild.name}</h3>
+            <div className="flex items-center gap-1.5 type-caption text-subtle mt-0.5">
               <Icon icon="solar:users-group-rounded-linear" width={14} />
               <span>
                 {guild.memberCount} {t('members')}
@@ -299,7 +299,7 @@ function GuildCard({ guild, onJoin, isUserMember = false }: GuildCardProps) {
 
       <Card.Content className="pt-0">
         {guild.description && (
-          <p className="text-foreground/50 text-sm mb-4 line-clamp-2">{guild.description}</p>
+          <p className="text-subtle type-body mb-4 line-clamp-2">{guild.description}</p>
         )}
 
         <div className="flex flex-wrap gap-1 mb-4">

@@ -156,19 +156,19 @@ export default function DashboardLayout({ children, modal }: { children: React.R
             <div className="mt-auto flex items-center justify-center flex-col gap-1 w-full">
               <Tooltip delay={0}>
                 <Button
-                  className="text-foreground/50 py-1 px-1 h-[44px] min-h-[44px] w-full"
+                  className="text-subtle py-1 px-1 h-[44px] min-h-[44px] w-full"
                   variant="ghost"
                   onPress={isMobile ? () => setIsDrawerOpen(o => !o) : onToggle}
                 >
                   {isCollapsed ? (
                     <Icon
-                      className="text-foreground/50"
+                      className="text-subtle"
                       icon="solar:round-alt-arrow-right-line-duotone"
                       width={24}
                     />
                   ) : (
                     <Icon
-                      className="text-foreground/50"
+                      className="text-subtle"
                       icon="solar:round-alt-arrow-left-line-duotone"
                       width={24}
                     />
@@ -188,7 +188,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
             {isCompact && (
               <Button
                 isIconOnly
-                className="text-foreground/50"
+                className="text-subtle"
                 size="sm"
                 variant="ghost"
                 onPress={() => setIsDrawerOpen(true)}
@@ -202,7 +202,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
               <Button
                 isIconOnly
                 size="lg"
-                className="rounded-full text-foreground/50"
+                className="rounded-full text-subtle"
                 variant="ghost"
                 onPress={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               >
@@ -214,7 +214,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
 
               {/* Balance chip */}
               <div className="hidden sm:flex items-center">
-                <Chip size="lg" className="cursor-default text-sm font-semibold">
+                <Chip size="lg" className="cursor-default type-body font-medium tabular-nums">
                   <Icon icon="solar:wallet-linear" width={16} className="inline mr-1.5" />$
                   {userBalance.toLocaleString('en-US')}
                 </Chip>
@@ -225,7 +225,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                 <Button
                   isIconOnly
                   size="lg"
-                  className="rounded-full text-foreground/50 relative overflow-visible"
+                  className="rounded-full text-subtle relative overflow-visible"
                   variant="ghost"
                 >
                   <Icon icon="solar:bell-linear" width={24} />
@@ -278,7 +278,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                       <Dropdown.Section>
                         <Dropdown.Item id="user-info" textValue={t('signedInAs')}>
                           <p className="font-semibold">{displayName || t('signedInAs')}</p>
-                          <p className="font-semibold text-foreground/50">{me?.email ?? ''}</p>
+                          <p className="font-semibold text-subtle">{me?.email ?? ''}</p>
                         </Dropdown.Item>
                       </Dropdown.Section>
                       <Dropdown.Section>

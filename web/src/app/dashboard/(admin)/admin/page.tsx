@@ -76,7 +76,7 @@ const getActivityColor = (type: string) => {
     case 'join':
       return 'text-secondary';
     default:
-      return 'text-foreground/40';
+      return 'text-hint';
   }
 };
 
@@ -190,10 +190,10 @@ export default function AdminPage() {
                                 </Avatar.Fallback>
                               </Avatar>
                               <div>
-                                <p className="text-sm font-medium text-foreground">
+                                <p className="type-body font-medium text-foreground">
                                   {user.username}
                                 </p>
-                                <p className="text-xs text-foreground/40">{user.email}</p>
+                                <p className="type-caption text-hint">{user.email}</p>
                               </div>
                             </div>
                           </Table.Cell>
@@ -208,7 +208,7 @@ export default function AdminPage() {
                             </Chip>
                           </Table.Cell>
                           <Table.Cell>
-                            <p className="text-sm text-foreground/50">{user.lastActive}</p>
+                            <p className="type-body text-subtle">{user.lastActive}</p>
                           </Table.Cell>
                         </Table.Row>
                       ))}
@@ -224,7 +224,7 @@ export default function AdminPage() {
         <Tabs.Panel id="activity" className="pt-4">
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Header>
-              <p className="text-sm font-medium text-foreground">{t('recentActivity')}</p>
+              <p className="type-subheading text-foreground">{t('recentActivity')}</p>
             </Card.Header>
             <Card.Content className="pt-0">
               <div className="space-y-1">
@@ -235,11 +235,11 @@ export default function AdminPage() {
                         <Icon icon={getActivityIcon(item.actionType)} width={18} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground">
+                        <p className="type-body text-foreground">
                           <span className="font-medium">{item.actor}</span>{' '}
-                          <span className="text-foreground/50">{item.action}</span>
+                          <span className="text-subtle">{item.action}</span>
                         </p>
-                        <p className="text-xs text-foreground/40 mt-0.5">
+                        <p className="type-caption text-hint mt-0.5">
                           {formatTimeAgo(item.timestamp)}
                         </p>
                       </div>
@@ -294,8 +294,8 @@ export default function AdminPage() {
                         <Icon icon={stat.icon} width={18} className={stat.color} />
                       </div>
                       <div>
-                        <p className="text-xs text-foreground/40">{stat.label}</p>
-                        <p className="text-xl font-semibold text-foreground">{stat.value}</p>
+                        <p className="type-caption text-hint">{stat.label}</p>
+                        <p className="type-title tabular-nums text-foreground">{stat.value}</p>
                       </div>
                     </div>
                   </Card.Content>
@@ -307,8 +307,8 @@ export default function AdminPage() {
             <Card className="border border-divider shadow-none bg-surface">
               <Card.Header>
                 <div className="flex items-center gap-2">
-                  <Icon icon="solar:settings-linear" width={18} className="text-foreground/40" />
-                  <p className="text-sm font-medium text-foreground">{t('guildSettings')}</p>
+                  <Icon icon="solar:settings-linear" width={18} className="text-hint" />
+                  <p className="type-subheading text-foreground">{t('guildSettings')}</p>
                 </div>
               </Card.Header>
               <Card.Content className="pt-0">
@@ -320,8 +320,8 @@ export default function AdminPage() {
                   ].map(setting => (
                     <div key={setting.label} className="flex items-center justify-between py-2">
                       <div>
-                        <p className="text-sm text-foreground/50">{setting.label}</p>
-                        <p className="text-sm font-medium text-foreground">{setting.value}</p>
+                        <p className="type-body text-subtle">{setting.label}</p>
+                        <p className="type-body font-medium text-foreground">{setting.value}</p>
                       </div>
                       {setting.editable && (
                         <Button size="sm" variant="secondary">
@@ -340,7 +340,7 @@ export default function AdminPage() {
         <Tabs.Panel id="announcements" className="pt-4">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <p className="text-sm text-foreground/50">{announcements.length}</p>
+              <p className="type-body text-subtle">{announcements.length}</p>
               <Modal>
               <Button variant="primary" size="sm">
                 <Icon icon="solar:add-circle-linear" width={16} />
@@ -375,8 +375,8 @@ export default function AdminPage() {
                       </TextField>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-foreground">{t('pinAnnouncement')}</p>
-                          <p className="text-xs text-foreground/40">{t('pinNote')}</p>
+                          <p className="type-body text-foreground">{t('pinAnnouncement')}</p>
+                          <p className="type-caption text-hint">{t('pinNote')}</p>
                         </div>
                         <Switch isSelected={isPinned} onChange={setIsPinned} size="sm">
                           <Switch.Control>
@@ -413,15 +413,15 @@ export default function AdminPage() {
                           {ann.pinned && (
                             <Icon icon="solar:pin-bold" width={14} className="text-warning" />
                           )}
-                          <h4 className="text-sm font-medium text-foreground">{ann.title}</h4>
+                          <h4 className="type-subheading text-foreground">{ann.title}</h4>
                         </div>
-                        <p className="text-sm text-foreground/50">{ann.content}</p>
+                        <p className="type-body text-subtle">{ann.content}</p>
                         <div className="flex items-center gap-2 mt-2">
-                          <p className="text-xs text-foreground/40">
+                          <p className="type-caption text-hint">
                             {t('by')} {ann.author}
                           </p>
-                          <span className="text-xs text-foreground/30">·</span>
-                          <p className="text-xs text-foreground/40">{formatTimeAgo(ann.createdAt)}</p>
+                          <span className="type-caption text-disabled">·</span>
+                          <p className="type-caption text-hint">{formatTimeAgo(ann.createdAt)}</p>
                         </div>
                       </div>
                       {ann.pinned && (

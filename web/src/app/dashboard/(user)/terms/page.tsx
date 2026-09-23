@@ -30,7 +30,7 @@ export default function TermsPage() {
       <Card className="border border-accent/20 shadow-none bg-accent/5">
         <Card.Content className="flex flex-row items-start gap-3 py-4">
           <Icon icon="solar:info-circle-bold" width={18} className="text-accent shrink-0 mt-0.5" />
-          <p className="text-sm text-foreground/60">{t('bannerText')}</p>
+          <p className="type-body text-soft">{t('bannerText')}</p>
         </Card.Content>
       </Card>
 
@@ -39,8 +39,8 @@ export default function TermsPage() {
         <Card.Content className="flex flex-col gap-5 p-6">
           {sections.map((section, idx) => (
             <div key={idx} className="flex flex-col gap-1.5">
-              <h2 className="text-sm font-medium text-foreground">{section.title}</h2>
-              <p className="text-sm text-foreground/50 leading-relaxed">{section.content}</p>
+              <h2 className="type-subheading text-foreground">{section.title}</h2>
+              <p className="type-prose text-subtle">{section.content}</p>
               {idx < sections.length - 1 && <div className="border-b border-divider mt-3" />}
             </div>
           ))}

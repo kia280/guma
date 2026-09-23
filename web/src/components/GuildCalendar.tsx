@@ -146,7 +146,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           style={{ top: h * HOUR_PX, height: HOUR_PX }}
           className="absolute w-full flex items-start justify-end pr-2 pt-1"
         >
-          <span className="text-xs text-foreground/40 leading-none select-none">
+          <span className="type-caption text-hint select-none">
             {String(h).padStart(2, '0')}:00
           </span>
         </div>
@@ -203,11 +203,11 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               tabIndex={0}
               onKeyDown={e => e.key === 'Enter' && onEventClick(event)}
             >
-              <p className="text-xs font-medium text-foreground truncate leading-tight">
+              <p className="type-label text-foreground truncate">
                 {event.title}
               </p>
               {height >= 40 && (
-                <p className="text-xs text-foreground/50 leading-tight">
+                <p className="type-caption text-subtle">
                   {formatTime(event.startDate)}
                 </p>
               )}
@@ -227,7 +227,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     return (
       <div className="grid grid-cols-7 gap-1">
         {(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const).map(day => (
-          <div key={day} className="p-2 text-center text-xs font-medium text-foreground/40">
+          <div key={day} className="p-2 text-center type-label text-hint">
             {t(day)}
           </div>
         ))}
@@ -255,7 +255,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               <Card.Content className="p-1.5">
                 <div className="flex flex-col h-full">
                   <div
-                    className={`text-xs text-center mb-1 font-medium ${isToday ? 'text-accent' : 'text-foreground'}`}
+                    className={`type-label text-center mb-1 ${isToday ? 'text-accent' : 'text-foreground'}`}
                   >
                     {day.getDate()}
                   </div>
@@ -282,7 +282,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                             color={EVENT_TYPE_COLORS[event.type]}
                             size="sm"
                             variant="secondary"
-                            className="text-xs truncate max-w-full"
+                            className="type-caption truncate max-w-full"
                           >
                             {event.title.length > 8 ? `${event.title.slice(0, 8)}...` : event.title}
                           </Chip>
@@ -294,7 +294,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                     ))}
 
                     {dayEvents.length > 2 && (
-                      <div className="text-xs text-foreground/40 text-center">
+                      <div className="type-caption text-hint text-center">
                         +{dayEvents.length - 2}
                       </div>
                     )}
@@ -317,7 +317,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
       <div className="border border-divider rounded-xl overflow-hidden bg-surface">
         {/* Day header */}
         <div className={`px-4 py-3 border-b border-divider ${isToday ? 'bg-accent/5' : ''}`}>
-          <h3 className={`text-sm font-medium ${isToday ? 'text-accent' : 'text-foreground'}`}>
+          <h3 className={`type-subheading ${isToday ? 'text-accent' : 'text-foreground'}`}>
             {formatDate(currentDate)}
           </h3>
           {allDayEvents.length > 0 && (
@@ -372,11 +372,11 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 role="button"
                 tabIndex={0}
               >
-                <div className="text-xs font-medium text-foreground/40">
+                <div className="type-label text-hint">
                   {day.toLocaleDateString('en-US', { weekday: 'short' })}
                 </div>
                 <div
-                  className={`text-base font-semibold mt-0.5 ${isToday ? 'text-accent' : 'text-foreground'}`}
+                  className={`type-subheading tabular-nums mt-0.5 ${isToday ? 'text-accent' : 'text-foreground'}`}
                 >
                   {day.getDate()}
                 </div>
@@ -454,7 +454,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 <Icon icon="solar:alt-arrow-left-linear" width={16} />
               </Button>
 
-              <h2 className="text-base font-medium text-foreground min-w-[180px] text-center">
+              <h2 className="type-subheading text-foreground min-w-[180px] text-center">
                 {getViewTitle()}
               </h2>
 

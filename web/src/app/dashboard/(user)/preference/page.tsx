@@ -60,8 +60,8 @@ export default function PreferencePage() {
             <Icon className="text-accent" icon="solar:palette-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('appearance')}</p>
-            <p className="text-xs text-foreground/40">{t('appearanceSubtitle')}</p>
+            <p className="type-subheading text-foreground">{t('appearance')}</p>
+            <p className="type-caption text-hint">{t('appearanceSubtitle')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-4">
@@ -73,7 +73,7 @@ export default function PreferencePage() {
                 className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
                   theme === themeKey
                     ? 'border-accent bg-accent/10 text-accent'
-                    : 'border-divider bg-surface-secondary text-foreground/50 hover:border-foreground/20'
+                    : 'border-divider bg-surface-secondary text-subtle hover:border-foreground/20'
                 }`}
               >
                 <Icon
@@ -86,12 +86,12 @@ export default function PreferencePage() {
                   }
                   width={20}
                 />
-                <span className="text-xs font-medium capitalize">{themeLabels[themeKey]}</span>
+                <span className="type-label capitalize">{themeLabels[themeKey]}</span>
               </button>
             ))}
           </div>
           <div className="flex flex-col gap-2">
-            <p id="font-size-label" className="text-sm text-foreground">{t('fontSize')}</p>
+            <p id="font-size-label" className="type-body text-foreground">{t('fontSize')}</p>
             <div role="group" aria-labelledby="font-size-label" className="grid grid-cols-3 gap-3">
               {FONT_SIZES.map(size => (
                 <button
@@ -102,13 +102,13 @@ export default function PreferencePage() {
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${
                     fontSize === size
                       ? 'border-accent bg-accent/10 text-accent'
-                      : 'border-divider bg-surface-secondary text-foreground/50 hover:border-foreground/20'
+                      : 'border-divider bg-surface-secondary text-subtle hover:border-foreground/20'
                   }`}
                 >
                   <span className={`${fontSizePreviewClass[size]} font-semibold`} aria-hidden="true">
                     Aa
                   </span>
-                  <span className="text-xs font-medium">{fontSizeLabels[size]}</span>
+                  <span className="type-label">{fontSizeLabels[size]}</span>
                 </button>
               ))}
             </div>
@@ -120,11 +120,11 @@ export default function PreferencePage() {
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
-            <Icon className="text-foreground/50" icon="solar:global-bold-duotone" width={20} />
+            <Icon className="text-subtle" icon="solar:global-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('language')}</p>
-            <p className="text-xs text-foreground/40">{t('languageSubtitle')}</p>
+            <p className="type-subheading text-foreground">{t('language')}</p>
+            <p className="type-caption text-hint">{t('languageSubtitle')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
@@ -152,11 +152,11 @@ export default function PreferencePage() {
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Header className="flex gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
-            <Icon className="text-foreground/50" icon="solar:bell-bold-duotone" width={20} />
+            <Icon className="text-subtle" icon="solar:bell-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
-            <p className="text-sm font-medium text-foreground">{t('notifications')}</p>
-            <p className="text-xs text-foreground/40">{t('notificationsSubtitle')}</p>
+            <p className="type-subheading text-foreground">{t('notifications')}</p>
+            <p className="type-caption text-hint">{t('notificationsSubtitle')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-1">
@@ -205,10 +205,10 @@ export default function PreferencePage() {
             <React.Fragment key={item.key}>
               <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3">
-                  <Icon icon={item.icon} width={16} className="text-foreground/40 shrink-0" />
+                  <Icon icon={item.icon} width={16} className="text-hint shrink-0" />
                   <div>
-                    <p className="text-sm text-foreground">{item.label}</p>
-                    <p className="text-xs text-foreground/40">{item.description}</p>
+                    <p className="type-body text-foreground">{item.label}</p>
+                    <p className="type-caption text-hint">{item.description}</p>
                   </div>
                 </div>
                 <Switch isSelected={item.value} onChange={item.onChange} size="sm">
