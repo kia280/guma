@@ -35,8 +35,8 @@ export default function DashboardLayout({ children, modal }: { children: React.R
       title: t('dashboard'),
     },
     {
-      key: 'checkin',
-      path: '/checkin',
+      key: 'attendance',
+      path: '/attendance',
       icon: 'heroicons:clipboard-document-check',
       title: t('checkin'),
     },
@@ -84,7 +84,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
   const pathname = usePathname();
 
   // Derive selected key from the current pathname
-  // /dashboard → '', /dashboard/checkin → 'checkin', /dashboard/wallet → 'wallet'
+  // /dashboard → '', /dashboard/attendance → 'attendance', /dashboard/wallet → 'wallet'
   const selectedKey = React.useMemo(() => {
     const segments = pathname.replace(/^\/dashboard\/?/, '').split('/').filter(Boolean);
     return segments[0] || '';
