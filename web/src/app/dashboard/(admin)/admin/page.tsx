@@ -39,6 +39,8 @@ const getStatusColor = (status: string) => {
 
 const getRoleColor = (role: string) => {
   switch (role) {
+    case 'owner':
+      return 'accent';
     case 'admin':
       return 'danger';
     case 'moderator':
@@ -198,7 +200,7 @@ export default function AdminPage() {
                             </div>
                           </Table.Cell>
                           <Table.Cell>
-                            <Chip size="sm" variant="secondary" className="capitalize">
+                            <Chip size="sm" color={getRoleColor(user.role ?? '')} variant="secondary" className="capitalize">
                               {user.role}
                             </Chip>
                           </Table.Cell>
