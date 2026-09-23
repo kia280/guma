@@ -96,7 +96,14 @@
     "create": "Create",
     "statusActive": "Active",
     "statusClosed": "Closed",
-    "statusCompleted": "Completed"
+    "statusCompleted": "Completed",
+    "all": "All",
+    "noCheckins": "No check-ins in this category",
+    "noCheckinsHint": "Create a check-in to start tracking attendance",
+    "attendees": "Attendees",
+    "loot": "Loot",
+    "viewDetails": "View details",
+    "checkinClosed": "Check-in closed"
   },
   "walletPage": {
     "wallet": "Wallet",

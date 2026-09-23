@@ -96,7 +96,14 @@
     "create": "建立",
     "statusActive": "進行中",
     "statusClosed": "已關閉",
-    "statusCompleted": "已完成"
+    "statusCompleted": "已完成",
+    "all": "全部",
+    "noCheckins": "此分類沒有出席登記",
+    "noCheckinsHint": "建立新的登記開始記錄出席",
+    "attendees": "出席人數",
+    "loot": "戰利品",
+    "viewDetails": "查看詳情",
+    "checkinClosed": "登記已關閉"
   },
   "walletPage": {
     "wallet": "錢包",

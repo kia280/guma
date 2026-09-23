@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Button, Modal, Input, TextArea, TextField, Label, Description, DatePicker, DateField, Calendar } from '@heroui/react';
+import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Description, DatePicker, DateField, Calendar } from '@heroui/react';
 import type { DateValue } from '@internationalized/date';
 import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
-import { CheckinCard } from './CheckinCard';
-import type { CheckinEntry } from '@/types/checkin';
+import { CheckinCard, checkinStatusColor } from './CheckinCard';
+import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,13 @@ import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 
 const DRAFT_KEY = 'checkin_draft';
+
+const STATUS_TABS = [
+  { id: 'all', status: null },
+  { id: 'open', status: CheckinStatus.OPEN },
+  { id: 'finished', status: CheckinStatus.FINISHED },
+  { id: 'closed', status: CheckinStatus.CLOSED },
+] as const;
 
 interface CheckinDraft {
   title: string;
@@ -46,6 +53,18 @@ export default function CheckinPage() {
   React.useEffect(() => {
     refetchCheckins();
   }, [refetchCheckins]);
+
+  const [activeTab, setActiveTab] = React.useState<string>('all');
+  const tabLabels: Record<string, string> = {
+    all: t('all'),
+    open: t('statusActive'),
+    finished: t('statusCompleted'),
+    closed: t('statusClosed'),
+  };
+  const countFor = (status: CheckinStatus | null) =>
+    status === null ? checkins.length : checkins.filter(c => c.status === status).length;
+  const activeStatus = STATUS_TABS.find(tab => tab.id === activeTab)?.status ?? null;
+  const filtered = activeStatus === null ? checkins : checkins.filter(c => c.status === activeStatus);
 
   const [draft, setDraft] = React.useState<CheckinDraft>(emptyDraft);
 
@@ -320,23 +339,61 @@ export default function CheckinPage() {
         </Modal>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {checkins.map(item => (
-          <CheckinCard
-            key={item.id}
-            status={item.status}
-            date={item.date}
-            description={item.description}
-            expireTime={item.expireTime}
-            attendanceCount={item.attendanceList.length}
-            lootCount={item.lootList.length}
-            imageUrl={item.imageUrl}
-            isDisabled={item.isDisabled}
-            onClick={() => !item.isDisabled && handleCardClick(item)}
-          />
+      <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
+        <Tabs.ListContainer>
+          <Tabs.List aria-label={t('checkIn')}>
+            {STATUS_TABS.map(tab => (
+              <Tabs.Tab key={tab.id} id={tab.id}>
+                <div className="flex items-center gap-2">
+                  <span>{tabLabels[tab.id]}</span>
+                  <Chip
+                    size="sm"
+                    color={tab.status === null ? 'default' : checkinStatusColor[tab.status]}
+                    variant="secondary"
+                  >
+                    {countFor(tab.status)}
+                  </Chip>
+                </div>
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs.ListContainer>
+        {STATUS_TABS.map(tab => (
+          <Tabs.Panel key={tab.id} id={tab.id} className="pt-4">
+            {filtered.length === 0 ? (
+              <Card className="border border-divider shadow-none">
+                <Card.Content className="text-center py-12">
+                  <Icon
+                    icon="heroicons:clipboard-document-check"
+                    width={40}
+                    className="mx-auto mb-3 text-disabled"
+                  />
+                  <h3 className="type-subheading mb-1 text-foreground">{t('noCheckins')}</h3>
+                  <p className="type-body text-subtle">{t('noCheckinsHint')}</p>
+                </Card.Content>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filtered.map(item => (
+                  <CheckinCard
+                    key={item.id}
+                    status={item.status}
+                    date={item.date}
+                    description={item.description}
+                    expireTime={item.expireTime}
+                    attendanceCount={item.attendanceList.length}
+                    lootCount={item.lootList.length}
+                    imageUrl={item.imageUrl}
+                    isDisabled={item.isDisabled}
+                    onClick={() => !item.isDisabled && handleCardClick(item)}
+                  />
+                ))}
+              </div>
+            )}
+          </Tabs.Panel>
         ))}
-      </div>
-
+      </Tabs>
     </div>
   );
 }
