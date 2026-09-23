@@ -23,6 +23,7 @@ export function CheckinCard({
   expireTime,
   attendanceCount,
   lootCount,
+  imageUrl,
   isDisabled,
   onClick,
 }: {
@@ -32,6 +33,7 @@ export function CheckinCard({
   expireTime?: string;
   attendanceCount?: number;
   lootCount?: number;
+  imageUrl?: string;
   isDisabled?: boolean;
   onClick?: () => void;
 }) {
@@ -93,17 +95,24 @@ export function CheckinCard({
         )}
       </Card.Header>
       <Card.Content className="pb-4 pt-3">
-        <div className="overflow-hidden rounded-lg z-0">
-          <img
-            alt="Card background"
-            className={
-              'object-cover w-full' +
-              (isDisabled
-                ? ' grayscale opacity-50'
-                : ' hover:scale-105 transition-transform duration-300')
-            }
-            src="https://media.discordapp.net/attachments/1366759949568446566/1366760017662967859/image.png?ex=69daedb5&is=69d99c35&hm=1c1b07ce1a88e61b1c8aee25e712d6f8b4bb5880bd31b5958aab57462f2ca28d&=&format=webp&quality=lossless&width=1919&height=917"
-          />
+        <div className="aspect-video overflow-hidden rounded-lg bg-surface-secondary z-0">
+          {imageUrl ? (
+            <img
+              alt={description}
+              loading="lazy"
+              className={
+                'h-full w-full object-cover' +
+                (isDisabled
+                  ? ' grayscale opacity-50'
+                  : ' hover:scale-105 transition-transform duration-300')
+              }
+              src={imageUrl}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <Icon icon="solar:gallery-linear" width={32} className="text-foreground/30" />
+            </div>
+          )}
         </div>
       </Card.Content>
     </Card>

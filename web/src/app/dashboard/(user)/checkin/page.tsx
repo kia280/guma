@@ -330,6 +330,7 @@ export default function CheckinPage() {
             expireTime={item.expireTime}
             attendanceCount={item.attendanceList.length}
             lootCount={item.lootList.length}
+            imageUrl={item.imageUrl}
             isDisabled={item.isDisabled}
             onClick={() => !item.isDisabled && handleCardClick(item)}
           />

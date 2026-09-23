@@ -232,6 +232,7 @@ export const mockBackpackItems: BackpackItem[] = [
 export const mockCheckins: CheckinEntry[] = [
   {
     id: '1',
+    imageUrl: '/mock/checkin/checkin-1.webp',
     status: CheckinStatus.OPEN,
     date: '2024/07/24 22:47',
     description: '蜘蛛',
@@ -247,6 +248,7 @@ export const mockCheckins: CheckinEntry[] = [
   },
   {
     id: '2',
+    imageUrl: '/mock/checkin/checkin-2.webp',
     status: CheckinStatus.OPEN,
     date: '2024/07/24 22:47',
     description: '蜘蛛',
@@ -260,6 +262,7 @@ export const mockCheckins: CheckinEntry[] = [
   },
   {
     id: '3',
+    imageUrl: '/mock/checkin/checkin-3.webp',
     status: CheckinStatus.FINISHED,
     date: '2024/07/24 22:47',
     description: '蜘蛛',
@@ -276,6 +279,7 @@ export const mockCheckins: CheckinEntry[] = [
   },
   {
     id: '4',
+    imageUrl: '/mock/checkin/checkin-4.webp',
     status: CheckinStatus.CLOSED,
     date: '2024/07/24 22:47',
     description: '蜘蛛',

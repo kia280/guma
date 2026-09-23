@@ -98,7 +98,13 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         </Button>
       )}
 
-      {/* Header */}
+      {entry.imageUrl && (
+        <div className="overflow-hidden rounded-xl border border-divider bg-surface-secondary">
+          <img alt={entry.description} src={entry.imageUrl} className="max-h-[480px] w-full object-cover" />
+        </div>
+      )}
+
+            {/* Header */}
       <div className="flex flex-col sm:flex-row items-start gap-4 p-5 rounded-xl border border-divider bg-surface">
         <div className="p-4 rounded-xl bg-default shrink-0">
           <Icon icon="heroicons:clipboard-document-check" width={36} className="text-foreground/50" />
