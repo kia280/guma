@@ -95,6 +95,10 @@ function generateMembers(): MockUser[] {
 
 export const mockUsers: MockUser[] = generateMembers();
 
+const member = (n: number): MockUser => mockUsers[n - 1];
+
+const memberRef = (n: number) => ({ id: member(n).id, username: member(n).username });
+
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export const GUILD_STATS: GuildStats = {
@@ -156,12 +160,12 @@ export const ANNOUNCEMENTS: Announcement[] = [
 // ─── Admin ───────────────────────────────────────────────────────────────────
 
 export const mockActivity: AdminActivity[] = [
-  { id: 'a1', actor: 'DragonHunter', action: 'placed a bid on Dragon Slayer Sword', actionType: 'auction', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
-  { id: 'a2', actor: 'Healer', action: 'checked in to weekly guild check-in', actionType: 'checkin', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
-  { id: 'a3', actor: 'Warrior123', action: 'purchased 2 lottery tickets', actionType: 'lottery', timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString() },
-  { id: 'a4', actor: 'Blacksmith', action: 'joined the guild', actionType: 'join', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-  { id: 'a5', actor: 'GuildMaster', action: 'created auction for Mystic Shield', actionType: 'auction', timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() },
-  { id: 'a6', actor: 'ScrollMaster', action: 'checked in to raid preparation', actionType: 'checkin', timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
+  { id: 'a1', actor: member(7).username, action: 'placed a bid on Dragon Slayer Sword', actionType: 'auction', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
+  { id: 'a2', actor: member(12).username, action: 'checked in to weekly guild check-in', actionType: 'checkin', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
+  { id: 'a3', actor: member(23).username, action: 'purchased 2 lottery tickets', actionType: 'lottery', timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString() },
+  { id: 'a4', actor: member(40).username, action: 'joined the guild', actionType: 'join', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
+  { id: 'a5', actor: member(1).username, action: 'created auction for Mystic Shield', actionType: 'auction', timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() },
+  { id: 'a6', actor: member(45).username, action: 'checked in to raid preparation', actionType: 'checkin', timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
 ];
 
 export const mockAdminAnnouncements: AdminAnnouncement[] = [
@@ -170,7 +174,7 @@ export const mockAdminAnnouncements: AdminAnnouncement[] = [
     title: 'Weekly Raid Night - Friday 8PM',
     content: 'This Friday we will be tackling the Ancient Dragon. All members level 50+ are encouraged to join.',
     pinned: true,
-    author: 'GuildMaster',
+    author: member(1).username,
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
@@ -178,7 +182,7 @@ export const mockAdminAnnouncements: AdminAnnouncement[] = [
     title: 'Guild Treasury Update',
     content: 'The guild treasury has been updated. Auction proceeds for this month have been distributed.',
     pinned: false,
-    author: 'GuildMaster',
+    author: member(1).username,
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
@@ -187,16 +191,16 @@ export const mockAdminAnnouncements: AdminAnnouncement[] = [
 
 export const mockTransactions: Transaction[] = [
   { id: '1', type: 'deposit', amount: 500.0, date: '2024-01-20', status: 'completed', description: 'Account deposit' },
-  { id: '2', type: 'transfer', amount: -100.0, recipient: 'DragonHunter', date: '2024-01-19', status: 'completed', description: 'Transfer to DragonHunter' },
+  { id: '2', type: 'transfer', amount: -100.0, recipient: member(7).username, date: '2024-01-19', status: 'completed', description: `Transfer to ${member(7).username}` },
   { id: '3', type: 'withdraw', amount: -500.0, date: '2024-01-18', status: 'pending', description: 'Withdrawal request' },
-  { id: '4', type: 'transfer', amount: -75.5, recipient: 'Healer', date: '2024-01-17', status: 'completed', description: 'Transfer to Healer' },
+  { id: '4', type: 'transfer', amount: -75.5, recipient: member(12).username, date: '2024-01-17', status: 'completed', description: `Transfer to ${member(12).username}` },
   { id: '5', type: 'deposit', amount: 1000.0, date: '2024-01-16', status: 'completed', description: 'Guild reward payout' },
-  { id: '6', type: 'transfer', amount: -200.0, recipient: 'Warrior123', date: '2024-01-15', status: 'completed', description: 'Transfer to Warrior123' },
+  { id: '6', type: 'transfer', amount: -200.0, recipient: member(23).username, date: '2024-01-15', status: 'completed', description: `Transfer to ${member(23).username}` },
   { id: '7', type: 'withdraw', amount: -250.0, date: '2024-01-14', status: 'completed', description: 'Withdrawal to bank account' },
   { id: '8', type: 'deposit', amount: 300.0, date: '2024-01-13', status: 'completed', description: 'Auction sale proceeds' },
-  { id: '9', type: 'transfer', amount: -50.0, recipient: 'Enchanter', date: '2024-01-12', status: 'failed', description: 'Transfer to Enchanter' },
+  { id: '9', type: 'transfer', amount: -50.0, recipient: member(31).username, date: '2024-01-12', status: 'failed', description: `Transfer to ${member(31).username}` },
   { id: '10', type: 'deposit', amount: 150.0, date: '2024-01-11', status: 'completed', description: 'Lottery winnings' },
-  { id: '11', type: 'transfer', amount: -80.0, recipient: 'Blacksmith', date: '2024-01-10', status: 'completed', description: 'Transfer to Blacksmith' },
+  { id: '11', type: 'transfer', amount: -80.0, recipient: member(40).username, date: '2024-01-10', status: 'completed', description: `Transfer to ${member(40).username}` },
   { id: '12', type: 'withdraw', amount: -100.0, date: '2024-01-09', status: 'completed', description: 'Withdrawal to bank account' },
 ];
 
@@ -273,68 +277,70 @@ export const mockBackpackItems: BackpackItem[] = [
 
 // ─── Checkin ─────────────────────────────────────────────────────────────────
 
-export const mockCheckins: CheckinEntry[] = [
-  {
-    id: '1',
-    imageUrl: '/mock/checkin/checkin-1.webp',
-    status: CheckinStatus.OPEN,
-    date: '2024/07/24 22:47',
-    description: '蜘蛛',
-    expireTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    attendanceList: [
-      { id: 'a1', username: 'DragonHunter', checkedInAt: new Date(Date.now() - 30 * 60 * 1000).toISOString() },
-      { id: 'a2', username: 'Warrior123', checkedInAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(), notes: 'Late arrival' },
-    ],
-    lootList: [
-      { id: 'l1', name: 'Dragon Scale', quantity: 3 },
-      { id: 'l2', name: 'Fire Crystal', quantity: 1, winner: 'DragonHunter' },
-    ],
-  },
-  {
-    id: '2',
-    imageUrl: '/mock/checkin/checkin-2.webp',
-    status: CheckinStatus.OPEN,
-    date: '2024/07/24 22:47',
-    description: '蜘蛛',
-    expireTime: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-    attendanceList: [
-      { id: 'a3', username: 'Healer', checkedInAt: new Date(Date.now() - 10 * 60 * 1000).toISOString() },
-    ],
-    lootList: [
-      { id: 'l3', name: 'Web Fragment', quantity: 5 },
-    ],
-  },
-  {
-    id: '3',
-    imageUrl: '/mock/checkin/checkin-3.webp',
-    status: CheckinStatus.FINISHED,
-    date: '2024/07/24 22:47',
-    description: '蜘蛛',
-    expireTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    attendanceList: [
-      { id: 'a4', username: 'DragonHunter', checkedInAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString() },
-      { id: 'a5', username: 'Warrior123', checkedInAt: new Date(Date.now() - 2.5 * 60 * 60 * 1000).toISOString() },
-      { id: 'a6', username: 'Enchanter', checkedInAt: new Date(Date.now() - 2.8 * 60 * 60 * 1000).toISOString() },
-    ],
-    lootList: [
-      { id: 'l4', name: 'Venom Fang', quantity: 2, winner: 'Warrior123' },
-      { id: 'l5', name: 'Spider Silk', quantity: 10, winner: 'Enchanter' },
-    ],
-  },
-  {
-    id: '4',
-    imageUrl: '/mock/checkin/checkin-4.webp',
-    status: CheckinStatus.CLOSED,
-    date: '2024/07/24 22:47',
-    description: '蜘蛛',
-    isDisabled: true,
-    expireTime: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-    attendanceList: [
-      { id: 'a7', username: 'Blacksmith', checkedInAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
-    ],
-    lootList: [],
-  },
-];
+const CHECKIN_COUNT = 16;
+
+const CHECKIN_BOSSES = ['蜘蛛', '炎龍', '骷髏王', '深淵魔女', '巨石像', '冰霜巨人'];
+
+const CHECKIN_LOOT = ['Dragon Scale', 'Fire Crystal', 'Web Fragment', 'Venom Fang', 'Spider Silk', 'Ancient Rune', 'Frost Core', 'Shadow Essence'];
+
+const HOUR = 60 * 60 * 1000;
+
+function formatCheckinDate(time: number): string {
+  const d = new Date(time);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function checkinStatusFor(i: number): CheckinStatus {
+  if (i < 3) return CheckinStatus.OPEN;
+  if (i % 5 === 4) return CheckinStatus.CLOSED;
+  return CheckinStatus.FINISHED;
+}
+
+function generateCheckins(): CheckinEntry[] {
+  const random = seededRandom(20240724);
+  const now = Date.now();
+
+  return Array.from({ length: CHECKIN_COUNT }, (_, i) => {
+    const status = checkinStatusFor(i);
+    const start = now - (i * 8 + 1) * HOUR;
+    const attendeeCount = 20 + Math.floor(random() * 60);
+    const attendees = [...mockUsers].sort(() => random() - 0.5).slice(0, attendeeCount);
+    const attendanceList = attendees
+      .map((user, j) => ({
+        id: `c${i + 1}-a${j + 1}`,
+        username: user.username,
+        checkedInAt: new Date(start + random() * HOUR).toISOString(),
+        ...(random() < 0.05 ? { notes: 'Late arrival' } : {}),
+      }))
+      .sort((x, y) => x.checkedInAt.localeCompare(y.checkedInAt));
+    const lootList = [...CHECKIN_LOOT]
+      .sort(() => random() - 0.5)
+      .slice(0, Math.floor(random() * 5))
+      .map((name, j) => ({
+        id: `c${i + 1}-l${j + 1}`,
+        name,
+        quantity: 1 + Math.floor(random() * 10),
+        ...(status === CheckinStatus.FINISHED
+          ? { winner: attendees[Math.floor(random() * attendees.length)].username }
+          : {}),
+      }));
+
+    return {
+      id: String(i + 1),
+      imageUrl: `/mock/checkin/checkin-${(i % 4) + 1}.webp`,
+      status,
+      date: formatCheckinDate(start),
+      description: CHECKIN_BOSSES[i % CHECKIN_BOSSES.length],
+      ...(status === CheckinStatus.CLOSED ? { isDisabled: true } : {}),
+      expireTime: new Date(status === CheckinStatus.OPEN ? now + (i + 1) * 2 * HOUR : start + 2 * HOUR).toISOString(),
+      attendanceList,
+      lootList,
+    };
+  });
+}
+
+export const mockCheckins: CheckinEntry[] = generateCheckins();
 
 // ─── Auction ─────────────────────────────────────────────────────────────────
 
@@ -347,17 +353,17 @@ export const mockAuctionItems: AuctionItem[] = [
     rarity: ItemRarity.LEGENDARY,
     startingBid: 1000,
     currentBid: 2500,
-    currentBidder: { id: 'user1', username: 'DragonHunter' },
+    currentBidder: memberRef(7),
     minBidIncrement: 100,
     startTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     endTime: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
     status: AuctionStatus.ACTIVE,
     guildId: 'guild1',
-    sellerId: 'seller1',
-    seller: { id: 'seller1', username: 'GuildMaster' },
+    sellerId: member(1).id,
+    seller: memberRef(1),
     bidHistory: [
-      { id: 'bid1', auctionItemId: '1', bidderId: 'user2', bidder: { id: 'user2', username: 'Warrior123' }, amount: 1000, timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), isWinning: false },
-      { id: 'bid2', auctionItemId: '1', bidderId: 'user1', bidder: { id: 'user1', username: 'DragonHunter' }, amount: 2500, timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), isWinning: true },
+      { id: 'bid1', auctionItemId: '1', bidderId: member(23).id, bidder: memberRef(23), amount: 1000, timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), isWinning: false },
+      { id: 'bid2', auctionItemId: '1', bidderId: member(7).id, bidder: memberRef(7), amount: 2500, timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), isWinning: true },
     ],
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
@@ -375,8 +381,8 @@ export const mockAuctionItems: AuctionItem[] = [
     endTime: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
     status: AuctionStatus.ACTIVE,
     guildId: 'guild1',
-    sellerId: 'seller2',
-    seller: { id: 'seller2', username: 'Enchanter' },
+    sellerId: member(31).id,
+    seller: memberRef(31),
     bidHistory: [],
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
@@ -389,16 +395,16 @@ export const mockAuctionItems: AuctionItem[] = [
     rarity: ItemRarity.RARE,
     startingBid: 500,
     currentBid: 750,
-    currentBidder: { id: 'user3', username: 'Healer' },
+    currentBidder: memberRef(12),
     minBidIncrement: 25,
     startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     endTime: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(),
     status: AuctionStatus.UPCOMING,
     guildId: 'guild1',
-    sellerId: 'seller3',
-    seller: { id: 'seller3', username: 'ScrollMaster' },
+    sellerId: member(45).id,
+    seller: memberRef(45),
     bidHistory: [
-      { id: 'bid3', auctionItemId: '3', bidderId: 'user3', bidder: { id: 'user3', username: 'Healer' }, amount: 750, timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), isWinning: true },
+      { id: 'bid3', auctionItemId: '3', bidderId: member(12).id, bidder: memberRef(12), amount: 750, timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), isWinning: true },
     ],
     createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
@@ -411,16 +417,16 @@ export const mockAuctionItems: AuctionItem[] = [
     rarity: ItemRarity.UNCOMMON,
     startingBid: 200,
     currentBid: 350,
-    currentBidder: { id: 'user4', username: 'Blacksmith' },
+    currentBidder: memberRef(40),
     minBidIncrement: 25,
     startTime: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
     endTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
     status: AuctionStatus.ENDED,
     guildId: 'guild1',
-    sellerId: 'seller4',
-    seller: { id: 'seller4', username: 'Miner' },
+    sellerId: member(58).id,
+    seller: memberRef(58),
     bidHistory: [
-      { id: 'bid4', auctionItemId: '4', bidderId: 'user4', bidder: { id: 'user4', username: 'Blacksmith' }, amount: 350, timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), isWinning: true },
+      { id: 'bid4', auctionItemId: '4', bidderId: member(40).id, bidder: memberRef(40), amount: 350, timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), isWinning: true },
     ],
     createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
@@ -439,8 +445,8 @@ export const mockAuctionItems: AuctionItem[] = [
     endTime: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
     status: AuctionStatus.ACTIVE,
     guildId: 'guild1',
-    sellerId: 'seller1',
-    seller: { id: 'seller1', username: 'GuildMaster' },
+    sellerId: member(1).id,
+    seller: memberRef(1),
     bidHistory: [],
     createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
@@ -495,9 +501,9 @@ export const mockLotteries: Lottery[] = [
     maxTickets: 125,
     status: 'ended',
     winners: [
-      { id: 'w1', username: 'DragonHunter', prize: '$12,500 (1st place)' },
-      { id: 'w2', username: 'Healer', prize: '$7,500 (2nd place)' },
-      { id: 'w3', username: 'Warrior123', prize: '$5,000 (3rd place)' },
+      { id: 'w1', username: member(7).username, prize: '$12,500 (1st place)' },
+      { id: 'w2', username: member(12).username, prize: '$7,500 (2nd place)' },
+      { id: 'w3', username: member(23).username, prize: '$5,000 (3rd place)' },
     ],
   },
 ];
@@ -505,12 +511,12 @@ export const mockLotteries: Lottery[] = [
 // ─── Guild Bank ──────────────────────────────────────────────────────────────
 
 export const mockContributions: GuildContribution[] = [
-  { id: '1', type: 'contribute', amount: 500, member: 'DragonHunter', date: '2024-01-15', status: 'completed', note: 'Weekly contribution' },
-  { id: '2', type: 'request', amount: 200, member: 'Healer', date: '2024-01-14', status: 'approved', note: 'Potion supplies for raid' },
-  { id: '3', type: 'item_donate', itemName: 'Dragon Scale', member: 'Warrior123', date: '2024-01-13', status: 'completed' },
-  { id: '4', type: 'contribute', amount: 1000, member: 'GuildMaster', date: '2024-01-12', status: 'completed', note: 'Initial guild fund' },
-  { id: '5', type: 'request', amount: 350, member: 'Enchanter', date: '2024-01-16', status: 'pending', note: 'Enchanting materials' },
-  { id: '6', type: 'item_distribute', itemName: 'Ancient Sword', member: 'Blacksmith', date: '2024-01-11', status: 'completed', note: 'Distributed by admin' },
+  { id: '1', type: 'contribute', amount: 500, member: member(7).username, date: '2024-01-15', status: 'completed', note: 'Weekly contribution' },
+  { id: '2', type: 'request', amount: 200, member: member(12).username, date: '2024-01-14', status: 'approved', note: 'Potion supplies for raid' },
+  { id: '3', type: 'item_donate', itemName: 'Dragon Scale', member: member(23).username, date: '2024-01-13', status: 'completed' },
+  { id: '4', type: 'contribute', amount: 1000, member: member(1).username, date: '2024-01-12', status: 'completed', note: 'Initial guild fund' },
+  { id: '5', type: 'request', amount: 350, member: member(31).username, date: '2024-01-16', status: 'pending', note: 'Enchanting materials' },
+  { id: '6', type: 'item_distribute', itemName: 'Ancient Sword', member: member(40).username, date: '2024-01-11', status: 'completed', note: 'Distributed by admin' },
 ];
 
 export const mockGuildItems: GuildBankItem[] = [
@@ -520,7 +526,7 @@ export const mockGuildItems: GuildBankItem[] = [
     description: 'A durable scale from a defeated dragon. Used for crafting high-tier armor.',
     category: ItemCategory.MATERIAL,
     rarity: ItemRarity.RARE,
-    donatedBy: 'Warrior123',
+    donatedBy: member(23).username,
     donatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     quantity: 5,
   },
@@ -530,7 +536,7 @@ export const mockGuildItems: GuildBankItem[] = [
     description: 'Grants a powerful temporary boost to physical abilities.',
     category: ItemCategory.CONSUMABLE,
     rarity: ItemRarity.UNCOMMON,
-    donatedBy: 'GuildMaster',
+    donatedBy: member(1).username,
     donatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     quantity: 12,
   },
@@ -540,7 +546,7 @@ export const mockGuildItems: GuildBankItem[] = [
     description: 'An ancient spellbook containing forgotten knowledge of arcane arts.',
     category: ItemCategory.SKILL_SCROLL,
     rarity: ItemRarity.EPIC,
-    donatedBy: 'Enchanter',
+    donatedBy: member(31).username,
     donatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
     quantity: 1,
   },
@@ -550,7 +556,7 @@ export const mockGuildItems: GuildBankItem[] = [
     description: 'A bulk bundle of iron ore for crafting basic equipment.',
     category: ItemCategory.MATERIAL,
     rarity: ItemRarity.COMMON,
-    donatedBy: 'Blacksmith',
+    donatedBy: member(40).username,
     donatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     quantity: 50,
   },
