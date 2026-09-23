@@ -5,10 +5,12 @@ import { Button, Modal, Input, TextArea, TextField, Label, Description, DatePick
 import type { DateValue } from '@internationalized/date';
 import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
 import { CheckinCard } from './CheckinCard';
-import { CheckinStatus, CheckinEntry, mockCheckins } from './data';
+import type { CheckinEntry } from '@/types/checkin';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/guma';
+import { useCurrentGuildId } from '@/lib/current-guild';
 
 const DRAFT_KEY = 'checkin_draft';
 
@@ -35,8 +37,16 @@ const emptyDraft: CheckinDraft = {
 export default function CheckinPage() {
   const t = useTranslations('checkIn');
   const router = useRouter();
+  const guildId = useCurrentGuildId();
 
-  const [checkins, setCheckins] = React.useState<CheckinEntry[]>(mockCheckins);
+  const [checkins, setCheckins] = React.useState<CheckinEntry[]>([]);
+  const refetchCheckins = React.useCallback(() => {
+    apiClient.listCheckins(guildId).then(setCheckins).catch(() => {});
+  }, [guildId]);
+  React.useEffect(() => {
+    refetchCheckins();
+  }, [refetchCheckins]);
+
   const [draft, setDraft] = React.useState<CheckinDraft>(emptyDraft);
 
   const draftTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,23 +70,24 @@ export default function CheckinPage() {
     updateDraft({ lootList: draft.lootList.filter((_, i) => i !== idx) });
   };
 
-  const handleNewSubmit = () => {
-    if (!draft.title.trim()) return;
-    const newEntry: CheckinEntry = {
-      id: `ci-${Date.now()}`,
-      status: CheckinStatus.OPEN,
-      date: draft.datetime
-        ? new Date(draft.datetime).toLocaleString()
-        : new Date().toLocaleString(),
-      description: draft.title,
-      expireTime: draft.expireTime ? new Date(draft.expireTime).toISOString() : undefined,
-      attendanceList: [],
-      lootList: draft.lootList.map((name, i) => ({ id: `l-${Date.now()}-${i}`, name })),
-      imageUrl: draft.imageUrl || undefined,
-    };
-    setCheckins(prev => [newEntry, ...prev]);
-    setDraft(emptyDraft);
-    localStorage.removeItem(DRAFT_KEY);
+  const handleNewSubmit = async () => {
+    if (!draft.title.trim() || !draft.datetime || !draft.expireTime) return;
+    if (new Date(draft.expireTime) <= new Date(draft.datetime)) return;
+    try {
+      await apiClient.createCheckin(guildId, {
+        title: draft.title,
+        description: draft.description || undefined,
+        datetime: draft.datetime,
+        expireTime: draft.expireTime,
+        imageUrl: draft.imageUrl || undefined,
+        lootList: draft.lootList.map(name => ({ name })),
+      });
+      refetchCheckins();
+      setDraft(emptyDraft);
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleNewCancel = () => {
@@ -127,6 +138,7 @@ export default function CheckinPage() {
                       />
                     </TextField>
                     <DatePicker
+                      isRequired
                       granularity="minute"
                       hourCycle={24}
                       value={draft.datetime ? parseAbsoluteToLocal(new Date(draft.datetime).toISOString()) : null}
@@ -172,6 +184,7 @@ export default function CheckinPage() {
                       </DatePicker.Popover>
                     </DatePicker>
                     <DatePicker
+                      isRequired
                       granularity="minute"
                       hourCycle={24}
                       value={draft.expireTime ? parseAbsoluteToLocal(new Date(draft.expireTime).toISOString()) : null}
@@ -291,7 +304,12 @@ export default function CheckinPage() {
                     variant="primary"
                     slot="close"
                     onPress={handleNewSubmit}
-                    isDisabled={!draft.title.trim()}
+                    isDisabled={
+                      !draft.title.trim() ||
+                      !draft.datetime ||
+                      !draft.expireTime ||
+                      new Date(draft.expireTime) <= new Date(draft.datetime)
+                    }
                   >
                     {t('create')}
                   </Button>
