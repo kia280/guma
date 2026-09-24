@@ -11,6 +11,7 @@ interface UserState {
   status: 'idle' | 'loading' | 'ready' | 'error';
   error: string | null;
   fetchMe: () => Promise<User | null>;
+  setUser: (user: User) => void;
   reset: () => void;
 }
 
@@ -41,6 +42,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       });
     return mePromise;
   },
+  setUser: user => set({ user, status: 'ready', error: null }),
   reset: () => {
     mePromise = null;
     set({ user: null, status: 'idle', error: null });

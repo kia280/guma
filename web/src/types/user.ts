@@ -14,6 +14,13 @@ export interface User {
   updatedAt: string;
 }
 
+export interface UpdateMeRequest {
+  displayName?: string;
+  username?: string;
+  bio?: string;
+  avatarUrl?: string;
+}
+
 /** Simplified user for directory listings and recipient pickers. */
 export interface MockUser {
   id: string;

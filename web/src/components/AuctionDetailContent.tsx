@@ -21,9 +21,7 @@ import { ItemCategory, ItemRarity } from '@/types/item';
 import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
-
-// TODO: read from wallet hook once guild/wallet context is wired.
-const USER_BALANCE = 5000;
+import { useWalletBalance } from '@/hooks/useWalletBalance';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -64,6 +62,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const guildId = useCurrentGuildId();
   const bidModalState = useOverlayState();
   const t = useTranslations('auctionItemPage');
+  const { balance: userBalance, refresh: refreshBalance } = useWalletBalance();
 
   const formatTimeRemaining = (endTime: string) => {
     const diff = new Date(endTime).getTime() - Date.now();
@@ -122,7 +121,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
 
   const isActive = item.status === AuctionStatus.ACTIVE;
   const canBid =
-    isActive && bidAmount >= item.currentBid + item.minBidIncrement && bidAmount <= USER_BALANCE;
+    isActive && bidAmount >= item.currentBid + item.minBidIncrement && bidAmount <= userBalance;
 
   const handlePlaceBid = async () => {
     if (!canBid) return;
@@ -130,6 +129,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     try {
       await apiClient.placeBid(guildId, id, bidAmount);
       refetchItem();
+      refreshBalance();
       bidModalState.close();
     } catch (err) {
       console.error(err);
@@ -431,7 +431,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <span className="type-body">{t('yourBalance')}</span>
               </div>
               <span className="font-semibold text-foreground">
-                ${USER_BALANCE.toLocaleString()}
+                ${userBalance.toLocaleString()}
               </span>
             </div>
           </div>
@@ -478,7 +478,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <div className="flex justify-between type-body">
                     <span className="text-subtle">{t('yourBalance')}</span>
                     <span className="font-medium text-foreground">
-                      ${USER_BALANCE.toLocaleString()}
+                      ${userBalance.toLocaleString()}
                     </span>
                   </div>
                   {item.isBlind && (
@@ -498,7 +498,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     variant="secondary"
                   />
                   <Description>
-                    {bidAmount > USER_BALANCE
+                    {bidAmount > userBalance
                       ? t('insufficientBalance')
                       : bidAmount < item.currentBid + item.minBidIncrement
                         ? `${t('minimumBidIs')}${(item.currentBid + item.minBidIncrement).toLocaleString()}`

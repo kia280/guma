@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import {
   Card,
   Button,
@@ -252,7 +253,12 @@ export default function GuildsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {guilds.map(guild => (
-            <GuildCard key={guild.id} guild={guild} onJoin={() => handleJoinGuild(guild.id)} />
+            <GuildCard
+              key={guild.id}
+              guild={guild}
+              onJoin={() => handleJoinGuild(guild.id)}
+              isUserMember={guild.id === currentGuild?.id}
+            />
           ))}
         </div>
       )}
@@ -276,6 +282,7 @@ interface GuildCardProps {
 
 function GuildCard({ guild, onJoin, isUserMember = false }: GuildCardProps) {
   const t = useTranslations('guildsPage');
+  const router = useRouter();
 
   return (
     <Card className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors">
@@ -322,7 +329,7 @@ function GuildCard({ guild, onJoin, isUserMember = false }: GuildCardProps) {
 
         <div className="flex gap-2">
           {isUserMember ? (
-            <Button variant="secondary" className="flex-1">
+            <Button variant="secondary" className="flex-1" onPress={() => router.push('/dashboard/admin')}>
               <Icon icon="solar:settings-linear" width={16} />
               {t('manage')}
             </Button>

@@ -23,6 +23,7 @@ import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import type { MockUser } from '@/types/user';
 import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
+import type { Guild } from '@/types/guild';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -99,12 +100,36 @@ export default function AdminPage() {
   const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
   const [mockActivity, setMockActivity] = React.useState<AdminActivity[]>([]);
   const [announcements, setAnnouncements] = React.useState<AdminAnnouncement[]>([]);
+  const [guild, setGuild] = React.useState<Guild | null>(null);
+  const [isEditingName, setIsEditingName] = React.useState(false);
+  const [guildNameDraft, setGuildNameDraft] = React.useState('');
+  const [isSavingName, setIsSavingName] = React.useState(false);
+
+  const startEditingName = () => {
+    setGuildNameDraft(guild?.name ?? '');
+    setIsEditingName(true);
+  };
+
+  const saveGuildName = async () => {
+    const name = guildNameDraft.trim();
+    if (!guild || !name) return;
+    setIsSavingName(true);
+    try {
+      setGuild(await apiClient.updateGuild(guild.id, { name }));
+      setIsEditingName(false);
+    } catch (err) {
+      console.error('Failed to update guild name', err);
+    } finally {
+      setIsSavingName(false);
+    }
+  };
 
   React.useEffect(() => {
     let cancelled = false;
     apiClient.listMembers(guildId).then(d => { if (!cancelled) setMockUsers(d); }).catch(() => {});
     apiClient.getAdminActivity().then(d => { if (!cancelled) setMockActivity(d); }).catch(() => {});
     apiClient.getAdminAnnouncements().then(d => { if (!cancelled) setAnnouncements(d); }).catch(() => {});
+    apiClient.getCurrentGuild().then(d => { if (!cancelled) setGuild(d); }).catch(() => {});
     return () => { cancelled = true; };
   }, [guildId]);
 
@@ -315,21 +340,50 @@ export default function AdminPage() {
               </Card.Header>
               <Card.Content className="pt-0">
                 <div className="space-y-3">
-                  {[
-                    { label: t('guildName'), value: 'Sunbaby Guild', editable: true },
-                    { label: t('recruitment'), value: 'Open', editable: false },
-                    { label: t('serverRegion'), value: 'Asia Pacific', editable: false },
-                  ].map(setting => (
-                    <div key={setting.label} className="flex items-center justify-between py-2">
-                      <div>
-                        <p className="type-body text-subtle">{setting.label}</p>
-                        <p className="type-body font-medium text-foreground">{setting.value}</p>
-                      </div>
-                      {setting.editable && (
-                        <Button size="sm" variant="secondary">
+                  <div className="flex items-center justify-between gap-3 py-2">
+                    {isEditingName ? (
+                      <form
+                        className="flex flex-1 flex-wrap items-end gap-2"
+                        onSubmit={event => {
+                          event.preventDefault();
+                          saveGuildName();
+                        }}
+                      >
+                        <TextField className="flex-1 min-w-48" isRequired>
+                          <Label>{t('guildName')}</Label>
+                          <Input
+                            variant="secondary"
+                            value={guildNameDraft}
+                            onChange={event => setGuildNameDraft(event.target.value)}
+                            autoFocus
+                          />
+                        </TextField>
+                        <Button size="sm" variant="secondary" onPress={() => setIsEditingName(false)}>
+                          {t('cancel')}
+                        </Button>
+                        <Button size="sm" type="submit" isPending={isSavingName} isDisabled={!guildNameDraft.trim()}>
+                          {t('save')}
+                        </Button>
+                      </form>
+                    ) : (
+                      <>
+                        <div className="min-w-0">
+                          <p className="type-body text-subtle">{t('guildName')}</p>
+                          <p className="type-body font-medium text-foreground truncate">{guild?.name ?? '—'}</p>
+                        </div>
+                        <Button size="sm" variant="secondary" isDisabled={!guild} onPress={startEditingName}>
                           {t('edit')}
                         </Button>
-                      )}
+                      </>
+                    )}
+                  </div>
+                  {[
+                    { label: t('recruitment'), value: 'Open' },
+                    { label: t('serverRegion'), value: 'Asia Pacific' },
+                  ].map(setting => (
+                    <div key={setting.label} className="py-2">
+                      <p className="type-body text-subtle">{setting.label}</p>
+                      <p className="type-body font-medium text-foreground">{setting.value}</p>
                     </div>
                   ))}
                 </div>
