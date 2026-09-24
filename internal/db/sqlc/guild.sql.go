@@ -249,6 +249,22 @@ func (q *Queries) GetGuildSettings(ctx context.Context, id uuid.UUID) (GetGuildS
 	return i, err
 }
 
+const getOldestGuild = `-- name: GetOldestGuild :one
+SELECT id, name FROM guilds ORDER BY created_at ASC LIMIT 1
+`
+
+type GetOldestGuildRow struct {
+	ID   uuid.UUID
+	Name string
+}
+
+func (q *Queries) GetOldestGuild(ctx context.Context) (GetOldestGuildRow, error) {
+	row := q.db.QueryRow(ctx, getOldestGuild)
+	var i GetOldestGuildRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const getSingletonGuildID = `-- name: GetSingletonGuildID :one
 SELECT id FROM guilds
 WHERE (SELECT COUNT(*) FROM guilds) = 1
@@ -332,6 +348,68 @@ type InsertGuildMemberParams struct {
 func (q *Queries) InsertGuildMember(ctx context.Context, arg InsertGuildMemberParams) error {
 	_, err := q.db.Exec(ctx, insertGuildMember, arg.UserID, arg.GuildID, arg.Role)
 	return err
+}
+
+const listGuildMemberUsers = `-- name: ListGuildMemberUsers :many
+SELECT u.id, u.email, u.username,
+       COALESCE(u.display_name, '') AS display_name,
+       COALESCE(u.avatar_url, '')   AS avatar_url,
+       u.created_at,
+       m.role
+FROM members m
+JOIN users u ON u.id = m.user_id
+WHERE m.guild_id = $1
+ORDER BY CASE m.role
+             WHEN 'owner' THEN 0
+             WHEN 'admin' THEN 1
+             WHEN 'moderator' THEN 2
+             ELSE 3
+         END,
+         m.joined_at ASC
+LIMIT $2::int
+`
+
+type ListGuildMemberUsersParams struct {
+	GuildID uuid.UUID
+	MaxRows int32
+}
+
+type ListGuildMemberUsersRow struct {
+	ID          uuid.UUID
+	Email       string
+	Username    string
+	DisplayName string
+	AvatarUrl   string
+	CreatedAt   time.Time
+	Role        string
+}
+
+func (q *Queries) ListGuildMemberUsers(ctx context.Context, arg ListGuildMemberUsersParams) ([]ListGuildMemberUsersRow, error) {
+	rows, err := q.db.Query(ctx, listGuildMemberUsers, arg.GuildID, arg.MaxRows)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListGuildMemberUsersRow{}
+	for rows.Next() {
+		var i ListGuildMemberUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Email,
+			&i.Username,
+			&i.DisplayName,
+			&i.AvatarUrl,
+			&i.CreatedAt,
+			&i.Role,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listGuilds = `-- name: ListGuilds :many

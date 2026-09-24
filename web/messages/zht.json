@@ -748,6 +748,19 @@
         "name": "Plus Jakarta Sans + 昭源黑體 HK",
         "description": "現代幾何風格,部分字形採香港寫法"
       }
+    },
+    "seedMembers": "建立種子成員",
+    "seedDescription": "在 {guild} 加入隨機命名的測試成員,每第 10 位會設為幹部。",
+    "seedCount": "成員數量",
+    "seed": "建立",
+    "seeded": "已加入 {count} 位成員。",
+    "guildMembers": "{guild} 的成員",
+    "allUsers": "尚無公會,顯示所有使用者",
+    "roles": {
+      "owner": "會長",
+      "admin": "管理員",
+      "moderator": "幹部",
+      "member": "成員"
     }
   },
   "lotteryDetail": {

@@ -7,6 +7,7 @@ import {
   Description,
   Input,
   Label,
+  NumberField,
   SearchField,
   Spinner,
   Switch,
@@ -22,12 +23,24 @@ import {
   devLogout,
   getDevSession,
   listDevUsers,
+  seedDevMembers,
+  type DevGuild,
   type DevUser,
 } from '@/lib/dev-auth';
 import { isDevMockEnabled, setDevMockEnabled } from '@/lib/dev-mock';
 import { env } from '@/lib/env';
 
 const AFTER_LOGIN_PATH = '/dashboard';
+const DEFAULT_SEED_COUNT = 20;
+const MAX_SEED_COUNT = 200;
+const ROLES = ['owner', 'admin', 'moderator', 'member'] as const;
+
+const ROLE_COLOR: Record<string, 'accent' | 'danger' | 'warning' | 'default'> = {
+  owner: 'accent',
+  admin: 'danger',
+  moderator: 'warning',
+  member: 'default',
+};
 
 function initials(user: DevUser): string {
   const source = user.displayName || user.username || user.email;
@@ -38,6 +51,9 @@ export function DevAuthPanel() {
   const t = useTranslations('devTools');
   const [current, setCurrent] = useState<DevUser | null>(null);
   const [users, setUsers] = useState<DevUser[]>([]);
+  const [guild, setGuild] = useState<DevGuild | null>(null);
+  const [seedCount, setSeedCount] = useState(DEFAULT_SEED_COUNT);
+  const [seedResult, setSeedResult] = useState<number | null>(null);
   const [query, setQuery] = useState('');
   const [newName, setNewName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -51,7 +67,8 @@ export function DevAuthPanel() {
     try {
       const [session, list] = await Promise.all([getDevSession(), listDevUsers()]);
       setCurrent(session);
-      setUsers(list);
+      setGuild(list.guild);
+      setUsers(list.users);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -93,6 +110,24 @@ export function DevAuthPanel() {
       await createDevUser(newName, true);
       window.location.assign(AFTER_LOGIN_PATH);
     });
+
+  const seedMembers = async () => {
+    setPendingAction('seed');
+    setError(null);
+    setSeedResult(null);
+    try {
+      const { users: seeded } = await seedDevMembers(seedCount);
+      setSeedResult(seeded.length);
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const roleLabel = (role: string) =>
+    (ROLES as readonly string[]).includes(role) ? t(`roles.${role as (typeof ROLES)[number]}`) : role;
 
   const toggleMock = (enabled: boolean) => {
     setDevMockEnabled(enabled);
@@ -174,9 +209,58 @@ export function DevAuthPanel() {
         </form>
       </section>
 
+      {guild && (
+        <section className="flex flex-col gap-2 rounded-xl border border-divider bg-surface p-3">
+          <h3 className="type-subheading text-soft">{t('seedMembers')}</h3>
+          <p className="type-caption text-hint">{t('seedDescription', { guild: guild.name })}</p>
+          <form
+            className="flex items-end gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void seedMembers();
+            }}
+          >
+            <NumberField
+              className="flex-1"
+              minValue={1}
+              maxValue={MAX_SEED_COUNT}
+              value={seedCount}
+              onChange={(value) => setSeedCount(Number.isFinite(value) ? value : 1)}
+            >
+              <Label>{t('seedCount')}</Label>
+              <NumberField.Group>
+                <NumberField.DecrementButton />
+                <NumberField.Input className="w-full min-w-0" />
+                <NumberField.IncrementButton />
+              </NumberField.Group>
+            </NumberField>
+            <Button
+              type="submit"
+              size="sm"
+              variant="secondary"
+              isPending={pendingAction === 'seed'}
+              isDisabled={pendingAction !== null && pendingAction !== 'seed'}
+            >
+              <Icon icon="solar:users-group-rounded-linear" width={16} />
+              {t('seed')}
+            </Button>
+          </form>
+          {seedResult !== null && (
+            <p role="status" className="type-caption text-success">
+              {t('seeded', { count: seedResult })}
+            </p>
+          )}
+        </section>
+      )}
+
       <section className="flex min-h-0 flex-col gap-2 rounded-xl border border-divider bg-surface p-3">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="type-subheading text-soft">{t('loginAs')}</h3>
+          <div className="min-w-0">
+            <h3 className="type-subheading text-soft">{t('loginAs')}</h3>
+            <p className="truncate type-caption text-hint">
+              {guild ? t('guildMembers', { guild: guild.name }) : t('allUsers')}
+            </p>
+          </div>
           <Chip size="sm">{t('userCount', { count: users.length })}</Chip>
         </div>
         <SearchField value={query} onChange={setQuery} aria-label={t('search')}>
@@ -208,7 +292,14 @@ export function DevAuthPanel() {
                       <Avatar.Fallback>{initials(user)}</Avatar.Fallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="truncate type-body font-medium">{user.displayName || user.username}</p>
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <p className="truncate type-body font-medium">{user.displayName || user.username}</p>
+                        {user.role && user.role !== 'member' && (
+                          <Chip size="sm" variant="secondary" color={ROLE_COLOR[user.role] ?? 'default'} className="shrink-0">
+                            {roleLabel(user.role)}
+                          </Chip>
+                        )}
+                      </div>
                       <p className="truncate type-caption text-hint">{user.email}</p>
                     </div>
                   </div>
