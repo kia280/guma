@@ -320,7 +320,68 @@
       "moderator": "幹部",
       "member": "成員"
     },
-    "bankRequests": "金庫申請"
+    "bankRequests": "金庫申請",
+    "rolePermissions": "角色權限"
+  },
+  "adminRolesPage": {
+    "title": "角色權限",
+    "subtitle": "會長、管理員、幹部與成員在公會中可執行的操作。",
+    "action": "操作",
+    "allowed": "允許",
+    "notAllowed": "不允許",
+    "roleSummaries": {
+      "owner": "公會建立者，擁有管理員的所有權限，也是唯一可以刪除公會的角色。",
+      "admin": "管理公會：編輯設定、舉辦抽獎並取消拍賣。",
+      "moderator": "協助日常運作：建立簽到並審核公會銀行申請。",
+      "member": "參與公會活動：簽到、拍賣、抽獎與公會銀行。"
+    },
+    "sections": {
+      "guild": {
+        "title": "公會",
+        "description": "公會資訊、設定與成員身分"
+      },
+      "checkin": {
+        "title": "簽到",
+        "description": "公會活動的出席紀錄"
+      },
+      "bank": {
+        "title": "公會銀行",
+        "description": "公會共用的資金與物品"
+      },
+      "auction": {
+        "title": "拍賣",
+        "description": "物品拍賣與出價"
+      },
+      "lottery": {
+        "title": "抽獎",
+        "description": "抽獎與開獎"
+      },
+      "wallet": {
+        "title": "錢包與背包",
+        "description": "個人的資金與物品"
+      }
+    },
+    "actions": {
+      "viewGuild": "查看公會資訊與設定",
+      "viewMembers": "查看成員名單",
+      "editGuild": "編輯公會資訊與設定",
+      "deleteGuild": "刪除公會",
+      "leaveGuild": "退出公會",
+      "attendCheckin": "查看簽到並登記出席",
+      "createCheckin": "建立簽到",
+      "contribute": "捐獻資金與物品",
+      "requestFromBank": "申請資金或物品",
+      "reviewRequests": "核准或駁回資金與物品申請",
+      "createAuction": "建立拍賣",
+      "placeBid": "出價",
+      "cancelAuction": "取消拍賣",
+      "buyTickets": "購買抽獎券",
+      "createLottery": "建立抽獎",
+      "drawLottery": "開獎",
+      "changeDrawDate": "變更開獎日期",
+      "manageWallet": "管理自己的錢包與背包"
+    },
+    "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。"
   },
   "guildBankPage": {
     "treasury": "公會金庫",

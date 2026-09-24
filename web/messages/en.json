@@ -320,7 +320,68 @@
       "moderator": "Moderator",
       "member": "Member"
     },
-    "bankRequests": "Bank requests"
+    "bankRequests": "Bank requests",
+    "rolePermissions": "Role permissions"
+  },
+  "adminRolesPage": {
+    "title": "Role permissions",
+    "subtitle": "What owners, admins, moderators, and members can do in this guild.",
+    "action": "Action",
+    "allowed": "Allowed",
+    "notAllowed": "Not allowed",
+    "roleSummaries": {
+      "owner": "Created the guild. Has every admin permission and is the only role that can delete the guild.",
+      "admin": "Manages the guild: edits settings, runs lotteries, and cancels auctions.",
+      "moderator": "Helps run day-to-day activities: creates check-ins and reviews guild bank requests.",
+      "member": "Takes part in guild activities: check-ins, auctions, lotteries, and the guild bank."
+    },
+    "sections": {
+      "guild": {
+        "title": "Guild",
+        "description": "Guild information, settings, and membership"
+      },
+      "checkin": {
+        "title": "Check-ins",
+        "description": "Attendance tracking for guild activities"
+      },
+      "bank": {
+        "title": "Guild bank",
+        "description": "Shared funds and items"
+      },
+      "auction": {
+        "title": "Auctions",
+        "description": "Item auctions and bidding"
+      },
+      "lottery": {
+        "title": "Lotteries",
+        "description": "Lotteries and prize draws"
+      },
+      "wallet": {
+        "title": "Wallet and backpack",
+        "description": "Personal funds and items"
+      }
+    },
+    "actions": {
+      "viewGuild": "View guild information and settings",
+      "viewMembers": "View the member list",
+      "editGuild": "Edit guild information and settings",
+      "deleteGuild": "Delete the guild",
+      "leaveGuild": "Leave the guild",
+      "attendCheckin": "View check-ins and record attendance",
+      "createCheckin": "Create check-ins",
+      "contribute": "Contribute funds and donate items",
+      "requestFromBank": "Request funds or items",
+      "reviewRequests": "Approve or reject fund and item requests",
+      "createAuction": "Create auctions",
+      "placeBid": "Place bids",
+      "cancelAuction": "Cancel auctions",
+      "buyTickets": "Buy lottery tickets",
+      "createLottery": "Create lotteries",
+      "drawLottery": "Draw lottery winners",
+      "changeDrawDate": "Change the draw date",
+      "manageWallet": "Manage their own wallet and backpack"
+    },
+    "ownerLeaveNote": "The owner must transfer ownership before leaving the guild."
   },
   "guildBankPage": {
     "treasury": "Guild Treasury",
