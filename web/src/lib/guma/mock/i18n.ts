@@ -26,6 +26,7 @@ const ZHT_TEXT: Record<string, string> = {
   'Weekly Mini Draw': '每週小抽獎',
   'Grand Guild Lottery': '公會大樂透',
   'Legendary Item Raffle': '傳說物品抽獎',
+  'Flash Draw': '限時快速抽獎',
 
   'Spider Queen': '蜘蛛女王',
   'Flame Dragon': '炎龍',

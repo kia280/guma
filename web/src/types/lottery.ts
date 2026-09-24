@@ -8,6 +8,12 @@ export interface LotteryWinner {
   prize: string;
 }
 
+export interface LotteryParticipant {
+  id: string;
+  username: string;
+  tickets: number;
+}
+
 export interface Lottery {
   id: string;
   title: string;
@@ -18,6 +24,7 @@ export interface Lottery {
   maxTickets: number;
   status: LotteryStatus;
   winners?: LotteryWinner[];
+  participants?: LotteryParticipant[];
 }
 
 export interface LotteryTicket {
