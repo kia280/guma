@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import {
   Tabs,
   Card,
@@ -187,6 +188,15 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <Link
+          href="/dashboard/admin/roles"
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 type-body text-accent transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          <Icon icon="solar:shield-check-linear" width={16} aria-hidden />
+          {t('rolePermissions')}
+        </Link>
+      </div>
       <Tabs aria-label="Admin sections">
         <Tabs.ListContainer>
           <Tabs.List>
