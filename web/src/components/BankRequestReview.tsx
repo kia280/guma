@@ -18,6 +18,7 @@ import { Icon } from '@iconify/react';
 import { useFormatter, useTranslations } from 'next-intl';
 
 import { ItemThumbnail, getRarityColor } from '@/components/ItemThumbnail';
+import { useLiveResource } from '@/hooks/useLiveResource';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import type { FundRequest, ItemRequest, RequestStatus, ReviewDecision } from '@/types/guild-bank';
@@ -151,29 +152,46 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [reviewError, setReviewError] = React.useState<string | null>(null);
 
-  const load = React.useCallback(async () => {
-    setIsLoading(true);
-    setLoadFailed(false);
+  const latestLoad = React.useRef(0);
+  const foregroundPending = React.useRef(false);
+
+  const load = React.useCallback(async ({ background = false }: { background?: boolean } = {}) => {
+    const loadId = ++latestLoad.current;
+    const foreground = !background || foregroundPending.current;
+    foregroundPending.current = foreground;
+    if (!background) {
+      setIsLoading(true);
+      setLoadFailed(false);
+    }
     const status = view === 'pending' ? 'pending' : undefined;
     try {
       const [funds, items] = await Promise.all([
         apiClient.listFundRequests(guildId, status),
         apiClient.listItemRequests(guildId, status),
       ]);
+      if (loadId !== latestLoad.current) return;
       const visible = <T extends { status: RequestStatus }>(list: T[]) =>
         view === 'pending' ? list : list.filter(r => r.status !== 'pending');
       setFundRequests(visible(funds));
       setItemRequests(visible(items));
+      setLoadFailed(false);
     } catch {
-      setLoadFailed(true);
+      if (loadId === latestLoad.current && foreground) setLoadFailed(true);
     } finally {
-      setIsLoading(false);
+      if (loadId === latestLoad.current) {
+        foregroundPending.current = false;
+        setIsLoading(false);
+      }
     }
   }, [guildId, view]);
+
+  const refresh = React.useCallback(() => load({ background: true }), [load]);
 
   React.useEffect(() => {
     load();
   }, [load]);
+
+  useLiveResource(['bank'], refresh, { guildId });
 
   const openReview = (next: ReviewTarget) => {
     setTarget(next);
@@ -194,10 +212,10 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
         await apiClient.reviewItemRequest(guildId, target.request.id, target.decision, trimmed);
       }
       reviewModal.close();
-      load();
+      refresh();
     } catch (err) {
       setReviewError(t(reviewErrorKey(err)));
-      if (apiErrorCode(err) !== GrpcCode.PermissionDenied) load();
+      if (apiErrorCode(err) !== GrpcCode.PermissionDenied) refresh();
     } finally {
       setIsSubmitting(false);
     }
@@ -236,7 +254,7 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
           <Alert.Content>
             <Alert.Title>{t('loadFailed')}</Alert.Title>
           </Alert.Content>
-          <Button size="sm" variant="secondary" onPress={load}>
+          <Button size="sm" variant="secondary" onPress={() => load()}>
             {t('retry')}
           </Button>
         </Alert>

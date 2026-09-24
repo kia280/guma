@@ -22,6 +22,7 @@ import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/Ite
 import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-bank';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { useLiveResource } from '@/hooks/useLiveResource';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 
 
@@ -74,15 +75,23 @@ export default function GuildBankPage() {
   const [mockContributions, setMockContributions] = React.useState<GuildContribution[]>([]);
   const [mockGuildItems, setMockGuildItems] = React.useState<GuildBankItem[]>([]);
 
+  const latestRefetch = React.useRef(0);
+
   const refetchBank = React.useCallback(() => {
-    apiClient.getGuildBank(guildId).then(setBank).catch(() => {});
-    apiClient.listContributions(guildId).then(setMockContributions).catch(() => {});
-    apiClient.listBankItems(guildId).then(setMockGuildItems).catch(() => {});
+    const refetchId = ++latestRefetch.current;
+    const ifLatest = <T,>(apply: (value: T) => void) => (value: T) => {
+      if (refetchId === latestRefetch.current) apply(value);
+    };
+    apiClient.getGuildBank(guildId).then(ifLatest(setBank)).catch(() => {});
+    apiClient.listContributions(guildId).then(ifLatest(setMockContributions)).catch(() => {});
+    apiClient.listBankItems(guildId).then(ifLatest(setMockGuildItems)).catch(() => {});
   }, [guildId]);
 
   React.useEffect(() => {
     refetchBank();
   }, [refetchBank]);
+
+  useLiveResource(['bank'], refetchBank, { guildId });
 
   const guildBalance = bank?.balance ?? 0;
   const guildFundGoal = bank?.goal || 10000;
