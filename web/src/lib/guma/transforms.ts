@@ -19,6 +19,7 @@ import type {
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
 import type { MockUser, User } from '@/types/user';
+import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -556,4 +557,54 @@ export const toGuildEvent = (raw: ProtoGuildEvent): GuildEvent => ({
   createdBy: raw.created_by ?? '',
   createdAt: ts(raw.created_at),
   updatedAt: ts(raw.updated_at),
+});
+
+// ─── Notification ───────────────────────────────────────────────────────────
+
+type ProtoNotification = {
+  id: string;
+  title?: string;
+  message?: string;
+  type?: string;
+  read?: boolean;
+  created_at?: string;
+  action_url?: string;
+  params?: Record<string, unknown>;
+};
+
+const toNotificationParams = (raw: Record<string, unknown> | undefined): NotificationParams => {
+  const params: NotificationParams = {};
+  Object.entries(raw ?? {}).forEach(([key, value]) => {
+    if (typeof value === 'number' || typeof value === 'string') params[key] = value;
+    else if (typeof value === 'boolean') params[key] = String(value);
+  });
+  return params;
+};
+
+const toInternalHref = (url: string | undefined): string | undefined =>
+  url && url.startsWith('/') && !url.startsWith('//') ? url : undefined;
+
+export const toNotification = (raw: ProtoNotification): GuildNotification => ({
+  id: raw.id,
+  type: raw.type ?? '',
+  title: raw.title ?? '',
+  message: raw.message ?? '',
+  params: toNotificationParams(raw.params),
+  createdAt: ts(raw.created_at),
+  isRead: raw.read ?? false,
+  href: toInternalHref(raw.action_url),
+});
+
+type ProtoNotificationPage = {
+  notifications?: ProtoNotification[];
+  next_page_token?: string;
+  total_count?: number;
+  unread_count?: number;
+};
+
+export const toNotificationPage = (raw: ProtoNotificationPage): NotificationPage => ({
+  notifications: (raw.notifications ?? []).map(toNotification),
+  nextPageToken: raw.next_page_token || undefined,
+  totalCount: Number(raw.total_count ?? 0),
+  unreadCount: Number(raw.unread_count ?? 0),
 });

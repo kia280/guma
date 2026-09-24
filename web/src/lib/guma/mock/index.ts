@@ -24,6 +24,7 @@ import type { GuildEvent } from '@/types/guild-events';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { Transaction, Wallet } from '@/types/wallet';
 import type { AdminAnnouncement } from '@/types/admin';
+import type { GuildNotification } from '@/types/notification';
 import type { ApiClient } from '../types';
 
 
@@ -35,6 +36,7 @@ const store = {
   lotteries: mockData.mockLotteries.map(l => ({ ...l, participants: l.participants?.map(p => ({ ...p })) })) as Lottery[],
   events: [] as GuildEvent[],
   announcements: [...mockData.mockAdminAnnouncements] as AdminAnnouncement[],
+  notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
 };
 
 const currentUser: User = {
@@ -519,6 +521,33 @@ const baseMockApiClient: ApiClient = {
   },
   deleteEvent: async (_guildId, id) => {
     store.events = store.events.filter(e => e.id !== id);
+  },
+
+  // ── Notifications ──
+  listNotifications: async ({ unreadOnly = false, pageSize = 20, pageToken } = {}) => {
+    const matching = unreadOnly ? store.notifications.filter(n => !n.isRead) : store.notifications;
+    const offset = Number(pageToken ?? 0) || 0;
+    const next = offset + pageSize;
+    return {
+      notifications: matching.slice(offset, next).map(n => ({ ...n })),
+      nextPageToken: next < matching.length ? String(next) : undefined,
+      totalCount: matching.length,
+      unreadCount: store.notifications.filter(n => !n.isRead).length,
+    };
+  },
+  getUnreadNotificationCount: async () => store.notifications.filter(n => !n.isRead).length,
+  markNotificationRead: async (id) => {
+    const found = store.notifications.find(n => n.id === id);
+    if (!found) throw new Error('notification not found');
+    found.isRead = true;
+    return { ...found };
+  },
+  markAllNotificationsRead: async () => {
+    const unread = store.notifications.filter(n => !n.isRead);
+    unread.forEach(n => {
+      n.isRead = true;
+    });
+    return unread.length;
   },
 
   // ── Admin ──

@@ -1,39 +1,41 @@
 'use client';
 
 import React from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Button, Popover } from '@heroui/react';
 import { Icon } from '@iconify/react';
 
 import { NotificationsCard } from './NotificationsCard';
-import { mockNotifications } from '@/lib/guma/mock/data';
-import { localizeMock } from '@/lib/guma/mock/i18n';
-import { isLocale } from '@/i18n/locales';
-import type { GuildNotification, TradeResponse } from '@/types/notification';
+import { useNotifications } from '@/hooks/useNotifications';
+
+const MAX_BADGE_COUNT = 99;
 
 export function NotificationBell() {
   const t = useTranslations('notificationsCard');
   const [isOpen, setIsOpen] = React.useState(false);
-  const [notifications, setNotifications] = React.useState<GuildNotification[]>(mockNotifications);
+  const {
+    filter,
+    setFilter,
+    notifications,
+    unreadCount,
+    status,
+    hasMore,
+    isLoadingMore,
+    isMarkingAll,
+    refresh,
+    retry,
+    loadMore,
+    markRead,
+    markAllRead,
+  } = useNotifications();
 
-  const locale = useLocale();
-  const localized = React.useMemo(
-    () => (isLocale(locale) ? localizeMock(notifications, locale) : notifications),
-    [notifications, locale]
-  );
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
-  const markRead = (id: string) =>
-    setNotifications(list => list.map(n => (n.id === id ? { ...n, isRead: true } : n)));
-
-  const respond = (id: string, response: TradeResponse) =>
-    setNotifications(list => list.map(n => (n.id === id ? { ...n, isRead: true, response } : n)));
-
-  const markAllRead = () => setNotifications(list => list.map(n => ({ ...n, isRead: true })));
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) void refresh();
+  };
 
   return (
-    <Popover isOpen={isOpen} onOpenChange={setIsOpen}>
+    <Popover isOpen={isOpen} onOpenChange={handleOpenChange}>
       <Button
         isIconOnly
         size="lg"
@@ -41,20 +43,31 @@ export function NotificationBell() {
         className="rounded-full text-subtle relative overflow-visible"
         variant="ghost"
       >
-        <Icon icon="solar:bell-linear" width={24} />
+        <Icon icon="solar:bell-linear" width={24} aria-hidden />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-0.5 text-danger-foreground text-[11px] font-bold tabular-nums">
-            {unreadCount}
+          <span
+            aria-hidden
+            className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-0.5 text-danger-foreground text-[11px] font-bold tabular-nums"
+          >
+            {unreadCount > MAX_BADGE_COUNT ? `${MAX_BADGE_COUNT}+` : unreadCount}
           </span>
         )}
       </Button>
       <Popover.Content className="w-[min(92vw,400px)] p-0">
-        <Popover.Dialog className="p-0 m-0">
+        <Popover.Dialog className="p-0 m-0" aria-label={t('notifications')}>
           <NotificationsCard
-            notifications={localized}
-            onOpen={markRead}
-            onRespond={respond}
-            onMarkAllRead={markAllRead}
+            notifications={notifications}
+            unreadCount={unreadCount}
+            status={status}
+            filter={filter}
+            hasMore={hasMore}
+            isLoadingMore={isLoadingMore}
+            isMarkingAll={isMarkingAll}
+            onFilterChange={setFilter}
+            onOpen={id => void markRead(id)}
+            onMarkAllRead={() => void markAllRead()}
+            onLoadMore={() => void loadMore()}
+            onRetry={retry}
             onNavigate={() => setIsOpen(false)}
           />
         </Popover.Dialog>

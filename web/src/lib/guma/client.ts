@@ -9,7 +9,7 @@ import type { ApiClient } from './types';
 import type { UserStats } from '@/types/user';
 import type { Guild } from '@/types/guild';
 import type { AdminAnnouncement } from '@/types/admin';
-import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toTransaction, toUser, toWallet } from './transforms';
+import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
 
 const http: AxiosInstance = axios.create({
   baseURL: env.api.url,
@@ -412,6 +412,30 @@ export const gumaApiClient: ApiClient = {
   },
   deleteEvent: async (guildId, id) => {
     await http.delete(`/v1/guilds/${guildId}/events/${id}`);
+  },
+
+  // ── Notifications ──
+  listNotifications: async (options = {}) => {
+    const { data } = await http.get('/v1/me/notifications', {
+      params: {
+        unread_only: options.unreadOnly || undefined,
+        page_size: options.pageSize,
+        page_token: options.pageToken,
+      },
+    });
+    return toNotificationPage(data);
+  },
+  getUnreadNotificationCount: async () => {
+    const { data } = await http.get('/v1/me/notifications/unread-count');
+    return Number(data.unread_count ?? 0);
+  },
+  markNotificationRead: async (id) => {
+    const { data } = await http.post(`/v1/me/notifications/${id}/read`, {});
+    return toNotification(data.notification);
+  },
+  markAllNotificationsRead: async () => {
+    const { data } = await http.post('/v1/me/notifications/read-all', {});
+    return Number(data.updated_count ?? 0);
   },
 
   // ── Admin ──

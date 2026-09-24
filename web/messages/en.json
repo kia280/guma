@@ -363,7 +363,11 @@
     "noNotifications": "No notifications yet.",
     "allCaughtUp": "You're all caught up.",
     "settings": "Notification settings",
-    "bellLabel": "{count, plural, =0 {Notifications} one {Notifications, # unread} other {Notifications, # unread}}"
+    "bellLabel": "{count, plural, =0 {Notifications} one {Notifications, # unread} other {Notifications, # unread}}",
+    "loading": "Loading notifications",
+    "loadError": "Couldn't load notifications.",
+    "retry": "Try again",
+    "loadMore": "Load more"
   },
   "createAuctionModal": {
     "createNewAuction": "Create New Auction",
@@ -505,19 +509,17 @@
     "DarkTheme": "Dark Theme"
   },
   "notificationItem": {
-    "accept": "Accept",
-    "decline": "Decline",
-    "accepted": "You accepted this trade.",
-    "declined": "You declined this trade.",
     "unread": "Unread",
-    "tradeOffer": "<b>{actor}</b> proposed a trade: {give} for your {want}",
-    "transferReceived": "<b>{actor}</b> sent you <b>${amount, number}</b>",
-    "attendanceSettled": "Attendance for <b>{event}</b> has closed. You earned <b>${reward, number}</b>",
-    "lootWon": "You received <b>{item} ×{quantity}</b> from <b>{event}</b>",
+    "note": "Note: {note}",
+    "reason": "Reason: {reason}",
+    "fundRequestApproved": "<b>{actor}</b> approved your guild bank request for <b>${amount, number}</b>",
+    "fundRequestRejected": "<b>{actor}</b> rejected your guild bank request for <b>${amount, number}</b>",
+    "itemRequestApproved": "<b>{actor}</b> approved your request for <b>{item}</b>",
+    "itemRequestRejected": "<b>{actor}</b> rejected your request for <b>{item}</b>",
+    "fundRequestSubmitted": "<b>{actor}</b> requested <b>${amount, number}</b> from the guild bank",
+    "itemRequestSubmitted": "<b>{actor}</b> requested <b>{item}</b> from the guild bank",
     "auctionOutbid": "<b>{actor}</b> outbid you on <b>{item}</b> with ${amount, number}",
-    "auctionWon": "You won <b>{item}</b> for ${amount, number}",
-    "lotteryWon": "You won <b>{prize}</b> in <b>{lottery}</b>",
-    "bankRequestApproved": "<b>{actor}</b> approved your guild bank request for ${amount, number}"
+    "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {${amount, number}}}</b>"
   },
   "profilePage": {
     "title": "Personal Information",
