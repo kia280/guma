@@ -1,23 +1,15 @@
 'use client';
 
 import React from 'react';
-import { apiClient } from '@/lib/guma';
-import { useCurrentGuildId } from '@/lib/current-guild';
+import { useUserStore } from '@/lib/store';
 
 export function useWalletBalance() {
-  const guildId = useCurrentGuildId();
-  const [balance, setBalance] = React.useState(0);
+  const balance = useUserStore(s => s.user?.balance ?? 0);
+  const refreshMe = useUserStore(s => s.refreshMe);
 
   const refresh = React.useCallback(() => {
-    apiClient
-      .getWallet(guildId)
-      .then(wallet => setBalance(wallet.balance))
-      .catch(() => setBalance(0));
-  }, [guildId]);
-
-  React.useEffect(() => {
-    refresh();
-  }, [refresh]);
+    void refreshMe();
+  }, [refreshMe]);
 
   return { balance, refresh };
 }
