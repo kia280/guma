@@ -869,6 +869,7 @@
       "pending": "Pending",
       "approved": "Approved",
       "rejected": "Rejected"
-    }
+    },
+    "ownRequest": "Your request"
   }
 }
