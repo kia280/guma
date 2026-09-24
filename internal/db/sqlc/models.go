@@ -254,6 +254,7 @@ type Notification struct {
 	Read      bool
 	ActionUrl pgtype.Text
 	CreatedAt time.Time
+	Params    []byte
 }
 
 type Transaction struct {
