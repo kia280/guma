@@ -137,9 +137,9 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-5 h-full">
       {/* Header */}
-      <div className="flex justify-end">
+      <div className="flex justify-end shrink-0">
         <Button variant="primary" onPress={handleCreateEvent}>
           <Icon icon="solar:add-circle-linear" width={16} />
           {t('createEvent')}
@@ -147,15 +147,17 @@ export default function CalendarPage() {
       </div>
 
       {/* Calendar */}
-      <GuildCalendar
-        events={events}
-        currentDate={calendarView.currentDate}
-        view={calendarView.view}
-        onDateChange={setCalendarDate}
-        onViewChange={setViewType}
-        onNavigate={navigateCalendar}
-        onEventClick={handleEventClick}
-      />
+      <div className="flex-1 min-h-0">
+        <GuildCalendar
+          events={events}
+          currentDate={calendarView.currentDate}
+          view={calendarView.view}
+          onDateChange={setCalendarDate}
+          onViewChange={setViewType}
+          onNavigate={navigateCalendar}
+          onEventClick={handleEventClick}
+        />
+      </div>
 
       {/* Event Form Modal */}
       <EventFormModal

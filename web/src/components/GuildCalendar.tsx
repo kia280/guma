@@ -225,7 +225,10 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     const today = new Date();
 
     return (
-      <div className="grid grid-cols-7 gap-1">
+      <div
+        className="grid grid-cols-7 gap-1 h-full"
+        style={{ gridTemplateRows: `auto repeat(${days.length / 7}, minmax(80px, 1fr))` }}
+      >
         {(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const).map(day => (
           <div key={day} className="p-2 text-center type-label text-hint">
             {t(day)}
@@ -245,14 +248,14 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               onKeyDown={e => e.key === 'Enter' && handleDateClick(day)}
               role="button"
               tabIndex={0}
-              className={`cursor-pointer
+              className={`cursor-pointer h-full
                 min-h-[80px] border shadow-none transition-colors
                 ${!isCurrentMonth ? 'opacity-30' : ''}
                 ${isToday ? 'border-accent/50 bg-accent/5' : 'border-divider bg-surface'}
                 ${isSelected && !isToday ? 'border-foreground/20 bg-surface-secondary' : ''}
               `}
             >
-              <Card.Content className="p-1.5">
+              <Card.Content className="p-1.5 h-full">
                 <div className="flex flex-col h-full">
                   <div
                     className={`type-label text-center mb-1 ${isToday ? 'text-accent' : 'text-foreground'}`}
@@ -314,7 +317,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     const allDayEvents = dayEvents.filter(e => e.isAllDay);
 
     return (
-      <div className="border border-divider rounded-xl overflow-hidden bg-surface">
+      <div className="flex flex-col h-full min-h-[480px] border border-divider rounded-xl overflow-hidden bg-surface">
         {/* Day header */}
         <div className={`px-4 py-3 border-b border-divider ${isToday ? 'bg-accent/5' : ''}`}>
           <h3 className={`type-subheading ${isToday ? 'text-accent' : 'text-foreground'}`}>
@@ -341,7 +344,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
         </div>
 
         {/* 24h timeline */}
-        <div className="flex overflow-y-auto" style={{ maxHeight: '600px' }}>
+        <div className="flex flex-1 min-h-0 overflow-y-auto">
           {renderHourLabels()}
           <div className="flex-1 border-l border-divider">
             {renderDayColumn(dayEvents, isToday)}
@@ -356,7 +359,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     const today = new Date();
 
     return (
-      <div className="border border-divider rounded-xl overflow-hidden bg-surface">
+      <div className="flex flex-col h-full min-h-[480px] border border-divider rounded-xl overflow-hidden bg-surface">
         {/* Day column headers */}
         <div className="flex border-b border-divider">
           <div className="w-14 shrink-0 border-r border-divider" />
@@ -400,7 +403,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
         </div>
 
         {/* 24h timeline grid */}
-        <div className="flex overflow-y-auto" style={{ maxHeight: '600px' }}>
+        <div className="flex flex-1 min-h-0 overflow-y-auto">
           {renderHourLabels()}
           {days.map((day, index) => {
             const isToday = isSameDay(day, today);
@@ -438,9 +441,9 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 h-full">
       {/* Calendar Header */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-divider shadow-none bg-surface shrink-0">
         <Card.Content className="p-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-3">
@@ -507,7 +510,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
       </Card>
 
       {/* Calendar Content */}
-      <div>
+      <div className="flex-1 min-h-0">
         {view === 'month' && renderMonthView()}
         {view === 'week' && renderWeekView()}
         {view === 'day' && renderDayView()}
