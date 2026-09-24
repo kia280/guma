@@ -116,7 +116,8 @@ install-tools: ## Install development tools
 
 health: ## Check service health
 	@echo "Checking service health..."
-	@curl -f http://localhost:8080/health 2>/dev/null && echo "✓ Backend healthy" || echo "✗ Backend unhealthy"
+	@curl -fs http://localhost:8080/livez >/dev/null && echo "✓ Backend live" || echo "✗ Backend not live"
+	@curl -fs http://localhost:8080/readyz >/dev/null && echo "✓ Backend ready" || echo "✗ Backend not ready"
 	@curl -f http://localhost:3000 2>/dev/null && echo "✓ Frontend healthy" || echo "✗ Frontend unhealthy"
 
 logs: ## View application logs

@@ -69,14 +69,9 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 	config.HTTPClient = &http.Client{Timeout: 5 * time.Second}
 	client := kratos.NewAPIClient(config)
 
-	skipPaths := map[string]struct{}{
-		"/health/live":  {},
-		"/health/ready": {},
-	}
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == http.MethodOptions || shouldSkipPath(r.URL.Path, skipPaths) || session.UserIDFromContext(r.Context()) != "" {
+			if r.Method == http.MethodOptions || session.UserIDFromContext(r.Context()) != "" {
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -155,19 +150,6 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
-}
-
-func shouldSkipPath(path string, skip map[string]struct{}) bool {
-	if _, ok := skip[path]; ok {
-		return true
-	}
-	// Allow trailing slash variants
-	if strings.HasSuffix(path, "/") {
-		if _, ok := skip[strings.TrimSuffix(path, "/")]; ok {
-			return true
-		}
-	}
-	return false
 }
 
 func writeAuthError(w http.ResponseWriter, status int, message string) {

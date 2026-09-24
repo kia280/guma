@@ -111,46 +111,6 @@ func TestKratosSessionMiddleware_InvalidSession(t *testing.T) {
 	}
 }
 
-func TestKratosSessionMiddleware_SkipHealthPaths(t *testing.T) {
-	logger := zerolog.New(io.Discard)
-
-	tests := []struct {
-		name string
-		path string
-	}{
-		{
-			name: "skip /health/ready",
-			path: "/health/ready",
-		},
-		{
-			name: "skip /health/live",
-			path: "/health/live",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var called bool
-			handler := KratosSessionMiddleware("http://example.com", logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				called = true
-				w.WriteHeader(http.StatusNoContent)
-			}))
-
-			req := httptest.NewRequest(http.MethodGet, tt.path, nil)
-			rr := httptest.NewRecorder()
-
-			handler.ServeHTTP(rr, req)
-
-			if rr.Code != http.StatusNoContent {
-				t.Fatalf("expected status 204, got %d", rr.Code)
-			}
-			if !called {
-				t.Fatalf("expected downstream handler to be called for health path")
-			}
-		})
-	}
-}
-
 func TestKratosSessionMiddleware_AllowsOptions(t *testing.T) {
 	logger := zerolog.New(io.Discard)
 

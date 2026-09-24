@@ -86,14 +86,27 @@ resources: {}
   #   memory: 128Mi
 
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# Probes use the native gRPC health protocol (grpc.health.v1) on the gRPC port.
+# The same checks are available over HTTP at /livez and /readyz on the gateway port.
+grpcPort: 50051
+startupProbe:
+  grpc:
+    port: 50051
+    service: readiness
+  periodSeconds: 5
+  failureThreshold: 30
 livenessProbe:
-  httpGet:
-    path: /
-    port: http
+  grpc:
+    port: 50051
+    service: liveness
+  periodSeconds: 10
+  failureThreshold: 3
 readinessProbe:
-  httpGet:
-    path: /
-    port: http
+  grpc:
+    port: 50051
+    service: readiness
+  periodSeconds: 5
+  failureThreshold: 3
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
@@ -26,7 +27,10 @@ type Server struct {
 	logger        zerolog.Logger
 	config        *config.Config
 	healthService *health.Service
+	healthHandler *handlers.HealthHandler
 }
+
+const healthCheckInterval = 5 * time.Second
 
 // NewServer creates and configures a new gRPC server
 func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, logger zerolog.Logger) (*Server, error) {
@@ -59,7 +63,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	streamHandler := handlers.NewStreamService(broker, events.MemberGuildIDs(db), logger)
 
 	healthService := health.NewService(db)
-	healthHandler := handlers.NewHealthServiceHandler(healthService, logger)
+	healthHandler := handlers.NewHealthHandler(healthService, healthCheckInterval, logger)
 
 	// Register services
 	gumav1.RegisterGumaServiceServer(grpcServer, gumaHandler)
@@ -74,7 +78,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	gumav1.RegisterBankServiceServer(grpcServer, bankHandler)
 	gumav1.RegisterNotificationServiceServer(grpcServer, notificationHandler)
 	gumav1.RegisterStreamServiceServer(grpcServer, streamHandler)
-	gumav1.RegisterHealthServiceServer(grpcServer, healthHandler)
+	healthHandler.Register(grpcServer)
 
 	// Enable reflection for debugging (disable in production)
 	if cfg.IsDevelopment() {
@@ -97,6 +101,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 		logger:        logger,
 		config:        cfg,
 		healthService: healthService,
+		healthHandler: healthHandler,
 	}, nil
 }
 
@@ -139,7 +144,14 @@ func (s *Server) Address() string {
 	return s.listener.Addr().String()
 }
 
-// HealthService returns the health service
-func (s *Server) HealthService() *health.Service {
-	return s.healthService
+func (s *Server) MarkStartupComplete() {
+	s.healthService.MarkStartupComplete()
+}
+
+func (s *Server) RunHealthChecks(ctx context.Context) {
+	s.healthHandler.Run(ctx)
+}
+
+func (s *Server) MarkShuttingDown() {
+	s.healthHandler.Shutdown()
 }
