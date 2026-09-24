@@ -39,7 +39,7 @@ func startStreamGateway(t *testing.T, broker *events.Broker, userID string, writ
 	lis, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 	grpcServer := grpc.NewServer()
-	gumav1.RegisterStreamServiceServer(grpcServer, handlers.NewStreamService(broker, zerolog.Nop()))
+	gumav1.RegisterStreamServiceServer(grpcServer, handlers.NewStreamService(broker, func(context.Context, string) ([]string, error) { return nil, nil }, zerolog.Nop()))
 	go func() { _ = grpcServer.Serve(lis) }()
 	t.Cleanup(grpcServer.Stop)
 

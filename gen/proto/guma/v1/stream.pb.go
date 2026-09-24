@@ -66,6 +66,7 @@ type WatchUserEventsResponse struct {
 	//
 	//	*WatchUserEventsResponse_Heartbeat
 	//	*WatchUserEventsResponse_WalletUpdated
+	//	*WatchUserEventsResponse_ResourceChanged
 	Event         isWatchUserEventsResponse_Event `protobuf_oneof:"event"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -133,6 +134,15 @@ func (x *WatchUserEventsResponse) GetWalletUpdated() *WalletUpdated {
 	return nil
 }
 
+func (x *WatchUserEventsResponse) GetResourceChanged() *ResourceChanged {
+	if x != nil {
+		if x, ok := x.Event.(*WatchUserEventsResponse_ResourceChanged); ok {
+			return x.ResourceChanged
+		}
+	}
+	return nil
+}
+
 type isWatchUserEventsResponse_Event interface {
 	isWatchUserEventsResponse_Event()
 }
@@ -145,9 +155,15 @@ type WatchUserEventsResponse_WalletUpdated struct {
 	WalletUpdated *WalletUpdated `protobuf:"bytes,11,opt,name=wallet_updated,json=walletUpdated,proto3,oneof"`
 }
 
+type WatchUserEventsResponse_ResourceChanged struct {
+	ResourceChanged *ResourceChanged `protobuf:"bytes,12,opt,name=resource_changed,json=resourceChanged,proto3,oneof"`
+}
+
 func (*WatchUserEventsResponse_Heartbeat) isWatchUserEventsResponse_Event() {}
 
 func (*WatchUserEventsResponse_WalletUpdated) isWatchUserEventsResponse_Event() {}
+
+func (*WatchUserEventsResponse_ResourceChanged) isWatchUserEventsResponse_Event() {}
 
 type Heartbeat struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -237,23 +253,89 @@ func (x *WalletUpdated) GetBalance() int64 {
 	return 0
 }
 
+type ResourceChanged struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	Resource      string                 `protobuf:"bytes,2,opt,name=resource,proto3" json:"resource,omitempty"`
+	ResourceId    string                 `protobuf:"bytes,3,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResourceChanged) Reset() {
+	*x = ResourceChanged{}
+	mi := &file_proto_guma_v1_stream_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResourceChanged) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResourceChanged) ProtoMessage() {}
+
+func (x *ResourceChanged) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_stream_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResourceChanged.ProtoReflect.Descriptor instead.
+func (*ResourceChanged) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_stream_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ResourceChanged) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *ResourceChanged) GetResource() string {
+	if x != nil {
+		return x.Resource
+	}
+	return ""
+}
+
+func (x *ResourceChanged) GetResourceId() string {
+	if x != nil {
+		return x.ResourceId
+	}
+	return ""
+}
+
 var File_proto_guma_v1_stream_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_stream_proto_rawDesc = "" +
 	"\n" +
 	"\x1aproto/guma/v1/stream.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x18\n" +
-	"\x16WatchUserEventsRequest\"\xd4\x01\n" +
+	"\x16WatchUserEventsRequest\"\x9b\x02\n" +
 	"\x17WatchUserEventsResponse\x12;\n" +
 	"\voccurred_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"occurredAt\x122\n" +
 	"\theartbeat\x18\n" +
 	" \x01(\v2\x12.guma.v1.HeartbeatH\x00R\theartbeat\x12?\n" +
-	"\x0ewallet_updated\x18\v \x01(\v2\x16.guma.v1.WalletUpdatedH\x00R\rwalletUpdatedB\a\n" +
+	"\x0ewallet_updated\x18\v \x01(\v2\x16.guma.v1.WalletUpdatedH\x00R\rwalletUpdated\x12E\n" +
+	"\x10resource_changed\x18\f \x01(\v2\x18.guma.v1.ResourceChangedH\x00R\x0fresourceChangedB\a\n" +
 	"\x05event\"\v\n" +
 	"\tHeartbeat\"D\n" +
 	"\rWalletUpdated\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x18\n" +
-	"\abalance\x18\x02 \x01(\x03R\abalance2~\n" +
+	"\abalance\x18\x02 \x01(\x03R\abalance\"i\n" +
+	"\x0fResourceChanged\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1a\n" +
+	"\bresource\x18\x02 \x01(\tR\bresource\x12\x1f\n" +
+	"\vresource_id\x18\x03 \x01(\tR\n" +
+	"resourceId2~\n" +
 	"\rStreamService\x12m\n" +
 	"\x0fWatchUserEvents\x12\x1f.guma.v1.WatchUserEventsRequest\x1a .guma.v1.WatchUserEventsResponse\"\x15\x82\xd3\xe4\x93\x02\x0f\x12\r/v1/me/events0\x01B1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
@@ -269,25 +351,27 @@ func file_proto_guma_v1_stream_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_stream_proto_rawDescData
 }
 
-var file_proto_guma_v1_stream_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_proto_guma_v1_stream_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_guma_v1_stream_proto_goTypes = []any{
 	(*WatchUserEventsRequest)(nil),  // 0: guma.v1.WatchUserEventsRequest
 	(*WatchUserEventsResponse)(nil), // 1: guma.v1.WatchUserEventsResponse
 	(*Heartbeat)(nil),               // 2: guma.v1.Heartbeat
 	(*WalletUpdated)(nil),           // 3: guma.v1.WalletUpdated
-	(*timestamppb.Timestamp)(nil),   // 4: google.protobuf.Timestamp
+	(*ResourceChanged)(nil),         // 4: guma.v1.ResourceChanged
+	(*timestamppb.Timestamp)(nil),   // 5: google.protobuf.Timestamp
 }
 var file_proto_guma_v1_stream_proto_depIdxs = []int32{
-	4, // 0: guma.v1.WatchUserEventsResponse.occurred_at:type_name -> google.protobuf.Timestamp
+	5, // 0: guma.v1.WatchUserEventsResponse.occurred_at:type_name -> google.protobuf.Timestamp
 	2, // 1: guma.v1.WatchUserEventsResponse.heartbeat:type_name -> guma.v1.Heartbeat
 	3, // 2: guma.v1.WatchUserEventsResponse.wallet_updated:type_name -> guma.v1.WalletUpdated
-	0, // 3: guma.v1.StreamService.WatchUserEvents:input_type -> guma.v1.WatchUserEventsRequest
-	1, // 4: guma.v1.StreamService.WatchUserEvents:output_type -> guma.v1.WatchUserEventsResponse
-	4, // [4:5] is the sub-list for method output_type
-	3, // [3:4] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	4, // 3: guma.v1.WatchUserEventsResponse.resource_changed:type_name -> guma.v1.ResourceChanged
+	0, // 4: guma.v1.StreamService.WatchUserEvents:input_type -> guma.v1.WatchUserEventsRequest
+	1, // 5: guma.v1.StreamService.WatchUserEvents:output_type -> guma.v1.WatchUserEventsResponse
+	5, // [5:6] is the sub-list for method output_type
+	4, // [4:5] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_stream_proto_init() }
@@ -298,6 +382,7 @@ func file_proto_guma_v1_stream_proto_init() {
 	file_proto_guma_v1_stream_proto_msgTypes[1].OneofWrappers = []any{
 		(*WatchUserEventsResponse_Heartbeat)(nil),
 		(*WatchUserEventsResponse_WalletUpdated)(nil),
+		(*WatchUserEventsResponse_ResourceChanged)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -305,7 +390,7 @@ func file_proto_guma_v1_stream_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_stream_proto_rawDesc), len(file_proto_guma_v1_stream_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

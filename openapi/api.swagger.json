@@ -5326,6 +5326,20 @@
         }
       }
     },
+    "v1ResourceChanged": {
+      "type": "object",
+      "properties": {
+        "guildId": {
+          "type": "string"
+        },
+        "resource": {
+          "type": "string"
+        },
+        "resourceId": {
+          "type": "string"
+        }
+      }
+    },
     "v1ReviewFundRequestResponse": {
       "type": "object",
       "properties": {
@@ -5753,6 +5767,9 @@
         },
         "walletUpdated": {
           "$ref": "#/definitions/v1WalletUpdated"
+        },
+        "resourceChanged": {
+          "$ref": "#/definitions/v1ResourceChanged"
         }
       }
     },

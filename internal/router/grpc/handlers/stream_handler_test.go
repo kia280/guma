@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -40,15 +41,17 @@ func (s *fakeUserEventStream) messages() []*gumav1.WatchUserEventsResponse {
 	return append([]*gumav1.WatchUserEventsResponse(nil), s.sent...)
 }
 
+func noGuilds(context.Context, string) ([]string, error) { return nil, nil }
+
 func TestWatchUserEventsRequiresAuthentication(t *testing.T) {
-	h := NewStreamService(events.NewBroker(), zerolog.Nop())
+	h := NewStreamService(events.NewBroker(), noGuilds, zerolog.Nop())
 	err := h.WatchUserEvents(&gumav1.WatchUserEventsRequest{}, &fakeUserEventStream{ctx: context.Background()})
 	assert.Equal(t, codes.Unauthenticated, status.Code(err))
 }
 
 func TestWatchUserEventsStreamsWalletUpdates(t *testing.T) {
 	broker := events.NewBroker()
-	h := NewStreamService(broker, zerolog.Nop())
+	h := NewStreamService(broker, noGuilds, zerolog.Nop())
 	h.heartbeatInterval = time.Hour
 
 	ctx, cancel := context.WithCancel(session.WithUserID(context.Background(), "alice"))
@@ -79,7 +82,7 @@ func TestWatchUserEventsStreamsWalletUpdates(t *testing.T) {
 
 func TestWatchUserEventsEndsWhenBrokerCloses(t *testing.T) {
 	broker := events.NewBroker()
-	h := NewStreamService(broker, zerolog.Nop())
+	h := NewStreamService(broker, noGuilds, zerolog.Nop())
 	stream := &fakeUserEventStream{ctx: session.WithUserID(context.Background(), "alice")}
 	done := make(chan error, 1)
 	go func() { done <- h.WatchUserEvents(&gumav1.WatchUserEventsRequest{}, stream) }()
@@ -95,7 +98,7 @@ func TestWatchUserEventsEndsWhenBrokerCloses(t *testing.T) {
 }
 
 func TestWatchUserEventsSendsHeartbeats(t *testing.T) {
-	h := NewStreamService(events.NewBroker(), zerolog.Nop())
+	h := NewStreamService(events.NewBroker(), noGuilds, zerolog.Nop())
 	h.heartbeatInterval = 10 * time.Millisecond
 	ctx, cancel := context.WithCancel(session.WithUserID(context.Background(), "alice"))
 	defer cancel()
@@ -106,4 +109,40 @@ func TestWatchUserEventsSendsHeartbeats(t *testing.T) {
 	for _, m := range stream.messages() {
 		assert.NotNil(t, m.GetHeartbeat())
 	}
+}
+
+func TestWatchUserEventsFailsWhenMembershipLookupFails(t *testing.T) {
+	failing := func(context.Context, string) ([]string, error) { return nil, errors.New("db down") }
+	h := NewStreamService(events.NewBroker(), failing, zerolog.Nop())
+	err := h.WatchUserEvents(&gumav1.WatchUserEventsRequest{}, &fakeUserEventStream{ctx: session.WithUserID(context.Background(), "alice")})
+	assert.Equal(t, codes.Internal, status.Code(err))
+}
+
+func TestWatchUserEventsStreamsResourceChangesForMemberGuilds(t *testing.T) {
+	broker := events.NewBroker()
+	var lookedUp string
+	lookup := func(_ context.Context, userID string) ([]string, error) {
+		lookedUp = userID
+		return []string{"g1"}, nil
+	}
+	h := NewStreamService(broker, lookup, zerolog.Nop())
+	h.heartbeatInterval = time.Hour
+
+	ctx, cancel := context.WithCancel(session.WithUserID(context.Background(), "alice"))
+	defer cancel()
+	stream := &fakeUserEventStream{ctx: ctx}
+	go func() { _ = h.WatchUserEvents(&gumav1.WatchUserEventsRequest{}, stream) }()
+
+	require.Eventually(t, func() bool { return len(stream.messages()) == 1 }, time.Second, 5*time.Millisecond)
+	assert.Equal(t, "alice", lookedUp)
+
+	broker.PublishGuild("g2", events.Event{OccurredAt: time.Now(), ResourceChanged: &events.ResourceChanged{GuildID: "g2", Resource: "auction", ResourceID: "a0"}})
+	broker.PublishGuild("g1", events.Event{OccurredAt: time.Now(), ResourceChanged: &events.ResourceChanged{GuildID: "g1", Resource: "auction", ResourceID: "a1"}})
+
+	require.Eventually(t, func() bool { return len(stream.messages()) == 2 }, time.Second, 5*time.Millisecond)
+	changed := stream.messages()[1].GetResourceChanged()
+	require.NotNil(t, changed)
+	assert.Equal(t, "g1", changed.GuildId)
+	assert.Equal(t, "auction", changed.Resource)
+	assert.Equal(t, "a1", changed.ResourceId)
 }
