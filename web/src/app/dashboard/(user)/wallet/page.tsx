@@ -20,7 +20,7 @@ import {
   useFilter,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import BackpackItemCard from '@/components/BackpackItemCard';
 import { BackpackItem } from '@/types/backpack';
@@ -28,10 +28,17 @@ import type { Transaction, Wallet as WalletType } from '@/types/wallet';
 import type { MockUser } from '@/types/user';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
-import { walletBalanceTrend as balanceTrend } from '@/lib/guma/mock/data';
+import { walletBalanceTrend } from '@/lib/guma/mock/data';
+import { localizeMock } from '@/lib/guma/mock/i18n';
+import { isLocale } from '@/i18n/locales';
 
 export default function WalletPage() {
   const t = useTranslations('walletPage');
+  const locale = useLocale();
+  const balanceTrend = React.useMemo(
+    () => (isLocale(locale) ? localizeMock(walletBalanceTrend, locale) : walletBalanceTrend),
+    [locale]
+  );
   const guildId = useCurrentGuildId();
   const itemWithdrawModalState = useOverlayState();
 
