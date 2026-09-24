@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"regexp"
 	"strings"
 	"time"
@@ -23,6 +24,21 @@ const (
 	defaultListLimit = 100
 	maxListLimit     = 500
 	devEmailDomain   = "dev.guma.local"
+	MaxSeedCount     = 200
+	moderatorEvery   = 10
+)
+
+var (
+	seedNamePrefixes = []string{
+		"熊", "桑", "夜", "星", "月", "風", "雪", "影", "龍", "貓",
+		"Shadow", "Storm", "Frost", "Iron", "Silver", "Night", "Moon", "Sun", "Blood", "Crystal",
+		"달빛", "그림자", "폭풍", "별빛", "불꽃", "하늘", "용", "검은",
+	}
+	seedNameSuffixes = []string{
+		"寶寶", "小隊長", "劍士", "法師", "射手", "不睡", "吃貨", "大俠",
+		"Blade", "Hunter", "Knight", "Mage", "Wolf", "Fox", "Rider", "Walker",
+		"전사", "기사", "마법사", "궁수", "도적", "사냥꾼",
+	}
 )
 
 var nonSlugChars = regexp.MustCompile(`[^a-z0-9]+`)
@@ -34,29 +50,184 @@ type User struct {
 	Username    string
 	DisplayName string
 	AvatarURL   string
+	Role        string
 	CreatedAt   time.Time
+}
+
+type Guild struct {
+	ID   string
+	Name string
 }
 
 // Service supports development-only impersonation of existing users.
 type Service struct {
-	q *db.Queries
+	pool *database.Pool
+	q    *db.Queries
 }
 
 // New creates a dev auth Service.
 func New(pool *database.Pool) *Service {
-	return &Service{q: db.New(pool.Pool)}
+	return &Service{pool: pool, q: db.New(pool.Pool)}
+}
+
+func (s *Service) ResolveGuild(ctx context.Context, userID string) (*Guild, error) {
+	if id, err := uuid.Parse(userID); err == nil {
+		g, err := s.q.GetUserCurrentGuild(ctx, id)
+		if err == nil {
+			return &Guild{ID: g.ID.String(), Name: g.Name}, nil
+		}
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: get current guild: %v", errs.ErrInternal, err)
+		}
+	}
+
+	g, err := s.q.GetOldestGuild(ctx)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("%w: get default guild: %v", errs.ErrInternal, err)
+	}
+	return &Guild{ID: g.ID.String(), Name: g.Name}, nil
+}
+
+func (s *Service) ListGuildMembers(ctx context.Context, guildID string, limit int32) ([]User, error) {
+	gid, err := uuid.Parse(guildID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: guild_id must be a UUID", errs.ErrInvalidArgument)
+	}
+
+	rows, err := s.q.ListGuildMemberUsers(ctx, db.ListGuildMemberUsersParams{GuildID: gid, MaxRows: clampLimit(limit)})
+	if err != nil {
+		return nil, fmt.Errorf("%w: list guild members: %v", errs.ErrInternal, err)
+	}
+
+	users := make([]User, 0, len(rows))
+	for _, row := range rows {
+		users = append(users, User{
+			ID:          row.ID.String(),
+			Email:       row.Email,
+			Username:    row.Username,
+			DisplayName: row.DisplayName,
+			AvatarURL:   row.AvatarUrl,
+			Role:        row.Role,
+			CreatedAt:   row.CreatedAt,
+		})
+	}
+	return users, nil
+}
+
+func (s *Service) SeedGuildMembers(ctx context.Context, guildID string, count int) ([]User, error) {
+	gid, err := uuid.Parse(guildID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: guild_id must be a UUID", errs.ErrInvalidArgument)
+	}
+	if count < 1 || count > MaxSeedCount {
+		return nil, fmt.Errorf("%w: count must be between 1 and %d", errs.ErrInvalidArgument, MaxSeedCount)
+	}
+
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin: %v", errs.ErrInternal, err)
+	}
+	defer tx.Rollback(ctx)
+	qtx := s.q.WithTx(tx)
+
+	users := make([]User, 0, count)
+	for i := 1; i <= count; i++ {
+		displayName, err := randomSeedName()
+		if err != nil {
+			return nil, fmt.Errorf("%w: generate name: %v", errs.ErrInternal, err)
+		}
+		suffix, err := randomSuffix()
+		if err != nil {
+			return nil, fmt.Errorf("%w: generate suffix: %v", errs.ErrInternal, err)
+		}
+		username := "seed-" + suffix
+		role := seedRole(i)
+
+		row, err := qtx.CreateUser(ctx, db.CreateUserParams{
+			ID:          uuid.New(),
+			Email:       username + "@" + devEmailDomain,
+			Username:    username,
+			DisplayName: displayName,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("%w: create user: %v", errs.ErrInternal, err)
+		}
+		if err := joinGuild(ctx, qtx, row.ID, gid, role); err != nil {
+			return nil, err
+		}
+		users = append(users, User{
+			ID:          row.ID.String(),
+			Email:       row.Email,
+			Username:    row.Username,
+			DisplayName: row.DisplayName,
+			Role:        role,
+			CreatedAt:   row.CreatedAt,
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	return users, nil
+}
+
+func joinGuild(ctx context.Context, q *db.Queries, userID, guildID uuid.UUID, role string) error {
+	if err := q.InsertGuildMember(ctx, db.InsertGuildMemberParams{UserID: userID, GuildID: guildID, Role: role}); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
+			return fmt.Errorf("%w: guild", errs.ErrNotFound)
+		}
+		return fmt.Errorf("%w: add guild member: %v", errs.ErrInternal, err)
+	}
+	if err := q.EnsureWallet(ctx, db.EnsureWalletParams{UserID: userID, GuildID: guildID}); err != nil {
+		return fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
+	}
+	return nil
+}
+
+func seedRole(n int) string {
+	if n%moderatorEvery == 0 {
+		return "moderator"
+	}
+	return "member"
+}
+
+func randomSeedName() (string, error) {
+	prefix, err := randomItem(seedNamePrefixes)
+	if err != nil {
+		return "", err
+	}
+	suffix, err := randomItem(seedNameSuffixes)
+	if err != nil {
+		return "", err
+	}
+	return prefix + suffix, nil
+}
+
+func randomItem(items []string) (string, error) {
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(items))))
+	if err != nil {
+		return "", err
+	}
+	return items[n.Int64()], nil
+}
+
+func clampLimit(limit int32) int32 {
+	if limit <= 0 {
+		return defaultListLimit
+	}
+	if limit > maxListLimit {
+		return maxListLimit
+	}
+	return limit
 }
 
 // ListUsers returns the most recently created users.
 func (s *Service) ListUsers(ctx context.Context, limit int32) ([]User, error) {
-	if limit <= 0 {
-		limit = defaultListLimit
-	}
-	if limit > maxListLimit {
-		limit = maxListLimit
-	}
-
-	rows, err := s.q.ListUsers(ctx, limit)
+	rows, err := s.q.ListUsers(ctx, clampLimit(limit))
 	if err != nil {
 		return nil, fmt.Errorf("%w: list users: %v", errs.ErrInternal, err)
 	}
@@ -101,7 +272,16 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
 }
 
 // CreateUser inserts a local test user that exists only in the app database.
-func (s *Service) CreateUser(ctx context.Context, displayName string) (*User, error) {
+func (s *Service) CreateUser(ctx context.Context, displayName, guildID string) (*User, error) {
+	var gid uuid.UUID
+	if guildID != "" {
+		parsed, err := uuid.Parse(guildID)
+		if err != nil {
+			return nil, fmt.Errorf("%w: guild_id must be a UUID", errs.ErrInvalidArgument)
+		}
+		gid = parsed
+	}
+
 	displayName = strings.TrimSpace(displayName)
 
 	suffix, err := randomSuffix()
@@ -118,7 +298,14 @@ func (s *Service) CreateUser(ctx context.Context, displayName string) (*User, er
 		displayName = username
 	}
 
-	row, err := s.q.CreateUser(ctx, db.CreateUserParams{
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin: %v", errs.ErrInternal, err)
+	}
+	defer tx.Rollback(ctx)
+	qtx := s.q.WithTx(tx)
+
+	row, err := qtx.CreateUser(ctx, db.CreateUserParams{
 		ID:          uuid.New(),
 		Email:       username + "@" + devEmailDomain,
 		Username:    username,
@@ -132,12 +319,24 @@ func (s *Service) CreateUser(ctx context.Context, displayName string) (*User, er
 		return nil, fmt.Errorf("%w: create user: %v", errs.ErrInternal, err)
 	}
 
+	role := ""
+	if gid != uuid.Nil {
+		role = "member"
+		if err := joinGuild(ctx, qtx, row.ID, gid, role); err != nil {
+			return nil, err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+
 	return &User{
 		ID:          row.ID.String(),
 		Email:       row.Email,
 		Username:    row.Username,
 		DisplayName: row.DisplayName,
 		AvatarURL:   row.AvatarUrl,
+		Role:        role,
 		CreatedAt:   row.CreatedAt,
 	}, nil
 }

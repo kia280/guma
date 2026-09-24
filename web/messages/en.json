@@ -748,6 +748,19 @@
         "name": "Plus Jakarta Sans + Chiron Hei HK",
         "description": "Modern and geometric; some glyphs follow Hong Kong forms"
       }
+    },
+    "seedMembers": "Seed members",
+    "seedDescription": "Add randomly named test members to {guild}. Every 10th seeded member is a moderator.",
+    "seedCount": "Number of members",
+    "seed": "Seed",
+    "seeded": "Added {count} members.",
+    "guildMembers": "Members of {guild}",
+    "allUsers": "No guild yet, showing all users",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "moderator": "Moderator",
+      "member": "Member"
     }
   },
   "lotteryDetail": {

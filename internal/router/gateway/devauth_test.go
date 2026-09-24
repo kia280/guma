@@ -18,7 +18,36 @@ import (
 )
 
 type fakeDevStore struct {
-	users map[string]devauth.User
+	users        map[string]devauth.User
+	userGuilds   map[string]devauth.Guild
+	defaultGuild *devauth.Guild
+	members      map[string][]devauth.User
+	createdGuild string
+	seededGuild  string
+	seededCount  int
+}
+
+func (f *fakeDevStore) ResolveGuild(_ context.Context, userID string) (*devauth.Guild, error) {
+	if g, ok := f.userGuilds[userID]; ok {
+		return &g, nil
+	}
+	return f.defaultGuild, nil
+}
+
+func (f *fakeDevStore) ListGuildMembers(_ context.Context, guildID string, _ int32) ([]devauth.User, error) {
+	return f.members[guildID], nil
+}
+
+func (f *fakeDevStore) SeedGuildMembers(_ context.Context, guildID string, count int) ([]devauth.User, error) {
+	if count < 1 || count > devauth.MaxSeedCount {
+		return nil, fmt.Errorf("%w: count", errs.ErrInvalidArgument)
+	}
+	f.seededGuild, f.seededCount = guildID, count
+	out := make([]devauth.User, count)
+	for i := range out {
+		out[i] = devauth.User{ID: fmt.Sprintf("seed-%d", i), Role: "member"}
+	}
+	return out, nil
 }
 
 func (f *fakeDevStore) ListUsers(context.Context, int32) ([]devauth.User, error) {
@@ -37,17 +66,30 @@ func (f *fakeDevStore) GetUser(_ context.Context, id string) (*devauth.User, err
 	return &u, nil
 }
 
-func (f *fakeDevStore) CreateUser(_ context.Context, name string) (*devauth.User, error) {
+func (f *fakeDevStore) CreateUser(_ context.Context, name, guildID string) (*devauth.User, error) {
+	f.createdGuild = guildID
 	u := devauth.User{ID: "new-user", DisplayName: name}
 	f.users[u.ID] = u
 	return &u, nil
 }
 
+func newTestDevStore() *fakeDevStore {
+	return &fakeDevStore{
+		users: map[string]devauth.User{
+			"alice": {ID: "alice", Email: "alice@example.com"},
+			"bob":   {ID: "bob", Email: "bob@example.com"},
+		},
+		userGuilds:   map[string]devauth.Guild{"alice": {ID: "guild-a", Name: "Alpha"}},
+		defaultGuild: &devauth.Guild{ID: "guild-default", Name: "Default"},
+		members: map[string][]devauth.User{
+			"guild-a":       {{ID: "alice", Role: "owner"}},
+			"guild-default": {{ID: "bob", Role: "member"}},
+		},
+	}
+}
+
 func newTestDevHandler() http.Handler {
-	store := &fakeDevStore{users: map[string]devauth.User{
-		"alice": {ID: "alice", Email: "alice@example.com"},
-	}}
-	return newDevAuthHandler(store, zerolog.New(io.Discard))
+	return newDevAuthHandler(newTestDevStore(), zerolog.New(io.Discard))
 }
 
 func devCookie(t *testing.T, rr *httptest.ResponseRecorder) *http.Cookie {
@@ -77,7 +119,7 @@ func TestDevAuthHandler_LoginSetsCookie(t *testing.T) {
 
 func TestDevAuthHandler_LoginUnknownUser(t *testing.T) {
 	rr := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/v1/dev/login", strings.NewReader(`{"user_id":"bob"}`))
+	req := httptest.NewRequest(http.MethodPost, "/v1/dev/login", strings.NewReader(`{"user_id":"ghost"}`))
 
 	newTestDevHandler().ServeHTTP(rr, req)
 
@@ -170,5 +212,113 @@ func TestDevAuthHandler_CreateUserAndLogin(t *testing.T) {
 	}
 	if c := devCookie(t, rr); c == nil || c.Value != "new-user" {
 		t.Fatalf("expected dev cookie for new user, got %+v", c)
+	}
+}
+
+func TestDevAuthHandler_CreateUserJoinsResolvedGuild(t *testing.T) {
+	store := newTestDevStore()
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/v1/dev/users", strings.NewReader(`{"display_name":"Tester"}`))
+	req.AddCookie(&http.Cookie{Name: session.DevCookieName, Value: "alice"})
+
+	newDevAuthHandler(store, zerolog.New(io.Discard)).ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusCreated {
+		t.Fatalf("expected 201, got %d", rr.Code)
+	}
+	if store.createdGuild != "guild-a" {
+		t.Fatalf("expected new user to join guild-a, got %q", store.createdGuild)
+	}
+}
+
+func TestDevAuthHandler_ListUsersScopedToGuild(t *testing.T) {
+	tests := []struct {
+		name      string
+		cookie    string
+		query     string
+		wantGuild string
+		wantUsers []string
+	}{
+		{name: "session guild", cookie: "alice", wantGuild: "guild-a", wantUsers: []string{"alice"}},
+		{name: "default guild without session", wantGuild: "guild-default", wantUsers: []string{"bob"}},
+		{name: "all users", cookie: "alice", query: "?scope=all", wantUsers: []string{"alice", "bob"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rr := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, "/v1/dev/users"+tt.query, nil)
+			if tt.cookie != "" {
+				req.AddCookie(&http.Cookie{Name: session.DevCookieName, Value: tt.cookie})
+			}
+
+			newTestDevHandler().ServeHTTP(rr, req)
+
+			if rr.Code != http.StatusOK {
+				t.Fatalf("expected 200, got %d: %s", rr.Code, rr.Body.String())
+			}
+			var body struct {
+				Guild *devGuildJSON `json:"guild"`
+				Users []devUserJSON `json:"users"`
+			}
+			if err := json.NewDecoder(rr.Body).Decode(&body); err != nil {
+				t.Fatalf("decode: %v", err)
+			}
+			gotGuild := ""
+			if body.Guild != nil {
+				gotGuild = body.Guild.ID
+			}
+			if gotGuild != tt.wantGuild {
+				t.Fatalf("expected guild %q, got %q", tt.wantGuild, gotGuild)
+			}
+			got := map[string]bool{}
+			for _, u := range body.Users {
+				got[u.ID] = true
+			}
+			if len(got) != len(tt.wantUsers) {
+				t.Fatalf("expected users %v, got %+v", tt.wantUsers, body.Users)
+			}
+			for _, id := range tt.wantUsers {
+				if !got[id] {
+					t.Fatalf("expected user %q in %+v", id, body.Users)
+				}
+			}
+		})
+	}
+}
+
+func TestDevAuthHandler_Seed(t *testing.T) {
+	tests := []struct {
+		name       string
+		body       string
+		noGuild    bool
+		wantStatus int
+		wantCount  int
+	}{
+		{name: "seeds resolved guild", body: `{"count":12}`, wantStatus: http.StatusCreated, wantCount: 12},
+		{name: "rejects zero", body: `{"count":0}`, wantStatus: http.StatusBadRequest},
+		{name: "rejects too many", body: `{"count":1000}`, wantStatus: http.StatusBadRequest},
+		{name: "invalid body", body: `{`, wantStatus: http.StatusBadRequest},
+		{name: "no guild", body: `{"count":3}`, noGuild: true, wantStatus: http.StatusNotFound},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			store := newTestDevStore()
+			if tt.noGuild {
+				store.defaultGuild = nil
+			}
+			rr := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/v1/dev/seed", strings.NewReader(tt.body))
+
+			newDevAuthHandler(store, zerolog.New(io.Discard)).ServeHTTP(rr, req)
+
+			if rr.Code != tt.wantStatus {
+				t.Fatalf("expected %d, got %d: %s", tt.wantStatus, rr.Code, rr.Body.String())
+			}
+			if tt.wantCount > 0 && (store.seededGuild != "guild-default" || store.seededCount != tt.wantCount) {
+				t.Fatalf("expected %d members seeded into guild-default, got %d into %q", tt.wantCount, store.seededCount, store.seededGuild)
+			}
+		})
 	}
 }

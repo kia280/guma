@@ -24,7 +24,10 @@ const (
 type devUserStore interface {
 	ListUsers(ctx context.Context, limit int32) ([]devauth.User, error)
 	GetUser(ctx context.Context, userID string) (*devauth.User, error)
-	CreateUser(ctx context.Context, displayName string) (*devauth.User, error)
+	CreateUser(ctx context.Context, displayName, guildID string) (*devauth.User, error)
+	ResolveGuild(ctx context.Context, userID string) (*devauth.Guild, error)
+	ListGuildMembers(ctx context.Context, guildID string, limit int32) ([]devauth.User, error)
+	SeedGuildMembers(ctx context.Context, guildID string, count int) ([]devauth.User, error)
 }
 
 type devUserJSON struct {
@@ -33,7 +36,13 @@ type devUserJSON struct {
 	Username    string    `json:"username"`
 	DisplayName string    `json:"display_name"`
 	AvatarURL   string    `json:"avatar_url,omitempty"`
+	Role        string    `json:"role,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+type devGuildJSON struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 func newDevAuthHandler(store devUserStore, logger zerolog.Logger) http.Handler {
@@ -43,6 +52,7 @@ func newDevAuthHandler(store devUserStore, logger zerolog.Logger) http.Handler {
 	mux.HandleFunc("GET /v1/dev/session", h.getSession)
 	mux.HandleFunc("GET /v1/dev/users", h.listUsers)
 	mux.HandleFunc("POST /v1/dev/users", h.createUser)
+	mux.HandleFunc("POST /v1/dev/seed", h.seed)
 	mux.HandleFunc("POST /v1/dev/login", h.login)
 	mux.HandleFunc("POST /v1/dev/logout", h.logout)
 	return mux
@@ -84,17 +94,66 @@ func (h *devAuthHandler) listUsers(w http.ResponseWriter, r *http.Request) {
 		limit = int32(n)
 	}
 
-	users, err := h.store.ListUsers(r.Context(), limit)
+	var guild *devauth.Guild
+	if r.URL.Query().Get("scope") != "all" {
+		g, err := h.resolveGuild(r)
+		if err != nil {
+			h.writeError(w, r, err)
+			return
+		}
+		guild = g
+	}
+
+	var (
+		users []devauth.User
+		err   error
+	)
+	if guild != nil {
+		users, err = h.store.ListGuildMembers(r.Context(), guild.ID, limit)
+	} else {
+		users, err = h.store.ListUsers(r.Context(), limit)
+	}
 	if err != nil {
 		h.writeError(w, r, err)
 		return
 	}
 
-	out := make([]devUserJSON, 0, len(users))
-	for _, u := range users {
-		out = append(out, toDevUserJSON(u))
+	writeJSON(w, http.StatusOK, map[string]any{"guild": toDevGuildJSON(guild), "users": toDevUsersJSON(users)})
+}
+
+func (h *devAuthHandler) seed(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Count int `json:"count"`
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"users": out})
+	if !decodeJSON(w, r, &body) {
+		return
+	}
+
+	guild, err := h.resolveGuild(r)
+	if err != nil {
+		h.writeError(w, r, err)
+		return
+	}
+	if guild == nil {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "no guild to seed"})
+		return
+	}
+
+	users, err := h.store.SeedGuildMembers(r.Context(), guild.ID, body.Count)
+	if err != nil {
+		h.writeError(w, r, err)
+		return
+	}
+	h.logger.Warn().Str("guild_id", guild.ID).Int("count", len(users)).Msg("dev seeded guild members")
+	writeJSON(w, http.StatusCreated, map[string]any{"guild": toDevGuildJSON(guild), "users": toDevUsersJSON(users)})
+}
+
+func (h *devAuthHandler) resolveGuild(r *http.Request) (*devauth.Guild, error) {
+	var userID string
+	if cookie, err := r.Cookie(session.DevCookieName); err == nil {
+		userID = cookie.Value
+	}
+	return h.store.ResolveGuild(r.Context(), userID)
 }
 
 func (h *devAuthHandler) createUser(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +165,17 @@ func (h *devAuthHandler) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := h.store.CreateUser(r.Context(), body.DisplayName)
+	guild, err := h.resolveGuild(r)
+	if err != nil {
+		h.writeError(w, r, err)
+		return
+	}
+	var guildID string
+	if guild != nil {
+		guildID = guild.ID
+	}
+
+	u, err := h.store.CreateUser(r.Context(), body.DisplayName, guildID)
 	if err != nil {
 		h.writeError(w, r, err)
 		return
@@ -206,6 +275,22 @@ func toDevUserJSON(u devauth.User) devUserJSON {
 		Username:    u.Username,
 		DisplayName: u.DisplayName,
 		AvatarURL:   u.AvatarURL,
+		Role:        u.Role,
 		CreatedAt:   u.CreatedAt,
 	}
+}
+
+func toDevUsersJSON(users []devauth.User) []devUserJSON {
+	out := make([]devUserJSON, 0, len(users))
+	for _, u := range users {
+		out = append(out, toDevUserJSON(u))
+	}
+	return out
+}
+
+func toDevGuildJSON(g *devauth.Guild) *devGuildJSON {
+	if g == nil {
+		return nil
+	}
+	return &devGuildJSON{ID: g.ID, Name: g.Name}
 }

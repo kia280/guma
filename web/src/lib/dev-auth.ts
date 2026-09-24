@@ -8,7 +8,18 @@ export interface DevUser {
   username: string;
   displayName: string;
   avatarUrl?: string;
+  role?: string;
   createdAt: string;
+}
+
+export interface DevGuild {
+  id: string;
+  name: string;
+}
+
+export interface DevUserList {
+  guild: DevGuild | null;
+  users: DevUser[];
 }
 
 interface DevUserWire {
@@ -17,6 +28,7 @@ interface DevUserWire {
   username: string;
   display_name: string;
   avatar_url?: string;
+  role?: string;
   created_at: string;
 }
 
@@ -27,6 +39,7 @@ function toDevUser(u: DevUserWire): DevUser {
     username: u.username,
     displayName: u.display_name,
     avatarUrl: u.avatar_url,
+    role: u.role,
     createdAt: u.created_at,
   };
 }
@@ -52,9 +65,17 @@ export async function getDevSession(): Promise<DevUser | null> {
   return user ? toDevUser(user) : null;
 }
 
-export async function listDevUsers(): Promise<DevUser[]> {
-  const { users } = await devRequest<{ users: DevUserWire[] }>('/users');
-  return users.map(toDevUser);
+export async function listDevUsers(): Promise<DevUserList> {
+  const { guild, users } = await devRequest<{ guild: DevGuild | null; users: DevUserWire[] }>('/users');
+  return { guild, users: users.map(toDevUser) };
+}
+
+export async function seedDevMembers(count: number): Promise<DevUserList> {
+  const { guild, users } = await devRequest<{ guild: DevGuild; users: DevUserWire[] }>('/seed', {
+    method: 'POST',
+    body: JSON.stringify({ count }),
+  });
+  return { guild, users: users.map(toDevUser) };
 }
 
 export async function createDevUser(displayName: string, login: boolean): Promise<DevUser> {

@@ -127,3 +127,24 @@ SELECT COUNT(*) FROM members WHERE guild_id = $1;
 
 -- name: GetGuildMemberRole :one
 SELECT role FROM members WHERE guild_id = $1 AND user_id = $2;
+
+-- name: GetOldestGuild :one
+SELECT id, name FROM guilds ORDER BY created_at ASC LIMIT 1;
+
+-- name: ListGuildMemberUsers :many
+SELECT u.id, u.email, u.username,
+       COALESCE(u.display_name, '') AS display_name,
+       COALESCE(u.avatar_url, '')   AS avatar_url,
+       u.created_at,
+       m.role
+FROM members m
+JOIN users u ON u.id = m.user_id
+WHERE m.guild_id = $1
+ORDER BY CASE m.role
+             WHEN 'owner' THEN 0
+             WHEN 'admin' THEN 1
+             WHEN 'moderator' THEN 2
+             ELSE 3
+         END,
+         m.joined_at ASC
+LIMIT sqlc.arg(max_rows)::int;
