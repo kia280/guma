@@ -10,7 +10,7 @@ import type { BalancePoint, UserStats } from '@/types/user';
 import type { Guild } from '@/types/guild';
 import type { AdminAnnouncement } from '@/types/admin';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
+import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
 
 const http: AxiosInstance = axios.create({
   baseURL: env.api.url,
@@ -269,6 +269,29 @@ export const gumaApiClient: ApiClient = {
   },
   deleteCheckin: async (guildId, id) => {
     await http.delete(`/v1/guilds/${guildId}/checkins/${id}`);
+  },
+  listCheckinTemplates: async (guildId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/checkin-templates`);
+    return (data.templates ?? []).map(toCheckinTemplate);
+  },
+  createCheckinTemplate: async (guildId, input) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/checkin-templates`, {
+      name: input.name,
+      title: input.title,
+      loot_list: input.lootList.map(i => ({ name: i.name })),
+    });
+    return toCheckinTemplate(data.template);
+  },
+  updateCheckinTemplate: async (guildId, id, input) => {
+    const { data } = await http.patch(`/v1/guilds/${guildId}/checkin-templates/${id}`, {
+      name: input.name,
+      title: input.title,
+      loot_list: input.lootList.map(i => ({ name: i.name })),
+    });
+    return toCheckinTemplate(data.template);
+  },
+  deleteCheckinTemplate: async (guildId, id) => {
+    await http.delete(`/v1/guilds/${guildId}/checkin-templates/${id}`);
   },
   submitAttendance: async (guildId, checkinId) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/attend`);

@@ -1,16 +1,18 @@
 'use client';
 
 import React from 'react';
-import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Description, DatePicker, DateField, Calendar } from '@heroui/react';
+import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Description, DatePicker, DateField, Calendar, ListBox, Select, type Key } from '@heroui/react';
 import type { DateValue } from '@internationalized/date';
 import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
 import { CheckinCard, checkinStatusColor } from './CheckinCard';
-import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
+import { CheckinStatus, type CheckinEntry, type CheckinTemplate } from '@/types/checkin';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
+import { LootListEditor } from '@/components/LootListEditor';
 
 const DRAFT_KEY = 'checkin_draft';
 
@@ -79,14 +81,33 @@ export default function CheckinPage() {
     }, 500);
   };
 
-  const handleAddLoot = () => {
-    const name = draft.lootInput.trim();
-    if (!name) return;
-    updateDraft({ lootInput: '', lootList: [...draft.lootList, name] });
-  };
+  const [templates, setTemplates] = React.useState<CheckinTemplate[]>([]);
+  const [templatesState, setTemplatesState] = React.useState<'loading' | 'ready' | 'failed' | 'hidden'>('loading');
+  const [selectedTemplateId, setSelectedTemplateId] = React.useState<Key | null>(null);
 
-  const handleRemoveLoot = (idx: number) => {
-    updateDraft({ lootList: draft.lootList.filter((_, i) => i !== idx) });
+  const loadTemplates = React.useCallback(async () => {
+    setTemplatesState('loading');
+    try {
+      setTemplates(await apiClient.listCheckinTemplates(guildId));
+      setTemplatesState('ready');
+    } catch (err) {
+      setTemplatesState(apiErrorCode(err) === GrpcCode.PermissionDenied ? 'hidden' : 'failed');
+    }
+  }, [guildId]);
+
+  React.useEffect(() => {
+    loadTemplates();
+  }, [loadTemplates]);
+
+  const handleTemplateChange = (key: Key | null) => {
+    setSelectedTemplateId(key);
+    const template = templates.find(tpl => tpl.id === key);
+    if (!template) return;
+    updateDraft({
+      title: template.title,
+      lootInput: '',
+      lootList: template.lootList.map(item => item.name),
+    });
   };
 
   const handleNewSubmit = async () => {
@@ -103,6 +124,7 @@ export default function CheckinPage() {
       });
       refetchCheckins();
       setDraft(emptyDraft);
+      setSelectedTemplateId(null);
       localStorage.removeItem(DRAFT_KEY);
     } catch (err) {
       console.error(err);
@@ -111,6 +133,7 @@ export default function CheckinPage() {
 
   const handleNewCancel = () => {
     setDraft(emptyDraft);
+    setSelectedTemplateId(null);
     localStorage.removeItem(DRAFT_KEY);
   };
 
@@ -136,6 +159,51 @@ export default function CheckinPage() {
                 </Modal.Header>
                 <Modal.Body className="p-1">
                   <form className="flex flex-col gap-4">
+                    {templatesState !== 'hidden' && (
+                      <div className="flex flex-col gap-1">
+                        <Select
+                          placeholder={
+                            templatesState === 'loading'
+                              ? t('templatesLoading')
+                              : templatesState === 'ready' && templates.length === 0
+                                ? t('noTemplates')
+                                : t('templatePlaceholder')
+                          }
+                          value={selectedTemplateId}
+                          onChange={handleTemplateChange}
+                          isDisabled={templatesState !== 'ready' || templates.length === 0}
+                        >
+                          <Label>{t('template')}</Label>
+                          <Select.Trigger>
+                            <Select.Value />
+                            <Select.Indicator />
+                          </Select.Trigger>
+                          <Select.Popover>
+                            <ListBox>
+                              {templates.map(template => (
+                                <ListBox.Item key={template.id} id={template.id} textValue={template.name}>
+                                  <div className="flex min-w-0 flex-col">
+                                    <span className="truncate">{template.name}</span>
+                                    <span className="type-caption text-hint truncate">
+                                      {t('templateSummary', { title: template.title, count: template.lootList.length })}
+                                    </span>
+                                  </div>
+                                  <ListBox.ItemIndicator />
+                                </ListBox.Item>
+                              ))}
+                            </ListBox>
+                          </Select.Popover>
+                          <Description className={templatesState === 'failed' ? 'text-danger' : undefined}>
+                            {templatesState === 'failed' ? t('templatesLoadFailed') : t('templateHint')}
+                          </Description>
+                        </Select>
+                        {templatesState === 'failed' && (
+                          <Button size="sm" variant="tertiary" className="self-start" onPress={loadTemplates}>
+                            {t('templatesRetry')}
+                          </Button>
+                        )}
+                      </div>
+                    )}
                     <TextField>
                       <Label>{t('title')}</Label>
                       <Input
@@ -251,57 +319,11 @@ export default function CheckinPage() {
                     </DatePicker>
 
                     {/* Loot list */}
-                    <div className="flex flex-col gap-2">
-                      <p className="type-body font-medium text-foreground">{t('lootList')}</p>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder={t('itemNamePlaceholder')}
-                          value={draft.lootInput}
-                          onChange={e => updateDraft({ lootInput: e.target.value })}
-                          variant="secondary"
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddLoot();
-                            }
-                          }}
-                          className="flex-1"
-                        />
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          isIconOnly
-                          onPress={handleAddLoot}
-                          isDisabled={!draft.lootInput.trim()}
-                        >
-                          <Icon icon="solar:add-circle-linear" width={16} />
-                        </Button>
-                      </div>
-                      {draft.lootList.length > 0 && (
-                        <div className="flex flex-col gap-1">
-                          {draft.lootList.map((name, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-surface-secondary border border-divider"
-                            >
-                              <div className="flex items-center gap-2">
-                                <Icon icon="solar:box-linear" width={14} className="text-hint" />
-                                <span className="type-body text-foreground">{name}</span>
-                              </div>
-                              <Button
-                                size="sm"
-                                isIconOnly
-                                variant="tertiary"
-                                className="text-hint hover:text-danger"
-                                onPress={() => handleRemoveLoot(idx)}
-                              >
-                                <Icon icon="solar:close-circle-linear" width={14} />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <LootListEditor
+                      items={draft.lootList}
+                      inputValue={draft.lootInput}
+                      onChange={(lootList, lootInput) => updateDraft({ lootList, lootInput })}
+                    />
 
                     <TextField>
                       <Label>{t('imageUrlPlaceholder')}</Label>

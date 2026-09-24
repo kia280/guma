@@ -5,7 +5,7 @@ import { AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
 import type { AuctionItem, Bid } from '@/types/auction';
 import type { BackpackItem } from '@/types/backpack';
-import type { CheckinEntry, AttendanceMember, LootItem } from '@/types/checkin';
+import type { CheckinEntry, CheckinTemplate, AttendanceMember, LootItem } from '@/types/checkin';
 import { CheckinStatus } from '@/types/checkin';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { Transaction, Wallet } from '@/types/wallet';
@@ -187,6 +187,20 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     imageUrl: raw.image_url,
   };
 };
+
+type ProtoCheckInTemplate = {
+  id: string;
+  name?: string;
+  title?: string;
+  loot_list?: ProtoItem[];
+};
+
+export const toCheckinTemplate = (raw: ProtoCheckInTemplate): CheckinTemplate => ({
+  id: raw.id,
+  name: raw.name ?? '',
+  title: raw.title ?? '',
+  lootList: (raw.loot_list ?? []).map((i, idx) => ({ id: i.id || `l-${idx}`, name: i.name ?? '' })),
+});
 
 type ProtoMember = {
   id: string;

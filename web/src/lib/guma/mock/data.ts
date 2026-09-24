@@ -11,7 +11,7 @@ import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
 import { BackpackItem } from '@/types/backpack';
 import { GuildEvent, CreateEventData, UpdateEventData } from '@/types/guild-events';
-import { CheckinStatus, CheckinEntry } from '@/types/checkin';
+import { CheckinStatus, CheckinEntry, CheckinTemplate } from '@/types/checkin';
 import type { MockUser, BalancePoint } from '@/types/user';
 import type {
   FeedEvent,
@@ -343,6 +343,24 @@ function generateCheckins(): CheckinEntry[] {
 }
 
 export const mockCheckins: CheckinEntry[] = generateCheckins();
+
+export const mockCheckinTemplates: CheckinTemplate[] = [
+  {
+    id: 'tpl-raid',
+    name: 'Weekly raid',
+    title: 'Weekly guild raid',
+    lootList: [
+      { id: 'tpl-raid-l-0', name: 'Dragon Scale' },
+      { id: 'tpl-raid-l-1', name: 'Ancient Relic' },
+    ],
+  },
+  {
+    id: 'tpl-siege',
+    name: 'Castle siege',
+    title: 'Castle siege roll call',
+    lootList: [{ id: 'tpl-siege-l-0', name: 'Siege Token' }],
+  },
+];
 
 // ─── Auction ─────────────────────────────────────────────────────────────────
 

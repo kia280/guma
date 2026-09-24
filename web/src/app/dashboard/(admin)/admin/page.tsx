@@ -20,6 +20,7 @@ import { Icon } from '@iconify/react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { BankRequestReview } from '@/components/BankRequestReview';
+import { CheckinTemplateManager } from '@/components/CheckinTemplateManager';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
@@ -202,6 +203,12 @@ export default function AdminPage() {
             <Tabs.Tab id="bankRequests">
               <div className="flex items-center gap-2">
                 <span>{t('bankRequests')}</span>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="checkinTemplates">
+              <div className="flex items-center gap-2">
+                <span>{t('checkinTemplates')}</span>
               </div>
               <Tabs.Indicator />
             </Tabs.Tab>
@@ -536,6 +543,10 @@ export default function AdminPage() {
 
         <Tabs.Panel id="bankRequests" className="pt-4">
           <BankRequestReview guildId={guildId} />
+        </Tabs.Panel>
+
+        <Tabs.Panel id="checkinTemplates" className="pt-4">
+          <CheckinTemplateManager guildId={guildId} />
         </Tabs.Panel>
       </Tabs>
 

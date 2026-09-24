@@ -43,3 +43,16 @@ export interface CreateCheckinRequest {
 }
 
 export interface UpdateCheckinRequest extends Partial<CreateCheckinRequest> {}
+
+export interface CheckinTemplate {
+  id: string;
+  name: string;
+  title: string;
+  lootList: LootItem[];
+}
+
+export interface CheckinTemplateInput {
+  name: string;
+  title: string;
+  lootList: Array<{ name: string }>;
+}

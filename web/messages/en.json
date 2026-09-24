@@ -105,7 +105,17 @@
     "loot": "Loot",
     "viewDetails": "View details",
     "checkinClosed": "Roll call closed",
-    "markPresent": "Mark present"
+    "markPresent": "Mark present",
+    "template": "Template",
+    "templatePlaceholder": "Start from a template",
+    "templatesLoading": "Loading templates…",
+    "noTemplates": "No templates yet",
+    "templateHint": "Fills in the title and loot list. You can still edit them.",
+    "templatesLoadFailed": "Could not load templates.",
+    "templatesRetry": "Retry",
+    "templateSummary": "{title} · {count, plural, one {# item} other {# items}}",
+    "addLootItem": "Add item",
+    "removeLootItem": "Remove {name}"
   },
   "walletPage": {
     "wallet": "Wallet",
@@ -320,7 +330,8 @@
       "moderator": "Moderator",
       "member": "Member"
     },
-    "bankRequests": "Bank requests"
+    "bankRequests": "Bank requests",
+    "checkinTemplates": "Roll call templates"
   },
   "guildBankPage": {
     "treasury": "Guild Treasury",
@@ -888,5 +899,34 @@
       "approved": "Approved",
       "rejected": "Rejected"
     }
+  },
+  "checkinTemplates": {
+    "description": "Reusable titles and loot lists for new roll calls.",
+    "create": "New template",
+    "createTitle": "New roll call template",
+    "editTitle": "Edit roll call template",
+    "name": "Template name",
+    "namePlaceholder": "e.g. Weekly raid",
+    "checkinTitle": "Roll call title",
+    "checkinTitlePlaceholder": "Title used for the roll call",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "editNamed": "Edit {name}",
+    "deleteNamed": "Delete {name}",
+    "deleteTitle": "Delete template?",
+    "deleteConfirm": "\"{name}\" will be removed. Existing roll calls are not affected.",
+    "loading": "Loading templates",
+    "loadFailed": "Could not load roll call templates.",
+    "retry": "Retry",
+    "emptyTitle": "No templates yet",
+    "emptyHint": "Create a template to prefill new roll calls.",
+    "noLoot": "No loot items",
+    "lootCount": "{count, plural, one {# loot item} other {# loot items}}",
+    "errorNameTaken": "A template with this name already exists.",
+    "errorForbidden": "You don't have permission to manage templates.",
+    "errorNotFound": "This template no longer exists.",
+    "errorInvalid": "Check the name, title, and loot items, then try again.",
+    "errorGeneric": "Something went wrong. Please try again."
   }
 }

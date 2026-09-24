@@ -7,6 +7,8 @@ import { AuctionStatus, type AuctionItem } from '@/types/auction';
 import type {
   AttendanceMember,
   CheckinEntry,
+  CheckinTemplate,
+  CheckinTemplateInput,
   LootItem,
 } from '@/types/checkin';
 import { CheckinStatus } from '@/types/checkin';
@@ -31,12 +33,26 @@ import type { ApiClient } from '../types';
 /** In-memory store so mutations feel interactive during mock-mode development. */
 const store = {
   checkins: [...mockData.mockCheckins] as CheckinEntry[],
+  checkinTemplates: mockData.mockCheckinTemplates.map(t => ({ ...t, lootList: [...t.lootList] })) as CheckinTemplate[],
   auctions: [...mockData.mockAuctionItems] as AuctionItem[],
   transactions: [...mockData.mockTransactions] as Transaction[],
   lotteries: mockData.mockLotteries.map(l => ({ ...l, participants: l.participants?.map(p => ({ ...p })) })) as Lottery[],
   events: [] as GuildEvent[],
   announcements: [...mockData.mockAdminAnnouncements] as AdminAnnouncement[],
   notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
+};
+
+const toMockTemplate = (id: string, input: CheckinTemplateInput): CheckinTemplate => ({
+  id,
+  name: input.name.trim(),
+  title: input.title.trim(),
+  lootList: input.lootList.map((item, idx) => ({ id: `${id}-l-${idx}`, name: item.name.trim() })),
+});
+
+const assertUniqueTemplateName = (template: CheckinTemplate) => {
+  if (store.checkinTemplates.some(t => t.id !== template.id && t.name === template.name)) {
+    throw Object.assign(new Error('a template with this name already exists'), { response: { status: 409 } });
+  }
 };
 
 const currentUser: User = {
@@ -332,6 +348,24 @@ const baseMockApiClient: ApiClient = {
   listAttendees: async (_guildId, checkinId) => {
     const entry = store.checkins.find(c => c.id === checkinId);
     return entry?.attendanceList ?? [];
+  },
+  listCheckinTemplates: async () =>
+    [...store.checkinTemplates].sort((a, b) => a.name.localeCompare(b.name)),
+  createCheckinTemplate: async (_guildId, input) => {
+    const template = toMockTemplate(`tpl-${Date.now()}`, input);
+    assertUniqueTemplateName(template);
+    store.checkinTemplates = [...store.checkinTemplates, template];
+    return template;
+  },
+  updateCheckinTemplate: async (_guildId, id, input) => {
+    if (!store.checkinTemplates.some(t => t.id === id)) throw new Error('not found');
+    const template = toMockTemplate(id, input);
+    assertUniqueTemplateName(template);
+    store.checkinTemplates = store.checkinTemplates.map(t => (t.id === id ? template : t));
+    return template;
+  },
+  deleteCheckinTemplate: async (_guildId, id) => {
+    store.checkinTemplates = store.checkinTemplates.filter(t => t.id !== id);
   },
 
   // ── Lottery ──
