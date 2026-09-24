@@ -2088,6 +2088,49 @@
         "tags": [
           "LotteryService"
         ]
+      },
+      "patch": {
+        "summary": "Update a lottery that has not been drawn yet (admin action)",
+        "operationId": "LotteryService_UpdateLottery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateLotteryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lotteryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LotteryServiceUpdateLotteryBody"
+            }
+          }
+        ],
+        "tags": [
+          "LotteryService"
+        ]
       }
     },
     "/v1/guilds/{guildId}/lotteries/{lotteryId}/draw": {
@@ -3320,6 +3363,15 @@
         "quantity": {
           "type": "integer",
           "format": "int32"
+        }
+      }
+    },
+    "LotteryServiceUpdateLotteryBody": {
+      "type": "object",
+      "properties": {
+        "drawDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime; must be in the future"
         }
       }
     },
@@ -5354,6 +5406,14 @@
       "properties": {
         "settings": {
           "$ref": "#/definitions/v1GuildSettings"
+        }
+      }
+    },
+    "v1UpdateLotteryResponse": {
+      "type": "object",
+      "properties": {
+        "lottery": {
+          "$ref": "#/definitions/v1Lottery"
         }
       }
     },

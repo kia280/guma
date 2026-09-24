@@ -130,6 +130,25 @@ func (h *LotteryHandler) GetLotteryWinners(ctx context.Context, req *gumav1.GetL
 	return &gumav1.GetLotteryWinnersResponse{Winners: protos}, nil
 }
 
+func (h *LotteryHandler) UpdateLottery(ctx context.Context, req *gumav1.UpdateLotteryRequest) (*gumav1.UpdateLotteryResponse, error) {
+	if req.GuildId == "" || req.LotteryId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and lottery_id are required")
+	}
+	if req.DrawDate == "" {
+		return nil, status.Error(codes.InvalidArgument, "draw_date is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	l, err := h.svc.UpdateDrawDate(ctx, req.GuildId, req.LotteryId, userID, req.DrawDate)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.UpdateLotteryResponse{Lottery: lotteryToProto(l)}, nil
+}
+
 func (h *LotteryHandler) DrawLottery(ctx context.Context, req *gumav1.DrawLotteryRequest) (*gumav1.DrawLotteryResponse, error) {
 	if req.GuildId == "" || req.LotteryId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and lottery_id are required")

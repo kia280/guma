@@ -71,7 +71,7 @@ INSERT INTO lotteries (
 ) VALUES (
     $1, $2, $6::text,
     NULLIF($7::text, ''),
-    $3, $4, $5, 'upcoming',
+    $3, $4, $5, 'active',
     $8::text::timestamptz,
     $9::jsonb
 )
@@ -583,4 +583,62 @@ func (q *Queries) LotteryExists(ctx context.Context, arg LotteryExistsParams) (b
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
+}
+
+const updateLotteryDrawDate = `-- name: UpdateLotteryDrawDate :one
+UPDATE lotteries SET
+    draw_date  = $1::text::timestamptz,
+    updated_at = NOW()
+WHERE id = $2 AND guild_id = $3 AND status <> 'ended'
+RETURNING id, guild_id, created_by, title,
+          COALESCE(description, '') AS description,
+          ticket_price, tickets_sold,
+          max_tickets, max_tickets_per_user, status,
+          TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
+          prizes, created_at, updated_at
+`
+
+type UpdateLotteryDrawDateParams struct {
+	DrawDate string
+	ID       uuid.UUID
+	GuildID  uuid.UUID
+}
+
+type UpdateLotteryDrawDateRow struct {
+	ID                uuid.UUID
+	GuildID           uuid.UUID
+	CreatedBy         uuid.UUID
+	Title             string
+	Description       string
+	TicketPrice       int64
+	TicketsSold       int32
+	MaxTickets        int32
+	MaxTicketsPerUser int32
+	Status            string
+	DrawDate          string
+	Prizes            []byte
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+}
+
+func (q *Queries) UpdateLotteryDrawDate(ctx context.Context, arg UpdateLotteryDrawDateParams) (UpdateLotteryDrawDateRow, error) {
+	row := q.db.QueryRow(ctx, updateLotteryDrawDate, arg.DrawDate, arg.ID, arg.GuildID)
+	var i UpdateLotteryDrawDateRow
+	err := row.Scan(
+		&i.ID,
+		&i.GuildID,
+		&i.CreatedBy,
+		&i.Title,
+		&i.Description,
+		&i.TicketPrice,
+		&i.TicketsSold,
+		&i.MaxTickets,
+		&i.MaxTicketsPerUser,
+		&i.Status,
+		&i.DrawDate,
+		&i.Prizes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

@@ -163,6 +163,11 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	lotteries := make([]*Lottery, 0, len(rows))
 	for _, r := range rows {
 		l := toLottery(lotteryRow(r))
+		if s.drawIfDue(ctx, guildID, r.ID, r.Status, r.DrawDate) {
+			if fresh, err := s.q.GetLottery(ctx, db.GetLotteryParams{ID: r.ID, GuildID: guildID}); err == nil {
+				l = toLottery(lotteryRow(fresh))
+			}
+		}
 		l.Winners, _ = s.getWinners(ctx, r.ID)
 		lotteries = append(lotteries, l)
 	}
@@ -189,6 +194,11 @@ func (s *Service) Get(ctx context.Context, guildIDStr, lotteryIDStr string) (*Lo
 	r, err := s.q.GetLottery(ctx, db.GetLotteryParams{ID: lotteryID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	if s.drawIfDue(ctx, guildID, lotteryID, r.Status, r.DrawDate) {
+		if r, err = s.q.GetLottery(ctx, db.GetLotteryParams{ID: lotteryID, GuildID: guildID}); err != nil {
+			return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		}
 	}
 	l := toLottery(lotteryRow(r))
 	l.Winners, _ = s.getWinners(ctx, lotteryID)
@@ -334,7 +344,11 @@ func (s *Service) GetWinners(ctx context.Context, guildIDStr, lotteryIDStr strin
 	if err != nil || !exists {
 		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
 	}
-	return s.getWinners(ctx, lotteryID)
+	l, err := s.Get(ctx, guildIDStr, lotteryIDStr)
+	if err != nil {
+		return nil, err
+	}
+	return l.Winners, nil
 }
 
 // Draw randomly selects winners and distributes prizes.
@@ -355,19 +369,35 @@ func (s *Service) Draw(ctx context.Context, guildIDStr, lotteryIDStr, callerIDSt
 		return nil, nil, err
 	}
 
+	winners, err := s.draw(ctx, guildID, lotteryID, false)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	l, err := s.Get(ctx, guildIDStr, lotteryIDStr)
+	if err != nil {
+		return nil, nil, err
+	}
+	s.logger.Info().Str("lottery_id", lotteryIDStr).Int("winners", len(winners)).Msg("lottery drawn")
+	return l, winners, nil
+}
+
+func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowEmpty bool) ([]*LotteryWinner, error) {
+	lotteryIDStr := lotteryID.String()
+
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
 	}
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
 	info, err := qtx.GetLotteryForDraw(ctx, db.GetLotteryForDrawParams{ID: lotteryID, GuildID: guildID})
 	if err != nil {
-		return nil, nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
 	}
 	if info.Status == "ended" {
-		return nil, nil, fmt.Errorf("%w: lottery already drawn", errs.ErrFailedPrecondition)
+		return nil, fmt.Errorf("%w: lottery already drawn", errs.ErrFailedPrecondition)
 	}
 
 	var prizeList []LotteryPrize
@@ -377,10 +407,19 @@ func (s *Service) Draw(ctx context.Context, guildIDStr, lotteryIDStr, callerIDSt
 
 	allTickets, err := qtx.ListAllLotteryTickets(ctx, lotteryID)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%w: fetch tickets: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: fetch tickets: %v", errs.ErrInternal, err)
 	}
 	if len(allTickets) == 0 {
-		return nil, nil, fmt.Errorf("%w: no tickets sold", errs.ErrFailedPrecondition)
+		if !allowEmpty {
+			return nil, fmt.Errorf("%w: no tickets sold", errs.ErrFailedPrecondition)
+		}
+		if err := qtx.EndLottery(ctx, lotteryID); err != nil {
+			return nil, fmt.Errorf("%w: end lottery: %v", errs.ErrInternal, err)
+		}
+		if err := pgtx.Commit(ctx); err != nil {
+			return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+		}
+		return nil, nil
 	}
 
 	rand.Shuffle(len(allTickets), func(i, j int) { allTickets[i], allTickets[j] = allTickets[j], allTickets[i] })
@@ -416,7 +455,7 @@ func (s *Service) Draw(ctx context.Context, guildIDStr, lotteryIDStr, callerIDSt
 			PrizeDescription: prize.Description, TicketNumber: t.TicketNumber,
 		})
 		if err != nil {
-			return nil, nil, fmt.Errorf("%w: insert winner: %v", errs.ErrInternal, err)
+			return nil, fmt.Errorf("%w: insert winner: %v", errs.ErrInternal, err)
 		}
 
 		if prize.Amount > 0 {
@@ -441,19 +480,76 @@ func (s *Service) Draw(ctx context.Context, guildIDStr, lotteryIDStr, callerIDSt
 	}
 
 	if err := qtx.EndLottery(ctx, lotteryID); err != nil {
-		return nil, nil, fmt.Errorf("%w: end lottery: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: end lottery: %v", errs.ErrInternal, err)
 	}
 
 	if err := pgtx.Commit(ctx); err != nil {
-		return nil, nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	return winners, nil
+}
+
+func (s *Service) drawIfDue(ctx context.Context, guildID, lotteryID uuid.UUID, status, drawDate string) bool {
+	if status == "ended" || !isDue(drawDate, time.Now()) {
+		return false
+	}
+	winners, err := s.draw(ctx, guildID, lotteryID, true)
+	if errors.Is(err, errs.ErrFailedPrecondition) {
+		return true
+	}
+	if err != nil {
+		s.logger.Error().Err(err).Str("lottery_id", lotteryID.String()).Msg("scheduled lottery draw failed")
+		return false
+	}
+	s.logger.Info().Str("lottery_id", lotteryID.String()).Int("winners", len(winners)).Msg("scheduled lottery drawn")
+	return true
+}
+
+func isDue(drawDate string, now time.Time) bool {
+	at, err := time.Parse(time.RFC3339, drawDate)
+	return err == nil && !now.Before(at)
+}
+
+func (s *Service) UpdateDrawDate(ctx context.Context, guildIDStr, lotteryIDStr, callerIDStr, drawDate string) (*Lottery, error) {
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	lotteryID, err := uuid.Parse(lotteryIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	callerID, err := uuid.Parse(callerIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	at, err := time.Parse(time.RFC3339, drawDate)
+	if err != nil {
+		return nil, fmt.Errorf("%w: draw_date must be an ISO 8601 datetime", errs.ErrInvalidArgument)
+	}
+	if !at.After(time.Now()) {
+		return nil, fmt.Errorf("%w: draw_date must be in the future", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
+		return nil, err
 	}
 
-	l, err := s.Get(ctx, guildIDStr, lotteryIDStr)
+	r, err := s.q.UpdateLotteryDrawDate(ctx, db.UpdateLotteryDrawDateParams{
+		DrawDate: at.UTC().Format(time.RFC3339), ID: lotteryID, GuildID: guildID,
+	})
 	if err != nil {
-		return nil, nil, err
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: update lottery: %v", errs.ErrInternal, err)
+		}
+		if exists, _ := s.q.LotteryExists(ctx, db.LotteryExistsParams{ID: lotteryID, GuildID: guildID}); exists {
+			return nil, fmt.Errorf("%w: lottery already drawn", errs.ErrFailedPrecondition)
+		}
+		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
 	}
-	s.logger.Info().Str("lottery_id", lotteryIDStr).Int("winners", len(winners)).Msg("lottery drawn")
-	return l, winners, nil
+	l := toLottery(lotteryRow(r))
+	l.Winners = []*LotteryWinner{}
+	s.logger.Info().Str("lottery_id", l.ID).Str("draw_date", l.DrawDate).Msg("lottery rescheduled")
+	return l, nil
 }
 
 // ListMyTickets returns tickets owned by a user across all guilds (or filtered by guild).

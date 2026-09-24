@@ -31,7 +31,7 @@ INSERT INTO lotteries (
 ) VALUES (
     $1, $2, sqlc.arg(title)::text,
     NULLIF(sqlc.arg(description)::text, ''),
-    $3, $4, $5, 'upcoming',
+    $3, $4, $5, 'active',
     sqlc.arg(draw_date)::text::timestamptz,
     sqlc.arg(prizes)::jsonb
 )
@@ -108,3 +108,15 @@ SELECT COUNT(*) FROM lottery_tickets lt
 JOIN lotteries l ON l.id = lt.lottery_id
 WHERE lt.user_id = $1
   AND (sqlc.arg(guild_filter)::text = '' OR l.guild_id::text = sqlc.arg(guild_filter)::text);
+
+-- name: UpdateLotteryDrawDate :one
+UPDATE lotteries SET
+    draw_date  = sqlc.arg(draw_date)::text::timestamptz,
+    updated_at = NOW()
+WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id) AND status <> 'ended'
+RETURNING id, guild_id, created_by, title,
+          COALESCE(description, '') AS description,
+          ticket_price, tickets_sold,
+          max_tickets, max_tickets_per_user, status,
+          TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
+          prizes, created_at, updated_at;

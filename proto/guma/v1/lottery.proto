@@ -41,6 +41,14 @@ service LotteryService {
     };
   }
 
+  // Update a lottery that has not been drawn yet (admin action)
+  rpc UpdateLottery(UpdateLotteryRequest) returns (UpdateLotteryResponse) {
+    option (google.api.http) = {
+      patch: "/v1/guilds/{guild_id}/lotteries/{lottery_id}"
+      body: "*"
+    };
+  }
+
   // Draw the lottery manually (admin action)
   rpc DrawLottery(DrawLotteryRequest) returns (DrawLotteryResponse) {
     option (google.api.http) = {
@@ -124,6 +132,16 @@ message DrawLotteryRequest {
 message DrawLotteryResponse {
   Lottery lottery = 1;
   repeated LotteryWinner winners = 2;
+}
+
+message UpdateLotteryRequest {
+  string guild_id = 1;
+  string lottery_id = 2;
+  string draw_date = 3; // ISO 8601 datetime; must be in the future
+}
+
+message UpdateLotteryResponse {
+  Lottery lottery = 1;
 }
 
 message ListMyTicketsRequest {
