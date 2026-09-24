@@ -861,7 +861,7 @@
     "notePlaceholder": "Add a note for the member…",
     "reviewNoteLabel": "Review note",
     "cancel": "Cancel",
-    "errorForbidden": "You don't have permission to review this request. You cannot review your own requests.",
+    "errorForbidden": "You don't have permission to review this request.",
     "errorConflict": "This request can no longer be approved. It may have been reviewed already, or the bank lacks funds or the item.",
     "errorNotFound": "This request no longer exists.",
     "errorGeneric": "Something went wrong. Please try again.",
@@ -869,7 +869,6 @@
       "pending": "Pending",
       "approved": "Approved",
       "rejected": "Rejected"
-    },
-    "ownRequest": "Your request"
+    }
   }
 }

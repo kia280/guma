@@ -861,7 +861,7 @@
     "notePlaceholder": "留言給申請的成員…",
     "reviewNoteLabel": "審核備註",
     "cancel": "取消",
-    "errorForbidden": "您沒有權限審核此申請，也不能審核自己的申請。",
+    "errorForbidden": "您沒有權限審核此申請。",
     "errorConflict": "此申請已無法批准：可能已被審核，或金庫餘額、物品不足。",
     "errorNotFound": "此申請已不存在。",
     "errorGeneric": "發生錯誤，請再試一次。",
@@ -869,7 +869,6 @@
       "pending": "待審核",
       "approved": "已批准",
       "rejected": "已拒絕"
-    },
-    "ownRequest": "您的申請"
+    }
   }
 }
