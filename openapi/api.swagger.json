@@ -15,6 +15,9 @@
       "name": "CheckInService"
     },
     {
+      "name": "CheckInTemplateService"
+    },
+    {
       "name": "EventService"
     },
     {
@@ -1195,6 +1198,150 @@
         ],
         "tags": [
           "BankService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkin-templates": {
+      "get": {
+        "operationId": "CheckInTemplateService_ListCheckInTemplates",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListCheckInTemplatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CheckInTemplateService"
+        ]
+      },
+      "post": {
+        "operationId": "CheckInTemplateService_CreateCheckInTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateCheckInTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInTemplateServiceCreateCheckInTemplateBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInTemplateService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkin-templates/{templateId}": {
+      "delete": {
+        "operationId": "CheckInTemplateService_DeleteCheckInTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteCheckInTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CheckInTemplateService"
+        ]
+      },
+      "patch": {
+        "operationId": "CheckInTemplateService_UpdateCheckInTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateCheckInTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInTemplateServiceUpdateCheckInTemplateBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInTemplateService"
         ]
       }
     },
@@ -3383,6 +3530,42 @@
         }
       }
     },
+    "CheckInTemplateServiceCreateCheckInTemplateBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        }
+      }
+    },
+    "CheckInTemplateServiceUpdateCheckInTemplateBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        }
+      }
+    },
     "EventServiceCreateEventBody": {
       "type": "object",
       "properties": {
@@ -4000,6 +4183,41 @@
         }
       }
     },
+    "v1CheckInTemplate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "v1ContributeFundsResponse": {
       "type": "object",
       "properties": {
@@ -4024,6 +4242,14 @@
       "properties": {
         "checkin": {
           "$ref": "#/definitions/v1CheckIn"
+        }
+      }
+    },
+    "v1CreateCheckInTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "$ref": "#/definitions/v1CheckInTemplate"
         }
       }
     },
@@ -4092,6 +4318,14 @@
       }
     },
     "v1DeleteCheckInResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteCheckInTemplateResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -4784,6 +5018,18 @@
         "totalCount": {
           "type": "integer",
           "format": "int32"
+        }
+      }
+    },
+    "v1ListCheckInTemplatesResponse": {
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CheckInTemplate"
+          }
         }
       }
     },
@@ -5624,6 +5870,14 @@
       "properties": {
         "checkin": {
           "$ref": "#/definitions/v1CheckIn"
+        }
+      }
+    },
+    "v1UpdateCheckInTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "$ref": "#/definitions/v1CheckInTemplate"
         }
       }
     },

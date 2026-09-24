@@ -104,6 +104,17 @@ type CheckinAttendee struct {
 	AttendedAt  time.Time
 }
 
+type CheckinTemplate struct {
+	ID        uuid.UUID
+	GuildID   uuid.UUID
+	Name      string
+	Title     string
+	LootList  []byte
+	CreatedBy uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type FundRequest struct {
 	ID            uuid.UUID
 	GuildID       uuid.UUID
