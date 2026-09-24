@@ -18,6 +18,7 @@ import { DateTimePicker } from './DateTimePicker';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import type { Lottery } from '@/types/lottery';
+import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
 
 type CreateLotteryModalProps = {
   state: UseOverlayStateReturn;
@@ -138,7 +139,7 @@ export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLo
                       onChange={event => setPrizeName(event.target.value)}
                     />
                   </TextField>
-                  <NumberField minValue={0} value={prizeAmount} onChange={value => setPrizeAmount(Number.isFinite(value) ? value : 0)}>
+                  <NumberField formatOptions={GOLD_FORMAT_OPTIONS} minValue={0} value={prizeAmount} onChange={value => setPrizeAmount(Number.isFinite(value) ? value : 0)}>
                     <Label>{t('prizeAmount')}</Label>
                     <NumberField.Group>
                       <NumberField.DecrementButton />
@@ -146,7 +147,7 @@ export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLo
                       <NumberField.IncrementButton />
                     </NumberField.Group>
                   </NumberField>
-                  <NumberField isRequired minValue={1} value={ticketPrice} onChange={value => setTicketPrice(Number.isFinite(value) ? value : 0)}>
+                  <NumberField isRequired formatOptions={GOLD_FORMAT_OPTIONS} minValue={GOLD_STEP} value={ticketPrice} onChange={value => setTicketPrice(Number.isFinite(value) ? value : 0)}>
                     <Label>{t('ticketPrice')}</Label>
                     <NumberField.Group>
                       <NumberField.DecrementButton />

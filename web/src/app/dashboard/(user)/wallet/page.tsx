@@ -35,6 +35,7 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { walletBalanceTrend } from '@/lib/guma/mock/data';
 import { localizeMock } from '@/lib/guma/mock/i18n';
 import { isLocale } from '@/i18n/locales';
+import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 
 const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
@@ -183,8 +184,8 @@ export default function WalletPage() {
   const balance = wallet?.balance ?? 0;
 
   const handleTransfer = async () => {
-    const amount = parseFloat(transferAmount);
-    if (!amount || !transferRecipient) return;
+    const amount = parseGold(transferAmount);
+    if (!(amount > 0) || !transferRecipient) return;
     try {
       await apiClient.transfer(guildId, { recipientId: transferRecipient, amount });
       refetchWallet();
@@ -194,8 +195,8 @@ export default function WalletPage() {
   };
 
   const handleWithdraw = async () => {
-    const amount = parseFloat(withdrawAmount);
-    if (!amount || amount <= 0) return;
+    const amount = parseGold(withdrawAmount);
+    if (!(amount > 0)) return;
     try {
       await apiClient.withdraw(guildId, amount);
       refetchWallet();
@@ -204,8 +205,8 @@ export default function WalletPage() {
   };
 
   const handleDeposit = async () => {
-    const amount = parseFloat(depositAmount);
-    if (!amount || amount <= 0) return;
+    const amount = parseGold(depositAmount);
+    if (!(amount > 0)) return;
     try {
       await apiClient.deposit(guildId, amount);
       refetchWallet();
@@ -285,6 +286,9 @@ export default function WalletPage() {
                           autoFocus
                           placeholder="0.00"
                           type="number"
+                          min={0}
+                          step={GOLD_STEP}
+                          inputMode="decimal"
                           value={depositAmount}
                           variant="secondary"
                           onChange={e => setDepositAmount(e.target.value)}
@@ -301,7 +305,7 @@ export default function WalletPage() {
                       <Button
                         variant="tertiary"
                         onPress={handleDeposit}
-                        isDisabled={!depositAmount || parseFloat(depositAmount) <= 0}
+                        isDisabled={!(parseGold(depositAmount) > 0)}
                       >
                         {t('deposit')}
                       </Button>
@@ -329,6 +333,9 @@ export default function WalletPage() {
                           autoFocus
                           placeholder="0.00"
                           type="number"
+                          min={0}
+                          step={GOLD_STEP}
+                          inputMode="decimal"
                           value={transferAmount}
                           variant="secondary"
                           onChange={e => setTransferAmount(e.target.value)}
@@ -404,6 +411,9 @@ export default function WalletPage() {
                           autoFocus
                           placeholder="0.00"
                           type="number"
+                          min={0}
+                          step={GOLD_STEP}
+                          inputMode="decimal"
                           value={withdrawAmount}
                           variant="secondary"
                           onChange={e => setWithdrawAmount(e.target.value)}

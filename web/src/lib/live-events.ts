@@ -2,6 +2,7 @@
 
 import { env } from '@/lib/env';
 import { isDevMockEnabled } from '@/lib/dev-mock';
+import { fromMinorUnits } from '@/lib/guma/money';
 
 export type LiveResource = 'bank' | 'auction' | 'lottery' | 'checkin' | 'notification';
 
@@ -47,7 +48,7 @@ export const parseLiveEvent = (data: string): LiveEvent | null => {
   }
   const wallet = frame.result?.wallet_updated;
   if (wallet?.guild_id) {
-    return { kind: 'wallet', guildId: wallet.guild_id, balance: Number(wallet.balance ?? 0) };
+    return { kind: 'wallet', guildId: wallet.guild_id, balance: fromMinorUnits(wallet.balance) };
   }
   const changed = frame.result?.resource_changed;
   if (changed?.resource) {

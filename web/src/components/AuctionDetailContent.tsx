@@ -24,6 +24,7 @@ import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { GOLD_STEP, roundGold } from '@/lib/guma/money';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -131,7 +132,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     );
   }
 
-  const minimumBid = item.currentBid + item.minBidIncrement;
+  const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput?.auctionId === id ? bidInput.amount : minimumBid;
   const isActive = item.status === AuctionStatus.ACTIVE;
   const canBid = isActive && bidAmount >= minimumBid && bidAmount <= userBalance;
@@ -506,9 +507,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <Label>{t('yourBidAmount')}</Label>
                   <Input
                     type="number"
+                    min={0}
+                    step={GOLD_STEP}
+                    inputMode="decimal"
                     placeholder={`Minimum: $${minimumBid.toLocaleString()}`}
                     value={bidAmount.toString()}
-                    onChange={e => setBidInput({ auctionId: id, amount: Number(e.target.value) })}
+                    onChange={e => setBidInput({ auctionId: id, amount: roundGold(Number(e.target.value)) })}
                     variant="secondary"
                   />
                   <Description>

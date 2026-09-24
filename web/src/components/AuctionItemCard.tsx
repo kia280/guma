@@ -17,6 +17,7 @@ import {
 import { Icon } from '@iconify/react';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
+import { GOLD_STEP, roundGold } from '@/lib/guma/money';
 
 const getCategoryIcon = (category: ItemCategory) => {
   const icons: Record<ItemCategory, string> = {
@@ -95,7 +96,7 @@ const AuctionItemCard = ({
   const router = useRouter();
   const t = useTranslations('auctionItemCard');
   const [bidInput, setBidInput] = useState<number | null>(null);
-  const minimumBid = item.currentBid + item.minBidIncrement;
+  const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput ?? minimumBid;
 
   const isActive = item.status === AuctionStatus.ACTIVE;
@@ -307,9 +308,12 @@ const AuctionItemCard = ({
                       </InputGroup.Prefix>
                       <InputGroup.Input
                         type="number"
+                        min={0}
+                        step={GOLD_STEP}
+                        inputMode="decimal"
                         placeholder={`${t('minimum')} $${minimumBid.toLocaleString()}`}
                         value={bidAmount.toString()}
-                        onChange={e => setBidInput(Number(e.target.value))}
+                        onChange={e => setBidInput(roundGold(Number(e.target.value)))}
                       />
                     </InputGroup>
                     <p className="type-caption text-hint mt-1">

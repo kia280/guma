@@ -20,6 +20,7 @@ import type {
 import type { GuildEvent } from '@/types/guild-events';
 import type { MockUser, User } from '@/types/user';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
+import { fromMinorUnits } from './money';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ export const toUser = (u: ProtoUser): User => ({
   bio: u.bio ?? '',
   guildIds: u.guild_ids ?? [],
   currentGuildId: u.current_guild_id ?? '',
-  balance: Number(u.balance ?? 0),
+  balance: fromMinorUnits(u.balance),
   createdAt: ts(u.created_at),
   updatedAt: ts(u.updated_at),
 });
@@ -106,12 +107,12 @@ export const toAuctionItem = (raw: ProtoAuctionItem): AuctionItem => ({
   category: toCategory(raw.item?.category),
   rarity: toRarity(raw.item?.rarity),
   imageUrl: raw.item?.image_url,
-  startingBid: Number(raw.starting_bid ?? 0),
-  currentBid: Number(raw.current_bid ?? 0),
+  startingBid: fromMinorUnits(raw.starting_bid),
+  currentBid: fromMinorUnits(raw.current_bid),
   currentBidder: raw.current_bidder_id
     ? { id: raw.current_bidder_id, username: raw.current_bidder_id }
     : undefined,
-  minBidIncrement: Number(raw.min_bid_increment ?? 0),
+  minBidIncrement: fromMinorUnits(raw.min_bid_increment),
   startTime: ts(raw.start_time),
   endTime: ts(raw.end_time),
   status: toStatus(raw.status),
@@ -146,7 +147,7 @@ export const toBid = (raw: ProtoBid): Bid => {
       username,
       avatar: raw.bidder_avatar_url || undefined,
     },
-    amount: Number(raw.amount ?? 0),
+    amount: fromMinorUnits(raw.amount),
     timestamp: ts(raw.placed_at),
     isWinning: Boolean(raw.is_winning),
   };
@@ -252,7 +253,7 @@ type ProtoLotteryWinner = {
 };
 
 export const toLottery = (raw: ProtoLottery): Lottery => {
-  const prizePool = (raw.prizes ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0);
+  const prizePool = fromMinorUnits((raw.prizes ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0));
   const winners = raw.winners?.length
     ? raw.winners.map(toLotteryWinner)
     : undefined;
@@ -260,7 +261,7 @@ export const toLottery = (raw: ProtoLottery): Lottery => {
     id: raw.id,
     title: raw.title ?? '',
     prizePool,
-    ticketPrice: Number(raw.ticket_price ?? 0),
+    ticketPrice: fromMinorUnits(raw.ticket_price),
     drawDate: raw.draw_date ?? '',
     ticketsSold: raw.tickets_sold ?? 0,
     maxTickets: raw.max_tickets ?? 0,
@@ -271,7 +272,7 @@ export const toLottery = (raw: ProtoLottery): Lottery => {
 
 export const toLotteryWinner = (raw: ProtoLotteryWinner): LotteryWinner => {
   const prize = raw.prize_description
-    || (raw.prize_amount ? `$${Number(raw.prize_amount).toLocaleString()}` : '');
+    || (raw.prize_amount ? `$${fromMinorUnits(raw.prize_amount).toLocaleString()}` : '');
   return {
     id: raw.id ?? '',
     username: raw.username ?? '',
@@ -320,7 +321,7 @@ export const toWallet = (w: ProtoWallet): Wallet => ({
   id: `${w.user_id ?? ''}:${w.guild_id ?? ''}`,
   userId: w.user_id ?? '',
   guildId: w.guild_id ?? '',
-  balance: Number(w.balance ?? 0),
+  balance: fromMinorUnits(w.balance),
   currency: w.currency ?? 'gold',
   createdAt: ts(w.created_at),
   updatedAt: ts(w.updated_at),
@@ -336,7 +337,7 @@ export const toTransaction = (raw: ProtoTransaction): Transaction => {
     id: raw.id,
     type,
     kind: raw.type?.toUpperCase(),
-    amount: Number(raw.amount ?? 0),
+    amount: fromMinorUnits(raw.amount),
     recipient: raw.recipient,
     date: ts(raw.created_at).slice(0, 10),
     status: (raw.status?.toLowerCase() as Transaction['status']) || 'completed',
@@ -385,9 +386,9 @@ type ProtoGuildBank = {
 export const toGuildBank = (raw: ProtoGuildBank): GuildBank => ({
   id: raw.id,
   guildId: raw.guild_id ?? '',
-  balance: Number(raw.balance ?? 0),
+  balance: fromMinorUnits(raw.balance),
   currency: raw.currency ?? 'gold',
-  goal: Number(raw.goal ?? 0),
+  goal: fromMinorUnits(raw.goal),
   updatedAt: ts(raw.updated_at),
 });
 
@@ -406,7 +407,7 @@ export const toBankContribution = (raw: ProtoBankContribution): BankContribution
   guildId: raw.guild_id ?? '',
   userId: raw.user_id ?? '',
   username: raw.username ?? '',
-  amount: Number(raw.amount ?? 0),
+  amount: fromMinorUnits(raw.amount),
   note: raw.note,
   createdAt: ts(raw.created_at),
 });
@@ -429,7 +430,7 @@ export const toFundRequest = (raw: ProtoFundRequest): FundRequest => ({
   guildId: raw.guild_id ?? '',
   requesterId: raw.requester_id ?? '',
   requesterName: raw.requester_name ?? '',
-  amount: Number(raw.amount ?? 0),
+  amount: fromMinorUnits(raw.amount),
   reason: raw.reason ?? '',
   status: (raw.status?.toLowerCase() as FundRequest['status']) || 'pending',
   reviewNote: raw.review_note || undefined,
