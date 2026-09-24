@@ -148,3 +148,28 @@ ORDER BY CASE m.role
          END,
          m.joined_at ASC
 LIMIT sqlc.arg(max_rows)::int;
+
+-- name: ListGuildMembers :many
+SELECT m.id, m.user_id, m.guild_id,
+       COALESCE(NULLIF(m.display_name, ''), NULLIF(u.display_name, ''), u.username)::text AS display_name,
+       m.role, m.profile, m.joined_at, m.last_active,
+       u.email,
+       COALESCE(u.avatar_url, '') AS avatar_url
+FROM members m
+JOIN users u ON u.id = m.user_id
+WHERE m.guild_id = sqlc.arg(guild_id)
+  AND (sqlc.arg(role_filter)::text = '' OR m.role = sqlc.arg(role_filter)::text)
+ORDER BY CASE m.role
+             WHEN 'owner' THEN 0
+             WHEN 'admin' THEN 1
+             WHEN 'moderator' THEN 2
+             ELSE 3
+         END,
+         m.joined_at ASC,
+         m.id ASC
+LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
+
+-- name: CountGuildMembersByRole :one
+SELECT COUNT(*) FROM members
+WHERE guild_id = sqlc.arg(guild_id)
+  AND (sqlc.arg(role_filter)::text = '' OR role = sqlc.arg(role_filter)::text);

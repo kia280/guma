@@ -17,13 +17,35 @@ import {
   Label,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { HTML_LANG, isLocale } from '@/i18n/locales';
 import type { MockUser } from '@/types/user';
 import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
 import type { Guild } from '@/types/guild';
+
+const STATUSES = ['online', 'offline', 'banned'] as const;
+const ROLES = ['owner', 'admin', 'moderator', 'member'] as const;
+
+const RELATIVE_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
+  ['year', 365 * 24 * 3600],
+  ['month', 30 * 24 * 3600],
+  ['week', 7 * 24 * 3600],
+  ['day', 24 * 3600],
+  ['hour', 3600],
+  ['minute', 60],
+];
+
+const formatRelative = (date: Date, intlLocale: string) => {
+  const seconds = Math.round((date.getTime() - Date.now()) / 1000);
+  const rtf = new Intl.RelativeTimeFormat(intlLocale, { numeric: 'auto' });
+  for (const [unit, size] of RELATIVE_UNITS) {
+    if (Math.abs(seconds) >= size) return rtf.format(Math.round(seconds / size), unit);
+  }
+  return rtf.format(seconds, 'second');
+};
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -95,6 +117,14 @@ const formatTimeAgo = (timestamp: string) => {
 
 export default function AdminPage() {
   const t = useTranslations('adminPage');
+  const locale = useLocale();
+  const formatLastActive = (value?: string) => {
+    if (!value) return '';
+    const date = new Date(value);
+    return /^\d{4}-\d{2}-\d{2}T/.test(value) && !Number.isNaN(date.getTime())
+      ? formatRelative(date, isLocale(locale) ? HTML_LANG[locale] : locale)
+      : value;
+  };
   const guildId = useCurrentGuildId();
 
   const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
@@ -226,16 +256,20 @@ export default function AdminPage() {
                           </Table.Cell>
                           <Table.Cell>
                             <Chip size="sm" color={getRoleColor(user.role ?? '')} variant="secondary" className="capitalize">
-                              {user.role}
+                              {user.role && ROLES.includes(user.role as (typeof ROLES)[number])
+                                ? t(`roles.${user.role as (typeof ROLES)[number]}`)
+                                : user.role}
                             </Chip>
                           </Table.Cell>
                           <Table.Cell className="hidden md:table-cell">
                             <Chip size="sm" variant="secondary" className="capitalize">
-                              {user.status}
+                              {user.status && STATUSES.includes(user.status as (typeof STATUSES)[number])
+                                ? t(`statuses.${user.status as (typeof STATUSES)[number]}`)
+                                : user.status}
                             </Chip>
                           </Table.Cell>
                           <Table.Cell className="hidden md:table-cell">
-                            <p className="type-body text-subtle">{user.lastActive}</p>
+                            <p className="type-body text-subtle">{formatLastActive(user.lastActive)}</p>
                           </Table.Cell>
                         </Table.Row>
                       ))}

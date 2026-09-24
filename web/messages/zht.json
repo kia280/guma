@@ -292,7 +292,18 @@
     "post": "發布",
     "by": "作者",
     "pinned": "已置頂",
-    "save": "儲存"
+    "save": "儲存",
+    "statuses": {
+      "online": "在線",
+      "offline": "離線",
+      "banned": "已封鎖"
+    },
+    "roles": {
+      "owner": "會長",
+      "admin": "管理員",
+      "moderator": "幹部",
+      "member": "成員"
+    }
   },
   "guildBankPage": {
     "treasury": "公會金庫",

@@ -5009,6 +5009,12 @@
         "lastActive": {
           "type": "string",
           "format": "date-time"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
         }
       },
       "title": "Data structures"
