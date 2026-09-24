@@ -55,7 +55,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	eventHandler := handlers.NewEventService(db, logger)
 	lotteryHandler := handlers.NewLotteryService(db, logger)
 	bankHandler := handlers.NewBankService(db, logger)
-	streamHandler := handlers.NewStreamService(broker, logger)
+	streamHandler := handlers.NewStreamService(broker, events.MemberGuildIDs(db), logger)
 
 	healthService := health.NewService(db)
 	healthHandler := handlers.NewHealthServiceHandler(healthService, logger)

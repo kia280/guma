@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -16,16 +17,20 @@ import (
 
 const defaultHeartbeatInterval = 25 * time.Second
 
+type GuildLookup func(ctx context.Context, userID string) ([]string, error)
+
 type StreamHandler struct {
 	gumav1.UnimplementedStreamServiceServer
 	broker            *events.Broker
+	guildLookup       GuildLookup
 	heartbeatInterval time.Duration
 	logger            zerolog.Logger
 }
 
-func NewStreamService(broker *events.Broker, logger zerolog.Logger) *StreamHandler {
+func NewStreamService(broker *events.Broker, guildLookup GuildLookup, logger zerolog.Logger) *StreamHandler {
 	return &StreamHandler{
 		broker:            broker,
+		guildLookup:       guildLookup,
 		heartbeatInterval: defaultHeartbeatInterval,
 		logger:            logger.With().Str("handler", "stream").Logger(),
 	}
@@ -38,7 +43,13 @@ func (h *StreamHandler) WatchUserEvents(_ *gumav1.WatchUserEventsRequest, stream
 		return status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	updates, unsubscribe := h.broker.Subscribe(userID)
+	guildIDs, err := h.guildLookup(ctx, userID)
+	if err != nil {
+		h.logger.Error().Err(err).Str("user_id", userID).Msg("failed to load guild memberships for event stream")
+		return status.Error(codes.Internal, "failed to load guild memberships")
+	}
+
+	updates, unsubscribe := h.broker.Subscribe(userID, guildIDs...)
 	defer unsubscribe()
 
 	if err := stream.Send(heartbeatEvent(time.Now())); err != nil {
@@ -76,9 +87,18 @@ func heartbeatEvent(now time.Time) *gumav1.WatchUserEventsResponse {
 
 func userEventToProto(e events.Event) *gumav1.WatchUserEventsResponse {
 	resp := &gumav1.WatchUserEventsResponse{OccurredAt: timestamppb.New(e.OccurredAt)}
-	if w := e.WalletUpdated; w != nil {
+	switch {
+	case e.WalletUpdated != nil:
 		resp.Event = &gumav1.WatchUserEventsResponse_WalletUpdated{
-			WalletUpdated: &gumav1.WalletUpdated{GuildId: w.GuildID, Balance: w.Balance},
+			WalletUpdated: &gumav1.WalletUpdated{GuildId: e.WalletUpdated.GuildID, Balance: e.WalletUpdated.Balance},
+		}
+	case e.ResourceChanged != nil:
+		resp.Event = &gumav1.WatchUserEventsResponse_ResourceChanged{
+			ResourceChanged: &gumav1.ResourceChanged{
+				GuildId:    e.ResourceChanged.GuildID,
+				Resource:   e.ResourceChanged.Resource,
+				ResourceId: e.ResourceChanged.ResourceID,
+			},
 		}
 	}
 	return resp

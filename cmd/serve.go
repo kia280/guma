@@ -64,7 +64,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	logger.Info().Msg("database connection established")
 
 	broker := events.NewBroker()
-	go events.ListenWalletChanges(ctx, db, broker, logger)
+	go events.Listen(ctx, db, broker, logger)
 
 	// Create gRPC server
 	grpcServer, err := grpc.NewServer(cfg, db, broker, logger)

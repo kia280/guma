@@ -90,3 +90,22 @@ func TestBrokerCloseEndsSubscriptions(t *testing.T) {
 	_, ok = <-late
 	assert.False(t, ok)
 }
+
+func TestBrokerPublishGuildReachesMembersOnly(t *testing.T) {
+	b := NewBroker()
+	member, unsubMember := b.Subscribe("alice", "g1", "g2")
+	other, unsubOther := b.Subscribe("bob", "g3")
+	defer unsubOther()
+
+	changed := Event{OccurredAt: time.Now(), ResourceChanged: &ResourceChanged{GuildID: "g2", Resource: "bank"}}
+	delivered, _ := b.PublishGuild("g2", changed)
+	assert.Equal(t, 1, delivered)
+	assert.Len(t, member, 1)
+	assert.Len(t, other, 0)
+
+	unsubMember()
+	delivered, _ = b.PublishGuild("g1", changed)
+	assert.Zero(t, delivered)
+	delivered, _ = b.Publish("alice", changed)
+	assert.Zero(t, delivered)
+}

@@ -22,6 +22,7 @@ message WatchUserEventsResponse {
   oneof event {
     Heartbeat heartbeat = 10;
     WalletUpdated wallet_updated = 11;
+    ResourceChanged resource_changed = 12;
   }
 }
 
@@ -30,4 +31,10 @@ message Heartbeat {}
 message WalletUpdated {
   string guild_id = 1;
   int64 balance = 2;
+}
+
+message ResourceChanged {
+  string guild_id = 1;
+  string resource = 2;
+  string resource_id = 3;
 }
