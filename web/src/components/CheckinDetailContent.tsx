@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Chip, Avatar, Separator, Modal, TextArea, TextField, Label } from '@heroui/react';
+import { Button, Chip, Avatar, Separator, Modal, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { useUserStore } from '@/lib/store';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -54,10 +55,18 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
 
   const [notes, setNotes] = useState('');
   const [timeRemaining, setTimeRemaining] = useState('');
+  const [isExpired, setIsExpired] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const checkinModal = useOverlayState();
+  const currentUserId = useUserStore(state => state.user?.id);
 
   useEffect(() => {
     if (!entry?.expireTime) return;
-    const tick = () => setTimeRemaining(formatTimeRemaining(entry.expireTime!));
+    const tick = () => {
+      setTimeRemaining(formatTimeRemaining(entry.expireTime!));
+      setIsExpired(new Date(entry.expireTime!).getTime() <= Date.now());
+    };
     tick();
     const timer = setInterval(tick, 30_000);
     return () => clearInterval(timer);
@@ -76,16 +85,35 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   }
 
   const { label: statusLabel, color: statusColor } = statusConfig[entry.status];
-  const isOpen_ = entry.status === CheckinStatus.OPEN;
+  const isOpen_ = entry.status === CheckinStatus.OPEN && !isExpired;
+  const hasCheckedIn = !!currentUserId && entry.attendanceList.some(member => member.userId === currentUserId);
+
+  const openCheckinModal = () => {
+    setSubmitError('');
+    checkinModal.open();
+  };
 
   const handleCheckinConfirm = async () => {
+    setIsSubmitting(true);
+    setSubmitError('');
     try {
       await apiClient.submitAttendance(guildId, id);
-      refetchEntry();
+      setNotes('');
+      checkinModal.close();
     } catch (err) {
-      console.error(err);
+      const status = (err as { response?: { status?: number } }).response?.status;
+      if (status === 409) {
+        checkinModal.close();
+      } else if (status === 400) {
+        setIsExpired(true);
+        setSubmitError(t('checkInExpired'));
+      } else {
+        setSubmitError(t('checkInFailed'));
+      }
+    } finally {
+      setIsSubmitting(false);
+      refetchEntry();
     }
-    setNotes('');
   };
 
   return (
@@ -124,11 +152,18 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           <h1 className="type-title text-foreground">{entry.description}</h1>
           <p className="type-body text-subtle mt-1">{entry.date}</p>
         </div>
-        {isOpen_ && (
-          <Modal>
-          <Button variant="primary" className="shrink-0">
+        {hasCheckedIn ? (
+          <Chip color="success" variant="secondary" className="shrink-0">
+            <Icon icon="solar:check-circle-linear" width={14} />
+            {t('checkedIn')}
+          </Chip>
+        ) : isOpen_ ? (
+          <Button variant="primary" className="shrink-0" onPress={openCheckinModal}>
             {t('checkIn')}
           </Button>
+        ) : null}
+        {!hasCheckedIn && (
+          <Modal state={checkinModal}>
           <Modal.Backdrop>
             <Modal.Container size="sm">
               <Modal.Dialog>
@@ -157,12 +192,17 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                       rows={2}
                     />
                   </TextField>
+                  {submitError && (
+                    <p role="alert" className="type-caption text-danger">
+                      {submitError}
+                    </p>
+                  )}
                 </Modal.Body>
                 <Modal.Footer>
                   <Button slot="close" variant="secondary">
                     {t('cancel')}
                   </Button>
-                  <Button variant="primary" onPress={handleCheckinConfirm}>
+                  <Button variant="primary" isPending={isSubmitting} isDisabled={!isOpen_} onPress={handleCheckinConfirm}>
                     {t('confirmCheckIn')}
                   </Button>
                 </Modal.Footer>

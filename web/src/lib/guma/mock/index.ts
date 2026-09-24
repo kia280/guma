@@ -311,13 +311,19 @@ const baseMockApiClient: ApiClient = {
   submitAttendance: async (_guildId, checkinId): Promise<AttendanceMember> => {
     const entry = store.checkins.find(c => c.id === checkinId);
     if (!entry) throw new Error('not found');
+    if (entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now()) {
+      throw Object.assign(new Error('check-in window has expired'), { response: { status: 400 } });
+    }
+    if (entry.attendanceList.some(a => a.userId === currentUser.id)) {
+      throw Object.assign(new Error('already attended this check-in'), { response: { status: 409 } });
+    }
     const attendee: AttendanceMember = {
       id: `a-${Date.now()}`,
+      userId: currentUser.id,
       username: currentUser.username,
       checkedInAt: new Date().toISOString(),
     };
     entry.attendanceList = [...entry.attendanceList, attendee];
-    entry.status = CheckinStatus.FINISHED;
     return attendee;
   },
   listAttendees: async (_guildId, checkinId) => {
