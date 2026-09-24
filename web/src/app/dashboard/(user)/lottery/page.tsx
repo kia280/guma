@@ -9,6 +9,7 @@ import LotteryCard from '@/components/LotteryCard';
 import { CreateLotteryModal } from '@/components/CreateLotteryModal';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { useLiveResource } from '@/hooks/useLiveResource';
 import type { Lottery } from '@/types/lottery';
 
 export default function LotteryPage() {
@@ -30,6 +31,8 @@ export default function LotteryPage() {
     return () => { cancelled = true; };
   }, [guildId, pathname, reloadKey]);
 
+  useLiveResource(['lottery'], () => setReloadKey(key => key + 1), { guildId });
+
   React.useEffect(() => {
     if (pathname !== '/dashboard/lottery') return;
     const timer = setInterval(() => {
@@ -37,7 +40,7 @@ export default function LotteryPage() {
       const due = mockLotteries.find(lottery => {
         const drawAt = new Date(lottery.drawDate).getTime();
         return (
-          lottery.status === 'active' &&
+          lottery.status !== 'upcoming' &&
           drawAt > watchedSince.current &&
           drawAt <= now &&
           !autoOpened.current.has(lottery.id)

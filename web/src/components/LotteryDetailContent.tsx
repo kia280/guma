@@ -11,6 +11,7 @@ import { DateTimePicker } from './DateTimePicker';
 import { apiClient } from '@/lib/guma';
 import { useUserStore } from '@/lib/store';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { useLiveResource } from '@/hooks/useLiveResource';
 import type { Lottery, LotteryStatus, LotteryWinner } from '@/types/lottery';
 
 const DRAW_RETRY_MS = 3000;
@@ -85,6 +86,9 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const [rescheduleError, setRescheduleError] = React.useState('');
   const [isSavingSchedule, setIsSavingSchedule] = React.useState(false);
   const retryTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
+  const changedDuringDraw = React.useRef(false);
+  const lotteryRef = React.useRef(lottery);
+  const phaseRef = React.useRef(phase);
   const currentUserId = useUserStore(state => state.user?.id);
 
   const load = React.useCallback(
@@ -108,6 +112,52 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   }, [load]);
 
   React.useEffect(() => {
+    lotteryRef.current = lottery;
+    phaseRef.current = phase;
+  });
+
+  const startSpin = React.useCallback((winners: LotteryWinner[]) => {
+    setDrawWinners(winners);
+    setPhase('spinning');
+    setSpinKey(key => key + 1);
+  }, []);
+
+  const refresh = React.useCallback(() => {
+    const previousStatus = lotteryRef.current?.status;
+    apiClient
+      .getLottery(guildId, id)
+      .then(data => {
+        setLottery(data);
+        setIsMissing(false);
+        const winners = data.winners ?? [];
+        if (previousStatus === 'active' && data.status === 'ended' && winners.length > 0 && phaseRef.current === 'idle') {
+          startSpin(winners);
+        }
+      })
+      .catch(err => {
+        if ((err as { response?: { status?: number } }).response?.status === 404) setIsMissing(true);
+      });
+  }, [guildId, id, startSpin]);
+
+  useLiveResource(
+    ['lottery'],
+    () => {
+      if (phaseRef.current !== 'drawing') {
+        refresh();
+        return;
+      }
+      if (retryTimer.current) {
+        clearTimeout(retryTimer.current);
+        retryTimer.current = undefined;
+        setPhase('idle');
+      } else {
+        changedDuringDraw.current = true;
+      }
+    },
+    { guildId, match: event => event.resourceId === id }
+  );
+
+  React.useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => {
       clearInterval(timer);
@@ -121,24 +171,34 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   React.useEffect(() => {
     if (!isDue || phase !== 'idle') return;
     setPhase('drawing');
+    changedDuringDraw.current = false;
     const retryLater = () => {
-      retryTimer.current = setTimeout(() => setPhase('idle'), DRAW_RETRY_MS);
+      const delay = changedDuringDraw.current ? 0 : DRAW_RETRY_MS;
+      changedDuringDraw.current = false;
+      retryTimer.current = setTimeout(() => {
+        retryTimer.current = undefined;
+        setPhase('idle');
+      }, delay);
     };
     apiClient
       .getLotteryWinners(guildId, id)
       .then(async winners => {
         if (winners.length > 0) {
-          setDrawWinners(winners);
-          setPhase('spinning');
-          setSpinKey(key => key + 1);
+          startSpin(winners);
           return;
         }
         const latest = await load();
-        if (latest?.status === 'ended') setPhase('revealed');
-        else retryLater();
+        if (latest?.status !== 'ended') retryLater();
+        else if (latest.winners?.length) startSpin(latest.winners);
+        else setPhase('revealed');
       })
       .catch(retryLater);
-  }, [isDue, phase, guildId, id, load]);
+  }, [isDue, phase, guildId, id, load, startSpin]);
+
+  const ticketsLeft = lottery ? Math.max(0, lottery.maxTickets - lottery.ticketsSold) : 0;
+  React.useEffect(() => {
+    if (ticketsLeft > 0) setQuantity(current => Math.min(current, ticketsLeft));
+  }, [ticketsLeft]);
 
   if (isMissing) {
     return (
@@ -165,7 +225,6 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const totalTickets = participants.reduce((sum, p) => sum + p.tickets, 0) || lottery.ticketsSold;
   const myTickets = participants.find(p => p.id === currentUserId)?.tickets ?? 0;
   const canReschedule = lottery.status !== 'ended' && phase === 'idle' && !isDue;
-  const ticketsLeft = Math.max(0, lottery.maxTickets - lottery.ticketsSold);
   const soldPercent = Math.round((lottery.ticketsSold / lottery.maxTickets) * 100);
   const isOpen = lottery.status === 'active' && !isDue && phase === 'idle';
   const isSettled = lottery.status === 'ended' && (phase === 'idle' || phase === 'revealed');
