@@ -1,11 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Tabs, Chip } from '@heroui/react';
+import { Button, Tabs, Chip, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import LotteryCard from '@/components/LotteryCard';
+import { CreateLotteryModal } from '@/components/CreateLotteryModal';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import type { Lottery } from '@/types/lottery';
@@ -20,11 +21,14 @@ export default function LotteryPage() {
   const watchedSince = React.useRef(Date.now());
   const autoOpened = React.useRef(new Set<string>());
 
+  const createModalState = useOverlayState();
+  const [reloadKey, setReloadKey] = React.useState(0);
+
   React.useEffect(() => {
     let cancelled = false;
     apiClient.listLotteries(guildId).then(d => { if (!cancelled) setMockLotteries(d); }).catch(() => {});
     return () => { cancelled = true; };
-  }, [guildId, pathname]);
+  }, [guildId, pathname, reloadKey]);
 
   React.useEffect(() => {
     if (pathname !== '/dashboard/lottery') return;
@@ -58,6 +62,14 @@ export default function LotteryPage() {
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <Button onPress={createModalState.open}>
+          <Icon icon="solar:add-circle-linear" width={16} />
+          {t('createLottery')}
+        </Button>
+      </div>
+      <CreateLotteryModal state={createModalState} onCreated={() => setReloadKey(key => key + 1)} />
+
       {/* Status Tabs */}
       <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
         <Tabs.ListContainer>

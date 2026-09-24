@@ -70,6 +70,15 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.get('/v1/me');
     return toUser(data.user ?? {});
   },
+  updateMe: async (patch) => {
+    const { data } = await http.patch('/v1/me', {
+      display_name: patch.displayName,
+      username: patch.username,
+      bio: patch.bio,
+      avatar_url: patch.avatarUrl,
+    });
+    return toUser(data.user ?? {});
+  },
   getUser: async (id) => {
     const { data } = await http.get(`/v1/users/${id}`);
     return toUser(data.user ?? {});

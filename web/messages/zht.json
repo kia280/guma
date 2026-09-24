@@ -150,7 +150,8 @@
     "active": "進行中",
     "upcoming": "即將開始",
     "ended": "已結束",
-    "noLotteries": "此分類沒有抽獎活動"
+    "noLotteries": "此分類沒有抽獎活動",
+    "createLottery": "建立抽獎"
   },
   "lotteryCard": {
     "drawComplete": "抽獎已結束",
@@ -212,7 +213,8 @@
     "addNote": "新增備注…",
     "cancel": "取消",
     "save": "儲存",
-    "actions": "物品操作"
+    "actions": "物品操作",
+    "comingSoon": "即將推出"
   },
   "calendarPage": {
     "loadingEvents": "載入活動中...",
@@ -289,7 +291,8 @@
     "cancel": "取消",
     "post": "發布",
     "by": "作者",
-    "pinned": "已置頂"
+    "pinned": "已置頂",
+    "save": "儲存"
   },
   "guildBankPage": {
     "treasury": "公會金庫",
@@ -369,7 +372,25 @@
     "1day": "1 天",
     "2days": "2 天",
     "3days": "3 天",
-    "1week": "1 週"
+    "1week": "1 週",
+    "categories": {
+      "weapon": "武器",
+      "armor": "防具",
+      "accessory": "飾品",
+      "consumable": "消耗品",
+      "skill_scroll": "技能卷軸",
+      "material": "材料",
+      "misc": "其他"
+    },
+    "rarities": {
+      "common": "普通",
+      "uncommon": "優秀",
+      "rare": "稀有",
+      "epic": "史詩",
+      "legendary": "傳說",
+      "mythic": "神話"
+    },
+    "createFailed": "無法建立競拍，請再試一次。"
   },
   "navigation": {
     "dashboard": "主頁",
@@ -504,7 +525,10 @@
     "dangerZoneSubtitle": "不可逆的帳號操作",
     "deleteAccount": "刪除帳號",
     "deleteAccountDesc": "永久刪除您的帳號及所有相關資料",
-    "deleteAccountBtn": "刪除帳號"
+    "deleteAccountBtn": "刪除帳號",
+    "saveFailed": "無法儲存個人資料，請再試一次。",
+    "changeAvatarSoon": "更換頭像即將推出",
+    "comingSoon": "即將推出"
   },
   "preferencePage": {
     "title": "偏好設定",
@@ -753,5 +777,23 @@
       "ended": "已結束"
     },
     "wheelDetail": "{count} 張 · {chance}%"
+  },
+  "createLotteryModal": {
+    "title": "建立抽獎",
+    "subtitle": "為公會成員設定一場抽獎活動",
+    "lotteryTitle": "抽獎名稱",
+    "lotteryTitlePlaceholder": "例如：週末大抽獎",
+    "titleFromItem": "{item} 抽獎",
+    "description": "說明",
+    "prizeName": "獎品",
+    "prizeNamePlaceholder": "物品或獎勵名稱",
+    "prizeAmount": "獎金",
+    "ticketPrice": "票價",
+    "maxTickets": "票券上限",
+    "drawDate": "開獎時間",
+    "drawDateInPast": "開獎時間必須在未來。",
+    "cancel": "取消",
+    "create": "建立抽獎",
+    "createFailed": "無法建立抽獎，請再試一次。"
   }
 }

@@ -14,15 +14,58 @@ import {
   InputGroup,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
+import { apiClient } from '@/lib/guma';
+import { useUserStore } from '@/lib/store';
 import { PageHeader } from '@/components/PageHeader';
 
 export default function ProfilePage() {
   const t = useTranslations('profilePage');
+  const format = useFormatter();
+  const user = useUserStore(state => state.user);
+  const setUser = useUserStore(state => state.setUser);
   const [isEditing, setIsEditing] = React.useState(false);
-  const [displayName, setDisplayName] = React.useState('John Doe');
-  const [username, setUsername] = React.useState('johndoe');
-  const [bio, setBio] = React.useState('Guild veteran. Raid leader on weekends.');
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [saveError, setSaveError] = React.useState('');
+  const [displayName, setDisplayName] = React.useState('');
+  const [username, setUsername] = React.useState('');
+  const [bio, setBio] = React.useState('');
+
+  const resetDraft = React.useCallback(() => {
+    setDisplayName(user?.displayName ?? '');
+    setUsername(user?.username ?? '');
+    setBio(user?.bio ?? '');
+    setSaveError('');
+  }, [user]);
+
+  React.useEffect(() => {
+    if (!isEditing) resetDraft();
+  }, [isEditing, resetDraft]);
+
+  const toggleEditing = () => {
+    if (isEditing) resetDraft();
+    setIsEditing(editing => !editing);
+  };
+
+  const saveProfile = async () => {
+    setIsSaving(true);
+    setSaveError('');
+    try {
+      const updated = await apiClient.updateMe({
+        displayName: displayName.trim(),
+        username: username.trim(),
+        bio: bio.trim(),
+      });
+      setUser(updated);
+      setIsEditing(false);
+    } catch {
+      setSaveError(t('saveFailed'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const shownName = user?.displayName || user?.username || '';
 
   return (
     <div className="flex flex-col gap-5 w-full">
@@ -34,15 +77,21 @@ export default function ProfilePage() {
         <Card.Content className="flex flex-row items-center gap-4 sm:gap-5 p-4 sm:p-5">
           <div className="relative shrink-0">
             <Avatar className="size-16 sm:size-20 text-large">
-              <Avatar.Image src="https://i.pravatar.cc/150?u=a04258114e29526708c" />
-              <Avatar.Fallback>JD</Avatar.Fallback>
+              <Avatar.Image src={user?.avatarUrl || undefined} />
+              <Avatar.Fallback>{Array.from(shownName).slice(0, 2).join('').toUpperCase()}</Avatar.Fallback>
             </Avatar>
-            <button className="absolute bottom-0 right-0 flex items-center justify-center w-7 h-7 rounded-full bg-accent text-accent-foreground shadow-sm hover:bg-accent/90 transition-colors">
+            <button
+              type="button"
+              disabled
+              aria-label={t('changeAvatarSoon')}
+              title={t('changeAvatarSoon')}
+              className="absolute bottom-0 right-0 flex items-center justify-center w-7 h-7 rounded-full bg-accent text-accent-foreground shadow-sm opacity-60 cursor-not-allowed"
+            >
               <Icon icon="solar:camera-linear" width={14} />
             </button>
           </div>
           <div className="flex flex-col gap-1 flex-1 min-w-0">
-            <p className="type-subheading text-foreground truncate">{displayName}</p>
+            <p className="type-subheading text-foreground truncate">{shownName}</p>
             <Chip size="sm" variant="secondary" className="w-fit mt-0.5 whitespace-nowrap">
               {t('guildMember')}
             </Chip>
@@ -51,7 +100,7 @@ export default function ProfilePage() {
             <Button
               size="sm"
               variant="secondary"
-              onPress={() => setIsEditing(e => !e)}
+              onPress={toggleEditing}
             >
               {isEditing ? t('cancel') : t('editProfile')}
             </Button>
@@ -91,8 +140,13 @@ export default function ProfilePage() {
             <TextArea value={bio} onChange={e => setBio(e.target.value)} rows={2} />
           </TextField>
           {isEditing && (
-            <div className="flex justify-end">
-              <Button size="sm" variant="primary" onPress={() => setIsEditing(false)}>
+            <div className="flex items-center justify-end gap-3">
+              {saveError && (
+                <p role="alert" className="type-caption text-danger">
+                  {saveError}
+                </p>
+              )}
+              <Button size="sm" variant="primary" isPending={isSaving} onPress={saveProfile}>
                 <Icon icon="solar:check-circle-linear" width={16} />
                 {t('saveChanges')}
               </Button>
@@ -118,7 +172,7 @@ export default function ProfilePage() {
               <Icon icon="solar:letter-linear" width={16} className="text-hint shrink-0" />
               <div>
                 <p className="type-body text-foreground">{t('emailAddress')}</p>
-                <p className="type-caption text-hint">johndoe@example.com</p>
+                <p className="type-caption text-hint">{user?.email ?? '—'}</p>
               </div>
             </div>
             <Chip size="sm" variant="secondary">
@@ -144,7 +198,9 @@ export default function ProfilePage() {
               <Icon icon="solar:calendar-linear" width={16} className="text-hint shrink-0" />
               <div>
                 <p className="type-body text-foreground">{t('memberSince')}</p>
-                <p className="type-caption text-hint">January 2024</p>
+                <p className="type-caption text-hint">
+                  {user?.createdAt ? format.dateTime(new Date(user.createdAt), { year: 'numeric', month: 'long' }) : '—'}
+                </p>
               </div>
             </div>
           </div>
@@ -168,9 +224,12 @@ export default function ProfilePage() {
               <p className="type-body text-foreground">{t('deleteAccount')}</p>
               <p className="type-caption text-hint">{t('deleteAccountDesc')}</p>
             </div>
-            <Button size="sm" variant="danger">
-              {t('deleteAccountBtn')}
-            </Button>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <Button size="sm" variant="danger" isDisabled>
+                {t('deleteAccountBtn')}
+              </Button>
+              <span className="type-caption text-hint">{t('comingSoon')}</span>
+            </div>
           </div>
         </Card.Content>
       </Card>

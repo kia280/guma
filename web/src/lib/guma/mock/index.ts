@@ -25,7 +25,6 @@ import type { Transaction, Wallet } from '@/types/wallet';
 import type { AdminAnnouncement } from '@/types/admin';
 import type { ApiClient } from '../types';
 
-const notImpl = (name: string) => () => Promise.reject(new Error(`mockApiClient.${name} is not implemented`));
 
 /** In-memory store so mutations feel interactive during mock-mode development. */
 const store = {
@@ -47,6 +46,22 @@ const currentUser: User = {
   guildIds: [],
   currentGuildId: '',
   balance: 1250,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
+const mockGuild: Guild = {
+  id: 'mock-guild',
+  name: 'Sunbaby Guild',
+  description: '',
+  ownerId: mockData.mockUsers[0].id,
+  memberCount: mockData.mockUsers.length,
+  settings: {
+    timezone: 'Asia/Taipei',
+    language: 'zht',
+    currency: 'gold',
+    features: { economy: true, events: true, raids: true, voting: false },
+  },
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
@@ -84,16 +99,36 @@ const baseMockApiClient: ApiClient = {
 
   // ── User ──
   getMe: async () => currentUser,
+  updateMe: async (patch) => {
+    Object.assign(
+      currentUser,
+      Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined)),
+      { updatedAt: new Date().toISOString() },
+    );
+    return { ...currentUser };
+  },
   getUser: async (id) => ({ ...currentUser, id }),
   getUserStats: async (): Promise<UserStats> => mockData.PERSONAL_STATS,
   getBalanceTrend: async () => mockData.dashboardBalanceTrend,
 
   // ── Guild ──
-  listGuilds: async (): Promise<Guild[]> => [],
-  getGuild: notImpl('getGuild'),
-  getCurrentGuild: async () => null,
-  createGuild: notImpl('createGuild'),
-  updateGuild: notImpl('updateGuild'),
+  listGuilds: async (): Promise<Guild[]> => [{ ...mockGuild }],
+  getGuild: async () => ({ ...mockGuild }),
+  getCurrentGuild: async () => ({ ...mockGuild }),
+  createGuild: async req => ({
+    ...mockGuild,
+    id: `guild-${Date.now()}`,
+    name: req.name,
+    description: req.description,
+    ownerId: currentUser.id,
+    memberCount: 1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }),
+  updateGuild: async (_id, patch) => {
+    Object.assign(mockGuild, patch, { updatedAt: new Date().toISOString() });
+    return { ...mockGuild };
+  },
   joinGuild: async () => undefined,
   leaveGuild: async () => undefined,
 
@@ -177,7 +212,31 @@ const baseMockApiClient: ApiClient = {
     if (!item) throw new Error(`auction ${id} not found`);
     return item;
   },
-  createAuction: notImpl('createAuction'),
+  createAuction: async (guildId, req) => {
+    const now = new Date();
+    const item: AuctionItem = {
+      id: `auction-${now.getTime()}`,
+      name: req.name,
+      description: req.description,
+      category: req.category,
+      rarity: req.rarity,
+      imageUrl: req.imageUrl,
+      startingBid: req.startingBid,
+      currentBid: req.startingBid,
+      minBidIncrement: req.minBidIncrement,
+      startTime: now.toISOString(),
+      endTime: new Date(now.getTime() + req.duration * 60 * 60 * 1000).toISOString(),
+      status: AuctionStatus.ACTIVE,
+      guildId,
+      sellerId: currentUser.id,
+      seller: { id: currentUser.id, username: currentUser.username },
+      bidHistory: [],
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    };
+    store.auctions = [item, ...store.auctions];
+    return item;
+  },
   placeBid: async (_guildId, auctionId, amount) => {
     const item = store.auctions.find(a => a.id === auctionId);
     if (!item) throw new Error('not found');
@@ -276,7 +335,21 @@ const baseMockApiClient: ApiClient = {
     if (!l) throw new Error(`lottery ${id} not found`);
     return l;
   },
-  createLottery: notImpl('createLottery'),
+  createLottery: async (_guildId, req) => {
+    const lottery: Lottery = {
+      id: `lottery-${Date.now()}`,
+      title: req.title,
+      prizePool: req.prizes?.reduce((sum, prize) => sum + (prize.amount ?? 0), 0) ?? 0,
+      ticketPrice: req.ticketPrice,
+      drawDate: req.drawDate,
+      ticketsSold: 0,
+      maxTickets: req.maxTickets ?? 0,
+      status: 'active',
+      participants: [],
+    };
+    store.lotteries = [lottery, ...store.lotteries];
+    return lottery;
+  },
   purchaseTickets: async (_guildId, lotteryId, quantity): Promise<LotteryTicket[]> => {
     const lottery = store.lotteries.find(x => x.id === lotteryId);
     if (!lottery) throw new Error('not found');

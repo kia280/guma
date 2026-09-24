@@ -23,6 +23,8 @@ import { Icon } from '@iconify/react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import BackpackItemCard from '@/components/BackpackItemCard';
+import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
+import { CreateLotteryModal } from '@/components/CreateLotteryModal';
 import { BackpackItem } from '@/types/backpack';
 import type { Transaction, Wallet as WalletType } from '@/types/wallet';
 import type { MockUser } from '@/types/user';
@@ -41,6 +43,10 @@ export default function WalletPage() {
   );
   const guildId = useCurrentGuildId();
   const itemWithdrawModalState = useOverlayState();
+  const auctionModalState = useOverlayState();
+  const lotteryModalState = useOverlayState();
+  const [auctionItem, setAuctionItem] = React.useState<AuctionDraftItem | null>(null);
+  const [lotteryPrize, setLotteryPrize] = React.useState<string | null>(null);
 
   const [transferAmount, setTransferAmount] = React.useState('');
   const [transferRecipient, setTransferRecipient] = React.useState('');
@@ -404,14 +410,26 @@ export default function WalletPage() {
               <BackpackItemCard
                 key={item.id}
                 item={item}
-                onPutToAuction={i => console.log('Put to auction:', i.item.name)}
-                onPutToLottery={i => console.log('Put to lottery:', i.item.name)}
-                onTransfer={i => console.log('Transfer:', i.item.name)}
+                onPutToAuction={i => {
+                  setAuctionItem({
+                    name: i.item.name,
+                    description: i.item.description,
+                    category: i.item.category,
+                    rarity: i.item.rarity,
+                    imageUrl: i.item.imageUrl,
+                  });
+                  auctionModalState.open();
+                }}
+                onPutToLottery={i => {
+                  setLotteryPrize(i.item.name);
+                  lotteryModalState.open();
+                }}
                 onWithdraw={openItemWithdraw}
-
               />
             ))}
           </div>
+          <CreateAuctionModal state={auctionModalState} item={auctionItem} />
+          <CreateLotteryModal state={lotteryModalState} prizeItemName={lotteryPrize} />
         </Card.Content>
       </Card>
 

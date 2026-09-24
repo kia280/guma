@@ -150,7 +150,8 @@
     "active": "Active",
     "upcoming": "Upcoming",
     "ended": "Ended",
-    "noLotteries": "No lotteries in this category"
+    "noLotteries": "No lotteries in this category",
+    "createLottery": "Create lottery"
   },
   "lotteryCard": {
     "drawComplete": "Draw complete",
@@ -178,7 +179,7 @@
     "ended": "Ended",
     "noAuctions": "No auctions found",
     "noAuctionsHint": "Try adjusting your search criteria or check back later.",
-    "createAuction": "Create Auction"
+    "createAuction": "Create auction"
   },
   "auctionItemCard": {
     "timeRemaining": "Time remaining",
@@ -212,7 +213,8 @@
     "addNote": "Add a note…",
     "cancel": "Cancel",
     "save": "Save",
-    "actions": "Item actions"
+    "actions": "Item actions",
+    "comingSoon": "Coming soon"
   },
   "calendarPage": {
     "loadingEvents": "Loading events...",
@@ -289,7 +291,8 @@
     "cancel": "Cancel",
     "post": "Post",
     "by": "By",
-    "pinned": "Pinned"
+    "pinned": "Pinned",
+    "save": "Save"
   },
   "guildBankPage": {
     "treasury": "Guild Treasury",
@@ -369,7 +372,25 @@
     "1day": "1 Day",
     "2days": "2 Days",
     "3days": "3 Days",
-    "1week": "1 Week"
+    "1week": "1 Week",
+    "categories": {
+      "weapon": "Weapon",
+      "armor": "Armor",
+      "accessory": "Accessory",
+      "consumable": "Consumable",
+      "skill_scroll": "Skill scroll",
+      "material": "Material",
+      "misc": "Misc"
+    },
+    "rarities": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "mythic": "Mythic"
+    },
+    "createFailed": "Could not create the auction. Please try again."
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -504,7 +525,10 @@
     "dangerZoneSubtitle": "Irreversible account actions",
     "deleteAccount": "Delete account",
     "deleteAccountDesc": "Permanently delete your account and all associated data",
-    "deleteAccountBtn": "Delete Account"
+    "deleteAccountBtn": "Delete Account",
+    "saveFailed": "Could not save your profile. Please try again.",
+    "changeAvatarSoon": "Changing your avatar is coming soon",
+    "comingSoon": "Coming soon"
   },
   "preferencePage": {
     "title": "Preference",
@@ -753,5 +777,23 @@
       "ended": "Ended"
     },
     "wheelDetail": "{count, plural, one {# ticket} other {# tickets}} · {chance}%"
+  },
+  "createLotteryModal": {
+    "title": "Create lottery",
+    "subtitle": "Set up a prize draw for guild members",
+    "lotteryTitle": "Lottery name",
+    "lotteryTitlePlaceholder": "e.g. Weekend Mega Draw",
+    "titleFromItem": "{item} raffle",
+    "description": "Description",
+    "prizeName": "Prize",
+    "prizeNamePlaceholder": "Item or reward name",
+    "prizeAmount": "Prize money",
+    "ticketPrice": "Ticket price",
+    "maxTickets": "Max tickets",
+    "drawDate": "Draw time",
+    "drawDateInPast": "The draw time must be in the future.",
+    "cancel": "Cancel",
+    "create": "Create lottery",
+    "createFailed": "Could not create the lottery. Please try again."
   }
 }

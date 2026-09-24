@@ -2,21 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { Card, Select, Chip, Tabs, TextField, Label, InputGroup, ListBox } from '@heroui/react';
+import { Button, Card, Select, Chip, Tabs, TextField, Label, InputGroup, ListBox, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import AuctionItemCard from '@/components/AuctionItemCard';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { useWalletBalance } from '@/hooks/useWalletBalance';
+import { CreateAuctionModal } from '@/components/CreateAuctionModal';
 
-interface AuctionPageProps {
-  userBalance?: number;
-}
-
-const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
+const AuctionPage = () => {
   const t = useTranslations('auctionPage');
   const guildId = useCurrentGuildId();
+  const { balance: userBalance, refresh: refreshBalance } = useWalletBalance();
+  const createModalState = useOverlayState();
 
   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,6 +82,7 @@ const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
     try {
       await apiClient.placeBid(guildId, itemId, amount);
       refetchAuctions();
+      refreshBalance();
     } catch (err) {
       console.error(err);
     } finally {
@@ -100,6 +101,14 @@ const AuctionPage = ({ userBalance = 5000 }: AuctionPageProps) => {
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <Button onPress={createModalState.open}>
+          <Icon icon="solar:add-circle-linear" width={16} />
+          {t('createAuction')}
+        </Button>
+      </div>
+      <CreateAuctionModal state={createModalState} onCreated={refetchAuctions} />
+
       {/* Search and Filters */}
       <div className="flex flex-col lg:flex-row gap-3">
         <TextField className="lg:flex-1">

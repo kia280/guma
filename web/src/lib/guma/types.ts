@@ -3,7 +3,7 @@
 // interface — TypeScript enforces they stay in sync.
 
 import type { QueryOptions } from '@/types/common';
-import type { User, UserStats, BalancePoint, MockUser } from '@/types/user';
+import type { User, UserStats, BalancePoint, MockUser, UpdateMeRequest } from '@/types/user';
 import type { Guild } from '@/types/guild';
 import type { Invitation } from '@/types/member';
 import type { Wallet, Transaction, TransferRequest } from '@/types/wallet';
@@ -60,6 +60,7 @@ export interface ApiClient {
 
   // ── User ──
   getMe(): Promise<User>;
+  updateMe(patch: UpdateMeRequest): Promise<User>;
   getUser(id: string): Promise<User>;
   getUserStats(): Promise<UserStats>;
   getBalanceTrend(): Promise<BalancePoint[]>;
