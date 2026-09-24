@@ -328,18 +328,22 @@ export const gumaApiClient: ApiClient = {
     );
     return toFundRequest(data.fund_request);
   },
-  listFundRequests: async (guildId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/bank/fund-requests`);
+  listFundRequests: async (guildId, status) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/bank/fund-requests`, {
+      params: { status, page_size: 100 },
+    });
     return (data.requests ?? []).map(toFundRequest);
   },
   listContributions: async (guildId) => {
-    const [contrib, requests] = await Promise.all([
+    const [contrib, requests, itemRequests] = await Promise.all([
       http.get(`/v1/guilds/${guildId}/bank/contributions`),
       http.get(`/v1/guilds/${guildId}/bank/fund-requests`).catch(() => ({ data: { requests: [] } })),
+      http.get(`/v1/guilds/${guildId}/bank/item-requests`).catch(() => ({ data: { requests: [] } })),
     ]);
     return toGuildContributions(
       (contrib.data.contributions ?? []).map(toBankContribution),
       (requests.data.requests ?? []).map(toFundRequest),
+      (itemRequests.data.requests ?? []).map(toItemRequest),
     );
   },
   donateItem: async (guildId, backpackItemId, note) => {
@@ -359,6 +363,19 @@ export const gumaApiClient: ApiClient = {
       reason,
     });
     return toItemRequest(data.item_request);
+  },
+  reviewItemRequest: async (guildId, reqId, status, note) => {
+    const { data } = await http.patch(
+      `/v1/guilds/${guildId}/bank/item-requests/${reqId}`,
+      { status, note },
+    );
+    return toItemRequest(data.item_request);
+  },
+  listItemRequests: async (guildId, status) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/bank/item-requests`, {
+      params: { status, page_size: 100 },
+    });
+    return (data.requests ?? []).map(toItemRequest);
   },
 
   // ── Event / Calendar ──

@@ -10,6 +10,7 @@ import type {
   LootItem,
 } from '@/types/checkin';
 import { CheckinStatus } from '@/types/checkin';
+import { ItemCategory, ItemRarity } from '@/types/item';
 import type { User, UserStats } from '@/types/user';
 import type { Guild } from '@/types/guild';
 import type {
@@ -424,7 +425,7 @@ const baseMockApiClient: ApiClient = {
     status: 'pending',
     createdAt: new Date().toISOString(),
   }),
-  reviewFundRequest: async (guildId, reqId, status): Promise<FundRequest> => ({
+  reviewFundRequest: async (guildId, reqId, status, note): Promise<FundRequest> => ({
     id: reqId,
     guildId,
     requesterId: '',
@@ -432,7 +433,9 @@ const baseMockApiClient: ApiClient = {
     amount: 0,
     reason: '',
     status,
+    reviewNote: note,
     createdAt: new Date().toISOString(),
+    reviewedAt: new Date().toISOString(),
   }),
   listFundRequests: async (): Promise<FundRequest[]> => [],
   listContributions: async () => mockData.mockContributions,
@@ -451,16 +454,39 @@ const baseMockApiClient: ApiClient = {
     };
   },
   listBankItems: async () => mockData.mockGuildItems,
-  requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => ({
-    id: `ir-${Date.now()}`,
+  requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => {
+    const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
+    if (!bankItem) throw new Error('not found');
+    return {
+      id: `ir-${Date.now()}`,
+      guildId,
+      bankItemId,
+      requesterId: currentUser.id,
+      requesterName: currentUser.username,
+      reason,
+      status: 'pending',
+      itemName: bankItem.name,
+      itemCategory: bankItem.category,
+      itemRarity: bankItem.rarity,
+      createdAt: new Date().toISOString(),
+    };
+  },
+  reviewItemRequest: async (guildId, reqId, status, note): Promise<ItemRequest> => ({
+    id: reqId,
     guildId,
-    bankItemId,
-    requesterId: currentUser.id,
-    requesterName: currentUser.username,
-    reason,
-    status: 'pending',
+    bankItemId: '',
+    requesterId: '',
+    requesterName: '',
+    reason: '',
+    status,
+    itemName: '',
+    itemCategory: ItemCategory.MISC,
+    itemRarity: ItemRarity.COMMON,
+    reviewNote: note,
     createdAt: new Date().toISOString(),
+    reviewedAt: new Date().toISOString(),
   }),
+  listItemRequests: async (): Promise<ItemRequest[]> => [],
 
   // ── Events ──
   listEvents: async () => store.events,

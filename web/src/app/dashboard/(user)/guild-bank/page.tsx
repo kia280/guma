@@ -14,6 +14,7 @@ import {
   TextField,
   Label,
   Tooltip,
+  Alert,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
@@ -21,6 +22,7 @@ import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/Ite
 import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-bank';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 
 
 
@@ -57,6 +59,7 @@ export default function GuildBankPage() {
   const guildId = useCurrentGuildId();
 
   const requestItemModalState = useOverlayState();
+  const requestFundsModalState = useOverlayState();
 
   const [contributeAmount, setContributeAmount] = React.useState('');
   const [contributeNote, setContributeNote] = React.useState('');
@@ -64,6 +67,8 @@ export default function GuildBankPage() {
   const [requestReason, setRequestReason] = React.useState('');
   const [selectedItem, setSelectedItem] = React.useState<GuildBankItem | null>(null);
   const [requestItemReason, setRequestItemReason] = React.useState('');
+  const [isRequesting, setIsRequesting] = React.useState(false);
+  const [requestError, setRequestError] = React.useState<string | null>(null);
 
   const [bank, setBank] = React.useState<GuildBank | null>(null);
   const [mockContributions, setMockContributions] = React.useState<GuildContribution[]>([]);
@@ -106,30 +111,64 @@ export default function GuildBankPage() {
     setContributeNote('');
   };
 
+  const requestErrorMessage = (err: unknown) => {
+    switch (apiErrorCode(err)) {
+      case GrpcCode.FailedPrecondition:
+        return t('errorExceedsBalance');
+      case GrpcCode.AlreadyExists:
+        return t('errorDuplicateItemRequest');
+      case GrpcCode.NotFound:
+        return t('errorItemUnavailable');
+      case GrpcCode.PermissionDenied:
+        return t('errorNotMember');
+      default:
+        return t('errorGeneric');
+    }
+  };
+
+  const openFundRequest = () => {
+    setRequestError(null);
+    requestFundsModalState.open();
+  };
+
   const handleRequest = async () => {
-    const amount = parseFloat(requestAmount);
-    if (!amount || !requestReason.trim()) return;
+    const amount = Number(requestAmount);
+    if (!Number.isInteger(amount) || amount <= 0 || !requestReason.trim()) return;
+    setIsRequesting(true);
+    setRequestError(null);
     try {
-      await apiClient.requestFunds(guildId, { amount, reason: requestReason });
+      await apiClient.requestFunds(guildId, { amount, reason: requestReason.trim() });
       refetchBank();
-    } catch (err) { console.error(err); }
-    setRequestAmount('');
-    setRequestReason('');
+      setRequestAmount('');
+      setRequestReason('');
+      requestFundsModalState.close();
+    } catch (err) {
+      setRequestError(requestErrorMessage(err));
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   const handleRequestItem = async () => {
     if (!selectedItem || !requestItemReason.trim()) return;
+    setIsRequesting(true);
+    setRequestError(null);
     try {
-      await apiClient.requestItem(guildId, selectedItem.id, requestItemReason);
+      await apiClient.requestItem(guildId, selectedItem.id, requestItemReason.trim());
       refetchBank();
-    } catch (err) { console.error(err); }
-    setSelectedItem(null);
-    setRequestItemReason('');
-    requestItemModalState.close();
+      setSelectedItem(null);
+      setRequestItemReason('');
+      requestItemModalState.close();
+    } catch (err) {
+      setRequestError(requestErrorMessage(err));
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   const openItemRequest = (item: GuildBankItem) => {
     setSelectedItem(item);
+    setRequestError(null);
     requestItemModalState.open();
   };
 
@@ -218,14 +257,15 @@ export default function GuildBankPage() {
                   </Modal.Container>
                 </Modal.Backdrop>
               </Modal>
-              <Modal>
-                <Button
-                  variant="secondary"
-                  className="w-full sm:w-auto"
-                >
-                  <Icon icon="solar:arrow-up-linear" width={16} />
-                  {t('requestFunds')}
-                </Button>
+              <Button
+                variant="secondary"
+                className="w-full sm:w-auto"
+                onPress={openFundRequest}
+              >
+                <Icon icon="solar:arrow-up-linear" width={16} />
+                {t('requestFunds')}
+              </Button>
+              <Modal state={requestFundsModalState}>
                 <Modal.Backdrop>
                   <Modal.Container size="sm">
                     <Modal.Dialog>
@@ -238,8 +278,11 @@ export default function GuildBankPage() {
                           <Label>{t('amountLabel')}</Label>
                           <Input
                             autoFocus
-                            placeholder="0.00"
+                            placeholder="0"
                             type="number"
+                            min={1}
+                            step={1}
+                            inputMode="numeric"
                             value={requestAmount}
                             variant="secondary"
                             onChange={e => setRequestAmount(e.target.value)}
@@ -265,6 +308,14 @@ export default function GuildBankPage() {
                             <p className="type-caption text-subtle">{t('fundRequestNote')}</p>
                           </div>
                         </div>
+                        {requestError && (
+                          <Alert status="danger">
+                            <Alert.Indicator />
+                            <Alert.Content>
+                              <Alert.Title>{requestError}</Alert.Title>
+                            </Alert.Content>
+                          </Alert>
+                        )}
                       </Modal.Body>
                       <Modal.Footer>
                         <Button slot="close" variant="secondary">
@@ -273,7 +324,8 @@ export default function GuildBankPage() {
                         <Button
                           variant="primary"
                           onPress={handleRequest}
-                          isDisabled={!requestAmount || !requestReason.trim()}
+                          isPending={isRequesting}
+                          isDisabled={!Number.isInteger(Number(requestAmount)) || Number(requestAmount) <= 0 || !requestReason.trim()}
                         >
                           {t('submitRequest')}
                         </Button>
@@ -550,6 +602,14 @@ export default function GuildBankPage() {
                       <p className="type-caption text-subtle">{t('itemRequestNote')}</p>
                     </div>
                   </div>
+                  {requestError && (
+                    <Alert status="danger">
+                      <Alert.Indicator />
+                      <Alert.Content>
+                        <Alert.Title>{requestError}</Alert.Title>
+                      </Alert.Content>
+                    </Alert>
+                  )}
                 </div>
               )}
             </Modal.Body>
@@ -560,6 +620,7 @@ export default function GuildBankPage() {
               <Button
                 variant="primary"
                 onPress={handleRequestItem}
+                isPending={isRequesting}
                 isDisabled={!requestItemReason.trim()}
               >
                 {t('submitRequest')}

@@ -1,0 +1,118 @@
+package bank
+
+import (
+	"context"
+	"errors"
+	"testing"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rs/zerolog"
+	"github.com/stretchr/testify/assert"
+
+	db "github.com/kia280/guma/internal/db/sqlc"
+	"github.com/kia280/guma/internal/services/errs"
+)
+
+const (
+	testGuild = "00000000-0000-0000-0000-000000000001"
+	testUser  = "00000000-0000-0000-0000-000000000002"
+)
+
+func TestRequestFundsValidatesInput(t *testing.T) {
+	s := New(nil, zerolog.Nop())
+	tests := []struct {
+		name   string
+		guild  string
+		user   string
+		amount int64
+		reason string
+	}{
+		{name: "zero amount", guild: testGuild, user: testUser, amount: 0, reason: "raid"},
+		{name: "negative amount", guild: testGuild, user: testUser, amount: -5, reason: "raid"},
+		{name: "blank reason", guild: testGuild, user: testUser, amount: 10, reason: "   "},
+		{name: "bad guild id", guild: "nope", user: testUser, amount: 10, reason: "raid"},
+		{name: "bad user id", guild: testGuild, user: "nope", amount: 10, reason: "raid"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := s.RequestFunds(context.Background(), tt.guild, tt.user, tt.amount, tt.reason)
+			assert.ErrorIs(t, err, errs.ErrInvalidArgument)
+		})
+	}
+}
+
+func TestRequestItemRequiresReason(t *testing.T) {
+	s := New(nil, zerolog.Nop())
+	_, err := s.RequestItem(context.Background(), testGuild, testUser, uuid.NewString(), " ")
+	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
+}
+
+func TestReviewRejectsUnknownDecision(t *testing.T) {
+	s := New(nil, zerolog.Nop())
+	for _, status := range []string{"", "pending", "maybe"} {
+		t.Run(status, func(t *testing.T) {
+			_, err := s.ReviewFundRequest(context.Background(), testGuild, uuid.NewString(), testUser, status, "")
+			assert.ErrorIs(t, err, errs.ErrInvalidArgument)
+			_, err = s.ReviewItemRequest(context.Background(), testGuild, uuid.NewString(), testUser, status, "")
+			assert.ErrorIs(t, err, errs.ErrInvalidArgument)
+		})
+	}
+}
+
+func TestListRequestsRejectsUnknownStatusFilter(t *testing.T) {
+	s := New(nil, zerolog.Nop())
+	_, err := s.ListFundRequests(context.Background(), ListFundRequestsParams{GuildID: testGuild, UserID: testUser, Status: "done"})
+	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
+	_, err = s.ListItemRequests(context.Background(), ListItemRequestsParams{GuildID: testGuild, UserID: testUser, Status: "done"})
+	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
+}
+
+func TestCheckReviewable(t *testing.T) {
+	requester := uuid.New()
+	reviewer := uuid.New()
+	tests := []struct {
+		name     string
+		status   string
+		reviewer uuid.UUID
+		want     error
+	}{
+		{name: "pending by another member", status: StatusPending, reviewer: reviewer},
+		{name: "already approved", status: StatusApproved, reviewer: reviewer, want: errs.ErrFailedPrecondition},
+		{name: "already rejected", status: StatusRejected, reviewer: reviewer, want: errs.ErrFailedPrecondition},
+		{name: "own request", status: StatusPending, reviewer: requester, want: errs.ErrPermissionDenied},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := checkReviewable(tt.status, requester, tt.reviewer)
+			if tt.want == nil {
+				assert.NoError(t, err)
+				return
+			}
+			assert.True(t, errors.Is(err, tt.want), "expected %v, got %v", tt.want, err)
+		})
+	}
+}
+
+func TestToItemRequest(t *testing.T) {
+	id, guild, requester, reviewer := uuid.New(), uuid.New(), uuid.New(), uuid.New()
+	created := time.Date(2026, 9, 24, 10, 0, 0, 0, time.UTC)
+	reviewed := created.Add(time.Hour)
+
+	ir := toItemRequest(db.ListItemRequestsRow{
+		ID: id, GuildID: guild, BankItemID: nil, RequesterID: requester,
+		RequesterName: "Aria", Reason: "tank gear", Status: StatusApproved,
+		ReviewerID: &reviewer, ReviewNote: "ok", CreatedAt: created,
+		ReviewedAt: pgtype.Timestamptz{Time: reviewed, Valid: true},
+		Item:       []byte(`{"id":"i1","name":"Iron Shield","category":"ARMOR","rarity":"RARE"}`),
+	})
+
+	assert.Equal(t, "", ir.BankItemID)
+	assert.Equal(t, reviewer.String(), ir.ReviewerID)
+	assert.Equal(t, "Iron Shield", ir.Item.Name)
+	assert.Equal(t, "RARE", ir.Item.Rarity)
+	if assert.NotNil(t, ir.ReviewedAt) {
+		assert.Equal(t, reviewed, *ir.ReviewedAt)
+	}
+}

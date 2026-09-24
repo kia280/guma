@@ -303,7 +303,8 @@
       "admin": "管理員",
       "moderator": "幹部",
       "member": "成員"
-    }
+    },
+    "bankRequests": "金庫申請"
   },
   "guildBankPage": {
     "treasury": "公會金庫",
@@ -347,7 +348,12 @@
     "typeContribute": "貢獻記錄",
     "typeRequest": "資金申請",
     "typeItemDonate": "物品捐贈",
-    "typeItemDistribute": "物品分發"
+    "typeItemDistribute": "物品分發",
+    "errorExceedsBalance": "申請金額超過公會金庫目前的餘額。",
+    "errorDuplicateItemRequest": "您已經有一筆此物品的申請正在審核中。",
+    "errorItemUnavailable": "此物品已不在公會倉庫中。",
+    "errorNotMember": "只有公會成員可以提出申請。",
+    "errorGeneric": "發生錯誤，請再試一次。"
   },
   "notificationsCard": {
     "notifications": "通知",
@@ -830,5 +836,39 @@
     "cancel": "取消",
     "create": "建立抽獎",
     "createFailed": "無法建立抽獎，請再試一次。"
+  },
+  "bankRequestReview": {
+    "viewLabel": "申請狀態",
+    "pending": "待審核",
+    "reviewed": "已審核",
+    "loading": "正在載入申請",
+    "loadFailed": "無法載入金庫申請。",
+    "retry": "重試",
+    "fundRequests": "資金申請",
+    "itemRequests": "物品申請",
+    "emptyPending": "目前沒有待審核的申請。",
+    "emptyReviewed": "目前沒有已審核的申請。",
+    "unknownItem": "未知物品",
+    "approve": "批准",
+    "reject": "拒絕",
+    "approveTitle": "批准申請",
+    "rejectTitle": "拒絕申請",
+    "requestedBy": "申請人：{name}",
+    "approveFundHint": "金額將從公會金庫轉入該成員的錢包。",
+    "approveItemHint": "物品將移至該成員的背包，其他人對此物品的待審核申請會自動拒絕。",
+    "rejectHint": "該成員會看到此申請已被拒絕。",
+    "noteLabel": "審核備註（選填）",
+    "notePlaceholder": "留言給申請的成員…",
+    "reviewNoteLabel": "審核備註",
+    "cancel": "取消",
+    "errorForbidden": "您沒有權限審核此申請，也不能審核自己的申請。",
+    "errorConflict": "此申請已無法批准：可能已被審核，或金庫餘額、物品不足。",
+    "errorNotFound": "此申請已不存在。",
+    "errorGeneric": "發生錯誤，請再試一次。",
+    "statuses": {
+      "pending": "待審核",
+      "approved": "已批准",
+      "rejected": "已拒絕"
+    }
   }
 }

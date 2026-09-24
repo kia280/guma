@@ -99,12 +99,14 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
-	if session.UserIDFromContext(ctx) == "" {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
 	result, err := h.svc.ListFundRequests(ctx, banksvc.ListFundRequestsParams{
 		GuildID:  req.GuildId,
+		UserID:   userID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
 		Offset:   banksvc.ParsePageToken(req.PageToken),
@@ -230,6 +232,37 @@ func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewI
 	return &gumav1.ReviewItemRequestResponse{ItemRequest: itemRequestToProto(ir)}, nil
 }
 
+func (h *BankHandler) ListItemRequests(ctx context.Context, req *gumav1.ListItemRequestsRequest) (*gumav1.ListItemRequestsResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	result, err := h.svc.ListItemRequests(ctx, banksvc.ListItemRequestsParams{
+		GuildID:  req.GuildId,
+		UserID:   userID,
+		Status:   req.Status,
+		PageSize: int(req.PageSize),
+		Offset:   banksvc.ParsePageToken(req.PageToken),
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+
+	protos := make([]*gumav1.ItemRequest, len(result.Requests))
+	for i, r := range result.Requests {
+		protos[i] = itemRequestToProto(r)
+	}
+	return &gumav1.ListItemRequestsResponse{
+		Requests:      protos,
+		NextPageToken: banksvc.NextPageToken(result.NextOffset),
+		TotalCount:    result.TotalCount,
+	}, nil
+}
+
 // --- proto conversion helpers ---
 
 func bankToProto(b *banksvc.GuildBank) *gumav1.GuildBank {
@@ -309,6 +342,7 @@ func itemRequestToProto(ir *banksvc.ItemRequest) *gumav1.ItemRequest {
 		Status:        ir.Status,
 		ReviewerId:    ir.ReviewerID,
 		ReviewNote:    ir.ReviewNote,
+		Item:          itemToProto(ir.Item),
 		CreatedAt:     timestamppb.New(ir.CreatedAt),
 	}
 	if ir.ReviewedAt != nil {

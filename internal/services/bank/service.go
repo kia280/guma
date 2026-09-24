@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 
@@ -88,13 +90,23 @@ type ItemRequest struct {
 	Status        string
 	ReviewerID    string
 	ReviewNote    string
+	Item          models.Item
 	CreatedAt     time.Time
 	ReviewedAt    *time.Time
 }
 
+const (
+	StatusPending  = "pending"
+	StatusApproved = "approved"
+	StatusRejected = "rejected"
+)
+
+var reviewerRoles = []string{"owner", "admin", "moderator"}
+
 // ListFundRequestsParams holds inputs for ListFundRequests.
 type ListFundRequestsParams struct {
 	GuildID  string
+	UserID   string
 	Status   string
 	PageSize int
 	Offset   int
@@ -103,6 +115,20 @@ type ListFundRequestsParams struct {
 // ListFundRequestsResult is returned by ListFundRequests.
 type ListFundRequestsResult struct {
 	Requests   []*FundRequest
+	TotalCount int32
+	NextOffset int
+}
+
+type ListItemRequestsParams struct {
+	GuildID  string
+	UserID   string
+	Status   string
+	PageSize int
+	Offset   int
+}
+
+type ListItemRequestsResult struct {
+	Requests   []*ItemRequest
 	TotalCount int32
 	NextOffset int
 }
@@ -264,6 +290,10 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 	if amount <= 0 {
 		return nil, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
 	}
+	reason = strings.TrimSpace(reason)
+	if reason == "" {
+		return nil, fmt.Errorf("%w: reason is required", errs.ErrInvalidArgument)
+	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -271,6 +301,17 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, userID); err != nil {
+		return nil, err
+	}
+
+	bank, err := s.GetBank(ctx, guildIDStr)
+	if err != nil {
+		return nil, err
+	}
+	if amount > bank.Balance {
+		return nil, fmt.Errorf("%w: amount exceeds bank balance", errs.ErrFailedPrecondition)
 	}
 
 	requesterName, _ := s.q.GetUserDisplayName(ctx, userID)
@@ -287,8 +328,8 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 
 // ReviewFundRequest approves or rejects a fund request.
 func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDStr, reviewerIDStr, status, note string) (*FundRequest, error) {
-	if status != "approved" && status != "rejected" {
-		return nil, fmt.Errorf("%w: status must be 'approved' or 'rejected'", errs.ErrInvalidArgument)
+	if err := validateDecision(status); err != nil {
+		return nil, err
 	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
@@ -302,30 +343,41 @@ func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDSt
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, reviewerID, "owner", "admin", "moderator"); err != nil {
+	if err := s.requireRole(ctx, guildID, reviewerID, reviewerRoles...); err != nil {
 		return nil, err
 	}
 
-	if status == "approved" {
-		pending, err := s.q.GetPendingFundRequest(ctx, db.GetPendingFundRequestParams{ID: requestID, GuildID: guildID})
-		if err != nil {
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	pending, err := qtx.LockFundRequest(ctx, db.LockFundRequestParams{ID: requestID, GuildID: guildID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: fund request", errs.ErrNotFound)
 		}
+		return nil, fmt.Errorf("%w: load fund request: %v", errs.ErrInternal, err)
+	}
+	if err := checkReviewable(pending.Status, pending.RequesterID, reviewerID); err != nil {
+		return nil, err
+	}
 
-		pgtx, err := s.pool.Begin(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
-		}
-		defer pgtx.Rollback(ctx) //nolint:errcheck
-		qtx := s.q.WithTx(pgtx)
-
+	if status == StatusApproved {
 		if _, err := qtx.DeductGuildBankIfSufficient(ctx, db.DeductGuildBankIfSufficientParams{
 			Amount: pending.Amount, GuildID: guildID,
 		}); err != nil {
-			return nil, fmt.Errorf("%w: insufficient bank balance", errs.ErrFailedPrecondition)
+			if errors.Is(err, pgx.ErrNoRows) {
+				return nil, fmt.Errorf("%w: insufficient bank balance", errs.ErrFailedPrecondition)
+			}
+			return nil, fmt.Errorf("%w: deduct bank: %v", errs.ErrInternal, err)
 		}
 
-		_ = qtx.EnsureWallet(ctx, db.EnsureWalletParams{UserID: pending.RequesterID, GuildID: guildID})
+		if err := qtx.EnsureWallet(ctx, db.EnsureWalletParams{UserID: pending.RequesterID, GuildID: guildID}); err != nil {
+			return nil, fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
+		}
 		newBalance, err := qtx.CreditWallet(ctx, db.CreditWalletParams{
 			Amount: pending.Amount, UserID: pending.RequesterID, GuildID: guildID,
 		})
@@ -333,33 +385,27 @@ func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDSt
 			return nil, fmt.Errorf("%w: credit wallet: %v", errs.ErrInternal, err)
 		}
 
-		_, _ = qtx.InsertTransaction(ctx, db.InsertTransactionParams{
+		if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
 			UserID: pending.RequesterID, GuildID: guildID, Type: "FUND_REQUEST_APPROVED",
 			Amount: pending.Amount, BalanceAfter: newBalance,
 			Description: note, ReferenceID: requestIDStr, ReferenceType: "fund_request",
-		})
-
-		r, err := qtx.UpdateFundRequestStatus(ctx, db.UpdateFundRequestStatusParams{
-			Status: status, ReviewerID: &reviewerID, ReviewNote: note,
-			ID: requestID, GuildID: guildID,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("%w: fund request", errs.ErrNotFound)
+		}); err != nil {
+			return nil, fmt.Errorf("%w: record transaction: %v", errs.ErrInternal, err)
 		}
-
-		if err := pgtx.Commit(ctx); err != nil {
-			return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
-		}
-		return toFundRequest(r.ID, r.GuildID, r.RequesterID, r.RequesterName, r.Amount, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt), nil
 	}
 
-	r, err := s.q.UpdateFundRequestStatus(ctx, db.UpdateFundRequestStatusParams{
+	r, err := qtx.UpdateFundRequestStatus(ctx, db.UpdateFundRequestStatusParams{
 		Status: status, ReviewerID: &reviewerID, ReviewNote: note,
 		ID: requestID, GuildID: guildID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("%w: fund request", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: update fund request: %v", errs.ErrInternal, err)
 	}
+
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("fund_request_id", requestIDStr).Str("reviewer_id", reviewerIDStr).Str("status", status).Msg("fund request reviewed")
 	return toFundRequest(r.ID, r.GuildID, r.RequesterID, r.RequesterName, r.Amount, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt), nil
 }
 
@@ -369,9 +415,19 @@ func (s *Service) ListFundRequests(ctx context.Context, p ListFundRequestsParams
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
 	}
+	if err := validateStatusFilter(p.Status); err != nil {
+		return nil, err
+	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
+	}
+	userID, err := uuid.Parse(p.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, userID); err != nil {
+		return nil, err
 	}
 
 	rows, err := s.q.ListFundRequests(ctx, db.ListFundRequestsParams{
@@ -532,6 +588,10 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 
 // RequestItem inserts a pending item request.
 func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankItemIDStr, reason string) (*ItemRequest, error) {
+	reason = strings.TrimSpace(reason)
+	if reason == "" {
+		return nil, fmt.Errorf("%w: reason is required", errs.ErrInvalidArgument)
+	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
@@ -544,10 +604,8 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 	if err != nil {
 		return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
 	}
-
-	exists, err := s.q.BankItemExists(ctx, db.BankItemExistsParams{ID: bankItemID, GuildID: guildID})
-	if err != nil || !exists {
-		return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
+	if err := s.requireRole(ctx, guildID, userID); err != nil {
+		return nil, err
 	}
 
 	requesterName, _ := s.q.GetUserDisplayName(ctx, userID)
@@ -557,15 +615,22 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 		RequesterName: requesterName, Reason: reason,
 	})
 	if err != nil {
+		var pgErr *pgconn.PgError
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
+		case errors.As(err, &pgErr) && pgErr.Code == "23505":
+			return nil, fmt.Errorf("%w: a pending request for this item already exists", errs.ErrAlreadyExists)
+		}
 		return nil, fmt.Errorf("%w: create item request: %v", errs.ErrInternal, err)
 	}
-	return toItemRequest(r.ID, r.GuildID, r.BankItemID, r.RequesterID, r.RequesterName, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt), nil
+	return toItemRequest(db.ListItemRequestsRow(r)), nil
 }
 
 // ReviewItemRequest approves or rejects an item request.
 func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDStr, reviewerIDStr, status, note string) (*ItemRequest, error) {
-	if status != "approved" && status != "rejected" {
-		return nil, fmt.Errorf("%w: status must be 'approved' or 'rejected'", errs.ErrInvalidArgument)
+	if err := validateDecision(status); err != nil {
+		return nil, err
 	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
@@ -579,28 +644,47 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, reviewerID, "owner", "admin", "moderator"); err != nil {
+	if err := s.requireRole(ctx, guildID, reviewerID, reviewerRoles...); err != nil {
 		return nil, err
 	}
 
-	if status == "approved" {
-		pending, err := s.q.GetPendingItemRequest(ctx, db.GetPendingItemRequestParams{ID: requestID, GuildID: guildID})
-		if err != nil {
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	pending, err := qtx.LockItemRequest(ctx, db.LockItemRequestParams{ID: requestID, GuildID: guildID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: item request", errs.ErrNotFound)
 		}
+		return nil, fmt.Errorf("%w: load item request: %v", errs.ErrInternal, err)
+	}
+	if err := checkReviewable(pending.Status, pending.RequesterID, reviewerID); err != nil {
+		return nil, err
+	}
 
-		pgtx, err := s.pool.Begin(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	if status == StatusApproved {
+		if pending.BankItemID == nil {
+			return nil, fmt.Errorf("%w: bank item is no longer available", errs.ErrFailedPrecondition)
 		}
-		defer pgtx.Rollback(ctx) //nolint:errcheck
-		qtx := s.q.WithTx(pgtx)
+
+		if err := qtx.RejectCompetingItemRequests(ctx, db.RejectCompetingItemRequestsParams{
+			ReviewerID: &reviewerID, BankItemID: pending.BankItemID, GuildID: guildID, ID: requestID,
+		}); err != nil {
+			return nil, fmt.Errorf("%w: reject competing requests: %v", errs.ErrInternal, err)
+		}
 
 		itemJSON, err := qtx.DeleteBankItemReturningItem(ctx, db.DeleteBankItemReturningItemParams{
-			ID: pending.BankItemID, GuildID: guildID,
+			ID: *pending.BankItemID, GuildID: guildID,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("%w: bank item already removed", errs.ErrNotFound)
+			if errors.Is(err, pgx.ErrNoRows) {
+				return nil, fmt.Errorf("%w: bank item is no longer available", errs.ErrFailedPrecondition)
+			}
+			return nil, fmt.Errorf("%w: remove bank item: %v", errs.ErrInternal, err)
 		}
 
 		if err := qtx.InsertBackpackItemFromRequest(ctx, db.InsertBackpackItemFromRequestParams{
@@ -608,29 +692,63 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 		}); err != nil {
 			return nil, fmt.Errorf("%w: add to backpack: %v", errs.ErrInternal, err)
 		}
-
-		r, err := qtx.UpdateItemRequestStatus(ctx, db.UpdateItemRequestStatusParams{
-			Status: status, ReviewerID: &reviewerID, ReviewNote: note,
-			ID: requestID, GuildID: guildID,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("%w: item request", errs.ErrNotFound)
-		}
-
-		if err := pgtx.Commit(ctx); err != nil {
-			return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
-		}
-		return toItemRequest(r.ID, r.GuildID, r.BankItemID, r.RequesterID, r.RequesterName, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt), nil
 	}
 
-	r, err := s.q.UpdateItemRequestStatus(ctx, db.UpdateItemRequestStatusParams{
+	r, err := qtx.UpdateItemRequestStatus(ctx, db.UpdateItemRequestStatusParams{
 		Status: status, ReviewerID: &reviewerID, ReviewNote: note,
 		ID: requestID, GuildID: guildID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("%w: item request", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: update item request: %v", errs.ErrInternal, err)
 	}
-	return toItemRequest(r.ID, r.GuildID, r.BankItemID, r.RequesterID, r.RequesterName, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt), nil
+
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("item_request_id", requestIDStr).Str("reviewer_id", reviewerIDStr).Str("status", status).Msg("item request reviewed")
+	return toItemRequest(db.ListItemRequestsRow(r)), nil
+}
+
+func (s *Service) ListItemRequests(ctx context.Context, p ListItemRequestsParams) (*ListItemRequestsResult, error) {
+	pageSize := p.PageSize
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 20
+	}
+	if err := validateStatusFilter(p.Status); err != nil {
+		return nil, err
+	}
+	guildID, err := uuid.Parse(p.GuildID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
+	}
+	userID, err := uuid.Parse(p.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, userID); err != nil {
+		return nil, err
+	}
+
+	rows, err := s.q.ListItemRequests(ctx, db.ListItemRequestsParams{
+		GuildID: guildID, StatusFilter: p.Status,
+		PageSize: int32(pageSize), PageOffset: int32(p.Offset),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: list item requests: %v", errs.ErrInternal, err)
+	}
+
+	requests := make([]*ItemRequest, 0, len(rows))
+	for _, r := range rows {
+		requests = append(requests, toItemRequest(r))
+	}
+
+	total, _ := s.q.CountItemRequests(ctx, db.CountItemRequestsParams{GuildID: guildID, StatusFilter: p.Status})
+
+	nextOffset := 0
+	if len(requests) == pageSize {
+		nextOffset = p.Offset + pageSize
+	}
+	return &ListItemRequestsResult{Requests: requests, TotalCount: int32(total), NextOffset: nextOffset}, nil
 }
 
 // --- helpers ---
@@ -651,20 +769,51 @@ func toFundRequest(id, guildID, requesterID uuid.UUID, requesterName string, amo
 	return fr
 }
 
-func toItemRequest(id, guildID, bankItemID, requesterID uuid.UUID, requesterName, reason, status string, reviewerID *uuid.UUID, reviewNote string, createdAt time.Time, reviewedAt pgtype.Timestamptz) *ItemRequest {
+func toItemRequest(r db.ListItemRequestsRow) *ItemRequest {
 	ir := &ItemRequest{
-		ID: id.String(), GuildID: guildID.String(), BankItemID: bankItemID.String(),
-		RequesterID: requesterID.String(), RequesterName: requesterName,
-		Reason: reason, Status: status, ReviewNote: reviewNote, CreatedAt: createdAt,
+		ID: r.ID.String(), GuildID: r.GuildID.String(),
+		RequesterID: r.RequesterID.String(), RequesterName: r.RequesterName,
+		Reason: r.Reason, Status: r.Status, ReviewNote: r.ReviewNote, CreatedAt: r.CreatedAt,
 	}
-	if reviewerID != nil {
-		ir.ReviewerID = reviewerID.String()
+	if r.BankItemID != nil {
+		ir.BankItemID = r.BankItemID.String()
 	}
-	if reviewedAt.Valid {
-		t := reviewedAt.Time
+	if r.ReviewerID != nil {
+		ir.ReviewerID = r.ReviewerID.String()
+	}
+	if r.ReviewedAt.Valid {
+		t := r.ReviewedAt.Time
 		ir.ReviewedAt = &t
 	}
+	if len(r.Item) > 0 {
+		_ = json.Unmarshal(r.Item, &ir.Item)
+	}
 	return ir
+}
+
+func validateDecision(status string) error {
+	if status != StatusApproved && status != StatusRejected {
+		return fmt.Errorf("%w: status must be '%s' or '%s'", errs.ErrInvalidArgument, StatusApproved, StatusRejected)
+	}
+	return nil
+}
+
+func validateStatusFilter(status string) error {
+	switch status {
+	case "", StatusPending, StatusApproved, StatusRejected:
+		return nil
+	}
+	return fmt.Errorf("%w: unknown status filter %q", errs.ErrInvalidArgument, status)
+}
+
+func checkReviewable(currentStatus string, requesterID, reviewerID uuid.UUID) error {
+	if currentStatus != StatusPending {
+		return fmt.Errorf("%w: request has already been reviewed", errs.ErrFailedPrecondition)
+	}
+	if requesterID == reviewerID {
+		return fmt.Errorf("%w: cannot review your own request", errs.ErrPermissionDenied)
+	}
+	return nil
 }
 
 func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
@@ -673,7 +822,10 @@ func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, ro
 		if errors.Is(err, pgx.ErrNoRows) {
 			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
 		}
-		return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
+		return fmt.Errorf("%w: load member role: %v", errs.ErrInternal, err)
+	}
+	if len(roles) == 0 {
+		return nil
 	}
 	for _, r := range roles {
 		if role == r {

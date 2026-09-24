@@ -29,6 +29,8 @@ import type {
   BankContribution,
   FundRequest,
   ItemRequest,
+  RequestStatus,
+  ReviewDecision,
 } from '@/types/guild-bank';
 import type {
   GuildEvent,
@@ -121,14 +123,21 @@ export interface ApiClient {
   reviewFundRequest(
     guildId: string,
     reqId: string,
-    status: 'approved' | 'rejected',
+    status: ReviewDecision,
     note?: string,
   ): Promise<FundRequest>;
-  listFundRequests(guildId: string): Promise<FundRequest[]>;
+  listFundRequests(guildId: string, status?: RequestStatus): Promise<FundRequest[]>;
   listContributions(guildId: string): Promise<GuildContribution[]>;
   donateItem(guildId: string, backpackItemId: string, note?: string): Promise<GuildBankItem>;
   listBankItems(guildId: string): Promise<GuildBankItem[]>;
   requestItem(guildId: string, bankItemId: string, reason: string): Promise<ItemRequest>;
+  reviewItemRequest(
+    guildId: string,
+    reqId: string,
+    status: ReviewDecision,
+    note?: string,
+  ): Promise<ItemRequest>;
+  listItemRequests(guildId: string, status?: RequestStatus): Promise<ItemRequest[]>;
 
   // ── Event / Calendar ──
   listEvents(guildId: string): Promise<GuildEvent[]>;
