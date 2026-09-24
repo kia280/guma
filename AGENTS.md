@@ -27,6 +27,9 @@ PostgreSQL is accessed through `pgx` and generated `sqlc` queries.
 - Use English only in source code, comments, documentation, commit messages, and
   agent responses.
 - Preserve unrelated changes; this repository may have a dirty worktree.
+- Develop in a git worktree, not the primary checkout, so feature work stays
+  isolated from the working tree. Start every development task by creating a
+  worktree on a new branch, and do all edits, generation, and checks there.
 - Keep transport concerns in handlers, business rules in services, and data access
   in sqlc queries.
 - Do not return raw service errors from gRPC handlers. Map known errors to an
