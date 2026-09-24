@@ -20,6 +20,7 @@ import type {
   LotteryTicket,
   LotteryWinner,
   CreateLotteryRequest,
+  UpdateLotteryRequest,
 } from '@/types/lottery';
 import type {
   GuildBank,
@@ -108,6 +109,7 @@ export interface ApiClient {
   listLotteries(guildId: string, status?: string): Promise<Lottery[]>;
   getLottery(guildId: string, id: string): Promise<Lottery>;
   createLottery(guildId: string, req: CreateLotteryRequest): Promise<Lottery>;
+  updateLottery(guildId: string, lotteryId: string, patch: UpdateLotteryRequest): Promise<Lottery>;
   purchaseTickets(guildId: string, lotteryId: string, quantity: number): Promise<LotteryTicket[]>;
   getLotteryWinners(guildId: string, lotteryId: string): Promise<LotteryWinner[]>;
   listMyTickets(): Promise<LotteryTicket[]>;

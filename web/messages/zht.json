@@ -776,7 +776,15 @@
       "upcoming": "即將開始",
       "ended": "已結束"
     },
-    "wheelDetail": "{count} 張 · {chance}%"
+    "wheelDetail": "{count} 張 · {chance}%",
+    "reschedule": "調整開獎時間",
+    "newDrawDate": "新的開獎時間",
+    "saveSchedule": "儲存",
+    "cancel": "取消",
+    "drawDateInPast": "開獎時間必須在未來。",
+    "rescheduleForbidden": "只有公會擁有者和管理員可以調整開獎時間。",
+    "rescheduleFailed": "無法調整開獎時間，請再試一次。",
+    "noWinners": "沒有人購票，本次無得獎者。"
   },
   "createLotteryModal": {
     "title": "建立抽獎",

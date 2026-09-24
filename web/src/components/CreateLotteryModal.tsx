@@ -4,9 +4,6 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Button,
-  Calendar,
-  DateField,
-  DatePicker,
   Input,
   Label,
   Modal,
@@ -16,9 +13,8 @@ import {
   type UseOverlayStateReturn,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import type { DateValue } from '@internationalized/date';
-import { getLocalTimeZone, parseAbsoluteToLocal } from '@internationalized/date';
 
+import { DateTimePicker } from './DateTimePicker';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import type { Lottery } from '@/types/lottery';
@@ -168,48 +164,14 @@ export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLo
                   </NumberField>
                 </div>
 
-                <DatePicker
+                <DateTimePicker
                   isRequired
-                  granularity="minute"
-                  hourCycle={24}
+                  label={t('drawDate')}
+                  value={drawDate}
+                  onChange={setDrawDate}
                   isInvalid={!isFuture}
-                  value={parseAbsoluteToLocal(drawDate)}
-                  onChange={(value: DateValue | null) => {
-                    if (value) setDrawDate(value.toDate(getLocalTimeZone()).toISOString());
-                  }}
-                >
-                  <Label>{t('drawDate')}</Label>
-                  <DateField.Group fullWidth>
-                    <DateField.Input>{segment => <DateField.Segment segment={segment} />}</DateField.Input>
-                    <DateField.Suffix>
-                      <DatePicker.Trigger>
-                        <DatePicker.TriggerIndicator />
-                      </DatePicker.Trigger>
-                    </DateField.Suffix>
-                  </DateField.Group>
-                  <DatePicker.Popover>
-                    <Calendar aria-label={t('drawDate')}>
-                      <Calendar.Header>
-                        <Calendar.YearPickerTrigger>
-                          <Calendar.YearPickerTriggerHeading />
-                          <Calendar.YearPickerTriggerIndicator />
-                        </Calendar.YearPickerTrigger>
-                        <Calendar.NavButton slot="previous" />
-                        <Calendar.NavButton slot="next" />
-                      </Calendar.Header>
-                      <Calendar.Grid>
-                        <Calendar.GridHeader>{day => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}</Calendar.GridHeader>
-                        <Calendar.GridBody>{date => <Calendar.Cell date={date} />}</Calendar.GridBody>
-                      </Calendar.Grid>
-                      <Calendar.YearPickerGrid>
-                        <Calendar.YearPickerGridBody>
-                          {({ year }) => <Calendar.YearPickerCell year={year} />}
-                        </Calendar.YearPickerGridBody>
-                      </Calendar.YearPickerGrid>
-                    </Calendar>
-                  </DatePicker.Popover>
-                </DatePicker>
-                {!isFuture && <p className="type-caption text-danger">{t('drawDateInPast')}</p>}
+                  errorMessage={t('drawDateInPast')}
+                />
 
                 {error && (
                   <p role="alert" className="type-caption text-danger">

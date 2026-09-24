@@ -776,7 +776,15 @@
       "upcoming": "Upcoming",
       "ended": "Ended"
     },
-    "wheelDetail": "{count, plural, one {# ticket} other {# tickets}} · {chance}%"
+    "wheelDetail": "{count, plural, one {# ticket} other {# tickets}} · {chance}%",
+    "reschedule": "Change draw time",
+    "newDrawDate": "New draw time",
+    "saveSchedule": "Save",
+    "cancel": "Cancel",
+    "drawDateInPast": "The draw time must be in the future.",
+    "rescheduleForbidden": "Only guild owners and admins can change the draw time.",
+    "rescheduleFailed": "Could not change the draw time. Please try again.",
+    "noWinners": "No tickets were sold, so there is no winner."
   },
   "createLotteryModal": {
     "title": "Create lottery",

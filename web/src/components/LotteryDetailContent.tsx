@@ -7,11 +7,13 @@ import { Avatar, Button, Chip, Label, NumberField, ProgressBar, ScrollShadow } f
 import { Icon } from '@iconify/react';
 
 import { LotteryWheel, type WheelEntry } from './LotteryWheel';
+import { DateTimePicker } from './DateTimePicker';
 import { apiClient } from '@/lib/guma';
+import { useUserStore } from '@/lib/store';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import type { Lottery, LotteryStatus, LotteryWinner } from '@/types/lottery';
 
-const CURRENT_USER_ID = 'current-user';
+const DRAW_RETRY_MS = 3000;
 
 type DrawPhase = 'idle' | 'drawing' | 'spinning' | 'revealed';
 
@@ -78,6 +80,12 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const [phase, setPhase] = React.useState<DrawPhase>('idle');
   const [spinKey, setSpinKey] = React.useState(0);
   const [drawWinners, setDrawWinners] = React.useState<LotteryWinner[]>([]);
+  const [isRescheduling, setIsRescheduling] = React.useState(false);
+  const [rescheduleDate, setRescheduleDate] = React.useState('');
+  const [rescheduleError, setRescheduleError] = React.useState('');
+  const [isSavingSchedule, setIsSavingSchedule] = React.useState(false);
+  const retryTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
+  const currentUserId = useUserStore(state => state.user?.id);
 
   const load = React.useCallback(
     () =>
@@ -101,7 +109,10 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
 
   React.useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      clearTimeout(retryTimer.current);
+    };
   }, []);
 
   const drawTime = lottery ? new Date(lottery.drawDate).getTime() : 0;
@@ -110,19 +121,23 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   React.useEffect(() => {
     if (!isDue || phase !== 'idle') return;
     setPhase('drawing');
+    const retryLater = () => {
+      retryTimer.current = setTimeout(() => setPhase('idle'), DRAW_RETRY_MS);
+    };
     apiClient
       .getLotteryWinners(guildId, id)
-      .then(winners => {
-        setDrawWinners(winners);
-        if (winners.length === 0) {
-          setPhase('revealed');
-          load();
+      .then(async winners => {
+        if (winners.length > 0) {
+          setDrawWinners(winners);
+          setPhase('spinning');
+          setSpinKey(key => key + 1);
           return;
         }
-        setPhase('spinning');
-        setSpinKey(key => key + 1);
+        const latest = await load();
+        if (latest?.status === 'ended') setPhase('revealed');
+        else retryLater();
       })
-      .catch(() => setPhase('idle'));
+      .catch(retryLater);
   }, [isDue, phase, guildId, id, load]);
 
   if (isMissing) {
@@ -148,7 +163,8 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const topWinner = winners[0]?.username;
   const participants = lottery.participants ?? [];
   const totalTickets = participants.reduce((sum, p) => sum + p.tickets, 0) || lottery.ticketsSold;
-  const myTickets = participants.find(p => p.id === CURRENT_USER_ID)?.tickets ?? 0;
+  const myTickets = participants.find(p => p.id === currentUserId)?.tickets ?? 0;
+  const canReschedule = lottery.status !== 'ended' && phase === 'idle' && !isDue;
   const ticketsLeft = Math.max(0, lottery.maxTickets - lottery.ticketsSold);
   const soldPercent = Math.round((lottery.ticketsSold / lottery.maxTickets) * 100);
   const isOpen = lottery.status === 'active' && !isDue && phase === 'idle';
@@ -178,10 +194,36 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     load();
   };
 
+  const startRescheduling = () => {
+    setRescheduleDate(lottery.drawDate);
+    setRescheduleError('');
+    setIsRescheduling(true);
+  };
+
+  const saveSchedule = async () => {
+    if (new Date(rescheduleDate).getTime() <= Date.now()) {
+      setRescheduleError(t('drawDateInPast'));
+      return;
+    }
+    setIsSavingSchedule(true);
+    setRescheduleError('');
+    try {
+      await apiClient.updateLottery(guildId, id, { drawDate: rescheduleDate });
+      await load();
+      setIsRescheduling(false);
+    } catch (err) {
+      const status = (err as { response?: { status?: number } }).response?.status;
+      setRescheduleError(status === 403 ? t('rescheduleForbidden') : t('rescheduleFailed'));
+    } finally {
+      setIsSavingSchedule(false);
+    }
+  };
+
   const wheelCaption = () => {
     if (phase === 'drawing') return t('drawing');
     if (phase === 'spinning') return t('spinning');
     if (showWinners && topWinner) return t('winnerIs', { name: topWinner });
+    if (lottery.status === 'ended') return t('noWinners');
     if (lottery.status === 'upcoming') return t('notStarted');
     return t('drawsIn', { time: formatCountdown(drawTime - now) });
   };
@@ -234,12 +276,55 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
               <dt className="type-caption text-hint">{t('ticketPrice')}</dt>
               <dd className="type-subheading text-foreground tabular-nums">${lottery.ticketPrice.toLocaleString('en-US')}</dd>
             </div>
-            <div className="rounded-xl border border-divider p-3">
-              <dt className="type-caption text-hint">{t('drawDate')}</dt>
-              <dd className="type-subheading text-foreground tabular-nums">
-                {format.dateTime(new Date(lottery.drawDate), { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-              </dd>
+            <div className="flex items-start justify-between gap-2 rounded-xl border border-divider p-3">
+              <div className="min-w-0">
+                <dt className="type-caption text-hint">{t('drawDate')}</dt>
+                <dd className="type-subheading text-foreground tabular-nums">
+                  {format.dateTime(new Date(lottery.drawDate), {
+                    year: new Date(lottery.drawDate).getFullYear() === new Date(now).getFullYear() ? undefined : 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </dd>
+              </div>
+              {canReschedule && !isRescheduling && (
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="ghost"
+                  className="text-hint shrink-0 -mr-1 -mt-1"
+                  aria-label={t('reschedule')}
+                  onPress={startRescheduling}
+                >
+                  <Icon icon="solar:pen-linear" width={16} />
+                </Button>
+              )}
             </div>
+            {isRescheduling && canReschedule && (
+              <div className="col-span-2 rounded-xl border border-divider p-3 space-y-3">
+                <DateTimePicker
+                  isRequired
+                  label={t('newDrawDate')}
+                  value={rescheduleDate}
+                  onChange={value => {
+                    setRescheduleDate(value);
+                    setRescheduleError('');
+                  }}
+                  isInvalid={!!rescheduleError}
+                  errorMessage={rescheduleError}
+                />
+                <div className="flex justify-end gap-2">
+                  <Button size="sm" variant="secondary" onPress={() => setIsRescheduling(false)}>
+                    {t('cancel')}
+                  </Button>
+                  <Button size="sm" isPending={isSavingSchedule} onPress={saveSchedule}>
+                    {t('saveSchedule')}
+                  </Button>
+                </div>
+              </div>
+            )}
             <div className="col-span-2 rounded-xl border border-divider p-3 space-y-2">
               <div className="flex justify-between type-caption text-hint">
                 <span>{t('ticketsSold', { sold: lottery.ticketsSold, max: lottery.maxTickets })}</span>
