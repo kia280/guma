@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button, Card, Select, Chip, Tabs, TextField, Label, InputGroup, ListBox, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
@@ -10,6 +10,7 @@ import { ItemCategory, ItemRarity } from '@/types/item';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
+import { useLiveResource } from '@/hooks/useLiveResource';
 import { CreateAuctionModal } from '@/components/CreateAuctionModal';
 
 const AuctionPage = () => {
@@ -21,13 +22,22 @@ const AuctionPage = () => {
   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const latestRequest = useRef(0);
   const refetchAuctions = () => {
-    apiClient.listAuctions(guildId).then(setAuctionItems).catch(() => {});
+    const request = ++latestRequest.current;
+    apiClient
+      .listAuctions(guildId)
+      .then(items => {
+        if (request === latestRequest.current) setAuctionItems(items);
+      })
+      .catch(() => {});
   };
   useEffect(() => {
     refetchAuctions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guildId]);
+
+  useLiveResource(['auction'], refetchAuctions, { guildId });
 
   const [filteredItems, setFilteredItems] = useState<AuctionItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
