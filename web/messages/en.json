@@ -50,7 +50,8 @@
     "preference": "Preference",
     "learnMore": "Learn More",
     "starOnGitHub": "Star on GitHub",
-    "logout": "Logout"
+    "logout": "Logout",
+    "openMenu": "Open menu"
   },
   "dashboard": {
     "overview": "Overview",

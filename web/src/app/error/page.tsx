@@ -49,7 +49,7 @@ function ErrorPageContent() {
       case 404:
         return 'solar:map-line-duotone';
       case 429:
-        return 'solar:clock-line-duotone';
+        return 'solar:clock-circle-line-duotone';
       case 500:
       case 503:
         return 'solar:bug-line-duotone';

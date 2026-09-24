@@ -28,9 +28,9 @@ const USER_BALANCE = 5000;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const CATEGORY_ICONS: Record<ItemCategory, string> = {
-  [ItemCategory.WEAPON]: 'solar:wrench-linear',
+  [ItemCategory.WEAPON]: 'tabler:sword',
   [ItemCategory.ARMOR]: 'solar:shield-check-linear',
-  [ItemCategory.SKILL_SCROLL]: 'solar:book-open-linear',
+  [ItemCategory.SKILL_SCROLL]: 'solar:book-2-linear',
   [ItemCategory.CONSUMABLE]: 'solar:test-tube-linear',
   [ItemCategory.ACCESSORY]: 'solar:stars-linear',
   [ItemCategory.MATERIAL]: 'solar:box-linear',

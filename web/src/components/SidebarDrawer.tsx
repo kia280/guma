@@ -31,9 +31,9 @@ const SidebarDrawer = React.forwardRef<HTMLDivElement, SidebarDrawerProps>(
         <Drawer isOpen={isOpen} onOpenChange={onOpenChange}>
           <Drawer.Backdrop>
             <Drawer.Content placement={sidebarPlacement}>
-              <Drawer.Dialog className="h-full max-h-full rounded-none m-0">
+              <Drawer.Dialog className="h-full max-h-full w-72 sm:w-72 max-w-[85vw] rounded-none m-0 p-0">
                 {!hideCloseButton && <Drawer.CloseTrigger />}
-                <Drawer.Body className="p-0">{children}</Drawer.Body>
+                <Drawer.Body className="m-0 p-0">{children}</Drawer.Body>
               </Drawer.Dialog>
             </Drawer.Content>
           </Drawer.Backdrop>

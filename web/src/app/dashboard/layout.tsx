@@ -90,8 +90,16 @@ export default function DashboardLayout({ children, modal }: { children: React.R
     return segments[0] || '';
   }, [pathname]);
 
-  const isCompact = useMediaQuery('(max-width: 1024px)');
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isCompact = useMediaQuery('(max-width: 1023px)');
+  const showCollapsed = isCollapsed && !isCompact;
+
+  React.useEffect(() => {
+    setIsDrawerOpen(false);
+  }, [pathname]);
+
+  React.useEffect(() => {
+    if (!isCompact) setIsDrawerOpen(false);
+  }, [isCompact]);
 
   const onToggle = React.useCallback(() => {
     setIsCollapsed(prev => !prev);
@@ -107,7 +115,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
       <div className="flex h-screen w-full">
         {/* Sidebar */}
         <SidebarDrawer
-          className={cn('z-50 min-w-[288px]', { 'min-w-[76px] max-w-[76px]': isCollapsed })}
+          className={cn('z-50 min-w-[288px]', { 'min-w-[76px] max-w-[76px]': showCollapsed })}
           hideCloseButton={true}
           isOpen={isDrawerOpen}
           onOpenChange={setIsDrawerOpen}
@@ -116,8 +124,8 @@ export default function DashboardLayout({ children, modal }: { children: React.R
             className={cn(
               'will-change bg-surface border-r border-divider flex h-full flex-col py-[24px] px-[12px]',
               {
-                'w-72': !isCollapsed,
-                'w-[76px] overflow-hidden': isCollapsed,
+                'w-72 max-w-full': !showCollapsed,
+                'w-[76px] overflow-hidden': showCollapsed,
               }
             )}
           >
@@ -126,7 +134,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
               <div className="w-11 flex items-center justify-start shrink-0">
                 <Logo size="sm" showText={false} className="h-9 w-9" />
               </div>
-              {!isCollapsed && (
+              {!showCollapsed && (
                 <span className="text-lg font-bold uppercase text-foreground">
                   {t('sunbaby')}
                 </span>
@@ -138,7 +146,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
             <Sidebar
               defaultSelectedKey={selectedKey}
               iconClassName="group-data-[selected=true]:text-foreground"
-              isCompact={isCollapsed}
+              isCompact={showCollapsed}
               itemClasses={{
                 base: 'rounded-large data-[selected=true]:bg-default!',
                 title: 'group-data-[selected=true]:text-foreground group-data-[selected=true]:font-semibold',
@@ -147,6 +155,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
               onSelect={key => {
                 const item = items.find(i => i.key === key);
                 if (item) router.push(`/dashboard${item.path}`);
+                setIsDrawerOpen(false);
               }}
             />
 
@@ -158,9 +167,9 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                 <Button
                   className="text-subtle py-1 px-1 h-[44px] min-h-[44px] w-full"
                   variant="ghost"
-                  onPress={isMobile ? () => setIsDrawerOpen(o => !o) : onToggle}
+                  onPress={isCompact ? () => setIsDrawerOpen(false) : onToggle}
                 >
-                  {isCollapsed ? (
+                  {showCollapsed ? (
                     <Icon
                       className="text-subtle"
                       icon="solar:round-alt-arrow-right-line-duotone"
@@ -175,7 +184,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                   )}
                 </Button>
                 <Tooltip.Content>
-                  {isCollapsed ? t('expandSidebar') : t('collapseSidebar')}
+                  {showCollapsed ? t('expandSidebar') : t('collapseSidebar')}
                 </Tooltip.Content>
               </Tooltip>
             </div>
@@ -191,6 +200,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                 className="text-subtle"
                 size="sm"
                 variant="ghost"
+                aria-label={t('openMenu')}
                 onPress={() => setIsDrawerOpen(true)}
               >
                 <Icon height={24} icon="solar:hamburger-menu-outline" width={24} />
