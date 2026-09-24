@@ -194,6 +194,7 @@ export const gumaApiClient: ApiClient = {
       starting_bid: req.startingBid,
       min_bid_increment: req.minBidIncrement,
       duration_hours: req.duration,
+      status: 'ACTIVE',
     };
     const { data } = await http.post(`/v1/guilds/${guildId}/auctions`, payload);
     return toAuctionItem(data.auction);
@@ -282,6 +283,12 @@ export const gumaApiClient: ApiClient = {
       max_tickets_per_user: req.maxTicketsPerUser ?? 0,
       draw_date: req.drawDate,
       prizes: req.prizes,
+    });
+    return toLottery(data.lottery);
+  },
+  updateLottery: async (guildId, lotteryId, patch) => {
+    const { data } = await http.patch(`/v1/guilds/${guildId}/lotteries/${lotteryId}`, {
+      draw_date: patch.drawDate,
     });
     return toLottery(data.lottery);
   },

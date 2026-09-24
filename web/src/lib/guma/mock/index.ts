@@ -350,6 +350,14 @@ const baseMockApiClient: ApiClient = {
     store.lotteries = [lottery, ...store.lotteries];
     return lottery;
   },
+  updateLottery: async (_guildId, lotteryId, patch) => {
+    const lottery = store.lotteries.find(x => x.id === lotteryId);
+    if (!lottery) throw new Error('not found');
+    if (lottery.status === 'ended') throw new Error('lottery already drawn');
+    if (new Date(patch.drawDate).getTime() <= Date.now()) throw new Error('draw date must be in the future');
+    lottery.drawDate = patch.drawDate;
+    return lottery;
+  },
   purchaseTickets: async (_guildId, lotteryId, quantity): Promise<LotteryTicket[]> => {
     const lottery = store.lotteries.find(x => x.id === lotteryId);
     if (!lottery) throw new Error('not found');

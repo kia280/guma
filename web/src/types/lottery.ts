@@ -44,3 +44,7 @@ export interface CreateLotteryRequest {
   drawDate: string;
   prizes?: Array<{ rank: number; description: string; amount?: number }>;
 }
+
+export interface UpdateLotteryRequest {
+  drawDate: string;
+}
