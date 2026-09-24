@@ -869,6 +869,7 @@
       "pending": "待審核",
       "approved": "已批准",
       "rejected": "已拒絕"
-    }
+    },
+    "ownRequest": "您的申請"
   }
 }

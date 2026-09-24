@@ -20,6 +20,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { ItemThumbnail, getRarityColor } from '@/components/ItemThumbnail';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
+import { useUserStore } from '@/lib/store';
 import type { FundRequest, ItemRequest, RequestStatus, ReviewDecision } from '@/types/guild-bank';
 
 type View = 'pending' | 'reviewed';
@@ -58,12 +59,13 @@ interface RequestRowProps {
   reason: string;
   status: RequestStatus;
   reviewNote?: string;
+  isOwn: boolean;
   leading: React.ReactNode;
   summary: React.ReactNode;
   onReview: (decision: ReviewDecision) => void;
 }
 
-function RequestRow({ requester, createdAt, reason, status, reviewNote, leading, summary, onReview }: RequestRowProps) {
+function RequestRow({ requester, createdAt, reason, status, reviewNote, isOwn, leading, summary, onReview }: RequestRowProps) {
   const t = useTranslations('bankRequestReview');
   const format = useFormatter();
 
@@ -87,7 +89,11 @@ function RequestRow({ requester, createdAt, reason, status, reviewNote, leading,
           )}
         </div>
       </div>
-      {status === 'pending' ? (
+      {status === 'pending' && isOwn ? (
+        <Chip size="sm" variant="secondary" className="self-end sm:self-center">
+          {t('ownRequest')}
+        </Chip>
+      ) : status === 'pending' ? (
         <div className="flex shrink-0 gap-2 self-end sm:self-center">
           <Button size="sm" variant="secondary" onPress={() => onReview('rejected')}>
             {t('reject')}
@@ -139,6 +145,7 @@ function RequestSection({ title, icon, count, emptyText, children }: RequestSect
 export function BankRequestReview({ guildId }: { guildId: string }) {
   const t = useTranslations('bankRequestReview');
   const reviewModal = useOverlayState();
+  const currentUserId = useUserStore(s => s.user?.id);
 
   const [view, setView] = React.useState<View>('pending');
   const [fundRequests, setFundRequests] = React.useState<FundRequest[]>([]);
@@ -256,6 +263,7 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
                 reason={r.reason}
                 status={r.status}
                 reviewNote={r.reviewNote}
+                isOwn={r.requesterId === currentUserId}
                 leading={
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning/10">
                     <Icon className="text-warning" icon="solar:dollar-minimalistic-linear" width={20} />
@@ -285,6 +293,7 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
                 reason={r.reason}
                 status={r.status}
                 reviewNote={r.reviewNote}
+                isOwn={r.requesterId === currentUserId}
                 leading={<ItemThumbnail category={r.itemCategory} rarity={r.itemRarity} />}
                 summary={
                   <div className="flex min-w-0 items-center gap-2">

@@ -1,15 +1,15 @@
 import { isAxiosError } from 'axios';
 
 export const GrpcCode = {
-  InvalidArgument: 3,
-  NotFound: 5,
-  AlreadyExists: 6,
-  PermissionDenied: 7,
-  FailedPrecondition: 9,
+  InvalidArgument: 'InvalidArgument',
+  NotFound: 'NotFound',
+  AlreadyExists: 'AlreadyExists',
+  PermissionDenied: 'PermissionDenied',
+  FailedPrecondition: 'FailedPrecondition',
 } as const;
 
-export const apiErrorCode = (err: unknown): number | undefined => {
+export const apiErrorCode = (err: unknown): string | undefined => {
   if (!isAxiosError(err)) return undefined;
   const code = (err.response?.data as { code?: unknown } | undefined)?.code;
-  return typeof code === 'number' ? code : undefined;
+  return typeof code === 'string' ? code : undefined;
 };
