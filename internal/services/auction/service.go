@@ -161,10 +161,12 @@ func (s *Service) Get(ctx context.Context, guildIDStr, auctionIDStr string) (*Au
 	return toAuctionItem(row), nil
 }
 
+const defaultMinBidIncrement = 100
+
 // Create inserts a new auction.
 func (s *Service) Create(ctx context.Context, p CreateParams) (*AuctionItem, error) {
 	if p.MinBidIncrement <= 0 {
-		p.MinBidIncrement = 1
+		p.MinBidIncrement = defaultMinBidIncrement
 	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {

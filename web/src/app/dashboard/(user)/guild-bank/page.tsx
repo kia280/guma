@@ -24,6 +24,7 @@ import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
+import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 
 
 
@@ -110,8 +111,8 @@ export default function GuildBankPage() {
   };
 
   const handleContribute = async () => {
-    const amount = parseFloat(contributeAmount);
-    if (!amount || amount <= 0) return;
+    const amount = parseGold(contributeAmount);
+    if (!(amount > 0)) return;
     try {
       await apiClient.contributeFunds(guildId, { amount, note: contributeNote || undefined });
       refetchBank();
@@ -141,8 +142,8 @@ export default function GuildBankPage() {
   };
 
   const handleRequest = async () => {
-    const amount = Number(requestAmount);
-    if (!Number.isInteger(amount) || amount <= 0 || !requestReason.trim()) return;
+    const amount = parseGold(requestAmount);
+    if (!(amount > 0) || !requestReason.trim()) return;
     setIsRequesting(true);
     setRequestError(null);
     try {
@@ -224,6 +225,9 @@ export default function GuildBankPage() {
                             autoFocus
                             placeholder="0.00"
                             type="number"
+                            min={0}
+                            step={GOLD_STEP}
+                            inputMode="decimal"
                             value={contributeAmount}
                             variant="secondary"
                             onChange={e => setContributeAmount(e.target.value)}
@@ -257,7 +261,7 @@ export default function GuildBankPage() {
                         <Button
                           variant="tertiary"
                           onPress={handleContribute}
-                          isDisabled={!contributeAmount || parseFloat(contributeAmount) <= 0}
+                          isDisabled={!(parseGold(contributeAmount) > 0)}
                         >
                           {t('contribute')}
                         </Button>
@@ -287,11 +291,11 @@ export default function GuildBankPage() {
                           <Label>{t('amountLabel')}</Label>
                           <Input
                             autoFocus
-                            placeholder="0"
+                            placeholder="0.00"
                             type="number"
-                            min={1}
-                            step={1}
-                            inputMode="numeric"
+                            min={0}
+                            step={GOLD_STEP}
+                            inputMode="decimal"
                             value={requestAmount}
                             variant="secondary"
                             onChange={e => setRequestAmount(e.target.value)}
@@ -334,7 +338,7 @@ export default function GuildBankPage() {
                           variant="primary"
                           onPress={handleRequest}
                           isPending={isRequesting}
-                          isDisabled={!Number.isInteger(Number(requestAmount)) || Number(requestAmount) <= 0 || !requestReason.trim()}
+                          isDisabled={!(parseGold(requestAmount) > 0) || !requestReason.trim()}
                         >
                           {t('submitRequest')}
                         </Button>
@@ -351,7 +355,7 @@ export default function GuildBankPage() {
             <div className="flex justify-between items-center">
               <p className="type-caption text-subtle">{t('monthlyGoal')}</p>
               <p className="type-caption text-subtle">
-                ${guildBalance.toFixed(0)} / ${guildFundGoal.toLocaleString()}
+                ${guildBalance.toLocaleString()} / ${guildFundGoal.toLocaleString()}
               </p>
             </div>
             <div className="w-full bg-default rounded-full overflow-hidden h-2">

@@ -21,6 +21,7 @@ import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import type { AuctionItem } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
+import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
 
 export type AuctionDraftItem = {
   name: string;
@@ -195,7 +196,8 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
                 <div className="grid grid-cols-2 gap-3">
                   <NumberField
                     isRequired
-                    minValue={1}
+                    formatOptions={GOLD_FORMAT_OPTIONS}
+                    minValue={GOLD_STEP}
                     value={startingBid}
                     onChange={value => setStartingBid(Number.isFinite(value) ? value : 0)}
                   >
@@ -208,7 +210,8 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
                   </NumberField>
                   <NumberField
                     isRequired
-                    minValue={1}
+                    formatOptions={GOLD_FORMAT_OPTIONS}
+                    minValue={GOLD_STEP}
                     value={minBidIncrement}
                     onChange={value => setMinBidIncrement(Number.isFinite(value) ? value : 0)}
                   >

@@ -6,9 +6,10 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 import { env } from '@/lib/env';
 import { clearSession } from '@/lib/session';
 import type { ApiClient } from './types';
-import type { UserStats } from '@/types/user';
+import type { BalancePoint, UserStats } from '@/types/user';
 import type { Guild } from '@/types/guild';
 import type { AdminAnnouncement } from '@/types/admin';
+import { fromMinorUnits, toMinorUnits } from './money';
 import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
 
 const http: AxiosInstance = axios.create({
@@ -104,7 +105,7 @@ export const gumaApiClient: ApiClient = {
   },
   getBalanceTrend: async () => {
     const { data } = await http.get('/v1/me/balance-trend');
-    return data.points ?? [];
+    return (data.points ?? []).map((point: BalancePoint) => ({ ...point, balance: fromMinorUnits(point.balance) }));
   },
 
   // ── Guild ──
@@ -159,17 +160,17 @@ export const gumaApiClient: ApiClient = {
     return (data.transactions ?? []).map(toTransaction);
   },
   deposit: async (guildId, amount) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/deposit`, { amount });
+    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/deposit`, { amount: toMinorUnits(amount) });
     return toTransaction(data.transaction);
   },
   withdraw: async (guildId, amount) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/withdraw`, { amount });
+    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/withdraw`, { amount: toMinorUnits(amount) });
     return toTransaction(data.transaction);
   },
   transfer: async (guildId, req) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/wallet/transfer`, {
-      recipient_id: req.recipientId,
-      amount: req.amount,
+      to_user_id: req.recipientId,
+      amount: toMinorUnits(req.amount),
     });
     return toTransaction(data.transaction);
   },
@@ -206,8 +207,8 @@ export const gumaApiClient: ApiClient = {
         rarity: req.rarity,
         image_url: req.imageUrl,
       },
-      starting_bid: req.startingBid,
-      min_bid_increment: req.minBidIncrement,
+      starting_bid: toMinorUnits(req.startingBid),
+      min_bid_increment: toMinorUnits(req.minBidIncrement),
       duration_hours: req.duration,
       status: 'ACTIVE',
     };
@@ -215,7 +216,7 @@ export const gumaApiClient: ApiClient = {
     return toAuctionItem(data.auction);
   },
   placeBid: async (guildId, auctionId, amount) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/auctions/${auctionId}/bids`, { amount });
+    const { data } = await http.post(`/v1/guilds/${guildId}/auctions/${auctionId}/bids`, { amount: toMinorUnits(amount) });
     return { auction: toAuctionItem(data.auction), bid: toBid(data.bid) };
   },
   getBidHistory: async (guildId, auctionId) => {
@@ -293,11 +294,11 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.post(`/v1/guilds/${guildId}/lotteries`, {
       title: req.title,
       description: req.description,
-      ticket_price: req.ticketPrice,
+      ticket_price: toMinorUnits(req.ticketPrice),
       max_tickets: req.maxTickets ?? 0,
       max_tickets_per_user: req.maxTicketsPerUser ?? 0,
       draw_date: req.drawDate,
-      prizes: req.prizes,
+      prizes: req.prizes?.map(prize => ({ ...prize, amount: toMinorUnits(prize.amount ?? 0) })),
     });
     return toLottery(data.lottery);
   },
@@ -329,11 +330,11 @@ export const gumaApiClient: ApiClient = {
     return toGuildBank(data.bank);
   },
   contributeFunds: async (guildId, req) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/bank/contribute`, req);
+    const { data } = await http.post(`/v1/guilds/${guildId}/bank/contribute`, { ...req, amount: toMinorUnits(req.amount) });
     return toBankContribution(data.contribution);
   },
   requestFunds: async (guildId, req) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/bank/request-funds`, req);
+    const { data } = await http.post(`/v1/guilds/${guildId}/bank/request-funds`, { ...req, amount: toMinorUnits(req.amount) });
     return toFundRequest(data.fund_request);
   },
   reviewFundRequest: async (guildId, reqId, status, note) => {
