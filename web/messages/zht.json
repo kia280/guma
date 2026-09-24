@@ -50,7 +50,8 @@
     "preference": "偏好設定",
     "learnMore": "了解更多",
     "starOnGitHub": "在 GitHub 上收藏",
-    "logout": "登出"
+    "logout": "登出",
+    "openMenu": "開啟選單"
   },
   "dashboard": {
     "overview": "總覽",

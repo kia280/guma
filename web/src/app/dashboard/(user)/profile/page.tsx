@@ -31,9 +31,9 @@ export default function ProfilePage() {
 
       {/* Avatar */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Content className="flex flex-row items-center gap-5 p-5">
+        <Card.Content className="flex flex-row items-center gap-4 sm:gap-5 p-4 sm:p-5">
           <div className="relative shrink-0">
-            <Avatar className="w-20 h-20 text-large">
+            <Avatar className="size-16 sm:size-20 text-large">
               <Avatar.Image src="https://i.pravatar.cc/150?u=a04258114e29526708c" />
               <Avatar.Fallback>JD</Avatar.Fallback>
             </Avatar>
@@ -41,13 +41,13 @@ export default function ProfilePage() {
               <Icon icon="solar:camera-linear" width={14} />
             </button>
           </div>
-          <div className="flex flex-col gap-1">
-            <p className="type-subheading text-foreground">{displayName}</p>
-            <Chip size="sm" variant="secondary" className="w-fit mt-0.5">
+          <div className="flex flex-col gap-1 flex-1 min-w-0">
+            <p className="type-subheading text-foreground truncate">{displayName}</p>
+            <Chip size="sm" variant="secondary" className="w-fit mt-0.5 whitespace-nowrap">
               {t('guildMember')}
             </Chip>
           </div>
-          <div className="ml-auto">
+          <div className="shrink-0">
             <Button
               size="sm"
               variant="secondary"

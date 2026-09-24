@@ -169,7 +169,7 @@ const LotteryCard = ({
         )}
         {status === 'ended' && (
           <Button variant="secondary" className="w-full" onPress={() => onViewWinners?.(id)}>
-            <Icon icon="solar:trophy-linear" width={16} />
+            <Icon icon="solar:cup-star-linear" width={16} />
             {t('viewWinners')}
           </Button>
         )}

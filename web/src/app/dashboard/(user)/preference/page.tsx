@@ -179,7 +179,7 @@ export default function PreferencePage() {
               key: 'auction',
               label: t('auctionLabel'),
               description: t('auctionDesc'),
-              icon: 'solar:currency-dollar-linear',
+              icon: 'solar:dollar-linear',
               value: auctionAlerts,
               onChange: setAuctionAlerts,
             },

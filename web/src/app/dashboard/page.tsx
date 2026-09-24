@@ -66,13 +66,13 @@ function StatCard({
   value: string | number;
 }) {
   return (
-    <div className="flex items-center flex-1 min-w-0 gap-3 p-3 rounded-xl border border-divider bg-surface-secondary">
+    <div className="flex items-center min-w-0 gap-2.5 sm:gap-3 p-3 rounded-xl border border-divider bg-surface-secondary">
       <div className={`${iconBg} p-2 sm:p-2.5 rounded-lg shrink-0`}>
         <Icon icon={icon} width={18} className={iconClass} />
       </div>
       <div className="flex flex-col min-w-0">
         <p className="type-caption text-hint truncate">{label}</p>
-        <p className="type-title tabular-nums text-foreground mt-0.5">{value}</p>
+        <p className="type-heading sm:type-title tabular-nums text-foreground mt-0.5 truncate">{value}</p>
       </div>
     </div>
   );
@@ -136,13 +136,13 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
             style={{ transform: `translateX(-${idx * 100}%)` }}
           >
             {/* ── Slide 0: Personal Overview ── */}
-            <div className="min-w-full p-5 space-y-5">
+            <div className="min-w-full p-4 sm:p-5 space-y-5">
               <p className="type-label text-hint">
                 {t('personalOverview')}
               </p>
 
               {/* Stat row */}
-              <div className="flex gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                 <StatCard
                   icon="solar:wallet-linear"
                   iconClass="text-accent"
@@ -227,13 +227,13 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
             </div>
 
             {/* ── Slide 1: Guild Overview ── */}
-            <div className="min-w-full p-5 space-y-5">
+            <div className="min-w-full p-4 sm:p-5 space-y-5">
               <p className="type-label text-hint">
                 {t('guildOverview')}
               </p>
 
               {/* Stat row */}
-              <div className="flex gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 <StatCard
                   icon="solar:users-group-rounded-linear"
                   iconClass="text-accent"
@@ -255,10 +255,6 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                   label={t('guildBalance')}
                   value={`$${GUILD_STATS.balance.toLocaleString()}`}
                 />
-              </div>
-
-              {/* Extra metrics row */}
-              <div className="flex gap-4">
                 <StatCard
                   icon="solar:check-square-linear"
                   iconClass="text-success"
@@ -275,8 +271,8 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                 />
                 <StatCard
                   icon="solar:ticket-linear"
-                  iconClass="text-secondary"
-                  iconBg="bg-secondary/10"
+                  iconClass="text-accent"
+                  iconBg="bg-accent/10"
                   label={t('openLotteries')}
                   value={GUILD_STATS.openLotteries}
                 />
@@ -348,7 +344,7 @@ export default function DashboardPage() {
         {/* ── Announcements ── */}
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <Icon icon="solar:megaphone-linear" width={18} className="text-hint" />
+            <Icon icon="solar:volume-loud-linear" width={18} className="text-hint" />
             <h2 className="type-heading text-foreground">{t('news')}</h2>
           </div>
           <Card className="border border-divider shadow-none bg-surface">

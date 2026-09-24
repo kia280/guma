@@ -177,25 +177,25 @@ export default function AdminPage() {
                     <Table.Header>
                       <Table.Column isRowHeader>{t('user')}</Table.Column>
                       <Table.Column>{t('role')}</Table.Column>
-                      <Table.Column>{t('status')}</Table.Column>
-                      <Table.Column>{t('lastActive')}</Table.Column>
+                      <Table.Column className="hidden md:table-cell">{t('status')}</Table.Column>
+                      <Table.Column className="hidden md:table-cell">{t('lastActive')}</Table.Column>
                     </Table.Header>
                     <Table.Body>
                       {mockUsers.map(user => (
                         <Table.Row key={user.id}>
                           <Table.Cell>
-                            <div className="flex items-center gap-3">
-                              <Avatar size="sm">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <Avatar size="sm" className="shrink-0">
                                 <Avatar.Image src={user.avatar} />
                                 <Avatar.Fallback>
                                   {user.username.slice(0, 2).toUpperCase()}
                                 </Avatar.Fallback>
                               </Avatar>
-                              <div>
-                                <p className="type-body font-medium text-foreground">
+                              <div className="min-w-0">
+                                <p className="type-body font-medium text-foreground truncate">
                                   {user.username}
                                 </p>
-                                <p className="type-caption text-hint">{user.email}</p>
+                                <p className="type-caption text-hint truncate hidden sm:block">{user.email}</p>
                               </div>
                             </div>
                           </Table.Cell>
@@ -204,12 +204,12 @@ export default function AdminPage() {
                               {user.role}
                             </Chip>
                           </Table.Cell>
-                          <Table.Cell>
+                          <Table.Cell className="hidden md:table-cell">
                             <Chip size="sm" variant="secondary" className="capitalize">
                               {user.status}
                             </Chip>
                           </Table.Cell>
-                          <Table.Cell>
+                          <Table.Cell className="hidden md:table-cell">
                             <p className="type-body text-subtle">{user.lastActive}</p>
                           </Table.Cell>
                         </Table.Row>
