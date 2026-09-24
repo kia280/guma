@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "proto/guma/v1/guma.proto";
+
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
+
+service NotificationService {
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse) {
+    option (google.api.http) = {
+      get: "/v1/me/notifications"
+    };
+  }
+
+  rpc GetUnreadNotificationCount(GetUnreadNotificationCountRequest) returns (GetUnreadNotificationCountResponse) {
+    option (google.api.http) = {
+      get: "/v1/me/notifications/unread-count"
+    };
+  }
+
+  rpc MarkNotificationRead(MarkNotificationReadRequest) returns (MarkNotificationReadResponse) {
+    option (google.api.http) = {
+      post: "/v1/me/notifications/{notification_id}/read"
+      body: "*"
+    };
+  }
+
+  rpc MarkAllNotificationsRead(MarkAllNotificationsReadRequest) returns (MarkAllNotificationsReadResponse) {
+    option (google.api.http) = {
+      post: "/v1/me/notifications/read-all"
+      body: "*"
+    };
+  }
+}
+
+message ListNotificationsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  bool unread_only = 3;
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+  int32 unread_count = 4;
+}
+
+message GetUnreadNotificationCountRequest {}
+
+message GetUnreadNotificationCountResponse {
+  int32 unread_count = 1;
+}
+
+message MarkNotificationReadRequest {
+  string notification_id = 1;
+}
+
+message MarkNotificationReadResponse {
+  Notification notification = 1;
+}
+
+message MarkAllNotificationsReadRequest {}
+
+message MarkAllNotificationsReadResponse {
+  int32 updated_count = 1;
+}

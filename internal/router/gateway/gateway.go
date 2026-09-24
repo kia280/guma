@@ -86,6 +86,10 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 		return nil, fmt.Errorf("failed to register bank gateway: %w", err)
 	}
 
+	if err := gumav1.RegisterNotificationServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register notification gateway: %w", err)
+	}
+
 	if err := gumav1.RegisterStreamServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
 		return nil, fmt.Errorf("failed to register stream gateway: %w", err)
 	}
