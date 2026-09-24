@@ -188,6 +188,8 @@ message Member {
   map<string, string> profile = 6;
   google.protobuf.Timestamp joined_at = 7;
   google.protobuf.Timestamp last_active = 8;
+  string email = 9;
+  string avatar_url = 10;
 }
 
 message Invitation {

@@ -23,6 +23,24 @@ func (q *Queries) CountGuildMembers(ctx context.Context, guildID uuid.UUID) (int
 	return count, err
 }
 
+const countGuildMembersByRole = `-- name: CountGuildMembersByRole :one
+SELECT COUNT(*) FROM members
+WHERE guild_id = $1
+  AND ($2::text = '' OR role = $2::text)
+`
+
+type CountGuildMembersByRoleParams struct {
+	GuildID    uuid.UUID
+	RoleFilter string
+}
+
+func (q *Queries) CountGuildMembersByRole(ctx context.Context, arg CountGuildMembersByRoleParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countGuildMembersByRole, arg.GuildID, arg.RoleFilter)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countGuilds = `-- name: CountGuilds :one
 SELECT COUNT(*) FROM guilds
 WHERE ($1::text = '%%' OR name ILIKE $1::text OR description ILIKE $1::text)
@@ -401,6 +419,83 @@ func (q *Queries) ListGuildMemberUsers(ctx context.Context, arg ListGuildMemberU
 			&i.AvatarUrl,
 			&i.CreatedAt,
 			&i.Role,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listGuildMembers = `-- name: ListGuildMembers :many
+SELECT m.id, m.user_id, m.guild_id,
+       COALESCE(NULLIF(m.display_name, ''), NULLIF(u.display_name, ''), u.username)::text AS display_name,
+       m.role, m.profile, m.joined_at, m.last_active,
+       u.email,
+       COALESCE(u.avatar_url, '') AS avatar_url
+FROM members m
+JOIN users u ON u.id = m.user_id
+WHERE m.guild_id = $1
+  AND ($2::text = '' OR m.role = $2::text)
+ORDER BY CASE m.role
+             WHEN 'owner' THEN 0
+             WHEN 'admin' THEN 1
+             WHEN 'moderator' THEN 2
+             ELSE 3
+         END,
+         m.joined_at ASC,
+         m.id ASC
+LIMIT $4::int OFFSET $3::int
+`
+
+type ListGuildMembersParams struct {
+	GuildID    uuid.UUID
+	RoleFilter string
+	PageOffset int32
+	PageSize   int32
+}
+
+type ListGuildMembersRow struct {
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	GuildID     uuid.UUID
+	DisplayName string
+	Role        string
+	Profile     []byte
+	JoinedAt    time.Time
+	LastActive  time.Time
+	Email       string
+	AvatarUrl   string
+}
+
+func (q *Queries) ListGuildMembers(ctx context.Context, arg ListGuildMembersParams) ([]ListGuildMembersRow, error) {
+	rows, err := q.db.Query(ctx, listGuildMembers,
+		arg.GuildID,
+		arg.RoleFilter,
+		arg.PageOffset,
+		arg.PageSize,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListGuildMembersRow{}
+	for rows.Next() {
+		var i ListGuildMembersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.GuildID,
+			&i.DisplayName,
+			&i.Role,
+			&i.Profile,
+			&i.JoinedAt,
+			&i.LastActive,
+			&i.Email,
+			&i.AvatarUrl,
 		); err != nil {
 			return nil, err
 		}

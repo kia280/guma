@@ -12,18 +12,22 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	memberv1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/database"
+	membersvc "github.com/kia280/guma/internal/services/member"
 	"github.com/kia280/guma/internal/session"
 )
 
 // MemberService implements the MemberService gRPC service
 type MemberService struct {
 	memberv1.UnimplementedMemberServiceServer
+	svc    *membersvc.Service
 	logger zerolog.Logger
 }
 
 // NewMemberService creates a new Member handler
-func NewMemberService(logger zerolog.Logger) *MemberService {
+func NewMemberService(db *database.Pool, logger zerolog.Logger) *MemberService {
 	return &MemberService{
+		svc:    membersvc.New(db, logger),
 		logger: logger.With().Str("service", "member").Logger(),
 	}
 }
@@ -186,20 +190,42 @@ func (s *MemberService) ListMembers(ctx context.Context, req *memberv1.ListMembe
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	s.logger.Info().
-		Str("user_id", userID).
-		Str("guild_id", req.GuildId).
-		Msg("listing members")
+	result, err := s.svc.List(ctx, membersvc.ListParams{
+		GuildID:   req.GuildId,
+		CallerID:  userID,
+		Role:      req.Role,
+		PageSize:  req.PageSize,
+		PageToken: req.PageToken,
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
 
-	// TODO: Implement member listing from database
-
-	members := []*memberv1.Member{}
+	members := make([]*memberv1.Member, 0, len(result.Members))
+	for _, m := range result.Members {
+		members = append(members, toMemberProto(m))
+	}
 
 	return &memberv1.ListMembersResponse{
 		Members:       members,
-		NextPageToken: "",
-		TotalCount:    0,
+		NextPageToken: result.NextPageToken,
+		TotalCount:    result.TotalCount,
 	}, nil
+}
+
+func toMemberProto(m *membersvc.Member) *memberv1.Member {
+	return &memberv1.Member{
+		Id:          m.ID,
+		UserId:      m.UserID,
+		GuildId:     m.GuildID,
+		DisplayName: m.DisplayName,
+		Email:       m.Email,
+		AvatarUrl:   m.AvatarURL,
+		Role:        m.Role,
+		Profile:     m.Profile,
+		JoinedAt:    timestamppb.New(m.JoinedAt),
+		LastActive:  timestamppb.New(m.LastActive),
+	}
 }
 
 // GetMember retrieves a specific member

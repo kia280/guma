@@ -292,7 +292,18 @@
     "post": "Post",
     "by": "By",
     "pinned": "Pinned",
-    "save": "Save"
+    "save": "Save",
+    "statuses": {
+      "online": "Online",
+      "offline": "Offline",
+      "banned": "Banned"
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "moderator": "Moderator",
+      "member": "Member"
+    }
   },
   "guildBankPage": {
     "treasury": "Guild Treasury",

@@ -43,7 +43,7 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 	// Initialize service handlers
 	gumaHandler := handlers.NewGumaService(logger)
 	guildHandler := handlers.NewGuildService(db, logger)
-	memberHandler := handlers.NewMemberService(logger)
+	memberHandler := handlers.NewMemberService(db, logger)
 	userHandler := handlers.NewUserService(db, cfg.Auth.KratosPublicURL, logger, usersvc.WithDevAuth(cfg.Dev.AuthEnabled))
 	checkinHandler := handlers.NewCheckInService(db, logger)
 	walletHandler := handlers.NewWalletService(db, logger)

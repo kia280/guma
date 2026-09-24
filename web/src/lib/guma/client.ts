@@ -9,7 +9,7 @@ import type { ApiClient } from './types';
 import type { UserStats } from '@/types/user';
 import type { Guild } from '@/types/guild';
 import type { AdminAnnouncement } from '@/types/admin';
-import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toTransaction, toUser, toWallet } from './transforms';
+import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toTransaction, toUser, toWallet } from './transforms';
 
 const http: AxiosInstance = axios.create({
   baseURL: env.api.url,
@@ -126,8 +126,8 @@ export const gumaApiClient: ApiClient = {
 
   // ── Member ──
   listMembers: async (guildId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/members`);
-    return data.members ?? [];
+    const { data } = await http.get(`/v1/guilds/${guildId}/members`, { params: { page_size: 500 } });
+    return (data.members ?? []).map(toMember);
   },
   inviteMember: async (guildId, req) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/members/invite`, req);

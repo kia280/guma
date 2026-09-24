@@ -18,7 +18,7 @@ import type {
   GuildContribution,
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
-import type { User } from '@/types/user';
+import type { MockUser, User } from '@/types/user';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -183,6 +183,31 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     attendanceList: attendees,
     lootList: loot,
     imageUrl: raw.image_url,
+  };
+};
+
+type ProtoMember = {
+  id: string;
+  user_id?: string;
+  display_name?: string;
+  email?: string;
+  avatar_url?: string;
+  role?: string;
+  last_active?: string;
+};
+
+const ONLINE_WINDOW_MS = 15 * 60 * 1000;
+
+export const toMember = (raw: ProtoMember): MockUser => {
+  const lastActive = ts(raw.last_active);
+  return {
+    id: raw.user_id || raw.id,
+    username: raw.display_name || raw.email || raw.user_id || 'Unknown',
+    email: raw.email ?? '',
+    role: raw.role,
+    status: Date.now() - new Date(lastActive).getTime() < ONLINE_WINDOW_MS ? 'online' : 'offline',
+    lastActive,
+    avatar: raw.avatar_url || undefined,
   };
 };
 
