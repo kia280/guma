@@ -29,8 +29,23 @@ http.interceptors.request.use((cfg) => {
   return cfg;
 });
 
+const MUTATING_METHODS = new Set(['post', 'put', 'patch', 'delete']);
+const mutationListeners = new Set<() => void>();
+
+export const onApiMutation = (listener: () => void) => {
+  mutationListeners.add(listener);
+  return () => {
+    mutationListeners.delete(listener);
+  };
+};
+
 http.interceptors.response.use(
-  (r) => r,
+  (r) => {
+    if (MUTATING_METHODS.has(r.config.method ?? '')) {
+      mutationListeners.forEach(listener => listener());
+    }
+    return r;
+  },
   async (error: AxiosError) => {
     if (
       error.response?.status === 401 &&

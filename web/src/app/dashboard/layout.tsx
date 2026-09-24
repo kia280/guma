@@ -13,6 +13,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { clearSession } from '@/lib/session';
 import { useUserStore } from '@/lib/store';
 import { CurrentGuildProvider } from '@/lib/current-guild';
+import { useLiveBalance } from '@/hooks/useLiveBalance';
 
 interface SidebarItem {
   key: string;
@@ -106,6 +107,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
   }, []);
 
   const me = useUserStore(s => s.user);
+  useLiveBalance();
   const userBalance = me?.balance ?? 0;
   const displayName = me?.displayName || me?.username || '';
   const avatarFallback = (displayName || me?.email || '?').slice(0, 2).toUpperCase();
