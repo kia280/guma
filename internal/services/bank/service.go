@@ -361,7 +361,7 @@ func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDSt
 		}
 		return nil, fmt.Errorf("%w: load fund request: %v", errs.ErrInternal, err)
 	}
-	if err := checkReviewable(pending.Status, pending.RequesterID, reviewerID); err != nil {
+	if err := checkReviewable(pending.Status); err != nil {
 		return nil, err
 	}
 
@@ -662,7 +662,7 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 		}
 		return nil, fmt.Errorf("%w: load item request: %v", errs.ErrInternal, err)
 	}
-	if err := checkReviewable(pending.Status, pending.RequesterID, reviewerID); err != nil {
+	if err := checkReviewable(pending.Status); err != nil {
 		return nil, err
 	}
 
@@ -806,12 +806,9 @@ func validateStatusFilter(status string) error {
 	return fmt.Errorf("%w: unknown status filter %q", errs.ErrInvalidArgument, status)
 }
 
-func checkReviewable(currentStatus string, requesterID, reviewerID uuid.UUID) error {
+func checkReviewable(currentStatus string) error {
 	if currentStatus != StatusPending {
 		return fmt.Errorf("%w: request has already been reviewed", errs.ErrFailedPrecondition)
-	}
-	if requesterID == reviewerID {
-		return fmt.Errorf("%w: cannot review your own request", errs.ErrPermissionDenied)
 	}
 	return nil
 }

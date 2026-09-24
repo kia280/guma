@@ -70,22 +70,18 @@ func TestListRequestsRejectsUnknownStatusFilter(t *testing.T) {
 }
 
 func TestCheckReviewable(t *testing.T) {
-	requester := uuid.New()
-	reviewer := uuid.New()
 	tests := []struct {
-		name     string
-		status   string
-		reviewer uuid.UUID
-		want     error
+		name   string
+		status string
+		want   error
 	}{
-		{name: "pending by another member", status: StatusPending, reviewer: reviewer},
-		{name: "already approved", status: StatusApproved, reviewer: reviewer, want: errs.ErrFailedPrecondition},
-		{name: "already rejected", status: StatusRejected, reviewer: reviewer, want: errs.ErrFailedPrecondition},
-		{name: "own request", status: StatusPending, reviewer: requester, want: errs.ErrPermissionDenied},
+		{name: "pending", status: StatusPending},
+		{name: "already approved", status: StatusApproved, want: errs.ErrFailedPrecondition},
+		{name: "already rejected", status: StatusRejected, want: errs.ErrFailedPrecondition},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := checkReviewable(tt.status, requester, tt.reviewer)
+			err := checkReviewable(tt.status)
 			if tt.want == nil {
 				assert.NoError(t, err)
 				return
