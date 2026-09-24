@@ -143,7 +143,23 @@
     "withdrawItemNote": "提取的物品將從您的背包中移除並提交處理。",
     "sendMoney": "發送金額",
     "recentTransactions": "最近交易",
-    "viewAll": "查看全部"
+    "viewAll": "查看全部",
+    "transactionHistoryTable": "交易紀錄表",
+    "transactionKinds": {
+      "deposit": "存款",
+      "withdrawal": "提款",
+      "transferIn": "收到轉帳",
+      "transferOut": "轉帳支出",
+      "reward": "獎勵",
+      "penalty": "懲罰",
+      "auctionBid": "拍賣出價",
+      "auctionRefund": "拍賣出價退款",
+      "auctionWin": "拍賣得標",
+      "lotteryTicket": "購買彩券",
+      "lotteryWin": "彩券獎金",
+      "bankContribution": "公會銀行捐獻",
+      "fundRequestApproved": "資金申請核准"
+    }
   },
   "lotteryPage": {
     "all": "全部",

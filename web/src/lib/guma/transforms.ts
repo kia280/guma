@@ -335,6 +335,7 @@ export const toTransaction = (raw: ProtoTransaction): Transaction => {
   return {
     id: raw.id,
     type,
+    kind: raw.type?.toUpperCase(),
     amount: Number(raw.amount ?? 0),
     recipient: raw.recipient,
     date: ts(raw.created_at).slice(0, 10),

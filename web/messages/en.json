@@ -143,7 +143,23 @@
     "withdrawItemNote": "Withdrawn items will be removed from your backpack and submitted for processing.",
     "sendMoney": "Send Money",
     "recentTransactions": "Recent Transactions",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "transactionHistoryTable": "Transaction history table",
+    "transactionKinds": {
+      "deposit": "Deposit",
+      "withdrawal": "Withdrawal",
+      "transferIn": "Transfer received",
+      "transferOut": "Transfer sent",
+      "reward": "Reward",
+      "penalty": "Penalty",
+      "auctionBid": "Auction bid placed",
+      "auctionRefund": "Auction bid refund",
+      "auctionWin": "Auction won",
+      "lotteryTicket": "Lottery ticket purchase",
+      "lotteryWin": "Lottery prize",
+      "bankContribution": "Guild bank contribution",
+      "fundRequestApproved": "Fund request approved"
+    }
   },
   "lotteryPage": {
     "all": "All",

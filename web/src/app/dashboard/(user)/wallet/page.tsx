@@ -39,6 +39,75 @@ import { isLocale } from '@/i18n/locales';
 const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
+const TRANSACTION_KIND_LABELS: Record<string, string> = {
+  DEPOSIT: 'deposit',
+  WITHDRAWAL: 'withdrawal',
+  TRANSFER_IN: 'transferIn',
+  TRANSFER_OUT: 'transferOut',
+  REWARD: 'reward',
+  PENALTY: 'penalty',
+  AUCTION_WIN: 'auctionWin',
+  LOTTERY_TICKET: 'lotteryTicket',
+  LOTTERY_WIN: 'lotteryWin',
+  BANK_CONTRIBUTION: 'bankContribution',
+  FUND_REQUEST_APPROVED: 'fundRequestApproved',
+};
+
+const USER_NOTE_KINDS = new Set([
+  'DEPOSIT',
+  'WITHDRAWAL',
+  'TRANSFER_IN',
+  'TRANSFER_OUT',
+  'BANK_CONTRIBUTION',
+  'FUND_REQUEST_APPROVED',
+]);
+
+const DEFAULT_TRANSFER_NOTE = 'Transfer';
+
+const transactionLabelKey = (transaction: Transaction): string | undefined => {
+  if (transaction.kind === 'AUCTION_BID') {
+    return transaction.amount > 0 ? 'auctionRefund' : 'auctionBid';
+  }
+  return transaction.kind ? TRANSACTION_KIND_LABELS[transaction.kind] : undefined;
+};
+
+const transactionNote = (transaction: Transaction): string | undefined => {
+  const note = transaction.description?.trim();
+  if (!note || !transaction.kind || !USER_NOTE_KINDS.has(transaction.kind)) return undefined;
+  return note === DEFAULT_TRANSFER_NOTE ? undefined : note;
+};
+
+const getTransactionIcon = (transaction: Transaction) => {
+  switch (transaction.kind) {
+    case 'DEPOSIT':
+    case 'TRANSFER_IN':
+      return 'solar:arrow-down-linear';
+    case 'WITHDRAWAL':
+      return 'solar:arrow-up-linear';
+    case 'TRANSFER_OUT':
+      return 'solar:arrow-right-linear';
+    case 'AUCTION_BID':
+    case 'AUCTION_WIN':
+      return 'solar:sledgehammer-linear';
+    case 'LOTTERY_TICKET':
+    case 'LOTTERY_WIN':
+      return 'solar:ticket-linear';
+    case 'BANK_CONTRIBUTION':
+    case 'FUND_REQUEST_APPROVED':
+      return 'solar:safe-2-linear';
+  }
+  switch (transaction.type) {
+    case 'transfer':
+      return 'solar:arrow-right-linear';
+    case 'withdraw':
+      return 'solar:arrow-up-linear';
+    case 'deposit':
+      return 'solar:arrow-down-linear';
+    default:
+      return 'solar:wallet-linear';
+  }
+};
+
 export default function WalletPage() {
   const t = useTranslations('walletPage');
   const locale = useLocale();
@@ -160,17 +229,9 @@ export default function WalletPage() {
   };
 
 
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case 'transfer':
-        return 'solar:arrow-right-linear';
-      case 'withdraw':
-        return 'solar:arrow-up-linear';
-      case 'deposit':
-        return 'solar:arrow-down-linear';
-      default:
-        return 'solar:wallet-linear';
-    }
+  const transactionTitle = (transaction: Transaction) => {
+    const key = transactionLabelKey(transaction);
+    return key ? t(`transactionKinds.${key}`) : transaction.description;
   };
 
   const getStatusColor = (status: string) => {
@@ -494,7 +555,7 @@ export default function WalletPage() {
           <div className="hidden md:block">
             <Table>
               <Table.ScrollContainer>
-                <Table.Content aria-label="Transaction history table" className="min-w-[600px]">
+                <Table.Content aria-label={t('transactionHistoryTable')} className="min-w-[600px]">
                   <Table.Header>
                     <Table.Column isRowHeader className="w-[45%]">{t('transaction')}</Table.Column>
                     <Table.Column className="w-[20%]">{t('amount')}</Table.Column>
@@ -509,14 +570,17 @@ export default function WalletPage() {
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default">
                               <Icon
                                 className="text-subtle"
-                                icon={getTransactionIcon(transaction.type)}
+                                icon={getTransactionIcon(transaction)}
                                 width={16}
                               />
                             </div>
                             <div className="flex flex-col">
                               <p className="type-body font-medium text-foreground">
-                                {transaction.description}
+                                {transactionTitle(transaction)}
                               </p>
+                              {transactionNote(transaction) && (
+                                <p className="type-caption text-hint">{transactionNote(transaction)}</p>
+                              )}
                               {transaction.recipient && (
                                 <p className="type-caption text-hint">
                                   {t('to')} {transaction.recipient}
@@ -560,14 +624,19 @@ export default function WalletPage() {
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">
                       <Icon
                         className="text-subtle"
-                        icon={getTransactionIcon(transaction.type)}
+                        icon={getTransactionIcon(transaction)}
                         width={16}
                       />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
                       <p className="type-body font-medium text-foreground truncate">
-                        {transaction.description}
+                        {transactionTitle(transaction)}
                       </p>
+                      {transactionNote(transaction) && (
+                        <p className="type-caption text-hint truncate">
+                          {transactionNote(transaction)}
+                        </p>
+                      )}
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="type-caption text-hint">
                           {new Date(transaction.date).toLocaleDateString()}

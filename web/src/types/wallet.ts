@@ -13,6 +13,7 @@ export interface Wallet {
 export interface Transaction {
   id: string;
   type: 'transfer' | 'withdraw' | 'deposit';
+  kind?: string;
   amount: number;
   recipient?: string;
   date: string;
