@@ -94,7 +94,9 @@ const AuctionItemCard = ({
 }: AuctionItemCardProps) => {
   const router = useRouter();
   const t = useTranslations('auctionItemCard');
-  const [bidAmount, setBidAmount] = useState(item.currentBid + item.minBidIncrement);
+  const [bidInput, setBidInput] = useState<number | null>(null);
+  const minimumBid = item.currentBid + item.minBidIncrement;
+  const bidAmount = bidInput ?? minimumBid;
 
   const isActive = item.status === AuctionStatus.ACTIVE;
   const isUpcoming = item.status === AuctionStatus.UPCOMING;
@@ -102,12 +104,12 @@ const AuctionItemCard = ({
   const timeRemaining = formatTimeRemaining(item.endTime);
   const progress = getAuctionProgress(item.startTime, item.endTime);
 
-  const canBid =
-    isActive && bidAmount >= item.currentBid + item.minBidIncrement && bidAmount <= userBalance;
+  const canBid = isActive && bidAmount >= minimumBid && bidAmount <= userBalance;
 
   const handlePlaceBid = () => {
     if (canBid) {
       onPlaceBid(item.id, bidAmount);
+      setBidInput(null);
     }
   };
 
@@ -305,16 +307,16 @@ const AuctionItemCard = ({
                       </InputGroup.Prefix>
                       <InputGroup.Input
                         type="number"
-                        placeholder={`${t('minimum')} $${(item.currentBid + item.minBidIncrement).toLocaleString()}`}
+                        placeholder={`${t('minimum')} $${minimumBid.toLocaleString()}`}
                         value={bidAmount.toString()}
-                        onChange={e => setBidAmount(Number(e.target.value))}
+                        onChange={e => setBidInput(Number(e.target.value))}
                       />
                     </InputGroup>
                     <p className="type-caption text-hint mt-1">
                       {bidAmount > userBalance
                         ? t('insufficientBalance')
-                        : bidAmount < item.currentBid + item.minBidIncrement
-                          ? `${t('minimumBidIs')} $${(item.currentBid + item.minBidIncrement).toLocaleString()}`
+                        : bidAmount < minimumBid
+                          ? `${t('minimumBidIs')} $${minimumBid.toLocaleString()}`
                           : t('validBidAmount')}
                     </p>
                   </TextField>

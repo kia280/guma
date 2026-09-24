@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { isAxiosError } from 'axios';
 import {
   Button,
   Chip,
@@ -22,6 +23,7 @@ import { useTranslations } from 'next-intl';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
+import { useLiveResource } from '@/hooks/useLiveResource';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -77,16 +79,31 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
 
   const [item, setItem] = useState<AuctionItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const refetchItem = () => {
+  const latestRequest = useRef(0);
+  const refetchItem = (background = false) => {
     if (!id) return;
-    apiClient.getAuction(guildId, id).then(setItem).catch(() => setItem(null));
+    const request = ++latestRequest.current;
+    apiClient
+      .getAuction(guildId, id)
+      .then(next => {
+        if (request === latestRequest.current) setItem(next);
+      })
+      .catch(err => {
+        if (request !== latestRequest.current) return;
+        if (!background || (isAxiosError(err) && err.response?.status === 404)) setItem(null);
+      });
   };
   useEffect(() => {
     refetchItem();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [guildId, id]);
 
-  const [bidAmount, setBidAmount] = useState(0);
+  useLiveResource(['auction'], () => refetchItem(true), {
+    guildId,
+    match: event => event.resourceId === id,
+  });
+
+  const [bidInput, setBidInput] = useState<{ auctionId: string; amount: number } | null>(null);
   const [timeRemaining, setTimeRemaining] = useState('');
   const [progress, setProgress] = useState(0);
 
@@ -102,11 +119,6 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     return () => clearInterval(id);
   }, [item]);
 
-  // Reset bid amount when item changes
-  useEffect(() => {
-    if (item) setBidAmount(item.currentBid + item.minBidIncrement);
-  }, [item]);
-
   if (!item) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -119,16 +131,18 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     );
   }
 
+  const minimumBid = item.currentBid + item.minBidIncrement;
+  const bidAmount = bidInput?.auctionId === id ? bidInput.amount : minimumBid;
   const isActive = item.status === AuctionStatus.ACTIVE;
-  const canBid =
-    isActive && bidAmount >= item.currentBid + item.minBidIncrement && bidAmount <= userBalance;
+  const canBid = isActive && bidAmount >= minimumBid && bidAmount <= userBalance;
 
   const handlePlaceBid = async () => {
     if (!canBid) return;
     setIsLoading(true);
     try {
       await apiClient.placeBid(guildId, id, bidAmount);
-      refetchItem();
+      setBidInput(null);
+      refetchItem(true);
       refreshBalance();
       bidModalState.close();
     } catch (err) {
@@ -492,16 +506,16 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <Label>{t('yourBidAmount')}</Label>
                   <Input
                     type="number"
-                    placeholder={`Minimum: $${(item.currentBid + item.minBidIncrement).toLocaleString()}`}
+                    placeholder={`Minimum: $${minimumBid.toLocaleString()}`}
                     value={bidAmount.toString()}
-                    onChange={e => setBidAmount(Number(e.target.value))}
+                    onChange={e => setBidInput({ auctionId: id, amount: Number(e.target.value) })}
                     variant="secondary"
                   />
                   <Description>
                     {bidAmount > userBalance
                       ? t('insufficientBalance')
-                      : bidAmount < item.currentBid + item.minBidIncrement
-                        ? `${t('minimumBidIs')}${(item.currentBid + item.minBidIncrement).toLocaleString()}`
+                      : bidAmount < minimumBid
+                        ? `${t('minimumBidIs')}${minimumBid.toLocaleString()}`
                         : t('validBidAmount')}
                   </Description>
                 </TextField>
