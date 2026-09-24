@@ -80,6 +80,12 @@ service BankService {
       body: "*"
     };
   }
+
+  rpc ListItemRequests(ListItemRequestsRequest) returns (ListItemRequestsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/bank/item-requests"
+    };
+  }
 }
 
 // Request/Response messages
@@ -194,6 +200,19 @@ message ReviewItemRequestResponse {
   ItemRequest item_request = 1;
 }
 
+message ListItemRequestsRequest {
+  string guild_id = 1;
+  string status = 2; // "pending" | "approved" | "rejected" | "" (all)
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListItemRequestsResponse {
+  repeated ItemRequest requests = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
 // Data structures
 
 message GuildBank {
@@ -261,4 +280,5 @@ message ItemRequest {
   string review_note = 9;
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp reviewed_at = 11;
+  Item item = 12;
 }

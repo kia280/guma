@@ -19,6 +19,7 @@ import {
 import { Icon } from '@iconify/react';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { BankRequestReview } from '@/components/BankRequestReview';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
@@ -195,6 +196,12 @@ export default function AdminPage() {
                 <Chip size="sm" variant="secondary">
                   {mockUsers.length}
                 </Chip>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
+            <Tabs.Tab id="bankRequests">
+              <div className="flex items-center gap-2">
+                <span>{t('bankRequests')}</span>
               </div>
               <Tabs.Indicator />
             </Tabs.Tab>
@@ -525,6 +532,10 @@ export default function AdminPage() {
               ))}
             </div>
           </div>
+        </Tabs.Panel>
+
+        <Tabs.Panel id="bankRequests" className="pt-4">
+          <BankRequestReview guildId={guildId} />
         </Tabs.Panel>
       </Tabs>
 

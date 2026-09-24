@@ -417,7 +417,9 @@ type ProtoFundRequest = {
   amount?: number | string;
   reason?: string;
   status?: string;
+  review_note?: string;
   created_at?: string;
+  reviewed_at?: string;
 };
 
 export const toFundRequest = (raw: ProtoFundRequest): FundRequest => ({
@@ -428,7 +430,9 @@ export const toFundRequest = (raw: ProtoFundRequest): FundRequest => ({
   amount: Number(raw.amount ?? 0),
   reason: raw.reason ?? '',
   status: (raw.status?.toLowerCase() as FundRequest['status']) || 'pending',
+  reviewNote: raw.review_note || undefined,
   createdAt: ts(raw.created_at),
+  reviewedAt: raw.reviewed_at ? ts(raw.reviewed_at) : undefined,
 });
 
 type ProtoBankItem = {
@@ -458,7 +462,10 @@ type ProtoItemRequest = {
   requester_name?: string;
   reason?: string;
   status?: string;
+  item?: ProtoItem;
+  review_note?: string;
   created_at?: string;
+  reviewed_at?: string;
 };
 
 export const toItemRequest = (raw: ProtoItemRequest): ItemRequest => ({
@@ -469,13 +476,19 @@ export const toItemRequest = (raw: ProtoItemRequest): ItemRequest => ({
   requesterName: raw.requester_name ?? '',
   reason: raw.reason ?? '',
   status: (raw.status?.toLowerCase() as ItemRequest['status']) || 'pending',
+  itemName: raw.item?.name ?? '',
+  itemCategory: toCategory(raw.item?.category),
+  itemRarity: toRarity(raw.item?.rarity),
+  reviewNote: raw.review_note || undefined,
   createdAt: ts(raw.created_at),
+  reviewedAt: raw.reviewed_at ? ts(raw.reviewed_at) : undefined,
 });
 
 /** Merge the backend's separate history streams into the unified UI shape. */
 export const toGuildContributions = (
   contributions: BankContribution[],
   fundRequests: FundRequest[],
+  itemRequests: ItemRequest[] = [],
 ): GuildContribution[] => {
   const c: GuildContribution[] = contributions.map(b => ({
     id: `c-${b.id}`,
@@ -495,7 +508,16 @@ export const toGuildContributions = (
     status: f.status === 'pending' ? 'pending' : f.status,
     note: f.reason,
   }));
-  return [...c, ...r].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const i: GuildContribution[] = itemRequests.map(req => ({
+    id: `i-${req.id}`,
+    type: 'item_distribute',
+    itemName: req.itemName,
+    member: req.requesterName,
+    date: req.createdAt.slice(0, 10),
+    status: req.status,
+    note: req.reason,
+  }));
+  return [...c, ...r, ...i].sort((a, b) => (a.date < b.date ? 1 : -1));
 };
 
 // ─── Guild Event (calendar) ─────────────────────────────────────────────────

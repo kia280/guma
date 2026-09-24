@@ -55,9 +55,10 @@ RETURNING id, guild_id, requester_id, requester_name, amount,
           COALESCE(review_note, '') AS review_note,
           created_at, reviewed_at;
 
--- name: GetPendingFundRequest :one
-SELECT amount, requester_id FROM fund_requests
-WHERE id = $1 AND guild_id = $2 AND status = 'pending';
+-- name: LockFundRequest :one
+SELECT amount, requester_id, status FROM fund_requests
+WHERE id = $1 AND guild_id = $2
+FOR UPDATE;
 
 -- name: UpdateFundRequestStatus :one
 UPDATE fund_requests SET
@@ -65,7 +66,7 @@ UPDATE fund_requests SET
     reviewer_id = sqlc.arg(reviewer_id),
     review_note = NULLIF(sqlc.arg(review_note)::text, ''),
     reviewed_at = NOW()
-WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id)
+WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id) AND status = 'pending'
 RETURNING id, guild_id, requester_id, requester_name, amount,
           COALESCE(reason, '')      AS reason,
           status,
@@ -129,22 +130,48 @@ WHERE guild_id = $1
   AND (sqlc.arg(category_filter)::text = '' OR item->>'category' = sqlc.arg(category_filter)::text)
   AND (sqlc.arg(rarity_filter)::text   = '' OR item->>'rarity'   = sqlc.arg(rarity_filter)::text);
 
--- name: BankItemExists :one
-SELECT EXISTS(SELECT 1 FROM bank_items WHERE id = $1 AND guild_id = $2);
-
 -- name: InsertItemRequest :one
-INSERT INTO item_requests (guild_id, bank_item_id, requester_id, requester_name, reason)
-VALUES ($1, $2, $3, sqlc.arg(requester_name)::text, NULLIF(sqlc.arg(reason)::text, ''))
+INSERT INTO item_requests (guild_id, bank_item_id, requester_id, requester_name, reason, item)
+SELECT bi.guild_id, bi.id, sqlc.arg(requester_id), sqlc.arg(requester_name)::text,
+       NULLIF(sqlc.arg(reason)::text, ''), bi.item
+FROM bank_items bi
+WHERE bi.id = sqlc.arg(bank_item_id) AND bi.guild_id = sqlc.arg(guild_id)
 RETURNING id, guild_id, bank_item_id, requester_id, requester_name,
           COALESCE(reason, '')      AS reason,
           status,
           reviewer_id,
           COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at;
+          created_at, reviewed_at, item;
 
--- name: GetPendingItemRequest :one
-SELECT bank_item_id, requester_id FROM item_requests
-WHERE id = $1 AND guild_id = $2 AND status = 'pending';
+-- name: LockItemRequest :one
+SELECT bank_item_id, requester_id, status FROM item_requests
+WHERE id = $1 AND guild_id = $2
+FOR UPDATE;
+
+-- name: RejectCompetingItemRequests :exec
+UPDATE item_requests SET
+    status = 'rejected',
+    reviewer_id = sqlc.arg(reviewer_id),
+    reviewed_at = NOW()
+WHERE bank_item_id = sqlc.arg(bank_item_id) AND guild_id = sqlc.arg(guild_id)
+  AND id <> sqlc.arg(id) AND status = 'pending';
+
+-- name: ListItemRequests :many
+SELECT id, guild_id, bank_item_id, requester_id, requester_name,
+       COALESCE(reason, '')      AS reason,
+       status,
+       reviewer_id,
+       COALESCE(review_note, '') AS review_note,
+       created_at, reviewed_at, item
+FROM item_requests
+WHERE guild_id = $1
+  AND (sqlc.arg(status_filter)::text = '' OR status = sqlc.arg(status_filter)::text)
+ORDER BY created_at DESC
+LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
+
+-- name: CountItemRequests :one
+SELECT COUNT(*) FROM item_requests WHERE guild_id = $1
+  AND (sqlc.arg(status_filter)::text = '' OR status = sqlc.arg(status_filter)::text);
 
 -- name: DeleteBankItemReturningItem :one
 DELETE FROM bank_items WHERE id = $1 AND guild_id = $2
@@ -160,10 +187,10 @@ UPDATE item_requests SET
     reviewer_id = sqlc.arg(reviewer_id),
     review_note = NULLIF(sqlc.arg(review_note)::text, ''),
     reviewed_at = NOW()
-WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id)
+WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id) AND status = 'pending'
 RETURNING id, guild_id, bank_item_id, requester_id, requester_name,
           COALESCE(reason, '')      AS reason,
           status,
           reviewer_id,
           COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at;
+          created_at, reviewed_at, item;

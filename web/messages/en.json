@@ -303,7 +303,8 @@
       "admin": "Admin",
       "moderator": "Moderator",
       "member": "Member"
-    }
+    },
+    "bankRequests": "Bank requests"
   },
   "guildBankPage": {
     "treasury": "Guild Treasury",
@@ -347,7 +348,12 @@
     "typeContribute": "Contribution",
     "typeRequest": "Fund Request",
     "typeItemDonate": "Item Donated",
-    "typeItemDistribute": "Item Distributed"
+    "typeItemDistribute": "Item Distributed",
+    "errorExceedsBalance": "The amount exceeds the current guild bank balance.",
+    "errorDuplicateItemRequest": "You already have a pending request for this item.",
+    "errorItemUnavailable": "This item is no longer in the guild storage.",
+    "errorNotMember": "Only guild members can submit requests.",
+    "errorGeneric": "Something went wrong. Please try again."
   },
   "notificationsCard": {
     "notifications": "Notifications",
@@ -830,5 +836,39 @@
     "cancel": "Cancel",
     "create": "Create lottery",
     "createFailed": "Could not create the lottery. Please try again."
+  },
+  "bankRequestReview": {
+    "viewLabel": "Request status",
+    "pending": "Pending",
+    "reviewed": "Reviewed",
+    "loading": "Loading requests",
+    "loadFailed": "Could not load bank requests.",
+    "retry": "Retry",
+    "fundRequests": "Fund requests",
+    "itemRequests": "Item requests",
+    "emptyPending": "No requests are waiting for review.",
+    "emptyReviewed": "No reviewed requests yet.",
+    "unknownItem": "Unknown item",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approveTitle": "Approve request",
+    "rejectTitle": "Reject request",
+    "requestedBy": "Requested by {name}",
+    "approveFundHint": "The amount will be transferred from the guild bank to the member's wallet.",
+    "approveItemHint": "The item will be moved to the member's backpack. Other pending requests for this item will be rejected.",
+    "rejectHint": "The member will see this request as rejected.",
+    "noteLabel": "Review note (optional)",
+    "notePlaceholder": "Add a note for the member…",
+    "reviewNoteLabel": "Review note",
+    "cancel": "Cancel",
+    "errorForbidden": "You don't have permission to review this request. You cannot review your own requests.",
+    "errorConflict": "This request can no longer be approved. It may have been reviewed already, or the bank lacks funds or the item.",
+    "errorNotFound": "This request no longer exists.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "statuses": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    }
   }
 }

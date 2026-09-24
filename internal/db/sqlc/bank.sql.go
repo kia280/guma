@@ -13,22 +13,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const bankItemExists = `-- name: BankItemExists :one
-SELECT EXISTS(SELECT 1 FROM bank_items WHERE id = $1 AND guild_id = $2)
-`
-
-type BankItemExistsParams struct {
-	ID      uuid.UUID
-	GuildID uuid.UUID
-}
-
-func (q *Queries) BankItemExists(ctx context.Context, arg BankItemExistsParams) (bool, error) {
-	row := q.db.QueryRow(ctx, bankItemExists, arg.ID, arg.GuildID)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
-}
-
 const countBankContributions = `-- name: CountBankContributions :one
 SELECT COUNT(*) FROM bank_contributions WHERE guild_id = $1
 `
@@ -72,6 +56,23 @@ type CountFundRequestsParams struct {
 
 func (q *Queries) CountFundRequests(ctx context.Context, arg CountFundRequestsParams) (int64, error) {
 	row := q.db.QueryRow(ctx, countFundRequests, arg.GuildID, arg.StatusFilter)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countItemRequests = `-- name: CountItemRequests :one
+SELECT COUNT(*) FROM item_requests WHERE guild_id = $1
+  AND ($2::text = '' OR status = $2::text)
+`
+
+type CountItemRequestsParams struct {
+	GuildID      uuid.UUID
+	StatusFilter string
+}
+
+func (q *Queries) CountItemRequests(ctx context.Context, arg CountItemRequestsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countItemRequests, arg.GuildID, arg.StatusFilter)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -209,50 +210,6 @@ func (q *Queries) GetGuildBank(ctx context.Context, guildID uuid.UUID) (GuildBan
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
-}
-
-const getPendingFundRequest = `-- name: GetPendingFundRequest :one
-SELECT amount, requester_id FROM fund_requests
-WHERE id = $1 AND guild_id = $2 AND status = 'pending'
-`
-
-type GetPendingFundRequestParams struct {
-	ID      uuid.UUID
-	GuildID uuid.UUID
-}
-
-type GetPendingFundRequestRow struct {
-	Amount      int64
-	RequesterID uuid.UUID
-}
-
-func (q *Queries) GetPendingFundRequest(ctx context.Context, arg GetPendingFundRequestParams) (GetPendingFundRequestRow, error) {
-	row := q.db.QueryRow(ctx, getPendingFundRequest, arg.ID, arg.GuildID)
-	var i GetPendingFundRequestRow
-	err := row.Scan(&i.Amount, &i.RequesterID)
-	return i, err
-}
-
-const getPendingItemRequest = `-- name: GetPendingItemRequest :one
-SELECT bank_item_id, requester_id FROM item_requests
-WHERE id = $1 AND guild_id = $2 AND status = 'pending'
-`
-
-type GetPendingItemRequestParams struct {
-	ID      uuid.UUID
-	GuildID uuid.UUID
-}
-
-type GetPendingItemRequestRow struct {
-	BankItemID  uuid.UUID
-	RequesterID uuid.UUID
-}
-
-func (q *Queries) GetPendingItemRequest(ctx context.Context, arg GetPendingItemRequestParams) (GetPendingItemRequestRow, error) {
-	row := q.db.QueryRow(ctx, getPendingItemRequest, arg.ID, arg.GuildID)
-	var i GetPendingItemRequestRow
-	err := row.Scan(&i.BankItemID, &i.RequesterID)
 	return i, err
 }
 
@@ -430,28 +387,31 @@ func (q *Queries) InsertFundRequest(ctx context.Context, arg InsertFundRequestPa
 }
 
 const insertItemRequest = `-- name: InsertItemRequest :one
-INSERT INTO item_requests (guild_id, bank_item_id, requester_id, requester_name, reason)
-VALUES ($1, $2, $3, $4::text, NULLIF($5::text, ''))
+INSERT INTO item_requests (guild_id, bank_item_id, requester_id, requester_name, reason, item)
+SELECT bi.guild_id, bi.id, $1, $2::text,
+       NULLIF($3::text, ''), bi.item
+FROM bank_items bi
+WHERE bi.id = $4 AND bi.guild_id = $5
 RETURNING id, guild_id, bank_item_id, requester_id, requester_name,
           COALESCE(reason, '')      AS reason,
           status,
           reviewer_id,
           COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at
+          created_at, reviewed_at, item
 `
 
 type InsertItemRequestParams struct {
-	GuildID       uuid.UUID
-	BankItemID    uuid.UUID
 	RequesterID   uuid.UUID
 	RequesterName string
 	Reason        string
+	BankItemID    uuid.UUID
+	GuildID       uuid.UUID
 }
 
 type InsertItemRequestRow struct {
 	ID            uuid.UUID
 	GuildID       uuid.UUID
-	BankItemID    uuid.UUID
+	BankItemID    *uuid.UUID
 	RequesterID   uuid.UUID
 	RequesterName string
 	Reason        string
@@ -460,15 +420,16 @@ type InsertItemRequestRow struct {
 	ReviewNote    string
 	CreatedAt     time.Time
 	ReviewedAt    pgtype.Timestamptz
+	Item          []byte
 }
 
 func (q *Queries) InsertItemRequest(ctx context.Context, arg InsertItemRequestParams) (InsertItemRequestRow, error) {
 	row := q.db.QueryRow(ctx, insertItemRequest,
-		arg.GuildID,
-		arg.BankItemID,
 		arg.RequesterID,
 		arg.RequesterName,
 		arg.Reason,
+		arg.BankItemID,
+		arg.GuildID,
 	)
 	var i InsertItemRequestRow
 	err := row.Scan(
@@ -483,6 +444,7 @@ func (q *Queries) InsertItemRequest(ctx context.Context, arg InsertItemRequestPa
 		&i.ReviewNote,
 		&i.CreatedAt,
 		&i.ReviewedAt,
+		&i.Item,
 	)
 	return i, err
 }
@@ -678,6 +640,80 @@ func (q *Queries) ListFundRequests(ctx context.Context, arg ListFundRequestsPara
 	return items, nil
 }
 
+const listItemRequests = `-- name: ListItemRequests :many
+SELECT id, guild_id, bank_item_id, requester_id, requester_name,
+       COALESCE(reason, '')      AS reason,
+       status,
+       reviewer_id,
+       COALESCE(review_note, '') AS review_note,
+       created_at, reviewed_at, item
+FROM item_requests
+WHERE guild_id = $1
+  AND ($2::text = '' OR status = $2::text)
+ORDER BY created_at DESC
+LIMIT $4::int OFFSET $3::int
+`
+
+type ListItemRequestsParams struct {
+	GuildID      uuid.UUID
+	StatusFilter string
+	PageOffset   int32
+	PageSize     int32
+}
+
+type ListItemRequestsRow struct {
+	ID            uuid.UUID
+	GuildID       uuid.UUID
+	BankItemID    *uuid.UUID
+	RequesterID   uuid.UUID
+	RequesterName string
+	Reason        string
+	Status        string
+	ReviewerID    *uuid.UUID
+	ReviewNote    string
+	CreatedAt     time.Time
+	ReviewedAt    pgtype.Timestamptz
+	Item          []byte
+}
+
+func (q *Queries) ListItemRequests(ctx context.Context, arg ListItemRequestsParams) ([]ListItemRequestsRow, error) {
+	rows, err := q.db.Query(ctx, listItemRequests,
+		arg.GuildID,
+		arg.StatusFilter,
+		arg.PageOffset,
+		arg.PageSize,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListItemRequestsRow{}
+	for rows.Next() {
+		var i ListItemRequestsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.GuildID,
+			&i.BankItemID,
+			&i.RequesterID,
+			&i.RequesterName,
+			&i.Reason,
+			&i.Status,
+			&i.ReviewerID,
+			&i.ReviewNote,
+			&i.CreatedAt,
+			&i.ReviewedAt,
+			&i.Item,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTopBankContributors = `-- name: ListTopBankContributors :many
 SELECT bc.user_id,
        bc.username,
@@ -723,13 +759,87 @@ func (q *Queries) ListTopBankContributors(ctx context.Context, guildID uuid.UUID
 	return items, nil
 }
 
+const lockFundRequest = `-- name: LockFundRequest :one
+SELECT amount, requester_id, status FROM fund_requests
+WHERE id = $1 AND guild_id = $2
+FOR UPDATE
+`
+
+type LockFundRequestParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type LockFundRequestRow struct {
+	Amount      int64
+	RequesterID uuid.UUID
+	Status      string
+}
+
+func (q *Queries) LockFundRequest(ctx context.Context, arg LockFundRequestParams) (LockFundRequestRow, error) {
+	row := q.db.QueryRow(ctx, lockFundRequest, arg.ID, arg.GuildID)
+	var i LockFundRequestRow
+	err := row.Scan(&i.Amount, &i.RequesterID, &i.Status)
+	return i, err
+}
+
+const lockItemRequest = `-- name: LockItemRequest :one
+SELECT bank_item_id, requester_id, status FROM item_requests
+WHERE id = $1 AND guild_id = $2
+FOR UPDATE
+`
+
+type LockItemRequestParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type LockItemRequestRow struct {
+	BankItemID  *uuid.UUID
+	RequesterID uuid.UUID
+	Status      string
+}
+
+func (q *Queries) LockItemRequest(ctx context.Context, arg LockItemRequestParams) (LockItemRequestRow, error) {
+	row := q.db.QueryRow(ctx, lockItemRequest, arg.ID, arg.GuildID)
+	var i LockItemRequestRow
+	err := row.Scan(&i.BankItemID, &i.RequesterID, &i.Status)
+	return i, err
+}
+
+const rejectCompetingItemRequests = `-- name: RejectCompetingItemRequests :exec
+UPDATE item_requests SET
+    status = 'rejected',
+    reviewer_id = $1,
+    reviewed_at = NOW()
+WHERE bank_item_id = $2 AND guild_id = $3
+  AND id <> $4 AND status = 'pending'
+`
+
+type RejectCompetingItemRequestsParams struct {
+	ReviewerID *uuid.UUID
+	BankItemID *uuid.UUID
+	GuildID    uuid.UUID
+	ID         uuid.UUID
+}
+
+func (q *Queries) RejectCompetingItemRequests(ctx context.Context, arg RejectCompetingItemRequestsParams) error {
+	_, err := q.db.Exec(ctx, rejectCompetingItemRequests,
+		arg.ReviewerID,
+		arg.BankItemID,
+		arg.GuildID,
+		arg.ID,
+	)
+	return err
+}
+
 const updateFundRequestStatus = `-- name: UpdateFundRequestStatus :one
 UPDATE fund_requests SET
     status = $1::text,
     reviewer_id = $2,
     review_note = NULLIF($3::text, ''),
     reviewed_at = NOW()
-WHERE id = $4 AND guild_id = $5
+WHERE id = $4 AND guild_id = $5 AND status = 'pending'
 RETURNING id, guild_id, requester_id, requester_name, amount,
           COALESCE(reason, '')      AS reason,
           status,
@@ -791,13 +901,13 @@ UPDATE item_requests SET
     reviewer_id = $2,
     review_note = NULLIF($3::text, ''),
     reviewed_at = NOW()
-WHERE id = $4 AND guild_id = $5
+WHERE id = $4 AND guild_id = $5 AND status = 'pending'
 RETURNING id, guild_id, bank_item_id, requester_id, requester_name,
           COALESCE(reason, '')      AS reason,
           status,
           reviewer_id,
           COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at
+          created_at, reviewed_at, item
 `
 
 type UpdateItemRequestStatusParams struct {
@@ -811,7 +921,7 @@ type UpdateItemRequestStatusParams struct {
 type UpdateItemRequestStatusRow struct {
 	ID            uuid.UUID
 	GuildID       uuid.UUID
-	BankItemID    uuid.UUID
+	BankItemID    *uuid.UUID
 	RequesterID   uuid.UUID
 	RequesterName string
 	Reason        string
@@ -820,6 +930,7 @@ type UpdateItemRequestStatusRow struct {
 	ReviewNote    string
 	CreatedAt     time.Time
 	ReviewedAt    pgtype.Timestamptz
+	Item          []byte
 }
 
 func (q *Queries) UpdateItemRequestStatus(ctx context.Context, arg UpdateItemRequestStatusParams) (UpdateItemRequestStatusRow, error) {
@@ -843,6 +954,7 @@ func (q *Queries) UpdateItemRequestStatus(ctx context.Context, arg UpdateItemReq
 		&i.ReviewNote,
 		&i.CreatedAt,
 		&i.ReviewedAt,
+		&i.Item,
 	)
 	return i, err
 }

@@ -187,7 +187,7 @@ type Item struct {
 type ItemRequest struct {
 	ID            uuid.UUID
 	GuildID       uuid.UUID
-	BankItemID    uuid.UUID
+	BankItemID    *uuid.UUID
 	RequesterID   uuid.UUID
 	RequesterName string
 	Reason        pgtype.Text
@@ -196,6 +196,7 @@ type ItemRequest struct {
 	ReviewNote    pgtype.Text
 	CreatedAt     time.Time
 	ReviewedAt    pgtype.Timestamptz
+	Item          []byte
 }
 
 type Lottery struct {

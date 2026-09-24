@@ -50,6 +50,10 @@ export interface BankContribution {
   createdAt: string;
 }
 
+export type RequestStatus = 'pending' | 'approved' | 'rejected';
+
+export type ReviewDecision = Exclude<RequestStatus, 'pending'>;
+
 export interface FundRequest {
   id: string;
   guildId: string;
@@ -57,8 +61,10 @@ export interface FundRequest {
   requesterName: string;
   amount: number;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: RequestStatus;
+  reviewNote?: string;
   createdAt: string;
+  reviewedAt?: string;
 }
 
 export interface ItemRequest {
@@ -68,6 +74,11 @@ export interface ItemRequest {
   requesterId: string;
   requesterName: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: RequestStatus;
+  itemName: string;
+  itemCategory: ItemCategory;
+  itemRarity: ItemRarity;
+  reviewNote?: string;
   createdAt: string;
+  reviewedAt?: string;
 }

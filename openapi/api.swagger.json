@@ -981,6 +981,54 @@
       }
     },
     "/v1/guilds/{guildId}/bank/item-requests": {
+      "get": {
+        "operationId": "BankService_ListItemRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListItemRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "\"pending\" | \"approved\" | \"rejected\" | \"\" (all)",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      },
       "post": {
         "summary": "Request an item from guild bank (requires approval)",
         "operationId": "BankService_RequestItem",
@@ -4490,6 +4538,9 @@
         "reviewedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "item": {
+          "$ref": "#/definitions/v1Item"
         }
       }
     },
@@ -4744,6 +4795,25 @@
         },
         "nextPageToken": {
           "type": "string"
+        }
+      }
+    },
+    "v1ListItemRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ItemRequest"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
