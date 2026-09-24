@@ -102,7 +102,8 @@ func runServe(cmd *cobra.Command, args []string) {
 	logger.Info().Msg("HTTP gateway listening on " + gw.Address())
 
 	// Mark health service startup as complete
-	grpcServer.HealthService().MarkStartupComplete()
+	grpcServer.MarkStartupComplete()
+	go grpcServer.RunHealthChecks(ctx)
 	logger.Info().Msg("health service startup marked as complete")
 
 	lotteries := lotterysvc.New(db, logger)
@@ -122,6 +123,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	<-quit
 
 	logger.Info().Msg("shutting down servers")
+	grpcServer.MarkShuttingDown()
 
 	cancel()
 	broker.Close()

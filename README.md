@@ -66,7 +66,9 @@ make web-dev  # Start frontend on :3000
 
 - Frontend: <http://localhost:3000>
 - Backend: <http://localhost:8080>
-- Health check: <http://localhost:8080/health>
+- Liveness probe: <http://localhost:8080/livez>
+- Readiness probe: <http://localhost:8080/readyz>
+- gRPC health (`grpc.health.v1`): `localhost:50051`, services `liveness` and `readiness`
 
 ### Manual Setup
 
@@ -114,8 +116,10 @@ curl -X POST http://localhost:8080/guma.v1.GuildService/CreateGuild \
     }
   }'
 
-# Health check
-curl http://localhost:8080/health
+# Health checks
+curl http://localhost:8080/livez
+curl http://localhost:8080/readyz
+go run main.go healthcheck --service readiness
 ```
 
 ## Development Commands

@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -24,9 +25,10 @@ import (
 
 // Gateway wraps the HTTP gateway server
 type Gateway struct {
-	server *http.Server
-	logger zerolog.Logger
-	config *config.Config
+	server     *http.Server
+	healthConn *grpc.ClientConn
+	logger     zerolog.Logger
+	config     *config.Config
 }
 
 // NewGateway creates and configures a new HTTP gateway
@@ -52,10 +54,6 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 
 	if err := gumav1.RegisterMemberServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
 		return nil, fmt.Errorf("failed to register member gateway: %w", err)
-	}
-
-	if err := gumav1.RegisterHealthServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
-		return nil, fmt.Errorf("failed to register health gateway: %w", err)
 	}
 
 	if err := gumav1.RegisterUserServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
@@ -99,11 +97,6 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 	// Create HTTP handler with middleware
 	var handler http.Handler = mux
 
-	// Add health check endpoints
-	healthMux := http.NewServeMux()
-	healthMux.Handle("/", mux)
-	handler = healthMux
-
 	// Apply middleware
 	handler = middleware.KratosSessionMiddleware(cfg.Auth.KratosPublicURL, logger)(handler)
 	if cfg.Dev.AuthEnabled {
@@ -123,6 +116,12 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 		cfg.CORS.AllowedHeaders,
 	)(handler)
 
+	healthConn, err := grpc.NewClient(grpcAddr, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create health client: %w", err)
+	}
+	handler = newProbeMux(healthpb.NewHealthClient(healthConn), handler)
+
 	// Create HTTP server
 	httpAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	server := &http.Server{
@@ -136,9 +135,10 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 	logger.Info().Str("address", httpAddr).Msg("HTTP gateway initialized")
 
 	return &Gateway{
-		server: server,
-		logger: logger,
-		config: cfg,
+		server:     server,
+		healthConn: healthConn,
+		logger:     logger,
+		config:     cfg,
 	}, nil
 }
 
@@ -182,6 +182,10 @@ func (g *Gateway) Stop(ctx context.Context) error {
 	if err := g.server.Shutdown(ctx); err != nil {
 		g.logger.Error().Err(err).Msg("HTTP gateway shutdown error")
 		return err
+	}
+
+	if err := g.healthConn.Close(); err != nil {
+		g.logger.Warn().Err(err).Msg("health client close error")
 	}
 
 	g.logger.Info().Msg("HTTP gateway stopped")

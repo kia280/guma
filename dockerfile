@@ -33,11 +33,11 @@ RUN addgroup -g 1000 appuser && \
 USER appuser
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:8080/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD ["./guma", "healthcheck", "--service", "readiness"]
 
-# Expose port
-EXPOSE 8080
+# Expose ports
+EXPOSE 8080 50051
 
 # Run the application
 CMD ["./guma", "serve"]
