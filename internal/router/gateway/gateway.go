@@ -34,25 +34,7 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 	logger = logger.With().Str("component", "http-gateway").Logger()
 
 	// Create gRPC-Gateway mux
-	jsonMarshaler := &runtime.JSONPb{
-		MarshalOptions: protojson.MarshalOptions{
-			UseProtoNames:   true,
-			EmitUnpopulated: false,
-			UseEnumNumbers:  false,
-		},
-		UnmarshalOptions: protojson.UnmarshalOptions{
-			DiscardUnknown: true,
-		},
-	}
-
-	mux := runtime.NewServeMux(
-		runtime.WithErrorHandler(customErrorHandler(logger)),
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, jsonMarshaler),
-		runtime.WithMarshalerOption(mimeEventStream, &sseMarshaler{Marshaler: jsonMarshaler}),
-		runtime.WithIncomingHeaderMatcher(customHeaderMatcher),
-		runtime.WithOutgoingHeaderMatcher(outgoingHeaderMatcher),
-		runtime.WithMetadata(session.Annotator),
-	)
+	mux := newServeMux(logger)
 
 	// gRPC connection options
 	opts := []grpc.DialOption{
@@ -157,6 +139,28 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 }
 
 // Start starts the HTTP gateway server
+func newServeMux(logger zerolog.Logger) *runtime.ServeMux {
+	jsonMarshaler := &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames:   true,
+			EmitUnpopulated: false,
+			UseEnumNumbers:  false,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	}
+
+	return runtime.NewServeMux(
+		runtime.WithErrorHandler(customErrorHandler(logger)),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, jsonMarshaler),
+		runtime.WithMarshalerOption(mimeEventStream, &sseMarshaler{Marshaler: jsonMarshaler}),
+		runtime.WithIncomingHeaderMatcher(customHeaderMatcher),
+		runtime.WithOutgoingHeaderMatcher(outgoingHeaderMatcher),
+		runtime.WithMetadata(session.Annotator),
+	)
+}
+
 func (g *Gateway) Start() error {
 	g.logger.Info().Str("address", g.server.Addr).Msg("starting HTTP gateway")
 
