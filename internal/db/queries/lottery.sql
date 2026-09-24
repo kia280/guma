@@ -120,3 +120,9 @@ RETURNING id, guild_id, created_by, title,
           max_tickets, max_tickets_per_user, status,
           TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
           prizes, created_at, updated_at;
+
+-- name: ListDueLotteries :many
+SELECT id, guild_id FROM lotteries
+WHERE status <> 'ended' AND draw_date <= NOW()
+ORDER BY draw_date ASC
+LIMIT sqlc.arg(max_rows)::int;

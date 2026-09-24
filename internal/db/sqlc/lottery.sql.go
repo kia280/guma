@@ -388,6 +388,38 @@ func (q *Queries) ListAllLotteryTickets(ctx context.Context, lotteryID uuid.UUID
 	return items, nil
 }
 
+const listDueLotteries = `-- name: ListDueLotteries :many
+SELECT id, guild_id FROM lotteries
+WHERE status <> 'ended' AND draw_date <= NOW()
+ORDER BY draw_date ASC
+LIMIT $1::int
+`
+
+type ListDueLotteriesRow struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+func (q *Queries) ListDueLotteries(ctx context.Context, maxRows int32) ([]ListDueLotteriesRow, error) {
+	rows, err := q.db.Query(ctx, listDueLotteries, maxRows)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListDueLotteriesRow{}
+	for rows.Next() {
+		var i ListDueLotteriesRow
+		if err := rows.Scan(&i.ID, &i.GuildID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listLotteries = `-- name: ListLotteries :many
 SELECT id, guild_id, created_by, title,
        COALESCE(description, '') AS description,

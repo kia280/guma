@@ -35,6 +35,7 @@ cors:
     - GET
     - POST
     - PUT
+    - PATCH
     - DELETE
     - OPTIONS
   allowed_headers:
@@ -45,3 +46,7 @@ cors:
 rate_limit:
   requests_per_minute: 60
   burst: 10
+
+# Background job scheduling
+scheduler:
+  lottery_draw_interval: 15s  # set to 0 to disable

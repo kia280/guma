@@ -493,6 +493,29 @@ func (s *Service) drawIfDue(ctx context.Context, guildID, lotteryID uuid.UUID, s
 	if status == "ended" || !isDue(drawDate, time.Now()) {
 		return false
 	}
+	return s.drawScheduled(ctx, guildID, lotteryID)
+}
+
+const dueLotteryBatchSize = 100
+
+func (s *Service) DrawDueLotteries(ctx context.Context) (int, error) {
+	rows, err := s.q.ListDueLotteries(ctx, dueLotteryBatchSize)
+	if err != nil {
+		return 0, fmt.Errorf("list due lotteries: %w", err)
+	}
+	drawn := 0
+	for _, r := range rows {
+		if ctx.Err() != nil {
+			return drawn, ctx.Err()
+		}
+		if s.drawScheduled(ctx, r.GuildID, r.ID) {
+			drawn++
+		}
+	}
+	return drawn, nil
+}
+
+func (s *Service) drawScheduled(ctx context.Context, guildID, lotteryID uuid.UUID) bool {
 	winners, err := s.draw(ctx, guildID, lotteryID, true)
 	if errors.Is(err, errs.ErrFailedPrecondition) {
 		return true
