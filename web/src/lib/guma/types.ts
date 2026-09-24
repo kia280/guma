@@ -12,6 +12,8 @@ import type { AuctionItem, Bid, CreateAuctionRequest } from '@/types/auction';
 import type {
   CheckinEntry,
   AttendanceMember,
+  CheckinTemplate,
+  CheckinTemplateInput,
   CreateCheckinRequest,
   UpdateCheckinRequest,
 } from '@/types/checkin';
@@ -111,6 +113,10 @@ export interface ApiClient {
   deleteCheckin(guildId: string, id: string): Promise<void>;
   submitAttendance(guildId: string, checkinId: string): Promise<AttendanceMember>;
   listAttendees(guildId: string, checkinId: string): Promise<AttendanceMember[]>;
+  listCheckinTemplates(guildId: string): Promise<CheckinTemplate[]>;
+  createCheckinTemplate(guildId: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
+  updateCheckinTemplate(guildId: string, id: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
+  deleteCheckinTemplate(guildId: string, id: string): Promise<void>;
 
   // ── Lottery ──
   listLotteries(guildId: string, status?: string): Promise<Lottery[]>;

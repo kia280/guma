@@ -105,7 +105,17 @@
     "loot": "戰利品",
     "viewDetails": "查看詳情",
     "checkinClosed": "點名已結束",
-    "markPresent": "報到"
+    "markPresent": "報到",
+    "template": "範本",
+    "templatePlaceholder": "從範本開始",
+    "templatesLoading": "正在載入範本…",
+    "noTemplates": "尚無範本",
+    "templateHint": "會帶入標題與戰利品清單，之後仍可修改。",
+    "templatesLoadFailed": "無法載入範本。",
+    "templatesRetry": "重試",
+    "templateSummary": "{title} · {count} 項物品",
+    "addLootItem": "新增物品",
+    "removeLootItem": "移除 {name}"
   },
   "walletPage": {
     "wallet": "錢包",
@@ -320,7 +330,8 @@
       "moderator": "幹部",
       "member": "成員"
     },
-    "bankRequests": "金庫申請"
+    "bankRequests": "金庫申請",
+    "checkinTemplates": "點名範本"
   },
   "guildBankPage": {
     "treasury": "公會金庫",
@@ -888,5 +899,34 @@
       "approved": "已批准",
       "rejected": "已拒絕"
     }
+  },
+  "checkinTemplates": {
+    "description": "可重複使用的點名標題與戰利品清單。",
+    "create": "新增範本",
+    "createTitle": "新增點名範本",
+    "editTitle": "編輯點名範本",
+    "name": "範本名稱",
+    "namePlaceholder": "例如：每週團戰",
+    "checkinTitle": "點名標題",
+    "checkinTitlePlaceholder": "點名時使用的標題",
+    "save": "儲存",
+    "cancel": "取消",
+    "delete": "刪除",
+    "editNamed": "編輯 {name}",
+    "deleteNamed": "刪除 {name}",
+    "deleteTitle": "刪除範本？",
+    "deleteConfirm": "將移除「{name}」。已建立的點名不受影響。",
+    "loading": "正在載入範本",
+    "loadFailed": "無法載入點名範本。",
+    "retry": "重試",
+    "emptyTitle": "尚無範本",
+    "emptyHint": "建立範本即可快速帶入新點名的內容。",
+    "noLoot": "沒有戰利品",
+    "lootCount": "{count} 項戰利品",
+    "errorNameTaken": "已有相同名稱的範本。",
+    "errorForbidden": "您沒有權限管理範本。",
+    "errorNotFound": "此範本已不存在。",
+    "errorInvalid": "請檢查名稱、標題與戰利品後再試一次。",
+    "errorGeneric": "發生錯誤，請再試一次。"
   }
 }
