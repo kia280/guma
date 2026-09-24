@@ -4,6 +4,7 @@ import React from 'react';
 import { Tabs, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { usePathname, useRouter } from 'next/navigation';
 import LotteryCard from '@/components/LotteryCard';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
@@ -14,12 +15,36 @@ export default function LotteryPage() {
   const guildId = useCurrentGuildId();
   const [activeTab, setActiveTab] = React.useState('all');
   const [mockLotteries, setMockLotteries] = React.useState<Lottery[]>([]);
+  const pathname = usePathname();
+  const router = useRouter();
+  const watchedSince = React.useRef(Date.now());
+  const autoOpened = React.useRef(new Set<string>());
 
   React.useEffect(() => {
     let cancelled = false;
     apiClient.listLotteries(guildId).then(d => { if (!cancelled) setMockLotteries(d); }).catch(() => {});
     return () => { cancelled = true; };
-  }, [guildId]);
+  }, [guildId, pathname]);
+
+  React.useEffect(() => {
+    if (pathname !== '/dashboard/lottery') return;
+    const timer = setInterval(() => {
+      const now = Date.now();
+      const due = mockLotteries.find(lottery => {
+        const drawAt = new Date(lottery.drawDate).getTime();
+        return (
+          lottery.status === 'active' &&
+          drawAt > watchedSince.current &&
+          drawAt <= now &&
+          !autoOpened.current.has(lottery.id)
+        );
+      });
+      if (!due) return;
+      autoOpened.current.add(due.id);
+      router.push(`/dashboard/lottery/${due.id}`);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [mockLotteries, pathname, router]);
 
   const filtered =
     activeTab === 'all' ? mockLotteries : mockLotteries.filter(l => l.status === activeTab);
@@ -91,8 +116,6 @@ export default function LotteryPage() {
                 <LotteryCard
                   key={lottery.id}
                   {...lottery}
-                  onBuyTicket={id => console.log('Buy ticket for lottery:', id)}
-                  onViewWinners={id => console.log('View winners for lottery:', id)}
                 />
               ))}
             </div>
@@ -114,8 +137,6 @@ export default function LotteryPage() {
                 <LotteryCard
                   key={lottery.id}
                   {...lottery}
-                  onBuyTicket={id => console.log('Buy ticket for lottery:', id)}
-                  onViewWinners={id => console.log('View winners for lottery:', id)}
                 />
               ))}
             </div>
@@ -137,8 +158,6 @@ export default function LotteryPage() {
                 <LotteryCard
                   key={lottery.id}
                   {...lottery}
-                  onBuyTicket={id => console.log('Buy ticket for lottery:', id)}
-                  onViewWinners={id => console.log('View winners for lottery:', id)}
                 />
               ))}
             </div>
@@ -160,8 +179,6 @@ export default function LotteryPage() {
                 <LotteryCard
                   key={lottery.id}
                   {...lottery}
-                  onBuyTicket={id => console.log('Buy ticket for lottery:', id)}
-                  onViewWinners={id => console.log('View winners for lottery:', id)}
                 />
               ))}
             </div>

@@ -22,7 +22,7 @@ import type {
 } from '@/types/dashboard';
 import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
 import type { Transaction } from '@/types/wallet';
-import type { Lottery } from '@/types/lottery';
+import type { Lottery, LotteryParticipant } from '@/types/lottery';
 import type { GuildContribution, GuildBankItem } from '@/types/guild-bank';
 import type { GuildNotification } from '@/types/notification';
 
@@ -458,7 +458,7 @@ export const USER_BALANCE = 5000;
 
 // ─── Lottery ─────────────────────────────────────────────────────────────────
 
-export const mockLotteries: Lottery[] = [
+const BASE_LOTTERIES: Lottery[] = [
   {
     id: 'l1',
     title: 'Grand Guild Lottery',
@@ -507,7 +507,36 @@ export const mockLotteries: Lottery[] = [
       { id: 'w3', username: member(23).username, prize: '$5,000 (3rd place)' },
     ],
   },
+  {
+    id: 'l5',
+    title: 'Flash Draw',
+    prizePool: 800,
+    ticketPrice: 5,
+    drawDate: new Date(Date.now() + 60 * 1000).toISOString(),
+    ticketsSold: 36,
+    maxTickets: 50,
+    status: 'active',
+    winners: undefined,
+  },
 ];
+
+function generateParticipants(lottery: Lottery, seed: number): LotteryParticipant[] {
+  const random = seededRandom(seed);
+  const winnerNames = new Set(lottery.winners?.map(w => w.username));
+  const others = mockUsers.filter(u => !winnerNames.has(u.username)).sort(() => random() - 0.5);
+  const pool = [...mockUsers.filter(u => winnerNames.has(u.username)), ...others];
+  const count = Math.min(lottery.ticketsSold, Math.max(winnerNames.size, 8 + Math.floor(random() * 24)));
+  const participants = pool.slice(0, count).map(user => ({ id: user.id, username: user.username, tickets: 1 }));
+  for (let left = lottery.ticketsSold - count; left > 0; left--) {
+    participants[Math.floor(random() * participants.length)].tickets += 1;
+  }
+  return participants.sort((a, b) => b.tickets - a.tickets);
+}
+
+export const mockLotteries: Lottery[] = BASE_LOTTERIES.map((lottery, i) => ({
+  ...lottery,
+  participants: generateParticipants(lottery, 7000 + i),
+}));
 
 // ─── Guild Bank ──────────────────────────────────────────────────────────────
 

@@ -722,5 +722,36 @@
         "description": "Modern and geometric; some glyphs follow Hong Kong forms"
       }
     }
+  },
+  "lotteryDetail": {
+    "notFound": "Lottery not found.",
+    "goBack": "Go back",
+    "backToLotteries": "Back to lotteries",
+    "prizePool": "Prize pool",
+    "ticketPrice": "Ticket price",
+    "drawDate": "Draw time",
+    "ticketsSold": "{sold} of {max} tickets sold",
+    "ticketsSoldLabel": "Tickets sold",
+    "buyTickets": "Buy tickets",
+    "quantity": "Quantity",
+    "purchase": "Buy for {total}",
+    "soldOut": "All tickets are sold.",
+    "yourTickets": "You hold {count, plural, one {# ticket} other {# tickets}} · {chance}% chance",
+    "winners": "Winners",
+    "participants": "Participants",
+    "noParticipants": "No one has joined yet.",
+    "ticketCount": "{count, plural, one {# ticket} other {# tickets}}",
+    "drawsIn": "Draws in {time}",
+    "drawing": "Drawing…",
+    "spinning": "Spinning…",
+    "winnerIs": "🎉 {name} wins!",
+    "notStarted": "Ticket sales have not started",
+    "replay": "Replay draw",
+    "status": {
+      "active": "Active",
+      "upcoming": "Upcoming",
+      "ended": "Ended"
+    },
+    "wheelDetail": "{count, plural, one {# ticket} other {# tickets}} · {chance}%"
   }
 }

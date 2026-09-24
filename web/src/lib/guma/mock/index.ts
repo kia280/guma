@@ -32,7 +32,7 @@ const store = {
   checkins: [...mockData.mockCheckins] as CheckinEntry[],
   auctions: [...mockData.mockAuctionItems] as AuctionItem[],
   transactions: [...mockData.mockTransactions] as Transaction[],
-  lotteries: [...mockData.mockLotteries] as Lottery[],
+  lotteries: mockData.mockLotteries.map(l => ({ ...l, participants: l.participants?.map(p => ({ ...p })) })) as Lottery[],
   events: [] as GuildEvent[],
   announcements: [...mockData.mockAdminAnnouncements] as AdminAnnouncement[],
 };
@@ -277,17 +277,42 @@ const baseMockApiClient: ApiClient = {
     return l;
   },
   createLottery: notImpl('createLottery'),
-  purchaseTickets: async (_guildId, lotteryId, quantity): Promise<LotteryTicket[]> =>
-    Array.from({ length: quantity }, (_, i) => ({
+  purchaseTickets: async (_guildId, lotteryId, quantity): Promise<LotteryTicket[]> => {
+    const lottery = store.lotteries.find(x => x.id === lotteryId);
+    if (!lottery) throw new Error('not found');
+    const bought = Math.min(quantity, lottery.maxTickets - lottery.ticketsSold);
+    const participants = [...(lottery.participants ?? [])];
+    const mine = participants.find(p => p.id === currentUser.id);
+    if (mine) mine.tickets += bought;
+    else participants.unshift({ id: currentUser.id, username: currentUser.username, tickets: bought });
+    Object.assign(lottery, {
+      ticketsSold: lottery.ticketsSold + bought,
+      participants: participants.sort((a, b) => b.tickets - a.tickets),
+    });
+    return Array.from({ length: bought }, (_, i) => ({
       id: `ticket-${Date.now()}-${i}`,
       lotteryId,
       userId: currentUser.id,
       ticketNumber: `T-${Date.now()}-${i}`,
       purchasedAt: new Date().toISOString(),
-    })),
+    }));
+  },
   getLotteryWinners: async (_guildId, id): Promise<LotteryWinner[]> => {
-    const l = store.lotteries.find(x => x.id === id);
-    return l?.winners ?? [];
+    const lottery = store.lotteries.find(x => x.id === id);
+    if (!lottery) return [];
+    if (lottery.status === 'active' && new Date(lottery.drawDate).getTime() <= Date.now()) {
+      const participants = lottery.participants ?? [];
+      const total = participants.reduce((sum, p) => sum + p.tickets, 0);
+      let roll = Math.random() * total;
+      const winner = participants.find(p => (roll -= p.tickets) < 0) ?? participants[0];
+      Object.assign(lottery, {
+        status: 'ended',
+        winners: winner
+          ? [{ id: `w-${Date.now()}`, username: winner.username, prize: `$${lottery.prizePool.toLocaleString('en-US')}` }]
+          : [],
+      });
+    }
+    return lottery.winners ?? [];
   },
   listMyTickets: async () => [],
 

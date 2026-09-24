@@ -722,5 +722,36 @@
         "description": "現代幾何風格,部分字形採香港寫法"
       }
     }
+  },
+  "lotteryDetail": {
+    "notFound": "找不到這個抽獎。",
+    "goBack": "返回",
+    "backToLotteries": "返回抽獎列表",
+    "prizePool": "獎金池",
+    "ticketPrice": "票價",
+    "drawDate": "開獎時間",
+    "ticketsSold": "已售出 {sold} / {max} 張",
+    "ticketsSoldLabel": "已售票數",
+    "buyTickets": "購買彩券",
+    "quantity": "張數",
+    "purchase": "購買（{total}）",
+    "soldOut": "彩券已售完。",
+    "yourTickets": "你持有 {count} 張 · 中獎機率 {chance}%",
+    "winners": "得獎者",
+    "participants": "參加者",
+    "noParticipants": "目前還沒有人參加。",
+    "ticketCount": "{count} 張",
+    "drawsIn": "{time} 後開獎",
+    "drawing": "開獎中…",
+    "spinning": "轉盤轉動中…",
+    "winnerIs": "🎉 恭喜 {name} 中獎！",
+    "notStarted": "尚未開始售票",
+    "replay": "重播開獎",
+    "status": {
+      "active": "進行中",
+      "upcoming": "即將開始",
+      "ended": "已結束"
+    },
+    "wheelDetail": "{count} 張 · {chance}%"
   }
 }

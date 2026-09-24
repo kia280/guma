@@ -3,6 +3,7 @@
 import { Card, Chip, Button, ProgressBar, Avatar } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 interface LotteryWinner {
   id: string;
@@ -21,8 +22,6 @@ interface LotteryCardProps {
   maxTickets: number;
   status: 'active' | 'upcoming' | 'ended';
   winners?: LotteryWinner[];
-  onBuyTicket?: (id: string) => void;
-  onViewWinners?: (id: string) => void;
 }
 
 const getStatusColor = (status: LotteryCardProps['status']) => {
@@ -46,10 +45,10 @@ const LotteryCard = ({
   maxTickets,
   status,
   winners,
-  onBuyTicket,
-  onViewWinners,
 }: LotteryCardProps) => {
   const t = useTranslations('lotteryCard');
+  const router = useRouter();
+  const openDetail = () => router.push(`/dashboard/lottery/${id}`);
   const soldPercent = Math.round((ticketsSold / maxTickets) * 100);
 
   const formatCountdown = (dateStr: string, suffix = t('remaining')) => {
@@ -66,7 +65,22 @@ const LotteryCard = ({
   const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
 
   return (
-    <Card className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors">
+    <Card
+      role="link"
+      tabIndex={0}
+      aria-label={title}
+      onClick={event => {
+        if (!(event.target as HTMLElement).closest('button')) openDetail();
+      }}
+      onKeyDown={event => {
+        if (event.target !== event.currentTarget) return;
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openDetail();
+        }
+      }}
+      className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+    >
       <Card.Header className="pb-2">
         <div className="flex justify-between items-start w-full">
           <div>
@@ -162,13 +176,13 @@ const LotteryCard = ({
 
       <Card.Footer className="pt-0">
         {status === 'active' && (
-          <Button variant="primary" className="w-full" onPress={() => onBuyTicket?.(id)}>
+          <Button variant="primary" className="w-full" onPress={openDetail}>
             <Icon icon="solar:ticket-linear" width={16} />
             {t('buyTicket')}
           </Button>
         )}
         {status === 'ended' && (
-          <Button variant="secondary" className="w-full" onPress={() => onViewWinners?.(id)}>
+          <Button variant="secondary" className="w-full" onPress={openDetail}>
             <Icon icon="solar:cup-star-linear" width={16} />
             {t('viewWinners')}
           </Button>
