@@ -682,7 +682,10 @@
     "statusClosed": "已關閉",
     "statusFinished": "已完成",
     "expired": "已過期",
-    "remaining": "剩餘"
+    "remaining": "剩餘",
+    "checkedIn": "已簽到",
+    "checkInExpired": "此點名已截止。",
+    "checkInFailed": "簽到失敗，請稍後再試。"
   },
   "devTools": {
     "authTab": "開發登入",

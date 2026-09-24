@@ -310,6 +310,7 @@ function generateCheckins(): CheckinEntry[] {
     const attendanceList = attendees
       .map((user, j) => ({
         id: `c${i + 1}-a${j + 1}`,
+        userId: user.id,
         username: user.username,
         checkedInAt: new Date(start + random() * HOUR).toISOString(),
         ...(random() < 0.05 ? { notes: 'Late arrival' } : {}),

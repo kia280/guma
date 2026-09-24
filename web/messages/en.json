@@ -682,7 +682,10 @@
     "statusClosed": "Closed",
     "statusFinished": "Finished",
     "expired": "Expired",
-    "remaining": "remaining"
+    "remaining": "remaining",
+    "checkedIn": "You're present",
+    "checkInExpired": "This roll call has closed.",
+    "checkInFailed": "Couldn't mark you present. Please try again."
   },
   "devTools": {
     "authTab": "Dev Auth",

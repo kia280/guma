@@ -196,6 +196,7 @@ type ProtoAttendee = {
 
 export const toAttendee = (raw: ProtoAttendee): AttendanceMember => ({
   id: raw.id,
+  userId: raw.user_id,
   username: raw.display_name || raw.user_id || 'Unknown',
   checkedInAt: ts(raw.attended_at),
 });

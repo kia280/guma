@@ -8,6 +8,7 @@ export enum CheckinStatus {
 
 export interface AttendanceMember {
   id: string;
+  userId?: string;
   username: string;
   checkedInAt: string;
   notes?: string;
