@@ -11,11 +11,14 @@ interface UserState {
   status: 'idle' | 'loading' | 'ready' | 'error';
   error: string | null;
   fetchMe: () => Promise<User | null>;
+  refreshMe: () => Promise<void>;
   setUser: (user: User) => void;
   reset: () => void;
 }
 
 let mePromise: Promise<User | null> | null = null;
+let refreshInFlight = false;
+let refreshQueued = false;
 
 export const useUserStore = create<UserState>((set, get) => ({
   user: null,
@@ -41,6 +44,26 @@ export const useUserStore = create<UserState>((set, get) => ({
         mePromise = null;
       });
     return mePromise;
+  },
+  refreshMe: async () => {
+    if (refreshInFlight) {
+      refreshQueued = true;
+      return;
+    }
+    refreshInFlight = true;
+    try {
+      do {
+        refreshQueued = false;
+        try {
+          const user = await apiClient.getMe();
+          set({ user, status: 'ready', error: null });
+        } catch {
+          return;
+        }
+      } while (refreshQueued);
+    } finally {
+      refreshInFlight = false;
+    }
   },
   setUser: user => set({ user, status: 'ready', error: null }),
   reset: () => {

@@ -1,7 +1,7 @@
 import { env } from '@/lib/env';
 import { isDevMockEnabled } from '@/lib/dev-mock';
 import { mockApiClient } from './mock';
-import { gumaApiClient } from './client';
+import { gumaApiClient, onApiMutation } from './client';
 import type { ApiClient } from './types';
 
 function activeClient(): ApiClient {
@@ -22,6 +22,6 @@ export const apiClient: ApiClient = new Proxy({} as ApiClient, {
   get: (_, key) => activeClient()[key as keyof ApiClient],
 });
 
-export { mockApiClient, gumaApiClient };
+export { mockApiClient, gumaApiClient, onApiMutation };
 export type { ApiClient } from './types';
 export type { AuctionFilters } from './types';
