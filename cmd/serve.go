@@ -14,6 +14,8 @@ import (
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/router/gateway"
 	"github.com/kia280/guma/internal/router/grpc"
+	"github.com/kia280/guma/internal/scheduler"
+	lotterysvc "github.com/kia280/guma/internal/services/lottery"
 )
 
 var serveCmd = &cobra.Command{
@@ -99,12 +101,26 @@ func runServe(cmd *cobra.Command, args []string) {
 	grpcServer.HealthService().MarkStartupComplete()
 	logger.Info().Msg("health service startup marked as complete")
 
+	lotteries := lotterysvc.New(db, logger)
+	jobs := scheduler.New(logger, scheduler.Job{
+		Name:     "lottery-draw",
+		Interval: cfg.Scheduler.LotteryDrawInterval,
+		Run: func(ctx context.Context) error {
+			_, err := lotteries.DrawDueLotteries(ctx)
+			return err
+		},
+	})
+	jobs.Start(ctx)
+
 	// Wait for interrupt signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
 	logger.Info().Msg("shutting down servers")
+
+	cancel()
+	jobs.Wait()
 
 	// Graceful shutdown
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)

@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -29,6 +30,9 @@ type Config struct {
 
 	// Development tooling configuration
 	Dev DevConfig `mapstructure:"dev"`
+
+	// Background job scheduling configuration
+	Scheduler SchedulerConfig `mapstructure:"scheduler"`
 }
 
 // ServerConfig holds server-specific configuration
@@ -55,6 +59,11 @@ type AuthConfig struct {
 // DevConfig holds development-only tooling configuration
 type DevConfig struct {
 	AuthEnabled bool `mapstructure:"auth_enabled"`
+}
+
+// SchedulerConfig holds background job scheduling configuration
+type SchedulerConfig struct {
+	LotteryDrawInterval time.Duration `mapstructure:"lottery_draw_interval"`
 }
 
 // LoggingConfig holds logging configuration
@@ -103,6 +112,7 @@ func Load() (*Config, error) {
 	v.BindEnv("rate_limit.requests_per_minute", "RATE_LIMIT_REQUESTS_PER_MINUTE")
 	v.BindEnv("rate_limit.burst", "RATE_LIMIT_BURST")
 	v.BindEnv("dev.auth_enabled", "DEV_AUTH_ENABLED")
+	v.BindEnv("scheduler.lottery_draw_interval", "SCHEDULER_LOTTERY_DRAW_INTERVAL")
 
 	// Try to read config file
 	v.SetConfigName("config")
@@ -149,12 +159,14 @@ func setDefaults(v *viper.Viper) {
 
 	// CORS defaults
 	v.SetDefault("cors.allowed_origins", []string{"http://localhost:3000"})
-	v.SetDefault("cors.allowed_methods", []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
+	v.SetDefault("cors.allowed_methods", []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
 	v.SetDefault("cors.allowed_headers", []string{"Content-Type", "Authorization"})
 
 	// Rate limit defaults
 	v.SetDefault("rate_limit.requests_per_minute", 60)
 	v.SetDefault("rate_limit.burst", 10)
+
+	v.SetDefault("scheduler.lottery_draw_interval", "15s")
 }
 
 // Validate validates the configuration
