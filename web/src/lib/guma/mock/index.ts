@@ -2,6 +2,7 @@
 // Used when `NEXT_PUBLIC_USE_MOCK=true` for local frontend development.
 
 import * as mockData from './data';
+import { localizeMock } from './i18n';
 import { AuctionStatus, type AuctionItem } from '@/types/auction';
 import type {
   AttendanceMember,
@@ -69,7 +70,7 @@ const mockGuildBankData = (guildId: string): GuildBank => ({
   updatedAt: new Date().toISOString(),
 });
 
-export const mockApiClient: ApiClient = {
+const baseMockApiClient: ApiClient = {
   // ── Dashboard ──
   getDashboardData: async () => ({
     guildStats: mockData.GUILD_STATS,
@@ -153,7 +154,7 @@ export const mockApiClient: ApiClient = {
 
   // ── Auction ──
   listAuctions: async (_guildId, filters) => {
-    let items = store.auctions;
+    let items = localizeMock(store.auctions);
     if (filters?.status && filters.status !== 'all') {
       items = items.filter(i => i.status === filters.status);
     }
@@ -398,3 +399,10 @@ export const mockApiClient: ApiClient = {
     return ann;
   },
 };
+
+export const mockApiClient = Object.fromEntries(
+  Object.entries(baseMockApiClient).map(([name, method]) => [
+    name,
+    async (...args: unknown[]) => localizeMock(await (method as (...a: unknown[]) => unknown)(...args)),
+  ]),
+) as unknown as ApiClient;

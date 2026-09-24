@@ -142,11 +142,11 @@ export const INCOMING_EVENTS: FeedEvent[] = [
 export const ANNOUNCEMENTS: Announcement[] = [
   {
     id: 1,
-    title: '有任何問題，請回報給抽貝比',
+    title: 'Report any problems to 抽貝比',
     date: '2024/07/24',
     pinned: true,
     content:
-      '公會成員若遇到任何系統問題、功能錯誤或其他疑問，請直接私訊抽貝比。回報時請附上問題描述與截圖，以便快速處理。感謝大家的配合！',
+      'If you run into system problems, bugs, or any other questions, please message 抽貝比 directly. Include a description of the problem and a screenshot so it can be handled quickly. Thank you for your cooperation!',
   },
   {
     id: 2,
@@ -280,7 +280,7 @@ export const mockBackpackItems: BackpackItem[] = [
 
 const CHECKIN_COUNT = 16;
 
-const CHECKIN_BOSSES = ['蜘蛛', '炎龍', '骷髏王', '深淵魔女', '巨石像', '冰霜巨人'];
+const CHECKIN_BOSSES = ['Spider Queen', 'Flame Dragon', 'Skeleton King', 'Abyssal Witch', 'Stone Colossus', 'Frost Giant'];
 
 const CHECKIN_LOOT = ['Dragon Scale', 'Fire Crystal', 'Web Fragment', 'Venom Fang', 'Spider Silk', 'Ancient Rune', 'Frost Core', 'Shadow Essence'];
 
