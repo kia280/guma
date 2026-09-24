@@ -43,6 +43,11 @@ import type {
   FeedEvent,
 } from '@/types/dashboard';
 import type {
+  GuildNotification,
+  ListNotificationsOptions,
+  NotificationPage,
+} from '@/types/notification';
+import type {
   AdminActivity,
   AdminAnnouncement,
   CreateAnnouncementRequest,
@@ -145,6 +150,12 @@ export interface ApiClient {
   createEvent(guildId: string, data: CreateEventData): Promise<GuildEvent>;
   updateEvent(guildId: string, id: string, data: UpdateEventData): Promise<GuildEvent>;
   deleteEvent(guildId: string, id: string): Promise<void>;
+
+  // ── Notifications ──
+  listNotifications(options?: ListNotificationsOptions): Promise<NotificationPage>;
+  getUnreadNotificationCount(): Promise<number>;
+  markNotificationRead(id: string): Promise<GuildNotification>;
+  markAllNotificationsRead(): Promise<number>;
 
   // ── Admin ──
   getAdminActivity(): Promise<AdminActivity[]>;

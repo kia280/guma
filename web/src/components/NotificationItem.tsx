@@ -2,86 +2,96 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Button, cn } from '@heroui/react';
+import { cn } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useFormatter, useNow, useTranslations } from 'next-intl';
 
 import { LIST_ROW_CLASS } from '@/lib/list-row';
-import type { GuildNotification, NotificationKind, TradeResponse } from '@/types/notification';
+import type { GuildNotification, NotificationKind } from '@/types/notification';
 
 const KIND_META: Record<NotificationKind, { icon: string; tint: string }> = {
-  tradeOffer: { icon: 'solar:transfer-horizontal-linear', tint: 'bg-accent/10 text-accent' },
-  transferReceived: { icon: 'solar:wallet-money-linear', tint: 'bg-success/10 text-success' },
-  attendanceSettled: { icon: 'solar:check-circle-linear', tint: 'bg-success/10 text-success' },
-  lootWon: { icon: 'solar:gift-linear', tint: 'bg-warning/10 text-warning' },
+  fundRequestApproved: { icon: 'solar:safe-2-linear', tint: 'bg-success/10 text-success' },
+  fundRequestRejected: { icon: 'solar:safe-2-linear', tint: 'bg-danger/10 text-danger' },
+  itemRequestApproved: { icon: 'solar:box-linear', tint: 'bg-success/10 text-success' },
+  itemRequestRejected: { icon: 'solar:box-linear', tint: 'bg-danger/10 text-danger' },
+  fundRequestSubmitted: { icon: 'solar:inbox-in-linear', tint: 'bg-accent/10 text-accent' },
+  itemRequestSubmitted: { icon: 'solar:inbox-in-linear', tint: 'bg-accent/10 text-accent' },
   auctionOutbid: { icon: 'solar:sledgehammer-linear', tint: 'bg-danger/10 text-danger' },
-  auctionWon: { icon: 'solar:cup-star-linear', tint: 'bg-warning/10 text-warning' },
-  lotteryWon: { icon: 'solar:ticket-linear', tint: 'bg-accent/10 text-accent' },
-  bankRequestApproved: { icon: 'solar:safe-2-linear', tint: 'bg-success/10 text-success' },
+  lotteryWon: { icon: 'solar:ticket-linear', tint: 'bg-warning/10 text-warning' },
 };
+
+const FALLBACK_META = { icon: 'solar:bell-linear', tint: 'bg-default text-subtle' };
+
+const isKnownKind = (type: string): type is NotificationKind => Object.prototype.hasOwnProperty.call(KIND_META, type);
+
+const textParam = (value: string | number | undefined) =>
+  typeof value === 'string' ? value.trim() : '';
 
 export type NotificationItemProps = {
   notification: GuildNotification;
   onOpen: (id: string) => void;
-  onRespond: (id: string, response: TradeResponse) => void;
 };
 
-export function NotificationItem({ notification, onOpen, onRespond }: NotificationItemProps) {
+export function NotificationItem({ notification, onOpen }: NotificationItemProps) {
   const t = useTranslations('notificationItem');
   const format = useFormatter();
   const now = useNow({ updateInterval: 60 * 1000 });
-  const { id, kind, params, createdAt, isRead, href, response } = notification;
-  const meta = KIND_META[kind];
+  const { id, type, title, message, params, createdAt, isRead, href } = notification;
+  const known = isKnownKind(type);
+  const meta = known ? KIND_META[type] : FALLBACK_META;
+  const note = textParam(params.note);
+  const reason = textParam(params.reason);
 
   const body = (
     <>
       <div className={cn('flex size-8 shrink-0 items-center justify-center rounded-md', meta.tint)}>
-        <Icon icon={meta.icon} width={16} />
+        <Icon icon={meta.icon} width={16} aria-hidden />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={cn('type-body', isRead ? 'text-subtle' : 'text-foreground')}>
-          {t.rich(kind, {
-            ...params,
-            b: chunks => <span className="font-medium text-foreground">{chunks}</span>,
-          })}
-        </p>
+        {known ? (
+          <p className={cn('type-body', isRead ? 'text-subtle' : 'text-foreground')}>
+            {t.rich(type, {
+              ...params,
+              b: chunks => <span className="font-medium text-foreground">{chunks}</span>,
+            })}
+          </p>
+        ) : (
+          <>
+            <p className={cn('type-body font-medium', isRead ? 'text-subtle' : 'text-foreground')}>{title}</p>
+            {message && <p className="type-body text-subtle">{message}</p>}
+          </>
+        )}
+        {known && (note || reason) && (
+          <p className="type-caption text-subtle line-clamp-2">
+            {note ? t('note', { note }) : t('reason', { reason })}
+          </p>
+        )}
         <time dateTime={createdAt} className="type-caption text-hint">
           {format.relativeTime(new Date(createdAt), now)}
         </time>
       </div>
       {!isRead && (
-        <span aria-label={t('unread')} className="mt-1.5 size-2 shrink-0 rounded-full bg-accent" />
+        <>
+          <span aria-hidden className="mt-1.5 size-2 shrink-0 rounded-full bg-accent" />
+          <span className="sr-only">{t('unread')}</span>
+        </>
       )}
     </>
   );
 
+  const rowClass = cn('flex w-full items-start gap-3 text-left', LIST_ROW_CLASS);
+
   if (href) {
     return (
-      <Link href={href} onClick={() => onOpen(id)} className={cn('flex items-start gap-3', LIST_ROW_CLASS)}>
+      <Link href={href} onClick={() => onOpen(id)} className={rowClass}>
         {body}
       </Link>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg px-3 py-2.5">
-      <div className="flex items-start gap-3">{body}</div>
-      {kind === 'tradeOffer' && (
-        <div className="flex items-center gap-2 pl-11">
-          {response ? (
-            <span className="type-caption text-hint">{t(response)}</span>
-          ) : (
-            <>
-              <Button size="sm" onPress={() => onRespond(id, 'accepted')}>
-                {t('accept')}
-              </Button>
-              <Button size="sm" variant="secondary" onPress={() => onRespond(id, 'declined')}>
-                {t('decline')}
-              </Button>
-            </>
-          )}
-        </div>
-      )}
-    </div>
+    <button type="button" onClick={() => onOpen(id)} className={rowClass}>
+      {body}
+    </button>
   );
 }

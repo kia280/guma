@@ -363,7 +363,11 @@
     "noNotifications": "目前沒有通知。",
     "allCaughtUp": "所有通知都已讀取。",
     "settings": "通知設定",
-    "bellLabel": "{count, plural, =0 {通知} other {通知，# 則未讀}}"
+    "bellLabel": "{count, plural, =0 {通知} other {通知，# 則未讀}}",
+    "loading": "正在載入通知",
+    "loadError": "無法載入通知。",
+    "retry": "重試",
+    "loadMore": "載入更多"
   },
   "createAuctionModal": {
     "createNewAuction": "建立新競拍",
@@ -505,19 +509,17 @@
     "DarkTheme": "深色主題"
   },
   "notificationItem": {
-    "accept": "接受",
-    "decline": "拒絕",
-    "accepted": "你已接受這筆交易。",
-    "declined": "你已拒絕這筆交易。",
     "unread": "未讀",
-    "tradeOffer": "<b>{actor}</b> 提出交易：以 {give} 交換你的 {want}",
-    "transferReceived": "<b>{actor}</b> 轉給你 <b>${amount, number}</b>",
-    "attendanceSettled": "<b>{event}</b> 點名已結單，你獲得 <b>${reward, number}</b>",
-    "lootWon": "你在 <b>{event}</b> 獲得 <b>{item} ×{quantity}</b>",
+    "note": "備註：{note}",
+    "reason": "原因：{reason}",
+    "fundRequestApproved": "<b>{actor}</b> 核准了你 <b>${amount, number}</b> 的公會銀行申請",
+    "fundRequestRejected": "<b>{actor}</b> 拒絕了你 <b>${amount, number}</b> 的公會銀行申請",
+    "itemRequestApproved": "<b>{actor}</b> 核准了你申請的 <b>{item}</b>",
+    "itemRequestRejected": "<b>{actor}</b> 拒絕了你申請的 <b>{item}</b>",
+    "fundRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>${amount, number}</b>",
+    "itemRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{item}</b>",
     "auctionOutbid": "<b>{actor}</b> 以 ${amount, number} 超過你在 <b>{item}</b> 的出價",
-    "auctionWon": "你以 ${amount, number} 得標 <b>{item}</b>",
-    "lotteryWon": "你在 <b>{lottery}</b> 抽中 <b>{prize}</b>",
-    "bankRequestApproved": "<b>{actor}</b> 核准了你 ${amount, number} 的公會銀行申請"
+    "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {${amount, number}}}</b>"
   },
   "profilePage": {
     "title": "個人資料",
