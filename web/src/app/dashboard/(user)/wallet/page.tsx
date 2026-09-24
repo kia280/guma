@@ -30,9 +30,14 @@ import type { Transaction, Wallet as WalletType } from '@/types/wallet';
 import type { MockUser } from '@/types/user';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
+import { useLiveResource } from '@/hooks/useLiveResource';
 import { walletBalanceTrend } from '@/lib/guma/mock/data';
 import { localizeMock } from '@/lib/guma/mock/i18n';
 import { isLocale } from '@/i18n/locales';
+
+const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction'];
+const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
 export default function WalletPage() {
   const t = useTranslations('walletPage');
@@ -62,16 +67,49 @@ export default function WalletPage() {
   const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>([]);
   const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
 
-  const refetchWallet = React.useCallback(() => {
+  const refetchBalance = React.useCallback(() => {
     apiClient.getWallet(guildId).then(setWallet).catch(() => {});
     apiClient.listTransactions(guildId).then(setTransactions).catch(() => {});
+  }, [guildId]);
+
+  const refetchBackpack = React.useCallback(() => {
     apiClient.listBackpack(guildId).then(setBackpackItems).catch(() => {});
   }, [guildId]);
+
+  const refetchWallet = React.useCallback(() => {
+    refetchBalance();
+    refetchBackpack();
+  }, [refetchBalance, refetchBackpack]);
 
   React.useEffect(() => {
     refetchWallet();
     apiClient.listMembers(guildId).then(setMockUsers).catch(() => {});
   }, [guildId, refetchWallet]);
+
+  React.useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let wasOpen = false;
+    const scheduleRefetch = () => {
+      clearTimeout(timer);
+      timer = setTimeout(refetchBalance, LIVE_REFETCH_DEBOUNCE_MS);
+    };
+    const unsubscribe = subscribeLiveEvents(event => {
+      if (event.kind === 'open') {
+        if (wasOpen) scheduleRefetch();
+        wasOpen = true;
+        return;
+      }
+      if (event.kind !== 'wallet' || event.guildId !== guildId) return;
+      setWallet(current => (current ? { ...current, balance: event.balance } : current));
+      scheduleRefetch();
+    });
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
+  }, [guildId, refetchBalance]);
+
+  useLiveResource(LIVE_BACKPACK_RESOURCES, refetchBackpack, { guildId });
 
   const balance = wallet?.balance ?? 0;
 

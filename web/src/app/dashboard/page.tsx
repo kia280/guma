@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -18,6 +18,9 @@ import {
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
+import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
+import { useUserStore } from '@/lib/store';
+import { useLiveResource } from '@/hooks/useLiveResource';
 import type {
   Announcement,
   DashboardData,
@@ -301,6 +304,9 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+const LIVE_DASHBOARD_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'checkin'];
+const LIVE_REFETCH_DEBOUNCE_MS = 250;
+
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const guildId = useCurrentGuildId();
@@ -312,20 +318,47 @@ export default function DashboardPage() {
   });
 
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
-  useEffect(() => {
-    let cancelled = false;
+  const requestSeq = useRef(0);
+  const refetchDashboard = useCallback(() => {
+    const seq = ++requestSeq.current;
     apiClient.getDashboardData(guildId).then(d => {
-      if (!cancelled) setDashboard(d);
+      if (seq === requestSeq.current) setDashboard(d);
     }).catch(() => {});
-    return () => { cancelled = true; };
   }, [guildId]);
+
+  useEffect(() => {
+    refetchDashboard();
+    return () => { requestSeq.current++; };
+  }, [refetchDashboard]);
+
+  useLiveResource(LIVE_DASHBOARD_RESOURCES, refetchDashboard, { guildId });
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const unsubscribe = subscribeLiveEvents(event => {
+      if (event.kind !== 'wallet' || event.guildId !== guildId) return;
+      clearTimeout(timer);
+      timer = setTimeout(refetchDashboard, LIVE_REFETCH_DEBOUNCE_MS);
+    });
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
+  }, [guildId, refetchDashboard]);
+
+  const liveBalance = useUserStore(s =>
+    s.user && s.user.currentGuildId === guildId ? s.user.balance : undefined,
+  );
 
   const guildStats = dashboard?.guildStats ?? {
     members: 0, activeEvents: 0, balance: 0, checkinsThisWeek: 0, activeAuctions: 0, openLotteries: 0,
   };
-  const personalStats = dashboard?.personalStats ?? {
+  const fetchedPersonalStats = dashboard?.personalStats ?? {
     balance: 0, checkinsThisMonth: 0, activeAuctions: 0, activityPoints: 0,
   };
+  const personalStats = liveBalance === undefined
+    ? fetchedPersonalStats
+    : { ...fetchedPersonalStats, balance: liveBalance };
   const balanceTrend = dashboard?.balanceTrend ?? [];
   const announcements = dashboard?.announcements ?? [];
   const incomingEvents = dashboard?.incomingEvents ?? [];
