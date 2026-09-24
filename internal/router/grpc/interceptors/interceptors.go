@@ -69,6 +69,24 @@ func RecoveryInterceptor(logger zerolog.Logger) grpc.UnaryServerInterceptor {
 	}
 }
 
+func StreamRecoveryInterceptor(logger zerolog.Logger) grpc.StreamServerInterceptor {
+	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Error().
+					Interface("panic", r).
+					Str("method", info.FullMethod).
+					Bytes("stack", debug.Stack()).
+					Msg("panic recovered in gRPC stream handler")
+
+				err = status.Error(codes.Internal, "internal server error")
+			}
+		}()
+
+		return handler(srv, ss)
+	}
+}
+
 // ValidationInterceptor validates request messages
 func ValidationInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {

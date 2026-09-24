@@ -12,6 +12,7 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/config"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/events"
 	"github.com/kia280/guma/internal/router/grpc/handlers"
 	"github.com/kia280/guma/internal/router/grpc/interceptors"
 	"github.com/kia280/guma/internal/services/health"
@@ -28,7 +29,7 @@ type Server struct {
 }
 
 // NewServer creates and configures a new gRPC server
-func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*Server, error) {
+func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, logger zerolog.Logger) (*Server, error) {
 	logger = logger.With().Str("component", "grpc-server").Logger()
 
 	// Create gRPC server with interceptors
@@ -37,6 +38,9 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),
 			interceptors.ValidationInterceptor(),
+		),
+		grpc.ChainStreamInterceptor(
+			interceptors.StreamRecoveryInterceptor(logger),
 		),
 	)
 
@@ -51,6 +55,7 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 	eventHandler := handlers.NewEventService(db, logger)
 	lotteryHandler := handlers.NewLotteryService(db, logger)
 	bankHandler := handlers.NewBankService(db, logger)
+	streamHandler := handlers.NewStreamService(broker, logger)
 
 	healthService := health.NewService(db)
 	healthHandler := handlers.NewHealthServiceHandler(healthService, logger)
@@ -66,6 +71,7 @@ func NewServer(cfg *config.Config, db *database.Pool, logger zerolog.Logger) (*S
 	gumav1.RegisterEventServiceServer(grpcServer, eventHandler)
 	gumav1.RegisterLotteryServiceServer(grpcServer, lotteryHandler)
 	gumav1.RegisterBankServiceServer(grpcServer, bankHandler)
+	gumav1.RegisterStreamServiceServer(grpcServer, streamHandler)
 	gumav1.RegisterHealthServiceServer(grpcServer, healthHandler)
 
 	// Enable reflection for debugging (disable in production)

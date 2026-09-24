@@ -12,6 +12,7 @@ import (
 
 	"github.com/kia280/guma/internal/config"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/events"
 	"github.com/kia280/guma/internal/router/gateway"
 	"github.com/kia280/guma/internal/router/grpc"
 	"github.com/kia280/guma/internal/scheduler"
@@ -62,8 +63,11 @@ func runServe(cmd *cobra.Command, args []string) {
 
 	logger.Info().Msg("database connection established")
 
+	broker := events.NewBroker()
+	go events.ListenWalletChanges(ctx, db, broker, logger)
+
 	// Create gRPC server
-	grpcServer, err := grpc.NewServer(cfg, db, logger)
+	grpcServer, err := grpc.NewServer(cfg, db, broker, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to create gRPC server")
 		return
@@ -120,6 +124,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	logger.Info().Msg("shutting down servers")
 
 	cancel()
+	broker.Close()
 	jobs.Wait()
 
 	// Graceful shutdown

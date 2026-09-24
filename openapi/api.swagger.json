@@ -34,6 +34,9 @@
       "name": "MemberService"
     },
     {
+      "name": "StreamService"
+    },
+    {
       "name": "UserService",
       "description": "The authenticated-principal resource (/v1/me) is kept separate from the\n/v1/users collection so the wildcard {user_id} path does not collide\nwith the literal \"me\" segment."
     },
@@ -2854,6 +2857,37 @@
         ]
       }
     },
+    "/v1/me/events": {
+      "get": {
+        "operationId": "StreamService_WatchUserEvents",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/v1WatchUserEventsResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of v1WatchUserEventsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "StreamService"
+        ]
+      }
+    },
     "/v1/me/lottery-tickets": {
       "get": {
         "summary": "List tickets owned by the current user",
@@ -4432,6 +4466,9 @@
         }
       }
     },
+    "v1Heartbeat": {
+      "type": "object"
+    },
     "v1Invitation": {
       "type": "object",
       "properties": {
@@ -5689,6 +5726,33 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "v1WalletUpdated": {
+      "type": "object",
+      "properties": {
+        "guildId": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1WatchUserEventsResponse": {
+      "type": "object",
+      "properties": {
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "heartbeat": {
+          "$ref": "#/definitions/v1Heartbeat"
+        },
+        "walletUpdated": {
+          "$ref": "#/definitions/v1WalletUpdated"
         }
       }
     },

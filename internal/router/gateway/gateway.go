@@ -34,18 +34,21 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 	logger = logger.With().Str("component", "http-gateway").Logger()
 
 	// Create gRPC-Gateway mux
+	jsonMarshaler := &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames:   true,
+			EmitUnpopulated: false,
+			UseEnumNumbers:  false,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: true,
+		},
+	}
+
 	mux := runtime.NewServeMux(
 		runtime.WithErrorHandler(customErrorHandler(logger)),
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
-			MarshalOptions: protojson.MarshalOptions{
-				UseProtoNames:   true,
-				EmitUnpopulated: false,
-				UseEnumNumbers:  false,
-			},
-			UnmarshalOptions: protojson.UnmarshalOptions{
-				DiscardUnknown: true,
-			},
-		}),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, jsonMarshaler),
+		runtime.WithMarshalerOption(mimeEventStream, &sseMarshaler{Marshaler: jsonMarshaler}),
 		runtime.WithIncomingHeaderMatcher(customHeaderMatcher),
 		runtime.WithOutgoingHeaderMatcher(outgoingHeaderMatcher),
 		runtime.WithMetadata(session.Annotator),
@@ -101,6 +104,10 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 		return nil, fmt.Errorf("failed to register bank gateway: %w", err)
 	}
 
+	if err := gumav1.RegisterStreamServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register stream gateway: %w", err)
+	}
+
 	logger.Info().Msg("gRPC-Gateway handlers registered")
 
 	// Create HTTP handler with middleware
@@ -122,6 +129,7 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 		devMux.Handle("/", handler)
 		handler = devMux
 	}
+	handler = eventStreamMiddleware(handler)
 	handler = middleware.SecurityHeadersMiddleware()(handler)
 	handler = middleware.CORSMiddleware(
 		cfg.CORS.AllowedOrigins,

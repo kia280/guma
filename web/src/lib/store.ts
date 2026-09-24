@@ -12,6 +12,7 @@ interface UserState {
   error: string | null;
   fetchMe: () => Promise<User | null>;
   refreshMe: () => Promise<void>;
+  applyWalletUpdate: (guildId: string, balance: number) => void;
   setUser: (user: User) => void;
   reset: () => void;
 }
@@ -64,6 +65,16 @@ export const useUserStore = create<UserState>((set, get) => ({
     } finally {
       refreshInFlight = false;
     }
+  },
+  applyWalletUpdate: (guildId, balance) => {
+    const user = get().user;
+    if (!user) return;
+    if (!user.currentGuildId) {
+      void get().refreshMe();
+      return;
+    }
+    if (user.currentGuildId !== guildId) return;
+    set({ user: { ...user, balance } });
   },
   setUser: user => set({ user, status: 'ready', error: null }),
   reset: () => {
