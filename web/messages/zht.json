@@ -324,6 +324,7 @@
     "rolePermissions": "角色權限"
   },
   "adminRolesPage": {
+    "back": "返回管理",
     "title": "角色權限",
     "subtitle": "會長、管理員、幹部與成員在公會中可執行的操作。",
     "action": "操作",
