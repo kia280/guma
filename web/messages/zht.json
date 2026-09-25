@@ -941,6 +941,7 @@
     "ticketPrice": "票價",
     "drawDate": "開獎時間",
     "ticketsSold": "已售出 {sold} / {max} 張",
+    "ticketsSoldUncapped": "已售出 {sold} 張",
     "ticketsSoldLabel": "已售票數",
     "buyTickets": "購買彩券",
     "quantity": "張數",
