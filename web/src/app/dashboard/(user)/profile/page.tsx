@@ -4,7 +4,6 @@ import {
   Card,
   Button,
   Input,
-  Avatar,
   Chip,
   TextArea,
   Separator,
@@ -16,6 +15,7 @@ import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { PageHeader } from '@/components/PageHeader';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { useUserStore } from '@/lib/store';
@@ -91,10 +91,13 @@ export default function ProfilePage() {
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Content className="flex flex-row items-center gap-4 sm:gap-5 p-4 sm:p-5">
           <div className="relative shrink-0">
-            <Avatar className="size-16 sm:size-20">
-              <Avatar.Image src={user?.avatarUrl || undefined} />
-              <Avatar.Fallback className="type-heading">{Array.from(shownName).slice(0, 2).join('').toUpperCase()}</Avatar.Fallback>
-            </Avatar>
+            <UserAvatar
+              name={shownName}
+              src={user?.avatarUrl}
+              size="lg"
+              className="size-16 sm:size-20"
+              fallbackClassName="type-heading"
+            />
             <button
               type="button"
               disabled

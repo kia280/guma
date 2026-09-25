@@ -5,7 +5,6 @@ import {
   Chip,
   Button,
   Modal,
-  Avatar,
   Separator,
   NumberField,
   Label,
@@ -18,6 +17,7 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
+import { UserAvatar } from './UserAvatar';
 
 const PROGRESS_FILL = {
   danger: 'bg-danger',
@@ -203,12 +203,7 @@ const AuctionItemCard = ({
                   <div className="flex items-center justify-between">
                     <span className="type-caption text-hint">{t('leadingBidder')}</span>
                     <div className="flex items-center gap-2">
-                      <Avatar size="sm">
-                        <Avatar.Image src={item.currentBidder.avatar} />
-                        <Avatar.Fallback>
-                          {item.currentBidder.username?.slice(0, 2).toUpperCase()}
-                        </Avatar.Fallback>
-                      </Avatar>
+                      <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
                       <span className="type-body text-foreground">{item.currentBidder.username}</span>
                     </div>
                   </div>
@@ -220,12 +215,7 @@ const AuctionItemCard = ({
               <div className="flex items-center justify-between">
                 <span className="type-caption text-hint">{t('soldBy')}</span>
                 <div className="flex items-center gap-2">
-                  <Avatar size="sm">
-                    <Avatar.Image src={item.seller.avatar} />
-                    <Avatar.Fallback>
-                      {item.seller.username?.slice(0, 2).toUpperCase()}
-                    </Avatar.Fallback>
-                  </Avatar>
+                  <UserAvatar name={item.seller.username} src={item.seller.avatar} />
                   <span className="type-body text-foreground">{item.seller.username}</span>
                 </div>
               </div>
@@ -357,12 +347,7 @@ const AuctionItemCard = ({
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <Avatar size="sm">
-                              <Avatar.Image src={bid.bidder.avatar} />
-                              <Avatar.Fallback>
-                                {bid.bidder.username?.slice(0, 2).toUpperCase()}
-                              </Avatar.Fallback>
-                            </Avatar>
+                            <UserAvatar name={bid.bidder.username} src={bid.bidder.avatar} />
                             <div>
                               <div className="type-body font-medium text-foreground">
                                 {bid.bidder.username}
