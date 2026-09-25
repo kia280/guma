@@ -11,6 +11,7 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { isNotFoundError } from '@/lib/guma/errors';
+import { checkinStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
@@ -31,10 +32,10 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     return format.dateTime(date, { dateStyle: 'medium', timeStyle: 'short' });
   };
 
-  const statusConfig = {
-    [CheckinStatus.OPEN]: { label: t('statusOpen'), color: 'success' as const },
-    [CheckinStatus.CLOSED]: { label: t('statusClosed'), color: 'default' as const },
-    [CheckinStatus.FINISHED]: { label: t('statusFinished'), color: 'accent' as const },
+  const statusLabels = {
+    [CheckinStatus.OPEN]: t('statusOpen'),
+    [CheckinStatus.CLOSED]: t('statusClosed'),
+    [CheckinStatus.FINISHED]: t('statusFinished'),
   };
 
   const formatTimeRemaining = (expireTime: string) => {
@@ -120,7 +121,8 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     );
   }
 
-  const { label: statusLabel, color: statusColor } = statusConfig[entry.status];
+  const statusLabel = statusLabels[entry.status];
+  const statusColor = checkinStatusColor[entry.status];
   const isOpen_ = entry.status === CheckinStatus.OPEN && !isExpired;
   const hasCheckedIn = !!currentUserId && entry.attendanceList.some(member => member.userId === currentUserId);
 
@@ -177,7 +179,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <Chip size="sm" variant="secondary">
+            <Chip size="sm" color={statusColor} variant="secondary">
               {statusLabel}
             </Chip>
             {entry.expireTime && isOpen_ && (

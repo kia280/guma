@@ -14,11 +14,13 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { getRarityColor } from '@/components/ItemThumbnail';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
+import { auctionStatusColor } from '@/lib/status-colors';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import { ItemCategory } from '@/types/item';
 import { UserAvatar } from './UserAvatar';
 
 const PROGRESS_FILL = {
@@ -38,25 +40,6 @@ const getCategoryIcon = (category: ItemCategory) => {
     [ItemCategory.MISC]: 'solar:box-linear',
   };
   return icons[category] ?? 'solar:box-linear';
-};
-
-const getRarityColor = (rarity: ItemRarity) => {
-  switch (rarity) {
-    case ItemRarity.COMMON:
-      return 'default';
-    case ItemRarity.UNCOMMON:
-      return 'accent';
-    case ItemRarity.RARE:
-      return 'default';
-    case ItemRarity.EPIC:
-      return 'warning';
-    case ItemRarity.LEGENDARY:
-      return 'danger';
-    case ItemRarity.MYTHIC:
-      return 'success';
-    default:
-      return 'default';
-  }
 };
 
 const formatTimeRemaining = (endTime: string, endedLabel: string) => {
@@ -108,7 +91,6 @@ const AuctionItemCard = ({
   const bidAmount = bidInput ?? minimumBid;
 
   const isActive = item.status === AuctionStatus.ACTIVE;
-  const isUpcoming = item.status === AuctionStatus.UPCOMING;
 
   const timeRemaining = formatTimeRemaining(item.endTime, t('ended'));
   const progress = getAuctionProgress(item.startTime, item.endTime);
@@ -163,7 +145,7 @@ const AuctionItemCard = ({
               <div className="flex flex-col items-end gap-1">
                 <Chip
                   size="sm"
-                  color={isActive ? 'success' : isUpcoming ? 'warning' : 'default'}
+                  color={auctionStatusColor[item.status]}
                   variant="secondary"
                 >
                   {t(`status.${item.status}`)}

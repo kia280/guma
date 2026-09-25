@@ -22,6 +22,7 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
+import { requestStatusColor } from '@/lib/status-colors';
 import type { FundRequest, ItemRequest, RequestStatus, ReviewDecision } from '@/types/guild-bank';
 
 type View = 'pending' | 'reviewed';
@@ -29,17 +30,6 @@ type View = 'pending' | 'reviewed';
 type ReviewTarget =
   | { kind: 'fund'; request: FundRequest; decision: ReviewDecision }
   | { kind: 'item'; request: ItemRequest; decision: ReviewDecision };
-
-const getStatusColor = (status: RequestStatus) => {
-  switch (status) {
-    case 'approved':
-      return 'success';
-    case 'rejected':
-      return 'danger';
-    default:
-      return 'warning';
-  }
-};
 
 const reviewErrorKey = (err: unknown) => {
   switch (apiErrorCode(err)) {
@@ -99,7 +89,7 @@ function RequestRow({ requester, createdAt, reason, status, reviewNote, leading,
           </Button>
         </div>
       ) : (
-        <Chip size="sm" variant="secondary" color={getStatusColor(status)} className="self-end sm:self-center">
+        <Chip size="sm" variant="secondary" color={requestStatusColor[status]} className="self-end sm:self-center">
           {t(`statuses.${status}`)}
         </Chip>
       )}
