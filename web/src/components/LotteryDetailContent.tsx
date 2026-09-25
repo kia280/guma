@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { Avatar, Button, Chip, Label, NumberField, ProgressBar, ScrollShadow } from '@heroui/react';
 import { Icon } from '@iconify/react';
 
@@ -69,7 +70,7 @@ type LotteryDetailContentProps = {
 
 export default function LotteryDetailContent({ id, onClose }: LotteryDetailContentProps) {
   const t = useTranslations('lotteryDetail');
-  const format = useFormatter();
+  const format = useIntlFormatter();
   const router = useRouter();
   const guildId = useCurrentGuildId();
 

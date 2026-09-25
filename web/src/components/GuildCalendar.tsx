@@ -26,12 +26,12 @@ const HOUR_PX = 60; // pixels per hour
 const TOTAL_HEIGHT = 24 * HOUR_PX; // 1440px
 
 const TIMELINE_COLORS: Record<string, { border: string; bg: string }> = {
-  danger: { border: 'rgb(var(--heroui-danger))', bg: 'color-mix(in oklab, rgb(var(--heroui-danger)) 12%, transparent)' },
-  warning: { border: 'rgb(var(--heroui-warning))', bg: 'color-mix(in oklab, rgb(var(--heroui-warning)) 12%, transparent)' },
-  primary: { border: 'rgb(var(--heroui-accent))', bg: 'color-mix(in oklab, rgb(var(--heroui-accent)) 12%, transparent)' },
-  secondary: { border: 'rgb(var(--heroui-accent))', bg: 'color-mix(in oklab, rgb(var(--heroui-accent)) 12%, transparent)' },
-  success: { border: 'rgb(var(--heroui-success))', bg: 'color-mix(in oklab, rgb(var(--heroui-success)) 12%, transparent)' },
-  default: { border: 'rgb(var(--heroui-default-500))', bg: 'color-mix(in oklab, rgb(var(--heroui-default-500)) 12%, transparent)' },
+  danger: { border: 'var(--danger)', bg: 'color-mix(in oklab, var(--danger) 12%, transparent)' },
+  warning: { border: 'var(--warning)', bg: 'color-mix(in oklab, var(--warning) 12%, transparent)' },
+  primary: { border: 'var(--accent)', bg: 'color-mix(in oklab, var(--accent) 12%, transparent)' },
+  secondary: { border: 'var(--accent)', bg: 'color-mix(in oklab, var(--accent) 12%, transparent)' },
+  success: { border: 'var(--success)', bg: 'color-mix(in oklab, var(--success) 12%, transparent)' },
+  default: { border: 'var(--muted)', bg: 'color-mix(in oklab, var(--muted) 12%, transparent)' },
 };
 
 export const GuildCalendar: React.FC<GuildCalendarProps> = ({

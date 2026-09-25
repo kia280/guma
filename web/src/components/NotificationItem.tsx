@@ -4,7 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { cn } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useFormatter, useNow, useTranslations } from 'next-intl';
+import { useNow, useTranslations } from 'next-intl';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 
 import { LIST_ROW_CLASS } from '@/lib/list-row';
 import type { GuildNotification, NotificationKind } from '@/types/notification';
@@ -34,7 +35,7 @@ export type NotificationItemProps = {
 
 export function NotificationItem({ notification, onOpen }: NotificationItemProps) {
   const t = useTranslations('notificationItem');
-  const format = useFormatter();
+  const format = useIntlFormatter();
   const now = useNow({ updateInterval: 60 * 1000 });
   const { id, type, title, message, params, createdAt, isRead, href } = notification;
   const known = isKnownKind(type);
