@@ -3,7 +3,6 @@
 import {
   Button,
   Chip,
-  Avatar,
   Separator,
   Modal,
   useOverlayState,
@@ -28,6 +27,7 @@ import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { UserAvatar } from './UserAvatar';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -288,7 +288,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <Icon
                     icon="solar:eye-closed-linear"
                     width={20}
-                    className="text-secondary shrink-0"
+                    className="text-subtle shrink-0"
                   />
                   <div>
                     <p className="type-body font-medium text-foreground">{t('blindAuction')}</p>
@@ -332,11 +332,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <div className="flex items-center justify-between">
                     <span className="type-caption text-hint">{t('leadingBidder')}</span>
                     <div className="flex items-center gap-2">
-                      <Avatar size="sm">
-                        <Avatar.Fallback>
-                          {item.currentBidder.username.slice(0, 2).toUpperCase()}
-                        </Avatar.Fallback>
-                      </Avatar>
+                      <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
                       <span className="type-body text-foreground">{item.currentBidder.username}</span>
                     </div>
                   </div>
@@ -388,11 +384,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <Avatar size="sm">
-                            <Avatar.Fallback>
-                              {bid.bidder.username.slice(0, 2).toUpperCase()}
-                            </Avatar.Fallback>
-                          </Avatar>
+                          <UserAvatar name={bid.bidder.username} src={bid.bidder.avatar} />
                           <div>
                             <p className="type-body font-medium text-foreground">
                               {bid.bidder.username}
@@ -429,9 +421,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               {t('seller')}
             </h2>
             <div className="flex items-center gap-3">
-              <Avatar size="md">
-                <Avatar.Fallback>{item.seller.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-              </Avatar>
+              <UserAvatar name={item.seller.username} src={item.seller.avatar} size="md" />
               <div>
                 <p className="font-medium text-foreground">{item.seller.username}</p>
                 <p className="type-caption text-hint">{t('guildMember')}</p>
@@ -533,7 +523,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     </span>
                   </div>
                   {item.isBlind && (
-                    <div className="flex items-center gap-2 pt-1 type-caption text-secondary">
+                    <div className="flex items-center gap-2 pt-1 type-caption text-hint">
                       <Icon icon="solar:eye-closed-linear" width={12} />
                       <span>{t('blindAuctionNote')}</span>
                     </div>

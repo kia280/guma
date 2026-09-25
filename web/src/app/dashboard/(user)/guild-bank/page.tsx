@@ -8,7 +8,6 @@ import {
   Modal,
   useOverlayState,
   Input,
-  Avatar,
   TextArea,
   TextField,
   Label,
@@ -21,6 +20,7 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
@@ -588,12 +588,7 @@ export default function GuildBankPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <div className="flex items-center gap-2">
-                            <Avatar size="sm" className="w-6 h-6">
-                              <Avatar.Image src={`https://i.pravatar.cc/150?u=${entry.member}`} />
-                              <Avatar.Fallback>
-                                {entry.member.slice(0, 2).toUpperCase()}
-                              </Avatar.Fallback>
-                            </Avatar>
+                            <UserAvatar name={entry.member} src={entry.memberAvatar} className="size-6" />
                             <p className="type-body text-foreground">{entry.member}</p>
                           </div>
                         </Table.Cell>

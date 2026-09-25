@@ -320,6 +320,7 @@ export const toAttendee = (raw: ProtoAttendee): AttendanceMember => ({
   id: raw.id,
   userId: raw.user_id,
   username: raw.display_name || raw.user_id || 'Unknown',
+  avatar: raw.avatar_url || undefined,
   checkedInAt: ts(raw.attended_at),
   ...(raw.notes ? { notes: raw.notes } : {}),
 });
@@ -343,6 +344,7 @@ type ProtoLottery = {
 type ProtoLotteryWinner = {
   id?: string;
   username?: string;
+  avatar_url?: string;
   rank?: number;
   prize_amount?: number | string;
   prize_description?: string;
@@ -372,6 +374,7 @@ export const toLotteryWinner = (raw: ProtoLotteryWinner): LotteryWinner => {
   return {
     id: raw.id ?? '',
     username: raw.username ?? '',
+    avatar: raw.avatar_url || undefined,
     prize,
   };
 };
@@ -493,6 +496,7 @@ type ProtoBankContribution = {
   guild_id?: string;
   user_id?: string;
   username?: string;
+  avatar_url?: string;
   amount?: number | string;
   note?: string;
   created_at?: string;
@@ -506,6 +510,7 @@ export const toBankContribution = (raw: ProtoBankContribution): BankContribution
   guildId: raw.guild_id ?? '',
   userId: raw.user_id ?? '',
   username: raw.username ?? '',
+  avatarUrl: raw.avatar_url || undefined,
   amount: fromMinorUnits(raw.amount),
   note: raw.note,
   createdAt: ts(raw.created_at),
@@ -519,6 +524,7 @@ type ProtoFundRequest = {
   guild_id?: string;
   requester_id?: string;
   requester_name?: string;
+  requester_avatar_url?: string;
   amount?: number | string;
   reason?: string;
   status?: string;
@@ -532,6 +538,7 @@ export const toFundRequest = (raw: ProtoFundRequest): FundRequest => ({
   guildId: raw.guild_id ?? '',
   requesterId: raw.requester_id ?? '',
   requesterName: raw.requester_name ?? '',
+  requesterAvatarUrl: raw.requester_avatar_url || undefined,
   amount: fromMinorUnits(raw.amount),
   reason: raw.reason ?? '',
   status: (raw.status?.toLowerCase() as FundRequest['status']) || 'pending',
@@ -569,6 +576,7 @@ type ProtoItemRequest = {
   bank_item_id?: string;
   requester_id?: string;
   requester_name?: string;
+  requester_avatar_url?: string;
   reason?: string;
   status?: string;
   item?: ProtoItem;
@@ -583,6 +591,7 @@ export const toItemRequest = (raw: ProtoItemRequest): ItemRequest => ({
   bankItemId: raw.bank_item_id ?? '',
   requesterId: raw.requester_id ?? '',
   requesterName: raw.requester_name ?? '',
+  requesterAvatarUrl: raw.requester_avatar_url || undefined,
   reason: raw.reason ?? '',
   status: (raw.status?.toLowerCase() as ItemRequest['status']) || 'pending',
   itemName: raw.item?.name ?? '',
@@ -606,6 +615,7 @@ export const toGuildContributions = (
           type: 'checkin_loot',
           itemName: b.itemNames.join(', '),
           member: b.username,
+          memberAvatar: b.avatarUrl,
           date: b.createdAt.slice(0, 10),
           status: 'completed',
           note: b.note,
@@ -616,6 +626,7 @@ export const toGuildContributions = (
           type: 'contribute',
           amount: b.amount,
           member: b.username,
+          memberAvatar: b.avatarUrl,
           date: b.createdAt.slice(0, 10),
           status: 'completed',
           note: b.note,
@@ -626,6 +637,7 @@ export const toGuildContributions = (
     type: 'request',
     amount: f.amount,
     member: f.requesterName,
+    memberAvatar: f.requesterAvatarUrl,
     date: f.createdAt.slice(0, 10),
     status: f.status === 'pending' ? 'pending' : f.status,
     note: f.reason,
@@ -635,6 +647,7 @@ export const toGuildContributions = (
     type: 'item_distribute',
     itemName: req.itemName,
     member: req.requesterName,
+    memberAvatar: req.requesterAvatarUrl,
     date: req.createdAt.slice(0, 10),
     status: req.status,
     note: req.reason,

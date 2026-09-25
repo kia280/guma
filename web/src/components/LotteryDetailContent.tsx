@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, Button, Chip, Label, NumberField, ProgressBar, ScrollShadow } from '@heroui/react';
+import { Button, Chip, Label, NumberField, ProgressBar, ScrollShadow } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -17,6 +17,7 @@ import type { Lottery, LotteryStatus, LotteryWinner } from '@/types/lottery';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
 import { DateTimePicker } from './DateTimePicker';
 import { LotteryWheel, type WheelEntry } from './LotteryWheel';
+import { UserAvatar } from './UserAvatar';
 
 const DRAW_RETRY_MS = 3000;
 
@@ -488,9 +489,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                 <ul className="flex flex-col px-2 pb-2">
                   {participants.map(p => (
                     <li key={p.id} className="flex items-center gap-3 rounded-lg px-2 py-1.5">
-                      <Avatar size="sm" className="shrink-0">
-                        <Avatar.Fallback>{Array.from(p.username).slice(0, 2).join('')}</Avatar.Fallback>
-                      </Avatar>
+                      <UserAvatar name={p.username} src={p.avatar} className="shrink-0" />
                       <span className="type-body text-foreground flex-1 min-w-0 truncate">{p.username}</span>
                       <span className="type-caption text-hint tabular-nums">
                         {t('ticketCount', { count: p.tickets })} · {((p.tickets / totalTickets) * 100).toFixed(1)}%
