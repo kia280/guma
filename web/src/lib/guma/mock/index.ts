@@ -505,7 +505,7 @@ const baseMockApiClient: ApiClient = {
   purchaseTickets: async (_guildId, lotteryId, quantity): Promise<LotteryTicket[]> => {
     const lottery = store.lotteries.find(x => x.id === lotteryId);
     if (!lottery) throw new Error('not found');
-    const bought = Math.min(quantity, lottery.maxTickets - lottery.ticketsSold);
+    const bought = lottery.maxTickets > 0 ? Math.min(quantity, lottery.maxTickets - lottery.ticketsSold) : quantity;
     const participants = [...(lottery.participants ?? [])];
     const mine = participants.find(p => p.id === currentUser.id);
     if (mine) mine.tickets += bought;

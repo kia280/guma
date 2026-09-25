@@ -975,6 +975,7 @@
     "ticketPrice": "Ticket price",
     "drawDate": "Draw time",
     "ticketsSold": "{sold} of {max} tickets sold",
+    "ticketsSoldUncapped": "{sold} tickets sold",
     "ticketsSoldLabel": "Tickets sold",
     "buyTickets": "Buy tickets",
     "quantity": "Quantity",
