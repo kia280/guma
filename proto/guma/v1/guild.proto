@@ -3,6 +3,7 @@ syntax = "proto3";
 package guma.v1;
 
 import "google/api/annotations.proto";
+import "google/api/httpbody.proto";
 import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
@@ -32,6 +33,25 @@ service GuildService {
     option (google.api.http) = {
       put: "/v1/guilds/{guild_id}"
       body: "*"
+    };
+  }
+
+  rpc UploadGuildLogo(UploadGuildLogoRequest) returns (UploadGuildLogoResponse) {
+    option (google.api.http) = {
+      put: "/v1/guilds/{guild_id}/logo"
+      body: "*"
+    };
+  }
+
+  rpc DeleteGuildLogo(DeleteGuildLogoRequest) returns (DeleteGuildLogoResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/logo"
+    };
+  }
+
+  rpc GetGuildLogo(GetGuildLogoRequest) returns (google.api.HttpBody) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/logo"
     };
   }
 
@@ -108,6 +128,29 @@ message UpdateGuildRequest {
 
 message UpdateGuildResponse {
   Guild guild = 1;
+}
+
+message UploadGuildLogoRequest {
+  string guild_id = 1;
+  bytes data = 2;
+  string content_type = 3;
+}
+
+message UploadGuildLogoResponse {
+  Guild guild = 1;
+}
+
+message DeleteGuildLogoRequest {
+  string guild_id = 1;
+}
+
+message DeleteGuildLogoResponse {
+  Guild guild = 1;
+}
+
+message GetGuildLogoRequest {
+  string guild_id = 1;
+  string v = 2;
 }
 
 message DeleteGuildRequest {
