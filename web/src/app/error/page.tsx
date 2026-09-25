@@ -33,16 +33,17 @@ function ErrorPageContent() {
       },
     };
 
-  const errorId = searchParams.get('id') || 'unknown';
+  const errorId = searchParams.get('id') ?? '';
   const returnUrl = safeReturnPath(searchParams.get('return'));
 
-  const error = ERROR_MESSAGES[errorId] || {
+  const knownError = Object.hasOwn(ERROR_MESSAGES, errorId) ? ERROR_MESSAGES[errorId] : undefined;
+  const error = knownError ?? {
     title: t('unknownTitle'),
     description: t('description'),
-    statusCode: 500,
+    statusCode: undefined,
   };
 
-  const getErrorIcon = (statusCode: number) => {
+  const getErrorIcon = (statusCode?: number) => {
     switch (statusCode) {
       case 401:
       case 403:
@@ -59,11 +60,10 @@ function ErrorPageContent() {
     }
   };
 
-  const getStatusColor = (statusCode: number) => {
-    if (statusCode === 404) return 'warning';
-    if (statusCode >= 500) return 'danger';
-    if (statusCode >= 400) return 'danger';
-    return 'default';
+  const getIconColorClass = (statusCode?: number) => {
+    if (statusCode === undefined) return 'text-subtle';
+    if (statusCode === 404) return 'text-warning';
+    return 'text-danger';
   };
 
   return (
@@ -75,12 +75,10 @@ function ErrorPageContent() {
               icon={getErrorIcon(error.statusCode)}
               width={48}
               height={48}
-              className={
-                getStatusColor(error.statusCode) === 'danger' ? 'text-danger' : 'text-warning'
-              }
+              className={getIconColorClass(error.statusCode)}
             />
           </div>
-          <h1 className="type-display">{error.statusCode}</h1>
+          {error.statusCode !== undefined && <h1 className="type-display">{error.statusCode}</h1>}
         </Card.Header>
 
         <Card.Content className="gap-6 py-8">
@@ -89,7 +87,7 @@ function ErrorPageContent() {
             <p className="text-subtle">{error.description}</p>
           </div>
 
-          {errorId !== 'unknown' && (
+          {knownError && (
             <div className="bg-surface-secondary rounded-lg p-3">
               <p className="type-caption text-soft font-mono break-all">
                 {t('errorIdLabel')}{' '}
@@ -118,9 +116,6 @@ function ErrorPageContent() {
             <div className="bg-surface-secondary rounded-lg p-3 border border-dashed border-divider">
               <p className="type-caption text-soft mb-1">
                 <span className="font-semibold">{t('debugInfoLabel')}</span>
-              </p>
-              <p className="type-caption text-soft font-mono break-all">
-                {t('errorLabel')} {errorId}
               </p>
               <p className="type-caption text-soft font-mono break-all">
                 {t('returnUrlLabel')} {returnUrl}
