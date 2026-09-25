@@ -4,6 +4,7 @@ import { Button, Card, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
+import { checkinStatusColor } from '@/lib/status-colors';
 import { CheckinStatus } from './data';
 
 export { CheckinStatus };
@@ -22,12 +23,6 @@ const formatEventDate = (value: string, format: ReturnType<typeof useIntlFormatt
   if (Number.isNaN(date.getTime())) return value;
   return format.dateTime(date, { dateStyle: 'medium', timeStyle: 'short' });
 };
-
-export const checkinStatusColor = {
-  [CheckinStatus.OPEN]: 'success',
-  [CheckinStatus.CLOSED]: 'default',
-  [CheckinStatus.FINISHED]: 'accent',
-} as const;
 
 export function CheckinCard({
   status,
