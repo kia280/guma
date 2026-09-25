@@ -3,10 +3,11 @@
 import { Card, Button, Dropdown, Chip, Spinner, Modal, Separator, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EventFormModal } from '@/components/EventFormModal';
 import { GuildCalendar } from '@/components/GuildCalendar';
 import { useGuildEvents } from '@/hooks/useGuildEvents';
+import { useToast } from '@/hooks/useToast';
 import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import {
   GuildEvent,
@@ -22,6 +23,8 @@ export default function CalendarPage() {
   const {
     events,
     isLoading,
+    error,
+    refetch,
     createEvent,
     updateEvent,
     deleteEvent,
@@ -35,6 +38,11 @@ export default function CalendarPage() {
   } = useGuildEvents();
 
   const [selectedEvent, setSelectedEvent] = useState<GuildEvent | null>(null);
+  const notify = useToast();
+
+  useEffect(() => {
+    if (error) notify.loadFailed(refetch, 'events');
+  }, [error, refetch, notify]);
 
   // Modal controls
   const formModalState = useOverlayState();
@@ -57,27 +65,22 @@ export default function CalendarPage() {
   };
 
   const handleDeleteEvent = async () => {
-    if (selectedEvent) {
-      try {
-        await deleteEvent(selectedEvent.id);
-        deleteModalState.close();
-        detailModalState.close();
-      } catch (error) {
-        console.error('Error deleting event:', error);
-      }
+    if (!selectedEvent) return;
+    try {
+      await deleteEvent(selectedEvent.id);
+      deleteModalState.close();
+      detailModalState.close();
+      notify.success(t('deleteSuccess'));
+    } catch {
+      notify.error(t('deleteFailed'));
     }
   };
 
   const handleFormSubmit = async (data: any) => {
-    try {
-      if (selectedEvent) {
-        await updateEvent({ ...data, id: selectedEvent.id });
-      } else {
-        await createEvent(data);
-      }
-      formModalState.close();
-    } catch (error) {
-      console.error('Error saving event:', error);
+    if (selectedEvent) {
+      await updateEvent({ ...data, id: selectedEvent.id });
+    } else {
+      await createEvent(data);
     }
   };
 
