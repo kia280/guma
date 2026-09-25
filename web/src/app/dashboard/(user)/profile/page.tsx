@@ -20,6 +20,17 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { useUserStore } from '@/lib/store';
 
+const ROLE_COLORS = {
+  owner: 'accent',
+  admin: 'danger',
+  moderator: 'warning',
+  member: 'default',
+} as const;
+
+type KnownRole = keyof typeof ROLE_COLORS;
+
+const isKnownRole = (role: string): role is KnownRole => role in ROLE_COLORS;
+
 export default function ProfilePage() {
   const t = useTranslations('profilePage');
   const format = useIntlFormatter();
@@ -67,6 +78,9 @@ export default function ProfilePage() {
   };
 
   const shownName = user?.displayName || user?.username || '';
+  const guildRole = user?.guildRole ?? '';
+  const roleLabel = isKnownRole(guildRole) ? t(`roles.${guildRole}`) : guildRole;
+  const roleColor = isKnownRole(guildRole) ? ROLE_COLORS[guildRole] : 'default';
 
   return (
     <div className="flex flex-col gap-5 w-full">
@@ -93,9 +107,11 @@ export default function ProfilePage() {
           </div>
           <div className="flex flex-col gap-1 flex-1 min-w-0">
             <p className="type-subheading text-foreground truncate">{shownName}</p>
-            <Chip size="sm" variant="secondary" className="w-fit mt-0.5 whitespace-nowrap">
-              {t('guildMember')}
-            </Chip>
+            {guildRole && (
+              <Chip size="sm" variant="secondary" color={roleColor} className="w-fit mt-0.5 whitespace-nowrap">
+                {roleLabel}
+              </Chip>
+            )}
           </div>
           <div className="shrink-0">
             <Button
@@ -173,27 +189,40 @@ export default function ProfilePage() {
               <Icon icon="solar:letter-linear" width={16} className="text-hint shrink-0" />
               <div>
                 <p className="type-body text-foreground">{t('emailAddress')}</p>
-                <p className="type-caption text-hint">{user?.email ?? '—'}</p>
+                <p className="type-caption text-hint">{user?.email || '—'}</p>
               </div>
             </div>
-            <Chip size="sm" variant="secondary">
-              {t('verified')}
-            </Chip>
+            {user?.emailVerified === true && (
+              <Chip size="sm" variant="secondary" color="success">
+                {t('verified')}
+              </Chip>
+            )}
+            {user?.emailVerified === false && (
+              <Chip size="sm" variant="secondary" color="warning">
+                {t('unverified')}
+              </Chip>
+            )}
           </div>
           <Separator />
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-3">
-              <Icon icon="ic:baseline-discord" width={16} className="text-hint shrink-0" />
-              <div>
-                <p className="type-body text-foreground">{t('discord')}</p>
-                <p className="type-caption text-hint">johndoe#1234</p>
+          {user?.discord && (
+            <>
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-3">
+                  <Icon icon="ic:baseline-discord" width={16} className="text-hint shrink-0" />
+                  <div>
+                    <p className="type-body text-foreground">{t('discord')}</p>
+                    {user.discord.username && (
+                      <p className="type-caption text-hint">{user.discord.username}</p>
+                    )}
+                  </div>
+                </div>
+                <Chip size="sm" variant="secondary" color="success">
+                  {t('connected')}
+                </Chip>
               </div>
-            </div>
-            <Chip size="sm" variant="secondary">
-              {t('connected')}
-            </Chip>
-          </div>
-          <Separator />
+              <Separator />
+            </>
+          )}
           <div className="flex items-center justify-between py-2">
             <div className="flex items-center gap-3">
               <Icon icon="solar:calendar-linear" width={16} className="text-hint shrink-0" />

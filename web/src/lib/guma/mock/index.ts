@@ -118,6 +118,9 @@ const currentUser: User = {
   balance: 1250,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
+  emailVerified: true,
+  discord: { provider: 'discord', subject: '0', username: 'you' },
+  guildRole: 'member',
 };
 
 const mockGuild: Guild = {

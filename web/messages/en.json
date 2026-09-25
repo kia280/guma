@@ -698,7 +698,12 @@
   "profilePage": {
     "title": "Personal Information",
     "subtitle": "Manage your profile and account details",
-    "guildMember": "Guild Member",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "moderator": "Moderator",
+      "member": "Member"
+    },
     "cancel": "Cancel",
     "editProfile": "Edit Profile",
     "profileDetails": "Profile Details",
@@ -711,6 +716,7 @@
     "accountSubtitle": "Login credentials and security",
     "emailAddress": "Email address",
     "verified": "Verified",
+    "unverified": "Unverified",
     "discord": "Discord",
     "connected": "Connected",
     "memberSince": "Member since",
