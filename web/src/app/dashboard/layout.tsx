@@ -156,8 +156,11 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                             case 'preference':
                               router.push('/dashboard/preference');
                               break;
-                            case 'github':
-                              window.open('https://github.com/', '_blank');
+                            case 'terms':
+                              router.push('/dashboard/terms');
+                              break;
+                            case 'contact':
+                              router.push('/dashboard/contact');
                               break;
                             case 'logout':
                               void clearSession();
@@ -186,7 +189,25 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                           </Dropdown.Item>
                         </Dropdown.Section>
                         <Dropdown.Section>
-                          <Dropdown.Item id="github" textValue={t('starOnGitHub')}>
+                          <Dropdown.Item id="contact" textValue={t('pages.contact')}>
+                            <div className="flex items-center gap-2">
+                              <Icon icon="solar:chat-round-dots-linear" width={16} />
+                              <Label>{t('pages.contact')}</Label>
+                            </div>
+                          </Dropdown.Item>
+                          <Dropdown.Item id="terms" textValue={t('pages.terms')}>
+                            <div className="flex items-center gap-2">
+                              <Icon icon="solar:document-text-linear" width={16} />
+                              <Label>{t('pages.terms')}</Label>
+                            </div>
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            id="github"
+                            textValue={t('starOnGitHub')}
+                            href="https://github.com/kia280/guma"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             <div className="flex items-center gap-2">
                               <Icon icon="mdi:github" width={16} />
                               <Label>{t('starOnGitHub')}</Label>
