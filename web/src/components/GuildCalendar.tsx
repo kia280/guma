@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, ButtonGroup, Chip, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import {
   GuildEvent,
   EVENT_TYPE_COLORS,
@@ -45,6 +46,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   onDateClick,
 }) => {
   const t = useTranslations('guildCalendar');
+  const intlLocale = useIntlLocale();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -54,7 +56,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   }, []);
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(intlLocale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -62,7 +64,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   };
 
   const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString('en-US', {
+    return new Date(dateStr).toLocaleTimeString(intlLocale, {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -376,7 +378,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 tabIndex={0}
               >
                 <div className="type-label text-hint">
-                  {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                  {day.toLocaleDateString(intlLocale, { weekday: 'short' })}
                 </div>
                 <div
                   className={`type-subheading tabular-nums mt-0.5 ${isToday ? 'text-accent' : 'text-foreground'}`}
@@ -425,13 +427,13 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   const getViewTitle = () => {
     switch (view) {
       case 'month':
-        return currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+        return currentDate.toLocaleDateString(intlLocale, { year: 'numeric', month: 'long' });
       case 'week': {
         const weekStart = new Date(currentDate);
         weekStart.setDate(currentDate.getDate() - currentDate.getDay());
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
-        return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        return `${weekStart.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' })} – ${weekEnd.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' })}`;
       }
       case 'day':
         return formatDate(currentDate);
