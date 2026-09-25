@@ -22,6 +22,7 @@ import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
 
@@ -64,6 +65,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const guildId = useCurrentGuildId();
   const bidModalState = useOverlayState();
   const t = useTranslations('auctionItemPage');
+  const formatGold = useFormatGold();
   const { balance: userBalance, refresh: refreshBalance } = useWalletBalance();
 
   const formatTimeRemaining = (endTime: string) => {
@@ -262,13 +264,13 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <div className="flex justify-between type-body">
                   <span className="text-subtle">{t('startingBid')}</span>
                   <span className="font-semibold text-foreground">
-                    ${item.startingBid.toLocaleString()}
+                    {formatGold(item.startingBid)}
                   </span>
                 </div>
                 <div className="flex justify-between type-body">
                   <span className="text-subtle">{t('minIncrement')}</span>
                   <span className="font-semibold text-foreground">
-                    ${item.minBidIncrement.toLocaleString()}
+                    {formatGold(item.minBidIncrement)}
                   </span>
                 </div>
                 {isActive && (
@@ -288,7 +290,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <div className="flex justify-between items-center">
                   <span className="text-subtle type-body">{t('currentBid')}</span>
                   <span className="type-display text-foreground">
-                    ${item.currentBid.toLocaleString()}
+                    {formatGold(item.currentBid)}
                   </span>
                 </div>
 
@@ -310,13 +312,13 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <div className="p-3 rounded-lg bg-surface-secondary border border-divider space-y-0.5">
                     <p className="type-caption text-hint">{t('startingBid')}</p>
                     <p className="font-semibold text-foreground">
-                      ${item.startingBid.toLocaleString()}
+                      {formatGold(item.startingBid)}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-surface-secondary border border-divider space-y-0.5">
                     <p className="type-caption text-hint">{t('minIncrement')}</p>
                     <p className="font-semibold text-foreground">
-                      ${item.minBidIncrement.toLocaleString()}
+                      {formatGold(item.minBidIncrement)}
                     </p>
                   </div>
                 </div>
@@ -368,7 +370,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="type-subheading tabular-nums text-foreground">
-                            ${bid.amount.toLocaleString()}
+                            {formatGold(bid.amount)}
                           </span>
                           {bid.isWinning && (
                             <Chip size="sm" color="success" variant="tertiary">
@@ -446,7 +448,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <span className="type-body">{t('yourBalance')}</span>
               </div>
               <span className="font-semibold text-foreground">
-                ${userBalance.toLocaleString()}
+                {formatGold(userBalance)}
               </span>
             </div>
           </div>
@@ -480,20 +482,20 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     <div className="flex justify-between type-body">
                       <span className="text-subtle">{t('currentBid')}</span>
                       <span className="font-medium text-foreground">
-                        ${item.currentBid.toLocaleString()}
+                        {formatGold(item.currentBid)}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between type-body">
                     <span className="text-subtle">{t('minIncrement')}</span>
                     <span className="font-medium text-foreground">
-                      ${item.minBidIncrement.toLocaleString()}
+                      {formatGold(item.minBidIncrement)}
                     </span>
                   </div>
                   <div className="flex justify-between type-body">
                     <span className="text-subtle">{t('yourBalance')}</span>
                     <span className="font-medium text-foreground">
-                      ${userBalance.toLocaleString()}
+                      {formatGold(userBalance)}
                     </span>
                   </div>
                   {item.isBlind && (
@@ -515,7 +517,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     <NumberField.DecrementButton />
                     <NumberField.Input
                       className="w-full min-w-0"
-                      placeholder={`${t('minimum')} $${minimumBid.toLocaleString()}`}
+                      placeholder={`${t('minimum')} ${formatGold(minimumBid)}`}
                     />
                     <NumberField.IncrementButton />
                   </NumberField.Group>
@@ -523,7 +525,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     {bidAmount > userBalance
                       ? t('insufficientBalance')
                       : !hasBidAmount || bidAmount < minimumBid
-                        ? `${t('minimumBidIs')}${minimumBid.toLocaleString()}`
+                        ? `${t('minimumBidIs')} ${formatGold(minimumBid)}`
                         : t('validBidAmount')}
                   </Description>
                 </NumberField>

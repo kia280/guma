@@ -9,6 +9,7 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { type FormatGold, formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
 import { useUserStore } from '@/lib/store';
 import type { Lottery, LotteryStatus, LotteryWinner } from '@/types/lottery';
 import { DateTimePicker } from './DateTimePicker';
@@ -44,7 +45,8 @@ function formatCountdown(ms: number) {
 function wheelEntries(
   lottery: Lottery,
   winners: LotteryWinner[],
-  describe: (tickets: number, chance: string) => string
+  describe: (tickets: number, chance: string) => string,
+  formatGold: FormatGold
 ): WheelEntry[] {
   const participants = lottery.participants ?? [];
   const total = participants.reduce((sum, p) => sum + p.tickets, 0) || 1;
@@ -56,7 +58,7 @@ function wheelEntries(
   }));
   for (const winner of winners) {
     if (!entries.some(entry => entry.id === winner.username)) {
-      entries.push({ id: winner.username, label: winner.username, weight: 1, detail: winner.prize });
+      entries.push({ id: winner.username, label: winner.username, weight: 1, detail: formatPrize(winner.prize, winner.prizeAmount, formatGold) });
     }
   }
   return entries;
@@ -69,6 +71,7 @@ type LotteryDetailContentProps = {
 
 export default function LotteryDetailContent({ id, onClose }: LotteryDetailContentProps) {
   const t = useTranslations('lotteryDetail');
+  const formatGold = useFormatGold();
   const format = useIntlFormatter();
   const router = useRouter();
   const guildId = useCurrentGuildId();
@@ -218,8 +221,11 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   }
 
   const winners = drawWinners.length > 0 ? drawWinners : (lottery.winners ?? []);
-  const entries = wheelEntries(lottery, winners, (tickets, chance) =>
-    t('wheelDetail', { count: tickets, chance })
+  const entries = wheelEntries(
+    lottery,
+    winners,
+    (tickets, chance) => t('wheelDetail', { count: tickets, chance }),
+    formatGold
   );
   const topWinner = winners[0]?.username;
   const participants = lottery.participants ?? [];
@@ -306,7 +312,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
         </div>
         <div className="text-right">
           <p className="type-caption text-hint">{t('prizePool')}</p>
-          <p className="type-display text-foreground">${lottery.prizePool.toLocaleString('en-US')}</p>
+          <p className="type-display text-foreground">{formatGold(lottery.prizePool)}</p>
         </div>
       </div>
 
@@ -334,7 +340,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           <dl className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-divider p-3">
               <dt className="type-caption text-hint">{t('ticketPrice')}</dt>
-              <dd className="type-subheading text-foreground tabular-nums">${lottery.ticketPrice.toLocaleString('en-US')}</dd>
+              <dd className="type-subheading text-foreground tabular-nums">{formatGold(lottery.ticketPrice)}</dd>
             </div>
             <div className="flex items-start justify-between gap-2 rounded-xl border border-divider p-3">
               <div className="min-w-0">
@@ -431,7 +437,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                   </NumberField>
                   <Button className="flex-1 min-w-40" isPending={isBuying} onPress={buy}>
                     <Icon icon="solar:ticket-linear" width={16} />
-                    {t('purchase', { total: `$${(quantity * lottery.ticketPrice).toLocaleString('en-US')}` })}
+                    {t('purchase', { total: formatGold(quantity * lottery.ticketPrice) })}
                   </Button>
                 </div>
               ) : (
@@ -448,7 +454,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                   <li key={winner.id} className="flex items-center gap-3">
                     <Icon icon="solar:cup-star-linear" width={18} className="text-warning shrink-0" />
                     <span className="type-body font-medium text-foreground flex-1 min-w-0 truncate">{winner.username}</span>
-                    <span className="type-body text-success tabular-nums">{winner.prize}</span>
+                    <span className="type-body text-success tabular-nums">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</span>
                   </li>
                 ))}
               </ul>

@@ -16,6 +16,7 @@ import React from 'react';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import type { Lottery } from '@/types/lottery';
 import { DateTimePicker } from './DateTimePicker';
 
@@ -35,6 +36,7 @@ function defaultDrawDate() {
 
 export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLotteryModalProps) {
   const t = useTranslations('createLotteryModal');
+  const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
   const [title, setTitle] = React.useState('');
   const [description, setDescription] = React.useState('');
@@ -76,7 +78,7 @@ export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLo
         prizes: [
           {
             rank: 1,
-            description: prizeName.trim() || `$${prizeAmount.toLocaleString('en-US')}`,
+            description: prizeName.trim() || formatGold(prizeAmount),
             amount: prizeAmount > 0 ? prizeAmount : undefined,
           },
         ],

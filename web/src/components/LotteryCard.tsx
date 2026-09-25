@@ -4,12 +4,14 @@ import { Card, Chip, Button, ProgressBar, Avatar } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
 
 interface LotteryWinner {
   id: string;
   username: string;
   avatar?: string;
   prize: string;
+  prizeAmount?: number;
 }
 
 interface LotteryCardProps {
@@ -47,6 +49,7 @@ const LotteryCard = ({
   winners,
 }: LotteryCardProps) => {
   const t = useTranslations('lotteryCard');
+  const formatGold = useFormatGold();
   const router = useRouter();
   const openDetail = () => router.push(`/dashboard/lottery/${id}`);
   const hasCap = maxTickets > 0;
@@ -104,14 +107,14 @@ const LotteryCard = ({
           {/* Prize Pool */}
           <div className="text-center py-2">
             <p className="type-caption text-hint">{t('prizePool')}</p>
-            <p className="type-display text-foreground mt-1">${prizePool.toLocaleString()}</p>
+            <p className="type-display text-foreground mt-1">{formatGold(prizePool)}</p>
           </div>
 
           {/* Details */}
           <div className="space-y-2">
             <div className="flex justify-between type-body">
               <span className="text-subtle">{t('ticketPrice')}</span>
-              <span className="font-medium text-foreground">${ticketPrice}</span>
+              <span className="font-medium text-foreground">{formatGold(ticketPrice)}</span>
             </div>
             <div className="flex justify-between type-body">
               <span className="text-subtle">{t('drawDate')}</span>
@@ -172,7 +175,7 @@ const LotteryCard = ({
                     <p className="type-label text-foreground truncate">
                       {winner.username}
                     </p>
-                    <p className="type-caption text-success">{winner.prize}</p>
+                    <p className="type-caption text-success">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</p>
                   </div>
                 </div>
               ))}

@@ -348,15 +348,12 @@ export const toLottery = (raw: ProtoLottery): Lottery => {
   };
 };
 
-export const toLotteryWinner = (raw: ProtoLotteryWinner): LotteryWinner => {
-  const prize = raw.prize_description
-    || (raw.prize_amount ? `$${fromMinorUnits(raw.prize_amount).toLocaleString()}` : '');
-  return {
-    id: raw.id ?? '',
-    username: raw.username ?? '',
-    prize,
-  };
-};
+export const toLotteryWinner = (raw: ProtoLotteryWinner): LotteryWinner => ({
+  id: raw.id ?? '',
+  username: raw.username ?? '',
+  prize: raw.prize_description ?? '',
+  prizeAmount: raw.prize_amount ? fromMinorUnits(raw.prize_amount) : undefined,
+});
 
 type ProtoTicket = {
   id: string;

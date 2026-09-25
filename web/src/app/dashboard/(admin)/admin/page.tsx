@@ -29,6 +29,7 @@ import { HTML_LANG, isLocale } from '@/i18n/locales';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
 import { apiClient } from '@/lib/guma';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
 import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
@@ -116,6 +117,7 @@ const getActivityColor = (type: string) => {
 
 export default function AdminPage() {
   const t = useTranslations('adminPage');
+  const formatGold = useFormatGold();
   const locale = useLocale();
   const router = useRouter();
   const selectedTab = adminTabFromParam(useSearchParams().get('tab'));
@@ -390,7 +392,7 @@ export default function AdminPage() {
                 },
                 {
                   label: t('guildBalance'),
-                  value: '$12,500',
+                  value: formatGold(12500),
                   icon: 'solar:wallet-money-linear',
                   color: 'text-success',
                   bg: 'bg-success/10',

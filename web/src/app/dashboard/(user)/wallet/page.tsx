@@ -32,6 +32,7 @@ import { apiClient } from '@/lib/guma';
 import { walletBalanceTrend } from '@/lib/guma/mock/data';
 import { localizeMock } from '@/lib/guma/mock/i18n';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
+import { type FormatGold, useFormatGold, useFormatGoldAxisTick } from '@/lib/guma/useFormatGold';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
@@ -84,8 +85,8 @@ const transactionAmountSign = (amount: number): string => {
   return '';
 };
 
-const formatTransactionAmount = (amount: number): string =>
-  `${transactionAmountSign(amount)}$${Math.abs(amount).toFixed(2)}`;
+const formatTransactionAmount = (amount: number, formatGold: FormatGold): string =>
+  `${transactionAmountSign(amount)}${formatGold(Math.abs(amount))}`;
 
 const transactionAmountClass = (amount: number): string => {
   if (amount > 0) return 'text-success';
@@ -126,6 +127,8 @@ const getTransactionIcon = (transaction: Transaction) => {
 
 export default function WalletPage() {
   const t = useTranslations('walletPage');
+  const formatGold = useFormatGold();
+  const formatGoldAxisTick = useFormatGoldAxisTick();
   const locale = useLocale();
   const balanceTrend = React.useMemo(
     () => (isLocale(locale) ? localizeMock(walletBalanceTrend, locale) : walletBalanceTrend),
@@ -279,7 +282,7 @@ export default function WalletPage() {
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="type-display text-foreground">${balance.toFixed(2)}</p>
+              <p className="type-display text-foreground">{formatGold(balance)}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Modal>
@@ -310,7 +313,7 @@ export default function WalletPage() {
                         />
                       </TextField>
                       <p className="type-caption text-hint px-1">
-                        {t('currentBalanceLabel')} ${balance.toFixed(2)}
+                        {t('currentBalanceLabel')} {formatGold(balance)}
                       </p>
                     </Modal.Body>
                     <Modal.Footer>
@@ -392,7 +395,7 @@ export default function WalletPage() {
                         </Autocomplete.Popover>
                       </Autocomplete>
                       <p className="type-caption text-hint px-1">
-                        {t('available')} ${balance.toFixed(2)}
+                        {t('available')} {formatGold(balance)}
                       </p>
                     </Modal.Body>
                     <Modal.Footer>
@@ -435,7 +438,7 @@ export default function WalletPage() {
                         />
                       </TextField>
                       <p className="type-caption text-hint px-1">
-                        {t('available')} ${balance.toFixed(2)}
+                        {t('available')} {formatGold(balance)}
                       </p>
                       <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
                         <div className="flex items-start gap-2">
@@ -484,10 +487,10 @@ export default function WalletPage() {
                   tick={{ fontSize: 12, fill: 'var(--muted)' }}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={v => `$${v}`}
+                  tickFormatter={formatGoldAxisTick}
                 />
                 <Tooltip
-                  formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, 'Balance']}
+                  formatter={(v: any) => [formatGold(Number(v ?? 0)), 'Balance']}
                   contentStyle={{
                     background: 'var(--overlay)',
                     border: '1px solid var(--border)',
@@ -618,7 +621,7 @@ export default function WalletPage() {
                           <span
                             className={`type-body font-medium ${transactionAmountClass(transaction.amount)}`}
                           >
-                            {formatTransactionAmount(transaction.amount)}
+                            {formatTransactionAmount(transaction.amount, formatGold)}
                           </span>
                         </Table.Cell>
                         <Table.Cell>
@@ -680,7 +683,7 @@ export default function WalletPage() {
                     <span
                       className={`type-body font-medium ${transactionAmountClass(transaction.amount)}`}
                     >
-                      {formatTransactionAmount(transaction.amount)}
+                      {formatTransactionAmount(transaction.amount, formatGold)}
                     </span>
                   </div>
                 </div>

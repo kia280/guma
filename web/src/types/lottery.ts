@@ -6,6 +6,7 @@ export interface LotteryWinner {
   id: string;
   username: string;
   prize: string;
+  prizeAmount?: number;
 }
 
 export interface LotteryParticipant {
