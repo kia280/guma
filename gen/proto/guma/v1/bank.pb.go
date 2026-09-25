@@ -1448,6 +1448,9 @@ type BankContribution struct {
 	Amount        int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
 	Note          string                 `protobuf:"bytes,6,opt,name=note,proto3" json:"note,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Kind          string                 `protobuf:"bytes,8,opt,name=kind,proto3" json:"kind,omitempty"`
+	Items         []*Item                `protobuf:"bytes,9,rep,name=items,proto3" json:"items,omitempty"`
+	CheckinId     string                 `protobuf:"bytes,10,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1529,6 +1532,27 @@ func (x *BankContribution) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *BankContribution) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *BankContribution) GetItems() []*Item {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *BankContribution) GetCheckinId() string {
+	if x != nil {
+		return x.CheckinId
+	}
+	return ""
 }
 
 type FundRequest struct {
@@ -2014,7 +2038,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12+\n" +
-	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\xd9\x01\n" +
+	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\xb1\x02\n" +
 	"\x10BankContribution\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x17\n" +
@@ -2023,7 +2047,12 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x06amount\x18\x05 \x01(\x03R\x06amount\x12\x12\n" +
 	"\x04note\x18\x06 \x01(\tR\x04note\x129\n" +
 	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x84\x03\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x12\n" +
+	"\x04kind\x18\b \x01(\tR\x04kind\x12#\n" +
+	"\x05items\x18\t \x03(\v2\r.guma.v1.ItemR\x05items\x12\x1d\n" +
+	"\n" +
+	"checkin_id\x18\n" +
+	" \x01(\tR\tcheckinId\"\x84\x03\n" +
 	"\vFundRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12!\n" +
@@ -2151,40 +2180,41 @@ var file_proto_guma_v1_bank_proto_depIdxs = []int32{
 	28, // 13: guma.v1.GuildBank.created_at:type_name -> google.protobuf.Timestamp
 	28, // 14: guma.v1.GuildBank.updated_at:type_name -> google.protobuf.Timestamp
 	28, // 15: guma.v1.BankContribution.created_at:type_name -> google.protobuf.Timestamp
-	28, // 16: guma.v1.FundRequest.created_at:type_name -> google.protobuf.Timestamp
-	28, // 17: guma.v1.FundRequest.reviewed_at:type_name -> google.protobuf.Timestamp
-	29, // 18: guma.v1.BankItem.item:type_name -> guma.v1.Item
-	28, // 19: guma.v1.BankItem.donated_at:type_name -> google.protobuf.Timestamp
-	28, // 20: guma.v1.ItemRequest.created_at:type_name -> google.protobuf.Timestamp
-	28, // 21: guma.v1.ItemRequest.reviewed_at:type_name -> google.protobuf.Timestamp
-	29, // 22: guma.v1.ItemRequest.item:type_name -> guma.v1.Item
-	0,  // 23: guma.v1.BankService.GetBank:input_type -> guma.v1.GetBankRequest
-	2,  // 24: guma.v1.BankService.ContributeFunds:input_type -> guma.v1.ContributeFundsRequest
-	4,  // 25: guma.v1.BankService.RequestFunds:input_type -> guma.v1.RequestFundsRequest
-	6,  // 26: guma.v1.BankService.ReviewFundRequest:input_type -> guma.v1.ReviewFundRequestRequest
-	8,  // 27: guma.v1.BankService.ListFundRequests:input_type -> guma.v1.ListFundRequestsRequest
-	10, // 28: guma.v1.BankService.ListContributions:input_type -> guma.v1.ListContributionsRequest
-	12, // 29: guma.v1.BankService.DonateItem:input_type -> guma.v1.DonateItemRequest
-	14, // 30: guma.v1.BankService.ListBankItems:input_type -> guma.v1.ListBankItemsRequest
-	16, // 31: guma.v1.BankService.RequestItem:input_type -> guma.v1.RequestItemRequest
-	18, // 32: guma.v1.BankService.ReviewItemRequest:input_type -> guma.v1.ReviewItemRequestRequest
-	20, // 33: guma.v1.BankService.ListItemRequests:input_type -> guma.v1.ListItemRequestsRequest
-	1,  // 34: guma.v1.BankService.GetBank:output_type -> guma.v1.GetBankResponse
-	3,  // 35: guma.v1.BankService.ContributeFunds:output_type -> guma.v1.ContributeFundsResponse
-	5,  // 36: guma.v1.BankService.RequestFunds:output_type -> guma.v1.RequestFundsResponse
-	7,  // 37: guma.v1.BankService.ReviewFundRequest:output_type -> guma.v1.ReviewFundRequestResponse
-	9,  // 38: guma.v1.BankService.ListFundRequests:output_type -> guma.v1.ListFundRequestsResponse
-	11, // 39: guma.v1.BankService.ListContributions:output_type -> guma.v1.ListContributionsResponse
-	13, // 40: guma.v1.BankService.DonateItem:output_type -> guma.v1.DonateItemResponse
-	15, // 41: guma.v1.BankService.ListBankItems:output_type -> guma.v1.ListBankItemsResponse
-	17, // 42: guma.v1.BankService.RequestItem:output_type -> guma.v1.RequestItemResponse
-	19, // 43: guma.v1.BankService.ReviewItemRequest:output_type -> guma.v1.ReviewItemRequestResponse
-	21, // 44: guma.v1.BankService.ListItemRequests:output_type -> guma.v1.ListItemRequestsResponse
-	34, // [34:45] is the sub-list for method output_type
-	23, // [23:34] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	29, // 16: guma.v1.BankContribution.items:type_name -> guma.v1.Item
+	28, // 17: guma.v1.FundRequest.created_at:type_name -> google.protobuf.Timestamp
+	28, // 18: guma.v1.FundRequest.reviewed_at:type_name -> google.protobuf.Timestamp
+	29, // 19: guma.v1.BankItem.item:type_name -> guma.v1.Item
+	28, // 20: guma.v1.BankItem.donated_at:type_name -> google.protobuf.Timestamp
+	28, // 21: guma.v1.ItemRequest.created_at:type_name -> google.protobuf.Timestamp
+	28, // 22: guma.v1.ItemRequest.reviewed_at:type_name -> google.protobuf.Timestamp
+	29, // 23: guma.v1.ItemRequest.item:type_name -> guma.v1.Item
+	0,  // 24: guma.v1.BankService.GetBank:input_type -> guma.v1.GetBankRequest
+	2,  // 25: guma.v1.BankService.ContributeFunds:input_type -> guma.v1.ContributeFundsRequest
+	4,  // 26: guma.v1.BankService.RequestFunds:input_type -> guma.v1.RequestFundsRequest
+	6,  // 27: guma.v1.BankService.ReviewFundRequest:input_type -> guma.v1.ReviewFundRequestRequest
+	8,  // 28: guma.v1.BankService.ListFundRequests:input_type -> guma.v1.ListFundRequestsRequest
+	10, // 29: guma.v1.BankService.ListContributions:input_type -> guma.v1.ListContributionsRequest
+	12, // 30: guma.v1.BankService.DonateItem:input_type -> guma.v1.DonateItemRequest
+	14, // 31: guma.v1.BankService.ListBankItems:input_type -> guma.v1.ListBankItemsRequest
+	16, // 32: guma.v1.BankService.RequestItem:input_type -> guma.v1.RequestItemRequest
+	18, // 33: guma.v1.BankService.ReviewItemRequest:input_type -> guma.v1.ReviewItemRequestRequest
+	20, // 34: guma.v1.BankService.ListItemRequests:input_type -> guma.v1.ListItemRequestsRequest
+	1,  // 35: guma.v1.BankService.GetBank:output_type -> guma.v1.GetBankResponse
+	3,  // 36: guma.v1.BankService.ContributeFunds:output_type -> guma.v1.ContributeFundsResponse
+	5,  // 37: guma.v1.BankService.RequestFunds:output_type -> guma.v1.RequestFundsResponse
+	7,  // 38: guma.v1.BankService.ReviewFundRequest:output_type -> guma.v1.ReviewFundRequestResponse
+	9,  // 39: guma.v1.BankService.ListFundRequests:output_type -> guma.v1.ListFundRequestsResponse
+	11, // 40: guma.v1.BankService.ListContributions:output_type -> guma.v1.ListContributionsResponse
+	13, // 41: guma.v1.BankService.DonateItem:output_type -> guma.v1.DonateItemResponse
+	15, // 42: guma.v1.BankService.ListBankItems:output_type -> guma.v1.ListBankItemsResponse
+	17, // 43: guma.v1.BankService.RequestItem:output_type -> guma.v1.RequestItemResponse
+	19, // 44: guma.v1.BankService.ReviewItemRequest:output_type -> guma.v1.ReviewItemRequestResponse
+	21, // 45: guma.v1.BankService.ListItemRequests:output_type -> guma.v1.ListItemRequestsResponse
+	35, // [35:46] is the sub-list for method output_type
+	24, // [24:35] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_bank_proto_init() }

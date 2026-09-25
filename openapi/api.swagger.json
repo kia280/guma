@@ -4214,6 +4214,19 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        },
+        "checkinId": {
+          "type": "string"
         }
       }
     },
