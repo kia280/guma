@@ -43,7 +43,7 @@ web/
 │       └── api.ts            # API type definitions
 ├── .env.example              # Environment variables template
 ├── .env.local                # Local environment variables
-├── .eslintrc.js              # ESLint configuration
+├── eslint.config.mjs         # ESLint configuration
 ├── .prettierrc.js            # Prettier configuration
 ├── jest.config.js            # Jest testing configuration
 ├── jest.setup.js             # Jest setup file

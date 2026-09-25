@@ -1,14 +1,13 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import { Button, Chip, ScrollShadow, Spinner, Tabs } from '@heroui/react';
 import { Icon } from '@iconify/react';
-
-import { NotificationItem } from './NotificationItem';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import React from 'react';
 import type { NotificationFilter, NotificationsStatus } from '@/hooks/useNotifications';
 import type { GuildNotification } from '@/types/notification';
+import { NotificationItem } from './NotificationItem';
 
 export type NotificationsCardProps = {
   notifications: GuildNotification[];

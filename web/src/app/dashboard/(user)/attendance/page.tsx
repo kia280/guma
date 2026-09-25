@@ -1,19 +1,19 @@
 'use client';
 
-import React from 'react';
 import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Description, DatePicker, DateField, Calendar, ListBox, Select, type Key } from '@heroui/react';
-import type { DateValue } from '@internationalized/date';
-import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
-import { CheckinCard, checkinStatusColor } from './CheckinCard';
-import { CheckinStatus, type CheckinEntry, type CheckinTemplate, type ItemTemplate, type LootEntry } from '@/types/checkin';
-import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
+import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
+import type { DateValue } from '@internationalized/date';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/guma';
-import { useCurrentGuildId } from '@/lib/current-guild';
-import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
-import { LootListEditor } from '@/components/LootListEditor';
+import { useTranslations } from 'next-intl';
+import React from 'react';
 import { ItemTemplatePicker } from '@/components/ItemTemplatePicker';
+import { LootListEditor } from '@/components/LootListEditor';
+import { useCurrentGuildId } from '@/lib/current-guild';
+import { apiClient } from '@/lib/guma';
+import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
+import { CheckinStatus, type CheckinEntry, type CheckinTemplate, type ItemTemplate, type LootEntry } from '@/types/checkin';
+import { CheckinCard, checkinStatusColor } from './CheckinCard';
 
 const DRAFT_KEY = 'checkin_draft';
 

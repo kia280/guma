@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 import {
   Button,
   Card,
@@ -13,9 +12,10 @@ import {
   Spinner,
   Alert,
 } from '@heroui/react';
-import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import React from 'react';
 import { kratos } from '@/lib/kratos';
 import { checkSession } from '@/lib/session';
 

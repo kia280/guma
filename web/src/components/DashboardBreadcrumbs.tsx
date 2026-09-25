@@ -1,9 +1,8 @@
 'use client';
 
 import { Breadcrumbs } from '@heroui/react';
-import { useTranslations } from 'next-intl';
 import { usePathname, useSearchParams } from 'next/navigation';
-
+import { useTranslations } from 'next-intl';
 import { buildCrumbs, type Crumb } from '@/lib/dashboard-nav';
 
 export function DashboardBreadcrumbs() {

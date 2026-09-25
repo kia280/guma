@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
 import { Tabs } from '@heroui/react';
 import { useTranslations } from 'next-intl';
-
+import React from 'react';
 import { CheckinTemplateManager } from '@/components/CheckinTemplateManager';
 import { ItemTemplateManager } from '@/components/ItemTemplateManager';
 

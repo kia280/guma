@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import {
   Tabs,
   Card,
@@ -15,25 +14,25 @@ import {
   Spinner,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useLocale, useTranslations } from 'next-intl';
+import { isAxiosError } from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
-
+import { useLocale, useTranslations } from 'next-intl';
+import React from 'react';
 import { BankRequestReview } from '@/components/BankRequestReview';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
-import { TemplateSettings } from '@/components/TemplateSettings';
 import { GuildAvatar } from '@/components/GuildAvatar';
 import { GuildLogoPrompt } from '@/components/GuildLogoPrompt';
-import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
-import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
+import { TemplateSettings } from '@/components/TemplateSettings';
 import { useLiveResource } from '@/hooks/useLiveResource';
-import { apiClient } from '@/lib/guma';
-import { useCurrentGuildId } from '@/lib/current-guild';
-import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
-import type { MockUser } from '@/types/user';
+import { useCurrentGuildId } from '@/lib/current-guild';
+import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
+import { apiClient } from '@/lib/guma';
+import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
+import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
-import { isAxiosError } from 'axios';
+import type { MockUser } from '@/types/user';
 
 
 const STATUSES = ['online', 'offline', 'banned'] as const;

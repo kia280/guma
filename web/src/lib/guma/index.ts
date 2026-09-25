@@ -1,7 +1,7 @@
-import { env } from '@/lib/env';
 import { isDevMockEnabled } from '@/lib/dev-mock';
-import { mockApiClient } from './mock';
+import { env } from '@/lib/env';
 import { gumaApiClient, onApiMutation } from './client';
+import { mockApiClient } from './mock';
 import type { ApiClient } from './types';
 
 function activeClient(): ApiClient {

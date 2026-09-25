@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import {
   Alert,
   Button,
@@ -16,10 +15,10 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import { useIntlFormatter } from '@/i18n/useIntlFormatter';
-
+import React from 'react';
 import { ItemThumbnail, getRarityColor } from '@/components/ItemThumbnail';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import type { FundRequest, ItemRequest, RequestStatus, ReviewDecision } from '@/types/guild-bank';

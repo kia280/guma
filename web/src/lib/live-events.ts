@@ -1,7 +1,7 @@
 'use client';
 
-import { env } from '@/lib/env';
 import { isDevMockEnabled } from '@/lib/dev-mock';
+import { env } from '@/lib/env';
 import { fromMinorUnits } from '@/lib/guma/money';
 
 export type LiveResource = 'bank' | 'auction' | 'lottery' | 'checkin' | 'notification' | 'announcement';

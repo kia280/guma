@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
 import { AlertDialog, Button } from '@heroui/react';
 import { useTranslations } from 'next-intl';
+import React from 'react';
 
 export function ConfirmDialog({
   heading,

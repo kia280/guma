@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { Button, Dropdown, Avatar, Label } from '@heroui/react';
+import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { Button, Dropdown, Avatar, Label } from '@heroui/react';
-import { Icon } from '@iconify/react';
-import { Logo } from './Logo';
+import { useState } from 'react';
 import { useCurrentGuild } from '@/lib/store';
+import { Logo } from './Logo';
 
 interface NavItem {
   key: string;
