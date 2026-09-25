@@ -47,8 +47,11 @@ const CATEGORY_ICONS: Record<ItemCategory, string> = {
 };
 
 const getProgress = (now: number, startTime: string, endTime: string) => {
-  const total = new Date(endTime).getTime() - new Date(startTime).getTime();
-  const elapsed = now - new Date(startTime).getTime();
+  const start = new Date(startTime).getTime();
+  const end = new Date(endTime).getTime();
+  const total = end - start;
+  if (!(total > 0)) return now >= end ? 100 : 0;
+  const elapsed = now - start;
   return Math.min(100, Math.max(0, (elapsed / total) * 100));
 };
 
@@ -216,10 +219,16 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <span className="font-medium text-foreground">{timeRemaining}</span>
                 </div>
                 <ProgressBar
+                  aria-label={t('timeRemaining')}
+                  className="w-full"
                   value={progress}
                   color={progress > 80 ? 'danger' : progress > 50 ? 'warning' : 'success'}
                   size="sm"
-                />
+                >
+                  <ProgressBar.Track>
+                    <ProgressBar.Fill />
+                  </ProgressBar.Track>
+                </ProgressBar>
               </div>
             )}
 
