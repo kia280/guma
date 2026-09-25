@@ -1,10 +1,11 @@
 'use client';
 
-import { Card, Chip, Button, ProgressBar, Avatar } from '@heroui/react';
+import { Card, Chip, Button, ProgressBar } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
+import { UserAvatar } from './UserAvatar';
 
 interface LotteryWinner {
   id: string;
@@ -162,10 +163,7 @@ const LotteryCard = ({
               <p className="type-caption text-hint">{t('winners')}</p>
               {winners.slice(0, 3).map(winner => (
                 <div key={winner.id} className="flex items-center gap-2">
-                  <Avatar size="sm">
-                    <Avatar.Image src={winner.avatar} />
-                    <Avatar.Fallback>{winner.username?.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-                  </Avatar>
+                  <UserAvatar name={winner.username} src={winner.avatar} />
                   <div className="flex-1 min-w-0">
                     <p className="type-label text-foreground truncate">
                       {winner.username}
