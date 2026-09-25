@@ -49,7 +49,8 @@ const LotteryCard = ({
   const t = useTranslations('lotteryCard');
   const router = useRouter();
   const openDetail = () => router.push(`/dashboard/lottery/${id}`);
-  const soldPercent = Math.round((ticketsSold / maxTickets) * 100);
+  const hasCap = maxTickets > 0;
+  const soldPercent = hasCap ? Math.round((ticketsSold / maxTickets) * 100) : 0;
 
   const formatCountdown = (dateStr: string, suffix = t('remaining')) => {
     const diff = new Date(dateStr).getTime() - Date.now();
@@ -132,23 +133,29 @@ const LotteryCard = ({
               <span>
                 {ticketsSold.toLocaleString()} {t('ticketsSold')}
               </span>
-              <span>
-                {maxTickets.toLocaleString()} {t('max')}
-              </span>
+              {hasCap && (
+                <span>
+                  {maxTickets.toLocaleString()} {t('max')}
+                </span>
+              )}
             </div>
-            <ProgressBar
-              aria-label="Tickets sold"
-              className="w-full"
-              value={soldPercent}
-              color={progressColor}
-            >
-              <ProgressBar.Track>
-                <ProgressBar.Fill />
-              </ProgressBar.Track>
-            </ProgressBar>
-            <p className="type-caption text-hint text-right">
-              {soldPercent}% {t('filled')}
-            </p>
+            {hasCap && (
+              <>
+                <ProgressBar
+                  aria-label="Tickets sold"
+                  className="w-full"
+                  value={soldPercent}
+                  color={progressColor}
+                >
+                  <ProgressBar.Track>
+                    <ProgressBar.Fill />
+                  </ProgressBar.Track>
+                </ProgressBar>
+                <p className="type-caption text-hint text-right">
+                  {soldPercent}% {t('filled')}
+                </p>
+              </>
+            )}
           </div>
 
           {/* Winners section for ended lotteries */}
