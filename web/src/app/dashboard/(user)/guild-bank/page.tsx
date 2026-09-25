@@ -39,6 +39,8 @@ const getContributionIcon = (type: GuildContribution['type']) => {
       return 'solar:backpack-linear';
     case 'item_distribute':
       return 'solar:arrow-right-linear';
+    case 'checkin_loot':
+      return 'solar:clipboard-check-linear';
   }
 };
 
@@ -108,6 +110,8 @@ export default function GuildBankPage() {
         return t('typeItemDonate');
       case 'item_distribute':
         return t('typeItemDistribute');
+      case 'checkin_loot':
+        return t('typeCheckinLoot');
     }
   };
 
@@ -476,7 +480,14 @@ export default function GuildBankPage() {
                               <p className="type-body font-medium text-foreground">
                                 {getContributionLabel(entry.type)}
                               </p>
-                              {entry.note && (
+                              {entry.note && entry.checkinId ? (
+                                <Link
+                                  href={`/dashboard/attendance/${entry.checkinId}`}
+                                  className="rounded type-caption text-hint hover:text-accent truncate max-w-[180px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                                >
+                                  {entry.note}
+                                </Link>
+                              ) : entry.note && (
                                 <p className="type-caption text-hint truncate max-w-[180px]">
                                   {entry.note}
                                 </p>
@@ -503,7 +514,7 @@ export default function GuildBankPage() {
                               {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
                             </span>
                           ) : (
-                            <span className="type-body text-subtle">{entry.itemName}</span>
+                            <span className="type-body text-subtle line-clamp-2 max-w-[220px]">{entry.itemName}</span>
                           )}
                         </Table.Cell>
                         <Table.Cell>
@@ -547,6 +558,14 @@ export default function GuildBankPage() {
                           {getContributionLabel(entry.type)}
                         </p>
                       </div>
+                      {entry.checkinId && entry.note && (
+                        <Link
+                          href={`/dashboard/attendance/${entry.checkinId}`}
+                          className="self-start rounded type-caption text-hint hover:text-accent truncate max-w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                        >
+                          {entry.note}
+                        </Link>
+                      )}
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <p className="type-caption text-hint">{entry.member}</p>
                         <p className="type-caption text-hint">
@@ -566,7 +585,7 @@ export default function GuildBankPage() {
                         {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
                       </span>
                     ) : (
-                      <span className="type-caption text-subtle">{entry.itemName}</span>
+                      <span className="type-caption text-subtle line-clamp-2 max-w-[140px] block">{entry.itemName}</span>
                     )}
                   </div>
                 </div>

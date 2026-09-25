@@ -386,7 +386,8 @@
     "errorNotMember": "只有公會成員可以提出申請。",
     "errorGeneric": "發生錯誤，請再試一次。",
     "fromCheckin": "來自點名：{title}",
-    "untitledCheckin": "已刪除的點名"
+    "untitledCheckin": "已刪除的點名",
+    "typeCheckinLoot": "點名入庫"
   },
   "notificationsCard": {
     "notifications": "通知",
