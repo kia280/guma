@@ -4245,6 +4245,12 @@
         "donatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "checkinId": {
+          "type": "string"
+        },
+        "checkinTitle": {
+          "type": "string"
         }
       }
     },
