@@ -96,7 +96,7 @@ export default function LotteryPage() {
       {/* Status Tabs */}
       <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
         <Tabs.ListContainer>
-          <Tabs.List aria-label="Lottery status">
+          <Tabs.List aria-label={t('statusTabs')}>
             <Tabs.Tab id="all">
               <div className="flex items-center gap-2">
                 <span>{t('all')}</span>

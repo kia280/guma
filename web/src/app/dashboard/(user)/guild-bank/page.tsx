@@ -24,6 +24,7 @@ import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/Ite
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
@@ -64,6 +65,8 @@ const getStatusColor = (status: GuildContribution['status']) => {
 
 export default function GuildBankPage() {
   const t = useTranslations('guildBankPage');
+  const labels = useTranslations('createAuctionModal');
+  const format = useIntlFormatter();
   const guildId = useCurrentGuildId();
 
   const contributeModalState = useOverlayState();
@@ -448,7 +451,7 @@ export default function GuildBankPage() {
             <div className="flex items-center justify-between">
               <p className="type-subheading text-foreground">{t('storage')}</p>
               <Chip size="sm" variant="tertiary">
-                {mockGuildItems.length} {t('items')}
+                {t('items', { count: mockGuildItems.length })}
               </Chip>
             </div>
             <p className="type-caption text-hint">{t('storageDesc')}</p>
@@ -484,8 +487,8 @@ export default function GuildBankPage() {
                       )}
                     </p>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary" className="capitalize">
-                        {item.rarity}
+                      <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
+                        {labels(`rarities.${item.rarity}`)}
                       </Chip>
                     </div>
                     {item.checkinId && (
@@ -544,7 +547,7 @@ export default function GuildBankPage() {
           <div className="hidden md:block">
             <Table>
               <Table.ScrollContainer>
-                <Table.Content aria-label="Guild bank activity table" className="min-w-[700px]">
+                <Table.Content aria-label={t('activityTable')} className="min-w-[700px]">
                   <Table.Header>
                     <Table.Column isRowHeader>{t('activity')}</Table.Column>
                     <Table.Column>{t('member')}</Table.Column>
@@ -607,7 +610,7 @@ export default function GuildBankPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <p className="type-body text-subtle">
-                            {new Date(entry.date).toLocaleDateString()}
+                            {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
                           </p>
                         </Table.Cell>
                         <Table.Cell>
@@ -657,7 +660,7 @@ export default function GuildBankPage() {
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <p className="type-caption text-hint">{entry.member}</p>
                         <p className="type-caption text-hint">
-                          {new Date(entry.date).toLocaleDateString()}
+                          {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
                         </p>
                         <Chip size="sm" variant="secondary">
                           {t(entry.status)}
@@ -708,9 +711,12 @@ export default function GuildBankPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="type-body font-medium text-foreground">{selectedItem.name}</p>
-                      <p className="type-caption text-hint capitalize">
-                        {selectedItem.rarity} · {selectedItem.category} · x{selectedItem.quantity}{' '}
-                        {t('available')}
+                      <p className="type-caption text-hint">
+                        {t('itemSummary', {
+                          rarity: labels(`rarities.${selectedItem.rarity}`),
+                          category: labels(`categories.${selectedItem.category}`),
+                          count: selectedItem.quantity,
+                        })}
                       </p>
                     </div>
                   </div>

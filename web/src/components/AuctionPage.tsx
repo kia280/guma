@@ -18,6 +18,7 @@ import { ItemCategory, ItemRarity } from '@/types/item';
 
 const AuctionPage = () => {
   const t = useTranslations('auctionPage');
+  const labels = useTranslations('createAuctionModal');
   const guildId = useCurrentGuildId();
   const { balance: userBalance, refresh: refreshBalance } = useWalletBalance();
   const createModalState = useOverlayState();
@@ -65,7 +66,7 @@ const AuctionPage = () => {
     { key: 'all', label: t('allCategories') },
     ...Object.values(ItemCategory).map(category => ({
       key: category,
-      label: category.replace('_', ' ').toUpperCase(),
+      label: labels(`categories.${category}`),
     })),
   ];
 
@@ -73,7 +74,7 @@ const AuctionPage = () => {
     { key: 'all', label: t('allRarities') },
     ...Object.values(ItemRarity).map(rarity => ({
       key: rarity,
-      label: rarity.toUpperCase(),
+      label: labels(`rarities.${rarity}`),
     })),
   ];
 
@@ -202,7 +203,7 @@ const AuctionPage = () => {
       {/* Status Tabs */}
       <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
         <Tabs.ListContainer>
-          <Tabs.List aria-label="Auction status">
+          <Tabs.List aria-label={t('statusTabs')}>
             <Tabs.Tab id="all">
               <div className="flex items-center gap-2">
                 <span>{t('all')}</span>

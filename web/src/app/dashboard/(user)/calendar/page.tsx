@@ -9,16 +9,11 @@ import { GuildCalendar } from '@/components/GuildCalendar';
 import { useGuildEvents } from '@/hooks/useGuildEvents';
 import { useToast } from '@/hooks/useToast';
 import { useIntlLocale } from '@/i18n/useIntlFormatter';
-import {
-  GuildEvent,
-  EVENT_TYPE_COLORS,
-  EVENT_TYPE_LABELS,
-  PRIORITY_COLORS,
-  PRIORITY_LABELS,
-} from '@/types/guild-events';
+import { GuildEvent, EVENT_TYPE_COLORS, PRIORITY_COLORS } from '@/types/guild-events';
 
 export default function CalendarPage() {
   const t = useTranslations('calendarPage');
+  const eventLabels = useTranslations('guildEvents');
   const intlLocale = useIntlLocale();
   const {
     events,
@@ -191,20 +186,20 @@ export default function CalendarPage() {
                         size="sm"
                         variant="tertiary"
                       >
-                        {EVENT_TYPE_LABELS[selectedEvent.type]}
+                        {eventLabels(`types.${selectedEvent.type}`)}
                       </Chip>
                       <Chip
                         color={PRIORITY_COLORS[selectedEvent.priority] as any}
                         size="sm"
                         variant="secondary"
                       >
-                        {PRIORITY_LABELS[selectedEvent.priority]}
+                        {eventLabels(`priorities.${selectedEvent.priority}`)}
                       </Chip>
                     </div>
                   </div>
 
                   <Dropdown>
-                    <Button isIconOnly variant="secondary" size="sm" aria-label="Event actions">
+                    <Button isIconOnly variant="secondary" size="sm" aria-label={t('eventActions')}>
                       <Icon icon="solar:menu-dots-bold" width={16} />
                     </Button>
                     <Dropdown.Popover>
@@ -218,11 +213,11 @@ export default function CalendarPage() {
                           }
                         }}
                       >
-                        <Dropdown.Item key="edit" textValue="Edit">
+                        <Dropdown.Item key="edit" textValue={t('editEvent')}>
                           <Icon icon="solar:pen-linear" width={16} />
                           {t('editEvent')}
                         </Dropdown.Item>
-                        <Dropdown.Item key="delete" textValue="Delete" className="text-danger">
+                        <Dropdown.Item key="delete" textValue={t('deleteEvent')} className="text-danger">
                           <Icon icon="solar:trash-bin-trash-linear" width={16} />
                           {t('deleteEvent')}
                         </Dropdown.Item>
@@ -273,20 +268,17 @@ export default function CalendarPage() {
                             className="text-hint"
                           />
                           <span>
-                            {t('repeats')} {selectedEvent.recurringPattern?.type}
-                            {selectedEvent.recurringPattern?.interval &&
-                            selectedEvent.recurringPattern.interval > 1
-                              ? ` (${t('every')} ${selectedEvent.recurringPattern.interval} ${selectedEvent.recurringPattern.type}s)`
-                              : ''}
+                            {t('repeatsEvery', {
+                              type: selectedEvent.recurringPattern?.type ?? 'custom',
+                              interval: selectedEvent.recurringPattern?.interval ?? 1,
+                            })}
                           </span>
                         </div>
                       )}
 
                       <div className="flex items-center gap-3 text-small text-subtle">
                         <Icon icon="solar:users-group-rounded-linear" width={16} />
-                        <span>
-                          {t('createdBy')} {selectedEvent.createdBy}
-                        </span>
+                        <span>{t('createdBy', { name: selectedEvent.createdBy })}</span>
                       </div>
                     </div>
                   </div>

@@ -21,7 +21,7 @@ import type { GuildEvent } from '@/types/guild-events';
 import { ItemCategory, ItemRarity } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
-import type { MockUser, User } from '@/types/user';
+import type { LinkedAccount, MockUser, User } from '@/types/user';
 import type { Transaction, Wallet } from '@/types/wallet';
 import { fromMinorUnits } from './money';
 
@@ -104,7 +104,22 @@ type ProtoUser = {
   balance?: number | string;
   created_at?: string;
   updated_at?: string;
+  email_verified?: boolean;
+  discord?: ProtoLinkedAccount;
+  guild_role?: string;
 };
+
+type ProtoLinkedAccount = {
+  provider?: string;
+  subject?: string;
+  username?: string;
+};
+
+const toLinkedAccount = (a: ProtoLinkedAccount): LinkedAccount => ({
+  provider: a.provider ?? '',
+  subject: a.subject ?? '',
+  username: a.username ?? '',
+});
 
 export const toUser = (u: ProtoUser): User => ({
   id: u.id ?? '',
@@ -118,6 +133,9 @@ export const toUser = (u: ProtoUser): User => ({
   balance: fromMinorUnits(u.balance),
   createdAt: ts(u.created_at),
   updatedAt: ts(u.updated_at),
+  emailVerified: typeof u.email_verified === 'boolean' ? u.email_verified : undefined,
+  discord: u.discord ? toLinkedAccount(u.discord) : undefined,
+  guildRole: u.guild_role ?? '',
 });
 
 // ─── Auction ────────────────────────────────────────────────────────────────

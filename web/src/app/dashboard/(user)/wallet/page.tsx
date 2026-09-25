@@ -30,6 +30,7 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
 import { isLocale } from '@/i18n/locales';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { walletBalanceTrend } from '@/lib/guma/mock/data';
@@ -131,6 +132,8 @@ const getTransactionIcon = (transaction: Transaction) => {
 
 export default function WalletPage() {
   const t = useTranslations('walletPage');
+  const labels = useTranslations('createAuctionModal');
+  const format = useIntlFormatter();
   const locale = useLocale();
   const balanceTrend = React.useMemo(
     () => (isLocale(locale) ? localizeMock(walletBalanceTrend, locale) : walletBalanceTrend),
@@ -569,7 +572,7 @@ export default function WalletPage() {
                   tickFormatter={v => `$${v}`}
                 />
                 <Tooltip
-                  formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, 'Balance']}
+                  formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, t('balance')]}
                   contentStyle={{
                     background: 'var(--overlay)',
                     border: '1px solid var(--border)',
@@ -605,7 +608,7 @@ export default function WalletPage() {
             <div className="flex items-center justify-between">
               <p className="type-subheading text-foreground">{t('yourItems')}</p>
               <Chip size="sm" variant="tertiary">
-                {backpackItems.length} {t('items')}
+                {t('items', { count: backpackItems.length })}
               </Chip>
             </div>
           </div>
@@ -728,7 +731,7 @@ export default function WalletPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <p className="type-body text-subtle">
-                            {new Date(transaction.date).toLocaleDateString()}
+                            {format.dateTime(new Date(transaction.date), { dateStyle: 'medium' })}
                           </p>
                         </Table.Cell>
                         <Table.Cell>
@@ -768,7 +771,7 @@ export default function WalletPage() {
                       )}
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="type-caption text-hint">
-                          {new Date(transaction.date).toLocaleDateString()}
+                          {format.dateTime(new Date(transaction.date), { dateStyle: 'medium' })}
                         </p>
                         <Chip
                           className="capitalize"
@@ -854,15 +857,16 @@ export default function WalletPage() {
                     </div>
                     <div>
                       <p className="type-body font-medium text-foreground">{selectedItem.item.name}</p>
-                      <p className="type-caption text-hint capitalize">
-                        {selectedItem.item.rarity} · {selectedItem.item.category}
+                      <p className="type-caption text-hint">
+                        {labels(`rarities.${selectedItem.item.rarity}`)} · {labels(`categories.${selectedItem.item.category}`)}
                       </p>
                     </div>
                   </div>
                   <p className="type-body text-soft">
-                    {t('withdrawItemConfirm')}{' '}
-                    <span className="font-medium text-foreground">{selectedItem.item.name}</span>{' '}
-                    {t('withdrawItemConfirmSuffix')}
+                    {t.rich('withdrawItemConfirm', {
+                      name: selectedItem.item.name,
+                      strong: chunks => <span className="font-medium text-foreground">{chunks}</span>,
+                    })}
                   </p>
                   <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
                     <div className="flex items-start gap-2">
