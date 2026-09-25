@@ -24,6 +24,7 @@ import type { GuildEvent } from '@/types/guild-events';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { Transaction, Wallet } from '@/types/wallet';
 import type { AdminAnnouncement } from '@/types/admin';
+import type { Announcement } from '@/types/dashboard';
 import type { GuildNotification } from '@/types/notification';
 import type { ApiClient } from '../types';
 
@@ -38,6 +39,31 @@ const store = {
   announcements: [...mockData.mockAdminAnnouncements] as AdminAnnouncement[],
   notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
 };
+
+const findMockAnnouncement = (id: string): AdminAnnouncement => {
+  const ann = store.announcements.find(a => a.id === id);
+  if (!ann) throw new Error('announcement not found');
+  return ann;
+};
+
+const announcementSortTime = (a: AdminAnnouncement) => new Date(a.publishedAt ?? a.updatedAt).getTime();
+
+const sortAdminAnnouncements = (list: AdminAnnouncement[]) =>
+  [...list].sort((a, b) =>
+    Number(b.status === 'draft') - Number(a.status === 'draft')
+    || Number(b.status === 'published' && b.pinned) - Number(a.status === 'published' && a.pinned)
+    || announcementSortTime(b) - announcementSortTime(a));
+
+const publishedMockAnnouncements = (): Announcement[] => [
+  ...sortAdminAnnouncements(store.announcements.filter(a => a.status === 'published')).map(a => ({
+    id: a.id,
+    title: a.title,
+    content: a.content,
+    pinned: a.pinned,
+    date: (a.publishedAt ?? a.createdAt).slice(0, 10).replaceAll('-', '/'),
+  })),
+  ...mockData.ANNOUNCEMENTS,
+];
 
 const currentUser: User = {
   id: 'current-user',
@@ -95,9 +121,9 @@ const baseMockApiClient: ApiClient = {
     personalStats: mockData.PERSONAL_STATS,
     balanceTrend: mockData.dashboardBalanceTrend,
     incomingEvents: mockData.INCOMING_EVENTS,
-    announcements: mockData.ANNOUNCEMENTS,
+    announcements: publishedMockAnnouncements(),
   }),
-  getAnnouncements: async () => mockData.ANNOUNCEMENTS,
+  getAnnouncements: async () => publishedMockAnnouncements(),
   getFeedEvents: async () => mockData.INCOMING_EVENTS,
 
   // ── User ──
@@ -552,18 +578,41 @@ const baseMockApiClient: ApiClient = {
 
   // ── Admin ──
   getAdminActivity: async () => mockData.mockActivity,
-  getAdminAnnouncements: async () => store.announcements,
-  createAnnouncement: async (req) => {
+  getAdminAnnouncements: async () => sortAdminAnnouncements(store.announcements).map(a => ({ ...a })),
+  getAnnouncement: async (_guildId, id) => ({ ...findMockAnnouncement(id) }),
+  createAnnouncementDraft: async () => {
+    const now = new Date().toISOString();
     const ann: AdminAnnouncement = {
       id: `ann-${Date.now()}`,
-      title: req.title,
-      content: req.content,
-      pinned: req.pinned ?? false,
+      title: '',
+      content: '',
+      pinned: false,
+      status: 'draft',
       author: currentUser.username,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
     store.announcements = [ann, ...store.announcements];
-    return ann;
+    return { ...ann };
+  },
+  updateAnnouncementDraft: async (_guildId, id, input) => {
+    const ann = findMockAnnouncement(id);
+    if (ann.status !== 'draft') throw new Error('only drafts can be edited');
+    Object.assign(ann, input, { updatedAt: new Date().toISOString() });
+    return { ...ann };
+  },
+  publishAnnouncement: async (_guildId, id) => {
+    const ann = findMockAnnouncement(id);
+    if (ann.status !== 'draft') throw new Error('announcement is already published');
+    if (!ann.title.trim() || !ann.content.trim()) throw new Error('title and content are required to publish');
+    const now = new Date().toISOString();
+    Object.assign(ann, { status: 'published', publishedAt: now, updatedAt: now });
+    return { ...ann };
+  },
+  deleteAnnouncementDraft: async (_guildId, id) => {
+    const ann = findMockAnnouncement(id);
+    if (ann.status !== 'draft') throw new Error('only drafts can be deleted');
+    store.announcements = store.announcements.filter(a => a.id !== id);
   },
 };
 

@@ -141,7 +141,7 @@ export const INCOMING_EVENTS: FeedEvent[] = [
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
-    id: 1,
+    id: '1',
     title: 'Report any problems to 抽貝比',
     date: '2024/07/24',
     pinned: true,
@@ -149,7 +149,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
       'If you run into system problems, bugs, or any other questions, please message 抽貝比 directly. Include a description of the problem and a screenshot so it can be handled quickly. Thank you for your cooperation!',
   },
   {
-    id: 2,
+    id: '2',
     title: 'Guild raid night every Friday at 21:00',
     date: '2024/07/20',
     pinned: false,
@@ -171,20 +171,36 @@ export const mockActivity: AdminActivity[] = [
 
 export const mockAdminAnnouncements: AdminAnnouncement[] = [
   {
+    id: 'ann-draft1',
+    title: 'Guild Hall Renovation',
+    content: 'We are planning to renovate the guild hall next month.',
+    pinned: false,
+    status: 'draft',
+    author: member(1).username,
+    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+  },
+  {
     id: 'ann1',
     title: 'Weekly Raid Night - Friday 8PM',
     content: 'This Friday we will be tackling the Ancient Dragon. All members level 50+ are encouraged to join.',
     pinned: true,
+    status: 'published',
     author: member(1).username,
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'ann2',
     title: 'Guild Treasury Update',
     content: 'The guild treasury has been updated. Auction proceeds for this month have been distributed.',
     pinned: false,
+    status: 'published',
     author: member(1).username,
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
 

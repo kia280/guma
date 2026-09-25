@@ -304,7 +304,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const LIVE_DASHBOARD_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'checkin'];
+const LIVE_DASHBOARD_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'checkin', 'announcement'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
 export default function DashboardPage() {

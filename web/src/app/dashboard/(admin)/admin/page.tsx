@@ -9,18 +9,18 @@ import {
   Chip,
   Avatar,
   Button,
-  Modal,
   Input,
-  TextArea,
-  Switch,
   Separator,
   TextField,
   Label,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { BankRequestReview } from '@/components/BankRequestReview';
+import { DeleteAnnouncementDraftDialog } from '@/components/DeleteAnnouncementDraftDialog';
+import { useLiveResource } from '@/hooks/useLiveResource';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
@@ -120,6 +120,9 @@ const formatTimeAgo = (timestamp: string) => {
 export default function AdminPage() {
   const t = useTranslations('adminPage');
   const locale = useLocale();
+  const router = useRouter();
+  const initialTab = useSearchParams().get('tab') ?? undefined;
+  const intlLocale = isLocale(locale) ? HTML_LANG[locale] : locale;
   const formatLastActive = (value?: string) => {
     if (!value) return '';
     const date = new Date(value);
@@ -160,30 +163,37 @@ export default function AdminPage() {
     let cancelled = false;
     apiClient.listMembers(guildId).then(d => { if (!cancelled) setMockUsers(d); }).catch(() => {});
     apiClient.getAdminActivity().then(d => { if (!cancelled) setMockActivity(d); }).catch(() => {});
-    apiClient.getAdminAnnouncements().then(d => { if (!cancelled) setAnnouncements(d); }).catch(() => {});
+    apiClient.getAdminAnnouncements(guildId).then(d => { if (!cancelled) setAnnouncements(d); }).catch(() => {});
     apiClient.getCurrentGuild().then(d => { if (!cancelled) setGuild(d); }).catch(() => {});
     return () => { cancelled = true; };
   }, [guildId]);
 
-  const [newTitle, setNewTitle] = React.useState('');
-  const [newContent, setNewContent] = React.useState('');
-  const [isPinned, setIsPinned] = React.useState(false);
+  const refetchAnnouncements = React.useCallback(() => {
+    apiClient.getAdminAnnouncements(guildId).then(setAnnouncements).catch(() => {});
+  }, [guildId]);
+
+  useLiveResource(['announcement'], refetchAnnouncements, { guildId });
+
+  const [isCreatingDraft, setIsCreatingDraft] = React.useState(false);
+  const [createDraftFailed, setCreateDraftFailed] = React.useState(false);
+  const [draftToDelete, setDraftToDelete] = React.useState<AdminAnnouncement | null>(null);
 
   const handlePostAnnouncement = async () => {
-    if (!newTitle.trim() || !newContent.trim()) return;
+    setIsCreatingDraft(true);
+    setCreateDraftFailed(false);
     try {
-      const ann = await apiClient.createAnnouncement({
-        title: newTitle,
-        content: newContent,
-        pinned: isPinned,
-      });
-      setAnnouncements(prev => [ann, ...prev]);
-      setNewTitle('');
-      setNewContent('');
-      setIsPinned(false);
+      const draft = await apiClient.createAnnouncementDraft(guildId);
+      router.push(`/dashboard/admin/announcements/${draft.id}`);
     } catch (err) {
-      console.error('Failed to post announcement', err);
+      console.error('Failed to create announcement draft', err);
+      setCreateDraftFailed(true);
+      setIsCreatingDraft(false);
     }
+  };
+
+  const deleteDraft = async (draft: AdminAnnouncement) => {
+    await apiClient.deleteAnnouncementDraft(guildId, draft.id);
+    setAnnouncements(prev => prev.filter(a => a.id !== draft.id));
   };
 
   return (
@@ -197,7 +207,7 @@ export default function AdminPage() {
           {t('rolePermissions')}
         </Link>
       </div>
-      <Tabs aria-label="Admin sections">
+      <Tabs aria-label="Admin sections" defaultSelectedKey={initialTab}>
         <Tabs.ListContainer>
           <Tabs.List>
             <Tabs.Tab id="users">
@@ -230,9 +240,6 @@ export default function AdminPage() {
             <Tabs.Tab id="announcements">
               <div className="flex items-center gap-2">
                 <span>{t('announcements')}</span>
-                <Chip size="sm" variant="secondary">
-                  {announcements.length}
-                </Chip>
               </div>
               <Tabs.Indicator />
             </Tabs.Tab>
@@ -446,89 +453,85 @@ export default function AdminPage() {
         {/* Announcements Panel */}
         <Tabs.Panel id="announcements" className="pt-4">
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <p className="type-body text-subtle">{announcements.length}</p>
-              <Modal>
-              <Button variant="primary" size="sm">
+            <div className="flex flex-wrap justify-end items-center gap-3">
+              {createDraftFailed && (
+                <p role="alert" className="type-caption text-danger">{t('createDraftFailed')}</p>
+              )}
+              <Button variant="primary" size="sm" onPress={handlePostAnnouncement} isPending={isCreatingDraft}>
                 <Icon icon="solar:add-circle-linear" width={16} />
                 {t('postAnnouncement')}
               </Button>
-              <Modal.Backdrop>
-                <Modal.Container size="md">
-                  <Modal.Dialog>
-                    <Modal.CloseTrigger />
-                    <Modal.Header className="text-center items-center">
-                      <Modal.Heading>{t('postAnnouncement')}</Modal.Heading>
-                    </Modal.Header>
-                    <Modal.Body className="p-1 flex flex-col gap-3">
-                      <TextField>
-                        <Label>{t('announcementTitle')}</Label>
-                        <Input
-                          placeholder={t('announcementTitle')}
-                          value={newTitle}
-                          onChange={e => setNewTitle(e.target.value)}
-                          variant="secondary"
-                        />
-                      </TextField>
-                      <TextField>
-                        <Label>{t('announcementContent')}</Label>
-                        <TextArea
-                          placeholder={t('announcementContent')}
-                          value={newContent}
-                          onChange={e => setNewContent(e.target.value)}
-                          variant="secondary"
-                          rows={3}
-                        />
-                      </TextField>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="type-body text-foreground">{t('pinAnnouncement')}</p>
-                          <p className="type-caption text-hint">{t('pinNote')}</p>
-                        </div>
-                        <Switch isSelected={isPinned} onChange={setIsPinned} size="sm">
-                          <Switch.Control>
-                            <Switch.Thumb />
-                          </Switch.Control>
-                        </Switch>
-                      </div>
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button variant="secondary" slot="close">
-                        {t('cancel')}
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onPress={handlePostAnnouncement}
-                        isDisabled={!newTitle.trim() || !newContent.trim()}
-                      >
-                        {t('post')}
-                      </Button>
-                    </Modal.Footer>
-                  </Modal.Dialog>
-                </Modal.Container>
-              </Modal.Backdrop>
-              </Modal>
             </div>
 
+            {announcements.length === 0 && (
+              <Card className="border border-divider shadow-none bg-surface">
+                <Card.Content className="p-6 text-center">
+                  <p className="type-body text-disabled">{t('noAnnouncements')}</p>
+                </Card.Content>
+              </Card>
+            )}
+
             <div className="space-y-3">
-              {announcements.map(ann => (
+              {announcements.map(ann => ann.status === 'draft' ? (
+                <Card key={ann.id} className="border border-dashed border-divider shadow-none bg-surface">
+                  <Card.Content className="p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 min-w-0">
+                          <Chip size="sm" variant="secondary" color="warning">{t('draft')}</Chip>
+                          <h4 className={`type-subheading truncate ${ann.title.trim() ? 'text-foreground' : 'text-hint'}`}>
+                            {ann.title.trim() || t('untitledDraft')}
+                          </h4>
+                        </div>
+                        {ann.content.trim() && (
+                          <p className="type-body text-subtle line-clamp-2">{ann.content}</p>
+                        )}
+                        <p className="type-caption text-hint mt-2">
+                          {t('lastSaved', { time: formatRelative(new Date(ann.updatedAt), intlLocale) })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onPress={() => router.push(`/dashboard/admin/announcements/${ann.id}`)}
+                        >
+                          <Icon icon="solar:pen-linear" width={16} />
+                          {t('editDraft')}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          isIconOnly
+                          aria-label={t('deleteDraft')}
+                          onPress={() => setDraftToDelete(ann)}
+                        >
+                          <Icon icon="solar:trash-bin-trash-linear" width={16} className="text-danger" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card.Content>
+                </Card>
+              ) : (
                 <Card key={ann.id} className="border border-divider shadow-none bg-surface">
                   <Card.Content className="p-4">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           {ann.pinned && (
                             <Icon icon="solar:pin-bold" width={14} className="text-warning" />
                           )}
                           <h4 className="type-subheading text-foreground">{ann.title}</h4>
                         </div>
-                        <p className="type-body text-subtle">{ann.content}</p>
+                        <p className="type-body text-subtle whitespace-pre-line">{ann.content}</p>
                         <div className="flex items-center gap-2 mt-2">
                           <p className="type-caption text-hint">
                             {t('by')} {ann.author}
                           </p>
                           <span className="type-caption text-disabled">·</span>
-                          <p className="type-caption text-hint">{formatTimeAgo(ann.createdAt)}</p>
+                          <p className="type-caption text-hint">
+                            {formatRelative(new Date(ann.publishedAt ?? ann.createdAt), intlLocale)}
+                          </p>
                         </div>
                       </div>
                       {ann.pinned && (
@@ -542,6 +545,13 @@ export default function AdminPage() {
               ))}
             </div>
           </div>
+
+          <DeleteAnnouncementDraftDialog
+            title={draftToDelete?.title ?? ''}
+            isOpen={draftToDelete !== null}
+            onOpenChange={open => { if (!open) setDraftToDelete(null); }}
+            onConfirm={() => (draftToDelete ? deleteDraft(draftToDelete) : Promise.resolve())}
+          />
         </Tabs.Panel>
 
         <Tabs.Panel id="bankRequests" className="pt-4">

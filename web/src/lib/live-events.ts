@@ -4,7 +4,7 @@ import { env } from '@/lib/env';
 import { isDevMockEnabled } from '@/lib/dev-mock';
 import { fromMinorUnits } from '@/lib/guma/money';
 
-export type LiveResource = 'bank' | 'auction' | 'lottery' | 'checkin' | 'notification';
+export type LiveResource = 'bank' | 'auction' | 'lottery' | 'checkin' | 'notification' | 'announcement';
 
 export interface ResourceChangedEvent {
   kind: 'resource';
