@@ -11,8 +11,8 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/models"
-	"github.com/kia280/guma/internal/session"
 	banksvc "github.com/kia280/guma/internal/services/bank"
+	"github.com/kia280/guma/internal/session"
 )
 
 // BankHandler is a thin gRPC adapter over the bank service.
@@ -294,6 +294,7 @@ func bankContributionToProto(c *banksvc.BankContribution) *gumav1.BankContributi
 		GuildId:   c.GuildID,
 		UserId:    c.UserID,
 		Username:  c.Username,
+		AvatarUrl: c.AvatarURL,
 		Amount:    c.Amount,
 		Note:      c.Note,
 		CreatedAt: timestamppb.New(c.CreatedAt),
@@ -313,16 +314,17 @@ func protoItems(items []models.Item) []*gumav1.Item {
 
 func fundRequestToProto(fr *banksvc.FundRequest) *gumav1.FundRequest {
 	proto := &gumav1.FundRequest{
-		Id:            fr.ID,
-		GuildId:       fr.GuildID,
-		RequesterId:   fr.RequesterID,
-		RequesterName: fr.RequesterName,
-		Amount:        fr.Amount,
-		Reason:        fr.Reason,
-		Status:        fr.Status,
-		ReviewerId:    fr.ReviewerID,
-		ReviewNote:    fr.ReviewNote,
-		CreatedAt:     timestamppb.New(fr.CreatedAt),
+		Id:                 fr.ID,
+		GuildId:            fr.GuildID,
+		RequesterId:        fr.RequesterID,
+		RequesterName:      fr.RequesterName,
+		RequesterAvatarUrl: fr.RequesterAvatarURL,
+		Amount:             fr.Amount,
+		Reason:             fr.Reason,
+		Status:             fr.Status,
+		ReviewerId:         fr.ReviewerID,
+		ReviewNote:         fr.ReviewNote,
+		CreatedAt:          timestamppb.New(fr.CreatedAt),
 	}
 	if fr.ReviewedAt != nil {
 		proto.ReviewedAt = timestamppb.New(*fr.ReviewedAt)
@@ -347,17 +349,18 @@ func bankItemToProto(bi *banksvc.BankItem) *gumav1.BankItem {
 
 func itemRequestToProto(ir *banksvc.ItemRequest) *gumav1.ItemRequest {
 	proto := &gumav1.ItemRequest{
-		Id:            ir.ID,
-		GuildId:       ir.GuildID,
-		BankItemId:    ir.BankItemID,
-		RequesterId:   ir.RequesterID,
-		RequesterName: ir.RequesterName,
-		Reason:        ir.Reason,
-		Status:        ir.Status,
-		ReviewerId:    ir.ReviewerID,
-		ReviewNote:    ir.ReviewNote,
-		Item:          itemToProto(ir.Item),
-		CreatedAt:     timestamppb.New(ir.CreatedAt),
+		Id:                 ir.ID,
+		GuildId:            ir.GuildID,
+		BankItemId:         ir.BankItemID,
+		RequesterId:        ir.RequesterID,
+		RequesterName:      ir.RequesterName,
+		RequesterAvatarUrl: ir.RequesterAvatarURL,
+		Reason:             ir.Reason,
+		Status:             ir.Status,
+		ReviewerId:         ir.ReviewerID,
+		ReviewNote:         ir.ReviewNote,
+		Item:               itemToProto(ir.Item),
+		CreatedAt:          timestamppb.New(ir.CreatedAt),
 	}
 	if ir.ReviewedAt != nil {
 		proto.ReviewedAt = timestamppb.New(*ir.ReviewedAt)

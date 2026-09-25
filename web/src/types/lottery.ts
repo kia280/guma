@@ -5,6 +5,7 @@ export type LotteryStatus = 'active' | 'upcoming' | 'ended';
 export interface LotteryWinner {
   id: string;
   username: string;
+  avatar?: string;
   prize: string;
   prizeAmount?: number;
 }
@@ -12,6 +13,7 @@ export interface LotteryWinner {
 export interface LotteryParticipant {
   id: string;
   username: string;
+  avatar?: string;
   tickets: number;
 }
 

@@ -1,30 +1,35 @@
 'use client';
 
-import { Button, Chip, Avatar, Separator, Modal, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
+import { Button, Chip, Separator, Modal, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { isNotFoundError } from '@/lib/guma/errors';
 import { useUserStore } from '@/lib/store';
 import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
+import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { UserAvatar } from './UserAvatar';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function CheckinDetailContent({ id, onClose }: { id: string; onClose?: () => void }) {
   const router = useRouter();
   const t = useTranslations('checkinDetailPage');
+  const format = useIntlFormatter();
+
+  const formatDateTime = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return format.dateTime(date, { dateStyle: 'medium', timeStyle: 'short' });
+  };
 
   const statusConfig = {
     [CheckinStatus.OPEN]: { label: t('statusOpen'), color: 'success' as const },
@@ -44,14 +49,37 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const guildId = useCurrentGuildId();
 
   const [entry, setEntry] = useState<CheckinEntry | null>(null);
+  const [isMissing, setIsMissing] = useState(false);
+  const loadState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => {
+    loadState.reset();
+    setReloadKey(key => key + 1);
+  };
   const refetchEntry = () => {
     if (!id) return;
-    apiClient.getCheckin(guildId, id).then(setEntry).catch(() => setEntry(null));
+    apiClient
+      .getCheckin(guildId, id)
+      .then(data => {
+        setEntry(data);
+        setIsMissing(false);
+        loadState.ready();
+      })
+      .catch(err => {
+        if (isNotFoundError(err)) {
+          setEntry(null);
+          setIsMissing(true);
+          return;
+        }
+        loadState.failed();
+        notify.loadFailed(reload, 'checkin-detail');
+      });
   };
   useEffect(() => {
     refetchEntry();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guildId, id]);
+  }, [guildId, id, reloadKey]);
 
   const [notes, setNotes] = useState('');
   const [timeRemaining, setTimeRemaining] = useState('');
@@ -72,7 +100,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     return () => clearInterval(timer);
   }, [entry]);
 
-  if (!entry) {
+  if (isMissing) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
         <Icon icon="solar:ghost-linear" width={48} className="text-disabled" />
@@ -81,6 +109,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           {t('goBack')}
         </Button>
       </div>
+    );
+  }
+
+  if (!entry) {
+    return (
+      <AsyncContent state={loadState.state} onRetry={reload} skeleton={<DetailSkeleton />}>
+        {null}
+      </AsyncContent>
     );
   }
 
@@ -100,10 +136,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
       await apiClient.submitAttendance(guildId, id, notes.trim());
       setNotes('');
       checkinModal.close();
+      notify.success(t('checkInSuccess'));
     } catch (err) {
       const status = (err as { response?: { status?: number } }).response?.status;
       if (status === 409) {
         checkinModal.close();
+        notify.info(t('alreadyCheckedIn'));
       } else if (status === 400) {
         setIsExpired(true);
         setSubmitError(t('checkInExpired'));
@@ -150,7 +188,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             )}
           </div>
           <h1 className="type-title text-foreground">{entry.description}</h1>
-          <p className="type-body text-subtle mt-1">{entry.date}</p>
+          <p className="type-body text-subtle mt-1">{formatDateTime(entry.date)}</p>
         </div>
         {hasCheckedIn ? (
           <Chip color="success" variant="secondary" className="shrink-0">
@@ -176,12 +214,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                         width={18}
                         className="text-subtle"
                       />
-                      {t('checkIn')} — {entry.description}
+                      {t('checkInTitle', { title: entry.description })}
                     </div>
                   </Modal.Heading>
                 </Modal.Header>
                 <Modal.Body className="flex flex-col gap-3">
-                  <p className="type-body text-subtle">{entry.date}</p>
+                  <p className="type-body text-subtle">{formatDateTime(entry.date)}</p>
                   <TextField>
                     <Label>{t('notesOptional')}</Label>
                     <TextArea
@@ -224,7 +262,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                 {t('attendance')}
               </h2>
               <Chip size="sm" variant="secondary">
-                {entry.attendanceList.length} {t('members')}
+                {t('members', { count: entry.attendanceList.length })}
               </Chip>
             </div>
 
@@ -240,9 +278,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     <span className="type-caption text-hint w-5 text-right shrink-0">
                       {idx + 1}
                     </span>
-                    <Avatar size="sm">
-                      <Avatar.Fallback>{member.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-                    </Avatar>
+                    <UserAvatar name={member.username} src={member.avatar} />
                     <div className="flex-1 min-w-0">
                       <p className="type-body font-medium text-foreground">{member.username}</p>
                       {member.notes && (
@@ -265,7 +301,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                 {t('loot')}
               </h2>
               <Chip size="sm" variant="secondary">
-                {entry.lootList.length} {t('items')}
+                {t('items', { count: entry.lootList.length })}
               </Chip>
             </div>
 
@@ -284,9 +320,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     <div className="flex-1 min-w-0">
                       <p className="type-body font-medium text-foreground">{item.name}</p>
                       {item.winner && (
-                        <p className="type-caption text-hint">
-                          {t('wonBy')} {item.winner}
-                        </p>
+                        <p className="type-caption text-hint">{t('wonBy', { name: item.winner })}</p>
                       )}
                     </div>
                     {item.quantity && (
@@ -311,21 +345,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             <div className="space-y-2 type-body">
               <div className="flex justify-between gap-2">
                 <span className="text-subtle shrink-0">{t('eventDate')}</span>
-                <span className="text-foreground text-right">{entry.date}</span>
+                <span className="text-foreground text-right">{formatDateTime(entry.date)}</span>
               </div>
               {entry.expireTime && (
                 <>
                   <Separator />
                   <div className="flex justify-between gap-2">
                     <span className="text-subtle shrink-0">{t('expires')}</span>
-                    <span className="text-foreground text-right">
-                      {new Date(entry.expireTime).toLocaleString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
+                    <span className="text-foreground text-right">{formatDateTime(entry.expireTime)}</span>
                   </div>
                   {isOpen_ && (
                     <div className="flex items-center gap-1.5 text-warning type-caption">
