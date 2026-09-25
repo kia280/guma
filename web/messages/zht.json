@@ -848,6 +848,7 @@
     "blindAuctionNote": "盲標競拍 — 其他出價已隱藏",
     "yourBidAmount": "您的出價金額",
     "insufficientBalance": "餘額不足",
+    "minimum": "最低：",
     "minimumBidIs": "最低出價為 $",
     "validBidAmount": "有效的出價金額",
     "cancel": "取消",

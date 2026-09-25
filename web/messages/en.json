@@ -848,6 +848,7 @@
     "blindAuctionNote": "Blind auction — other bids are hidden",
     "yourBidAmount": "Your Bid Amount",
     "insufficientBalance": "Insufficient balance",
+    "minimum": "Minimum:",
     "minimumBidIs": "Minimum bid is $",
     "validBidAmount": "Valid bid amount",
     "cancel": "Cancel",
