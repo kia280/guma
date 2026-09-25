@@ -108,7 +108,7 @@ const getActivityColor = (type: string) => {
     case 'lottery':
       return 'text-accent';
     case 'join':
-      return 'text-secondary';
+      return 'text-subtle';
     default:
       return 'text-hint';
   }
@@ -406,8 +406,8 @@ export default function AdminPage() {
                   label: t('totalItems'),
                   value: '47',
                   icon: 'solar:backpack-linear',
-                  color: 'text-secondary',
-                  bg: 'bg-secondary/10',
+                  color: 'text-subtle',
+                  bg: 'bg-default',
                 },
               ].map(stat => (
                 <Card key={stat.label} className="border border-divider shadow-none bg-surface">

@@ -31,7 +31,6 @@ export default function ContactPage() {
       description: t('discordDesc'),
       action: t('discordAction'),
       href: 'https://discord.gg/',
-      color: 'accent' as const,
     },
     {
       icon: 'solar:letter-bold-duotone',
@@ -41,7 +40,6 @@ export default function ContactPage() {
       description: t('emailDesc'),
       action: t('emailAction'),
       href: 'mailto:support@guma.app',
-      color: 'primary' as const,
     },
   ];
 
