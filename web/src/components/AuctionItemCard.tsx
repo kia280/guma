@@ -9,6 +9,7 @@ import {
   Separator,
   NumberField,
   Label,
+  useOverlayState,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
@@ -85,7 +86,7 @@ const getAuctionProgress = (startTime: string, endTime: string) => {
 
 interface AuctionItemCardProps {
   item: AuctionItem;
-  onPlaceBid: (itemId: string, amount: number) => void;
+  onPlaceBid: (itemId: string, amount: number) => Promise<boolean>;
   isLoading?: boolean;
   userBalance?: number;
 }
@@ -110,10 +111,13 @@ const AuctionItemCard = ({
   const hasBidAmount = Number.isFinite(bidAmount);
   const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
 
-  const handlePlaceBid = () => {
-    if (canBid) {
-      onPlaceBid(item.id, bidAmount);
+  const bidModal = useOverlayState();
+
+  const handlePlaceBid = async () => {
+    if (!canBid) return;
+    if (await onPlaceBid(item.id, bidAmount)) {
       setBidInput(null);
+      bidModal.close();
     }
   };
 
@@ -229,15 +233,17 @@ const AuctionItemCard = ({
 
               <div className="relative z-10 flex gap-2">
                 {isActive && (
-                  <Modal>
+                  <>
                   <Button
                     variant="primary"
                     isDisabled={isLoading}
                     className="flex-1"
+                    onPress={bidModal.open}
                   >
                     {t('placeBid')}
                   </Button>
                   {/* Place Bid Modal */}
+                  <Modal state={bidModal}>
                   <Modal.Backdrop>
           <Modal.Container size="md">
             <Modal.Dialog>
@@ -321,6 +327,7 @@ const AuctionItemCard = ({
           </Modal.Container>
       </Modal.Backdrop>
       </Modal>
+                  </>
                 )}
                 <Modal>
                 <Button variant="secondary" size="sm">

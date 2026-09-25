@@ -1,6 +1,6 @@
 // app/providers.tsx
 'use client';
-import { RouterProvider } from '@heroui/react';
+import { RouterProvider, Toast } from '@heroui/react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
@@ -23,6 +23,7 @@ export function Providers({ children }: { children: ReactNode }) {
     >
       <RouterProvider navigate={router.push}>
         <SharedElementTransition>{children}</SharedElementTransition>
+        <Toast.Provider />
         {DevTools && <DevTools />}
       </RouterProvider>
     </NextThemesProvider>

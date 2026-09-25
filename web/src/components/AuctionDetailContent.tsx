@@ -13,17 +13,20 @@ import {
   Description,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { isAxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { isNotFoundError } from '@/lib/guma/errors';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
+import { AsyncContent, DetailSkeleton } from './AsyncContent';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -78,27 +81,44 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   };
 
   const [item, setItem] = useState<AuctionItem | null>(null);
+  const [isMissing, setIsMissing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const loadState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => {
+    loadState.reset();
+    setReloadKey(key => key + 1);
+  };
   const latestRequest = useRef(0);
-  const refetchItem = (background = false) => {
+  const refetchItem = () => {
     if (!id) return;
     const request = ++latestRequest.current;
     apiClient
       .getAuction(guildId, id)
       .then(next => {
-        if (request === latestRequest.current) setItem(next);
+        if (request !== latestRequest.current) return;
+        setItem(next);
+        setIsMissing(false);
+        loadState.ready();
       })
       .catch(err => {
         if (request !== latestRequest.current) return;
-        if (!background || (isAxiosError(err) && err.response?.status === 404)) setItem(null);
+        if (isNotFoundError(err)) {
+          setItem(null);
+          setIsMissing(true);
+          return;
+        }
+        loadState.failed();
+        notify.loadFailed(reload, 'auction-detail');
       });
   };
   useEffect(() => {
     refetchItem();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guildId, id]);
+  }, [guildId, id, reloadKey]);
 
-  useLiveResource(['auction'], () => refetchItem(true), {
+  useLiveResource(['auction'], refetchItem, {
     guildId,
     match: event => event.resourceId === id,
   });
@@ -119,7 +139,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     return () => clearInterval(id);
   }, [item]);
 
-  if (!item) {
+  if (isMissing) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
         <Icon icon="solar:ghost-linear" width={48} className="text-disabled" />
@@ -128,6 +148,14 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           {t('goBack')}
         </Button>
       </div>
+    );
+  }
+
+  if (!item) {
+    return (
+      <AsyncContent state={loadState.state} onRetry={reload} skeleton={<DetailSkeleton />}>
+        {null}
+      </AsyncContent>
     );
   }
 
@@ -143,11 +171,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     try {
       await apiClient.placeBid(guildId, id, bidAmount);
       setBidInput(null);
-      refetchItem(true);
+      refetchItem();
       refreshBalance();
       bidModalState.close();
-    } catch (err) {
-      console.error(err);
+      notify.success(t('bidSuccess'));
+    } catch {
+      notify.error(t('bidFailed'));
     } finally {
       setIsLoading(false);
     }

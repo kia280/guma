@@ -5,10 +5,14 @@ import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { isNotFoundError } from '@/lib/guma/errors';
 import { useUserStore } from '@/lib/store';
 import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
+import { AsyncContent, DetailSkeleton } from './AsyncContent';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -44,14 +48,37 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const guildId = useCurrentGuildId();
 
   const [entry, setEntry] = useState<CheckinEntry | null>(null);
+  const [isMissing, setIsMissing] = useState(false);
+  const loadState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => {
+    loadState.reset();
+    setReloadKey(key => key + 1);
+  };
   const refetchEntry = () => {
     if (!id) return;
-    apiClient.getCheckin(guildId, id).then(setEntry).catch(() => setEntry(null));
+    apiClient
+      .getCheckin(guildId, id)
+      .then(data => {
+        setEntry(data);
+        setIsMissing(false);
+        loadState.ready();
+      })
+      .catch(err => {
+        if (isNotFoundError(err)) {
+          setEntry(null);
+          setIsMissing(true);
+          return;
+        }
+        loadState.failed();
+        notify.loadFailed(reload, 'checkin-detail');
+      });
   };
   useEffect(() => {
     refetchEntry();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guildId, id]);
+  }, [guildId, id, reloadKey]);
 
   const [notes, setNotes] = useState('');
   const [timeRemaining, setTimeRemaining] = useState('');
@@ -72,7 +99,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     return () => clearInterval(timer);
   }, [entry]);
 
-  if (!entry) {
+  if (isMissing) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
         <Icon icon="solar:ghost-linear" width={48} className="text-disabled" />
@@ -81,6 +108,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           {t('goBack')}
         </Button>
       </div>
+    );
+  }
+
+  if (!entry) {
+    return (
+      <AsyncContent state={loadState.state} onRetry={reload} skeleton={<DetailSkeleton />}>
+        {null}
+      </AsyncContent>
     );
   }
 
@@ -100,10 +135,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
       await apiClient.submitAttendance(guildId, id, notes.trim());
       setNotes('');
       checkinModal.close();
+      notify.success(t('checkInSuccess'));
     } catch (err) {
       const status = (err as { response?: { status?: number } }).response?.status;
       if (status === 409) {
         checkinModal.close();
+        notify.info(t('alreadyCheckedIn'));
       } else if (status === 400) {
         setIsExpired(true);
         setSubmitError(t('checkInExpired'));
