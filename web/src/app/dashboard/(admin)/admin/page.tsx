@@ -322,7 +322,7 @@ export default function AdminPage() {
   return (
     <div className="space-y-5">
       <Tabs
-        aria-label="Admin sections"
+        aria-label={t('sections')}
         selectedKey={selectedTab}
         onSelectionChange={key => router.replace(adminTabHref(adminTabFromParam(String(key))), { scroll: false })}
       >
@@ -378,7 +378,7 @@ export default function AdminPage() {
               ) : (
               <Table>
                 <Table.ScrollContainer>
-                  <Table.Content aria-label="Users table">
+                  <Table.Content aria-label={t('usersTable')}>
                     <Table.Header>
                       <Table.Column isRowHeader>{t('user')}</Table.Column>
                       <Table.Column>{t('role')}</Table.Column>
@@ -587,8 +587,8 @@ export default function AdminPage() {
                       )}
                     </div>
                     {[
-                      { label: t('recruitment'), value: 'Open' },
-                      { label: t('serverRegion'), value: 'Asia Pacific' },
+                      { label: t('recruitment'), value: t('recruitmentOpen') },
+                      { label: t('serverRegion'), value: t('regionAsiaPacific') },
                     ].map(setting => (
                       <div key={setting.label} className="py-2">
                         <p className="type-body text-subtle">{setting.label}</p>

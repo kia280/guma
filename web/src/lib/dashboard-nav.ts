@@ -116,7 +116,7 @@ export const isLinkActive = (href: string, pathname: string, tab: string | null)
 
 export type CrumbLabel =
   | { kind: 'nav'; key: NavLabelKey }
-  | { kind: 'page'; key: 'detail' | 'editAnnouncement' | 'withdraw' | 'profile' | 'preference' | 'terms' | 'contact' };
+  | { kind: 'page'; key: 'detail' | 'editAnnouncement' | 'profile' | 'preference' | 'terms' | 'contact' };
 
 export interface Crumb {
   label: CrumbLabel;
@@ -145,7 +145,6 @@ export function buildCrumbs(pathname: string, tab: string | null): Crumb[] {
     const admin = nav('admin', '/dashboard/admin');
     if (!second) return [admin, nav(ADMIN_TAB_LABELS[adminTabFromParam(tab)])];
     if (second === 'roles') return [admin, nav('adminRoles')];
-    if (second === 'withdraw') return [admin, { label: { kind: 'page', key: 'withdraw' } }];
     if (second === 'announcements') {
       const announcements = nav('adminAnnouncements', adminTabHref('announcements'));
       return third ? [admin, announcements, { label: { kind: 'page', key: 'editAnnouncement' } }] : [admin, announcements];
