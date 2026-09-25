@@ -99,7 +99,9 @@
     "kindAuction": "Auction",
     "kindCheckin": "Roll call",
     "kindLottery": "Lottery",
-    "kindCalendar": "Event"
+    "kindCalendar": "Event",
+    "previousSlide": "Previous overview",
+    "nextSlide": "Next overview"
   },
   "checkIn": {
     "checkIn": "Attendance",
