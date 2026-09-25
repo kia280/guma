@@ -26,6 +26,7 @@ import type { GuildEvent } from '@/types/guild-events';
 import { ItemCategory, ItemRarity } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
+import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from '@/types/preference';
 import type { User, UserStats } from '@/types/user';
 import type { Transaction, Wallet } from '@/types/wallet';
 import type { ApiClient } from '../types';
@@ -44,6 +45,8 @@ const store = {
   events: [] as GuildEvent[],
   announcements: [...mockData.mockAdminAnnouncements] as AdminAnnouncement[],
   notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
+  notificationPreferences: { ...DEFAULT_NOTIFICATION_PREFERENCES } as NotificationPreferences,
+  preferencesUpdatedAt: undefined as string | undefined,
 };
 
 type StoredCheckinTemplate = Omit<CheckinTemplate, 'items'> & { itemTemplateIds: string[] };
@@ -689,6 +692,23 @@ const baseMockApiClient: ApiClient = {
       n.isRead = true;
     });
     return unread.length;
+  },
+
+  // ── Preferences ──
+  getMyPreferences: async () => ({
+    notifications: { ...store.notificationPreferences },
+    updatedAt: store.preferencesUpdatedAt,
+  }),
+  updateNotificationPreferences: async (patch) => {
+    Object.assign(
+      store.notificationPreferences,
+      Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined)),
+    );
+    store.preferencesUpdatedAt = new Date().toISOString();
+    return {
+      notifications: { ...store.notificationPreferences },
+      updatedAt: store.preferencesUpdatedAt,
+    };
   },
 
   // ── Admin ──

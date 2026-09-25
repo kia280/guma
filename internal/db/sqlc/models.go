@@ -331,14 +331,19 @@ type User struct {
 }
 
 type UserPreference struct {
-	UserID     uuid.UUID
-	Theme      string
-	Language   string
-	Timezone   string
-	DateFormat string
-	TimeFormat string
-	UiSettings []byte
-	UpdatedAt  time.Time
+	UserID             uuid.UUID
+	Theme              string
+	Language           string
+	Timezone           string
+	DateFormat         string
+	TimeFormat         string
+	UiSettings         []byte
+	UpdatedAt          time.Time
+	EmailNotifications bool
+	AuctionAlerts      bool
+	LotteryAlerts      bool
+	EventReminders     bool
+	CheckinReminders   bool
 }
 
 type Wallet struct {

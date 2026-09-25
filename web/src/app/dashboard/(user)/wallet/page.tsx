@@ -36,6 +36,7 @@ import { apiClient } from '@/lib/guma';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 import { type FormatGold, useFormatGold } from '@/lib/guma/useFormatGold';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
+import { useGuildPermissions } from '@/lib/permissions';
 import { transactionStatusColor } from '@/lib/status-colors';
 import { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
@@ -136,6 +137,7 @@ export default function WalletPage() {
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
+  const { can } = useGuildPermissions();
   const balanceTrend = useBalanceTrend(guildId);
   const depositModalState = useOverlayState();
   const transferModalState = useOverlayState();
@@ -591,10 +593,14 @@ export default function WalletPage() {
                   });
                   auctionModalState.open();
                 }}
-                onPutToLottery={i => {
-                  setLotteryPrize(i.item.name);
-                  lotteryModalState.open();
-                }}
+                onPutToLottery={
+                  can('createLottery')
+                    ? i => {
+                        setLotteryPrize(i.item.name);
+                        lotteryModalState.open();
+                      }
+                    : undefined
+                }
                 onWithdraw={openItemWithdraw}
               />
             ))}
