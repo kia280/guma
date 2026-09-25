@@ -91,9 +91,9 @@ export default function ProfilePage() {
       <Card className="border border-divider shadow-none bg-surface">
         <Card.Content className="flex flex-row items-center gap-4 sm:gap-5 p-4 sm:p-5">
           <div className="relative shrink-0">
-            <Avatar className="size-16 sm:size-20 text-large">
+            <Avatar className="size-16 sm:size-20">
               <Avatar.Image src={user?.avatarUrl || undefined} />
-              <Avatar.Fallback>{Array.from(shownName).slice(0, 2).join('').toUpperCase()}</Avatar.Fallback>
+              <Avatar.Fallback className="type-heading">{Array.from(shownName).slice(0, 2).join('').toUpperCase()}</Avatar.Fallback>
             </Avatar>
             <button
               type="button"
