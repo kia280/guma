@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import {
   Card,
@@ -89,7 +89,6 @@ interface AuctionItemCardProps {
   onPlaceBid: (itemId: string, amount: number) => void;
   isLoading?: boolean;
   userBalance?: number;
-  onCardClick?: (id: string) => void;
 }
 
 const AuctionItemCard = ({
@@ -97,9 +96,7 @@ const AuctionItemCard = ({
   onPlaceBid,
   isLoading = false,
   userBalance = 0,
-  onCardClick,
 }: AuctionItemCardProps) => {
-  const router = useRouter();
   const t = useTranslations('auctionItemCard');
   const [bidInput, setBidInput] = useState<number | null>(null);
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
@@ -120,31 +117,12 @@ const AuctionItemCard = ({
     }
   };
 
-  const handleCardClick = () => {
-    if (onCardClick) {
-      onCardClick(item.id);
-    } else {
-      router.push(`/dashboard/auction/${item.id}`);
-    }
-  };
-
-  const handleCardKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleCardClick();
-    }
-  };
-
   const progressColor = progress > 80 ? 'danger' : progress > 50 ? 'warning' : 'success';
 
   return (
     <>
       <div
-        className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors cursor-pointer rounded-lg"
-        role="button"
-        tabIndex={0}
-        onClick={handleCardClick}
-        onKeyDown={handleCardKeyDown}
+        className="relative border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors rounded-lg"
       >
         <Card className="border-0 shadow-none bg-transparent">
           <Card.Header className="pb-2">
@@ -158,7 +136,14 @@ const AuctionItemCard = ({
                   />
                 </div>
                 <div className="flex flex-col">
-                  <h4 className="type-subheading text-foreground">{item.name}</h4>
+                  <h4 className="type-subheading text-foreground">
+                    <Link
+                      href={`/dashboard/auction/${item.id}`}
+                      className="outline-none after:absolute after:inset-0 after:rounded-lg focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-focus"
+                    >
+                      {item.name}
+                    </Link>
+                  </h4>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
                       {item.rarity.toUpperCase()}
@@ -242,7 +227,7 @@ const AuctionItemCard = ({
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="relative z-10 flex gap-2">
                 {isActive && (
                   <Modal>
                   <Button
