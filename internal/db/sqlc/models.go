@@ -119,6 +119,7 @@ type CheckinAttendee struct {
 	DisplayName pgtype.Text
 	AvatarUrl   pgtype.Text
 	AttendedAt  time.Time
+	Notes       string
 }
 
 type CheckinTemplate struct {
