@@ -422,6 +422,9 @@ type ProtoBankContribution = {
   amount?: number | string;
   note?: string;
   created_at?: string;
+  kind?: string;
+  items?: ProtoItem[];
+  checkin_id?: string;
 };
 
 export const toBankContribution = (raw: ProtoBankContribution): BankContribution => ({
@@ -432,6 +435,9 @@ export const toBankContribution = (raw: ProtoBankContribution): BankContribution
   amount: fromMinorUnits(raw.amount),
   note: raw.note,
   createdAt: ts(raw.created_at),
+  kind: raw.kind === 'checkin_loot' ? 'checkin_loot' : 'gold',
+  itemNames: (raw.items ?? []).map(i => i.name ?? '').filter(Boolean),
+  checkinId: raw.checkin_id || undefined,
 });
 
 type ProtoFundRequest = {
@@ -519,15 +525,28 @@ export const toGuildContributions = (
   fundRequests: FundRequest[],
   itemRequests: ItemRequest[] = [],
 ): GuildContribution[] => {
-  const c: GuildContribution[] = contributions.map(b => ({
-    id: `c-${b.id}`,
-    type: 'contribute',
-    amount: b.amount,
-    member: b.username,
-    date: b.createdAt.slice(0, 10),
-    status: 'completed',
-    note: b.note,
-  }));
+  const c: GuildContribution[] = contributions.map(b =>
+    b.kind === 'checkin_loot'
+      ? {
+          id: `c-${b.id}`,
+          type: 'checkin_loot',
+          itemName: b.itemNames.join(', '),
+          member: b.username,
+          date: b.createdAt.slice(0, 10),
+          status: 'completed',
+          note: b.note,
+          checkinId: b.checkinId,
+        }
+      : {
+          id: `c-${b.id}`,
+          type: 'contribute',
+          amount: b.amount,
+          member: b.username,
+          date: b.createdAt.slice(0, 10),
+          status: 'completed',
+          note: b.note,
+        },
+  );
   const r: GuildContribution[] = fundRequests.map(f => ({
     id: `r-${f.id}`,
     type: 'request',

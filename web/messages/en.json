@@ -386,7 +386,8 @@
     "errorNotMember": "Only guild members can submit requests.",
     "errorGeneric": "Something went wrong. Please try again.",
     "fromCheckin": "From roll call: {title}",
-    "untitledCheckin": "a deleted roll call"
+    "untitledCheckin": "a deleted roll call",
+    "typeCheckinLoot": "Roll call stocked"
   },
   "notificationsCard": {
     "notifications": "Notifications",

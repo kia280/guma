@@ -350,6 +350,18 @@ const baseMockApiClient: ApiClient = {
         checkinTitle: req.title,
       })),
     );
+    if (req.lootList?.length) {
+      mockData.mockContributions.unshift({
+        id: `c-${entry.id}`,
+        type: 'checkin_loot',
+        itemName: req.lootList.map(item => item.name).join(', '),
+        member: currentUser.displayName,
+        date: new Date().toISOString().slice(0, 10),
+        status: 'completed',
+        note: req.title,
+        checkinId: entry.id,
+      });
+    }
     return entry;
   },
   updateCheckin: async (_guildId, id, patch) => {
@@ -505,6 +517,8 @@ const baseMockApiClient: ApiClient = {
     amount: req.amount,
     note: req.note,
     createdAt: new Date().toISOString(),
+    kind: 'gold',
+    itemNames: [],
   }),
   requestFunds: async (guildId, req): Promise<FundRequest> => ({
     id: `fr-${Date.now()}`,
