@@ -129,7 +129,7 @@
     "loot": "戰利品",
     "viewDetails": "查看詳情",
     "checkinClosed": "點名已結束",
-    "markPresent": "報到",
+    "openCheckin": "前往點名",
     "template": "範本",
     "templatePlaceholder": "從範本開始",
     "templatesLoading": "正在載入範本…",

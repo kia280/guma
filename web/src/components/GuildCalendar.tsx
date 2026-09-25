@@ -4,6 +4,7 @@ import { Card, Button, ButtonGroup, Chip, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React, { useState, useEffect } from 'react';
+import { Focusable } from 'react-aria-components';
 import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import {
   GuildEvent,
@@ -189,8 +190,9 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           const top = getEventTop(event.startDate);
           const height = Math.max(getEventHeight(event.startDate, event.endDate), 24);
           return (
-            <div
+            <button
               key={event.id}
+              type="button"
               style={{
                 top,
                 height,
@@ -199,11 +201,8 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 backgroundColor: colors.bg,
                 borderLeft: `3px solid ${colors.border}`,
               }}
-              className="absolute rounded-r-md overflow-hidden cursor-pointer z-20 hover:opacity-80 transition-opacity px-1.5 py-0.5"
+              className="absolute block text-left rounded-r-md overflow-hidden cursor-pointer z-20 hover:opacity-80 transition-opacity px-1.5 py-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               onClick={() => onEventClick(event)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={e => e.key === 'Enter' && onEventClick(event)}
             >
               <p className="type-label text-foreground truncate">
                 {event.title}
@@ -213,7 +212,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                   {formatTime(event.startDate)}
                 </p>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
@@ -246,66 +245,51 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           return (
             <Card
               key={index}
-              onClick={() => handleDateClick(day)}
-              onKeyDown={e => e.key === 'Enter' && handleDateClick(day)}
-              role="button"
-              tabIndex={0}
-              className={`cursor-pointer h-full
-                min-h-[80px] border shadow-none transition-colors
+              className={`h-full min-h-[80px] p-0 border shadow-none transition-colors
                 ${!isCurrentMonth ? 'opacity-30' : ''}
                 ${isToday ? 'border-accent/50 bg-accent/5' : 'border-divider bg-surface'}
                 ${isSelected && !isToday ? 'border-foreground/20 bg-surface-secondary' : ''}
               `}
             >
-              <Card.Content className="p-1.5 h-full">
-                <div className="flex flex-col h-full">
-                  <div
-                    className={`type-label text-center mb-1 ${isToday ? 'text-accent' : 'text-foreground'}`}
-                  >
-                    {day.getDate()}
-                  </div>
+              <button
+                type="button"
+                aria-label={formatDate(day)}
+                aria-pressed={Boolean(isSelected)}
+                onClick={() => handleDateClick(day)}
+                className={`absolute inset-0 flex w-full items-start justify-center rounded-[inherit] cursor-pointer pt-1.5 type-label focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${isToday ? 'text-accent' : 'text-foreground'}`}
+              >
+                <span className="block leading-none">{day.getDate()}</span>
+              </button>
 
-                  <div className="flex-1 space-y-0.5">
-                    {dayEvents.slice(0, 2).map(event => (
-                      <Tooltip key={event.id}>
-                        <div
-                          onClick={e => {
-                            e.stopPropagation();
-                            onEventClick(event);
-                          }}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') {
-                              e.stopPropagation();
-                              onEventClick(event);
-                            }
-                          }}
-                          role="button"
-                          tabIndex={0}
-                          className="cursor-pointer"
+              <div className="relative z-10 mt-6 px-1.5 pb-1.5 space-y-0.5 pointer-events-none">
+                {dayEvents.slice(0, 2).map(event => (
+                  <Tooltip key={event.id}>
+                    <Focusable>
+                      <button
+                        type="button"
+                        onClick={() => onEventClick(event)}
+                        className="block w-full text-left cursor-pointer pointer-events-auto rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      >
+                        <Chip
+                          color={EVENT_TYPE_COLORS[event.type]}
+                          size="sm"
+                          variant="secondary"
+                          className="type-caption truncate max-w-full"
                         >
-                          <Chip
-                            color={EVENT_TYPE_COLORS[event.type]}
-                            size="sm"
-                            variant="secondary"
-                            className="type-caption truncate max-w-full"
-                          >
-                            {event.title.length > 8 ? `${event.title.slice(0, 8)}...` : event.title}
-                          </Chip>
-                        </div>
-                        <Tooltip.Content>
-                          {`${event.title} - ${formatTime(event.startDate)}`}
-                        </Tooltip.Content>
-                      </Tooltip>
-                    ))}
+                          {event.title.length > 8 ? `${event.title.slice(0, 8)}...` : event.title}
+                        </Chip>
+                      </button>
+                    </Focusable>
+                    <Tooltip.Content>
+                      {`${event.title} - ${formatTime(event.startDate)}`}
+                    </Tooltip.Content>
+                  </Tooltip>
+                ))}
 
-                    {dayEvents.length > 2 && (
-                      <div className="type-caption text-hint text-center">
-                        +{dayEvents.length - 2}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Card.Content>
+                {dayEvents.length > 2 && (
+                  <div className="type-caption text-hint text-center">+{dayEvents.length - 2}</div>
+                )}
+              </div>
             </Card>
           );
         })}
@@ -328,18 +312,16 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           {allDayEvents.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {allDayEvents.map(event => (
-                <div
+                <button
                   key={event.id}
-                  className="cursor-pointer"
+                  type="button"
+                  className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   onClick={() => onEventClick(event)}
-                  onKeyDown={e => e.key === 'Enter' && onEventClick(event)}
-                  role="button"
-                  tabIndex={0}
                 >
                   <Chip size="sm" color={EVENT_TYPE_COLORS[event.type]} variant="secondary">
                     {event.title}
                   </Chip>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -369,13 +351,12 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
             const isToday = isSameDay(day, today);
             const allDayEvs = getEventsForDate(day).filter(e => e.isAllDay);
             return (
-              <div
+              <button
                 key={index}
-                className={`flex-1 px-1 py-2 text-center border-l border-divider cursor-pointer transition-colors ${isToday ? 'bg-accent/5' : 'hover:bg-surface-secondary'}`}
+                type="button"
+                aria-label={formatDate(day)}
+                className={`flex-1 px-1 py-2 text-center border-l border-divider cursor-pointer transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus ${isToday ? 'bg-accent/5' : 'hover:bg-surface-secondary'}`}
                 onClick={() => handleDateClick(day)}
-                onKeyDown={e => e.key === 'Enter' && handleDateClick(day)}
-                role="button"
-                tabIndex={0}
               >
                 <div className="type-label text-hint">
                   {day.toLocaleDateString(intlLocale, { weekday: 'short' })}
@@ -399,7 +380,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                     ))}
                   </div>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>

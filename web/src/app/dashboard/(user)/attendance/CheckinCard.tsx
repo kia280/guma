@@ -2,6 +2,8 @@
 
 import { Button, Card, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { CheckinStatus } from './data';
 
@@ -31,7 +33,7 @@ export function CheckinCard({
   lootCount,
   imageUrl,
   isDisabled,
-  onClick,
+  href,
 }: {
   status: CheckinStatus;
   date: string;
@@ -41,9 +43,11 @@ export function CheckinCard({
   lootCount: number;
   imageUrl?: string;
   isDisabled?: boolean;
-  onClick?: () => void;
+  href: string;
 }) {
   const t = useTranslations('checkIn');
+  const router = useRouter();
+  const openDetail = () => router.push(href);
   const statusLabel = {
     [CheckinStatus.OPEN]: t('statusActive'),
     [CheckinStatus.CLOSED]: t('statusClosed'),
@@ -53,20 +57,11 @@ export function CheckinCard({
 
   return (
     <Card
-      className={`border border-divider shadow-none bg-surface ${!isDisabled ? 'cursor-pointer hover:border-foreground/20 transition-colors' : 'opacity-50'}`}
-      role={!isDisabled ? 'button' : undefined}
-      tabIndex={!isDisabled ? 0 : undefined}
-      onClick={!isDisabled ? onClick : undefined}
-      onKeyDown={
+      className={`border border-divider shadow-none bg-surface ${
         !isDisabled
-          ? (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onClick?.();
-              }
-            }
-          : undefined
-      }
+          ? 'hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus'
+          : 'opacity-50'
+      }`}
     >
       <Card.Header className="pb-2">
         <div className="flex justify-between items-start gap-3 w-full">
@@ -75,7 +70,15 @@ export function CheckinCard({
               <Icon icon="heroicons:clipboard-document-check" width={20} className="text-subtle" />
             </div>
             <div className="flex flex-col min-w-0">
-              <h4 className="type-subheading text-foreground truncate">{description}</h4>
+              <h4 className="type-subheading text-foreground truncate">
+                {isDisabled ? (
+                  description
+                ) : (
+                  <Link href={href} className="outline-none after:absolute after:inset-0">
+                    {description}
+                  </Link>
+                )}
+              </h4>
               <p className="type-caption text-hint">{date}</p>
             </div>
           </div>
@@ -128,13 +131,18 @@ export function CheckinCard({
 
       <Card.Footer className="pt-0">
         {status === CheckinStatus.OPEN && (
-          <Button variant="primary" className="w-full" isDisabled={isDisabled} onPress={onClick}>
+          <Button variant="primary" className="w-full" isDisabled={isDisabled} onPress={openDetail}>
             <Icon icon="solar:check-circle-linear" width={16} />
-            {t('markPresent')}
+            {t('openCheckin')}
           </Button>
         )}
         {status === CheckinStatus.FINISHED && (
-          <Button variant="secondary" className="w-full" isDisabled={isDisabled} onPress={onClick}>
+          <Button
+            variant="secondary"
+            className="w-full"
+            isDisabled={isDisabled}
+            onPress={openDetail}
+          >
             <Icon icon="solar:eye-linear" width={16} />
             {t('viewDetails')}
           </Button>

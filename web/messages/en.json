@@ -129,7 +129,7 @@
     "loot": "Loot",
     "viewDetails": "View details",
     "checkinClosed": "Roll call closed",
-    "markPresent": "Mark present",
+    "openCheckin": "Open roll call",
     "template": "Template",
     "templatePlaceholder": "Start from a template",
     "templatesLoading": "Loading templates…",

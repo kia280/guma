@@ -4,7 +4,6 @@ import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Des
 import { Icon } from '@iconify/react';
 import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
 import type { DateValue } from '@internationalized/date';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { ItemTemplatePicker } from '@/components/ItemTemplatePicker';
@@ -64,7 +63,6 @@ const emptyDraft: CheckinDraft = {
 
 export default function CheckinPage() {
   const t = useTranslations('checkIn');
-  const router = useRouter();
   const guildId = useCurrentGuildId();
 
   const [checkins, setCheckins] = React.useState<CheckinEntry[]>([]);
@@ -178,10 +176,6 @@ export default function CheckinPage() {
     setDraft(emptyDraft);
     setSelectedTemplateId(null);
     localStorage.removeItem(DRAFT_KEY);
-  };
-
-  const handleCardClick = (item: CheckinEntry) => {
-    router.push(`/dashboard/attendance/${item.id}`);
   };
 
   return (
@@ -470,7 +464,7 @@ export default function CheckinPage() {
                     lootCount={item.lootList.length}
                     imageUrl={item.imageUrl}
                     isDisabled={item.isDisabled}
-                    onClick={() => !item.isDisabled && handleCardClick(item)}
+                    href={`/dashboard/attendance/${item.id}`}
                   />
                 ))}
               </div>
