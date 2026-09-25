@@ -60,6 +60,19 @@ interface FormData {
   recurringSeconds: number;
 }
 
+const pad2 = (value: number) => String(value).padStart(2, '0');
+
+const toLocalDateInput = (date: Date) =>
+  `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+
+const toLocalTimeInput = (date: Date) => `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+
+const localDateTimeToISO = (date: string, time: string, seconds = 0, milliseconds = 0) => {
+  const [year, month, day] = date.split('-').map(Number);
+  const [hours, minutes] = time.split(':').map(Number);
+  return new Date(year, month - 1, day, hours, minutes, seconds, milliseconds).toISOString();
+};
+
 export const EventFormModal: React.FC<EventFormModalProps> = ({
   state,
   onSubmit,
@@ -78,7 +91,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       title: '',
       description: '',
       type: 'other' as EventType,
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: toLocalDateInput(new Date()),
       startTime: '09:00',
       endDate: '',
       endTime: '10:00',
@@ -108,10 +121,10 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         title: event.title,
         description: event.description || '',
         type: event.type,
-        startDate: startDate.toISOString().split('T')[0],
-        startTime: startDate.toTimeString().slice(0, 5),
-        endDate: endDate ? endDate.toISOString().split('T')[0] : '',
-        endTime: endDate ? endDate.toTimeString().slice(0, 5) : '10:00',
+        startDate: toLocalDateInput(startDate),
+        startTime: toLocalTimeInput(startDate),
+        endDate: endDate ? toLocalDateInput(endDate) : '',
+        endTime: endDate ? toLocalTimeInput(endDate) : '10:00',
         isAllDay: event.isAllDay,
         location: event.location || '',
         priority: event.priority,
@@ -127,7 +140,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         title: '',
         description: '',
         type: 'other',
-        startDate: new Date().toISOString().split('T')[0],
+        startDate: toLocalDateInput(new Date()),
         startTime: '09:00',
         endDate: '',
         endTime: '10:00',
@@ -147,14 +160,14 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   const onFormSubmit = async (data: FormData) => {
     try {
       const startDateTime = data.isAllDay
-        ? `${data.startDate}T00:00:00.000Z`
-        : `${data.startDate}T${data.startTime}:00.000Z`;
+        ? localDateTimeToISO(data.startDate, '00:00')
+        : localDateTimeToISO(data.startDate, data.startTime);
 
       let endDateTime = undefined;
       if (data.endDate) {
         endDateTime = data.isAllDay
-          ? `${data.endDate}T23:59:59.999Z`
-          : `${data.endDate}T${data.endTime}:00.000Z`;
+          ? localDateTimeToISO(data.endDate, '23:59', 59, 999)
+          : localDateTimeToISO(data.endDate, data.endTime);
       }
 
       const eventData: CreateEventData | UpdateEventData = {
