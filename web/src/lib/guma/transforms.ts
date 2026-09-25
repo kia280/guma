@@ -295,6 +295,7 @@ type ProtoAttendee = {
   display_name?: string;
   avatar_url?: string;
   attended_at?: string;
+  notes?: string;
 };
 
 export const toAttendee = (raw: ProtoAttendee): AttendanceMember => ({
@@ -302,6 +303,7 @@ export const toAttendee = (raw: ProtoAttendee): AttendanceMember => ({
   userId: raw.user_id,
   username: raw.display_name || raw.user_id || 'Unknown',
   checkedInAt: ts(raw.attended_at),
+  ...(raw.notes ? { notes: raw.notes } : {}),
 });
 
 // ─── Lottery ────────────────────────────────────────────────────────────────

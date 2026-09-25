@@ -86,8 +86,8 @@ SELECT COALESCE(display_name, '') AS display_name,
 FROM users WHERE id = $1;
 
 -- name: InsertCheckinAttendee :one
-INSERT INTO checkin_attendees (checkin_id, user_id, display_name, avatar_url)
-VALUES ($1, $2, sqlc.arg(display_name)::text, sqlc.arg(avatar_url)::text)
+INSERT INTO checkin_attendees (checkin_id, user_id, display_name, avatar_url, notes)
+VALUES ($1, $2, sqlc.arg(display_name)::text, sqlc.arg(avatar_url)::text, sqlc.arg(notes)::text)
 ON CONFLICT (checkin_id, user_id) DO NOTHING
 RETURNING id;
 
@@ -101,6 +101,7 @@ SELECT EXISTS(SELECT 1 FROM checkins WHERE id = $1 AND guild_id = $2);
 SELECT id, checkin_id, user_id,
        COALESCE(display_name, '') AS display_name,
        COALESCE(avatar_url, '')   AS avatar_url,
+       notes,
        attended_at
 FROM checkin_attendees WHERE checkin_id = $1
 ORDER BY attended_at ASC

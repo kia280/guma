@@ -346,8 +346,8 @@ export const gumaApiClient: ApiClient = {
   deleteItemTemplate: async (guildId, id) => {
     await http.delete(`/v1/guilds/${guildId}/item-templates/${id}`);
   },
-  submitAttendance: async (guildId, checkinId) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/attend`);
+  submitAttendance: async (guildId, checkinId, notes) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/attend`, { notes: notes ?? '' });
     return toAttendee(data.attendee);
   },
   listAttendees: async (guildId, checkinId) => {

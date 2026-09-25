@@ -97,7 +97,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     setIsSubmitting(true);
     setSubmitError('');
     try {
-      await apiClient.submitAttendance(guildId, id);
+      await apiClient.submitAttendance(guildId, id, notes.trim());
       setNotes('');
       checkinModal.close();
     } catch (err) {
@@ -190,6 +190,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                       onChange={e => setNotes(e.target.value)}
                       variant="secondary"
                       rows={2}
+                      maxLength={500}
                     />
                   </TextField>
                   {submitError && (
