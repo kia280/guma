@@ -90,7 +90,7 @@ function ErrorPageContent() {
 
           {errorId !== 'unknown' && (
             <div className="bg-surface-secondary rounded-lg p-3">
-              <p className="type-caption text-soft font-mono">
+              <p className="type-caption text-soft font-mono break-all">
                 {t('errorIdLabel')}{' '}
                 <span className="text-foreground/90 font-semibold">{errorId}</span>
               </p>
