@@ -22,6 +22,19 @@ type Activity struct {
 	CreatedAt   time.Time
 }
 
+type Announcement struct {
+	ID          uuid.UUID
+	GuildID     uuid.UUID
+	AuthorID    uuid.UUID
+	Title       string
+	Content     string
+	Pinned      bool
+	Status      string
+	PublishedAt pgtype.Timestamptz
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
 type Auction struct {
 	ID              uuid.UUID
 	GuildID         uuid.UUID

@@ -13,6 +13,8 @@ const ZHT_TEXT: Record<string, string> = {
   'Guild Treasury Update': '公會金庫更新',
   'The guild treasury has been updated. Auction proceeds for this month have been distributed.':
     '公會金庫已更新，本月的競拍收益已經分配完畢。',
+  'Guild Hall Renovation': '公會大廳整修',
+  'We are planning to renovate the guild hall next month.': '我們計劃在下個月整修公會大廳。',
 
   'Weekly Guild Check-in': '每週公會點名',
   'Open — awaiting your check-in': '進行中 — 等待你報到',

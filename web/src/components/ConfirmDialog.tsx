@@ -1,0 +1,80 @@
+'use client';
+
+import React from 'react';
+import { AlertDialog, Button } from '@heroui/react';
+import { useTranslations } from 'next-intl';
+
+export function ConfirmDialog({
+  heading,
+  body,
+  confirmLabel,
+  failedMessage,
+  status = 'danger',
+  isOpen,
+  onOpenChange,
+  onConfirm,
+}: {
+  heading: string;
+  body: string;
+  confirmLabel: string;
+  failedMessage: string;
+  status?: 'danger' | 'warning';
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  onConfirm: () => Promise<void> | void;
+}) {
+  const t = useTranslations('adminPage');
+  const [isPending, setIsPending] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    if (isPending) return;
+    if (!open) setFailed(false);
+    onOpenChange(open);
+  };
+
+  const confirm = async () => {
+    setIsPending(true);
+    setFailed(false);
+    try {
+      await onConfirm();
+      onOpenChange(false);
+    } catch (err) {
+      console.error('Confirmed action failed', err);
+      setFailed(true);
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return (
+    <AlertDialog>
+      <AlertDialog.Backdrop isOpen={isOpen} onOpenChange={handleOpenChange} isDismissable={!isPending}>
+        <AlertDialog.Container size="sm">
+          <AlertDialog.Dialog>
+            <AlertDialog.Header>
+              <AlertDialog.Icon status={status} />
+              <AlertDialog.Heading>{heading}</AlertDialog.Heading>
+            </AlertDialog.Header>
+            <AlertDialog.Body className="flex flex-col gap-2">
+              <p className="type-body text-subtle">{body}</p>
+              {failed && (
+                <p role="alert" className="type-caption text-danger">
+                  {failedMessage}
+                </p>
+              )}
+            </AlertDialog.Body>
+            <AlertDialog.Footer>
+              <Button slot="close" variant="tertiary" isDisabled={isPending}>
+                {t('cancel')}
+              </Button>
+              <Button variant={status === 'danger' ? 'danger' : 'primary'} onPress={confirm} isPending={isPending}>
+                {confirmLabel}
+              </Button>
+            </AlertDialog.Footer>
+          </AlertDialog.Dialog>
+        </AlertDialog.Container>
+      </AlertDialog.Backdrop>
+    </AlertDialog>
+  );
+}

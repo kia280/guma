@@ -20,6 +20,7 @@ import { useCurrentGuildId } from '@/lib/current-guild';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { useUserStore } from '@/lib/store';
+import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import type {
   Announcement,
@@ -304,7 +305,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const LIVE_DASHBOARD_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'checkin'];
+const LIVE_DASHBOARD_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'checkin', 'announcement'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
 export default function DashboardPage() {
@@ -479,9 +480,7 @@ export default function DashboardPage() {
 
             <Modal.Body className="flex flex-col gap-3">
               <p className="type-body text-subtle">{selectedAnn?.date}</p>
-              <p className="type-prose text-foreground whitespace-pre-wrap">
-                {selectedAnn?.content}
-              </p>
+              <DiscordMarkdown content={selectedAnn?.content ?? ''} className="type-prose text-foreground" />
             </Modal.Body>
 
             <Modal.Footer className="border-t border-divider pt-3">

@@ -296,7 +296,6 @@
   },
   "adminPage": {
     "users": "用戶",
-    "activity": "動態",
     "guild": "公會",
     "announcements": "公告",
     "user": "用戶",
@@ -304,6 +303,10 @@
     "status": "狀態",
     "lastActive": "最後活躍",
     "recentActivity": "近期公會動態",
+    "loadingActivity": "正在載入動態",
+    "activityLoadError": "無法載入近期動態。",
+    "retry": "重試",
+    "noActivity": "目前還沒有公會動態。競標、簽到、抽獎與新成員加入都會顯示在這裡。",
     "totalMembers": "總成員數",
     "guildBalance": "公會餘額",
     "activeEvents": "進行中活動",
@@ -319,9 +322,52 @@
     "pinAnnouncement": "置頂公告",
     "pinNote": "置頂公告將顯示在頂部",
     "cancel": "取消",
-    "post": "發布",
     "by": "作者",
     "pinned": "已置頂",
+    "draft": "草稿",
+    "untitledDraft": "未命名草稿",
+    "noAnnouncements": "目前沒有公告",
+    "createDraftFailed": "無法建立草稿，請稍後再試。",
+    "lastSaved": "最後儲存於 {time}",
+    "editDraft": "編輯",
+    "deleteDraft": "刪除草稿",
+    "deleteDraftTitle": "要刪除這份草稿嗎？",
+    "deleteDraftBody": "「{title}」將被永久刪除，且無法復原。",
+    "deleteDraftFailed": "無法刪除草稿，請稍後再試。",
+    "delete": "刪除",
+    "backToAnnouncements": "返回公告",
+    "editAnnouncement": "編輯公告",
+    "editAnnouncementHint": "變更會自動儲存為草稿，發布後成員才看得到。",
+    "loadingDraft": "正在載入草稿",
+    "draftNotFound": "找不到這則公告",
+    "draftNotFoundHint": "它可能已被其他管理員刪除。",
+    "announcementTitlePlaceholder": "輸入標題",
+    "announcementContentPlaceholder": "撰寫公告內容",
+    "contentLength": "{count} / {max} 字",
+    "write": "編輯",
+    "preview": "預覽",
+    "nothingToPreview": "目前沒有內容可以預覽。",
+    "markdownHint": "支援 Discord 格式：**粗體**、*斜體*、__底線__、~~刪除線~~、||防雷||、`程式碼`、```程式碼區塊```、# 標題、-# 小字、> 引用、- 清單、[文字](https://網址)",
+    "saving": "儲存中…",
+    "saved": "已儲存",
+    "savedAt": "已於 {time} 儲存",
+    "unsavedChanges": "有尚未儲存的變更",
+    "saveFailed": "自動儲存失敗",
+    "publish": "發布",
+    "publishRequirement": "填寫標題與內容後即可發布。",
+    "publishFailed": "發布公告失敗，請稍後再試。",
+    "published": "已發布",
+    "unpublish": "撤銷發布",
+    "unpublishTitle": "要撤銷發布這則公告嗎？",
+    "unpublishBody": "「{title}」會從成員的公告中移除並改回草稿。重新發布時會使用新的發布時間。",
+    "unpublishFailed": "撤銷發布失敗，請稍後再試。",
+    "editPublishedHint": "這則公告已發布，修改後按「儲存變更」才會更新成員看到的內容。",
+    "saveChanges": "儲存變更",
+    "saveChangesFailed": "儲存變更失敗",
+    "publishedRequirement": "已發布的公告必須有標題與內容。",
+    "discardChangesTitle": "要捨棄未儲存的變更嗎？",
+    "discardChangesBody": "你對這則已發布公告的修改尚未儲存，離開後將會遺失。",
+    "discardChanges": "捨棄",
     "save": "儲存",
     "statuses": {
       "online": "在線",
@@ -334,8 +380,70 @@
       "moderator": "幹部",
       "member": "成員"
     },
-    "bankRequests": "金庫申請",
+    "bankRequests": "申請",
+    "rolePermissions": "角色權限",
     "templates": "範本"
+  },
+  "adminRolesPage": {
+    "back": "返回管理",
+    "title": "角色權限",
+    "subtitle": "會長、管理員、幹部與成員在公會中可執行的操作。",
+    "action": "操作",
+    "allowed": "允許",
+    "notAllowed": "不允許",
+    "roleSummaries": {
+      "owner": "公會建立者，擁有管理員的所有權限，也是唯一可以刪除公會的角色。",
+      "admin": "管理公會：編輯設定、舉辦抽獎並取消拍賣。",
+      "moderator": "協助日常運作：建立簽到並審核公會銀行申請。",
+      "member": "參與公會活動：簽到、拍賣、抽獎與公會銀行。"
+    },
+    "sections": {
+      "guild": {
+        "title": "公會",
+        "description": "公會資訊、設定與成員身分"
+      },
+      "checkin": {
+        "title": "簽到",
+        "description": "公會活動的出席紀錄"
+      },
+      "bank": {
+        "title": "公會銀行",
+        "description": "公會共用的資金與物品"
+      },
+      "auction": {
+        "title": "拍賣",
+        "description": "物品拍賣與出價"
+      },
+      "lottery": {
+        "title": "抽獎",
+        "description": "抽獎與開獎"
+      },
+      "wallet": {
+        "title": "錢包與背包",
+        "description": "個人的資金與物品"
+      }
+    },
+    "actions": {
+      "viewGuild": "查看公會資訊與設定",
+      "viewMembers": "查看成員名單",
+      "editGuild": "編輯公會資訊與設定",
+      "deleteGuild": "刪除公會",
+      "leaveGuild": "退出公會",
+      "attendCheckin": "查看簽到並登記出席",
+      "createCheckin": "建立簽到",
+      "contribute": "捐獻資金與物品",
+      "requestFromBank": "申請資金或物品",
+      "reviewRequests": "核准或駁回資金與物品申請",
+      "createAuction": "建立拍賣",
+      "placeBid": "出價",
+      "cancelAuction": "取消拍賣",
+      "buyTickets": "購買抽獎券",
+      "createLottery": "建立抽獎",
+      "drawLottery": "開獎",
+      "changeDrawDate": "變更開獎日期",
+      "manageWallet": "管理自己的錢包與背包"
+    },
+    "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。"
   },
   "guildBankPage": {
     "treasury": "公會金庫",
@@ -906,6 +1014,9 @@
       "approved": "已批准",
       "rejected": "已拒絕"
     }
+  },
+  "markdown": {
+    "revealSpoiler": "防雷內容，按下以顯示"
   },
   "checkinTemplates": {
     "description": "標題加上道具庫中的道具，用來快速帶入新點名。",

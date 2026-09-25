@@ -12,7 +12,7 @@ export interface FeedEvent {
 }
 
 export interface Announcement {
-  id: number;
+  id: string;
   title: string;
   date: string;
   pinned: boolean;
