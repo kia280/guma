@@ -203,7 +203,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                       tickFormatter={v => `$${compactNumber.format(v)}`}
                     />
                     <Tooltip
-                      formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, 'Balance']}
+                      formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, t('balance')]}
                       contentStyle={{
                         background: 'var(--overlay)',
                         border: '1px solid var(--border)',

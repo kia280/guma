@@ -14,6 +14,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
@@ -56,12 +57,12 @@ const getRarityColor = (rarity: ItemRarity) => {
   }
 };
 
-const formatTimeRemaining = (endTime: string) => {
+const formatTimeRemaining = (endTime: string, endedLabel: string) => {
   const now = new Date();
   const end = new Date(endTime);
   const diff = end.getTime() - now.getTime();
 
-  if (diff <= 0) return 'Ended';
+  if (diff <= 0) return endedLabel;
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -97,6 +98,8 @@ const AuctionItemCard = ({
   userBalance = 0,
 }: AuctionItemCardProps) => {
   const t = useTranslations('auctionItemCard');
+  const labels = useTranslations('createAuctionModal');
+  const format = useIntlFormatter();
   const [bidInput, setBidInput] = useState<number | null>(null);
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput ?? minimumBid;
@@ -104,7 +107,7 @@ const AuctionItemCard = ({
   const isActive = item.status === AuctionStatus.ACTIVE;
   const isUpcoming = item.status === AuctionStatus.UPCOMING;
 
-  const timeRemaining = formatTimeRemaining(item.endTime);
+  const timeRemaining = formatTimeRemaining(item.endTime, t('ended'));
   const progress = getAuctionProgress(item.startTime, item.endTime);
 
   const hasBidAmount = Number.isFinite(bidAmount);
@@ -146,7 +149,7 @@ const AuctionItemCard = ({
                   </h4>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
-                      {item.rarity.toUpperCase()}
+                      {labels(`rarities.${item.rarity}`)}
                     </Chip>
                   </div>
                 </div>
@@ -157,7 +160,7 @@ const AuctionItemCard = ({
                   color={isActive ? 'success' : isUpcoming ? 'warning' : 'default'}
                   variant="secondary"
                 >
-                  {item.status.toUpperCase()}
+                  {t(`status.${item.status}`)}
                 </Chip>
                 {isActive && (
                   <div className="flex items-center gap-1 type-caption text-hint">
@@ -250,9 +253,7 @@ const AuctionItemCard = ({
                       width={18}
                       className="text-subtle"
                     />
-                    <span>
-                      {t('placeBidTitle')} {item.name}
-                    </span>
+                    <span>{t('placeBidTitle', { name: item.name })}</span>
                   </div>
                 </Modal.Heading>
               </Modal.Header>
@@ -325,7 +326,7 @@ const AuctionItemCard = ({
                 <Modal>
                 <Button variant="secondary" size="sm">
                   <Icon icon="solar:history-linear" width={14} />
-                  {t('history')} ({item.bidHistory.length})
+                  {t('history', { count: item.bidHistory.length })}
                 </Button>
                 {/* Bid History Modal */}
                 <Modal.Backdrop>
@@ -333,9 +334,7 @@ const AuctionItemCard = ({
             <Modal.Dialog>
               <Modal.CloseTrigger />
               <Modal.Header className="text-center items-center">
-                <Modal.Heading>
-                  {t('bidHistory')} {item.name}
-                </Modal.Heading>
+                <Modal.Heading>{t('bidHistory', { name: item.name })}</Modal.Heading>
               </Modal.Header>
               <Modal.Body className="p-1">
                 <div className="space-y-2 overflow-y-auto max-h-[60vh]">
@@ -369,7 +368,7 @@ const AuctionItemCard = ({
                                 {bid.bidder.username}
                               </div>
                               <div className="type-caption text-hint">
-                                {new Date(bid.timestamp).toLocaleString()}
+                                {format.dateTime(new Date(bid.timestamp), { dateStyle: 'medium', timeStyle: 'short' })}
                               </div>
                             </div>
                           </div>

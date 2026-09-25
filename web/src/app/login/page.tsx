@@ -144,7 +144,7 @@ function Login() {
                 <InputGroup.Suffix className="pr-0">
                   <Button
                     isIconOnly
-                    aria-label={isVisible ? 'Hide password' : 'Show password'}
+                    aria-label={isVisible ? t('hidePassword') : t('showPassword')}
                     size="sm"
                     variant="ghost"
                     onPress={toggleVisibility}
