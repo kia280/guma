@@ -19,18 +19,16 @@ import {
   useFilter,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import React from 'react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import BackpackItemCard from '@/components/BackpackItemCard';
+import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal } from '@/components/CreateLotteryModal';
+import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
-import { isLocale } from '@/i18n/locales';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
-import { walletBalanceTrend } from '@/lib/guma/mock/data';
-import { localizeMock } from '@/lib/guma/mock/i18n';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { BackpackItem } from '@/types/backpack';
@@ -126,12 +124,8 @@ const getTransactionIcon = (transaction: Transaction) => {
 
 export default function WalletPage() {
   const t = useTranslations('walletPage');
-  const locale = useLocale();
-  const balanceTrend = React.useMemo(
-    () => (isLocale(locale) ? localizeMock(walletBalanceTrend, locale) : walletBalanceTrend),
-    [locale]
-  );
   const guildId = useCurrentGuildId();
+  const balanceTrend = useBalanceTrend(guildId);
   const itemWithdrawModalState = useOverlayState();
   const auctionModalState = useOverlayState();
   const lotteryModalState = useOverlayState();
@@ -152,10 +146,12 @@ export default function WalletPage() {
   const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>([]);
   const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
 
+  const refetchTrend = balanceTrend.refetch;
   const refetchBalance = React.useCallback(() => {
     apiClient.getWallet(guildId).then(setWallet).catch(() => {});
     apiClient.listTransactions(guildId).then(setTransactions).catch(() => {});
-  }, [guildId]);
+    refetchTrend();
+  }, [guildId, refetchTrend]);
 
   const refetchBackpack = React.useCallback(() => {
     apiClient.listBackpack(guildId).then(setBackpackItems).catch(() => {});
@@ -465,49 +461,12 @@ export default function WalletPage() {
 
           {/* Balance Chart */}
           <div>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={balanceTrend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="walletBalanceFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--separator)" vertical={false} />
-                <XAxis
-                  dataKey="day"
-                  tick={{ fontSize: 12, fill: 'var(--muted)' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 12, fill: 'var(--muted)' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={v => `$${v}`}
-                />
-                <Tooltip
-                  formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, 'Balance']}
-                  contentStyle={{
-                    background: 'var(--overlay)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    color: 'var(--foreground)',
-                  }}
-                  labelStyle={{ color: 'var(--muted)' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="balance"
-                  stroke="var(--accent)"
-                  strokeWidth={2}
-                  fill="url(#walletBalanceFill)"
-                  dot={false}
-                  activeDot={{ r: 4, fill: 'var(--accent)' }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <BalanceTrendChart
+              points={balanceTrend.points}
+              status={balanceTrend.status}
+              onRetry={balanceTrend.retry}
+              height={200}
+            />
           </div>
 
         </Card.Content>

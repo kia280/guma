@@ -75,7 +75,7 @@ export interface ApiClient {
   updateMe(patch: UpdateMeRequest): Promise<User>;
   getUser(id: string): Promise<User>;
   getUserStats(): Promise<UserStats>;
-  getBalanceTrend(): Promise<BalancePoint[]>;
+  getBalanceTrend(guildId: string, days?: number): Promise<BalancePoint[]>;
 
   // ── Guild ──
   listGuilds(query?: QueryOptions): Promise<Guild[]>;

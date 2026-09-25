@@ -118,17 +118,18 @@ export const PERSONAL_STATS: PersonalStats = {
   activityPoints: 340,
 };
 
-export const dashboardBalanceTrend: BalancePoint[] = [
-  { day: 'Feb 1', balance: 3200 },
-  { day: 'Feb 4', balance: 3800 },
-  { day: 'Feb 7', balance: 3500 },
-  { day: 'Feb 10', balance: 4100 },
-  { day: 'Feb 13', balance: 3900 },
-  { day: 'Feb 16', balance: 4400 },
-  { day: 'Feb 19', balance: 4200 },
-  { day: 'Feb 22', balance: 4750 },
-  { day: 'Feb 25', balance: 5000 },
-];
+const toIsoDate = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+export const mockBalanceTrend = (days: number): BalancePoint[] => {
+  const today = new Date();
+  return Array.from({ length: days }, (_, index) => {
+    const offset = days - 1 - index;
+    const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - offset);
+    const balance = 3200 + index * 60 + Math.round(Math.sin(index / 2.5) * 350);
+    return { date: toIsoDate(date), balance };
+  });
+};
 
 export const INCOMING_EVENTS: FeedEvent[] = [
   { id: '1', kind: 'auction', title: 'Dragon Slayer Sword', subtitle: 'Auction ending soon', timeLabel: '6h remaining', urgency: 'high' },
@@ -219,18 +220,6 @@ export const mockTransactions: Transaction[] = [
   { id: '10', type: 'deposit', amount: 150.0, date: '2024-01-11', status: 'completed', description: 'Lottery winnings' },
   { id: '11', type: 'transfer', amount: -80.0, recipient: member(40).username, date: '2024-01-10', status: 'completed', description: `Transfer to ${member(40).username}` },
   { id: '12', type: 'withdraw', amount: -100.0, date: '2024-01-09', status: 'completed', description: 'Withdrawal to bank account' },
-];
-
-export const walletBalanceTrend: BalancePoint[] = [
-  { day: 'Jan 1', balance: 800 },
-  { day: 'Jan 5', balance: 950 },
-  { day: 'Jan 9', balance: 870 },
-  { day: 'Jan 13', balance: 1100 },
-  { day: 'Jan 17', balance: 1050 },
-  { day: 'Jan 21', balance: 1200 },
-  { day: 'Jan 25', balance: 1150 },
-  { day: 'Jan 29', balance: 1300 },
-  { day: 'Feb 2', balance: 1250 },
 ];
 
 export const mockBackpackItems: BackpackItem[] = [
