@@ -15,6 +15,7 @@ import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
+import { getRarityColor } from '@/components/ItemThumbnail';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
@@ -25,8 +26,9 @@ import { apiClient } from '@/lib/guma';
 import { isNotFoundError } from '@/lib/guma/errors';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
+import { auctionStatusColor } from '@/lib/status-colors';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import { ItemCategory } from '@/types/item';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
 import { UserAvatar } from './UserAvatar';
 
@@ -40,15 +42,6 @@ const CATEGORY_ICONS: Record<ItemCategory, string> = {
   [ItemCategory.ACCESSORY]: 'solar:stars-linear',
   [ItemCategory.MATERIAL]: 'solar:box-linear',
   [ItemCategory.MISC]: 'solar:box-linear',
-};
-
-const RARITY_COLOR: Record<ItemRarity, 'default' | 'accent' | 'success' | 'warning' | 'danger'> = {
-  [ItemRarity.COMMON]: 'default',
-  [ItemRarity.UNCOMMON]: 'accent',
-  [ItemRarity.RARE]: 'success',
-  [ItemRarity.EPIC]: 'warning',
-  [ItemRarity.LEGENDARY]: 'danger',
-  [ItemRarity.MYTHIC]: 'success',
 };
 
 const getProgress = (startTime: string, endTime: string) => {
@@ -192,7 +185,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   );
 
   return (
-    <>
+    <div className="space-y-5">
       {/* Back button - only show in full page mode */}
       {!onClose && (
         <Button variant="secondary" size="sm" onPress={() => router.push('/dashboard/auction')}>
@@ -208,20 +201,10 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <Chip size="sm" color={RARITY_COLOR[item.rarity]} variant="tertiary">
+            <Chip size="sm" color={getRarityColor(item.rarity)} variant="tertiary">
               {labels(`rarities.${item.rarity}`)}
             </Chip>
-            <Chip
-              size="sm"
-              color={
-                isActive
-                  ? 'success'
-                  : item.status === AuctionStatus.UPCOMING
-                    ? 'warning'
-                    : 'default'
-              }
-              variant="tertiary"
-            >
+            <Chip size="sm" color={auctionStatusColor[item.status]} variant="tertiary">
               {t(`status.${item.status}`)}
             </Chip>
             {item.isBlind && (
@@ -443,7 +426,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               </div>
               <div className="flex justify-between">
                 <span className="text-hint">{t('rarity')}</span>
-                <Chip size="sm" color={RARITY_COLOR[item.rarity]} variant="tertiary">
+                <Chip size="sm" color={getRarityColor(item.rarity)} variant="tertiary">
                   {labels(`rarities.${item.rarity}`)}
                 </Chip>
               </div>
@@ -574,6 +557,6 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         </Modal.Container>
       </Modal.Backdrop>
       </Modal>
-    </>
+    </div>
   );
 }

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
+import { lotteryStatusColor } from '@/lib/status-colors';
 import { UserAvatar } from './UserAvatar';
 
 interface LotteryWinner {
@@ -27,17 +28,6 @@ interface LotteryCardProps {
   status: 'active' | 'upcoming' | 'ended';
   winners?: LotteryWinner[];
 }
-
-const getStatusColor = (status: LotteryCardProps['status']) => {
-  switch (status) {
-    case 'active':
-      return 'accent';
-    case 'upcoming':
-      return 'warning';
-    case 'ended':
-      return 'default';
-  }
-};
 
 const LotteryCard = ({
   id,
@@ -93,7 +83,7 @@ const LotteryCard = ({
           <div>
             <Chip
               size="sm"
-              color={getStatusColor(status)}
+              color={lotteryStatusColor[status]}
               variant="secondary"
               className="mb-1"
             >
