@@ -3,6 +3,7 @@
 import { Button, Card, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { checkinStatusColor } from '@/lib/status-colors';
 import { CheckinStatus } from './data';
 
 export { CheckinStatus };
@@ -15,12 +16,6 @@ const formatExpire = (iso: string) => {
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
 };
-
-export const checkinStatusColor = {
-  [CheckinStatus.OPEN]: 'success',
-  [CheckinStatus.CLOSED]: 'default',
-  [CheckinStatus.FINISHED]: 'accent',
-} as const;
 
 export function CheckinCard({
   status,

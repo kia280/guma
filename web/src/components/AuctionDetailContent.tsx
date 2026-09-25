@@ -17,13 +17,15 @@ import { isAxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
+import { getRarityColor } from '@/components/ItemThumbnail';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
+import { auctionStatusColor } from '@/lib/status-colors';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import { ItemCategory } from '@/types/item';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -35,15 +37,6 @@ const CATEGORY_ICONS: Record<ItemCategory, string> = {
   [ItemCategory.ACCESSORY]: 'solar:stars-linear',
   [ItemCategory.MATERIAL]: 'solar:box-linear',
   [ItemCategory.MISC]: 'solar:box-linear',
-};
-
-const RARITY_COLOR: Record<ItemRarity, 'default' | 'accent' | 'success' | 'warning' | 'danger'> = {
-  [ItemRarity.COMMON]: 'default',
-  [ItemRarity.UNCOMMON]: 'accent',
-  [ItemRarity.RARE]: 'success',
-  [ItemRarity.EPIC]: 'warning',
-  [ItemRarity.LEGENDARY]: 'danger',
-  [ItemRarity.MYTHIC]: 'success',
 };
 
 const getProgress = (startTime: string, endTime: string) => {
@@ -174,20 +167,10 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <Chip size="sm" color={RARITY_COLOR[item.rarity]} variant="tertiary">
+            <Chip size="sm" color={getRarityColor(item.rarity)} variant="tertiary">
               {item.rarity.toUpperCase()}
             </Chip>
-            <Chip
-              size="sm"
-              color={
-                isActive
-                  ? 'success'
-                  : item.status === AuctionStatus.UPCOMING
-                    ? 'warning'
-                    : 'default'
-              }
-              variant="tertiary"
-            >
+            <Chip size="sm" color={auctionStatusColor[item.status]} variant="tertiary">
               {item.status.toUpperCase()}
             </Chip>
             {item.isBlind && (
@@ -417,7 +400,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               </div>
               <div className="flex justify-between">
                 <span className="text-hint">{t('rarity')}</span>
-                <Chip size="sm" color={RARITY_COLOR[item.rarity]} variant="tertiary">
+                <Chip size="sm" color={getRarityColor(item.rarity)} variant="tertiary">
                   {item.rarity.toUpperCase()}
                 </Chip>
               </div>

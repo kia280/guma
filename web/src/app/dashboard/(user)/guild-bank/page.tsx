@@ -25,6 +25,7 @@ import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
+import { contributionStatusColor } from '@/lib/status-colors';
 import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-bank';
 
 
@@ -41,20 +42,6 @@ const getContributionIcon = (type: GuildContribution['type']) => {
       return 'solar:arrow-right-linear';
     case 'checkin_loot':
       return 'solar:clipboard-check-linear';
-  }
-};
-
-const getStatusColor = (status: GuildContribution['status']) => {
-  switch (status) {
-    case 'completed':
-    case 'approved':
-      return 'success';
-    case 'pending':
-      return 'warning';
-    case 'rejected':
-      return 'danger';
-    default:
-      return 'default';
   }
 };
 
@@ -524,7 +511,7 @@ export default function GuildBankPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <Chip
-                            color={getStatusColor(entry.status)}
+                            color={contributionStatusColor[entry.status]}
                             size="sm"
                             variant="tertiary"
                           >
@@ -571,7 +558,7 @@ export default function GuildBankPage() {
                         <p className="type-caption text-hint">
                           {new Date(entry.date).toLocaleDateString()}
                         </p>
-                        <Chip size="sm" variant="secondary">
+                        <Chip size="sm" color={contributionStatusColor[entry.status]} variant="secondary">
                           {t(entry.status)}
                         </Chip>
                       </div>

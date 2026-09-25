@@ -10,6 +10,7 @@ import LotteryCard from '@/components/LotteryCard';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { lotteryStatusColor } from '@/lib/status-colors';
 import type { Lottery } from '@/types/lottery';
 
 export default function LotteryPage() {
@@ -89,7 +90,7 @@ export default function LotteryPage() {
             <Tabs.Tab id="active">
               <div className="flex items-center gap-2">
                 <span>{t('active')}</span>
-                <Chip size="sm" color="success" variant="secondary">
+                <Chip size="sm" color={lotteryStatusColor.active} variant="secondary">
                   {counts.active}
                 </Chip>
               </div>
@@ -98,7 +99,7 @@ export default function LotteryPage() {
             <Tabs.Tab id="upcoming">
               <div className="flex items-center gap-2">
                 <span>{t('upcoming')}</span>
-                <Chip size="sm" color="warning" variant="secondary">
+                <Chip size="sm" color={lotteryStatusColor.upcoming} variant="secondary">
                   {counts.upcoming}
                 </Chip>
               </div>
@@ -107,7 +108,7 @@ export default function LotteryPage() {
             <Tabs.Tab id="ended">
               <div className="flex items-center gap-2">
                 <span>{t('ended')}</span>
-                <Chip size="sm" variant="secondary">
+                <Chip size="sm" color={lotteryStatusColor.ended} variant="secondary">
                   {counts.ended}
                 </Chip>
               </div>

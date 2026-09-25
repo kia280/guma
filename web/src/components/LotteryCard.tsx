@@ -4,6 +4,7 @@ import { Card, Chip, Button, ProgressBar, Avatar } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { lotteryStatusColor } from '@/lib/status-colors';
 
 interface LotteryWinner {
   id: string;
@@ -23,17 +24,6 @@ interface LotteryCardProps {
   status: 'active' | 'upcoming' | 'ended';
   winners?: LotteryWinner[];
 }
-
-const getStatusColor = (status: LotteryCardProps['status']) => {
-  switch (status) {
-    case 'active':
-      return 'accent';
-    case 'upcoming':
-      return 'warning';
-    case 'ended':
-      return 'default';
-  }
-};
 
 const LotteryCard = ({
   id,
@@ -87,7 +77,7 @@ const LotteryCard = ({
           <div>
             <Chip
               size="sm"
-              color={getStatusColor(status)}
+              color={lotteryStatusColor[status]}
               variant="secondary"
               className="capitalize mb-1"
             >

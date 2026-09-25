@@ -30,6 +30,7 @@ import { useCurrentGuildId } from '@/lib/current-guild';
 import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
 import { apiClient } from '@/lib/guma';
 import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
+import { userStatusColor, type UserStatus } from '@/lib/status-colors';
 import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
 import type { MockUser } from '@/types/user';
@@ -54,19 +55,6 @@ const formatRelative = (date: Date, intlLocale: string) => {
     if (Math.abs(seconds) >= size) return rtf.format(Math.round(seconds / size), unit);
   }
   return rtf.format(seconds, 'second');
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'online':
-      return 'success';
-    case 'offline':
-      return 'default';
-    case 'banned':
-      return 'danger';
-    default:
-      return 'default';
-  }
 };
 
 const getRoleColor = (role: string) => {
@@ -356,7 +344,12 @@ export default function AdminPage() {
                             </Chip>
                           </Table.Cell>
                           <Table.Cell className="hidden md:table-cell">
-                            <Chip size="sm" variant="secondary" className="capitalize">
+                            <Chip
+                              size="sm"
+                              variant="secondary"
+                              color={userStatusColor[user.status as UserStatus] ?? 'default'}
+                              className="capitalize"
+                            >
                               {user.status && STATUSES.includes(user.status as (typeof STATUSES)[number])
                                 ? t(`statuses.${user.status as (typeof STATUSES)[number]}`)
                                 : user.status}

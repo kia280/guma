@@ -33,6 +33,7 @@ import { walletBalanceTrend } from '@/lib/guma/mock/data';
 import { localizeMock } from '@/lib/guma/mock/i18n';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
+import { transactionStatusColor } from '@/lib/status-colors';
 import { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
 import type { Transaction, Wallet as WalletType } from '@/types/wallet';
@@ -248,19 +249,6 @@ export default function WalletPage() {
   const transactionTitle = (transaction: Transaction) => {
     const key = transactionLabelKey(transaction);
     return key ? t(`transactionKinds.${key}`) : transaction.description;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'success';
-      case 'pending':
-        return 'warning';
-      case 'failed':
-        return 'danger';
-      default:
-        return 'default';
-    }
   };
 
   return (
@@ -627,7 +615,12 @@ export default function WalletPage() {
                           </p>
                         </Table.Cell>
                         <Table.Cell>
-                          <Chip className="capitalize" size="sm" variant="secondary">
+                          <Chip
+                            className="capitalize"
+                            color={transactionStatusColor[transaction.status]}
+                            size="sm"
+                            variant="secondary"
+                          >
                             {t(transaction.status)}
                           </Chip>
                         </Table.Cell>
@@ -667,7 +660,7 @@ export default function WalletPage() {
                         </p>
                         <Chip
                           className="capitalize"
-                          color={getStatusColor(transaction.status)}
+                          color={transactionStatusColor[transaction.status]}
                           size="sm"
                           variant="tertiary"
                         >
