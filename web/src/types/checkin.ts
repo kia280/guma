@@ -12,6 +12,7 @@ export interface AttendanceMember {
   id: string;
   userId?: string;
   username: string;
+  avatar?: string;
   checkedInAt: string;
   notes?: string;
 }
