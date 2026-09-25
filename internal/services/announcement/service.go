@@ -52,7 +52,7 @@ type ListParams struct {
 	PageSize      int32
 }
 
-type DraftUpdate struct {
+type Update struct {
 	GuildID        string
 	AnnouncementID string
 	UserID         string
@@ -143,7 +143,7 @@ func (s *Service) CreateDraft(ctx context.Context, guildIDStr, userIDStr string)
 	return s.load(ctx, guildID, id)
 }
 
-func (s *Service) UpdateDraft(ctx context.Context, p DraftUpdate) (*Announcement, error) {
+func (s *Service) Update(ctx context.Context, p Update) (*Announcement, error) {
 	guildID, userID, err := parseGuildAndUser(p.GuildID, p.UserID)
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (s *Service) UpdateDraft(ctx context.Context, p DraftUpdate) (*Announcement
 		return nil, err
 	}
 
-	n, err := s.q.UpdateAnnouncementDraft(ctx, db.UpdateAnnouncementDraftParams{
+	n, err := s.q.UpdateAnnouncement(ctx, db.UpdateAnnouncementParams{
 		ID:      announcementID,
 		GuildID: guildID,
 		Title:   p.Title,
@@ -167,14 +167,41 @@ func (s *Service) UpdateDraft(ctx context.Context, p DraftUpdate) (*Announcement
 		Pinned:  p.Pinned,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("%w: update announcement draft: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: update announcement: %v", errs.ErrInternal, err)
 	}
 	a, err := s.load(ctx, guildID, announcementID)
 	if err != nil {
 		return nil, err
 	}
 	if n == 0 {
-		return nil, fmt.Errorf("%w: only drafts can be edited", errs.ErrFailedPrecondition)
+		return nil, updateRejection(a)
+	}
+	return a, nil
+}
+
+func (s *Service) Unpublish(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) (*Announcement, error) {
+	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	if err != nil {
+		return nil, err
+	}
+	announcementID, err := parseAnnouncementID(announcementIDStr)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.requireRole(ctx, guildID, userID, managerRoles...); err != nil {
+		return nil, err
+	}
+
+	n, err := s.q.UnpublishAnnouncement(ctx, db.UnpublishAnnouncementParams{ID: announcementID, GuildID: guildID})
+	if err != nil {
+		return nil, fmt.Errorf("%w: unpublish announcement: %v", errs.ErrInternal, err)
+	}
+	a, err := s.load(ctx, guildID, announcementID)
+	if err != nil {
+		return nil, err
+	}
+	if n == 0 {
+		return nil, fmt.Errorf("%w: announcement is not published", errs.ErrFailedPrecondition)
 	}
 	return a, nil
 }
@@ -259,6 +286,13 @@ func checkRole(role string, allowed []string) error {
 		return nil
 	}
 	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, allowed)
+}
+
+func updateRejection(a *Announcement) error {
+	if a.Status == StatusPublished {
+		return fmt.Errorf("%w: published announcements require a title and content", errs.ErrInvalidArgument)
+	}
+	return fmt.Errorf("%w: announcement could not be updated", errs.ErrFailedPrecondition)
 }
 
 func publishRejection(a *Announcement) error {

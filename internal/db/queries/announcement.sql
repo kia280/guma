@@ -25,16 +25,22 @@ ORDER BY (a.status = 'draft') DESC,
          a.id DESC
 LIMIT sqlc.arg(page_size)::int;
 
--- name: UpdateAnnouncementDraft :execrows
+-- name: UpdateAnnouncement :execrows
 UPDATE announcements
 SET title = $3, content = $4, pinned = $5, updated_at = NOW()
-WHERE id = $1 AND guild_id = $2 AND status = 'draft';
+WHERE id = $1 AND guild_id = $2
+  AND (status = 'draft' OR (btrim($3) <> '' AND btrim($4) <> ''));
 
 -- name: PublishAnnouncement :execrows
 UPDATE announcements
 SET status = 'published', published_at = NOW(), updated_at = NOW()
 WHERE id = $1 AND guild_id = $2 AND status = 'draft'
   AND btrim(title) <> '' AND btrim(content) <> '';
+
+-- name: UnpublishAnnouncement :execrows
+UPDATE announcements
+SET status = 'draft', published_at = NULL, updated_at = NOW()
+WHERE id = $1 AND guild_id = $2 AND status = 'published';
 
 -- name: DeleteAnnouncementDraft :execrows
 DELETE FROM announcements

@@ -68,7 +68,7 @@ func TestAnnouncementService_Validation(t *testing.T) {
 		{
 			name: "update malformed announcement",
 			call: func() error {
-				_, err := h.UpdateAnnouncementDraft(authed, &gumav1.UpdateAnnouncementDraftRequest{GuildId: guild, AnnouncementId: "nope"})
+				_, err := h.UpdateAnnouncement(authed, &gumav1.UpdateAnnouncementRequest{GuildId: guild, AnnouncementId: "nope"})
 				return err
 			},
 			wantCode: codes.InvalidArgument,
@@ -80,6 +80,22 @@ func TestAnnouncementService_Validation(t *testing.T) {
 				return err
 			},
 			wantCode: codes.Unauthenticated,
+		},
+		{
+			name: "unpublish unauthenticated",
+			call: func() error {
+				_, err := h.UnpublishAnnouncement(anon, &gumav1.UnpublishAnnouncementRequest{GuildId: guild, AnnouncementId: ann})
+				return err
+			},
+			wantCode: codes.Unauthenticated,
+		},
+		{
+			name: "unpublish missing announcement",
+			call: func() error {
+				_, err := h.UnpublishAnnouncement(authed, &gumav1.UnpublishAnnouncementRequest{GuildId: guild})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
 		},
 		{
 			name: "delete missing guild",

@@ -27,7 +27,7 @@ service AnnouncementService {
     };
   }
 
-  rpc UpdateAnnouncementDraft(UpdateAnnouncementDraftRequest) returns (UpdateAnnouncementDraftResponse) {
+  rpc UpdateAnnouncement(UpdateAnnouncementRequest) returns (UpdateAnnouncementResponse) {
     option (google.api.http) = {
       patch: "/v1/guilds/{guild_id}/announcements/{announcement_id}"
       body: "*"
@@ -37,6 +37,13 @@ service AnnouncementService {
   rpc PublishAnnouncement(PublishAnnouncementRequest) returns (PublishAnnouncementResponse) {
     option (google.api.http) = {
       post: "/v1/guilds/{guild_id}/announcements/{announcement_id}/publish"
+      body: "*"
+    };
+  }
+
+  rpc UnpublishAnnouncement(UnpublishAnnouncementRequest) returns (UnpublishAnnouncementResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/announcements/{announcement_id}/unpublish"
       body: "*"
     };
   }
@@ -89,7 +96,7 @@ message CreateAnnouncementDraftResponse {
   Announcement announcement = 1;
 }
 
-message UpdateAnnouncementDraftRequest {
+message UpdateAnnouncementRequest {
   string guild_id = 1;
   string announcement_id = 2;
   string title = 3;
@@ -97,7 +104,7 @@ message UpdateAnnouncementDraftRequest {
   bool pinned = 5;
 }
 
-message UpdateAnnouncementDraftResponse {
+message UpdateAnnouncementResponse {
   Announcement announcement = 1;
 }
 
@@ -107,6 +114,15 @@ message PublishAnnouncementRequest {
 }
 
 message PublishAnnouncementResponse {
+  Announcement announcement = 1;
+}
+
+message UnpublishAnnouncementRequest {
+  string guild_id = 1;
+  string announcement_id = 2;
+}
+
+message UnpublishAnnouncementResponse {
   Announcement announcement = 1;
 }
 

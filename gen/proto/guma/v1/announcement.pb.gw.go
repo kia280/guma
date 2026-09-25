@@ -188,9 +188,9 @@ func local_request_AnnouncementService_CreateAnnouncementDraft_0(ctx context.Con
 	return msg, metadata, err
 }
 
-func request_AnnouncementService_UpdateAnnouncementDraft_0(ctx context.Context, marshaler runtime.Marshaler, client AnnouncementServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_AnnouncementService_UpdateAnnouncement_0(ctx context.Context, marshaler runtime.Marshaler, client AnnouncementServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq UpdateAnnouncementDraftRequest
+		protoReq UpdateAnnouncementRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -216,13 +216,13 @@ func request_AnnouncementService_UpdateAnnouncementDraft_0(ctx context.Context, 
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
 	}
-	msg, err := client.UpdateAnnouncementDraft(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.UpdateAnnouncement(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
 
-func local_request_AnnouncementService_UpdateAnnouncementDraft_0(ctx context.Context, marshaler runtime.Marshaler, server AnnouncementServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_AnnouncementService_UpdateAnnouncement_0(ctx context.Context, marshaler runtime.Marshaler, server AnnouncementServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq UpdateAnnouncementDraftRequest
+		protoReq UpdateAnnouncementRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -245,7 +245,7 @@ func local_request_AnnouncementService_UpdateAnnouncementDraft_0(ctx context.Con
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "announcement_id", err)
 	}
-	msg, err := server.UpdateAnnouncementDraft(ctx, &protoReq)
+	msg, err := server.UpdateAnnouncement(ctx, &protoReq)
 	return msg, metadata, err
 }
 
@@ -307,6 +307,67 @@ func local_request_AnnouncementService_PublishAnnouncement_0(ctx context.Context
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "announcement_id", err)
 	}
 	msg, err := server.PublishAnnouncement(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_AnnouncementService_UnpublishAnnouncement_0(ctx context.Context, marshaler runtime.Marshaler, client AnnouncementServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UnpublishAnnouncementRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["guild_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "guild_id")
+	}
+	protoReq.GuildId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "guild_id", err)
+	}
+	val, ok = pathParams["announcement_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "announcement_id")
+	}
+	protoReq.AnnouncementId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "announcement_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.UnpublishAnnouncement(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_AnnouncementService_UnpublishAnnouncement_0(ctx context.Context, marshaler runtime.Marshaler, server AnnouncementServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq UnpublishAnnouncementRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["guild_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "guild_id")
+	}
+	protoReq.GuildId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "guild_id", err)
+	}
+	val, ok = pathParams["announcement_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "announcement_id")
+	}
+	protoReq.AnnouncementId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "announcement_id", err)
+	}
+	msg, err := server.UnpublishAnnouncement(ctx, &protoReq)
 	return msg, metadata, err
 }
 
@@ -431,25 +492,25 @@ func RegisterAnnouncementServiceHandlerServer(ctx context.Context, mux *runtime.
 		}
 		forward_AnnouncementService_CreateAnnouncementDraft_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPatch, pattern_AnnouncementService_UpdateAnnouncementDraft_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPatch, pattern_AnnouncementService_UpdateAnnouncement_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/guma.v1.AnnouncementService/UpdateAnnouncementDraft", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/announcements/{announcement_id}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/guma.v1.AnnouncementService/UpdateAnnouncement", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/announcements/{announcement_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_AnnouncementService_UpdateAnnouncementDraft_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_AnnouncementService_UpdateAnnouncement_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_AnnouncementService_UpdateAnnouncementDraft_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AnnouncementService_UpdateAnnouncement_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodPost, pattern_AnnouncementService_PublishAnnouncement_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -470,6 +531,26 @@ func RegisterAnnouncementServiceHandlerServer(ctx context.Context, mux *runtime.
 			return
 		}
 		forward_AnnouncementService_PublishAnnouncement_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_AnnouncementService_UnpublishAnnouncement_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/guma.v1.AnnouncementService/UnpublishAnnouncement", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/announcements/{announcement_id}/unpublish"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_AnnouncementService_UnpublishAnnouncement_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_AnnouncementService_UnpublishAnnouncement_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodDelete, pattern_AnnouncementService_DeleteAnnouncementDraft_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -582,22 +663,22 @@ func RegisterAnnouncementServiceHandlerClient(ctx context.Context, mux *runtime.
 		}
 		forward_AnnouncementService_CreateAnnouncementDraft_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodPatch, pattern_AnnouncementService_UpdateAnnouncementDraft_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPatch, pattern_AnnouncementService_UpdateAnnouncement_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/guma.v1.AnnouncementService/UpdateAnnouncementDraft", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/announcements/{announcement_id}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/guma.v1.AnnouncementService/UpdateAnnouncement", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/announcements/{announcement_id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_AnnouncementService_UpdateAnnouncementDraft_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_AnnouncementService_UpdateAnnouncement_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		forward_AnnouncementService_UpdateAnnouncementDraft_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_AnnouncementService_UpdateAnnouncement_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodPost, pattern_AnnouncementService_PublishAnnouncement_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -615,6 +696,23 @@ func RegisterAnnouncementServiceHandlerClient(ctx context.Context, mux *runtime.
 			return
 		}
 		forward_AnnouncementService_PublishAnnouncement_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_AnnouncementService_UnpublishAnnouncement_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/guma.v1.AnnouncementService/UnpublishAnnouncement", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/announcements/{announcement_id}/unpublish"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_AnnouncementService_UnpublishAnnouncement_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_AnnouncementService_UnpublishAnnouncement_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 	mux.Handle(http.MethodDelete, pattern_AnnouncementService_DeleteAnnouncementDraft_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -640,8 +738,9 @@ var (
 	pattern_AnnouncementService_ListAnnouncements_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "guilds", "guild_id", "announcements"}, ""))
 	pattern_AnnouncementService_GetAnnouncement_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "announcements", "announcement_id"}, ""))
 	pattern_AnnouncementService_CreateAnnouncementDraft_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "guilds", "guild_id", "announcements"}, ""))
-	pattern_AnnouncementService_UpdateAnnouncementDraft_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "announcements", "announcement_id"}, ""))
+	pattern_AnnouncementService_UpdateAnnouncement_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "announcements", "announcement_id"}, ""))
 	pattern_AnnouncementService_PublishAnnouncement_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "guilds", "guild_id", "announcements", "announcement_id", "publish"}, ""))
+	pattern_AnnouncementService_UnpublishAnnouncement_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "guilds", "guild_id", "announcements", "announcement_id", "unpublish"}, ""))
 	pattern_AnnouncementService_DeleteAnnouncementDraft_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "announcements", "announcement_id"}, ""))
 )
 
@@ -649,7 +748,8 @@ var (
 	forward_AnnouncementService_ListAnnouncements_0       = runtime.ForwardResponseMessage
 	forward_AnnouncementService_GetAnnouncement_0         = runtime.ForwardResponseMessage
 	forward_AnnouncementService_CreateAnnouncementDraft_0 = runtime.ForwardResponseMessage
-	forward_AnnouncementService_UpdateAnnouncementDraft_0 = runtime.ForwardResponseMessage
+	forward_AnnouncementService_UpdateAnnouncement_0      = runtime.ForwardResponseMessage
 	forward_AnnouncementService_PublishAnnouncement_0     = runtime.ForwardResponseMessage
+	forward_AnnouncementService_UnpublishAnnouncement_0   = runtime.ForwardResponseMessage
 	forward_AnnouncementService_DeleteAnnouncementDraft_0 = runtime.ForwardResponseMessage
 )

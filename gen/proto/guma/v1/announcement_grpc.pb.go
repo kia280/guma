@@ -22,8 +22,9 @@ const (
 	AnnouncementService_ListAnnouncements_FullMethodName       = "/guma.v1.AnnouncementService/ListAnnouncements"
 	AnnouncementService_GetAnnouncement_FullMethodName         = "/guma.v1.AnnouncementService/GetAnnouncement"
 	AnnouncementService_CreateAnnouncementDraft_FullMethodName = "/guma.v1.AnnouncementService/CreateAnnouncementDraft"
-	AnnouncementService_UpdateAnnouncementDraft_FullMethodName = "/guma.v1.AnnouncementService/UpdateAnnouncementDraft"
+	AnnouncementService_UpdateAnnouncement_FullMethodName      = "/guma.v1.AnnouncementService/UpdateAnnouncement"
 	AnnouncementService_PublishAnnouncement_FullMethodName     = "/guma.v1.AnnouncementService/PublishAnnouncement"
+	AnnouncementService_UnpublishAnnouncement_FullMethodName   = "/guma.v1.AnnouncementService/UnpublishAnnouncement"
 	AnnouncementService_DeleteAnnouncementDraft_FullMethodName = "/guma.v1.AnnouncementService/DeleteAnnouncementDraft"
 )
 
@@ -34,8 +35,9 @@ type AnnouncementServiceClient interface {
 	ListAnnouncements(ctx context.Context, in *ListAnnouncementsRequest, opts ...grpc.CallOption) (*ListAnnouncementsResponse, error)
 	GetAnnouncement(ctx context.Context, in *GetAnnouncementRequest, opts ...grpc.CallOption) (*GetAnnouncementResponse, error)
 	CreateAnnouncementDraft(ctx context.Context, in *CreateAnnouncementDraftRequest, opts ...grpc.CallOption) (*CreateAnnouncementDraftResponse, error)
-	UpdateAnnouncementDraft(ctx context.Context, in *UpdateAnnouncementDraftRequest, opts ...grpc.CallOption) (*UpdateAnnouncementDraftResponse, error)
+	UpdateAnnouncement(ctx context.Context, in *UpdateAnnouncementRequest, opts ...grpc.CallOption) (*UpdateAnnouncementResponse, error)
 	PublishAnnouncement(ctx context.Context, in *PublishAnnouncementRequest, opts ...grpc.CallOption) (*PublishAnnouncementResponse, error)
+	UnpublishAnnouncement(ctx context.Context, in *UnpublishAnnouncementRequest, opts ...grpc.CallOption) (*UnpublishAnnouncementResponse, error)
 	DeleteAnnouncementDraft(ctx context.Context, in *DeleteAnnouncementDraftRequest, opts ...grpc.CallOption) (*DeleteAnnouncementDraftResponse, error)
 }
 
@@ -77,10 +79,10 @@ func (c *announcementServiceClient) CreateAnnouncementDraft(ctx context.Context,
 	return out, nil
 }
 
-func (c *announcementServiceClient) UpdateAnnouncementDraft(ctx context.Context, in *UpdateAnnouncementDraftRequest, opts ...grpc.CallOption) (*UpdateAnnouncementDraftResponse, error) {
+func (c *announcementServiceClient) UpdateAnnouncement(ctx context.Context, in *UpdateAnnouncementRequest, opts ...grpc.CallOption) (*UpdateAnnouncementResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateAnnouncementDraftResponse)
-	err := c.cc.Invoke(ctx, AnnouncementService_UpdateAnnouncementDraft_FullMethodName, in, out, cOpts...)
+	out := new(UpdateAnnouncementResponse)
+	err := c.cc.Invoke(ctx, AnnouncementService_UpdateAnnouncement_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -91,6 +93,16 @@ func (c *announcementServiceClient) PublishAnnouncement(ctx context.Context, in 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(PublishAnnouncementResponse)
 	err := c.cc.Invoke(ctx, AnnouncementService_PublishAnnouncement_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *announcementServiceClient) UnpublishAnnouncement(ctx context.Context, in *UnpublishAnnouncementRequest, opts ...grpc.CallOption) (*UnpublishAnnouncementResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UnpublishAnnouncementResponse)
+	err := c.cc.Invoke(ctx, AnnouncementService_UnpublishAnnouncement_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -114,8 +126,9 @@ type AnnouncementServiceServer interface {
 	ListAnnouncements(context.Context, *ListAnnouncementsRequest) (*ListAnnouncementsResponse, error)
 	GetAnnouncement(context.Context, *GetAnnouncementRequest) (*GetAnnouncementResponse, error)
 	CreateAnnouncementDraft(context.Context, *CreateAnnouncementDraftRequest) (*CreateAnnouncementDraftResponse, error)
-	UpdateAnnouncementDraft(context.Context, *UpdateAnnouncementDraftRequest) (*UpdateAnnouncementDraftResponse, error)
+	UpdateAnnouncement(context.Context, *UpdateAnnouncementRequest) (*UpdateAnnouncementResponse, error)
 	PublishAnnouncement(context.Context, *PublishAnnouncementRequest) (*PublishAnnouncementResponse, error)
+	UnpublishAnnouncement(context.Context, *UnpublishAnnouncementRequest) (*UnpublishAnnouncementResponse, error)
 	DeleteAnnouncementDraft(context.Context, *DeleteAnnouncementDraftRequest) (*DeleteAnnouncementDraftResponse, error)
 	mustEmbedUnimplementedAnnouncementServiceServer()
 }
@@ -136,11 +149,14 @@ func (UnimplementedAnnouncementServiceServer) GetAnnouncement(context.Context, *
 func (UnimplementedAnnouncementServiceServer) CreateAnnouncementDraft(context.Context, *CreateAnnouncementDraftRequest) (*CreateAnnouncementDraftResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateAnnouncementDraft not implemented")
 }
-func (UnimplementedAnnouncementServiceServer) UpdateAnnouncementDraft(context.Context, *UpdateAnnouncementDraftRequest) (*UpdateAnnouncementDraftResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method UpdateAnnouncementDraft not implemented")
+func (UnimplementedAnnouncementServiceServer) UpdateAnnouncement(context.Context, *UpdateAnnouncementRequest) (*UpdateAnnouncementResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateAnnouncement not implemented")
 }
 func (UnimplementedAnnouncementServiceServer) PublishAnnouncement(context.Context, *PublishAnnouncementRequest) (*PublishAnnouncementResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method PublishAnnouncement not implemented")
+}
+func (UnimplementedAnnouncementServiceServer) UnpublishAnnouncement(context.Context, *UnpublishAnnouncementRequest) (*UnpublishAnnouncementResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UnpublishAnnouncement not implemented")
 }
 func (UnimplementedAnnouncementServiceServer) DeleteAnnouncementDraft(context.Context, *DeleteAnnouncementDraftRequest) (*DeleteAnnouncementDraftResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteAnnouncementDraft not implemented")
@@ -220,20 +236,20 @@ func _AnnouncementService_CreateAnnouncementDraft_Handler(srv interface{}, ctx c
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AnnouncementService_UpdateAnnouncementDraft_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateAnnouncementDraftRequest)
+func _AnnouncementService_UpdateAnnouncement_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAnnouncementRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AnnouncementServiceServer).UpdateAnnouncementDraft(ctx, in)
+		return srv.(AnnouncementServiceServer).UpdateAnnouncement(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AnnouncementService_UpdateAnnouncementDraft_FullMethodName,
+		FullMethod: AnnouncementService_UpdateAnnouncement_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AnnouncementServiceServer).UpdateAnnouncementDraft(ctx, req.(*UpdateAnnouncementDraftRequest))
+		return srv.(AnnouncementServiceServer).UpdateAnnouncement(ctx, req.(*UpdateAnnouncementRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -252,6 +268,24 @@ func _AnnouncementService_PublishAnnouncement_Handler(srv interface{}, ctx conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AnnouncementServiceServer).PublishAnnouncement(ctx, req.(*PublishAnnouncementRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AnnouncementService_UnpublishAnnouncement_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnpublishAnnouncementRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AnnouncementServiceServer).UnpublishAnnouncement(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AnnouncementService_UnpublishAnnouncement_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AnnouncementServiceServer).UnpublishAnnouncement(ctx, req.(*UnpublishAnnouncementRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -294,12 +328,16 @@ var AnnouncementService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AnnouncementService_CreateAnnouncementDraft_Handler,
 		},
 		{
-			MethodName: "UpdateAnnouncementDraft",
-			Handler:    _AnnouncementService_UpdateAnnouncementDraft_Handler,
+			MethodName: "UpdateAnnouncement",
+			Handler:    _AnnouncementService_UpdateAnnouncement_Handler,
 		},
 		{
 			MethodName: "PublishAnnouncement",
 			Handler:    _AnnouncementService_PublishAnnouncement_Handler,
+		},
+		{
+			MethodName: "UnpublishAnnouncement",
+			Handler:    _AnnouncementService_UnpublishAnnouncement_Handler,
 		},
 		{
 			MethodName: "DeleteAnnouncementDraft",
