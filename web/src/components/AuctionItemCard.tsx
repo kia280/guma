@@ -14,6 +14,8 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { useCountdown } from '@/hooks/useNow';
+import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
@@ -56,29 +58,12 @@ const getRarityColor = (rarity: ItemRarity) => {
   }
 };
 
-const formatTimeRemaining = (endTime: string) => {
-  const now = new Date();
-  const end = new Date(endTime);
-  const diff = end.getTime() - now.getTime();
-
-  if (diff <= 0) return 'Ended';
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-};
-
-const getAuctionProgress = (startTime: string, endTime: string) => {
-  const now = new Date();
+const getAuctionProgress = (now: number, startTime: string, endTime: string) => {
   const start = new Date(startTime);
   const end = new Date(endTime);
 
   const total = end.getTime() - start.getTime();
-  const elapsed = now.getTime() - start.getTime();
+  const elapsed = now - start.getTime();
 
   return Math.min(100, Math.max(0, (elapsed / total) * 100));
 };
@@ -97,6 +82,7 @@ const AuctionItemCard = ({
   userBalance = 0,
 }: AuctionItemCardProps) => {
   const t = useTranslations('auctionItemCard');
+  const formatCountdown = useCountdownFormatter();
   const [bidInput, setBidInput] = useState<number | null>(null);
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput ?? minimumBid;
@@ -104,8 +90,9 @@ const AuctionItemCard = ({
   const isActive = item.status === AuctionStatus.ACTIVE;
   const isUpcoming = item.status === AuctionStatus.UPCOMING;
 
-  const timeRemaining = formatTimeRemaining(item.endTime);
-  const progress = getAuctionProgress(item.startTime, item.endTime);
+  const { now, remainingMs, isExpired } = useCountdown(item.endTime);
+  const timeRemaining = isExpired ? t('ended') : formatCountdown(remainingMs);
+  const progress = getAuctionProgress(now, item.startTime, item.endTime);
 
   const hasBidAmount = Number.isFinite(bidAmount);
   const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;

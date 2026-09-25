@@ -4,6 +4,13 @@
     "description": "桑貝幣分鑽系統",
     "keywords": "桑貝幣分鑽系統"
   },
+  "countdown": {
+    "days": "{days} 天 {hours} 小時",
+    "hours": "{hours} 小時 {minutes} 分",
+    "minutes": "{minutes} 分",
+    "seconds": "{seconds} 秒",
+    "daysClock": "{days} 天 {clock}"
+  },
   "index": {
     "title": "你好 世界!"
   },
@@ -209,7 +216,7 @@
   },
   "lotteryCard": {
     "drawComplete": "抽獎已結束",
-    "remaining": "剩餘",
+    "remaining": "剩餘 {time}",
     "prizePool": "獎金池",
     "ticketPrice": "票價",
     "drawDate": "開獎日期",
@@ -220,8 +227,7 @@
     "winners": "得獎者",
     "buyTicket": "購買票券",
     "viewWinners": "查看得獎者",
-    "starts": "開始",
-    "fromNow": "後開始"
+    "starts": "{time} 後開始"
   },
   "auctionPage": {
     "searchItems": "搜尋物品...",
@@ -237,6 +243,7 @@
   },
   "auctionItemCard": {
     "timeRemaining": "剩餘時間",
+    "ended": "已結束",
     "currentBid": "目前出價",
     "leadingBidder": "領先競標者",
     "soldBy": "賣家",
@@ -783,8 +790,8 @@
     "goBack": "返回",
     "backToAuctions": "返回競拍列表",
     "auctionStatus": "競拍狀態",
-    "timeElapsed": "已過時間",
-    "remaining": "剩餘",
+    "timeRemaining": "剩餘時間",
+    "remaining": "剩餘 {time}",
     "startTime": "開始時間",
     "endTime": "結束時間",
     "bidding": "出價",
@@ -848,7 +855,7 @@
     "statusClosed": "已關閉",
     "statusFinished": "已完成",
     "expired": "已過期",
-    "remaining": "剩餘",
+    "remaining": "剩餘 {time}",
     "checkedIn": "已簽到",
     "checkInExpired": "此點名已截止。",
     "checkInFailed": "簽到失敗，請稍後再試。"

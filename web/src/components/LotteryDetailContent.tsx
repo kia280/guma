@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useNow } from '@/hooks/useNow';
+import { splitDuration } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
@@ -24,21 +26,11 @@ const STATUS_COLOR: Record<LotteryStatus, 'accent' | 'warning' | 'default'> = {
   ended: 'default',
 };
 
-function splitDuration(ms: number) {
-  const total = Math.max(0, Math.floor(ms / 1000));
-  return {
-    days: Math.floor(total / 86_400),
-    hours: Math.floor((total % 86_400) / 3_600),
-    minutes: Math.floor((total % 3_600) / 60),
-    seconds: total % 60,
-  };
-}
-
-function formatCountdown(ms: number) {
+function formatCountdown(ms: number, withDays: (days: number, clock: string) => string) {
   const { days, hours, minutes, seconds } = splitDuration(ms);
   const pad = (n: number) => String(n).padStart(2, '0');
   const clock = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  return days > 0 ? `${days}d ${clock}` : clock;
+  return days > 0 ? withDays(days, clock) : clock;
 }
 
 function wheelEntries(
@@ -69,13 +61,14 @@ type LotteryDetailContentProps = {
 
 export default function LotteryDetailContent({ id, onClose }: LotteryDetailContentProps) {
   const t = useTranslations('lotteryDetail');
+  const tCountdown = useTranslations('countdown');
   const format = useIntlFormatter();
+  const now = useNow(1000);
   const router = useRouter();
   const guildId = useCurrentGuildId();
 
   const [lottery, setLottery] = React.useState<Lottery | null>(null);
   const [isMissing, setIsMissing] = React.useState(false);
-  const [now, setNow] = React.useState(() => Date.now());
   const [quantity, setQuantity] = React.useState(1);
   const [isBuying, setIsBuying] = React.useState(false);
   const [phase, setPhase] = React.useState<DrawPhase>('idle');
@@ -157,13 +150,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     { guildId, match: event => event.resourceId === id }
   );
 
-  React.useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => {
-      clearInterval(timer);
-      clearTimeout(retryTimer.current);
-    };
-  }, []);
+  React.useEffect(() => () => clearTimeout(retryTimer.current), []);
 
   const drawTime = lottery ? new Date(lottery.drawDate).getTime() : 0;
   const isDue = !!lottery && lottery.status === 'active' && now >= drawTime;
@@ -285,7 +272,9 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     if (showWinners && topWinner) return t('winnerIs', { name: topWinner });
     if (lottery.status === 'ended') return t('noWinners');
     if (lottery.status === 'upcoming') return t('notStarted');
-    return t('drawsIn', { time: formatCountdown(drawTime - now) });
+    return t('drawsIn', {
+      time: formatCountdown(drawTime - now, (days, clock) => tCountdown('daysClock', { days, clock })),
+    });
   };
 
   return (

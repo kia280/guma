@@ -18,7 +18,9 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useCountdown } from '@/hooks/useNow';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
+import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
@@ -46,9 +48,9 @@ const RARITY_COLOR: Record<ItemRarity, 'default' | 'accent' | 'success' | 'warni
   [ItemRarity.MYTHIC]: 'success',
 };
 
-const getProgress = (startTime: string, endTime: string) => {
+const getProgress = (now: number, startTime: string, endTime: string) => {
   const total = new Date(endTime).getTime() - new Date(startTime).getTime();
-  const elapsed = Date.now() - new Date(startTime).getTime();
+  const elapsed = now - new Date(startTime).getTime();
   return Math.min(100, Math.max(0, (elapsed / total) * 100));
 };
 
@@ -65,17 +67,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const bidModalState = useOverlayState();
   const t = useTranslations('auctionItemPage');
   const { balance: userBalance, refresh: refreshBalance } = useWalletBalance();
-
-  const formatTimeRemaining = (endTime: string) => {
-    const diff = new Date(endTime).getTime() - Date.now();
-    if (diff <= 0) return t('ended');
-    const days = Math.floor(diff / 86_400_000);
-    const hours = Math.floor((diff % 86_400_000) / 3_600_000);
-    const minutes = Math.floor((diff % 3_600_000) / 60_000);
-    if (days > 0) return `${days}d ${hours}h ${minutes}m`;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
+  const formatCountdown = useCountdownFormatter();
 
   const [item, setItem] = useState<AuctionItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -104,20 +96,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   });
 
   const [bidInput, setBidInput] = useState<{ auctionId: string; amount: number } | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState('');
-  const [progress, setProgress] = useState(0);
-
-  // Live countdown
-  useEffect(() => {
-    if (!item) return;
-    const tick = () => {
-      setTimeRemaining(formatTimeRemaining(item.endTime));
-      setProgress(getProgress(item.startTime, item.endTime));
-    };
-    tick();
-    const id = setInterval(tick, 10_000);
-    return () => clearInterval(id);
-  }, [item]);
+  const { now, remainingMs, isExpired } = useCountdown(item?.endTime);
 
   if (!item) {
     return (
@@ -134,6 +113,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput?.auctionId === id ? bidInput.amount : minimumBid;
   const isActive = item.status === AuctionStatus.ACTIVE;
+  const timeRemaining = isExpired ? t('ended') : t('remaining', { time: formatCountdown(remainingMs) });
+  const progress = getProgress(now, item.startTime, item.endTime);
   const hasBidAmount = Number.isFinite(bidAmount);
   const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
 
@@ -214,10 +195,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
             {isActive && (
               <div className="space-y-2">
                 <div className="flex justify-between type-caption text-hint">
-                  <span>{t('timeElapsed')}</span>
-                  <span className="font-medium text-foreground">
-                    {timeRemaining} {t('remaining')}
-                  </span>
+                  <span>{t('timeRemaining')}</span>
+                  <span className="font-medium text-foreground">{timeRemaining}</span>
                 </div>
                 <ProgressBar
                   value={progress}
