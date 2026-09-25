@@ -185,7 +185,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   );
 
   return (
-    <>
+    <div className="space-y-5">
       {/* Back button - only show in full page mode */}
       {!onClose && (
         <Button variant="secondary" size="sm" onPress={() => router.push('/dashboard/auction')}>
@@ -557,6 +557,6 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         </Modal.Container>
       </Modal.Backdrop>
       </Modal>
-    </>
+    </div>
   );
 }
