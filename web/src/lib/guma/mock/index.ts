@@ -160,7 +160,6 @@ const baseMockApiClient: ApiClient = {
   getDashboardData: async () => ({
     guildStats: mockData.GUILD_STATS,
     personalStats: mockData.PERSONAL_STATS,
-    balanceTrend: mockData.dashboardBalanceTrend,
     incomingEvents: mockData.INCOMING_EVENTS,
     announcements: publishedMockAnnouncements(),
   }),
@@ -179,7 +178,7 @@ const baseMockApiClient: ApiClient = {
   },
   getUser: async (id) => ({ ...currentUser, id }),
   getUserStats: async (): Promise<UserStats> => mockData.PERSONAL_STATS,
-  getBalanceTrend: async () => mockData.dashboardBalanceTrend,
+  getBalanceTrend: async (_guildId, days = 30) => mockData.mockBalanceTrend(days),
 
   // ── Guild ──
   listGuilds: async (): Promise<Guild[]> => [{ ...mockGuild }],

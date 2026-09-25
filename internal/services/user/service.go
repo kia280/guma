@@ -52,12 +52,6 @@ type Stats struct {
 	CheckinsCompleted int32
 }
 
-// BalancePoint is a single data point in a balance trend series.
-type BalancePoint struct {
-	Date    string
-	Balance int64
-}
-
 // Service handles user business logic and database access.
 type Service struct {
 	pool   *database.Pool
@@ -354,33 +348,6 @@ func (s *Service) GetStats(ctx context.Context, userID string) (*Stats, error) {
 		TotalEarned:       totals.TotalEarned,
 		TotalSpent:        totals.TotalSpent,
 	}, nil
-}
-
-// GetBalanceTrend returns a daily cumulative balance trend for the last N days.
-func (s *Service) GetBalanceTrend(ctx context.Context, userID string, days int32) ([]*BalancePoint, error) {
-	if days <= 0 {
-		days = 30
-	}
-	id, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
-	}
-
-	rows, err := s.q.GetUserBalanceTrend(ctx, db.GetUserBalanceTrendParams{
-		UserID: id,
-		Days:   days,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("%w: query balance trend: %v", errs.ErrInternal, err)
-	}
-
-	points := make([]*BalancePoint, 0, len(rows))
-	var cumulative int64
-	for _, r := range rows {
-		cumulative += r.Net
-		points = append(points, &BalancePoint{Date: r.Day, Balance: cumulative})
-	}
-	return points, nil
 }
 
 // --- internal helpers ---

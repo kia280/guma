@@ -145,6 +145,13 @@
     "itemTemplateHint": "Adds the item to the end of the loot list.",
     "lootToBankHint": "When published, these items go to the guild storage and stay linked to this roll call."
   },
+  "balanceTrendChart": {
+    "balance": "Balance",
+    "loading": "Loading balance history",
+    "empty": "No balance history yet",
+    "loadFailed": "Could not load balance history.",
+    "retry": "Retry"
+  },
   "walletPage": {
     "wallet": "Wallet",
     "manageBalance": "Manage your balance and transactions",

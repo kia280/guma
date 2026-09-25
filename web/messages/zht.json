@@ -145,6 +145,13 @@
     "itemTemplateHint": "會加到戰利品清單最後面。",
     "lootToBankHint": "發布後，這些道具會自動放入公會倉庫，並與此點名關聯。"
   },
+  "balanceTrendChart": {
+    "balance": "餘額",
+    "loading": "正在載入餘額紀錄",
+    "empty": "尚無餘額紀錄",
+    "loadFailed": "無法載入餘額紀錄。",
+    "retry": "重試"
+  },
   "walletPage": {
     "wallet": "錢包",
     "manageBalance": "管理您的餘額和交易",
