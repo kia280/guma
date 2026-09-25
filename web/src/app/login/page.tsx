@@ -99,7 +99,7 @@ function Login() {
           ) : (
             <div className="flex flex-col items-center justify-center py-8 gap-4">
               <Spinner size="lg" />
-              <p className="text-sm text-subtle">{t('redirecting')}</p>
+              <p className="type-body text-subtle">{t('redirecting')}</p>
             </div>
           )}
         </div>
@@ -123,7 +123,7 @@ function Login() {
               <Label className="type-body font-medium text-soft">
                 {t('emailAddress')}
               </Label>
-              <InputGroup variant="secondary" className="h-12 text-base">
+              <InputGroup variant="secondary" className="h-12">
                 <InputGroup.Input
                   name="email"
                   placeholder={t('enterYourEmail')}
@@ -134,7 +134,7 @@ function Login() {
             </TextField>
             <TextField isRequired className="w-full">
               <Label className="type-body font-medium text-soft">{t('password')}</Label>
-              <InputGroup variant="secondary" className="h-12 text-base">
+              <InputGroup variant="secondary" className="h-12">
                 <InputGroup.Input
                   name="password"
                   placeholder={t('enterYourPassword')}
@@ -144,15 +144,15 @@ function Login() {
                 <InputGroup.Suffix className="pr-0">
                   <Button
                     isIconOnly
-                    aria-label={isVisible ? 'Hide password' : 'Show password'}
+                    aria-label={isVisible ? t('hidePassword') : t('showPassword')}
                     size="sm"
                     variant="ghost"
                     onPress={toggleVisibility}
                   >
                     {isVisible ? (
-                      <Icon className="text-subtle text-lg" icon="bi:eye-slash-fill" />
+                      <Icon className="text-subtle" icon="bi:eye-slash-fill" width={18} />
                     ) : (
-                      <Icon className="text-subtle text-lg" icon="bi:eye-fill" />
+                      <Icon className="text-subtle" icon="bi:eye-fill" width={18} />
                     )}
                   </Button>
                 </InputGroup.Suffix>
@@ -173,7 +173,7 @@ function Login() {
             </div>
             <Button
               variant="primary"
-              className="w-full font-semibold h-12 text-base text-accent-foreground/90"
+              className="w-full font-semibold h-12 text-accent-foreground/90"
               type="submit"
             >
               {t('logIn')}
@@ -187,7 +187,7 @@ function Login() {
           <div className="flex flex-col gap-2">
             <Button
               variant="tertiary"
-              className="w-full h-12 text-base text-soft"
+              className="w-full h-12 text-soft"
               onPress={() => {
                 if (flow) {
                   kratos

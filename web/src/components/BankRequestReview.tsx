@@ -21,6 +21,8 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
+import { requestStatusColor } from '@/lib/status-colors';
 import type { FundRequest, ItemRequest, RequestStatus, ReviewDecision } from '@/types/guild-bank';
 
 type View = 'pending' | 'reviewed';
@@ -28,17 +30,6 @@ type View = 'pending' | 'reviewed';
 type ReviewTarget =
   | { kind: 'fund'; request: FundRequest; decision: ReviewDecision }
   | { kind: 'item'; request: ItemRequest; decision: ReviewDecision };
-
-const getStatusColor = (status: RequestStatus) => {
-  switch (status) {
-    case 'approved':
-      return 'success';
-    case 'rejected':
-      return 'danger';
-    default:
-      return 'warning';
-  }
-};
 
 const reviewErrorKey = (err: unknown) => {
   switch (apiErrorCode(err)) {
@@ -98,7 +89,7 @@ function RequestRow({ requester, createdAt, reason, status, reviewNote, leading,
           </Button>
         </div>
       ) : (
-        <Chip size="sm" variant="secondary" color={getStatusColor(status)} className="self-end sm:self-center">
+        <Chip size="sm" variant="secondary" color={requestStatusColor[status]} className="self-end sm:self-center">
           {t(`statuses.${status}`)}
         </Chip>
       )}
@@ -139,6 +130,7 @@ function RequestSection({ title, icon, count, emptyText, children }: RequestSect
 
 export function BankRequestReview({ guildId }: { guildId: string }) {
   const t = useTranslations('bankRequestReview');
+  const formatGold = useFormatGold();
   const reviewModal = useOverlayState();
 
   const [view, setView] = React.useState<View>('pending');
@@ -281,7 +273,7 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
                 }
                 summary={
                   <p className="type-body font-medium text-foreground tabular-nums">
-                    ${r.amount.toLocaleString()}
+                    {formatGold(r.amount)}
                   </p>
                 }
                 onReview={decision => openReview({ kind: 'fund', request: r, decision })}
@@ -334,7 +326,7 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
                   <div className="flex flex-col gap-1 rounded-lg bg-surface-secondary p-3">
                     <p className="type-body font-medium text-foreground">
                       {target.kind === 'fund'
-                        ? `$${target.request.amount.toLocaleString()}`
+                        ? formatGold(target.request.amount)
                         : target.request.itemName || t('unknownItem')}
                     </p>
                     <p className="type-caption text-hint">

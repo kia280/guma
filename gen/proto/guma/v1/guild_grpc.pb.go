@@ -33,6 +33,7 @@ const (
 	GuildService_LeaveGuild_FullMethodName          = "/guma.v1.GuildService/LeaveGuild"
 	GuildService_GetGuildSettings_FullMethodName    = "/guma.v1.GuildService/GetGuildSettings"
 	GuildService_UpdateGuildSettings_FullMethodName = "/guma.v1.GuildService/UpdateGuildSettings"
+	GuildService_GetGuildStats_FullMethodName       = "/guma.v1.GuildService/GetGuildStats"
 )
 
 // GuildServiceClient is the client API for GuildService service.
@@ -53,6 +54,7 @@ type GuildServiceClient interface {
 	LeaveGuild(ctx context.Context, in *LeaveGuildRequest, opts ...grpc.CallOption) (*LeaveGuildResponse, error)
 	GetGuildSettings(ctx context.Context, in *GetGuildSettingsRequest, opts ...grpc.CallOption) (*GetGuildSettingsResponse, error)
 	UpdateGuildSettings(ctx context.Context, in *UpdateGuildSettingsRequest, opts ...grpc.CallOption) (*UpdateGuildSettingsResponse, error)
+	GetGuildStats(ctx context.Context, in *GetGuildStatsRequest, opts ...grpc.CallOption) (*GetGuildStatsResponse, error)
 }
 
 type guildServiceClient struct {
@@ -193,6 +195,16 @@ func (c *guildServiceClient) UpdateGuildSettings(ctx context.Context, in *Update
 	return out, nil
 }
 
+func (c *guildServiceClient) GetGuildStats(ctx context.Context, in *GetGuildStatsRequest, opts ...grpc.CallOption) (*GetGuildStatsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetGuildStatsResponse)
+	err := c.cc.Invoke(ctx, GuildService_GetGuildStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GuildServiceServer is the server API for GuildService service.
 // All implementations must embed UnimplementedGuildServiceServer
 // for forward compatibility.
@@ -211,6 +223,7 @@ type GuildServiceServer interface {
 	LeaveGuild(context.Context, *LeaveGuildRequest) (*LeaveGuildResponse, error)
 	GetGuildSettings(context.Context, *GetGuildSettingsRequest) (*GetGuildSettingsResponse, error)
 	UpdateGuildSettings(context.Context, *UpdateGuildSettingsRequest) (*UpdateGuildSettingsResponse, error)
+	GetGuildStats(context.Context, *GetGuildStatsRequest) (*GetGuildStatsResponse, error)
 	mustEmbedUnimplementedGuildServiceServer()
 }
 
@@ -259,6 +272,9 @@ func (UnimplementedGuildServiceServer) GetGuildSettings(context.Context, *GetGui
 }
 func (UnimplementedGuildServiceServer) UpdateGuildSettings(context.Context, *UpdateGuildSettingsRequest) (*UpdateGuildSettingsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateGuildSettings not implemented")
+}
+func (UnimplementedGuildServiceServer) GetGuildStats(context.Context, *GetGuildStatsRequest) (*GetGuildStatsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetGuildStats not implemented")
 }
 func (UnimplementedGuildServiceServer) mustEmbedUnimplementedGuildServiceServer() {}
 func (UnimplementedGuildServiceServer) testEmbeddedByValue()                      {}
@@ -515,6 +531,24 @@ func _GuildService_UpdateGuildSettings_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GuildService_GetGuildStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGuildStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GuildServiceServer).GetGuildStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GuildService_GetGuildStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GuildServiceServer).GetGuildStats(ctx, req.(*GetGuildStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GuildService_ServiceDesc is the grpc.ServiceDesc for GuildService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -573,6 +607,10 @@ var GuildService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateGuildSettings",
 			Handler:    _GuildService_UpdateGuildSettings_Handler,
+		},
+		{
+			MethodName: "GetGuildStats",
+			Handler:    _GuildService_GetGuildStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

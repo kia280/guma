@@ -100,6 +100,9 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws
 NEXT_PUBLIC_DISCORD_CLIENT_ID=your_discord_client_id
 NEXT_PUBLIC_OAUTH_REDIRECT_URI=http://localhost:3000/auth/callback
 
+# Support channels (optional; the Discord card is hidden when unset)
+NEXT_PUBLIC_DISCORD_INVITE_URL=
+
 # Feature Flags
 NEXT_PUBLIC_ENABLE_PWA=true
 NEXT_PUBLIC_ENABLE_NOTIFICATIONS=true

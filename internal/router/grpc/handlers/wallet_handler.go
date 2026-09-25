@@ -124,6 +124,27 @@ func (h *WalletHandler) ListTransactions(ctx context.Context, req *gumav1.ListTr
 	}, nil
 }
 
+func (h *WalletHandler) GetBalanceTrend(ctx context.Context, req *gumav1.GetBalanceTrendRequest) (*gumav1.GetBalanceTrendResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	points, err := h.svc.GetBalanceTrend(ctx, userID, req.GuildId, req.Days)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+
+	proto := make([]*gumav1.BalancePoint, len(points))
+	for i, p := range points {
+		proto[i] = &gumav1.BalancePoint{Date: p.Date, Balance: p.Balance}
+	}
+	return &gumav1.GetBalanceTrendResponse{Points: proto}, nil
+}
+
 func (h *WalletHandler) ListBackpackItems(ctx context.Context, req *gumav1.ListBackpackItemsRequest) (*gumav1.ListBackpackItemsResponse, error) {
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")

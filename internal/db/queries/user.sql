@@ -72,6 +72,7 @@ SELECT guild_id FROM members WHERE user_id = $1;
 
 -- name: GetUserCurrentGuildBalance :one
 SELECT m.guild_id,
+       m.role,
        COALESCE(w.balance, 0)::bigint AS balance
 FROM members m
 LEFT JOIN wallets w ON w.user_id = m.user_id AND w.guild_id = m.guild_id
@@ -100,15 +101,6 @@ SELECT
     COALESCE(SUM(CASE WHEN amount < 0 THEN ABS(amount)  ELSE 0 END), 0)::bigint AS total_spent
 FROM transactions
 WHERE user_id = $1;
-
--- name: GetUserBalanceTrend :many
-SELECT TO_CHAR(DATE(created_at), 'YYYY-MM-DD') AS day,
-       SUM(amount)::bigint                     AS net
-FROM transactions
-WHERE user_id = sqlc.arg(user_id)
-  AND created_at >= NOW() - make_interval(days => sqlc.arg(days)::int)
-GROUP BY DATE(created_at)
-ORDER BY day ASC;
 
 -- name: ListUsers :many
 SELECT id, email, username,

@@ -47,6 +47,13 @@ service WalletService {
     };
   }
 
+  // Daily balance history of the current user's wallet within this guild
+  rpc GetBalanceTrend(GetBalanceTrendRequest) returns (GetBalanceTrendResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/wallet/balance-trend"
+    };
+  }
+
   // Backpack: items owned by the current user within this guild
   rpc ListBackpackItems(ListBackpackItemsRequest) returns (ListBackpackItemsResponse) {
     option (google.api.http) = {
@@ -130,6 +137,15 @@ message WithdrawBackpackItemResponse {
   BackpackItem item = 1;
 }
 
+message GetBalanceTrendRequest {
+  string guild_id = 1;
+  int32 days = 2; // Default: 30
+}
+
+message GetBalanceTrendResponse {
+  repeated BalancePoint points = 1;
+}
+
 // Data structures
 
 message Wallet {
@@ -140,6 +156,11 @@ message Wallet {
   string currency = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
+}
+
+message BalancePoint {
+  string date = 1; // ISO 8601 date
+  int64 balance = 2;
 }
 
 message Transaction {
