@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
@@ -64,6 +65,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const guildId = useCurrentGuildId();
   const bidModalState = useOverlayState();
   const t = useTranslations('auctionItemPage');
+  const labels = useTranslations('createAuctionModal');
+  const format = useIntlFormatter();
   const { balance: userBalance, refresh: refreshBalance } = useWalletBalance();
 
   const formatTimeRemaining = (endTime: string) => {
@@ -175,7 +178,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <Chip size="sm" color={RARITY_COLOR[item.rarity]} variant="tertiary">
-              {item.rarity.toUpperCase()}
+              {labels(`rarities.${item.rarity}`)}
             </Chip>
             <Chip
               size="sm"
@@ -188,12 +191,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               }
               variant="tertiary"
             >
-              {item.status.toUpperCase()}
+              {t(`status.${item.status}`)}
             </Chip>
             {item.isBlind && (
               <Chip size="sm" color="accent" variant="tertiary">
                 <Icon icon="solar:eye-closed-linear" width={12} />
-                BLIND
+                {t('blind')}
               </Chip>
             )}
           </div>
@@ -230,11 +233,15 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
             <div className="grid grid-cols-2 gap-3 type-body">
               <div className="space-y-0.5">
                 <p className="type-caption text-hint">{t('startTime')}</p>
-                <p className="text-foreground">{new Date(item.startTime).toLocaleString()}</p>
+                <p className="text-foreground">
+                  {format.dateTime(new Date(item.startTime), { dateStyle: 'medium', timeStyle: 'short' })}
+                </p>
               </div>
               <div className="space-y-0.5">
                 <p className="type-caption text-hint">{t('endTime')}</p>
-                <p className="text-foreground">{new Date(item.endTime).toLocaleString()}</p>
+                <p className="text-foreground">
+                  {format.dateTime(new Date(item.endTime), { dateStyle: 'medium', timeStyle: 'short' })}
+                </p>
               </div>
             </div>
           </div>
@@ -337,7 +344,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 {/* Bid history */}
                 <div className="space-y-2">
                   <h3 className="type-label text-subtle">
-                    {t('bidHistoryTitle')} ({item.bidHistory.length})
+                    {t('bidHistoryTitle', { count: item.bidHistory.length })}
                   </h3>
                   {sortedHistory.length === 0 ? (
                     <p className="type-body text-hint text-center py-4">{t('noBidsYet')}</p>
@@ -362,7 +369,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                               {bid.bidder.username}
                             </p>
                             <p className="type-caption text-hint">
-                              {new Date(bid.timestamp).toLocaleString()}
+                              {format.dateTime(new Date(bid.timestamp), { dateStyle: 'medium', timeStyle: 'short' })}
                             </p>
                           </div>
                         </div>
@@ -411,14 +418,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
             <div className="space-y-2 type-body">
               <div className="flex justify-between">
                 <span className="text-hint">{t('category')}</span>
-                <span className="text-foreground capitalize">
-                  {item.category.replace('_', ' ')}
-                </span>
+                <span className="text-foreground">{labels(`categories.${item.category}`)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-hint">{t('rarity')}</span>
                 <Chip size="sm" color={RARITY_COLOR[item.rarity]} variant="tertiary">
-                  {item.rarity.toUpperCase()}
+                  {labels(`rarities.${item.rarity}`)}
                 </Chip>
               </div>
               <div className="flex justify-between">
@@ -432,7 +437,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               <div className="flex justify-between">
                 <span className="text-hint">{t('listed')}</span>
                 <span className="text-foreground">
-                  {new Date(item.createdAt).toLocaleDateString()}
+                  {format.dateTime(new Date(item.createdAt), { dateStyle: 'medium' })}
                 </span>
               </div>
             </div>
@@ -468,7 +473,9 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     className="text-subtle"
                   />
                   <span>
-                    {item.isBlind ? t('submitBid') : t('placeBid')} — {item.name}
+                    {item.isBlind
+                      ? t('submitBidTitle', { name: item.name })
+                      : t('placeBidTitle', { name: item.name })}
                   </span>
                 </div>
               </Modal.Heading>

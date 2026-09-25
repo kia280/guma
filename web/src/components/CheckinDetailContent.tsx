@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { useUserStore } from '@/lib/store';
@@ -12,19 +13,18 @@ import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function CheckinDetailContent({ id, onClose }: { id: string; onClose?: () => void }) {
   const router = useRouter();
   const t = useTranslations('checkinDetailPage');
+  const format = useIntlFormatter();
+
+  const formatDateTime = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return format.dateTime(date, { dateStyle: 'medium', timeStyle: 'short' });
+  };
 
   const statusConfig = {
     [CheckinStatus.OPEN]: { label: t('statusOpen'), color: 'success' as const },
@@ -150,7 +150,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             )}
           </div>
           <h1 className="type-title text-foreground">{entry.description}</h1>
-          <p className="type-body text-subtle mt-1">{entry.date}</p>
+          <p className="type-body text-subtle mt-1">{formatDateTime(entry.date)}</p>
         </div>
         {hasCheckedIn ? (
           <Chip color="success" variant="secondary" className="shrink-0">
@@ -176,12 +176,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                         width={18}
                         className="text-subtle"
                       />
-                      {t('checkIn')} — {entry.description}
+                      {t('checkInTitle', { title: entry.description })}
                     </div>
                   </Modal.Heading>
                 </Modal.Header>
                 <Modal.Body className="flex flex-col gap-3">
-                  <p className="type-body text-subtle">{entry.date}</p>
+                  <p className="type-body text-subtle">{formatDateTime(entry.date)}</p>
                   <TextField>
                     <Label>{t('notesOptional')}</Label>
                     <TextArea
@@ -224,7 +224,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                 {t('attendance')}
               </h2>
               <Chip size="sm" variant="secondary">
-                {entry.attendanceList.length} {t('members')}
+                {t('members', { count: entry.attendanceList.length })}
               </Chip>
             </div>
 
@@ -265,7 +265,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                 {t('loot')}
               </h2>
               <Chip size="sm" variant="secondary">
-                {entry.lootList.length} {t('items')}
+                {t('items', { count: entry.lootList.length })}
               </Chip>
             </div>
 
@@ -284,9 +284,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     <div className="flex-1 min-w-0">
                       <p className="type-body font-medium text-foreground">{item.name}</p>
                       {item.winner && (
-                        <p className="type-caption text-hint">
-                          {t('wonBy')} {item.winner}
-                        </p>
+                        <p className="type-caption text-hint">{t('wonBy', { name: item.winner })}</p>
                       )}
                     </div>
                     {item.quantity && (
@@ -311,21 +309,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             <div className="space-y-2 type-body">
               <div className="flex justify-between gap-2">
                 <span className="text-subtle shrink-0">{t('eventDate')}</span>
-                <span className="text-foreground text-right">{entry.date}</span>
+                <span className="text-foreground text-right">{formatDateTime(entry.date)}</span>
               </div>
               {entry.expireTime && (
                 <>
                   <Separator />
                   <div className="flex justify-between gap-2">
                     <span className="text-subtle shrink-0">{t('expires')}</span>
-                    <span className="text-foreground text-right">
-                      {new Date(entry.expireTime).toLocaleString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
+                    <span className="text-foreground text-right">{formatDateTime(entry.expireTime)}</span>
                   </div>
                   {isOpen_ && (
                     <div className="flex items-center gap-1.5 text-warning type-caption">

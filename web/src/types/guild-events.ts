@@ -28,6 +28,19 @@ export type EventType =
 
 export type EventPriority = 'low' | 'medium' | 'high' | 'critical';
 
+export const EVENT_TYPES: readonly EventType[] = [
+  'boss_respawn',
+  'guild_war',
+  'guild_meeting',
+  'raid',
+  'training',
+  'tournament',
+  'social',
+  'other',
+];
+
+export const EVENT_PRIORITIES: readonly EventPriority[] = ['low', 'medium', 'high', 'critical'];
+
 export interface RecurringPattern {
   type: 'daily' | 'weekly' | 'monthly' | 'custom';
   interval: number; // every N days/weeks/months
@@ -73,27 +86,9 @@ export const EVENT_TYPE_COLORS: Record<
   other: 'default',
 };
 
-export const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  boss_respawn: 'Boss Respawn',
-  guild_war: 'Guild War',
-  guild_meeting: 'Guild Meeting',
-  raid: 'Raid',
-  training: 'Training',
-  tournament: 'Tournament',
-  social: 'Social Event',
-  other: 'Other',
-};
-
 export const PRIORITY_COLORS: Record<EventPriority, string> = {
   low: 'default',
   medium: 'primary',
   high: 'warning',
   critical: 'danger',
-};
-
-export const PRIORITY_LABELS: Record<EventPriority, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  critical: 'Critical',
 };
