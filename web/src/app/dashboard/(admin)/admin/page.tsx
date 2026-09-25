@@ -5,7 +5,6 @@ import {
   Card,
   Table,
   Chip,
-  Avatar,
   Button,
   Input,
   Separator,
@@ -19,18 +18,22 @@ import { isAxiosError } from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import React from 'react';
+import { AsyncContent, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import { BankRequestReview } from '@/components/BankRequestReview';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { GuildAvatar } from '@/components/GuildAvatar';
 import { GuildLogoPrompt } from '@/components/GuildLogoPrompt';
 import { TemplateSettings } from '@/components/TemplateSettings';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
 import { apiClient } from '@/lib/guma';
-import { GOLD_FORMAT_OPTIONS } from '@/lib/guma/money';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
 import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import type { AdminActivity, AdminAnnouncement, AdminGuildStats } from '@/types/admin';
@@ -110,7 +113,7 @@ const getActivityColor = (type: string) => {
     case 'lottery':
       return 'text-accent';
     case 'join':
-      return 'text-secondary';
+      return 'text-subtle';
     default:
       return 'text-hint';
   }
@@ -118,6 +121,7 @@ const getActivityColor = (type: string) => {
 
 export default function AdminPage() {
   const t = useTranslations('adminPage');
+  const formatGold = useFormatGold();
   const locale = useLocale();
   const router = useRouter();
   const selectedTab = adminTabFromParam(useSearchParams().get('tab'));
@@ -139,6 +143,15 @@ export default function AdminPage() {
   const [guildStats, setGuildStats] = React.useState<AdminGuildStats | null>(null);
   const [statsStatus, setStatsStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
   const [statsReloadKey, setStatsReloadKey] = React.useState(0);
+  const usersState = useLoadState();
+  const announcementsState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = React.useState(0);
+  const reload = React.useCallback(() => {
+    usersState.reset();
+    announcementsState.reset();
+    setReloadKey(key => key + 1);
+  }, [usersState.reset, announcementsState.reset]);
   const { guild } = useCurrentGuild();
   const setGuild = useCurrentGuildStore(s => s.setGuild);
   const [isEditingName, setIsEditingName] = React.useState(false);
@@ -208,8 +221,9 @@ export default function AdminPage() {
     try {
       setGuild(await apiClient.updateGuild(guild.id, { name }));
       setIsEditingName(false);
-    } catch (err) {
-      console.error('Failed to update guild name', err);
+      notify.success(t('guildNameSaved'));
+    } catch {
+      notify.error(t('guildNameFailed'));
     } finally {
       setIsSavingName(false);
     }
@@ -217,10 +231,41 @@ export default function AdminPage() {
 
   React.useEffect(() => {
     let cancelled = false;
-    apiClient.listMembers(guildId).then(d => { if (!cancelled) setMockUsers(d); }).catch(() => {});
-    apiClient.getAdminAnnouncements(guildId).then(d => { if (!cancelled) setAnnouncements(d); }).catch(() => {});
+    apiClient
+      .listMembers(guildId)
+      .then(d => {
+        if (cancelled) return;
+        setMockUsers(d);
+        usersState.ready();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        usersState.failed();
+        notify.loadFailed(reload, 'admin');
+      });
+    apiClient
+      .getAdminAnnouncements(guildId)
+      .then(d => {
+        if (cancelled) return;
+        setAnnouncements(d);
+        announcementsState.ready();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        announcementsState.failed();
+        notify.loadFailed(reload, 'admin');
+      });
     return () => { cancelled = true; };
-  }, [guildId]);
+  }, [
+    guildId,
+    reloadKey,
+    notify,
+    reload,
+    usersState.ready,
+    usersState.failed,
+    announcementsState.ready,
+    announcementsState.failed,
+  ]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -272,10 +317,6 @@ export default function AdminPage() {
   useLiveResource(['bank'], refetchStats, { guildId });
 
   const formatCount = (value: number) => new Intl.NumberFormat(intlLocale).format(value);
-  const formatBalance = (stats: AdminGuildStats) => {
-    const amount = new Intl.NumberFormat(intlLocale, GOLD_FORMAT_OPTIONS).format(stats.bankBalance);
-    return stats.bankCurrency === 'gold' ? t('goldAmount', { amount }) : `${amount} ${stats.bankCurrency}`;
-  };
 
   const statCards = [
     {
@@ -289,7 +330,7 @@ export default function AdminPage() {
     {
       key: 'balance',
       label: t('guildBalance'),
-      value: guildStats ? formatBalance(guildStats) : '',
+      value: guildStats ? formatGold(guildStats.bankBalance) : '',
       icon: 'solar:wallet-money-linear',
       color: 'text-success',
       bg: 'bg-success/10',
@@ -307,14 +348,17 @@ export default function AdminPage() {
       label: t('totalItems'),
       value: guildStats ? formatCount(guildStats.bankItemCount) : '',
       icon: 'solar:backpack-linear',
-      color: 'text-secondary',
-      bg: 'bg-secondary/10',
+      color: 'text-subtle',
+      bg: 'bg-default',
     },
   ];
 
   const refetchAnnouncements = React.useCallback(() => {
-    apiClient.getAdminAnnouncements(guildId).then(setAnnouncements).catch(() => {});
-  }, [guildId]);
+    apiClient
+      .getAdminAnnouncements(guildId)
+      .then(setAnnouncements)
+      .catch(() => notify.loadFailed(reload, 'admin'));
+  }, [guildId, notify, reload]);
 
   useLiveResource(['announcement'], refetchAnnouncements, { guildId });
 
@@ -329,8 +373,7 @@ export default function AdminPage() {
     try {
       const draft = await apiClient.createAnnouncementDraft(guildId);
       router.push(`/dashboard/admin/announcements/${draft.id}`);
-    } catch (err) {
-      console.error('Failed to create announcement draft', err);
+    } catch {
       setCreateDraftFailed(true);
       setIsCreatingDraft(false);
     }
@@ -339,17 +382,19 @@ export default function AdminPage() {
   const deleteDraft = async (draft: AdminAnnouncement) => {
     await apiClient.deleteAnnouncementDraft(guildId, draft.id);
     setAnnouncements(prev => prev.filter(a => a.id !== draft.id));
+    notify.success(t('draftDeleted'));
   };
 
   const unpublish = async (ann: AdminAnnouncement) => {
     await apiClient.unpublishAnnouncement(guildId, ann.id);
     refetchAnnouncements();
+    notify.success(t('announcementUnpublished'));
   };
 
   return (
     <div className="space-y-5">
       <Tabs
-        aria-label="Admin sections"
+        aria-label={t('sections')}
         selectedKey={selectedTab}
         onSelectionChange={key => router.replace(adminTabHref(adminTabFromParam(String(key))), { scroll: false })}
       >
@@ -395,9 +440,17 @@ export default function AdminPage() {
         <Tabs.Panel id="users" className="pt-4">
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-0">
+              <AsyncContent
+                state={usersState.state}
+                onRetry={reload}
+                skeleton={<div className="p-4"><ListSkeleton rows={5} /></div>}
+              >
+              {mockUsers.length === 0 ? (
+                <EmptyContent icon="solar:users-group-rounded-linear" title={t('noUsers')} />
+              ) : (
               <Table>
                 <Table.ScrollContainer>
-                  <Table.Content aria-label="Users table">
+                  <Table.Content aria-label={t('usersTable')}>
                     <Table.Header>
                       <Table.Column isRowHeader>{t('user')}</Table.Column>
                       <Table.Column>{t('role')}</Table.Column>
@@ -409,12 +462,7 @@ export default function AdminPage() {
                         <Table.Row key={user.id}>
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
-                              <Avatar size="sm" className="shrink-0">
-                                <Avatar.Image src={user.avatar} />
-                                <Avatar.Fallback>
-                                  {user.username.slice(0, 2).toUpperCase()}
-                                </Avatar.Fallback>
-                              </Avatar>
+                              <UserAvatar name={user.username} src={user.avatar} className="shrink-0" />
                               <div className="min-w-0">
                                 <p className="type-body font-medium text-foreground truncate">
                                   {user.username}
@@ -446,6 +494,8 @@ export default function AdminPage() {
                   </Table.Content>
                 </Table.ScrollContainer>
               </Table>
+              )}
+              </AsyncContent>
             </Card.Content>
           </Card>
         </Tabs.Panel>
@@ -677,6 +727,7 @@ export default function AdminPage() {
               </Button>
             </div>
 
+            <AsyncContent state={announcementsState.state} onRetry={reload} skeleton={<ListSkeleton rows={3} />}>
             {announcements.length === 0 && (
               <Card className="border border-divider shadow-none bg-surface">
                 <Card.Content className="p-6 text-center">
@@ -779,6 +830,7 @@ export default function AdminPage() {
                 </Card>
               ))}
             </div>
+            </AsyncContent>
           </div>
 
           <ConfirmDialog

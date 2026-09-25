@@ -72,6 +72,7 @@ SELECT guild_id FROM members WHERE user_id = $1;
 
 -- name: GetUserCurrentGuildBalance :one
 SELECT m.guild_id,
+       m.role,
        COALESCE(w.balance, 0)::bigint AS balance
 FROM members m
 LEFT JOIN wallets w ON w.user_id = m.user_id AND w.guild_id = m.guild_id

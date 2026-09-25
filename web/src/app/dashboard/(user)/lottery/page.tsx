@@ -5,9 +5,12 @@ import { Icon } from '@iconify/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { AsyncContent, CardGridSkeleton } from '@/components/AsyncContent';
 import { CreateLotteryModal } from '@/components/CreateLotteryModal';
 import LotteryCard from '@/components/LotteryCard';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import type { Lottery } from '@/types/lottery';
@@ -24,12 +27,29 @@ export default function LotteryPage() {
 
   const createModalState = useOverlayState();
   const [reloadKey, setReloadKey] = React.useState(0);
+  const lotteriesState = useLoadState();
+  const notify = useToast();
+  const reload = React.useCallback(() => {
+    lotteriesState.reset();
+    setReloadKey(key => key + 1);
+  }, [lotteriesState.reset]);
 
   React.useEffect(() => {
     let cancelled = false;
-    apiClient.listLotteries(guildId).then(d => { if (!cancelled) setMockLotteries(d); }).catch(() => {});
+    apiClient
+      .listLotteries(guildId)
+      .then(d => {
+        if (cancelled) return;
+        setMockLotteries(d);
+        lotteriesState.ready();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        lotteriesState.failed();
+        notify.loadFailed(reload, 'lotteries');
+      });
     return () => { cancelled = true; };
-  }, [guildId, pathname, reloadKey]);
+  }, [guildId, pathname, reloadKey, notify, reload, lotteriesState.ready, lotteriesState.failed]);
 
   useLiveResource(['lottery'], () => setReloadKey(key => key + 1), { guildId });
 
@@ -76,7 +96,7 @@ export default function LotteryPage() {
       {/* Status Tabs */}
       <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
         <Tabs.ListContainer>
-          <Tabs.List aria-label="Lottery status">
+          <Tabs.List aria-label={t('statusTabs')}>
             <Tabs.Tab id="all">
               <div className="flex items-center gap-2">
                 <span>{t('all')}</span>
@@ -116,6 +136,11 @@ export default function LotteryPage() {
           </Tabs.List>
         </Tabs.ListContainer>
         <Tabs.Panel id="all" className="pt-4">
+          <AsyncContent
+            state={lotteriesState.state}
+            onRetry={reload}
+            skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
+          >
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-hint">
               <Icon
@@ -135,8 +160,14 @@ export default function LotteryPage() {
               ))}
             </div>
           )}
+          </AsyncContent>
         </Tabs.Panel>
         <Tabs.Panel id="active" className="pt-4">
+          <AsyncContent
+            state={lotteriesState.state}
+            onRetry={reload}
+            skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
+          >
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-hint">
               <Icon
@@ -156,8 +187,14 @@ export default function LotteryPage() {
               ))}
             </div>
           )}
+          </AsyncContent>
         </Tabs.Panel>
         <Tabs.Panel id="upcoming" className="pt-4">
+          <AsyncContent
+            state={lotteriesState.state}
+            onRetry={reload}
+            skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
+          >
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-hint">
               <Icon
@@ -177,8 +214,14 @@ export default function LotteryPage() {
               ))}
             </div>
           )}
+          </AsyncContent>
         </Tabs.Panel>
         <Tabs.Panel id="ended" className="pt-4">
+          <AsyncContent
+            state={lotteriesState.state}
+            onRetry={reload}
+            skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
+          >
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-hint">
               <Icon
@@ -198,6 +241,7 @@ export default function LotteryPage() {
               ))}
             </div>
           )}
+          </AsyncContent>
         </Tabs.Panel>
       </Tabs>
     </div>

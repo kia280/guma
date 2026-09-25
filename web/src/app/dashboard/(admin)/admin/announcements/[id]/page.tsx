@@ -7,7 +7,7 @@ import {
   Description,
   Input,
   Label,
-  Spinner,
+  Skeleton,
   Switch,
   Tabs,
   TextArea,
@@ -17,12 +17,16 @@ import { Icon } from '@iconify/react';
 import { useParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import React from 'react';
+import { AsyncContent } from '@/components/AsyncContent';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { PageHeader } from '@/components/PageHeader';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { isNotFoundError } from '@/lib/guma/errors';
 import type { AdminAnnouncement, AnnouncementDraftInput } from '@/types/admin';
 
 const AUTOSAVE_DELAY_MS = 800;
@@ -44,7 +48,14 @@ export default function AnnouncementEditorPage() {
   const { id } = useParams<{ id: string }>();
 
   const [announcement, setAnnouncement] = React.useState<AdminAnnouncement | null>(null);
-  const [loadFailed, setLoadFailed] = React.useState(false);
+  const [isMissing, setIsMissing] = React.useState(false);
+  const loadState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = React.useState(0);
+  const reload = React.useCallback(() => {
+    loadState.reset();
+    setReloadKey(key => key + 1);
+  }, [loadState.reset]);
   const [values, setValues] = React.useState<AnnouncementDraftInput>({ title: '', content: '', pinned: false });
   const [saveState, setSaveState] = React.useState<SaveState>('saved');
   const [lastSavedAt, setLastSavedAt] = React.useState<string | null>(null);
@@ -70,10 +81,19 @@ export default function AnnouncementEditorPage() {
         setAnnouncement(ann);
         setValues(input);
         setLastSavedAt(ann.updatedAt);
+        loadState.ready();
       })
-      .catch(() => { if (!cancelled) setLoadFailed(true); });
+      .catch(err => {
+        if (cancelled) return;
+        if (isNotFoundError(err)) {
+          setIsMissing(true);
+          return;
+        }
+        loadState.failed();
+        notify.loadFailed(reload, 'announcement');
+      });
     return () => { cancelled = true; };
-  }, [guildId, id]);
+  }, [guildId, id, reloadKey, notify, reload, loadState.ready, loadState.failed]);
 
   const save = React.useCallback(async (): Promise<boolean> => {
     clearTimeout(timer.current);
@@ -172,6 +192,7 @@ export default function AnnouncementEditorPage() {
       if (!(await flush())) throw new Error('draft not saved');
       await apiClient.publishAnnouncement(guildId, id);
       latest.current = null;
+      notify.success(t('announcementPublished'));
       router.push(ANNOUNCEMENTS_HREF);
     } catch (err) {
       console.error('Failed to publish announcement', err);
@@ -207,7 +228,7 @@ export default function AnnouncementEditorPage() {
     </Button>
   );
 
-  if (loadFailed) {
+  if (isMissing) {
     return (
       <div className="space-y-5">
         {backButton}
@@ -223,8 +244,20 @@ export default function AnnouncementEditorPage() {
 
   if (!announcement) {
     return (
-      <div className="flex justify-center py-16">
-        <Spinner size="lg" aria-label={t('loadingDraft')} />
+      <div className="space-y-5">
+        {backButton}
+        <AsyncContent
+          state={loadState.state}
+          onRetry={reload}
+          skeleton={
+            <div className="space-y-5" aria-busy="true" aria-label={t('loadingDraft')}>
+              <Skeleton className="h-8 w-1/2 rounded-lg" />
+              <Skeleton className="h-96 rounded-xl" />
+            </div>
+          }
+        >
+          {null}
+        </AsyncContent>
       </div>
     );
   }

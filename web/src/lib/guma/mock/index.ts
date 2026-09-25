@@ -118,6 +118,9 @@ const currentUser: User = {
   balance: 1250,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
+  emailVerified: true,
+  discord: { provider: 'discord', subject: '0', username: 'you' },
+  guildRole: 'member',
 };
 
 const mockGuild: Guild = {
@@ -359,7 +362,7 @@ const baseMockApiClient: ApiClient = {
     const entry: CheckinEntry = {
       id: `ci-${Date.now()}`,
       status: CheckinStatus.OPEN,
-      date: req.datetime ? new Date(req.datetime).toLocaleString() : new Date().toLocaleString(),
+      date: req.datetime ?? new Date().toISOString(),
       description: req.title,
       expireTime: req.expireTime,
       attendanceList: [],
@@ -535,7 +538,7 @@ const baseMockApiClient: ApiClient = {
       Object.assign(lottery, {
         status: 'ended',
         winners: winner
-          ? [{ id: `w-${Date.now()}`, username: winner.username, prize: `$${lottery.prizePool.toLocaleString('en-US')}` }]
+          ? [{ id: `w-${Date.now()}`, username: winner.username, prize: '', prizeAmount: lottery.prizePool }]
           : [],
       });
     }
