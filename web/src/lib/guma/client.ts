@@ -9,8 +9,9 @@ import type { ApiClient } from './types';
 import type { BalancePoint, UserStats } from '@/types/user';
 import type { Guild } from '@/types/guild';
 import type { AdminAnnouncement } from '@/types/admin';
+import type { LootEntry } from '@/types/checkin';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
+import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
 
 const http: AxiosInstance = axios.create({
   baseURL: env.api.url,
@@ -58,6 +59,13 @@ http.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+const toProtoLoot = (entry: LootEntry) => ({
+  name: entry.name,
+  description: entry.description,
+  category: entry.category,
+  rarity: entry.rarity,
+});
 
 const notImpl = (name: string) => () =>
   Promise.reject(new Error(`gumaApiClient.${name} is not yet wired to a backend endpoint`));
@@ -250,7 +258,7 @@ export const gumaApiClient: ApiClient = {
       datetime: req.datetime,
       expire_time: req.expireTime,
       image_url: req.imageUrl,
-      loot_list: (req.lootList ?? []).map(i => ({ name: i.name })),
+      loot_list: (req.lootList ?? []).map(toProtoLoot),
     };
     const { data } = await http.post(`/v1/guilds/${guildId}/checkins`, payload);
     return toCheckin(data.checkin);
@@ -262,7 +270,7 @@ export const gumaApiClient: ApiClient = {
       datetime: patch.datetime,
       expire_time: patch.expireTime,
       image_url: patch.imageUrl,
-      loot_list: patch.lootList?.map(i => ({ name: i.name })),
+      loot_list: patch.lootList?.map(toProtoLoot),
     };
     const { data } = await http.patch(`/v1/guilds/${guildId}/checkins/${id}`, payload);
     return toCheckin(data.checkin);
@@ -278,7 +286,7 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.post(`/v1/guilds/${guildId}/checkin-templates`, {
       name: input.name,
       title: input.title,
-      loot_list: input.lootList.map(i => ({ name: i.name })),
+      item_template_ids: input.itemTemplateIds,
     });
     return toCheckinTemplate(data.template);
   },
@@ -286,12 +294,27 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.patch(`/v1/guilds/${guildId}/checkin-templates/${id}`, {
       name: input.name,
       title: input.title,
-      loot_list: input.lootList.map(i => ({ name: i.name })),
+      item_template_ids: input.itemTemplateIds,
     });
     return toCheckinTemplate(data.template);
   },
   deleteCheckinTemplate: async (guildId, id) => {
     await http.delete(`/v1/guilds/${guildId}/checkin-templates/${id}`);
+  },
+  listItemTemplates: async (guildId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/item-templates`);
+    return (data.templates ?? []).map(toItemTemplate);
+  },
+  createItemTemplate: async (guildId, input) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/item-templates`, input);
+    return toItemTemplate(data.template);
+  },
+  updateItemTemplate: async (guildId, id, input) => {
+    const { data } = await http.patch(`/v1/guilds/${guildId}/item-templates/${id}`, input);
+    return toItemTemplate(data.template);
+  },
+  deleteItemTemplate: async (guildId, id) => {
+    await http.delete(`/v1/guilds/${guildId}/item-templates/${id}`);
   },
   submitAttendance: async (guildId, checkinId) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/attend`);

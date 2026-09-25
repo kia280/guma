@@ -5,7 +5,7 @@ import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Des
 import type { DateValue } from '@internationalized/date';
 import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
 import { CheckinCard, checkinStatusColor } from './CheckinCard';
-import { CheckinStatus, type CheckinEntry, type CheckinTemplate } from '@/types/checkin';
+import { CheckinStatus, type CheckinEntry, type CheckinTemplate, type ItemTemplate, type LootEntry } from '@/types/checkin';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,7 @@ import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { LootListEditor } from '@/components/LootListEditor';
+import { ItemTemplatePicker } from '@/components/ItemTemplatePicker';
 
 const DRAFT_KEY = 'checkin_draft';
 
@@ -30,8 +31,15 @@ interface CheckinDraft {
   expireTime: string;
   imageUrl: string;
   lootInput: string;
-  lootList: string[];
+  lootList: LootEntry[];
 }
+
+const toLootEntry = (item: ItemTemplate): LootEntry => ({
+  name: item.name,
+  description: item.description || undefined,
+  category: item.category,
+  rarity: item.rarity,
+});
 
 const emptyDraft: CheckinDraft = {
   title: '',
@@ -82,13 +90,19 @@ export default function CheckinPage() {
   };
 
   const [templates, setTemplates] = React.useState<CheckinTemplate[]>([]);
+  const [itemTemplates, setItemTemplates] = React.useState<ItemTemplate[]>([]);
   const [templatesState, setTemplatesState] = React.useState<'loading' | 'ready' | 'failed' | 'hidden'>('loading');
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<Key | null>(null);
 
   const loadTemplates = React.useCallback(async () => {
     setTemplatesState('loading');
     try {
-      setTemplates(await apiClient.listCheckinTemplates(guildId));
+      const [checkinList, itemList] = await Promise.all([
+        apiClient.listCheckinTemplates(guildId),
+        apiClient.listItemTemplates(guildId),
+      ]);
+      setTemplates(checkinList);
+      setItemTemplates(itemList);
       setTemplatesState('ready');
     } catch (err) {
       setTemplatesState(apiErrorCode(err) === GrpcCode.PermissionDenied ? 'hidden' : 'failed');
@@ -106,8 +120,12 @@ export default function CheckinPage() {
     updateDraft({
       title: template.title,
       lootInput: '',
-      lootList: template.lootList.map(item => item.name),
+      lootList: template.items.map(toLootEntry),
     });
+  };
+
+  const handleItemTemplatePick = (item: ItemTemplate) => {
+    updateDraft({ lootList: [...draft.lootList, toLootEntry(item)] });
   };
 
   const handleNewSubmit = async () => {
@@ -120,7 +138,7 @@ export default function CheckinPage() {
         datetime: draft.datetime,
         expireTime: draft.expireTime,
         imageUrl: draft.imageUrl || undefined,
-        lootList: draft.lootList.map(name => ({ name })),
+        lootList: draft.lootList,
       });
       refetchCheckins();
       setDraft(emptyDraft);
@@ -185,7 +203,7 @@ export default function CheckinPage() {
                                   <div className="flex min-w-0 flex-col">
                                     <span className="truncate">{template.name}</span>
                                     <span className="type-caption text-hint truncate">
-                                      {t('templateSummary', { title: template.title, count: template.lootList.length })}
+                                      {t('templateSummary', { title: template.title, count: template.items.length })}
                                     </span>
                                   </div>
                                   <ListBox.ItemIndicator />
@@ -323,7 +341,23 @@ export default function CheckinPage() {
                       items={draft.lootList}
                       inputValue={draft.lootInput}
                       onChange={(lootList, lootInput) => updateDraft({ lootList, lootInput })}
-                    />
+                    >
+                      {templatesState !== 'hidden' && (
+                        <ItemTemplatePicker
+                          templates={itemTemplates}
+                          onPick={handleItemTemplatePick}
+                          isDisabled={templatesState !== 'ready'}
+                          placeholder={
+                            templatesState === 'loading'
+                              ? t('templatesLoading')
+                              : itemTemplates.length === 0
+                                ? t('noItemTemplates')
+                                : t('itemTemplatePlaceholder')
+                          }
+                          description={t('itemTemplateHint')}
+                        />
+                      )}
+                    </LootListEditor>
 
                     <TextField>
                       <Label>{t('imageUrlPlaceholder')}</Label>

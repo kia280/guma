@@ -1,26 +1,21 @@
 'use client';
 
 import React from 'react';
-import {
-  Alert,
-  AlertDialog,
-  Button,
-  Card,
-  Chip,
-  Input,
-  Label,
-  Modal,
-  Spinner,
-  TextField,
-  useOverlayState,
-} from '@heroui/react';
+import { Button, Card, Chip, Input, Label, Modal, TextField, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 
-import { LootListEditor } from '@/components/LootListEditor';
+import { ItemTemplatePicker } from '@/components/ItemTemplatePicker';
+import { getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
+import {
+  DeleteTemplateDialog,
+  ErrorAlert,
+  TemplateListState,
+  templateErrorKey,
+  useTemplateList,
+} from '@/components/TemplateManagerParts';
 import { apiClient } from '@/lib/guma';
-import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
-import type { CheckinTemplate } from '@/types/checkin';
+import type { CheckinTemplate, ItemTemplate } from '@/types/checkin';
 
 const NAME_MAX_LENGTH = 100;
 const TITLE_MAX_LENGTH = 200;
@@ -28,72 +23,33 @@ const TITLE_MAX_LENGTH = 200;
 interface TemplateDraft {
   name: string;
   title: string;
-  lootInput: string;
-  lootList: string[];
+  items: ItemTemplate[];
 }
 
-const emptyDraft: TemplateDraft = { name: '', title: '', lootInput: '', lootList: [] };
-
-const saveErrorKey = (err: unknown) => {
-  switch (apiErrorCode(err)) {
-    case GrpcCode.AlreadyExists:
-      return 'errorNameTaken';
-    case GrpcCode.PermissionDenied:
-      return 'errorForbidden';
-    case GrpcCode.NotFound:
-      return 'errorNotFound';
-    case GrpcCode.InvalidArgument:
-      return 'errorInvalid';
-    default:
-      return 'errorGeneric';
-  }
-};
+const emptyDraft: TemplateDraft = { name: '', title: '', items: [] };
 
 export function CheckinTemplateManager({ guildId }: { guildId: string }) {
   const t = useTranslations('checkinTemplates');
+  const shared = useTranslations('templates');
+  const labels = useTranslations('createAuctionModal');
   const formModal = useOverlayState();
 
-  const [templates, setTemplates] = React.useState<CheckinTemplate[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [loadFailed, setLoadFailed] = React.useState(false);
+  const loadTemplates = React.useCallback(() => apiClient.listCheckinTemplates(guildId), [guildId]);
+  const { items: templates, isLoading, loadFailed, reload, upsert, remove } = useTemplateList(loadTemplates);
+  const loadItems = React.useCallback(() => apiClient.listItemTemplates(guildId), [guildId]);
+  const itemLibrary = useTemplateList(loadItems);
 
   const [editing, setEditing] = React.useState<CheckinTemplate | null>(null);
   const [draft, setDraft] = React.useState<TemplateDraft>(emptyDraft);
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
-
   const [deleteTarget, setDeleteTarget] = React.useState<CheckinTemplate | null>(null);
-  const [isDeleting, setIsDeleting] = React.useState(false);
-  const [deleteError, setDeleteError] = React.useState<string | null>(null);
-
-  const latestLoad = React.useRef(0);
-
-  const load = React.useCallback(async () => {
-    const loadId = ++latestLoad.current;
-    setIsLoading(true);
-    setLoadFailed(false);
-    try {
-      const list = await apiClient.listCheckinTemplates(guildId);
-      if (loadId === latestLoad.current) setTemplates(list);
-    } catch {
-      if (loadId === latestLoad.current) setLoadFailed(true);
-    } finally {
-      if (loadId === latestLoad.current) setIsLoading(false);
-    }
-  }, [guildId]);
-
-  React.useEffect(() => {
-    load();
-  }, [load]);
 
   const openForm = (template: CheckinTemplate | null) => {
     setEditing(template);
-    setDraft(
-      template
-        ? { name: template.name, title: template.title, lootInput: '', lootList: template.lootList.map(i => i.name) }
-        : emptyDraft,
-    );
+    setDraft(template ? { name: template.name, title: template.title, items: template.items } : emptyDraft);
     setSaveError(null);
+    itemLibrary.reload();
     formModal.open();
   };
 
@@ -106,50 +62,29 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
     const input = {
       name: draft.name.trim(),
       title: draft.title.trim(),
-      lootList: draft.lootList.map(name => ({ name })),
+      itemTemplateIds: draft.items.map(item => item.id),
     };
     try {
-      const saved = editing
-        ? await apiClient.updateCheckinTemplate(guildId, editing.id, input)
-        : await apiClient.createCheckinTemplate(guildId, input);
-      setTemplates(prev =>
-        (editing ? prev.map(tpl => (tpl.id === saved.id ? saved : tpl)) : [...prev, saved]).sort((a, b) =>
-          a.name.localeCompare(b.name),
-        ),
+      upsert(
+        editing
+          ? await apiClient.updateCheckinTemplate(guildId, editing.id, input)
+          : await apiClient.createCheckinTemplate(guildId, input),
       );
       formModal.close();
     } catch (err) {
-      setSaveError(t(saveErrorKey(err)));
+      setSaveError(shared(templateErrorKey(err)));
     } finally {
       setIsSaving(false);
     }
   };
 
-  const openDelete = (template: CheckinTemplate) => {
-    setDeleteTarget(template);
-    setDeleteError(null);
-  };
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setIsDeleting(true);
-    setDeleteError(null);
-    try {
-      await apiClient.deleteCheckinTemplate(guildId, deleteTarget.id);
-      setTemplates(prev => prev.filter(tpl => tpl.id !== deleteTarget.id));
-      setDeleteTarget(null);
-    } catch (err) {
-      const code = apiErrorCode(err);
-      if (code === GrpcCode.NotFound) {
-        setTemplates(prev => prev.filter(tpl => tpl.id !== deleteTarget.id));
-        setDeleteTarget(null);
-        return;
-      }
-      setDeleteError(t(code === GrpcCode.PermissionDenied ? 'errorForbidden' : 'errorGeneric'));
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  const itemPickerPlaceholder = itemLibrary.isLoading
+    ? t('itemsLoading')
+    : itemLibrary.loadFailed
+      ? t('itemsLoadFailed')
+      : itemLibrary.items.length === 0
+        ? t('noItemTemplates')
+        : t('itemPlaceholder');
 
   return (
     <div className="flex flex-col gap-4">
@@ -161,29 +96,15 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-10">
-          <Spinner aria-label={t('loading')} />
-        </div>
-      ) : loadFailed ? (
-        <Alert status="danger">
-          <Alert.Indicator />
-          <Alert.Content>
-            <Alert.Title>{t('loadFailed')}</Alert.Title>
-          </Alert.Content>
-          <Button size="sm" variant="secondary" onPress={load}>
-            {t('retry')}
-          </Button>
-        </Alert>
-      ) : templates.length === 0 ? (
-        <Card className="border border-divider shadow-none bg-surface">
-          <Card.Content className="text-center py-12">
-            <Icon icon="solar:clipboard-list-linear" width={40} className="mx-auto mb-3 text-disabled" />
-            <h3 className="type-subheading mb-1 text-foreground">{t('emptyTitle')}</h3>
-            <p className="type-body text-subtle">{t('emptyHint')}</p>
-          </Card.Content>
-        </Card>
-      ) : (
+      <TemplateListState
+        isLoading={isLoading}
+        loadFailed={loadFailed}
+        isEmpty={templates.length === 0}
+        onRetry={reload}
+        emptyIcon="solar:clipboard-list-linear"
+        emptyTitle={t('emptyTitle')}
+        emptyHint={t('emptyHint')}
+      >
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {templates.map(template => (
             <li key={template.id}>
@@ -198,7 +119,7 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
                       size="sm"
                       variant="tertiary"
                       isIconOnly
-                      aria-label={t('editNamed', { name: template.name })}
+                      aria-label={shared('editNamed', { name: template.name })}
                       onPress={() => openForm(template)}
                     >
                       <Icon icon="solar:pen-linear" width={16} />
@@ -207,23 +128,23 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
                       size="sm"
                       variant="tertiary"
                       isIconOnly
-                      aria-label={t('deleteNamed', { name: template.name })}
+                      aria-label={shared('deleteNamed', { name: template.name })}
                       className="text-hint hover:text-danger"
-                      onPress={() => openDelete(template)}
+                      onPress={() => setDeleteTarget(template)}
                     >
                       <Icon icon="solar:trash-bin-trash-linear" width={16} />
                     </Button>
                   </div>
                 </Card.Header>
                 <Card.Content className="pt-0">
-                  {template.lootList.length === 0 ? (
-                    <p className="type-caption text-hint">{t('noLoot')}</p>
+                  {template.items.length === 0 ? (
+                    <p className="type-caption text-hint">{t('noItems')}</p>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      <p className="type-caption text-hint">{t('lootCount', { count: template.lootList.length })}</p>
+                      <p className="type-caption text-hint">{t('itemCount', { count: template.items.length })}</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {template.lootList.map(item => (
-                          <Chip key={item.id} size="sm" variant="secondary">
+                        {template.items.map((item, idx) => (
+                          <Chip key={`${idx}-${item.id}`} size="sm" variant="secondary" color={getRarityColor(item.rarity)}>
                             {item.name}
                           </Chip>
                         ))}
@@ -235,7 +156,7 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
             </li>
           ))}
         </ul>
-      )}
+      </TemplateListState>
 
       <Modal state={formModal}>
         <Modal.Backdrop>
@@ -272,26 +193,56 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
                       variant="secondary"
                     />
                   </TextField>
-                  <LootListEditor
-                    items={draft.lootList}
-                    inputValue={draft.lootInput}
-                    onChange={(lootList, lootInput) => setDraft(d => ({ ...d, lootList, lootInput }))}
-                  />
-                  {saveError && (
-                    <Alert status="danger">
-                      <Alert.Indicator />
-                      <Alert.Content>
-                        <Alert.Title>{saveError}</Alert.Title>
-                      </Alert.Content>
-                    </Alert>
-                  )}
+                  <div className="flex flex-col gap-2">
+                    <ItemTemplatePicker
+                      templates={itemLibrary.items}
+                      placeholder={itemPickerPlaceholder}
+                      isDisabled={itemLibrary.isLoading || itemLibrary.loadFailed}
+                      description={itemLibrary.items.length === 0 && !itemLibrary.isLoading ? t('noItemTemplatesHint') : undefined}
+                      onPick={item => setDraft(d => ({ ...d, items: [...d.items, item] }))}
+                    />
+                    {itemLibrary.loadFailed && (
+                      <Button size="sm" variant="tertiary" className="self-start" onPress={itemLibrary.reload}>
+                        {shared('retry')}
+                      </Button>
+                    )}
+                    {draft.items.length > 0 && (
+                      <ul aria-label={t('items')} className="flex flex-col gap-1">
+                        {draft.items.map((item, idx) => (
+                          <li
+                            key={`${idx}-${item.id}`}
+                            className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-surface-secondary border border-divider"
+                          >
+                            <div className="flex min-w-0 items-center gap-2">
+                              <Icon icon={getCategoryIcon(item.category)} width={14} className="shrink-0 text-hint" />
+                              <span className="type-body text-foreground truncate">{item.name}</span>
+                              <Chip size="sm" variant="secondary" color={getRarityColor(item.rarity)} className="shrink-0">
+                                {labels(`rarities.${item.rarity}`)}
+                              </Chip>
+                            </div>
+                            <Button
+                              size="sm"
+                              isIconOnly
+                              variant="tertiary"
+                              aria-label={t('removeItem', { name: item.name })}
+                              className="shrink-0 text-hint hover:text-danger"
+                              onPress={() => setDraft(d => ({ ...d, items: d.items.filter((_, i) => i !== idx) }))}
+                            >
+                              <Icon icon="solar:close-circle-linear" width={14} />
+                            </Button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <ErrorAlert message={saveError} />
                 </Modal.Body>
                 <Modal.Footer>
                   <Button slot="close" variant="secondary" isDisabled={isSaving}>
-                    {t('cancel')}
+                    {shared('cancel')}
                   </Button>
                   <Button type="submit" variant="primary" isPending={isSaving} isDisabled={!canSave}>
-                    {t('save')}
+                    {shared('save')}
                   </Button>
                 </Modal.Footer>
               </form>
@@ -300,41 +251,13 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
         </Modal.Backdrop>
       </Modal>
 
-      <AlertDialog.Backdrop
-        isOpen={deleteTarget !== null}
-        onOpenChange={isOpen => {
-          if (!isOpen && !isDeleting) setDeleteTarget(null);
-        }}
-      >
-        <AlertDialog.Container>
-          <AlertDialog.Dialog className="sm:max-w-[400px]">
-            <AlertDialog.CloseTrigger />
-            <AlertDialog.Header>
-              <AlertDialog.Icon status="danger" />
-              <AlertDialog.Heading>{t('deleteTitle')}</AlertDialog.Heading>
-            </AlertDialog.Header>
-            <AlertDialog.Body className="flex flex-col gap-3">
-              <p className="type-body text-subtle">{t('deleteConfirm', { name: deleteTarget?.name ?? '' })}</p>
-              {deleteError && (
-                <Alert status="danger">
-                  <Alert.Indicator />
-                  <Alert.Content>
-                    <Alert.Title>{deleteError}</Alert.Title>
-                  </Alert.Content>
-                </Alert>
-              )}
-            </AlertDialog.Body>
-            <AlertDialog.Footer>
-              <Button slot="close" variant="tertiary" isDisabled={isDeleting}>
-                {t('cancel')}
-              </Button>
-              <Button variant="danger" isPending={isDeleting} onPress={handleDelete}>
-                {t('delete')}
-              </Button>
-            </AlertDialog.Footer>
-          </AlertDialog.Dialog>
-        </AlertDialog.Container>
-      </AlertDialog.Backdrop>
+      <DeleteTemplateDialog
+        target={deleteTarget}
+        description={t('deleteConfirm', { name: deleteTarget?.name ?? '' })}
+        onDelete={id => apiClient.deleteCheckinTemplate(guildId, id)}
+        onDeleted={remove}
+        onClose={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

@@ -9,6 +9,8 @@ import type {
   CheckinEntry,
   CheckinTemplate,
   CheckinTemplateInput,
+  ItemTemplate,
+  ItemTemplateInput,
   LootItem,
 } from '@/types/checkin';
 import { CheckinStatus } from '@/types/checkin';
@@ -33,7 +35,8 @@ import type { ApiClient } from '../types';
 /** In-memory store so mutations feel interactive during mock-mode development. */
 const store = {
   checkins: [...mockData.mockCheckins] as CheckinEntry[],
-  checkinTemplates: mockData.mockCheckinTemplates.map(t => ({ ...t, lootList: [...t.lootList] })) as CheckinTemplate[],
+  itemTemplates: mockData.mockItemTemplates.map(t => ({ ...t })) as ItemTemplate[],
+  checkinTemplates: mockData.mockCheckinTemplates.map(t => ({ ...t, itemTemplateIds: [...t.itemTemplateIds] })),
   auctions: [...mockData.mockAuctionItems] as AuctionItem[],
   transactions: [...mockData.mockTransactions] as Transaction[],
   lotteries: mockData.mockLotteries.map(l => ({ ...l, participants: l.participants?.map(p => ({ ...p })) })) as Lottery[],
@@ -42,18 +45,40 @@ const store = {
   notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
 };
 
-const toMockTemplate = (id: string, input: CheckinTemplateInput): CheckinTemplate => ({
+type StoredCheckinTemplate = Omit<CheckinTemplate, 'items'> & { itemTemplateIds: string[] };
+
+const conflict = () =>
+  Object.assign(new Error('a template with this name already exists'), {
+    isAxiosError: true,
+    response: { status: 409, data: { code: 'AlreadyExists' } },
+  });
+
+const assertUniqueName = (list: Array<{ id: string; name: string }>, id: string, name: string) => {
+  if (list.some(t => t.id !== id && t.name === name)) throw conflict();
+};
+
+const resolveCheckinTemplate = (t: StoredCheckinTemplate): CheckinTemplate => ({
+  id: t.id,
+  name: t.name,
+  title: t.title,
+  items: t.itemTemplateIds.flatMap(itemId => store.itemTemplates.filter(item => item.id === itemId)),
+});
+
+const toStoredCheckinTemplate = (id: string, input: CheckinTemplateInput): StoredCheckinTemplate => ({
   id,
   name: input.name.trim(),
   title: input.title.trim(),
-  lootList: input.lootList.map((item, idx) => ({ id: `${id}-l-${idx}`, name: item.name.trim() })),
+  itemTemplateIds: [...input.itemTemplateIds],
 });
 
-const assertUniqueTemplateName = (template: CheckinTemplate) => {
-  if (store.checkinTemplates.some(t => t.id !== template.id && t.name === template.name)) {
-    throw Object.assign(new Error('a template with this name already exists'), { response: { status: 409 } });
-  }
-};
+const toMockItemTemplate = (id: string, input: ItemTemplateInput): ItemTemplate => ({
+  ...input,
+  id,
+  name: input.name.trim(),
+  description: input.description.trim(),
+});
+
+const byName = <T extends { name: string }>(a: T, b: T) => a.name.localeCompare(b.name);
 
 const currentUser: User = {
   id: 'current-user',
@@ -349,23 +374,39 @@ const baseMockApiClient: ApiClient = {
     const entry = store.checkins.find(c => c.id === checkinId);
     return entry?.attendanceList ?? [];
   },
-  listCheckinTemplates: async () =>
-    [...store.checkinTemplates].sort((a, b) => a.name.localeCompare(b.name)),
+  listCheckinTemplates: async () => store.checkinTemplates.map(resolveCheckinTemplate).sort(byName),
   createCheckinTemplate: async (_guildId, input) => {
-    const template = toMockTemplate(`tpl-${Date.now()}`, input);
-    assertUniqueTemplateName(template);
+    const template = toStoredCheckinTemplate(`tpl-${Date.now()}`, input);
+    assertUniqueName(store.checkinTemplates, template.id, template.name);
     store.checkinTemplates = [...store.checkinTemplates, template];
-    return template;
+    return resolveCheckinTemplate(template);
   },
   updateCheckinTemplate: async (_guildId, id, input) => {
     if (!store.checkinTemplates.some(t => t.id === id)) throw new Error('not found');
-    const template = toMockTemplate(id, input);
-    assertUniqueTemplateName(template);
+    const template = toStoredCheckinTemplate(id, input);
+    assertUniqueName(store.checkinTemplates, id, template.name);
     store.checkinTemplates = store.checkinTemplates.map(t => (t.id === id ? template : t));
-    return template;
+    return resolveCheckinTemplate(template);
   },
   deleteCheckinTemplate: async (_guildId, id) => {
     store.checkinTemplates = store.checkinTemplates.filter(t => t.id !== id);
+  },
+  listItemTemplates: async () => [...store.itemTemplates].sort(byName),
+  createItemTemplate: async (_guildId, input) => {
+    const template = toMockItemTemplate(`item-${Date.now()}`, input);
+    assertUniqueName(store.itemTemplates, template.id, template.name);
+    store.itemTemplates = [...store.itemTemplates, template];
+    return template;
+  },
+  updateItemTemplate: async (_guildId, id, input) => {
+    if (!store.itemTemplates.some(t => t.id === id)) throw new Error('not found');
+    const template = toMockItemTemplate(id, input);
+    assertUniqueName(store.itemTemplates, id, template.name);
+    store.itemTemplates = store.itemTemplates.map(t => (t.id === id ? template : t));
+    return template;
+  },
+  deleteItemTemplate: async (_guildId, id) => {
+    store.itemTemplates = store.itemTemplates.filter(t => t.id !== id);
   },
 
   // ── Lottery ──

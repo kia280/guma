@@ -11,7 +11,7 @@ import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
 import { BackpackItem } from '@/types/backpack';
 import { GuildEvent, CreateEventData, UpdateEventData } from '@/types/guild-events';
-import { CheckinStatus, CheckinEntry, CheckinTemplate } from '@/types/checkin';
+import { CheckinStatus, CheckinEntry, ItemTemplate } from '@/types/checkin';
 import type { MockUser, BalancePoint } from '@/types/user';
 import type {
   FeedEvent,
@@ -344,22 +344,15 @@ function generateCheckins(): CheckinEntry[] {
 
 export const mockCheckins: CheckinEntry[] = generateCheckins();
 
-export const mockCheckinTemplates: CheckinTemplate[] = [
-  {
-    id: 'tpl-raid',
-    name: 'Weekly raid',
-    title: 'Weekly guild raid',
-    lootList: [
-      { id: 'tpl-raid-l-0', name: 'Dragon Scale' },
-      { id: 'tpl-raid-l-1', name: 'Ancient Relic' },
-    ],
-  },
-  {
-    id: 'tpl-siege',
-    name: 'Castle siege',
-    title: 'Castle siege roll call',
-    lootList: [{ id: 'tpl-siege-l-0', name: 'Siege Token' }],
-  },
+export const mockItemTemplates: ItemTemplate[] = [
+  { id: 'item-dragon-scale', name: 'Dragon Scale', description: 'Dropped by the fire dragon', category: ItemCategory.MATERIAL, rarity: ItemRarity.EPIC },
+  { id: 'item-ancient-relic', name: 'Ancient Relic', description: '', category: ItemCategory.MISC, rarity: ItemRarity.LEGENDARY },
+  { id: 'item-siege-token', name: 'Siege Token', description: '', category: ItemCategory.CONSUMABLE, rarity: ItemRarity.RARE },
+];
+
+export const mockCheckinTemplates = [
+  { id: 'tpl-raid', name: 'Weekly raid', title: 'Weekly guild raid', itemTemplateIds: ['item-dragon-scale', 'item-ancient-relic'] },
+  { id: 'tpl-siege', name: 'Castle siege', title: 'Castle siege roll call', itemTemplateIds: ['item-siege-token'] },
 ];
 
 // ─── Auction ─────────────────────────────────────────────────────────────────
