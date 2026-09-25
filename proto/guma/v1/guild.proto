@@ -93,6 +93,12 @@ service GuildService {
       body: "*"
     };
   }
+
+  rpc GetGuildStats(GetGuildStatsRequest) returns (GetGuildStatsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/stats"
+    };
+  }
 }
 
 // Request/Response messages
@@ -191,6 +197,14 @@ message UpdateGuildSettingsResponse {
   GuildSettings settings = 1;
 }
 
+message GetGuildStatsRequest {
+  string guild_id = 1;
+}
+
+message GetGuildStatsResponse {
+  GuildStats stats = 1;
+}
+
 message GetCurrentGuildRequest {}
 
 message GetCurrentGuildResponse {
@@ -228,6 +242,14 @@ message Guild {
   repeated Plugin plugins = 10;
   string icon_url = 11;
   string banner_url = 12;
+}
+
+message GuildStats {
+  int32 member_count = 1;
+  int64 bank_balance = 2;
+  string bank_currency = 3;
+  int32 active_event_count = 4;
+  int32 bank_item_count = 5;
 }
 
 message Plugin {

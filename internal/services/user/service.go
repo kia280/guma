@@ -20,18 +20,28 @@ import (
 
 // User is the domain model for an authenticated user.
 type User struct {
-	ID               string
-	Email            string
-	Username         string
-	DisplayName      string
-	Bio              string
-	AvatarURL        string
-	GuildIDs         []string
-	CurrentGuildID   string
+	ID             string
+	Email          string
+	Username       string
+	DisplayName    string
+	Bio            string
+	AvatarURL      string
+	GuildIDs       []string
+	CurrentGuildID string
+	Balance        int64
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+
+	EmailVerified    *bool
+	Discord          *LinkedAccount
 	CurrentGuildRole string
-	Balance          int64
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+}
+
+// LinkedAccount is an external identity provider account linked to the user.
+type LinkedAccount struct {
+	Provider string
+	Subject  string
+	Username string
 }
 
 // UpdateParams holds the fields for UpdateMe.
@@ -53,12 +63,6 @@ type Stats struct {
 	CheckinsCompleted int32
 }
 
-// BalancePoint is a single data point in a balance trend series.
-type BalancePoint struct {
-	Date    string
-	Balance int64
-}
-
 // Service handles user business logic and database access.
 type Service struct {
 	pool   *database.Pool
@@ -66,7 +70,8 @@ type Service struct {
 	kratos *kratos.APIClient
 	logger zerolog.Logger
 
-	devAuth bool
+	kratosAdmin *kratos.APIClient
+	devAuth     bool
 }
 
 // Option configures optional Service behavior.
@@ -80,6 +85,14 @@ func WithDevAuth(enabled bool) Option {
 	}
 }
 
+// WithKratosAdminURL enables looking up linked identity provider accounts
+// through the Kratos admin API.
+func WithKratosAdminURL(url string) Option {
+	return func(s *Service) {
+		s.kratosAdmin = newKratosClient(url)
+	}
+}
+
 // New creates a new user Service. kratosPublicURL is used by GetMe to
 // whoami-refresh the user profile from Kratos on every call.
 func New(pool *database.Pool, kratosPublicURL string, logger zerolog.Logger, opts ...Option) *Service {
@@ -87,23 +100,27 @@ func New(pool *database.Pool, kratosPublicURL string, logger zerolog.Logger, opt
 	if pool != nil {
 		q = db.New(pool.Pool)
 	}
-	var client *kratos.APIClient
-	if trimmed := strings.TrimSuffix(strings.TrimSpace(kratosPublicURL), "/"); trimmed != "" {
-		cfg := kratos.NewConfiguration()
-		cfg.Servers = kratos.ServerConfigurations{{URL: trimmed}}
-		cfg.HTTPClient = &http.Client{Timeout: 5 * time.Second}
-		client = kratos.NewAPIClient(cfg)
-	}
 	s := &Service{
 		pool:   pool,
 		q:      q,
-		kratos: client,
+		kratos: newKratosClient(kratosPublicURL),
 		logger: logger.With().Str("service", "user").Logger(),
 	}
 	for _, opt := range opts {
 		opt(s)
 	}
 	return s
+}
+
+func newKratosClient(baseURL string) *kratos.APIClient {
+	trimmed := strings.TrimSuffix(strings.TrimSpace(baseURL), "/")
+	if trimmed == "" {
+		return nil
+	}
+	cfg := kratos.NewConfiguration()
+	cfg.Servers = kratos.ServerConfigurations{{URL: trimmed}}
+	cfg.HTTPClient = &http.Client{Timeout: 5 * time.Second}
+	return kratos.NewAPIClient(cfg)
 }
 
 // GetMe returns the full profile for the authenticated user. It first
@@ -122,7 +139,7 @@ func (s *Service) GetMe(ctx context.Context, userID, kratosCookie string) (*User
 		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
 	}
 
-	row, err := s.loadProfile(ctx, id, kratosCookie)
+	row, ident, err := s.loadProfile(ctx, id, kratosCookie)
 	if err != nil {
 		return nil, err
 	}
@@ -131,6 +148,10 @@ func (s *Service) GetMe(ctx context.Context, userID, kratosCookie string) (*User
 		s.logger.Warn().Err(err).Str("user_id", id.String()).Msg("auto-join singleton guild failed")
 	}
 
+	return s.assembleUser(ctx, id, row, ident)
+}
+
+func (s *Service) assembleUser(ctx context.Context, id uuid.UUID, row db.GetUserByIDRow, ident *kratosIdentity) (*User, error) {
 	guildIDs, err := s.guildIDs(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("%w: query guild ids: %v", errs.ErrInternal, err)
@@ -138,10 +159,10 @@ func (s *Service) GetMe(ctx context.Context, userID, kratosCookie string) (*User
 
 	current, err := s.currentGuild(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("%w: current guild: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: current guild balance: %v", errs.ErrInternal, err)
 	}
 
-	return &User{
+	u := &User{
 		ID:               id.String(),
 		Email:            row.Email,
 		Username:         row.Username,
@@ -149,32 +170,38 @@ func (s *Service) GetMe(ctx context.Context, userID, kratosCookie string) (*User
 		Bio:              row.Bio,
 		AvatarURL:        row.AvatarUrl,
 		GuildIDs:         guildIDs,
-		CurrentGuildID:   current.ID,
-		CurrentGuildRole: current.Role,
-		Balance:          current.Balance,
+		CurrentGuildID:   current.id,
+		CurrentGuildRole: current.role,
+		Balance:          current.balance,
 		CreatedAt:        row.CreatedAt,
 		UpdatedAt:        row.UpdatedAt,
-	}, nil
+	}
+	if ident != nil {
+		verified := ident.emailVerified
+		u.EmailVerified = &verified
+		u.Discord = s.discordLink(ctx, id, ident)
+	}
+	return u, nil
 }
 
-func (s *Service) loadProfile(ctx context.Context, id uuid.UUID, kratosCookie string) (db.GetUserByIDRow, error) {
+func (s *Service) loadProfile(ctx context.Context, id uuid.UUID, kratosCookie string) (db.GetUserByIDRow, *kratosIdentity, error) {
 	if kratosCookie == "" && s.devAuth {
 		row, err := s.q.GetUserByID(ctx, id)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
-				return db.GetUserByIDRow{}, fmt.Errorf("%w: user", errs.ErrNotFound)
+				return db.GetUserByIDRow{}, nil, fmt.Errorf("%w: user", errs.ErrNotFound)
 			}
-			return db.GetUserByIDRow{}, fmt.Errorf("%w: get user: %v", errs.ErrInternal, err)
+			return db.GetUserByIDRow{}, nil, fmt.Errorf("%w: get user: %v", errs.ErrInternal, err)
 		}
-		return row, nil
+		return row, nil, nil
 	}
 
 	ident, err := s.fetchKratosIdentity(ctx, kratosCookie)
 	if err != nil {
-		return db.GetUserByIDRow{}, err
+		return db.GetUserByIDRow{}, nil, err
 	}
 	if ident.email == "" {
-		return db.GetUserByIDRow{}, fmt.Errorf("%w: kratos identity missing email", errs.ErrFailedPrecondition)
+		return db.GetUserByIDRow{}, nil, fmt.Errorf("%w: kratos identity missing email", errs.ErrFailedPrecondition)
 	}
 
 	row, err := s.q.UpsertUserFromKratos(ctx, db.UpsertUserFromKratosParams{
@@ -185,16 +212,60 @@ func (s *Service) loadProfile(ctx context.Context, id uuid.UUID, kratosCookie st
 		AvatarUrl:   ident.avatarURL,
 	})
 	if err != nil {
-		return db.GetUserByIDRow{}, fmt.Errorf("%w: upsert user: %v", errs.ErrInternal, err)
+		return db.GetUserByIDRow{}, nil, fmt.Errorf("%w: upsert user: %v", errs.ErrInternal, err)
 	}
-	return db.GetUserByIDRow(row), nil
+	return db.GetUserByIDRow(row), &ident, nil
 }
 
 // kratosIdentity is the subset of Kratos whoami output the user service cares about.
 type kratosIdentity struct {
-	email     string
-	username  string
-	avatarURL string
+	email           string
+	username        string
+	avatarURL       string
+	emailVerified   bool
+	discordUsername string
+}
+
+const discordProvider = "discord"
+
+func (s *Service) discordLink(ctx context.Context, id uuid.UUID, ident *kratosIdentity) *LinkedAccount {
+	if s.kratosAdmin == nil {
+		return nil
+	}
+	kid, resp, err := s.kratosAdmin.IdentityAPI.GetIdentity(ctx, id.String()).
+		IncludeCredential([]string{"oidc"}).
+		Execute()
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil || kid == nil {
+		s.logger.Warn().Err(err).Str("user_id", id.String()).Msg("kratos admin identity lookup failed")
+		return nil
+	}
+	if kid.Credentials == nil {
+		return nil
+	}
+	return linkedAccountFromCredentials(*kid.Credentials, discordProvider, ident.discordUsername)
+}
+
+func linkedAccountFromCredentials(creds map[string]kratos.IdentityCredentials, provider, username string) *LinkedAccount {
+	oidc, ok := creds["oidc"]
+	if !ok {
+		return nil
+	}
+	providers, _ := oidc.Config["providers"].([]any)
+	for _, entry := range providers {
+		p, ok := entry.(map[string]any)
+		if !ok {
+			continue
+		}
+		if name, _ := p["provider"].(string); name != provider {
+			continue
+		}
+		subject, _ := p["subject"].(string)
+		return &LinkedAccount{Provider: provider, Subject: subject, Username: username}
+	}
+	return nil
 }
 
 func (s *Service) fetchKratosIdentity(ctx context.Context, cookie string) (kratosIdentity, error) {
@@ -217,7 +288,10 @@ func (s *Service) fetchKratosIdentity(ctx context.Context, cookie string) (krato
 	if !ok || kid == nil {
 		return kratosIdentity{}, fmt.Errorf("%w: kratos session has no identity", errs.ErrUnauthenticated)
 	}
+	return identityFromKratos(kid), nil
+}
 
+func identityFromKratos(kid *kratos.Identity) kratosIdentity {
 	out := kratosIdentity{}
 	if traits, ok := kid.GetTraitsOk(); ok && traits != nil {
 		if traitMap, ok := (*traits).(map[string]any); ok {
@@ -236,16 +310,26 @@ func (s *Service) fetchKratosIdentity(ctx context.Context, cookie string) (krato
 			if avatar, ok := metaMap["avatar"].(string); ok {
 				out.avatarURL = avatar
 			}
+			if name, ok := metaMap["discord_username"].(string); ok {
+				out.discordUsername = strings.TrimSpace(name)
+			}
 		}
 	}
 	if out.username == "" {
 		out.username = out.email
 	}
-	return out, nil
+	for _, addr := range kid.VerifiableAddresses {
+		if addr.Via == "email" && addr.Value == out.email && addr.Verified {
+			out.emailVerified = true
+		}
+	}
+	return out
 }
 
 // UpdateMe updates mutable profile fields for the authenticated user.
-func (s *Service) UpdateMe(ctx context.Context, userID string, p UpdateParams) (*User, error) {
+// kratosCookie is optional and only used to enrich the response with the
+// identity state; a failed lookup leaves those fields unset.
+func (s *Service) UpdateMe(ctx context.Context, userID, kratosCookie string, p UpdateParams) (*User, error) {
 	id, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
@@ -265,30 +349,17 @@ func (s *Service) UpdateMe(ctx context.Context, userID string, p UpdateParams) (
 		return nil, fmt.Errorf("%w: update user: %v", errs.ErrInternal, err)
 	}
 
-	guildIDs, err := s.guildIDs(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("%w: query guild ids: %v", errs.ErrInternal, err)
+	var ident *kratosIdentity
+	if kratosCookie != "" {
+		fetched, err := s.fetchKratosIdentity(ctx, kratosCookie)
+		if err != nil {
+			s.logger.Warn().Err(err).Str("user_id", id.String()).Msg("kratos identity lookup failed")
+		} else {
+			ident = &fetched
+		}
 	}
 
-	current, err := s.currentGuild(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("%w: current guild: %v", errs.ErrInternal, err)
-	}
-
-	return &User{
-		ID:               row.ID.String(),
-		Email:            row.Email,
-		Username:         row.Username,
-		DisplayName:      row.DisplayName,
-		Bio:              row.Bio,
-		AvatarURL:        row.AvatarUrl,
-		GuildIDs:         guildIDs,
-		CurrentGuildID:   current.ID,
-		CurrentGuildRole: current.Role,
-		Balance:          current.Balance,
-		CreatedAt:        row.CreatedAt,
-		UpdatedAt:        row.UpdatedAt,
-	}, nil
+	return s.assembleUser(ctx, id, db.GetUserByIDRow(row), ident)
 }
 
 // GetUser returns the public profile for any user by ID.
@@ -359,33 +430,6 @@ func (s *Service) GetStats(ctx context.Context, userID string) (*Stats, error) {
 	}, nil
 }
 
-// GetBalanceTrend returns a daily cumulative balance trend for the last N days.
-func (s *Service) GetBalanceTrend(ctx context.Context, userID string, days int32) ([]*BalancePoint, error) {
-	if days <= 0 {
-		days = 30
-	}
-	id, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
-	}
-
-	rows, err := s.q.GetUserBalanceTrend(ctx, db.GetUserBalanceTrendParams{
-		UserID: id,
-		Days:   days,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("%w: query balance trend: %v", errs.ErrInternal, err)
-	}
-
-	points := make([]*BalancePoint, 0, len(rows))
-	var cumulative int64
-	for _, r := range rows {
-		cumulative += r.Net
-		points = append(points, &BalancePoint{Date: r.Day, Balance: cumulative})
-	}
-	return points, nil
-}
-
 // --- internal helpers ---
 
 // autoJoinSingletonGuild drops a freshly-bootstrapped user into the one and
@@ -424,9 +468,9 @@ func (s *Service) autoJoinSingletonGuild(ctx context.Context, userID uuid.UUID) 
 }
 
 type currentGuild struct {
-	ID      string
-	Role    string
-	Balance int64
+	id      string
+	role    string
+	balance int64
 }
 
 func (s *Service) currentGuild(ctx context.Context, userID uuid.UUID) (currentGuild, error) {
@@ -437,7 +481,7 @@ func (s *Service) currentGuild(ctx context.Context, userID uuid.UUID) (currentGu
 		}
 		return currentGuild{}, err
 	}
-	return currentGuild{ID: row.GuildID.String(), Role: row.Role, Balance: row.Balance}, nil
+	return currentGuild{id: row.GuildID.String(), role: row.Role, balance: row.Balance}, nil
 }
 
 func (s *Service) guildIDs(ctx context.Context, userID uuid.UUID) ([]string, error) {

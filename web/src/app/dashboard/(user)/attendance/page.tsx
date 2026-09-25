@@ -1,20 +1,23 @@
 'use client';
 
-import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Description, DatePicker, DateField, Calendar, ListBox, Select, type Key } from '@heroui/react';
+import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Description, DatePicker, DateField, Calendar, ListBox, Select, useOverlayState, type Key } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
 import type { DateValue } from '@internationalized/date';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { AsyncContent, CardGridSkeleton } from '@/components/AsyncContent';
 import { ItemTemplatePicker } from '@/components/ItemTemplatePicker';
 import { LootListEditor } from '@/components/LootListEditor';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { useGuildPermissions } from '@/lib/permissions';
+import { checkinStatusColor } from '@/lib/status-colors';
 import { CheckinStatus, type CheckinEntry, type CheckinTemplate, type ItemTemplate, type LootEntry } from '@/types/checkin';
-import { CheckinCard, checkinStatusColor } from './CheckinCard';
+import { CheckinCard } from './CheckinCard';
 
 const DRAFT_KEY = 'checkin_draft';
 
@@ -65,17 +68,34 @@ const emptyDraft: CheckinDraft = {
 
 export default function CheckinPage() {
   const t = useTranslations('checkIn');
-  const router = useRouter();
   const guildId = useCurrentGuildId();
   const { can } = useGuildPermissions();
 
   const [checkins, setCheckins] = React.useState<CheckinEntry[]>([]);
+  const checkinsState = useLoadState();
+  const notify = useToast();
+  const createModalState = useOverlayState();
+  const [isCreating, setIsCreating] = React.useState(false);
+  const [reloadKey, setReloadKey] = React.useState(0);
+  const reload = React.useCallback(() => {
+    checkinsState.reset();
+    setReloadKey(key => key + 1);
+  }, [checkinsState.reset]);
   const refetchCheckins = React.useCallback(() => {
-    apiClient.listCheckins(guildId).then(setCheckins).catch(() => {});
-  }, [guildId]);
+    apiClient
+      .listCheckins(guildId)
+      .then(data => {
+        setCheckins(data);
+        checkinsState.ready();
+      })
+      .catch(() => {
+        checkinsState.failed();
+        notify.loadFailed(reload, 'checkins');
+      });
+  }, [guildId, notify, reload, checkinsState.ready, checkinsState.failed]);
   React.useEffect(() => {
     refetchCheckins();
-  }, [refetchCheckins]);
+  }, [refetchCheckins, reloadKey]);
 
   const [activeTab, setActiveTab] = React.useState<string>('all');
   const tabLabels: Record<string, string> = {
@@ -158,6 +178,7 @@ export default function CheckinPage() {
   const handleNewSubmit = async () => {
     if (!draft.title.trim() || !draft.datetime || !draft.expireTime) return;
     if (new Date(draft.expireTime) <= new Date(draft.datetime)) return;
+    setIsCreating(true);
     try {
       await apiClient.createCheckin(guildId, {
         title: draft.title,
@@ -171,8 +192,12 @@ export default function CheckinPage() {
       setDraft(emptyDraft);
       setSelectedTemplateId(null);
       localStorage.removeItem(DRAFT_KEY);
-    } catch (err) {
-      console.error(err);
+      notify.success(t('createSuccess'));
+      createModalState.close();
+    } catch {
+      notify.error(t('createFailed'));
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -182,19 +207,20 @@ export default function CheckinPage() {
     localStorage.removeItem(DRAFT_KEY);
   };
 
-  const handleCardClick = (item: CheckinEntry) => {
-    router.push(`/dashboard/attendance/${item.id}`);
-  };
-
   return (
     <div className="space-y-5">
       {can('createCheckin') && (
         <div className="flex justify-end">
-          <Modal>
-            <Button onPress={applyDefaultTimes}>
-              <Icon icon="solar:add-circle-linear" width={16} />
-              {t('addCheckIn')}
-            </Button>
+          <Button
+            onPress={() => {
+              applyDefaultTimes();
+              createModalState.open();
+            }}
+          >
+            <Icon icon="solar:add-circle-linear" width={16} />
+            {t('addCheckIn')}
+          </Button>
+          <Modal state={createModalState}>
             <Modal.Backdrop>
               <Modal.Container size="md">
                 <Modal.Dialog>
@@ -247,184 +273,184 @@ export default function CheckinPage() {
                             <Button size="sm" variant="tertiary" className="self-start" onPress={loadTemplates}>
                               {t('templatesRetry')}
                             </Button>
-                        )}
-                      </div>
-                    )}
-                    <TextField>
-                      <Label>{t('title')}</Label>
-                      <Input
-                        placeholder={t('titlePlaceholder')}
-                        value={draft.title}
-                        onChange={e => updateDraft({ title: e.target.value })}
-                        variant="secondary"
-                        autoFocus
-                      />
-                    </TextField>
-                    <TextField>
-                      <Label>{t('description')}</Label>
-                      <TextArea
-                        placeholder={t('descriptionPlaceholder')}
-                        value={draft.description}
-                        onChange={e => updateDraft({ description: e.target.value })}
-                        variant="secondary"
-                        rows={2}
-                      />
-                    </TextField>
-                    <DatePicker
-                      isRequired
-                      granularity="minute"
-                      hourCycle={24}
-                      value={draft.datetime ? parseAbsoluteToLocal(new Date(draft.datetime).toISOString()) : null}
-                      onChange={(val: DateValue | null) => {
-                        handleDatetimeChange(val ? val.toDate(getLocalTimeZone()).toISOString() : '');
-                      }}
-                    >
-                      <Label>{t('eventDateTime')}</Label>
-                      <DateField.Group fullWidth>
-                        <DateField.Input>
-                          {(segment) => <DateField.Segment segment={segment} />}
-                        </DateField.Input>
-                        <DateField.Suffix>
-                          <DatePicker.Trigger>
-                            <DatePicker.TriggerIndicator />
-                          </DatePicker.Trigger>
-                        </DateField.Suffix>
-                      </DateField.Group>
-                      <DatePicker.Popover>
-                        <Calendar aria-label={t('eventDateTime')}>
-                          <Calendar.Header>
-                            <Calendar.YearPickerTrigger>
-                              <Calendar.YearPickerTriggerHeading />
-                              <Calendar.YearPickerTriggerIndicator />
-                            </Calendar.YearPickerTrigger>
-                            <Calendar.NavButton slot="previous" />
-                            <Calendar.NavButton slot="next" />
-                          </Calendar.Header>
-                          <Calendar.Grid>
-                            <Calendar.GridHeader>
-                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
-                            </Calendar.GridHeader>
-                            <Calendar.GridBody>
-                              {(date) => <Calendar.Cell date={date} />}
-                            </Calendar.GridBody>
-                          </Calendar.Grid>
-                          <Calendar.YearPickerGrid>
-                            <Calendar.YearPickerGridBody>
-                              {({ year }) => <Calendar.YearPickerCell year={year} />}
-                            </Calendar.YearPickerGridBody>
-                          </Calendar.YearPickerGrid>
-                        </Calendar>
-                      </DatePicker.Popover>
-                    </DatePicker>
-                    <DatePicker
-                      isRequired
-                      granularity="minute"
-                      hourCycle={24}
-                      value={draft.expireTime ? parseAbsoluteToLocal(new Date(draft.expireTime).toISOString()) : null}
-                      onChange={(val: DateValue | null) => {
-                        updateDraft({ expireTime: val ? val.toDate(getLocalTimeZone()).toISOString() : '' });
-                      }}
-                    >
-                      <Label>{t('expireTime')}</Label>
-                      <DateField.Group fullWidth>
-                        <DateField.Input>
-                          {(segment) => <DateField.Segment segment={segment} />}
-                        </DateField.Input>
-                        <DateField.Suffix>
-                          <DatePicker.Trigger>
-                            <DatePicker.TriggerIndicator />
-                          </DatePicker.Trigger>
-                        </DateField.Suffix>
-                      </DateField.Group>
-                      <Description>{t('expirePlaceholder')}</Description>
-                      <DatePicker.Popover>
-                        <Calendar aria-label={t('expireTime')}>
-                          <Calendar.Header>
-                            <Calendar.YearPickerTrigger>
-                              <Calendar.YearPickerTriggerHeading />
-                              <Calendar.YearPickerTriggerIndicator />
-                            </Calendar.YearPickerTrigger>
-                            <Calendar.NavButton slot="previous" />
-                            <Calendar.NavButton slot="next" />
-                          </Calendar.Header>
-                          <Calendar.Grid>
-                            <Calendar.GridHeader>
-                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
-                            </Calendar.GridHeader>
-                            <Calendar.GridBody>
-                              {(date) => <Calendar.Cell date={date} />}
-                            </Calendar.GridBody>
-                          </Calendar.Grid>
-                          <Calendar.YearPickerGrid>
-                            <Calendar.YearPickerGridBody>
-                              {({ year }) => <Calendar.YearPickerCell year={year} />}
-                            </Calendar.YearPickerGridBody>
-                          </Calendar.YearPickerGrid>
-                        </Calendar>
-                      </DatePicker.Popover>
-                    </DatePicker>
-
-                    {/* Loot list */}
-                    <LootListEditor
-                      items={draft.lootList}
-                      inputValue={draft.lootInput}
-                      onChange={(lootList, lootInput) => updateDraft({ lootList, lootInput })}
-                    >
-                      {templatesState !== 'hidden' && (
-                        <ItemTemplatePicker
-                          templates={itemTemplates}
-                          onPick={handleItemTemplatePick}
-                          isDisabled={templatesState !== 'ready'}
-                          placeholder={
-                            templatesState === 'loading'
-                              ? t('templatesLoading')
-                              : itemTemplates.length === 0
-                                ? t('noItemTemplates')
-                                : t('itemTemplatePlaceholder')
-                          }
-                          description={t('itemTemplateHint')}
-                        />
+                          )}
+                        </div>
                       )}
-                    </LootListEditor>
-                    {draft.lootList.length > 0 && (
-                      <p className="type-caption text-hint -mt-2">{t('lootToBankHint')}</p>
-                    )}
+                      <TextField>
+                        <Label>{t('title')}</Label>
+                        <Input
+                          placeholder={t('titlePlaceholder')}
+                          value={draft.title}
+                          onChange={e => updateDraft({ title: e.target.value })}
+                          variant="secondary"
+                          autoFocus
+                        />
+                      </TextField>
+                      <TextField>
+                        <Label>{t('description')}</Label>
+                        <TextArea
+                          placeholder={t('descriptionPlaceholder')}
+                          value={draft.description}
+                          onChange={e => updateDraft({ description: e.target.value })}
+                          variant="secondary"
+                          rows={2}
+                        />
+                      </TextField>
+                      <DatePicker
+                        isRequired
+                        granularity="minute"
+                        hourCycle={24}
+                        value={draft.datetime ? parseAbsoluteToLocal(new Date(draft.datetime).toISOString()) : null}
+                        onChange={(val: DateValue | null) => {
+                          handleDatetimeChange(val ? val.toDate(getLocalTimeZone()).toISOString() : '');
+                        }}
+                      >
+                        <Label>{t('eventDateTime')}</Label>
+                        <DateField.Group fullWidth>
+                          <DateField.Input>
+                            {(segment) => <DateField.Segment segment={segment} />}
+                          </DateField.Input>
+                          <DateField.Suffix>
+                            <DatePicker.Trigger>
+                              <DatePicker.TriggerIndicator />
+                            </DatePicker.Trigger>
+                          </DateField.Suffix>
+                        </DateField.Group>
+                        <DatePicker.Popover>
+                          <Calendar aria-label={t('eventDateTime')}>
+                            <Calendar.Header>
+                              <Calendar.YearPickerTrigger>
+                                <Calendar.YearPickerTriggerHeading />
+                                <Calendar.YearPickerTriggerIndicator />
+                              </Calendar.YearPickerTrigger>
+                              <Calendar.NavButton slot="previous" />
+                              <Calendar.NavButton slot="next" />
+                            </Calendar.Header>
+                            <Calendar.Grid>
+                              <Calendar.GridHeader>
+                                {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+                              </Calendar.GridHeader>
+                              <Calendar.GridBody>
+                                {(date) => <Calendar.Cell date={date} />}
+                              </Calendar.GridBody>
+                            </Calendar.Grid>
+                            <Calendar.YearPickerGrid>
+                              <Calendar.YearPickerGridBody>
+                                {({ year }) => <Calendar.YearPickerCell year={year} />}
+                              </Calendar.YearPickerGridBody>
+                            </Calendar.YearPickerGrid>
+                          </Calendar>
+                        </DatePicker.Popover>
+                      </DatePicker>
+                      <DatePicker
+                        isRequired
+                        granularity="minute"
+                        hourCycle={24}
+                        value={draft.expireTime ? parseAbsoluteToLocal(new Date(draft.expireTime).toISOString()) : null}
+                        onChange={(val: DateValue | null) => {
+                          updateDraft({ expireTime: val ? val.toDate(getLocalTimeZone()).toISOString() : '' });
+                        }}
+                      >
+                        <Label>{t('expireTime')}</Label>
+                        <DateField.Group fullWidth>
+                          <DateField.Input>
+                            {(segment) => <DateField.Segment segment={segment} />}
+                          </DateField.Input>
+                          <DateField.Suffix>
+                            <DatePicker.Trigger>
+                              <DatePicker.TriggerIndicator />
+                            </DatePicker.Trigger>
+                          </DateField.Suffix>
+                        </DateField.Group>
+                        <Description>{t('expirePlaceholder')}</Description>
+                        <DatePicker.Popover>
+                          <Calendar aria-label={t('expireTime')}>
+                            <Calendar.Header>
+                              <Calendar.YearPickerTrigger>
+                                <Calendar.YearPickerTriggerHeading />
+                                <Calendar.YearPickerTriggerIndicator />
+                              </Calendar.YearPickerTrigger>
+                              <Calendar.NavButton slot="previous" />
+                              <Calendar.NavButton slot="next" />
+                            </Calendar.Header>
+                            <Calendar.Grid>
+                              <Calendar.GridHeader>
+                                {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+                              </Calendar.GridHeader>
+                              <Calendar.GridBody>
+                                {(date) => <Calendar.Cell date={date} />}
+                              </Calendar.GridBody>
+                            </Calendar.Grid>
+                            <Calendar.YearPickerGrid>
+                              <Calendar.YearPickerGridBody>
+                                {({ year }) => <Calendar.YearPickerCell year={year} />}
+                              </Calendar.YearPickerGridBody>
+                            </Calendar.YearPickerGrid>
+                          </Calendar>
+                        </DatePicker.Popover>
+                      </DatePicker>
 
-                    <TextField>
-                      <Label>{t('imageUrlPlaceholder')}</Label>
-                      <Input
-                        placeholder="https://..."
-                        value={draft.imageUrl}
-                        onChange={e => updateDraft({ imageUrl: e.target.value })}
-                        variant="secondary"
-                      />
-                    </TextField>
-                    <p className="type-caption text-hint px-1">{t('draftSaved')}</p>
-                  </form>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button slot="close" variant="secondary" onPress={handleNewCancel}>
-                    {t('cancel')}
-                  </Button>
-                  <Button
-                    variant="primary"
-                    slot="close"
-                    onPress={handleNewSubmit}
-                    isDisabled={
-                      !draft.title.trim() ||
-                      !draft.datetime ||
-                      !draft.expireTime ||
-                      new Date(draft.expireTime) <= new Date(draft.datetime)
-                    }
-                  >
-                    {t('create')}
-                  </Button>
-                </Modal.Footer>
-              </Modal.Dialog>
-            </Modal.Container>
-          </Modal.Backdrop>
-        </Modal>
-      </div>
+                      {/* Loot list */}
+                      <LootListEditor
+                        items={draft.lootList}
+                        inputValue={draft.lootInput}
+                        onChange={(lootList, lootInput) => updateDraft({ lootList, lootInput })}
+                      >
+                        {templatesState !== 'hidden' && (
+                          <ItemTemplatePicker
+                            templates={itemTemplates}
+                            onPick={handleItemTemplatePick}
+                            isDisabled={templatesState !== 'ready'}
+                            placeholder={
+                              templatesState === 'loading'
+                                ? t('templatesLoading')
+                                : itemTemplates.length === 0
+                                  ? t('noItemTemplates')
+                                  : t('itemTemplatePlaceholder')
+                            }
+                            description={t('itemTemplateHint')}
+                          />
+                        )}
+                      </LootListEditor>
+                      {draft.lootList.length > 0 && (
+                        <p className="type-caption text-hint -mt-2">{t('lootToBankHint')}</p>
+                      )}
+
+                      <TextField>
+                        <Label>{t('imageUrlPlaceholder')}</Label>
+                        <Input
+                          placeholder="https://..."
+                          value={draft.imageUrl}
+                          onChange={e => updateDraft({ imageUrl: e.target.value })}
+                          variant="secondary"
+                        />
+                      </TextField>
+                      <p className="type-caption text-hint px-1">{t('draftSaved')}</p>
+                    </form>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button slot="close" variant="secondary" onPress={handleNewCancel}>
+                      {t('cancel')}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onPress={handleNewSubmit}
+                      isPending={isCreating}
+                      isDisabled={
+                        !draft.title.trim() ||
+                        !draft.datetime ||
+                        !draft.expireTime ||
+                        new Date(draft.expireTime) <= new Date(draft.datetime)
+                      }
+                    >
+                      {t('create')}
+                    </Button>
+                  </Modal.Footer>
+                </Modal.Dialog>
+              </Modal.Container>
+            </Modal.Backdrop>
+          </Modal>
+        </div>
       )}
 
       <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
@@ -449,6 +475,11 @@ export default function CheckinPage() {
         </Tabs.ListContainer>
         {STATUS_TABS.map(tab => (
           <Tabs.Panel key={tab.id} id={tab.id} className="pt-4">
+            <AsyncContent
+              state={checkinsState.state}
+              onRetry={reload}
+              skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
+            >
             {filtered.length === 0 ? (
               <Card className="border border-divider shadow-none">
                 <Card.Content className="text-center py-12">
@@ -474,11 +505,12 @@ export default function CheckinPage() {
                     lootCount={item.lootList.length}
                     imageUrl={item.imageUrl}
                     isDisabled={item.isDisabled}
-                    onClick={() => !item.isDisabled && handleCardClick(item)}
+                    href={`/dashboard/attendance/${item.id}`}
                   />
                 ))}
               </div>
             )}
+            </AsyncContent>
           </Tabs.Panel>
         ))}
       </Tabs>

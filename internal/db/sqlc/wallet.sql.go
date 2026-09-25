@@ -270,6 +270,45 @@ func (q *Queries) ListBackpackItems(ctx context.Context, arg ListBackpackItemsPa
 	return items, nil
 }
 
+const listWalletBalanceChangesSince = `-- name: ListWalletBalanceChangesSince :many
+SELECT created_at, amount
+FROM transactions
+WHERE user_id = $1 AND guild_id = $2
+  AND created_at >= $3::timestamptz
+ORDER BY created_at ASC
+`
+
+type ListWalletBalanceChangesSinceParams struct {
+	UserID  uuid.UUID
+	GuildID uuid.UUID
+	Since   time.Time
+}
+
+type ListWalletBalanceChangesSinceRow struct {
+	CreatedAt time.Time
+	Amount    int64
+}
+
+func (q *Queries) ListWalletBalanceChangesSince(ctx context.Context, arg ListWalletBalanceChangesSinceParams) ([]ListWalletBalanceChangesSinceRow, error) {
+	rows, err := q.db.Query(ctx, listWalletBalanceChangesSince, arg.UserID, arg.GuildID, arg.Since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListWalletBalanceChangesSinceRow{}
+	for rows.Next() {
+		var i ListWalletBalanceChangesSinceRow
+		if err := rows.Scan(&i.CreatedAt, &i.Amount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listWalletTransactions = `-- name: ListWalletTransactions :many
 SELECT id, user_id, guild_id, type, amount, balance_after,
        COALESCE(description, '')       AS description,
@@ -339,6 +378,26 @@ func (q *Queries) ListWalletTransactions(ctx context.Context, arg ListWalletTran
 		return nil, err
 	}
 	return items, nil
+}
+
+const sumWalletTransactionsBefore = `-- name: SumWalletTransactionsBefore :one
+SELECT COALESCE(SUM(amount), 0)::bigint AS balance
+FROM transactions
+WHERE user_id = $1 AND guild_id = $2
+  AND created_at < $3::timestamptz
+`
+
+type SumWalletTransactionsBeforeParams struct {
+	UserID  uuid.UUID
+	GuildID uuid.UUID
+	Before  time.Time
+}
+
+func (q *Queries) SumWalletTransactionsBefore(ctx context.Context, arg SumWalletTransactionsBeforeParams) (int64, error) {
+	row := q.db.QueryRow(ctx, sumWalletTransactionsBefore, arg.UserID, arg.GuildID, arg.Before)
+	var balance int64
+	err := row.Scan(&balance)
+	return balance, err
 }
 
 const updateWalletBalance = `-- name: UpdateWalletBalance :exec

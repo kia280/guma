@@ -1,0 +1,86 @@
+package handlers
+
+import (
+	"context"
+
+	"github.com/rs/zerolog"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/database"
+	preferencesvc "github.com/kia280/guma/internal/services/preference"
+	"github.com/kia280/guma/internal/session"
+)
+
+type PreferenceHandler struct {
+	gumav1.UnimplementedPreferenceServiceServer
+	svc    *preferencesvc.Service
+	logger zerolog.Logger
+}
+
+func NewPreferenceService(db *database.Pool, logger zerolog.Logger) *PreferenceHandler {
+	return &PreferenceHandler{
+		svc:    preferencesvc.New(db, logger),
+		logger: logger.With().Str("handler", "preference").Logger(),
+	}
+}
+
+func (h *PreferenceHandler) GetMyPreferences(ctx context.Context, _ *gumav1.GetMyPreferencesRequest) (*gumav1.GetMyPreferencesResponse, error) {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	p, err := h.svc.Get(ctx, userID)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.GetMyPreferencesResponse{
+		Notifications: notificationPreferencesToProto(p.Notifications),
+		UpdatedAt:     preferencesUpdatedAt(p),
+	}, nil
+}
+
+func (h *PreferenceHandler) UpdateMyPreferences(ctx context.Context, req *gumav1.UpdateMyPreferencesRequest) (*gumav1.UpdateMyPreferencesResponse, error) {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+	if req.Notifications == nil {
+		return nil, status.Error(codes.InvalidArgument, "notifications is required")
+	}
+
+	p, err := h.svc.UpdateNotifications(ctx, userID, preferencesvc.NotificationPatch{
+		EmailNotifications: req.Notifications.EmailNotifications,
+		AuctionAlerts:      req.Notifications.AuctionAlerts,
+		LotteryAlerts:      req.Notifications.LotteryAlerts,
+		EventReminders:     req.Notifications.EventReminders,
+		CheckinReminders:   req.Notifications.CheckinReminders,
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.UpdateMyPreferencesResponse{
+		Notifications: notificationPreferencesToProto(p.Notifications),
+		UpdatedAt:     preferencesUpdatedAt(p),
+	}, nil
+}
+
+func notificationPreferencesToProto(n preferencesvc.NotificationPreferences) *gumav1.NotificationPreferences {
+	return &gumav1.NotificationPreferences{
+		EmailNotifications: n.EmailNotifications,
+		AuctionAlerts:      n.AuctionAlerts,
+		LotteryAlerts:      n.LotteryAlerts,
+		EventReminders:     n.EventReminders,
+		CheckinReminders:   n.CheckinReminders,
+	}
+}
+
+func preferencesUpdatedAt(p *preferencesvc.Preferences) *timestamppb.Timestamp {
+	if p.UpdatedAt.IsZero() {
+		return nil
+	}
+	return timestamppb.New(p.UpdatedAt)
+}
