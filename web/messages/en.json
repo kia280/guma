@@ -698,6 +698,7 @@
     "description": "An error has occurred",
     "goBack": "Go Back",
     "goHome": "Go Home",
+    "signIn": "Sign in",
     "loading": "Loading...",
     "errorIdLabel": "Error ID:",
     "debugInfoLabel": "Debug Info:",
