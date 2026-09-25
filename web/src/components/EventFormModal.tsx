@@ -22,6 +22,7 @@ import { parseDate, Time } from '@internationalized/date';
 import { useTranslations } from 'next-intl';
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { useToast } from '@/hooks/useToast';
 import {
   GuildEvent,
   CreateEventData,
@@ -80,6 +81,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   isLoading = false,
 }) => {
   const t = useTranslations('eventFormModal');
+  const notify = useToast();
   const eventLabels = useTranslations('guildEvents');
   const {
     control,
@@ -199,9 +201,10 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       };
 
       await onSubmit(eventData);
+      notify.success(event ? t('updateSuccess') : t('createSuccess'));
       state.close();
-    } catch (error) {
-      console.error('Error submitting event:', error);
+    } catch {
+      notify.error(t('saveFailed'));
     }
   };
 

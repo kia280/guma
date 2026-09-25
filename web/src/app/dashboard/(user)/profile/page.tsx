@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { PageHeader } from '@/components/PageHeader';
 import { UserAvatar } from '@/components/UserAvatar';
+import { useToast } from '@/hooks/useToast';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { useUserStore } from '@/lib/store';
@@ -38,6 +39,7 @@ export default function ProfilePage() {
   const setUser = useUserStore(state => state.setUser);
   const [isEditing, setIsEditing] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
+  const notify = useToast();
   const [saveError, setSaveError] = React.useState('');
   const [displayName, setDisplayName] = React.useState('');
   const [username, setUsername] = React.useState('');
@@ -70,6 +72,7 @@ export default function ProfilePage() {
       });
       setUser(updated);
       setIsEditing(false);
+      notify.success(t('saveSuccess'));
     } catch {
       setSaveError(t('saveFailed'));
     } finally {

@@ -4,9 +4,12 @@ import { Button, Card, Select, Chip, Tabs, TextField, Label, InputGroup, ListBox
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
+import { AsyncContent, CardGridSkeleton } from '@/components/AsyncContent';
 import AuctionItemCard from '@/components/AuctionItemCard';
 import { CreateAuctionModal } from '@/components/CreateAuctionModal';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
@@ -22,6 +25,13 @@ const AuctionPage = () => {
 
   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const auctionsState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => {
+    auctionsState.reset();
+    setReloadKey(key => key + 1);
+  };
 
   const latestRequest = useRef(0);
   const refetchAuctions = () => {
@@ -29,14 +39,20 @@ const AuctionPage = () => {
     apiClient
       .listAuctions(guildId)
       .then(items => {
-        if (request === latestRequest.current) setAuctionItems(items);
+        if (request !== latestRequest.current) return;
+        setAuctionItems(items);
+        auctionsState.ready();
       })
-      .catch(() => {});
+      .catch(() => {
+        if (request !== latestRequest.current) return;
+        auctionsState.failed();
+        notify.loadFailed(reload, 'auctions');
+      });
   };
   useEffect(() => {
     refetchAuctions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guildId]);
+  }, [guildId, reloadKey]);
 
   useLiveResource(['auction'], refetchAuctions, { guildId });
 
@@ -94,8 +110,11 @@ const AuctionPage = () => {
       await apiClient.placeBid(guildId, itemId, amount);
       refetchAuctions();
       refreshBalance();
-    } catch (err) {
-      console.error(err);
+      notify.success(t('bidSuccess'));
+      return true;
+    } catch {
+      notify.error(t('bidFailed'));
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -224,6 +243,11 @@ const AuctionPage = () => {
           </Tabs.List>
         </Tabs.ListContainer>
         <Tabs.Panel id="all" className="pt-4">
+          <AsyncContent
+            state={auctionsState.state}
+            onRetry={reload}
+            skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
+          >
           {filteredItems.length === 0 ? (
             <Card className="border border-divider shadow-none">
               <Card.Content className="text-center py-12">
@@ -250,8 +274,14 @@ const AuctionPage = () => {
               ))}
             </div>
           )}
+          </AsyncContent>
         </Tabs.Panel>
         <Tabs.Panel id={AuctionStatus.ACTIVE} className="pt-4">
+          <AsyncContent
+            state={auctionsState.state}
+            onRetry={reload}
+            skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
+          >
           {filteredItems.length === 0 ? (
             <Card className="border border-divider shadow-none">
               <Card.Content className="text-center py-12">
@@ -278,8 +308,14 @@ const AuctionPage = () => {
               ))}
             </div>
           )}
+          </AsyncContent>
         </Tabs.Panel>
         <Tabs.Panel id={AuctionStatus.UPCOMING} className="pt-4">
+          <AsyncContent
+            state={auctionsState.state}
+            onRetry={reload}
+            skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
+          >
           {filteredItems.length === 0 ? (
             <Card className="border border-divider shadow-none">
               <Card.Content className="text-center py-12">
@@ -306,8 +342,14 @@ const AuctionPage = () => {
               ))}
             </div>
           )}
+          </AsyncContent>
         </Tabs.Panel>
         <Tabs.Panel id={AuctionStatus.ENDED} className="pt-4">
+          <AsyncContent
+            state={auctionsState.state}
+            onRetry={reload}
+            skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
+          >
           {filteredItems.length === 0 ? (
             <Card className="border border-divider shadow-none">
               <Card.Content className="text-center py-12">
@@ -334,6 +376,7 @@ const AuctionPage = () => {
               ))}
             </div>
           )}
+          </AsyncContent>
         </Tabs.Panel>
       </Tabs>
 
