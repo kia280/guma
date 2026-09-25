@@ -3204,6 +3204,36 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/stats": {
+      "get": {
+        "operationId": "GuildService_GetGuildStats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetGuildStatsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/wallet": {
       "get": {
         "summary": "Get the current user's wallet for a specific guild",
@@ -5258,6 +5288,14 @@
         }
       }
     },
+    "v1GetGuildStatsResponse": {
+      "type": "object",
+      "properties": {
+        "stats": {
+          "$ref": "#/definitions/v1GuildStats"
+        }
+      }
+    },
     "v1GetLotteryResponse": {
       "type": "object",
       "properties": {
@@ -5510,6 +5548,30 @@
           "additionalProperties": {
             "type": "string"
           }
+        }
+      }
+    },
+    "v1GuildStats": {
+      "type": "object",
+      "properties": {
+        "memberCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "bankBalance": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bankCurrency": {
+          "type": "string"
+        },
+        "activeEventCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "bankItemCount": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },

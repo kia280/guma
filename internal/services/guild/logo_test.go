@@ -31,6 +31,8 @@ type fakeDB struct {
 	role         string
 	upsertCalled bool
 	upsertArgs   []any
+	statsCalled  bool
+	statsMissing bool
 }
 
 func (f *fakeDB) Exec(context.Context, string, ...any) (pgconn.CommandTag, error) {
@@ -65,6 +67,19 @@ func (f *fakeDB) QueryRow(_ context.Context, sql string, args ...any) pgx.Row {
 	case strings.Contains(sql, "name: CountGuildMembers"):
 		return fakeRow{scan: func(dest ...any) error {
 			*dest[0].(*int64) = 3
+			return nil
+		}}
+	case strings.Contains(sql, "name: GetGuildStats"):
+		f.statsCalled = true
+		return fakeRow{scan: func(dest ...any) error {
+			if f.statsMissing {
+				return pgx.ErrNoRows
+			}
+			*dest[0].(*int32) = 24
+			*dest[1].(*int64) = 1250000
+			*dest[2].(*string) = "gold"
+			*dest[3].(*int32) = 3
+			*dest[4].(*int32) = 47
 			return nil
 		}}
 	}
