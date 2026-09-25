@@ -49,19 +49,6 @@
           "type": "image/png"
         }
       ]
-    },
-    {
-      "name": "Guilds",
-      "short_name": "Guilds",
-      "description": "Browse and manage guilds",
-      "url": "/guilds",
-      "icons": [
-        {
-          "src": "/assets/logo/sunbaby-96x96.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
     }
   ],
   "related_applications": [],
