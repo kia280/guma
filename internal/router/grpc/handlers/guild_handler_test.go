@@ -353,3 +353,38 @@ func TestGuildService_GuildLogo_Validation(t *testing.T) {
 		})
 	}
 }
+
+func TestGuildService_GetGuildStats_Validation(t *testing.T) {
+	logger := zerolog.New(os.Stdout)
+	service := NewGuildService(nil, logger)
+
+	tests := []struct {
+		name     string
+		ctx      context.Context
+		req      *guildv1.GetGuildStatsRequest
+		wantCode codes.Code
+	}{
+		{
+			name:     "missing guild_id",
+			ctx:      session.WithUserID(context.Background(), "test-user"),
+			req:      &guildv1.GetGuildStatsRequest{},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name:     "missing user_id in context",
+			ctx:      context.Background(),
+			req:      &guildv1.GetGuildStatsRequest{GuildId: "g"},
+			wantCode: codes.Unauthenticated,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := service.GetGuildStats(tt.ctx, tt.req)
+			require.Error(t, err)
+			st, ok := status.FromError(err)
+			require.True(t, ok)
+			assert.Equal(t, tt.wantCode, st.Code())
+		})
+	}
+}

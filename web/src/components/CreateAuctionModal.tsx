@@ -15,6 +15,7 @@ import {
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
@@ -54,6 +55,7 @@ const EMPTY_ITEM: AuctionDraftItem = {
 
 export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModalProps) {
   const t = useTranslations('createAuctionModal');
+  const notify = useToast();
   const guildId = useCurrentGuildId();
   const [draft, setDraft] = React.useState<AuctionDraftItem>(EMPTY_ITEM);
   const [startingBid, setStartingBid] = React.useState(100);
@@ -91,6 +93,7 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
         duration,
       });
       onCreated?.(auction);
+      notify.success(t('created'));
       state.close();
     } catch {
       setError(t('createFailed'));

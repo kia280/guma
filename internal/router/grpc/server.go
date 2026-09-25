@@ -52,7 +52,10 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	gumaHandler := handlers.NewGumaService(logger)
 	guildHandler := handlers.NewGuildService(db, logger)
 	memberHandler := handlers.NewMemberService(db, logger)
-	userHandler := handlers.NewUserService(db, cfg.Auth.KratosPublicURL, logger, usersvc.WithDevAuth(cfg.Dev.AuthEnabled))
+	userHandler := handlers.NewUserService(db, cfg.Auth.KratosPublicURL, logger,
+		usersvc.WithDevAuth(cfg.Dev.AuthEnabled),
+		usersvc.WithKratosAdminURL(cfg.Auth.KratosAdminURL),
+	)
 	checkinHandler := handlers.NewCheckInService(db, logger)
 	checkinTemplateHandler := handlers.NewCheckInTemplateService(db, logger)
 	itemTemplateHandler := handlers.NewItemTemplateService(db, logger)

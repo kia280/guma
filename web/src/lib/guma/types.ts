@@ -5,6 +5,7 @@
 import type {
   AdminActivity,
   AdminAnnouncement,
+  AdminGuildStats,
   AnnouncementDraftInput,
 } from '@/types/admin';
 import type { AuctionItem, Bid, CreateAuctionRequest } from '@/types/auction';
@@ -173,6 +174,7 @@ export interface ApiClient {
 
   // ── Admin ──
   getAdminActivity(): Promise<AdminActivity[]>;
+  getGuildStats(guildId: string): Promise<AdminGuildStats>;
   getAdminAnnouncements(guildId: string): Promise<AdminAnnouncement[]>;
   getAnnouncement(guildId: string, id: string): Promise<AdminAnnouncement>;
   createAnnouncementDraft(guildId: string): Promise<AdminAnnouncement>;

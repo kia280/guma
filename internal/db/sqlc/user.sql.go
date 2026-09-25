@@ -163,6 +163,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 
 const getUserCurrentGuildBalance = `-- name: GetUserCurrentGuildBalance :one
 SELECT m.guild_id,
+       m.role,
        COALESCE(w.balance, 0)::bigint AS balance
 FROM members m
 LEFT JOIN wallets w ON w.user_id = m.user_id AND w.guild_id = m.guild_id
@@ -173,13 +174,14 @@ LIMIT 1
 
 type GetUserCurrentGuildBalanceRow struct {
 	GuildID uuid.UUID
+	Role    string
 	Balance int64
 }
 
 func (q *Queries) GetUserCurrentGuildBalance(ctx context.Context, userID uuid.UUID) (GetUserCurrentGuildBalanceRow, error) {
 	row := q.db.QueryRow(ctx, getUserCurrentGuildBalance, userID)
 	var i GetUserCurrentGuildBalanceRow
-	err := row.Scan(&i.GuildID, &i.Balance)
+	err := row.Scan(&i.GuildID, &i.Role, &i.Balance)
 	return i, err
 }
 
