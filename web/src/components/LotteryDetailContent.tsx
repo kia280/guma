@@ -1,29 +1,30 @@
 'use client';
 
-import { Avatar, Button, Chip, Label, NumberField, ProgressBar, ScrollShadow } from '@heroui/react';
+import { Button, Chip, Label, NumberField, ProgressBar, ScrollShadow } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { useGuildPermissions } from '@/lib/permissions';
+import { isNotFoundError } from '@/lib/guma/errors';
+import { type FormatGold, formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
+import { lotteryStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
-import type { Lottery, LotteryStatus, LotteryWinner } from '@/types/lottery';
+import type { Lottery, LotteryWinner } from '@/types/lottery';
+import { AsyncContent, DetailSkeleton } from './AsyncContent';
 import { DateTimePicker } from './DateTimePicker';
 import { LotteryWheel, type WheelEntry } from './LotteryWheel';
+import { UserAvatar } from './UserAvatar';
 
 const DRAW_RETRY_MS = 3000;
 
 type DrawPhase = 'idle' | 'drawing' | 'spinning' | 'revealed';
-
-const STATUS_COLOR: Record<LotteryStatus, 'accent' | 'warning' | 'default'> = {
-  active: 'accent',
-  upcoming: 'warning',
-  ended: 'default',
-};
 
 function splitDuration(ms: number) {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -45,7 +46,8 @@ function formatCountdown(ms: number) {
 function wheelEntries(
   lottery: Lottery,
   winners: LotteryWinner[],
-  describe: (tickets: number, chance: string) => string
+  describe: (tickets: number, chance: string) => string,
+  formatGold: FormatGold
 ): WheelEntry[] {
   const participants = lottery.participants ?? [];
   const total = participants.reduce((sum, p) => sum + p.tickets, 0) || 1;
@@ -57,7 +59,7 @@ function wheelEntries(
   }));
   for (const winner of winners) {
     if (!entries.some(entry => entry.id === winner.username)) {
-      entries.push({ id: winner.username, label: winner.username, weight: 1, detail: winner.prize });
+      entries.push({ id: winner.username, label: winner.username, weight: 1, detail: formatPrize(winner.prize, winner.prizeAmount, formatGold) });
     }
   }
   return entries;
@@ -70,12 +72,20 @@ type LotteryDetailContentProps = {
 
 export default function LotteryDetailContent({ id, onClose }: LotteryDetailContentProps) {
   const t = useTranslations('lotteryDetail');
+  const formatGold = useFormatGold();
   const format = useIntlFormatter();
   const router = useRouter();
   const guildId = useCurrentGuildId();
 
   const [lottery, setLottery] = React.useState<Lottery | null>(null);
   const [isMissing, setIsMissing] = React.useState(false);
+  const loadState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = React.useState(0);
+  const reload = React.useCallback(() => {
+    loadState.reset();
+    setReloadKey(key => key + 1);
+  }, [loadState.reset]);
   const [now, setNow] = React.useState(() => Date.now());
   const [quantity, setQuantity] = React.useState(1);
   const [isBuying, setIsBuying] = React.useState(false);
@@ -100,18 +110,24 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
         .then(data => {
           setLottery(data);
           setIsMissing(false);
+          loadState.ready();
           return data;
         })
-        .catch(() => {
-          setIsMissing(true);
+        .catch(err => {
+          if (isNotFoundError(err)) {
+            setIsMissing(true);
+          } else {
+            loadState.failed();
+            notify.loadFailed(reload, 'lottery-detail');
+          }
           return null;
         }),
-    [guildId, id]
+    [guildId, id, notify, reload, loadState.ready, loadState.failed]
   );
 
   React.useEffect(() => {
     load();
-  }, [load]);
+  }, [load, reloadKey]);
 
   React.useEffect(() => {
     lotteryRef.current = lottery;
@@ -137,9 +153,10 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
         }
       })
       .catch(err => {
-        if ((err as { response?: { status?: number } }).response?.status === 404) setIsMissing(true);
+        if (isNotFoundError(err)) setIsMissing(true);
+        else notify.loadFailed(reload, 'lottery-detail');
       });
-  }, [guildId, id, startSpin]);
+  }, [guildId, id, startSpin, notify, reload]);
 
   useLiveResource(
     ['lottery'],
@@ -216,12 +233,19 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   }
 
   if (!lottery) {
-    return <div className="py-24" aria-busy="true" />;
+    return (
+      <AsyncContent state={loadState.state} onRetry={reload} skeleton={<DetailSkeleton />}>
+        {null}
+      </AsyncContent>
+    );
   }
 
   const winners = drawWinners.length > 0 ? drawWinners : (lottery.winners ?? []);
-  const entries = wheelEntries(lottery, winners, (tickets, chance) =>
-    t('wheelDetail', { count: tickets, chance })
+  const entries = wheelEntries(
+    lottery,
+    winners,
+    (tickets, chance) => t('wheelDetail', { count: tickets, chance }),
+    formatGold
   );
   const topWinner = winners[0]?.username;
   const participants = lottery.participants ?? [];
@@ -239,8 +263,9 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
       await apiClient.purchaseTickets(guildId, id, quantity);
       await load();
       setQuantity(1);
-    } catch (err) {
-      console.error(err);
+      notify.success(t('purchaseSuccess'));
+    } catch {
+      notify.error(t('purchaseFailed'));
     } finally {
       setIsBuying(false);
     }
@@ -301,14 +326,14 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
 
       <div className={`flex flex-wrap items-start justify-between gap-3 ${onClose ? 'pr-8' : ''}`}>
         <div className="min-w-0">
-          <Chip size="sm" color={STATUS_COLOR[lottery.status]} variant="secondary" className="mb-1">
+          <Chip size="sm" color={lotteryStatusColor[lottery.status]} variant="secondary" className="mb-1">
             {t(`status.${lottery.status}`)}
           </Chip>
           <h2 className="type-title text-foreground">{lottery.title}</h2>
         </div>
         <div className="text-right">
           <p className="type-caption text-hint">{t('prizePool')}</p>
-          <p className="type-display text-foreground">${lottery.prizePool.toLocaleString('en-US')}</p>
+          <p className="type-display text-foreground">{formatGold(lottery.prizePool)}</p>
         </div>
       </div>
 
@@ -336,7 +361,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           <dl className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-divider p-3">
               <dt className="type-caption text-hint">{t('ticketPrice')}</dt>
-              <dd className="type-subheading text-foreground tabular-nums">${lottery.ticketPrice.toLocaleString('en-US')}</dd>
+              <dd className="type-subheading text-foreground tabular-nums">{formatGold(lottery.ticketPrice)}</dd>
             </div>
             <div className="flex items-start justify-between gap-2 rounded-xl border border-divider p-3">
               <div className="min-w-0">
@@ -433,7 +458,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                   </NumberField>
                   <Button className="flex-1 min-w-40" isPending={isBuying} onPress={buy}>
                     <Icon icon="solar:ticket-linear" width={16} />
-                    {t('purchase', { total: `$${(quantity * lottery.ticketPrice).toLocaleString('en-US')}` })}
+                    {t('purchase', { total: formatGold(quantity * lottery.ticketPrice) })}
                   </Button>
                 </div>
               ) : (
@@ -450,7 +475,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                   <li key={winner.id} className="flex items-center gap-3">
                     <Icon icon="solar:cup-star-linear" width={18} className="text-warning shrink-0" />
                     <span className="type-body font-medium text-foreground flex-1 min-w-0 truncate">{winner.username}</span>
-                    <span className="type-body text-success tabular-nums">{winner.prize}</span>
+                    <span className="type-body text-success tabular-nums">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</span>
                   </li>
                 ))}
               </ul>
@@ -467,9 +492,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                 <ul className="flex flex-col px-2 pb-2">
                   {participants.map(p => (
                     <li key={p.id} className="flex items-center gap-3 rounded-lg px-2 py-1.5">
-                      <Avatar size="sm" className="shrink-0">
-                        <Avatar.Fallback>{Array.from(p.username).slice(0, 2).join('')}</Avatar.Fallback>
-                      </Avatar>
+                      <UserAvatar name={p.username} src={p.avatar} className="shrink-0" />
                       <span className="type-body text-foreground flex-1 min-w-0 truncate">{p.username}</span>
                       <span className="type-caption text-hint tabular-nums">
                         {t('ticketCount', { count: p.tickets })} · {((p.tickets / totalTickets) * 100).toFixed(1)}%

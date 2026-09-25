@@ -102,15 +102,6 @@ SELECT
 FROM transactions
 WHERE user_id = $1;
 
--- name: GetUserBalanceTrend :many
-SELECT TO_CHAR(DATE(created_at), 'YYYY-MM-DD') AS day,
-       SUM(amount)::bigint                     AS net
-FROM transactions
-WHERE user_id = sqlc.arg(user_id)
-  AND created_at >= NOW() - make_interval(days => sqlc.arg(days)::int)
-GROUP BY DATE(created_at)
-ORDER BY day ASC;
-
 -- name: ListUsers :many
 SELECT id, email, username,
        COALESCE(display_name, '') AS display_name,

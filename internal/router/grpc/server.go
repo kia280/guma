@@ -52,7 +52,10 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	gumaHandler := handlers.NewGumaService(logger)
 	guildHandler := handlers.NewGuildService(db, logger)
 	memberHandler := handlers.NewMemberService(db, logger)
-	userHandler := handlers.NewUserService(db, cfg.Auth.KratosPublicURL, logger, usersvc.WithDevAuth(cfg.Dev.AuthEnabled))
+	userHandler := handlers.NewUserService(db, cfg.Auth.KratosPublicURL, logger,
+		usersvc.WithDevAuth(cfg.Dev.AuthEnabled),
+		usersvc.WithKratosAdminURL(cfg.Auth.KratosAdminURL),
+	)
 	checkinHandler := handlers.NewCheckInService(db, logger)
 	checkinTemplateHandler := handlers.NewCheckInTemplateService(db, logger)
 	itemTemplateHandler := handlers.NewItemTemplateService(db, logger)
@@ -62,6 +65,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	lotteryHandler := handlers.NewLotteryService(db, logger)
 	bankHandler := handlers.NewBankService(db, logger)
 	notificationHandler := handlers.NewNotificationService(db, logger)
+	preferenceHandler := handlers.NewPreferenceService(db, logger)
 	announcementHandler := handlers.NewAnnouncementService(db, logger)
 	streamHandler := handlers.NewStreamService(broker, events.MemberGuildIDs(db), logger)
 
@@ -82,6 +86,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	gumav1.RegisterLotteryServiceServer(grpcServer, lotteryHandler)
 	gumav1.RegisterBankServiceServer(grpcServer, bankHandler)
 	gumav1.RegisterNotificationServiceServer(grpcServer, notificationHandler)
+	gumav1.RegisterPreferenceServiceServer(grpcServer, preferenceHandler)
 	gumav1.RegisterAnnouncementServiceServer(grpcServer, announcementHandler)
 	gumav1.RegisterStreamServiceServer(grpcServer, streamHandler)
 	healthHandler.Register(grpcServer)

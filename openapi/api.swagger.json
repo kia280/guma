@@ -42,6 +42,9 @@
       "name": "NotificationService"
     },
     {
+      "name": "PreferenceService"
+    },
+    {
       "name": "StreamService"
     },
     {
@@ -3204,6 +3207,36 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/stats": {
+      "get": {
+        "operationId": "GuildService_GetGuildStats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetGuildStatsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GuildService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/wallet": {
       "get": {
         "summary": "Get the current user's wallet for a specific guild",
@@ -3228,6 +3261,45 @@
             "in": "path",
             "required": true,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/wallet/balance-trend": {
+      "get": {
+        "summary": "Daily balance history of the current user's wallet within this guild",
+        "operationId": "WalletService_GetBalanceTrend",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetBalanceTrendResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "days",
+            "description": "Default: 30",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -3453,39 +3525,6 @@
         ]
       }
     },
-    "/v1/me/balance-trend": {
-      "get": {
-        "summary": "Get balance history for charts",
-        "operationId": "UserService_GetBalanceTrend",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetBalanceTrendResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "days",
-            "description": "Default: 30",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
     "/v1/me/events": {
       "get": {
         "operationId": "StreamService_WatchUserEvents",
@@ -3694,6 +3733,60 @@
         ],
         "tags": [
           "NotificationService"
+        ]
+      }
+    },
+    "/v1/me/preferences": {
+      "get": {
+        "summary": "Get authenticated user's preferences",
+        "operationId": "PreferenceService_GetMyPreferences",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMyPreferencesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "PreferenceService"
+        ]
+      },
+      "patch": {
+        "summary": "Partially update authenticated user's preferences; unset fields are kept",
+        "operationId": "PreferenceService_UpdateMyPreferences",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMyPreferencesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMyPreferencesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PreferenceService"
         ]
       }
     },
@@ -4715,6 +4808,9 @@
         },
         "checkinId": {
           "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -5135,6 +5231,9 @@
         "reviewedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "requesterAvatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -5258,6 +5357,14 @@
         }
       }
     },
+    "v1GetGuildStatsResponse": {
+      "type": "object",
+      "properties": {
+        "stats": {
+          "$ref": "#/definitions/v1GuildStats"
+        }
+      }
+    },
     "v1GetLotteryResponse": {
       "type": "object",
       "properties": {
@@ -5291,6 +5398,18 @@
       "properties": {
         "member": {
           "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
+    "v1GetMyPreferencesResponse": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "$ref": "#/definitions/v1NotificationPreferences"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -5513,6 +5632,30 @@
         }
       }
     },
+    "v1GuildStats": {
+      "type": "object",
+      "properties": {
+        "memberCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "bankBalance": {
+          "type": "string",
+          "format": "int64"
+        },
+        "bankCurrency": {
+          "type": "string"
+        },
+        "activeEventCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "bankItemCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "v1Heartbeat": {
       "type": "object"
     },
@@ -5625,6 +5768,9 @@
         },
         "item": {
           "$ref": "#/definitions/v1Item"
+        },
+        "requesterAvatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -5708,6 +5854,20 @@
         "maxFileSizeBytes": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "v1LinkedAccount": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
         }
       }
     },
@@ -6355,6 +6515,46 @@
         }
       }
     },
+    "v1NotificationPreferences": {
+      "type": "object",
+      "properties": {
+        "emailNotifications": {
+          "type": "boolean"
+        },
+        "auctionAlerts": {
+          "type": "boolean"
+        },
+        "lotteryAlerts": {
+          "type": "boolean"
+        },
+        "eventReminders": {
+          "type": "boolean"
+        },
+        "checkinReminders": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1NotificationPreferencesPatch": {
+      "type": "object",
+      "properties": {
+        "emailNotifications": {
+          "type": "boolean"
+        },
+        "auctionAlerts": {
+          "type": "boolean"
+        },
+        "lotteryAlerts": {
+          "type": "boolean"
+        },
+        "eventReminders": {
+          "type": "boolean"
+        },
+        "checkinReminders": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1PlaceBidResponse": {
       "type": "object",
       "properties": {
@@ -6768,6 +6968,26 @@
         }
       }
     },
+    "v1UpdateMyPreferencesRequest": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "$ref": "#/definitions/v1NotificationPreferencesPatch"
+        }
+      }
+    },
+    "v1UpdateMyPreferencesResponse": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "$ref": "#/definitions/v1NotificationPreferences"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "v1UpdateUserPreferencesRequest": {
       "type": "object",
       "properties": {
@@ -6834,7 +7054,13 @@
           "type": "string",
           "format": "int64"
         },
-        "currentGuildRole": {
+        "emailVerified": {
+          "type": "boolean"
+        },
+        "discord": {
+          "$ref": "#/definitions/v1LinkedAccount"
+        },
+        "guildRole": {
           "type": "string"
         }
       }

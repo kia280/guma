@@ -92,7 +92,7 @@ export interface GuildPermissions {
 }
 
 export function useGuildPermissions(): GuildPermissions {
-  const roleValue = useUserStore(state => state.user?.currentGuildRole);
+  const roleValue = useUserStore(state => state.user?.guildRole);
   const status = useUserStore(state => state.status);
   const role = isGuildRole(roleValue) ? roleValue : null;
   const isResolved = status === 'ready' || status === 'error';

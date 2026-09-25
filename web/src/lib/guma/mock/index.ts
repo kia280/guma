@@ -26,6 +26,7 @@ import type { GuildEvent } from '@/types/guild-events';
 import { ItemCategory, ItemRarity } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
+import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from '@/types/preference';
 import type { User, UserStats } from '@/types/user';
 import type { Transaction, Wallet } from '@/types/wallet';
 import type { ApiClient } from '../types';
@@ -44,6 +45,8 @@ const store = {
   events: [] as GuildEvent[],
   announcements: [...mockData.mockAdminAnnouncements] as AdminAnnouncement[],
   notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
+  notificationPreferences: { ...DEFAULT_NOTIFICATION_PREFERENCES } as NotificationPreferences,
+  preferencesUpdatedAt: undefined as string | undefined,
 };
 
 type StoredCheckinTemplate = Omit<CheckinTemplate, 'items'> & { itemTemplateIds: string[] };
@@ -115,10 +118,12 @@ const currentUser: User = {
   bio: '',
   guildIds: [],
   currentGuildId: '',
-  currentGuildRole: 'owner',
   balance: 1250,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
+  emailVerified: true,
+  discord: { provider: 'discord', subject: '0', username: 'you' },
+  guildRole: 'member',
 };
 
 const mockGuild: Guild = {
@@ -130,6 +135,7 @@ const mockGuild: Guild = {
   settings: {
     timezone: 'Asia/Taipei',
     language: 'zht',
+    isPublic: true,
     currency: 'gold',
     features: { economy: true, events: true, raids: true, voting: false },
   },
@@ -161,7 +167,6 @@ const baseMockApiClient: ApiClient = {
   getDashboardData: async () => ({
     guildStats: mockData.GUILD_STATS,
     personalStats: mockData.PERSONAL_STATS,
-    balanceTrend: mockData.dashboardBalanceTrend,
     incomingEvents: mockData.INCOMING_EVENTS,
     announcements: publishedMockAnnouncements(),
   }),
@@ -180,7 +185,7 @@ const baseMockApiClient: ApiClient = {
   },
   getUser: async (id) => ({ ...currentUser, id }),
   getUserStats: async (): Promise<UserStats> => mockData.PERSONAL_STATS,
-  getBalanceTrend: async () => mockData.dashboardBalanceTrend,
+  getBalanceTrend: async (_guildId, days = 30) => mockData.mockBalanceTrend(days),
 
   // ── Guild ──
   listGuilds: async (): Promise<Guild[]> => [{ ...mockGuild }],
@@ -359,7 +364,7 @@ const baseMockApiClient: ApiClient = {
     const entry: CheckinEntry = {
       id: `ci-${Date.now()}`,
       status: CheckinStatus.OPEN,
-      date: req.datetime ? new Date(req.datetime).toLocaleString() : new Date().toLocaleString(),
+      date: req.datetime ?? new Date().toISOString(),
       description: req.title,
       expireTime: req.expireTime,
       attendanceList: [],
@@ -535,7 +540,7 @@ const baseMockApiClient: ApiClient = {
       Object.assign(lottery, {
         status: 'ended',
         winners: winner
-          ? [{ id: `w-${Date.now()}`, username: winner.username, prize: `$${lottery.prizePool.toLocaleString('en-US')}` }]
+          ? [{ id: `w-${Date.now()}`, username: winner.username, prize: '', prizeAmount: lottery.prizePool }]
           : [],
       });
     }
@@ -689,8 +694,32 @@ const baseMockApiClient: ApiClient = {
     return unread.length;
   },
 
+  // ── Preferences ──
+  getMyPreferences: async () => ({
+    notifications: { ...store.notificationPreferences },
+    updatedAt: store.preferencesUpdatedAt,
+  }),
+  updateNotificationPreferences: async (patch) => {
+    Object.assign(
+      store.notificationPreferences,
+      Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined)),
+    );
+    store.preferencesUpdatedAt = new Date().toISOString();
+    return {
+      notifications: { ...store.notificationPreferences },
+      updatedAt: store.preferencesUpdatedAt,
+    };
+  },
+
   // ── Admin ──
   getAdminActivity: async () => mockData.mockActivity,
+  getGuildStats: async (guildId) => ({
+    memberCount: mockData.mockUsers.length,
+    bankBalance: mockGuildBankData(guildId).balance,
+    bankCurrency: mockGuildBankData(guildId).currency,
+    activeEventCount: mockData.GUILD_STATS.activeEvents,
+    bankItemCount: mockData.mockGuildItems.length,
+  }),
   getAdminAnnouncements: async () => sortAdminAnnouncements(store.announcements).map(a => ({ ...a })),
   getAnnouncement: async (_guildId, id) => ({ ...findMockAnnouncement(id) }),
   createAnnouncementDraft: async () => {

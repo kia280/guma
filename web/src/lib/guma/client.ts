@@ -8,7 +8,7 @@ import { clearSession } from '@/lib/session';
 import type { LootEntry } from '@/types/checkin';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -92,7 +92,6 @@ export const gumaApiClient: ApiClient = {
       personalStats: data.personal_stats ?? {
         balance: 0, checkinsThisMonth: 0, activeAuctions: 0, activityPoints: 0,
       },
-      balanceTrend: data.balance_trend ?? [],
       incomingEvents: data.incoming_events ?? [],
       announcements,
     };
@@ -125,9 +124,12 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.get('/v1/me/stats');
     return (data.stats ?? data) as UserStats;
   },
-  getBalanceTrend: async () => {
-    const { data } = await http.get('/v1/me/balance-trend');
-    return (data.points ?? []).map((point: BalancePoint) => ({ ...point, balance: fromMinorUnits(point.balance) }));
+  getBalanceTrend: async (guildId, days) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/wallet/balance-trend`, { params: { days } });
+    return (data.points ?? []).map((point: BalancePoint) => ({
+      date: point.date,
+      balance: fromMinorUnits(point.balance),
+    }));
   },
 
   // ── Guild ──
@@ -515,8 +517,30 @@ export const gumaApiClient: ApiClient = {
     return Number(data.updated_count ?? 0);
   },
 
+  // ── Preferences ──
+  getMyPreferences: async () => {
+    const { data } = await http.get('/v1/me/preferences');
+    return toUserPreferences(data);
+  },
+  updateNotificationPreferences: async (patch) => {
+    const { data } = await http.patch('/v1/me/preferences', {
+      notifications: {
+        email_notifications: patch.emailNotifications,
+        auction_alerts: patch.auctionAlerts,
+        lottery_alerts: patch.lotteryAlerts,
+        event_reminders: patch.eventReminders,
+        checkin_reminders: patch.checkinReminders,
+      },
+    });
+    return toUserPreferences(data);
+  },
+
   // ── Admin ──
   getAdminActivity: async () => [],
+  getGuildStats: async (guildId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/stats`);
+    return toAdminGuildStats(data.stats);
+  },
   getAdminAnnouncements: async (guildId) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/announcements`, {
       params: { include_drafts: true },
