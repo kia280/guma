@@ -1,10 +1,11 @@
 'use client';
 
-import { Card, Button, Input, TextArea, Select, TextField, Label, ListBox } from '@heroui/react';
+import { Card, Button, Input, TextArea, Select, TextField, Label, Link, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { PageHeader } from '@/components/PageHeader';
+import { env } from '@/lib/env';
 
 export default function ContactPage() {
   const t = useTranslations('contactPage');
@@ -23,16 +24,20 @@ export default function ContactPage() {
   ];
 
   const contactChannels = [
-    {
-      icon: 'ic:baseline-discord',
-      iconColor: 'text-accent',
-      bgColor: 'bg-accent/10',
-      label: t('discordLabel'),
-      description: t('discordDesc'),
-      action: t('discordAction'),
-      href: 'https://discord.gg/',
-      color: 'accent' as const,
-    },
+    ...(env.support.discordInviteUrl
+      ? [
+          {
+            icon: 'ic:baseline-discord',
+            iconColor: 'text-accent',
+            bgColor: 'bg-accent/10',
+            label: t('discordLabel'),
+            description: t('discordDesc'),
+            action: t('discordAction'),
+            href: env.support.discordInviteUrl,
+            external: true,
+          },
+        ]
+      : []),
     {
       icon: 'solar:letter-bold-duotone',
       iconColor: 'text-accent',
@@ -41,7 +46,7 @@ export default function ContactPage() {
       description: t('emailDesc'),
       action: t('emailAction'),
       href: 'mailto:support@guma.app',
-      color: 'primary' as const,
+      external: false,
     },
   ];
 
@@ -70,14 +75,17 @@ export default function ContactPage() {
                   <p className="type-caption text-hint">{channel.description}</p>
                 </div>
               </div>
-              <Button
-                size="sm"
-                variant="tertiary"
-                onPress={() => window.open(channel.href, '_blank')}
+              <Link
+                className="self-start type-body"
+                href={channel.href}
+                target={channel.external ? '_blank' : undefined}
+                rel={channel.external ? 'noopener noreferrer' : undefined}
               >
                 {channel.action}
-                <Icon icon="solar:arrow-right-up-linear" width={14} />
-              </Button>
+                <Link.Icon>
+                  <Icon icon="solar:arrow-right-up-linear" width={14} />
+                </Link.Icon>
+              </Link>
             </Card.Content>
           </Card>
         ))}
