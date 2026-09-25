@@ -3,6 +3,7 @@
 import { Button, Card, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { CheckinStatus } from './data';
 
 export { CheckinStatus };
@@ -14,6 +15,12 @@ const formatExpire = (iso: string) => {
   const minutes = Math.floor((diff % 3_600_000) / 60_000);
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
+};
+
+const formatEventDate = (value: string, format: ReturnType<typeof useIntlFormatter>) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return format.dateTime(date, { dateStyle: 'medium', timeStyle: 'short' });
 };
 
 export const checkinStatusColor = {
@@ -44,6 +51,7 @@ export function CheckinCard({
   onClick?: () => void;
 }) {
   const t = useTranslations('checkIn');
+  const format = useIntlFormatter();
   const statusLabel = {
     [CheckinStatus.OPEN]: t('statusActive'),
     [CheckinStatus.CLOSED]: t('statusClosed'),
@@ -76,7 +84,7 @@ export function CheckinCard({
             </div>
             <div className="flex flex-col min-w-0">
               <h4 className="type-subheading text-foreground truncate">{description}</h4>
-              <p className="type-caption text-hint">{date}</p>
+              <p className="type-caption text-hint">{formatEventDate(date, format)}</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">

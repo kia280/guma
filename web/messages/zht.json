@@ -23,7 +23,9 @@
     "loginUnavailable": "Login is unavailable",
     "loginUnavailableDescription": "The authentication service could not be reached. Check that it is running, then try again.",
     "retry": "Try again",
-    "welcomeBack": "歡迎回來"
+    "welcomeBack": "歡迎回來",
+    "showPassword": "顯示密碼",
+    "hidePassword": "隱藏密碼"
   },
   "sidebar": {
     "dashboard": "主頁",
@@ -155,7 +157,7 @@
     "transfer": "轉帳",
     "withdraw": "提款",
     "yourItems": "您的物品",
-    "items": "件物品",
+    "items": "{count} 件物品",
     "transactionHistory": "交易記錄",
     "transaction": "交易",
     "amount": "金額",
@@ -176,8 +178,7 @@
     "withdrawMoney": "提款",
     "withdrawNote": "提款可能需要 1–3 個工作日處理。",
     "withdrawItem": "提取物品",
-    "withdrawItemConfirm": "您確定要提取",
-    "withdrawItemConfirmSuffix": "從您的背包中移除？此操作無法撤銷。",
+    "withdrawItemConfirm": "您確定要從背包中提取 <strong>{name}</strong> 嗎？此操作無法撤銷。",
     "withdrawItemNote": "提取的物品將從您的背包中移除並提交處理。",
     "sendMoney": "發送金額",
     "recentTransactions": "最近交易",
@@ -197,7 +198,8 @@
       "lotteryWin": "彩券獎金",
       "bankContribution": "公會銀行捐獻",
       "fundRequestApproved": "資金申請核准"
-    }
+    },
+    "balance": "餘額"
   },
   "lotteryPage": {
     "all": "全部",
@@ -205,23 +207,29 @@
     "upcoming": "即將開始",
     "ended": "已結束",
     "noLotteries": "此分類沒有抽獎活動",
-    "createLottery": "建立抽獎"
+    "createLottery": "建立抽獎",
+    "statusTabs": "抽獎狀態"
   },
   "lotteryCard": {
     "drawComplete": "抽獎已結束",
-    "remaining": "剩餘",
     "prizePool": "獎金池",
     "ticketPrice": "票價",
     "drawDate": "開獎日期",
     "timeLeft": "剩餘時間",
-    "ticketsSold": "已售票數",
-    "max": "最多",
-    "filled": "已滿",
+    "ticketsSold": "已售 {count} 張",
+    "max": "上限 {count} 張",
+    "filled": "已售 {percent}%",
     "winners": "得獎者",
     "buyTicket": "購買票券",
     "viewWinners": "查看得獎者",
-    "starts": "開始",
-    "fromNow": "後開始"
+    "ticketsSoldProgress": "售票進度",
+    "timeLeftValue": "剩餘 {duration}",
+    "startsIn": "{duration}後開始",
+    "status": {
+      "active": "進行中",
+      "upcoming": "即將開始",
+      "ended": "已結束"
+    }
   },
   "auctionPage": {
     "searchItems": "搜尋物品...",
@@ -233,7 +241,8 @@
     "ended": "已結束",
     "noAuctions": "沒有找到競拍",
     "noAuctionsHint": "請嘗試調整搜尋條件或稍後再試。",
-    "createAuction": "建立競拍"
+    "createAuction": "建立競拍",
+    "statusTabs": "競拍狀態"
   },
   "auctionItemCard": {
     "timeRemaining": "剩餘時間",
@@ -241,8 +250,8 @@
     "leadingBidder": "領先競標者",
     "soldBy": "賣家",
     "placeBid": "出價",
-    "history": "歷史",
-    "placeBidTitle": "出價 —",
+    "history": "歷史（{count}）",
+    "placeBidTitle": "出價 — {name}",
     "minIncrement": "最低加價",
     "yourBalance": "您的餘額",
     "yourBidAmount": "您的出價金額",
@@ -251,11 +260,18 @@
     "minimumBidIs": "最低出價為",
     "validBidAmount": "有效出價金額",
     "cancel": "取消",
-    "bidHistory": "出價記錄 —",
+    "bidHistory": "出價記錄 — {name}",
     "noBidsYet": "目前無人出價，成為第一個出價者！",
     "leading": "領先",
     "close": "關閉",
-    "noBids": "尚無出價"
+    "noBids": "尚無出價",
+    "ended": "已結束",
+    "status": {
+      "upcoming": "即將開始",
+      "active": "進行中",
+      "ended": "已結束",
+      "cancelled": "已取消"
+    }
   },
   "backpackItemCard": {
     "editNote": "編輯備注",
@@ -268,7 +284,13 @@
     "cancel": "取消",
     "save": "儲存",
     "actions": "物品操作",
-    "comingSoon": "即將推出"
+    "comingSoon": "即將推出",
+    "acquiredFrom": {
+      "auction": "競拍",
+      "lottery": "抽獎",
+      "transfer": "轉讓",
+      "admin": "管理員"
+    }
   },
   "calendarPage": {
     "loadingEvents": "載入活動中...",
@@ -276,11 +298,11 @@
     "editEvent": "編輯活動",
     "deleteEvent": "刪除活動",
     "allDay": "全天",
-    "repeats": "重複",
-    "every": "每",
-    "createdBy": "建立者",
+    "createdBy": "由 {name} 建立",
     "deleteConfirm": "您確定要刪除此活動嗎？此操作無法撤銷。",
-    "cancel": "取消"
+    "cancel": "取消",
+    "eventActions": "活動操作",
+    "repeatsEvery": "{type, select, daily {{interval, plural, =1 {每天重複} other {每 # 天重複}}} weekly {{interval, plural, =1 {每週重複} other {每 # 週重複}}} monthly {{interval, plural, =1 {每月重複} other {每 # 個月重複}}} other {依自訂間隔重複}}"
   },
   "eventFormModal": {
     "editEvent": "編輯活動",
@@ -423,7 +445,11 @@
       "member": "成員"
     },
     "bankRequests": "申請",
-    "templates": "範本"
+    "templates": "範本",
+    "sections": "管理分頁",
+    "usersTable": "使用者",
+    "recruitmentOpen": "開放中",
+    "regionAsiaPacific": "亞太地區"
   },
   "adminRolesPage": {
     "back": "返回管理",
@@ -496,7 +522,7 @@
     "topContributors": "頂級貢獻者",
     "storage": "公會倉庫",
     "storageDesc": "公會成員分享的物品",
-    "items": "件物品",
+    "items": "{count} 件物品",
     "by": "由",
     "requestItem": "申請物品",
     "activityHistory": "活動記錄",
@@ -536,7 +562,9 @@
     "errorGeneric": "發生錯誤，請再試一次。",
     "fromCheckin": "來自點名：{title}",
     "untitledCheckin": "已刪除的點名",
-    "typeCheckinLoot": "點名入庫"
+    "typeCheckinLoot": "點名入庫",
+    "activityTable": "公會銀行活動記錄",
+    "itemSummary": "{rarity} · {category} · 剩餘 {count} 件"
   },
   "notificationsCard": {
     "notifications": "通知",
@@ -606,7 +634,8 @@
     "toggleTheme": "切換主題",
     "settings": "設置",
     "helpFeedback": "幫助與反饋",
-    "logOut": "登出"
+    "logOut": "登出",
+    "profileActions": "個人檔案操作"
   },
   "errorPage": {
     "title": "錯誤",
@@ -796,7 +825,7 @@
     "currentBid": "目前出價",
     "leadingBidder": "領先出價者",
     "placeBid": "出價",
-    "bidHistoryTitle": "出價記錄",
+    "bidHistoryTitle": "出價記錄（{count}）",
     "noBidsYet": "尚無出價。成為第一個出價者！",
     "leading": "領先",
     "seller": "賣家",
@@ -818,7 +847,15 @@
     "validBidAmount": "有效的出價金額",
     "cancel": "取消",
     "submit": "提交",
-    "ended": "已結束"
+    "ended": "已結束",
+    "placeBidTitle": "出價 — {name}",
+    "submitBidTitle": "提交出價 — {name}",
+    "status": {
+      "upcoming": "即將開始",
+      "active": "進行中",
+      "ended": "已結束",
+      "cancelled": "已取消"
+    }
   },
   "checkinDetailPage": {
     "notFound": "找不到這筆點名。",
@@ -826,12 +863,12 @@
     "backToCheckins": "返回點名列表",
     "checkIn": "報到",
     "attendance": "出席情況",
-    "members": "成員",
+    "members": "{count} 位成員",
     "noCheckinsYet": "尚無人報到。",
     "loot": "戰利品",
-    "items": "項目",
+    "items": "{count} 個項目",
     "noLootItems": "尚未新增戰利品項目。",
-    "wonBy": "獲得者",
+    "wonBy": "獲得者：{name}",
     "timing": "時間",
     "eventDate": "活動日期",
     "expires": "到期時間",
@@ -851,7 +888,8 @@
     "remaining": "剩餘",
     "checkedIn": "已簽到",
     "checkInExpired": "此點名已截止。",
-    "checkInFailed": "簽到失敗，請稍後再試。"
+    "checkInFailed": "簽到失敗，請稍後再試。",
+    "checkInTitle": "報到 — {title}"
   },
   "devTools": {
     "authTab": "開發登入",
@@ -1084,5 +1122,23 @@
     "emptyTitle": "尚無道具範本",
     "emptyHint": "建立道具後即可在戰利品清單中重複使用。",
     "deleteConfirm": "將從所有使用「{name}」的點名範本中移除此道具。已建立的點名不受影響。"
+  },
+  "guildEvents": {
+    "types": {
+      "boss_respawn": "首領重生",
+      "guild_war": "公會戰",
+      "guild_meeting": "公會會議",
+      "raid": "團隊副本",
+      "training": "訓練",
+      "tournament": "錦標賽",
+      "social": "社交活動",
+      "other": "其他"
+    },
+    "priorities": {
+      "low": "低",
+      "medium": "中",
+      "high": "高",
+      "critical": "緊急"
+    }
   }
 }

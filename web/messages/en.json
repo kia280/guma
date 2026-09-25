@@ -23,7 +23,9 @@
     "loginUnavailable": "Login is unavailable",
     "loginUnavailableDescription": "The authentication service could not be reached. Check that it is running, then try again.",
     "retry": "Try again",
-    "welcomeBack": "Welcome back"
+    "welcomeBack": "Welcome back",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -155,7 +157,7 @@
     "transfer": "Transfer",
     "withdraw": "Withdraw",
     "yourItems": "Your Items",
-    "items": "items",
+    "items": "{count, plural, one {# item} other {# items}}",
     "transactionHistory": "Transaction History",
     "transaction": "TRANSACTION",
     "amount": "AMOUNT",
@@ -176,8 +178,7 @@
     "withdrawMoney": "Withdraw Money",
     "withdrawNote": "Withdrawals may take 1–3 business days to process.",
     "withdrawItem": "Withdraw Item",
-    "withdrawItemConfirm": "Are you sure you want to withdraw",
-    "withdrawItemConfirmSuffix": "from your backpack? This action cannot be undone.",
+    "withdrawItemConfirm": "Are you sure you want to withdraw <strong>{name}</strong> from your backpack? This action cannot be undone.",
     "withdrawItemNote": "Withdrawn items will be removed from your backpack and submitted for processing.",
     "sendMoney": "Send Money",
     "recentTransactions": "Recent Transactions",
@@ -197,7 +198,8 @@
       "lotteryWin": "Lottery prize",
       "bankContribution": "Guild bank contribution",
       "fundRequestApproved": "Fund request approved"
-    }
+    },
+    "balance": "Balance"
   },
   "lotteryPage": {
     "all": "All",
@@ -205,23 +207,29 @@
     "upcoming": "Upcoming",
     "ended": "Ended",
     "noLotteries": "No lotteries in this category",
-    "createLottery": "Create lottery"
+    "createLottery": "Create lottery",
+    "statusTabs": "Lottery status"
   },
   "lotteryCard": {
     "drawComplete": "Draw complete",
-    "remaining": "remaining",
     "prizePool": "Prize Pool",
     "ticketPrice": "Ticket price",
     "drawDate": "Draw date",
     "timeLeft": "Time left",
-    "ticketsSold": "tickets sold",
-    "max": "max",
-    "filled": "filled",
+    "ticketsSold": "{count, plural, one {# ticket sold} other {# tickets sold}}",
+    "max": "{count} max",
+    "filled": "{percent}% filled",
     "winners": "Winners",
     "buyTicket": "Buy Ticket",
     "viewWinners": "View Winners",
-    "starts": "Starts",
-    "fromNow": "from now"
+    "ticketsSoldProgress": "Tickets sold",
+    "timeLeftValue": "{duration} remaining",
+    "startsIn": "Starts in {duration}",
+    "status": {
+      "active": "Active",
+      "upcoming": "Upcoming",
+      "ended": "Ended"
+    }
   },
   "auctionPage": {
     "searchItems": "Search items...",
@@ -233,7 +241,8 @@
     "ended": "Ended",
     "noAuctions": "No auctions found",
     "noAuctionsHint": "Try adjusting your search criteria or check back later.",
-    "createAuction": "Create auction"
+    "createAuction": "Create auction",
+    "statusTabs": "Auction status"
   },
   "auctionItemCard": {
     "timeRemaining": "Time remaining",
@@ -241,8 +250,8 @@
     "leadingBidder": "Leading bidder",
     "soldBy": "Sold by",
     "placeBid": "Place Bid",
-    "history": "History",
-    "placeBidTitle": "Place Bid —",
+    "history": "History ({count})",
+    "placeBidTitle": "Place Bid — {name}",
     "minIncrement": "Min increment",
     "yourBalance": "Your balance",
     "yourBidAmount": "Your Bid Amount",
@@ -251,11 +260,18 @@
     "minimumBidIs": "Minimum bid is",
     "validBidAmount": "Valid bid amount",
     "cancel": "Cancel",
-    "bidHistory": "Bid History —",
+    "bidHistory": "Bid History — {name}",
     "noBidsYet": "No bids yet. Be the first to bid!",
     "leading": "Leading",
     "close": "Close",
-    "noBids": "No bids"
+    "noBids": "No bids",
+    "ended": "Ended",
+    "status": {
+      "upcoming": "Upcoming",
+      "active": "Active",
+      "ended": "Ended",
+      "cancelled": "Cancelled"
+    }
   },
   "backpackItemCard": {
     "editNote": "Edit Note",
@@ -268,7 +284,13 @@
     "cancel": "Cancel",
     "save": "Save",
     "actions": "Item actions",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "acquiredFrom": {
+      "auction": "Auction",
+      "lottery": "Lottery",
+      "transfer": "Transfer",
+      "admin": "Admin"
+    }
   },
   "calendarPage": {
     "loadingEvents": "Loading events...",
@@ -276,11 +298,11 @@
     "editEvent": "Edit Event",
     "deleteEvent": "Delete Event",
     "allDay": "All Day",
-    "repeats": "Repeats",
-    "every": "every",
-    "createdBy": "Created by",
+    "createdBy": "Created by {name}",
     "deleteConfirm": "Are you sure you want to delete this event? This action cannot be undone.",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "eventActions": "Event actions",
+    "repeatsEvery": "{type, select, daily {Repeats every {interval, plural, one {day} other {# days}}} weekly {Repeats every {interval, plural, one {week} other {# weeks}}} monthly {Repeats every {interval, plural, one {month} other {# months}}} other {Repeats on a custom schedule}}"
   },
   "eventFormModal": {
     "editEvent": "Edit Event",
@@ -423,7 +445,11 @@
       "member": "Member"
     },
     "bankRequests": "Requests",
-    "templates": "Templates"
+    "templates": "Templates",
+    "sections": "Admin sections",
+    "usersTable": "Users",
+    "recruitmentOpen": "Open",
+    "regionAsiaPacific": "Asia Pacific"
   },
   "adminRolesPage": {
     "back": "Back to administration",
@@ -496,7 +522,7 @@
     "topContributors": "Top Contributors",
     "storage": "Guild Storage",
     "storageDesc": "Items shared by guild members",
-    "items": "items",
+    "items": "{count, plural, one {# item} other {# items}}",
     "by": "by",
     "requestItem": "Request Item",
     "activityHistory": "Activity History",
@@ -536,7 +562,9 @@
     "errorGeneric": "Something went wrong. Please try again.",
     "fromCheckin": "From roll call: {title}",
     "untitledCheckin": "a deleted roll call",
-    "typeCheckinLoot": "Roll call stocked"
+    "typeCheckinLoot": "Roll call stocked",
+    "activityTable": "Guild bank activity",
+    "itemSummary": "{rarity} · {category} · {count, plural, one {# available} other {# available}}"
   },
   "notificationsCard": {
     "notifications": "Notifications",
@@ -606,7 +634,8 @@
     "toggleTheme": "Toggle theme",
     "settings": "Settings",
     "helpFeedback": "Help & Feedback",
-    "logOut": "Log Out"
+    "logOut": "Log Out",
+    "profileActions": "Profile actions"
   },
   "errorPage": {
     "title": "Error",
@@ -796,7 +825,7 @@
     "currentBid": "Current bid",
     "leadingBidder": "Leading bidder",
     "placeBid": "Place Bid",
-    "bidHistoryTitle": "Bid History",
+    "bidHistoryTitle": "Bid History ({count})",
     "noBidsYet": "No bids yet. Be the first to bid!",
     "leading": "Leading",
     "seller": "Seller",
@@ -818,7 +847,15 @@
     "validBidAmount": "Valid bid amount",
     "cancel": "Cancel",
     "submit": "Submit",
-    "ended": "Ended"
+    "ended": "Ended",
+    "placeBidTitle": "Place Bid — {name}",
+    "submitBidTitle": "Submit Bid — {name}",
+    "status": {
+      "upcoming": "Upcoming",
+      "active": "Active",
+      "ended": "Ended",
+      "cancelled": "Cancelled"
+    }
   },
   "checkinDetailPage": {
     "notFound": "Roll call not found.",
@@ -826,12 +863,12 @@
     "backToCheckins": "Back to roll calls",
     "checkIn": "Mark present",
     "attendance": "Attendance",
-    "members": "members",
+    "members": "{count, plural, one {# member} other {# members}}",
     "noCheckinsYet": "No one has marked present yet.",
     "loot": "Loot",
-    "items": "items",
+    "items": "{count, plural, one {# item} other {# items}}",
     "noLootItems": "No loot items added.",
-    "wonBy": "Won by",
+    "wonBy": "Won by {name}",
     "timing": "Timing",
     "eventDate": "Event date",
     "expires": "Expires",
@@ -851,7 +888,8 @@
     "remaining": "remaining",
     "checkedIn": "You're present",
     "checkInExpired": "This roll call has closed.",
-    "checkInFailed": "Couldn't mark you present. Please try again."
+    "checkInFailed": "Couldn't mark you present. Please try again.",
+    "checkInTitle": "Mark present — {title}"
   },
   "devTools": {
     "authTab": "Dev Auth",
@@ -1084,5 +1122,23 @@
     "emptyTitle": "No item templates yet",
     "emptyHint": "Create items to reuse them in loot lists.",
     "deleteConfirm": "\"{name}\" will be removed from every roll call template that uses it. Existing roll calls are not affected."
+  },
+  "guildEvents": {
+    "types": {
+      "boss_respawn": "Boss Respawn",
+      "guild_war": "Guild War",
+      "guild_meeting": "Guild Meeting",
+      "raid": "Raid",
+      "training": "Training",
+      "tournament": "Tournament",
+      "social": "Social Event",
+      "other": "Other"
+    },
+    "priorities": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
   }
 }
