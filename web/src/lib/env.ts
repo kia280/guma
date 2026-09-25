@@ -36,6 +36,10 @@ export const env = {
       process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI || 'http://localhost:3000/auth/callback',
   },
 
+  support: {
+    discordInviteUrl: process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || '',
+  },
+
   // Feature Flags
   features: {
     enablePWA: process.env.NEXT_PUBLIC_ENABLE_PWA !== 'false',

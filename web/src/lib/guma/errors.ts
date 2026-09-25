@@ -13,3 +13,10 @@ export const apiErrorCode = (err: unknown): string | undefined => {
   const code = (err.response?.data as { code?: unknown } | undefined)?.code;
   return typeof code === 'string' ? code : undefined;
 };
+
+export const isNotFoundError = (err: unknown): boolean => {
+  if (isAxiosError(err)) {
+    return err.response?.status === 404 || apiErrorCode(err) === GrpcCode.NotFound;
+  }
+  return err instanceof Error && /not found/i.test(err.message);
+};

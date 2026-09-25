@@ -52,6 +52,7 @@ type BankContribution struct {
 	GuildID   string
 	UserID    string
 	Username  string
+	AvatarURL string
 	Amount    int64
 	Note      string
 	CreatedAt time.Time
@@ -62,17 +63,18 @@ type BankContribution struct {
 
 // FundRequest is the domain model for a fund request.
 type FundRequest struct {
-	ID            string
-	GuildID       string
-	RequesterID   string
-	RequesterName string
-	Amount        int64
-	Reason        string
-	Status        string
-	ReviewerID    string
-	ReviewNote    string
-	CreatedAt     time.Time
-	ReviewedAt    *time.Time
+	ID                 string
+	GuildID            string
+	RequesterID        string
+	RequesterName      string
+	RequesterAvatarURL string
+	Amount             int64
+	Reason             string
+	Status             string
+	ReviewerID         string
+	ReviewNote         string
+	CreatedAt          time.Time
+	ReviewedAt         *time.Time
 }
 
 // BankItem is the domain model for an item in the guild bank.
@@ -91,18 +93,19 @@ type BankItem struct {
 
 // ItemRequest is the domain model for an item request.
 type ItemRequest struct {
-	ID            string
-	GuildID       string
-	BankItemID    string
-	RequesterID   string
-	RequesterName string
-	Reason        string
-	Status        string
-	ReviewerID    string
-	ReviewNote    string
-	Item          models.Item
-	CreatedAt     time.Time
-	ReviewedAt    *time.Time
+	ID                 string
+	GuildID            string
+	BankItemID         string
+	RequesterID        string
+	RequesterName      string
+	RequesterAvatarURL string
+	Reason             string
+	Status             string
+	ReviewerID         string
+	ReviewNote         string
+	Item               models.Item
+	CreatedAt          time.Time
+	ReviewedAt         *time.Time
 }
 
 const (
@@ -334,7 +337,7 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 	if err != nil {
 		return nil, fmt.Errorf("%w: create fund request: %v", errs.ErrInternal, err)
 	}
-	return toFundRequest(r.ID, r.GuildID, r.RequesterID, r.RequesterName, r.Amount, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt), nil
+	return toFundRequest(r.ID, r.GuildID, r.RequesterID, r.RequesterName, r.RequesterAvatarUrl, r.Amount, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt), nil
 }
 
 // ReviewFundRequest approves or rejects a fund request.
@@ -417,7 +420,7 @@ func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDSt
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	s.logger.Info().Str("fund_request_id", requestIDStr).Str("reviewer_id", reviewerIDStr).Str("status", status).Msg("fund request reviewed")
-	return toFundRequest(r.ID, r.GuildID, r.RequesterID, r.RequesterName, r.Amount, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt), nil
+	return toFundRequest(r.ID, r.GuildID, r.RequesterID, r.RequesterName, r.RequesterAvatarUrl, r.Amount, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt), nil
 }
 
 // ListFundRequests returns paginated fund requests.
@@ -451,7 +454,7 @@ func (s *Service) ListFundRequests(ctx context.Context, p ListFundRequestsParams
 
 	requests := make([]*FundRequest, 0, len(rows))
 	for _, r := range rows {
-		requests = append(requests, toFundRequest(r.ID, r.GuildID, r.RequesterID, r.RequesterName, r.Amount, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt))
+		requests = append(requests, toFundRequest(r.ID, r.GuildID, r.RequesterID, r.RequesterName, r.RequesterAvatarUrl, r.Amount, r.Reason, r.Status, r.ReviewerID, r.ReviewNote, r.CreatedAt, r.ReviewedAt))
 	}
 
 	total, _ := s.q.CountFundRequests(ctx, db.CountFundRequestsParams{GuildID: guildID, StatusFilter: p.Status})
@@ -485,7 +488,7 @@ func (s *Service) ListContributions(ctx context.Context, p ListContributionsPara
 	for _, r := range rows {
 		c := &BankContribution{
 			ID: r.ID.String(), GuildID: r.GuildID.String(), UserID: r.UserID.String(),
-			Username: r.Username, Amount: r.Amount, Note: r.Note, CreatedAt: r.CreatedAt,
+			Username: r.Username, AvatarURL: r.AvatarUrl, Amount: r.Amount, Note: r.Note, CreatedAt: r.CreatedAt,
 			Kind: r.Kind, Items: []models.Item{},
 		}
 		if len(r.Items) > 0 {
@@ -775,10 +778,11 @@ func (s *Service) ListItemRequests(ctx context.Context, p ListItemRequestsParams
 
 // --- helpers ---
 
-func toFundRequest(id, guildID, requesterID uuid.UUID, requesterName string, amount int64, reason, status string, reviewerID *uuid.UUID, reviewNote string, createdAt time.Time, reviewedAt pgtype.Timestamptz) *FundRequest {
+func toFundRequest(id, guildID, requesterID uuid.UUID, requesterName, requesterAvatarURL string, amount int64, reason, status string, reviewerID *uuid.UUID, reviewNote string, createdAt time.Time, reviewedAt pgtype.Timestamptz) *FundRequest {
 	fr := &FundRequest{
 		ID: id.String(), GuildID: guildID.String(), RequesterID: requesterID.String(),
-		RequesterName: requesterName, Amount: amount, Reason: reason, Status: status,
+		RequesterName: requesterName, RequesterAvatarURL: requesterAvatarURL,
+		Amount: amount, Reason: reason, Status: status,
 		ReviewNote: reviewNote, CreatedAt: createdAt,
 	}
 	if reviewerID != nil {
@@ -795,7 +799,8 @@ func toItemRequest(r db.ListItemRequestsRow) *ItemRequest {
 	ir := &ItemRequest{
 		ID: r.ID.String(), GuildID: r.GuildID.String(),
 		RequesterID: r.RequesterID.String(), RequesterName: r.RequesterName,
-		Reason: r.Reason, Status: r.Status, ReviewNote: r.ReviewNote, CreatedAt: r.CreatedAt,
+		RequesterAvatarURL: r.RequesterAvatarUrl,
+		Reason:             r.Reason, Status: r.Status, ReviewNote: r.ReviewNote, CreatedAt: r.CreatedAt,
 	}
 	if r.BankItemID != nil {
 		ir.BankItemID = r.BankItemID.String()

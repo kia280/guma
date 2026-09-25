@@ -48,6 +48,7 @@ export interface BankContribution {
   guildId: string;
   userId: string;
   username: string;
+  avatarUrl?: string;
   amount: number;
   note?: string;
   createdAt: string;
@@ -65,6 +66,7 @@ export interface FundRequest {
   guildId: string;
   requesterId: string;
   requesterName: string;
+  requesterAvatarUrl?: string;
   amount: number;
   reason: string;
   status: RequestStatus;
@@ -79,6 +81,7 @@ export interface ItemRequest {
   bankItemId: string;
   requesterId: string;
   requesterName: string;
+  requesterAvatarUrl?: string;
   reason: string;
   status: RequestStatus;
   itemName: string;
