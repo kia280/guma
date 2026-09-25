@@ -363,7 +363,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     return (
       <div className="flex flex-col h-full min-h-[480px] border border-divider rounded-xl overflow-hidden bg-surface">
         {/* Day column headers */}
-        <div className="flex border-b border-divider">
+        <div className="flex border-b border-divider overflow-y-hidden [scrollbar-gutter:stable]">
           <div className="w-14 shrink-0 border-r border-divider" />
           {days.map((day, index) => {
             const isToday = isSameDay(day, today);
@@ -405,7 +405,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
         </div>
 
         {/* 24h timeline grid */}
-        <div className="flex flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-1 min-h-0 overflow-y-auto [scrollbar-gutter:stable]">
           {renderHourLabels()}
           {days.map((day, index) => {
             const isToday = isSameDay(day, today);
