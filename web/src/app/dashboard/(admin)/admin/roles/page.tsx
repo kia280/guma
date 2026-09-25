@@ -96,7 +96,7 @@ export default function AdminRolesPage() {
         {ROLES.map(role => (
           <li key={role}>
             <Card className="h-full border border-divider shadow-none bg-surface">
-              <Card.Content className="gap-2 p-4">
+              <Card.Content className="gap-2">
                 <Chip
                   size="sm"
                   color={ROLE_COLORS[role]}
@@ -114,7 +114,7 @@ export default function AdminRolesPage() {
 
       {SECTIONS.map(section => (
         <Card key={section.key} className="border border-divider shadow-none bg-surface">
-          <Card.Header className="flex gap-3 pb-2">
+          <Card.Header className="flex flex-row items-center gap-3 pb-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
               <Icon className="text-accent" icon={section.icon} width={20} aria-hidden />
             </div>
@@ -126,7 +126,27 @@ export default function AdminRolesPage() {
             </div>
           </Card.Header>
           <Card.Content className="p-0">
-            <Table>
+            <ul
+              aria-labelledby={`roles-section-${section.key}`}
+              className="flex flex-col gap-2 sm:hidden"
+            >
+              {section.actions.map(action => (
+                <li
+                  key={action.key}
+                  className="flex flex-col gap-2 rounded-lg bg-surface-secondary px-3 py-2.5"
+                >
+                  <span className="type-body text-foreground">{t(`actions.${action.key}`)}</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(action.roles as readonly Role[]).map(role => (
+                      <Chip key={role} size="sm" color={ROLE_COLORS[role]} variant="secondary">
+                        {tRoles(role)}
+                      </Chip>
+                    ))}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <Table className="hidden sm:grid">
               <Table.ScrollContainer>
                 <Table.Content
                   aria-labelledby={`roles-section-${section.key}`}
