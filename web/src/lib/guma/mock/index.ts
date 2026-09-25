@@ -129,6 +129,7 @@ const mockGuild: Guild = {
   settings: {
     timezone: 'Asia/Taipei',
     language: 'zht',
+    isPublic: true,
     currency: 'gold',
     features: { economy: true, events: true, raids: true, voting: false },
   },
@@ -690,6 +691,13 @@ const baseMockApiClient: ApiClient = {
 
   // ── Admin ──
   getAdminActivity: async () => mockData.mockActivity,
+  getGuildStats: async (guildId) => ({
+    memberCount: mockData.mockUsers.length,
+    bankBalance: mockGuildBankData(guildId).balance,
+    bankCurrency: mockGuildBankData(guildId).currency,
+    activeEventCount: mockData.GUILD_STATS.activeEvents,
+    bankItemCount: mockData.mockGuildItems.length,
+  }),
   getAdminAnnouncements: async () => sortAdminAnnouncements(store.announcements).map(a => ({ ...a })),
   getAnnouncement: async (_guildId, id) => ({ ...findMockAnnouncement(id) }),
   createAnnouncementDraft: async () => {
