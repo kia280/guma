@@ -35,6 +35,7 @@ const BackpackItemCard = ({
   onWithdraw,
 }: BackpackItemCardProps) => {
   const t = useTranslations('backpackItemCard');
+  const labels = useTranslations('createAuctionModal');
 
   return (
     <Card className="border border-divider shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors p-2.5 rounded-xl">
@@ -43,11 +44,11 @@ const BackpackItemCard = ({
         <div className="flex-1 min-w-0">
           <p className="type-body font-medium text-foreground truncate">{item.item.name}</p>
           <div className="flex items-center gap-1 mt-0.5">
-            <Chip size="sm" color={getRarityColor(item.item.rarity)} variant="secondary" className="capitalize">
-              {item.item.rarity}
+            <Chip size="sm" color={getRarityColor(item.item.rarity)} variant="secondary">
+              {labels(`rarities.${item.item.rarity}`)}
             </Chip>
-            <Chip size="sm" color={getAcquiredColor(item.acquiredFrom)} variant="secondary" className="capitalize">
-              {item.acquiredFrom}
+            <Chip size="sm" color={getAcquiredColor(item.acquiredFrom)} variant="secondary">
+              {t(`acquiredFrom.${item.acquiredFrom}`)}
             </Chip>
           </div>
         </div>

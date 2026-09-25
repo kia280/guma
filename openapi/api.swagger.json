@@ -4715,6 +4715,9 @@
         },
         "checkinId": {
           "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -5135,6 +5138,9 @@
         "reviewedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "requesterAvatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -5625,6 +5631,9 @@
         },
         "item": {
           "$ref": "#/definitions/v1Item"
+        },
+        "requesterAvatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -5708,6 +5717,20 @@
         "maxFileSizeBytes": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "v1LinkedAccount": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
         }
       }
     },
@@ -6833,6 +6856,15 @@
         "balance": {
           "type": "string",
           "format": "int64"
+        },
+        "emailVerified": {
+          "type": "boolean"
+        },
+        "discord": {
+          "$ref": "#/definitions/v1LinkedAccount"
+        },
+        "guildRole": {
+          "type": "string"
         }
       }
     },

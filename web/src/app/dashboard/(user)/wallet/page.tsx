@@ -22,16 +22,21 @@ import { Icon } from '@iconify/react';
 import { useLocale, useTranslations } from 'next-intl';
 import React from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import BackpackItemCard from '@/components/BackpackItemCard';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal } from '@/components/CreateLotteryModal';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { isLocale } from '@/i18n/locales';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { walletBalanceTrend } from '@/lib/guma/mock/data';
 import { localizeMock } from '@/lib/guma/mock/i18n';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
+import { type FormatGold, useFormatGold, useFormatGoldAxisTick } from '@/lib/guma/useFormatGold';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { transactionStatusColor } from '@/lib/status-colors';
 import { BackpackItem } from '@/types/backpack';
@@ -66,6 +71,8 @@ const USER_NOTE_KINDS = new Set([
 
 const DEFAULT_TRANSFER_NOTE = 'Transfer';
 
+type WalletAction = 'deposit' | 'transfer' | 'withdraw' | 'withdrawItem';
+
 const transactionLabelKey = (transaction: Transaction): string | undefined => {
   if (transaction.kind === 'AUCTION_BID') {
     return transaction.amount > 0 ? 'auctionRefund' : 'auctionBid';
@@ -85,8 +92,8 @@ const transactionAmountSign = (amount: number): string => {
   return '';
 };
 
-const formatTransactionAmount = (amount: number): string =>
-  `${transactionAmountSign(amount)}$${Math.abs(amount).toFixed(2)}`;
+const formatTransactionAmount = (amount: number, formatGold: FormatGold): string =>
+  `${transactionAmountSign(amount)}${formatGold(Math.abs(amount))}`;
 
 const transactionAmountClass = (amount: number): string => {
   if (amount > 0) return 'text-success';
@@ -127,12 +134,19 @@ const getTransactionIcon = (transaction: Transaction) => {
 
 export default function WalletPage() {
   const t = useTranslations('walletPage');
+  const labels = useTranslations('createAuctionModal');
+  const format = useIntlFormatter();
+  const formatGold = useFormatGold();
+  const formatGoldAxisTick = useFormatGoldAxisTick();
   const locale = useLocale();
   const balanceTrend = React.useMemo(
     () => (isLocale(locale) ? localizeMock(walletBalanceTrend, locale) : walletBalanceTrend),
     [locale]
   );
   const guildId = useCurrentGuildId();
+  const depositModalState = useOverlayState();
+  const transferModalState = useOverlayState();
+  const withdrawModalState = useOverlayState();
   const itemWithdrawModalState = useOverlayState();
   const auctionModalState = useOverlayState();
   const lotteryModalState = useOverlayState();
@@ -152,15 +166,55 @@ export default function WalletPage() {
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>([]);
   const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
+  const [pendingAction, setPendingAction] = React.useState<WalletAction | null>(null);
+  const walletState = useLoadState();
+  const transactionsState = useLoadState();
+  const backpackState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = React.useState(0);
+
+  const reload = React.useCallback(() => {
+    walletState.reset();
+    transactionsState.reset();
+    backpackState.reset();
+    setReloadKey(key => key + 1);
+  }, [walletState.reset, transactionsState.reset, backpackState.reset]);
 
   const refetchBalance = React.useCallback(() => {
-    apiClient.getWallet(guildId).then(setWallet).catch(() => {});
-    apiClient.listTransactions(guildId).then(setTransactions).catch(() => {});
-  }, [guildId]);
+    apiClient
+      .getWallet(guildId)
+      .then(data => {
+        setWallet(data);
+        walletState.ready();
+      })
+      .catch(() => {
+        walletState.failed();
+        notify.loadFailed(reload, 'wallet');
+      });
+    apiClient
+      .listTransactions(guildId)
+      .then(data => {
+        setTransactions(data);
+        transactionsState.ready();
+      })
+      .catch(() => {
+        transactionsState.failed();
+        notify.loadFailed(reload, 'wallet');
+      });
+  }, [guildId, notify, reload, walletState.ready, walletState.failed, transactionsState.ready, transactionsState.failed]);
 
   const refetchBackpack = React.useCallback(() => {
-    apiClient.listBackpack(guildId).then(setBackpackItems).catch(() => {});
-  }, [guildId]);
+    apiClient
+      .listBackpack(guildId)
+      .then(data => {
+        setBackpackItems(data);
+        backpackState.ready();
+      })
+      .catch(() => {
+        backpackState.failed();
+        notify.loadFailed(reload, 'wallet');
+      });
+  }, [guildId, notify, reload, backpackState.ready, backpackState.failed]);
 
   const refetchWallet = React.useCallback(() => {
     refetchBalance();
@@ -169,8 +223,11 @@ export default function WalletPage() {
 
   React.useEffect(() => {
     refetchWallet();
-    apiClient.listMembers(guildId).then(setMockUsers).catch(() => {});
-  }, [guildId, refetchWallet]);
+    apiClient
+      .listMembers(guildId)
+      .then(setMockUsers)
+      .catch(() => notify.loadFailed(reload, 'wallet'));
+  }, [guildId, refetchWallet, reloadKey, notify, reload]);
 
   React.useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -199,45 +256,63 @@ export default function WalletPage() {
 
   const balance = wallet?.balance ?? 0;
 
-  const handleTransfer = async () => {
+  const runAction = async (
+    action: WalletAction,
+    request: () => Promise<unknown>,
+    onSuccess: () => void,
+  ) => {
+    setPendingAction(action);
+    try {
+      await request();
+      refetchWallet();
+      notify.success(t(`${action}Success`));
+      onSuccess();
+    } catch {
+      notify.error(t(`${action}Failed`));
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleTransfer = () => {
     const amount = parseGold(transferAmount);
     if (!(amount > 0) || !transferRecipient) return;
-    try {
-      await apiClient.transfer(guildId, { recipientId: transferRecipient, amount });
-      refetchWallet();
-    } catch (err) { console.error(err); }
-    setTransferAmount('');
-    setTransferRecipient('');
+    return runAction(
+      'transfer',
+      () => apiClient.transfer(guildId, { recipientId: transferRecipient, amount }),
+      () => {
+        setTransferAmount('');
+        setTransferRecipient('');
+        transferModalState.close();
+      },
+    );
   };
 
-  const handleWithdraw = async () => {
+  const handleWithdraw = () => {
     const amount = parseGold(withdrawAmount);
     if (!(amount > 0)) return;
-    try {
-      await apiClient.withdraw(guildId, amount);
-      refetchWallet();
-    } catch (err) { console.error(err); }
-    setWithdrawAmount('');
+    return runAction('withdraw', () => apiClient.withdraw(guildId, amount), () => {
+      setWithdrawAmount('');
+      withdrawModalState.close();
+    });
   };
 
-  const handleDeposit = async () => {
+  const handleDeposit = () => {
     const amount = parseGold(depositAmount);
     if (!(amount > 0)) return;
-    try {
-      await apiClient.deposit(guildId, amount);
-      refetchWallet();
-    } catch (err) { console.error(err); }
-    setDepositAmount('');
+    return runAction('deposit', () => apiClient.deposit(guildId, amount), () => {
+      setDepositAmount('');
+      depositModalState.close();
+    });
   };
 
-  const handleItemWithdraw = async () => {
+  const handleItemWithdraw = () => {
     if (!selectedItem) return;
-    try {
-      await apiClient.withdrawBackpackItem(guildId, selectedItem.id);
-      refetchWallet();
-    } catch (err) { console.error(err); }
-    setSelectedItem(null);
-    itemWithdrawModalState.close();
+    const itemId = selectedItem.id;
+    return runAction('withdrawItem', () => apiClient.withdrawBackpackItem(guildId, itemId), () => {
+      setSelectedItem(null);
+      itemWithdrawModalState.close();
+    });
   };
 
   const openItemWithdraw = (item: BackpackItem) => {
@@ -267,14 +342,16 @@ export default function WalletPage() {
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="type-display text-foreground">${balance.toFixed(2)}</p>
+              <AsyncValue state={walletState.state}>
+                <p className="type-display text-foreground">{formatGold(balance)}</p>
+              </AsyncValue>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Modal>
-              <Button variant="tertiary" className="w-full sm:w-auto">
+              <Button variant="tertiary" className="w-full sm:w-auto" onPress={depositModalState.open}>
                 <Icon icon="solar:arrow-down-linear" width={16} />
                 {t('deposit')}
               </Button>
+              <Modal state={depositModalState}>
               <Modal.Backdrop>
                 <Modal.Container size="sm">
                   <Modal.Dialog>
@@ -298,7 +375,7 @@ export default function WalletPage() {
                         />
                       </TextField>
                       <p className="type-caption text-hint px-1">
-                        {t('currentBalanceLabel')} ${balance.toFixed(2)}
+                        {t('currentBalanceLabel')} {formatGold(balance)}
                       </p>
                     </Modal.Body>
                     <Modal.Footer>
@@ -308,6 +385,7 @@ export default function WalletPage() {
                       <Button
                         variant="tertiary"
                         onPress={handleDeposit}
+                        isPending={pendingAction === 'deposit'}
                         isDisabled={!(parseGold(depositAmount) > 0)}
                       >
                         {t('deposit')}
@@ -317,11 +395,11 @@ export default function WalletPage() {
                 </Modal.Container>
               </Modal.Backdrop>
               </Modal>
-              <Modal>
-              <Button variant="primary" className="w-full sm:w-auto">
+              <Button variant="primary" className="w-full sm:w-auto" onPress={transferModalState.open}>
                 <Icon icon="solar:arrow-right-linear" width={16} />
                 {t('transfer')}
               </Button>
+              <Modal state={transferModalState}>
               <Modal.Backdrop>
                 <Modal.Container size="sm">
                   <Modal.Dialog>
@@ -380,14 +458,19 @@ export default function WalletPage() {
                         </Autocomplete.Popover>
                       </Autocomplete>
                       <p className="type-caption text-hint px-1">
-                        {t('available')} ${balance.toFixed(2)}
+                        {t('available')} {formatGold(balance)}
                       </p>
                     </Modal.Body>
                     <Modal.Footer>
                       <Button slot="close" variant="secondary">
                         {t('cancel')}
                       </Button>
-                      <Button variant="primary" onPress={handleTransfer}>
+                      <Button
+                        variant="primary"
+                        onPress={handleTransfer}
+                        isPending={pendingAction === 'transfer'}
+                        isDisabled={!(parseGold(transferAmount) > 0) || !transferRecipient}
+                      >
                         {t('transfer')}
                       </Button>
                     </Modal.Footer>
@@ -395,11 +478,11 @@ export default function WalletPage() {
                 </Modal.Container>
               </Modal.Backdrop>
               </Modal>
-              <Modal>
-              <Button variant="secondary" className="w-full sm:w-auto">
+              <Button variant="secondary" className="w-full sm:w-auto" onPress={withdrawModalState.open}>
                 <Icon icon="solar:arrow-up-linear" width={16} />
                 {t('withdraw')}
               </Button>
+              <Modal state={withdrawModalState}>
               <Modal.Backdrop>
                 <Modal.Container size="sm">
                   <Modal.Dialog>
@@ -423,7 +506,7 @@ export default function WalletPage() {
                         />
                       </TextField>
                       <p className="type-caption text-hint px-1">
-                        {t('available')} ${balance.toFixed(2)}
+                        {t('available')} {formatGold(balance)}
                       </p>
                       <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
                         <div className="flex items-start gap-2">
@@ -440,7 +523,12 @@ export default function WalletPage() {
                       <Button slot="close" variant="secondary">
                         {t('cancel')}
                       </Button>
-                      <Button variant="primary" onPress={handleWithdraw}>
+                      <Button
+                        variant="primary"
+                        onPress={handleWithdraw}
+                        isPending={pendingAction === 'withdraw'}
+                        isDisabled={!(parseGold(withdrawAmount) > 0)}
+                      >
                         {t('withdraw')}
                       </Button>
                     </Modal.Footer>
@@ -472,10 +560,10 @@ export default function WalletPage() {
                   tick={{ fontSize: 12, fill: 'var(--muted)' }}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={v => `$${v}`}
+                  tickFormatter={formatGoldAxisTick}
                 />
                 <Tooltip
-                  formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, 'Balance']}
+                  formatter={(v: any) => [formatGold(Number(v ?? 0)), t('balance')]}
                   contentStyle={{
                     background: 'var(--overlay)',
                     border: '1px solid var(--border)',
@@ -511,12 +599,25 @@ export default function WalletPage() {
             <div className="flex items-center justify-between">
               <p className="type-subheading text-foreground">{t('yourItems')}</p>
               <Chip size="sm" variant="tertiary">
-                {backpackItems.length} {t('items')}
+                {t('items', { count: backpackItems.length })}
               </Chip>
             </div>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
+          <AsyncContent
+            state={backpackState.state}
+            onRetry={reload}
+            skeleton={
+              <CardGridSkeleton
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
+                cardClassName="h-24 rounded-xl"
+              />
+            }
+          >
+          {backpackItems.length === 0 ? (
+            <EmptyContent icon="solar:backpack-linear" title={t('noItems')} description={t('noItemsHint')} />
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {backpackItems.map(item => (
               <BackpackItemCard
@@ -540,6 +641,8 @@ export default function WalletPage() {
               />
             ))}
           </div>
+          )}
+          </AsyncContent>
           <CreateAuctionModal state={auctionModalState} item={auctionItem} />
           <CreateLotteryModal state={lotteryModalState} prizeItemName={lotteryPrize} />
         </Card.Content>
@@ -563,6 +666,14 @@ export default function WalletPage() {
               currentPage * rowsPerPage
             );
             return (
+              <AsyncContent state={transactionsState.state} onRetry={reload} skeleton={<ListSkeleton rows={5} />}>
+              {transactions.length === 0 ? (
+                <EmptyContent
+                  icon="solar:history-line-duotone"
+                  title={t('noTransactions')}
+                  description={t('noTransactionsHint')}
+                />
+              ) : (
               <>
           {/* Desktop Table View */}
           <div className="hidden md:block">
@@ -606,12 +717,12 @@ export default function WalletPage() {
                           <span
                             className={`type-body font-medium ${transactionAmountClass(transaction.amount)}`}
                           >
-                            {formatTransactionAmount(transaction.amount)}
+                            {formatTransactionAmount(transaction.amount, formatGold)}
                           </span>
                         </Table.Cell>
                         <Table.Cell>
                           <p className="type-body text-subtle">
-                            {new Date(transaction.date).toLocaleDateString()}
+                            {format.dateTime(new Date(transaction.date), { dateStyle: 'medium' })}
                           </p>
                         </Table.Cell>
                         <Table.Cell>
@@ -656,7 +767,7 @@ export default function WalletPage() {
                       )}
                       <div className="flex items-center gap-2 mt-0.5">
                         <p className="type-caption text-hint">
-                          {new Date(transaction.date).toLocaleDateString()}
+                          {format.dateTime(new Date(transaction.date), { dateStyle: 'medium' })}
                         </p>
                         <Chip
                           className="capitalize"
@@ -673,7 +784,7 @@ export default function WalletPage() {
                     <span
                       className={`type-body font-medium ${transactionAmountClass(transaction.amount)}`}
                     >
-                      {formatTransactionAmount(transaction.amount)}
+                      {formatTransactionAmount(transaction.amount, formatGold)}
                     </span>
                   </div>
                 </div>
@@ -717,6 +828,8 @@ export default function WalletPage() {
             </div>
           )}
               </>
+              )}
+              </AsyncContent>
             );
           })()}
         </Card.Content>
@@ -740,15 +853,16 @@ export default function WalletPage() {
                     </div>
                     <div>
                       <p className="type-body font-medium text-foreground">{selectedItem.item.name}</p>
-                      <p className="type-caption text-hint capitalize">
-                        {selectedItem.item.rarity} · {selectedItem.item.category}
+                      <p className="type-caption text-hint">
+                        {labels(`rarities.${selectedItem.item.rarity}`)} · {labels(`categories.${selectedItem.item.category}`)}
                       </p>
                     </div>
                   </div>
                   <p className="type-body text-soft">
-                    {t('withdrawItemConfirm')}{' '}
-                    <span className="font-medium text-foreground">{selectedItem.item.name}</span>{' '}
-                    {t('withdrawItemConfirmSuffix')}
+                    {t.rich('withdrawItemConfirm', {
+                      name: selectedItem.item.name,
+                      strong: chunks => <span className="font-medium text-foreground">{chunks}</span>,
+                    })}
                   </p>
                   <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
                     <div className="flex items-start gap-2">
@@ -767,7 +881,7 @@ export default function WalletPage() {
               <Button slot="close" variant="secondary">
                 {t('cancel')}
               </Button>
-              <Button variant="danger" onPress={handleItemWithdraw}>
+              <Button variant="danger" onPress={handleItemWithdraw} isPending={pendingAction === 'withdrawItem'}>
                 {t('withdrawItem')}
               </Button>
             </Modal.Footer>

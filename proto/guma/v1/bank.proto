@@ -244,6 +244,7 @@ message BankContribution {
   string kind = 8;
   repeated Item items = 9;
   string checkin_id = 10;
+  string avatar_url = 11;
 }
 
 message FundRequest {
@@ -258,6 +259,7 @@ message FundRequest {
   string review_note = 9;
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp reviewed_at = 11;
+  string requester_avatar_url = 12;
 }
 
 message BankItem {
@@ -286,4 +288,5 @@ message ItemRequest {
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp reviewed_at = 11;
   Item item = 12;
+  string requester_avatar_url = 13;
 }
