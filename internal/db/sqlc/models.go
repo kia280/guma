@@ -105,14 +105,14 @@ type CheckinAttendee struct {
 }
 
 type CheckinTemplate struct {
-	ID        uuid.UUID
-	GuildID   uuid.UUID
-	Name      string
-	Title     string
-	LootList  []byte
-	CreatedBy uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID              uuid.UUID
+	GuildID         uuid.UUID
+	Name            string
+	Title           string
+	ItemTemplateIds []uuid.UUID
+	CreatedBy       uuid.UUID
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 type FundRequest struct {
@@ -208,6 +208,18 @@ type ItemRequest struct {
 	CreatedAt     time.Time
 	ReviewedAt    pgtype.Timestamptz
 	Item          []byte
+}
+
+type ItemTemplate struct {
+	ID          uuid.UUID
+	GuildID     uuid.UUID
+	Name        string
+	Description string
+	Category    string
+	Rarity      string
+	CreatedBy   uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type Lottery struct {

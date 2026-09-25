@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
+
+service ItemTemplateService {
+  rpc ListItemTemplates(ListItemTemplatesRequest) returns (ListItemTemplatesResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/item-templates"
+    };
+  }
+
+  rpc CreateItemTemplate(CreateItemTemplateRequest) returns (CreateItemTemplateResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/item-templates"
+      body: "*"
+    };
+  }
+
+  rpc UpdateItemTemplate(UpdateItemTemplateRequest) returns (UpdateItemTemplateResponse) {
+    option (google.api.http) = {
+      patch: "/v1/guilds/{guild_id}/item-templates/{template_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteItemTemplate(DeleteItemTemplateRequest) returns (DeleteItemTemplateResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/item-templates/{template_id}"
+    };
+  }
+}
+
+message ListItemTemplatesRequest {
+  string guild_id = 1;
+}
+
+message ListItemTemplatesResponse {
+  repeated ItemTemplate templates = 1;
+}
+
+message CreateItemTemplateRequest {
+  string guild_id = 1;
+  string name = 2;
+  string description = 3;
+  string category = 4;
+  string rarity = 5;
+}
+
+message CreateItemTemplateResponse {
+  ItemTemplate template = 1;
+}
+
+message UpdateItemTemplateRequest {
+  string guild_id = 1;
+  string template_id = 2;
+  string name = 3;
+  string description = 4;
+  string category = 5;
+  string rarity = 6;
+}
+
+message UpdateItemTemplateResponse {
+  ItemTemplate template = 1;
+}
+
+message DeleteItemTemplateRequest {
+  string guild_id = 1;
+  string template_id = 2;
+}
+
+message DeleteItemTemplateResponse {
+  bool success = 1;
+}
+
+message ItemTemplate {
+  string id = 1;
+  string guild_id = 2;
+  string name = 3;
+  string description = 4;
+  string category = 5;
+  string rarity = 6;
+  string created_by = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}

@@ -80,6 +80,10 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 		return nil, fmt.Errorf("failed to register checkin template gateway: %w", err)
 	}
 
+	if err := gumav1.RegisterItemTemplateServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register item template gateway: %w", err)
+	}
+
 	if err := gumav1.RegisterLotteryServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
 		return nil, fmt.Errorf("failed to register lottery gateway: %w", err)
 	}

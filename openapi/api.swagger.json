@@ -27,6 +27,9 @@
       "name": "GumaService"
     },
     {
+      "name": "ItemTemplateService"
+    },
+    {
       "name": "LotteryService"
     },
     {
@@ -2043,6 +2046,150 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/item-templates": {
+      "get": {
+        "operationId": "ItemTemplateService_ListItemTemplates",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListItemTemplatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ItemTemplateService"
+        ]
+      },
+      "post": {
+        "operationId": "ItemTemplateService_CreateItemTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateItemTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ItemTemplateServiceCreateItemTemplateBody"
+            }
+          }
+        ],
+        "tags": [
+          "ItemTemplateService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/item-templates/{templateId}": {
+      "delete": {
+        "operationId": "ItemTemplateService_DeleteItemTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteItemTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ItemTemplateService"
+        ]
+      },
+      "patch": {
+        "operationId": "ItemTemplateService_UpdateItemTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateItemTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ItemTemplateServiceUpdateItemTemplateBody"
+            }
+          }
+        ],
+        "tags": [
+          "ItemTemplateService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/join": {
       "post": {
         "operationId": "GuildService_JoinGuildById",
@@ -3539,11 +3686,10 @@
         "title": {
           "type": "string"
         },
-        "lootList": {
+        "itemTemplateIds": {
           "type": "array",
           "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Item"
+            "type": "string"
           }
         }
       }
@@ -3557,11 +3703,10 @@
         "title": {
           "type": "string"
         },
-        "lootList": {
+        "itemTemplateIds": {
           "type": "array",
           "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Item"
+            "type": "string"
           }
         }
       }
@@ -3668,6 +3813,40 @@
       "properties": {
         "settings": {
           "$ref": "#/definitions/v1GuildSettings"
+        }
+      }
+    },
+    "ItemTemplateServiceCreateItemTemplateBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "rarity": {
+          "type": "string"
+        }
+      }
+    },
+    "ItemTemplateServiceUpdateItemTemplateBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "rarity": {
+          "type": "string"
         }
       }
     },
@@ -4198,7 +4377,7 @@
         "title": {
           "type": "string"
         },
-        "lootList": {
+        "items": {
           "type": "array",
           "items": {
             "type": "object",
@@ -4287,6 +4466,14 @@
         }
       }
     },
+    "v1CreateItemTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "$ref": "#/definitions/v1ItemTemplate"
+        }
+      }
+    },
     "v1CreateLotteryResponse": {
       "type": "object",
       "properties": {
@@ -4342,6 +4529,14 @@
       }
     },
     "v1DeleteGuildResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteItemTemplateResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -4896,6 +5091,40 @@
         }
       }
     },
+    "v1ItemTemplate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "rarity": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "v1JoinGuildByIdResponse": {
       "type": "object",
       "properties": {
@@ -5178,6 +5407,18 @@
         "totalCount": {
           "type": "integer",
           "format": "int32"
+        }
+      }
+    },
+    "v1ListItemTemplatesResponse": {
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ItemTemplate"
+          }
         }
       }
     },
@@ -5902,6 +6143,14 @@
       "properties": {
         "settings": {
           "$ref": "#/definitions/v1GuildSettings"
+        }
+      }
+    },
+    "v1UpdateItemTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "$ref": "#/definitions/v1ItemTemplate"
         }
       }
     },

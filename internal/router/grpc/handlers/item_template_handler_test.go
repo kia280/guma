@@ -14,8 +14,8 @@ import (
 	"github.com/kia280/guma/internal/session"
 )
 
-func TestCheckInTemplateService_Validation(t *testing.T) {
-	h := NewCheckInTemplateService(nil, zerolog.Nop())
+func TestItemTemplateService_Validation(t *testing.T) {
+	h := NewItemTemplateService(nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 
@@ -27,7 +27,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "list missing guild",
 			call: func() error {
-				_, err := h.ListCheckInTemplates(authed, &gumav1.ListCheckInTemplatesRequest{})
+				_, err := h.ListItemTemplates(authed, &gumav1.ListItemTemplatesRequest{})
 				return err
 			},
 			wantCode: codes.InvalidArgument,
@@ -35,32 +35,26 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "list unauthenticated",
 			call: func() error {
-				_, err := h.ListCheckInTemplates(context.Background(), &gumav1.ListCheckInTemplatesRequest{GuildId: guildID})
+				_, err := h.ListItemTemplates(context.Background(), &gumav1.ListItemTemplatesRequest{GuildId: guildID})
 				return err
 			},
 			wantCode: codes.Unauthenticated,
 		},
 		{
-			name: "create unauthenticated",
+			name: "create unknown category",
 			call: func() error {
-				_, err := h.CreateCheckInTemplate(context.Background(), &gumav1.CreateCheckInTemplateRequest{GuildId: guildID, Name: "n", Title: "t"})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "create blank name",
-			call: func() error {
-				_, err := h.CreateCheckInTemplate(authed, &gumav1.CreateCheckInTemplateRequest{GuildId: guildID, Name: " ", Title: "t"})
+				_, err := h.CreateItemTemplate(authed, &gumav1.CreateItemTemplateRequest{
+					GuildId: guildID, Name: "Sword", Category: "vehicle", Rarity: "rare",
+				})
 				return err
 			},
 			wantCode: codes.InvalidArgument,
 		},
 		{
-			name: "create malformed item template id",
+			name: "create unknown rarity",
 			call: func() error {
-				_, err := h.CreateCheckInTemplate(authed, &gumav1.CreateCheckInTemplateRequest{
-					GuildId: guildID, Name: "n", Title: "t", ItemTemplateIds: []string{"nope"},
+				_, err := h.CreateItemTemplate(authed, &gumav1.CreateItemTemplateRequest{
+					GuildId: guildID, Name: "Sword", Category: "weapon", Rarity: "shiny",
 				})
 				return err
 			},
@@ -69,7 +63,9 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "update missing template id",
 			call: func() error {
-				_, err := h.UpdateCheckInTemplate(authed, &gumav1.UpdateCheckInTemplateRequest{GuildId: guildID, Name: "n", Title: "t"})
+				_, err := h.UpdateItemTemplate(authed, &gumav1.UpdateItemTemplateRequest{
+					GuildId: guildID, Name: "Sword", Category: "weapon", Rarity: "rare",
+				})
 				return err
 			},
 			wantCode: codes.InvalidArgument,
@@ -77,8 +73,8 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "update malformed template id",
 			call: func() error {
-				_, err := h.UpdateCheckInTemplate(authed, &gumav1.UpdateCheckInTemplateRequest{
-					GuildId: guildID, TemplateId: "nope", Name: "n", Title: "t",
+				_, err := h.UpdateItemTemplate(authed, &gumav1.UpdateItemTemplateRequest{
+					GuildId: guildID, TemplateId: "nope", Name: "Sword", Category: "weapon", Rarity: "rare",
 				})
 				return err
 			},
@@ -87,18 +83,10 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "delete unauthenticated",
 			call: func() error {
-				_, err := h.DeleteCheckInTemplate(context.Background(), &gumav1.DeleteCheckInTemplateRequest{GuildId: guildID, TemplateId: "x"})
+				_, err := h.DeleteItemTemplate(context.Background(), &gumav1.DeleteItemTemplateRequest{GuildId: guildID, TemplateId: "x"})
 				return err
 			},
 			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "delete malformed template id",
-			call: func() error {
-				_, err := h.DeleteCheckInTemplate(authed, &gumav1.DeleteCheckInTemplateRequest{GuildId: guildID, TemplateId: "nope"})
-				return err
-			},
-			wantCode: codes.NotFound,
 		},
 	}
 
