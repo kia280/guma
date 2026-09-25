@@ -583,6 +583,7 @@
     "pending": "Pending",
     "approved": "Approved",
     "rejected": "Rejected",
+    "amountPending": "Not yet deducted",
     "contributeTitle": "Contribute to Guild Bank",
     "amountLabel": "Amount",
     "noteOptional": "Note (optional)",
