@@ -781,6 +781,7 @@
   "auctionItemPage": {
     "notFound": "找不到競拍項目。",
     "goBack": "返回",
+    "dialogLabel": "競拍項目詳情",
     "backToAuctions": "返回競拍列表",
     "auctionStatus": "競拍狀態",
     "timeElapsed": "已過時間",
@@ -823,6 +824,7 @@
   "checkinDetailPage": {
     "notFound": "找不到這筆點名。",
     "goBack": "返回",
+    "dialogLabel": "點名詳情",
     "backToCheckins": "返回點名列表",
     "checkIn": "報到",
     "attendance": "出席情況",
@@ -936,6 +938,7 @@
   "lotteryDetail": {
     "notFound": "找不到這個抽獎。",
     "goBack": "返回",
+    "dialogLabel": "抽獎詳情",
     "backToLotteries": "返回抽獎列表",
     "prizePool": "獎金池",
     "ticketPrice": "票價",

@@ -781,6 +781,7 @@
   "auctionItemPage": {
     "notFound": "Auction item not found.",
     "goBack": "Go Back",
+    "dialogLabel": "Auction item details",
     "backToAuctions": "Back to Auctions",
     "auctionStatus": "Auction Status",
     "timeElapsed": "Time elapsed",
@@ -823,6 +824,7 @@
   "checkinDetailPage": {
     "notFound": "Roll call not found.",
     "goBack": "Go Back",
+    "dialogLabel": "Roll call details",
     "backToCheckins": "Back to roll calls",
     "checkIn": "Mark present",
     "attendance": "Attendance",
@@ -936,6 +938,7 @@
   "lotteryDetail": {
     "notFound": "Lottery not found.",
     "goBack": "Go back",
+    "dialogLabel": "Lottery details",
     "backToLotteries": "Back to lotteries",
     "prizePool": "Prize pool",
     "ticketPrice": "Ticket price",

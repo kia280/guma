@@ -1,31 +1,17 @@
 'use client';
 
-import { Modal, useOverlayState } from '@heroui/react';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { use } from 'react';
 import CheckinDetailContent from '@/components/CheckinDetailContent';
+import DetailRouteModal from '@/components/DetailRouteModal';
 
 export default function CheckinModalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
-
-  const modalState = useOverlayState({
-    defaultOpen: true,
-    onOpenChange: (open) => { if (!open) router.back(); },
-  });
+  const t = useTranslations('checkinDetailPage');
 
   return (
-    <Modal state={modalState}>
-    <Modal.Backdrop>
-      <Modal.Container size="lg">
-        <Modal.Dialog className="max-w-6xl">
-          <Modal.CloseTrigger />
-          <Modal.Body>
-            <CheckinDetailContent id={id} onClose={() => router.back()} />
-          </Modal.Body>
-        </Modal.Dialog>
-      </Modal.Container>
-    </Modal.Backdrop>
-    </Modal>
+    <DetailRouteModal label={t('dialogLabel')} className="max-w-4xl">
+      {(close) => <CheckinDetailContent id={id} onClose={close} />}
+    </DetailRouteModal>
   );
 }
