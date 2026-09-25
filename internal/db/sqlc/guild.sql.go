@@ -341,6 +341,40 @@ func (q *Queries) GetGuildSettings(ctx context.Context, id uuid.UUID) (GetGuildS
 	return i, err
 }
 
+const getGuildStats = `-- name: GetGuildStats :one
+SELECT
+    (SELECT COUNT(*) FROM members m WHERE m.guild_id = g.id)::int AS member_count,
+    COALESCE(b.balance, 0)::bigint                               AS bank_balance,
+    COALESCE(b.currency, 'gold')::text                           AS bank_currency,
+    (SELECT COUNT(*) FROM guild_events e
+      WHERE e.guild_id = g.id AND e.end_date >= NOW())::int      AS active_event_count,
+    (SELECT COUNT(*) FROM bank_items bi WHERE bi.guild_id = g.id)::int AS bank_item_count
+FROM guilds g
+LEFT JOIN guild_bank b ON b.guild_id = g.id
+WHERE g.id = $1
+`
+
+type GetGuildStatsRow struct {
+	MemberCount      int32
+	BankBalance      int64
+	BankCurrency     string
+	ActiveEventCount int32
+	BankItemCount    int32
+}
+
+func (q *Queries) GetGuildStats(ctx context.Context, id uuid.UUID) (GetGuildStatsRow, error) {
+	row := q.db.QueryRow(ctx, getGuildStats, id)
+	var i GetGuildStatsRow
+	err := row.Scan(
+		&i.MemberCount,
+		&i.BankBalance,
+		&i.BankCurrency,
+		&i.ActiveEventCount,
+		&i.BankItemCount,
+	)
+	return i, err
+}
+
 const getOldestGuild = `-- name: GetOldestGuild :one
 SELECT id, name FROM guilds ORDER BY created_at ASC LIMIT 1
 `

@@ -48,12 +48,14 @@ FROM users WHERE id = $1;
 -- name: InsertFundRequest :one
 INSERT INTO fund_requests (guild_id, requester_id, requester_name, amount, reason)
 VALUES ($1, $2, sqlc.arg(requester_name)::text, $3, NULLIF(sqlc.arg(reason)::text, ''))
-RETURNING id, guild_id, requester_id, requester_name, amount,
-          COALESCE(reason, '')      AS reason,
-          status,
-          reviewer_id,
-          COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at;
+RETURNING fund_requests.id, fund_requests.guild_id, fund_requests.requester_id, fund_requests.requester_name,
+          (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = fund_requests.requester_id)::text AS requester_avatar_url,
+          fund_requests.amount,
+          COALESCE(fund_requests.reason, '')      AS reason,
+          fund_requests.status,
+          fund_requests.reviewer_id,
+          COALESCE(fund_requests.review_note, '') AS review_note,
+          fund_requests.created_at, fund_requests.reviewed_at;
 
 -- name: LockFundRequest :one
 SELECT amount, requester_id, status FROM fund_requests
@@ -66,25 +68,30 @@ UPDATE fund_requests SET
     reviewer_id = sqlc.arg(reviewer_id),
     review_note = NULLIF(sqlc.arg(review_note)::text, ''),
     reviewed_at = NOW()
-WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id) AND status = 'pending'
-RETURNING id, guild_id, requester_id, requester_name, amount,
-          COALESCE(reason, '')      AS reason,
-          status,
-          reviewer_id,
-          COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at;
+WHERE fund_requests.id = sqlc.arg(id) AND fund_requests.guild_id = sqlc.arg(guild_id) AND fund_requests.status = 'pending'
+RETURNING fund_requests.id, fund_requests.guild_id, fund_requests.requester_id, fund_requests.requester_name,
+          (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = fund_requests.requester_id)::text AS requester_avatar_url,
+          fund_requests.amount,
+          COALESCE(fund_requests.reason, '')      AS reason,
+          fund_requests.status,
+          fund_requests.reviewer_id,
+          COALESCE(fund_requests.review_note, '') AS review_note,
+          fund_requests.created_at, fund_requests.reviewed_at;
 
 -- name: ListFundRequests :many
-SELECT id, guild_id, requester_id, requester_name, amount,
-       COALESCE(reason, '')      AS reason,
-       status,
-       reviewer_id,
-       COALESCE(review_note, '') AS review_note,
-       created_at, reviewed_at
-FROM fund_requests
-WHERE guild_id = $1
-  AND (sqlc.arg(status_filter)::text = '' OR status = sqlc.arg(status_filter)::text)
-ORDER BY created_at DESC
+SELECT fr.id, fr.guild_id, fr.requester_id, fr.requester_name,
+       COALESCE(u.avatar_url, '')   AS requester_avatar_url,
+       fr.amount,
+       COALESCE(fr.reason, '')      AS reason,
+       fr.status,
+       fr.reviewer_id,
+       COALESCE(fr.review_note, '') AS review_note,
+       fr.created_at, fr.reviewed_at
+FROM fund_requests fr
+LEFT JOIN users u ON u.id = fr.requester_id
+WHERE fr.guild_id = $1
+  AND (sqlc.arg(status_filter)::text = '' OR fr.status = sqlc.arg(status_filter)::text)
+ORDER BY fr.created_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountFundRequests :one
@@ -92,11 +99,15 @@ SELECT COUNT(*) FROM fund_requests WHERE guild_id = $1
   AND (sqlc.arg(status_filter)::text = '' OR status = sqlc.arg(status_filter)::text);
 
 -- name: ListBankContributions :many
-SELECT id, guild_id, user_id, username, amount,
-       COALESCE(note, '') AS note,
-       created_at, kind, items, checkin_id
-FROM bank_contributions WHERE guild_id = $1
-ORDER BY created_at DESC
+SELECT bc.id, bc.guild_id, bc.user_id, bc.username,
+       COALESCE(u.avatar_url, '') AS avatar_url,
+       bc.amount,
+       COALESCE(bc.note, '')      AS note,
+       bc.created_at, bc.kind, bc.items, bc.checkin_id
+FROM bank_contributions bc
+LEFT JOIN users u ON u.id = bc.user_id
+WHERE bc.guild_id = $1
+ORDER BY bc.created_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountBankContributions :one
@@ -139,12 +150,13 @@ SELECT bi.guild_id, bi.id, sqlc.arg(requester_id), sqlc.arg(requester_name)::tex
        NULLIF(sqlc.arg(reason)::text, ''), bi.item
 FROM bank_items bi
 WHERE bi.id = sqlc.arg(bank_item_id) AND bi.guild_id = sqlc.arg(guild_id)
-RETURNING id, guild_id, bank_item_id, requester_id, requester_name,
-          COALESCE(reason, '')      AS reason,
-          status,
-          reviewer_id,
-          COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at, item;
+RETURNING item_requests.id, item_requests.guild_id, item_requests.bank_item_id, item_requests.requester_id, item_requests.requester_name,
+          (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = item_requests.requester_id)::text AS requester_avatar_url,
+          COALESCE(item_requests.reason, '')      AS reason,
+          item_requests.status,
+          item_requests.reviewer_id,
+          COALESCE(item_requests.review_note, '') AS review_note,
+          item_requests.created_at, item_requests.reviewed_at, item_requests.item;
 
 -- name: LockItemRequest :one
 SELECT bank_item_id, requester_id, status FROM item_requests
@@ -160,16 +172,18 @@ WHERE bank_item_id = sqlc.arg(bank_item_id) AND guild_id = sqlc.arg(guild_id)
   AND id <> sqlc.arg(id) AND status = 'pending';
 
 -- name: ListItemRequests :many
-SELECT id, guild_id, bank_item_id, requester_id, requester_name,
-       COALESCE(reason, '')      AS reason,
-       status,
-       reviewer_id,
-       COALESCE(review_note, '') AS review_note,
-       created_at, reviewed_at, item
-FROM item_requests
-WHERE guild_id = $1
-  AND (sqlc.arg(status_filter)::text = '' OR status = sqlc.arg(status_filter)::text)
-ORDER BY created_at DESC
+SELECT ir.id, ir.guild_id, ir.bank_item_id, ir.requester_id, ir.requester_name,
+       COALESCE(u.avatar_url, '')   AS requester_avatar_url,
+       COALESCE(ir.reason, '')      AS reason,
+       ir.status,
+       ir.reviewer_id,
+       COALESCE(ir.review_note, '') AS review_note,
+       ir.created_at, ir.reviewed_at, ir.item
+FROM item_requests ir
+LEFT JOIN users u ON u.id = ir.requester_id
+WHERE ir.guild_id = $1
+  AND (sqlc.arg(status_filter)::text = '' OR ir.status = sqlc.arg(status_filter)::text)
+ORDER BY ir.created_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountItemRequests :one
@@ -190,10 +204,11 @@ UPDATE item_requests SET
     reviewer_id = sqlc.arg(reviewer_id),
     review_note = NULLIF(sqlc.arg(review_note)::text, ''),
     reviewed_at = NOW()
-WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id) AND status = 'pending'
-RETURNING id, guild_id, bank_item_id, requester_id, requester_name,
-          COALESCE(reason, '')      AS reason,
-          status,
-          reviewer_id,
-          COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at, item;
+WHERE item_requests.id = sqlc.arg(id) AND item_requests.guild_id = sqlc.arg(guild_id) AND item_requests.status = 'pending'
+RETURNING item_requests.id, item_requests.guild_id, item_requests.bank_item_id, item_requests.requester_id, item_requests.requester_name,
+          (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = item_requests.requester_id)::text AS requester_avatar_url,
+          COALESCE(item_requests.reason, '')      AS reason,
+          item_requests.status,
+          item_requests.reviewer_id,
+          COALESCE(item_requests.review_note, '') AS review_note,
+          item_requests.created_at, item_requests.reviewed_at, item_requests.item;

@@ -9,7 +9,6 @@ import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import {
   GuildEvent,
   EVENT_TYPE_COLORS,
-  EVENT_TYPE_LABELS,
   PRIORITY_COLORS,
 } from '@/types/guild-events';
 

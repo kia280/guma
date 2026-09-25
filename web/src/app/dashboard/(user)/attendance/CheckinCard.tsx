@@ -5,6 +5,8 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
+import { checkinStatusColor } from '@/lib/status-colors';
 import { CheckinStatus } from './data';
 
 export { CheckinStatus };
@@ -18,11 +20,11 @@ const formatExpire = (iso: string) => {
   return `${minutes}m`;
 };
 
-export const checkinStatusColor = {
-  [CheckinStatus.OPEN]: 'success',
-  [CheckinStatus.CLOSED]: 'default',
-  [CheckinStatus.FINISHED]: 'accent',
-} as const;
+const formatEventDate = (value: string, format: ReturnType<typeof useIntlFormatter>) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return format.dateTime(date, { dateStyle: 'medium', timeStyle: 'short' });
+};
 
 export function CheckinCard({
   status,
@@ -48,6 +50,7 @@ export function CheckinCard({
   const t = useTranslations('checkIn');
   const router = useRouter();
   const openDetail = () => router.push(href);
+  const format = useIntlFormatter();
   const statusLabel = {
     [CheckinStatus.OPEN]: t('statusActive'),
     [CheckinStatus.CLOSED]: t('statusClosed'),
@@ -79,7 +82,7 @@ export function CheckinCard({
                   </Link>
                 )}
               </h4>
-              <p className="type-caption text-hint">{date}</p>
+              <p className="type-caption text-hint">{formatEventDate(date, format)}</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
