@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
+
+service PreferenceService {
+  // Get authenticated user's preferences
+  rpc GetMyPreferences(GetMyPreferencesRequest) returns (GetMyPreferencesResponse) {
+    option (google.api.http) = {
+      get: "/v1/me/preferences"
+    };
+  }
+
+  // Partially update authenticated user's preferences; unset fields are kept
+  rpc UpdateMyPreferences(UpdateMyPreferencesRequest) returns (UpdateMyPreferencesResponse) {
+    option (google.api.http) = {
+      patch: "/v1/me/preferences"
+      body: "*"
+    };
+  }
+}
+
+message GetMyPreferencesRequest {}
+
+message GetMyPreferencesResponse {
+  NotificationPreferences notifications = 1;
+  google.protobuf.Timestamp updated_at = 2;
+}
+
+message UpdateMyPreferencesRequest {
+  NotificationPreferencesPatch notifications = 1;
+}
+
+message UpdateMyPreferencesResponse {
+  NotificationPreferences notifications = 1;
+  google.protobuf.Timestamp updated_at = 2;
+}
+
+message NotificationPreferences {
+  bool email_notifications = 1;
+  bool auction_alerts = 2;
+  bool lottery_alerts = 3;
+  bool event_reminders = 4;
+  bool checkin_reminders = 5;
+}
+
+message NotificationPreferencesPatch {
+  optional bool email_notifications = 1;
+  optional bool auction_alerts = 2;
+  optional bool lottery_alerts = 3;
+  optional bool event_reminders = 4;
+  optional bool checkin_reminders = 5;
+}
