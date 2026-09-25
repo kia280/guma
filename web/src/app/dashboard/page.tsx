@@ -1,16 +1,20 @@
 'use client';
 
-import { Card, Chip, Modal, Button, useOverlayState } from '@heroui/react';
+import { Card, Chip, Modal, Button, Skeleton, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect, useCallback, type TouchEvent } from 'react';
+import { AsyncContent, EmptyContent } from '@/components/AsyncContent';
 import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { useUserStore } from '@/lib/store';
@@ -92,6 +96,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
   const t = useTranslations('dashboard');
   const [active, setActive] = useState<Slide>('personal');
   const idx = SLIDES.indexOf(active);
+  const formatGold = useFormatGold();
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const goTo = (i: number) => setActive(SLIDES[Math.min(Math.max(i, 0), SLIDES.length - 1)]);
@@ -136,7 +141,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                   iconClass="text-accent"
                   iconBg="bg-accent/10"
                   label={t('balance')}
-                  value={`$${PERSONAL_STATS.balance.toLocaleString()}`}
+                  value={formatGold(PERSONAL_STATS.balance)}
                 />
                 <StatCard
                   icon="solar:check-circle-linear"
@@ -200,7 +205,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                   iconClass="text-warning"
                   iconBg="bg-warning/10"
                   label={t('guildBalance')}
-                  value={`$${GUILD_STATS.balance.toLocaleString()}`}
+                  value={formatGold(GUILD_STATS.balance)}
                 />
                 <StatCard
                   icon="solar:check-square-linear"
@@ -292,18 +297,34 @@ export default function DashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const balanceTrend = useBalanceTrend(guildId);
   const refetchTrend = balanceTrend.refetch;
+  const dashboardState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = useCallback(() => {
+    dashboardState.reset();
+    setReloadKey(key => key + 1);
+  }, [dashboardState.reset]);
   const requestSeq = useRef(0);
   const refetchDashboard = useCallback(() => {
     const seq = ++requestSeq.current;
-    apiClient.getDashboardData(guildId).then(d => {
-      if (seq === requestSeq.current) setDashboard(d);
-    }).catch(() => {});
-  }, [guildId]);
+    apiClient
+      .getDashboardData(guildId)
+      .then(d => {
+        if (seq !== requestSeq.current) return;
+        setDashboard(d);
+        dashboardState.ready();
+      })
+      .catch(() => {
+        if (seq !== requestSeq.current) return;
+        dashboardState.failed();
+        notify.loadFailed(reload, 'dashboard');
+      });
+  }, [guildId, notify, reload, dashboardState.ready, dashboardState.failed]);
 
   useEffect(() => {
     refetchDashboard();
     return () => { requestSeq.current++; };
-  }, [refetchDashboard]);
+  }, [refetchDashboard, reloadKey]);
 
   useLiveResource(LIVE_DASHBOARD_RESOURCES, refetchDashboard, { guildId });
 
@@ -339,6 +360,26 @@ export default function DashboardPage() {
   const announcements = dashboard?.announcements ?? [];
   const incomingEvents = dashboard?.incomingEvents ?? [];
 
+  if (dashboardState.state !== 'ready') {
+    return (
+      <AsyncContent
+        state={dashboardState.state}
+        onRetry={reload}
+        skeleton={
+          <div className="space-y-5" aria-busy="true">
+            <Skeleton className="h-80 rounded-xl" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              <Skeleton className="h-64 rounded-xl" />
+              <Skeleton className="h-64 rounded-xl" />
+            </div>
+          </div>
+        }
+      >
+        {null}
+      </AsyncContent>
+    );
+  }
+
   return (
     <div className="space-y-5">
       {/* Overview Carousel */}
@@ -358,6 +399,9 @@ export default function DashboardPage() {
           </div>
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-1.5">
+              {announcements.length === 0 ? (
+                <EmptyContent icon="solar:volume-loud-linear" title={t('noAnnouncements')} />
+              ) : (
               <ul className="flex flex-col gap-0.5">
                 {announcements.map(ann => (
                   <li key={ann.id}>
@@ -383,6 +427,7 @@ export default function DashboardPage() {
                   </li>
                 ))}
               </ul>
+              )}
             </Card.Content>
           </Card>
         </section>
@@ -395,6 +440,9 @@ export default function DashboardPage() {
           </div>
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-1.5">
+              {incomingEvents.length === 0 ? (
+                <EmptyContent icon="solar:bell-linear" title={t('noUpcomingEvents')} />
+              ) : (
               <ul className="flex flex-col gap-0.5">
                 {incomingEvents.map(event => {
                   const meta = KIND_META[event.kind];
@@ -431,6 +479,7 @@ export default function DashboardPage() {
                   );
                 })}
               </ul>
+              )}
             </Card.Content>
           </Card>
         </section>

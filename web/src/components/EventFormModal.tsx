@@ -22,14 +22,15 @@ import { parseDate, Time } from '@internationalized/date';
 import { useTranslations } from 'next-intl';
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { useToast } from '@/hooks/useToast';
 import {
   GuildEvent,
   CreateEventData,
   UpdateEventData,
   EventType,
   EventPriority,
-  EVENT_TYPE_LABELS,
-  PRIORITY_LABELS,
+  EVENT_TYPES,
+  EVENT_PRIORITIES,
   EVENT_TYPE_COLORS,
   PRIORITY_COLORS,
 } from '@/types/guild-events';
@@ -80,6 +81,8 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   isLoading = false,
 }) => {
   const t = useTranslations('eventFormModal');
+  const notify = useToast();
+  const eventLabels = useTranslations('guildEvents');
   const {
     control,
     handleSubmit,
@@ -198,22 +201,23 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       };
 
       await onSubmit(eventData);
+      notify.success(event ? t('updateSuccess') : t('createSuccess'));
       state.close();
-    } catch (error) {
-      console.error('Error submitting event:', error);
+    } catch {
+      notify.error(t('saveFailed'));
     }
   };
 
-  const eventTypeOptions = Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => ({
-    key: key as EventType,
-    label,
-    color: EVENT_TYPE_COLORS[key as EventType],
+  const eventTypeOptions = EVENT_TYPES.map(key => ({
+    key,
+    label: eventLabels(`types.${key}`),
+    color: EVENT_TYPE_COLORS[key],
   }));
 
-  const priorityOptions = Object.entries(PRIORITY_LABELS).map(([key, label]) => ({
-    key: key as EventPriority,
-    label,
-    color: PRIORITY_COLORS[key as EventPriority],
+  const priorityOptions = EVENT_PRIORITIES.map(key => ({
+    key,
+    label: eventLabels(`priorities.${key}`),
+    color: PRIORITY_COLORS[key],
   }));
 
   return (
@@ -270,7 +274,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                         <ListBox>
                           {eventTypeOptions.map(option => (
                             <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
-                              <Chip color={option.color as any} size="sm" variant="secondary">
+                              <Chip color={option.color} size="sm" variant="secondary">
                                 {option.label}
                               </Chip>
                               <ListBox.ItemIndicator />
@@ -296,7 +300,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                         <ListBox>
                           {priorityOptions.map(option => (
                             <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
-                              <Chip color={option.color as any} size="sm" variant="secondary">
+                              <Chip color={option.color} size="sm" variant="secondary">
                                 {option.label}
                               </Chip>
                               <ListBox.ItemIndicator />

@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { BalanceTrendStatus } from '@/hooks/useBalanceTrend';
-import { useIntlFormatter, useIntlLocale } from '@/i18n/useIntlFormatter';
-import { GOLD_FORMAT_OPTIONS } from '@/lib/guma/money';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
+import { useFormatGold, useFormatGoldAxisTick } from '@/lib/guma/useFormatGold';
 import type { BalancePoint } from '@/types/user';
 
 interface BalanceTrendChartProps {
@@ -17,8 +17,6 @@ interface BalanceTrendChartProps {
   height?: number;
 }
 
-const COMPACT_GOLD_FORMAT_OPTIONS: Intl.NumberFormatOptions = { notation: 'compact', maximumFractionDigits: 1 };
-
 const parseIsoDate = (date: string) => {
   const [year, month, day] = date.split('-').map(Number);
   return new Date(year, month - 1, day);
@@ -27,22 +25,13 @@ const parseIsoDate = (date: string) => {
 export function BalanceTrendChart({ points, status, onRetry, height = 200 }: BalanceTrendChartProps) {
   const t = useTranslations('balanceTrendChart');
   const format = useIntlFormatter();
-  const intlLocale = useIntlLocale();
-  const goldFormat = React.useMemo(() => new Intl.NumberFormat(intlLocale, GOLD_FORMAT_OPTIONS), [intlLocale]);
-  const compactGoldFormat = React.useMemo(
-    () => new Intl.NumberFormat(intlLocale, COMPACT_GOLD_FORMAT_OPTIONS),
-    [intlLocale],
-  );
+  const formatGold = useFormatGold();
+  const formatGoldAxisTick = useFormatGoldAxisTick();
   const gradientId = `balance-fill-${React.useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
 
   const formatDay = React.useCallback(
     (date: string) => format.dateTime(parseIsoDate(date), { month: 'short', day: 'numeric' }),
     [format],
-  );
-  const formatGold = React.useCallback((value: number) => `$${goldFormat.format(value)}`, [goldFormat]);
-  const formatCompactGold = React.useCallback(
-    (value: number) => `$${compactGoldFormat.format(value)}`,
-    [compactGoldFormat],
   );
 
   if (status === 'loading') {
@@ -100,7 +89,7 @@ export function BalanceTrendChart({ points, status, onRetry, height = 200 }: Bal
           tick={{ fontSize: 12, fill: 'var(--muted)' }}
           axisLine={false}
           tickLine={false}
-          tickFormatter={formatCompactGold}
+          tickFormatter={formatGoldAxisTick}
         />
         <Tooltip
           labelFormatter={label => formatDay(String(label))}
