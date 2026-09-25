@@ -5,7 +5,6 @@ import {
   Card,
   Table,
   Chip,
-  Avatar,
   Button,
   Input,
   Separator,
@@ -25,6 +24,7 @@ import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { GuildAvatar } from '@/components/GuildAvatar';
 import { GuildLogoPrompt } from '@/components/GuildLogoPrompt';
 import { TemplateSettings } from '@/components/TemplateSettings';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
@@ -111,7 +111,7 @@ const getActivityColor = (type: string) => {
     case 'lottery':
       return 'text-accent';
     case 'join':
-      return 'text-secondary';
+      return 'text-subtle';
     default:
       return 'text-hint';
   }
@@ -390,12 +390,7 @@ export default function AdminPage() {
                         <Table.Row key={user.id}>
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
-                              <Avatar size="sm" className="shrink-0">
-                                <Avatar.Image src={user.avatar} />
-                                <Avatar.Fallback>
-                                  {user.username.slice(0, 2).toUpperCase()}
-                                </Avatar.Fallback>
-                              </Avatar>
+                              <UserAvatar name={user.username} src={user.avatar} className="shrink-0" />
                               <div className="min-w-0">
                                 <p className="type-body font-medium text-foreground truncate">
                                   {user.username}
@@ -464,8 +459,8 @@ export default function AdminPage() {
                   label: t('totalItems'),
                   value: '47',
                   icon: 'solar:backpack-linear',
-                  color: 'text-secondary',
-                  bg: 'bg-secondary/10',
+                  color: 'text-subtle',
+                  bg: 'bg-default',
                 },
               ].map(stat => (
                 <Card key={stat.label} className="border border-divider shadow-none bg-surface">

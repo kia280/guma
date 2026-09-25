@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Chip, Avatar, Separator, Modal, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
+import { Button, Chip, Separator, Modal, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -14,6 +14,7 @@ import { isNotFoundError } from '@/lib/guma/errors';
 import { useUserStore } from '@/lib/store';
 import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { UserAvatar } from './UserAvatar';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -277,9 +278,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     <span className="type-caption text-hint w-5 text-right shrink-0">
                       {idx + 1}
                     </span>
-                    <Avatar size="sm">
-                      <Avatar.Fallback>{member.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-                    </Avatar>
+                    <UserAvatar name={member.username} src={member.avatar} />
                     <div className="flex-1 min-w-0">
                       <p className="type-body font-medium text-foreground">{member.username}</p>
                       {member.notes && (

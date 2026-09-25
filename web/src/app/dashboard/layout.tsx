@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Dropdown, Avatar, Badge, Tooltip, Chip, Label } from '@heroui/react';
+import { Button, Dropdown, Badge, Tooltip, Chip, Label } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -10,6 +10,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { NotificationBell, SidebarDrawer } from '@/components';
 import { AppSidebar, ShortcutKeys } from '@/components/AppSidebar';
 import { DashboardBreadcrumbs } from '@/components/DashboardBreadcrumbs';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useDashboardShortcuts } from '@/hooks/useDashboardShortcuts';
 import { useLiveBalance } from '@/hooks/useLiveBalance';
 import { CurrentGuildProvider } from '@/lib/current-guild';
@@ -74,7 +75,6 @@ export default function DashboardLayout({ children, modal }: { children: React.R
   useLiveBalance();
   const userBalance = me?.balance ?? 0;
   const displayName = me?.displayName || me?.username || '';
-  const avatarFallback = (displayName || me?.email || '?').slice(0, 2).toUpperCase();
   const toggleLabel = isCompact ? t('openMenu') : showCollapsed ? t('expandSidebar') : t('collapseSidebar');
 
   return (
@@ -139,10 +139,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                       className="size-7 min-w-7 rounded-full relative overflow-visible p-0"
                     >
                       <Badge.Anchor>
-                        <Avatar size="sm" className="size-7">
-                          {me?.avatarUrl && <Avatar.Image src={me.avatarUrl} />}
-                          <Avatar.Fallback>{avatarFallback}</Avatar.Fallback>
-                        </Avatar>
+                        <UserAvatar name={displayName || me?.email || ''} src={me?.avatarUrl} className="size-7" />
                         <Badge color="success" placement="bottom-right" size="sm" />
                       </Badge.Anchor>
                     </Button>
