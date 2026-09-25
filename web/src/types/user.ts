@@ -12,6 +12,15 @@ export interface User {
   balance: number;
   createdAt: string;
   updatedAt: string;
+  emailVerified?: boolean;
+  discord?: LinkedAccount;
+  guildRole: string;
+}
+
+export interface LinkedAccount {
+  provider: string;
+  subject: string;
+  username: string;
 }
 
 export interface UpdateMeRequest {
@@ -57,6 +66,6 @@ export interface UserStats {
 }
 
 export interface BalancePoint {
-  day: string;
+  date: string;
   balance: number;
 }

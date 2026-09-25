@@ -44,6 +44,19 @@ SELECT COUNT(*) FROM transactions
 WHERE user_id = $1 AND guild_id = $2
   AND (sqlc.arg(type_filter)::text = '' OR type = sqlc.arg(type_filter)::text);
 
+-- name: SumWalletTransactionsBefore :one
+SELECT COALESCE(SUM(amount), 0)::bigint AS balance
+FROM transactions
+WHERE user_id = $1 AND guild_id = $2
+  AND created_at < sqlc.arg(before)::timestamptz;
+
+-- name: ListWalletBalanceChangesSince :many
+SELECT created_at, amount
+FROM transactions
+WHERE user_id = $1 AND guild_id = $2
+  AND created_at >= sqlc.arg(since)::timestamptz
+ORDER BY created_at ASC;
+
 -- name: ListBackpackItems :many
 SELECT id, owner_id, guild_id, item,
        source, source_id,

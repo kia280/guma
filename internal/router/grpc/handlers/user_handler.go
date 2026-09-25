@@ -53,7 +53,7 @@ func (h *UserHandler) UpdateMe(ctx context.Context, req *gumav1.UpdateMeRequest)
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	u, err := h.svc.UpdateMe(ctx, userID, usersvc.UpdateParams{
+	u, err := h.svc.UpdateMe(ctx, userID, session.CookieFromContext(ctx), usersvc.UpdateParams{
 		DisplayName: req.DisplayName,
 		Username:    req.Username,
 		Bio:         req.Bio,
@@ -100,24 +100,6 @@ func (h *UserHandler) GetUserStats(ctx context.Context, _ *gumav1.GetUserStatsRe
 	}, nil
 }
 
-func (h *UserHandler) GetBalanceTrend(ctx context.Context, req *gumav1.GetBalanceTrendRequest) (*gumav1.GetBalanceTrendResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
-	points, err := h.svc.GetBalanceTrend(ctx, userID, req.Days)
-	if err != nil {
-		return nil, toStatus(err)
-	}
-
-	proto := make([]*gumav1.BalancePoint, len(points))
-	for i, p := range points {
-		proto[i] = &gumav1.BalancePoint{Date: p.Date, Balance: p.Balance}
-	}
-	return &gumav1.GetBalanceTrendResponse{Points: proto}, nil
-}
-
 // --- proto conversion helpers ---
 
 func userToProto(u *usersvc.User) *gumav1.User {
@@ -133,5 +115,19 @@ func userToProto(u *usersvc.User) *gumav1.User {
 		Balance:        u.Balance,
 		CreatedAt:      timestamppb.New(u.CreatedAt),
 		UpdatedAt:      timestamppb.New(u.UpdatedAt),
+		EmailVerified:  u.EmailVerified,
+		Discord:        linkedAccountToProto(u.Discord),
+		GuildRole:      u.CurrentGuildRole,
+	}
+}
+
+func linkedAccountToProto(a *usersvc.LinkedAccount) *gumav1.LinkedAccount {
+	if a == nil {
+		return nil
+	}
+	return &gumav1.LinkedAccount{
+		Provider: a.Provider,
+		Subject:  a.Subject,
+		Username: a.Username,
 	}
 }

@@ -1,4 +1,4 @@
-import type { BalancePoint, UserStats } from './user';
+import type { UserStats } from './user';
 
 export type EventKind = 'checkin' | 'auction' | 'lottery' | 'calendar';
 
@@ -33,7 +33,6 @@ export type PersonalStats = UserStats;
 export interface DashboardData {
   guildStats: GuildStats;
   personalStats: PersonalStats;
-  balanceTrend: BalancePoint[];
   incomingEvents: FeedEvent[];
   announcements: Announcement[];
 }

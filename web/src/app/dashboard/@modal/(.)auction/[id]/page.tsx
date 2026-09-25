@@ -1,31 +1,17 @@
 'use client';
 
-import { Modal, useOverlayState } from '@heroui/react';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { use } from 'react';
 import AuctionDetailContent from '@/components/AuctionDetailContent';
+import DetailRouteModal from '@/components/DetailRouteModal';
 
 export default function AuctionModalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
-
-  const modalState = useOverlayState({
-    defaultOpen: true,
-    onOpenChange: (open) => { if (!open) router.back(); },
-  });
+  const t = useTranslations('auctionItemPage');
 
   return (
-    <Modal state={modalState}>
-    <Modal.Backdrop>
-      <Modal.Container size="lg">
-        <Modal.Dialog className="max-w-6xl">
-          <Modal.CloseTrigger />
-          <Modal.Body>
-            <AuctionDetailContent id={id} onClose={() => router.back()} />
-          </Modal.Body>
-        </Modal.Dialog>
-      </Modal.Container>
-    </Modal.Backdrop>
-    </Modal>
+    <DetailRouteModal label={t('dialogLabel')} className="max-w-4xl">
+      {(close) => <AuctionDetailContent id={id} onClose={close} />}
+    </DetailRouteModal>
   );
 }
