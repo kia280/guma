@@ -534,7 +534,7 @@ const baseMockApiClient: ApiClient = {
       Object.assign(lottery, {
         status: 'ended',
         winners: winner
-          ? [{ id: `w-${Date.now()}`, username: winner.username, prize: `$${lottery.prizePool.toLocaleString('en-US')}` }]
+          ? [{ id: `w-${Date.now()}`, username: winner.username, prize: '', prizeAmount: lottery.prizePool }]
           : [],
       });
     }

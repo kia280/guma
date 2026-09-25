@@ -25,6 +25,7 @@ import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-bank';
 
 
@@ -61,6 +62,7 @@ const getStatusColor = (status: GuildContribution['status']) => {
 
 export default function GuildBankPage() {
   const t = useTranslations('guildBankPage');
+  const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
 
   const requestItemModalState = useOverlayState();
@@ -204,7 +206,7 @@ export default function GuildBankPage() {
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="type-display text-foreground">${guildBalance.toFixed(2)}</p>
+              <p className="type-display text-foreground">{formatGold(guildBalance)}</p>
               <p className="type-caption text-hint mt-0.5">{t('guildGold')}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -360,7 +362,7 @@ export default function GuildBankPage() {
             <div className="flex justify-between items-center">
               <p className="type-caption text-subtle">{t('monthlyGoal')}</p>
               <p className="type-caption text-subtle">
-                ${guildBalance.toLocaleString()} / ${guildFundGoal.toLocaleString()}
+                {formatGold(guildBalance)} / {formatGold(guildFundGoal)}
               </p>
             </div>
             <div className="w-full bg-default rounded-full overflow-hidden h-2">
@@ -511,7 +513,7 @@ export default function GuildBankPage() {
                             <span
                               className={`type-body font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
                             >
-                              {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
+                              {entry.type === 'contribute' ? '+' : '-'}{formatGold(entry.amount)}
                             </span>
                           ) : (
                             <span className="type-body text-subtle line-clamp-2 max-w-[220px]">{entry.itemName}</span>
@@ -582,7 +584,7 @@ export default function GuildBankPage() {
                       <span
                         className={`type-body font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
                       >
-                        {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
+                        {entry.type === 'contribute' ? '+' : '-'}{formatGold(entry.amount)}
                       </span>
                     ) : (
                       <span className="type-caption text-subtle line-clamp-2 max-w-[140px] block">{entry.itemName}</span>

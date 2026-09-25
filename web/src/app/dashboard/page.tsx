@@ -4,7 +4,7 @@ import { Card, Chip, Modal, Button, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useState, useRef, useEffect, useCallback, useMemo, type TouchEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, type TouchEvent } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -16,9 +16,9 @@ import {
 } from 'recharts';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { useLiveResource } from '@/hooks/useLiveResource';
-import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { useFormatGold, useFormatGoldAxisTick } from '@/lib/guma/useFormatGold';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { useUserStore } from '@/lib/store';
@@ -100,11 +100,8 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
   const t = useTranslations('dashboard');
   const [active, setActive] = useState<Slide>('personal');
   const idx = SLIDES.indexOf(active);
-  const intlLocale = useIntlLocale();
-  const compactNumber = useMemo(
-    () => new Intl.NumberFormat(intlLocale, { notation: 'compact', maximumFractionDigits: 1 }),
-    [intlLocale],
-  );
+  const formatGold = useFormatGold();
+  const formatGoldAxisTick = useFormatGoldAxisTick();
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const goTo = (i: number) => setActive(SLIDES[Math.min(Math.max(i, 0), SLIDES.length - 1)]);
@@ -149,7 +146,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                   iconClass="text-accent"
                   iconBg="bg-accent/10"
                   label={t('balance')}
-                  value={`$${PERSONAL_STATS.balance.toLocaleString()}`}
+                  value={formatGold(PERSONAL_STATS.balance)}
                 />
                 <StatCard
                   icon="solar:check-circle-linear"
@@ -200,10 +197,10 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                       tick={{ fontSize: 12, fill: 'var(--muted)' }}
                       axisLine={false}
                       tickLine={false}
-                      tickFormatter={v => `$${compactNumber.format(v)}`}
+                      tickFormatter={formatGoldAxisTick}
                     />
                     <Tooltip
-                      formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, 'Balance']}
+                      formatter={(v: any) => [formatGold(Number(v ?? 0)), 'Balance']}
                       contentStyle={{
                         background: 'var(--overlay)',
                         border: '1px solid var(--border)',
@@ -254,7 +251,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                   iconClass="text-warning"
                   iconBg="bg-warning/10"
                   label={t('guildBalance')}
-                  value={`$${GUILD_STATS.balance.toLocaleString()}`}
+                  value={formatGold(GUILD_STATS.balance)}
                 />
                 <StatCard
                   icon="solar:check-square-linear"

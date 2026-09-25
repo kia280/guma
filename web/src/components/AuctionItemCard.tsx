@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
 
@@ -97,6 +98,7 @@ const AuctionItemCard = ({
   userBalance = 0,
 }: AuctionItemCardProps) => {
   const t = useTranslations('auctionItemCard');
+  const formatGold = useFormatGold();
   const [bidInput, setBidInput] = useState<number | null>(null);
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput ?? minimumBid;
@@ -192,7 +194,7 @@ const AuctionItemCard = ({
                 <div className="flex justify-between items-center">
                   <span className="type-body text-subtle">{t('currentBid')}</span>
                   <span className="type-heading tabular-nums text-foreground">
-                    ${item.currentBid.toLocaleString()}
+                    {formatGold(item.currentBid)}
                   </span>
                 </div>
 
@@ -262,19 +264,19 @@ const AuctionItemCard = ({
                     <div className="flex justify-between type-body">
                       <span className="text-subtle">{t('currentBid')}</span>
                       <span className="font-medium text-foreground">
-                        ${item.currentBid.toLocaleString()}
+                        {formatGold(item.currentBid)}
                       </span>
                     </div>
                     <div className="flex justify-between type-body">
                       <span className="text-subtle">{t('minIncrement')}</span>
                       <span className="font-medium text-foreground">
-                        ${item.minBidIncrement.toLocaleString()}
+                        {formatGold(item.minBidIncrement)}
                       </span>
                     </div>
                     <div className="flex justify-between type-body">
                       <span className="text-subtle">{t('yourBalance')}</span>
                       <span className="font-medium text-foreground">
-                        ${userBalance.toLocaleString()}
+                        {formatGold(userBalance)}
                       </span>
                     </div>
                   </div>
@@ -290,7 +292,7 @@ const AuctionItemCard = ({
                       <NumberField.DecrementButton />
                       <NumberField.Input
                         className="w-full min-w-0"
-                        placeholder={`${t('minimum')} $${minimumBid.toLocaleString()}`}
+                        placeholder={`${t('minimum')} ${formatGold(minimumBid)}`}
                       />
                       <NumberField.IncrementButton />
                     </NumberField.Group>
@@ -298,7 +300,7 @@ const AuctionItemCard = ({
                       {bidAmount > userBalance
                         ? t('insufficientBalance')
                         : !hasBidAmount || bidAmount < minimumBid
-                          ? `${t('minimumBidIs')} $${minimumBid.toLocaleString()}`
+                          ? `${t('minimumBidIs')} ${formatGold(minimumBid)}`
                           : t('validBidAmount')}
                     </p>
                   </NumberField>
@@ -375,7 +377,7 @@ const AuctionItemCard = ({
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="type-subheading tabular-nums text-foreground">
-                              ${bid.amount.toLocaleString()}
+                              {formatGold(bid.amount)}
                             </span>
                             {bid.isWinning && (
                               <Chip color="success" size="sm" variant="secondary">

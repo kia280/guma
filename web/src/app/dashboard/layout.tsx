@@ -13,6 +13,7 @@ import { DashboardBreadcrumbs } from '@/components/DashboardBreadcrumbs';
 import { useDashboardShortcuts } from '@/hooks/useDashboardShortcuts';
 import { useLiveBalance } from '@/hooks/useLiveBalance';
 import { CurrentGuildProvider } from '@/lib/current-guild';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { clearSession } from '@/lib/session';
 import { useUserStore } from '@/lib/store';
 
@@ -36,6 +37,7 @@ const saveCollapsed = (value: boolean) => {
 
 export default function DashboardLayout({ children, modal }: { children: React.ReactNode; modal: React.ReactNode }) {
   const t = useTranslations('dashboardLayout');
+  const formatGold = useFormatGold();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
@@ -124,7 +126,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                 <div className="hidden sm:flex items-center">
                   <Chip className="h-7 cursor-default gap-1.5 px-2.5 type-body font-medium tabular-nums">
                     <Icon icon="solar:wallet-linear" width={16} className="text-subtle" aria-hidden />
-                    <span>${userBalance.toLocaleString('en-US')}</span>
+                    <span>{formatGold(userBalance)}</span>
                   </Chip>
                 </div>
 
