@@ -122,16 +122,17 @@ func (h *UserHandler) GetBalanceTrend(ctx context.Context, req *gumav1.GetBalanc
 
 func userToProto(u *usersvc.User) *gumav1.User {
 	return &gumav1.User{
-		Id:             u.ID,
-		Email:          u.Email,
-		Username:       u.Username,
-		DisplayName:    u.DisplayName,
-		Bio:            u.Bio,
-		AvatarUrl:      u.AvatarURL,
-		GuildIds:       u.GuildIDs,
-		CurrentGuildId: u.CurrentGuildID,
-		Balance:        u.Balance,
-		CreatedAt:      timestamppb.New(u.CreatedAt),
-		UpdatedAt:      timestamppb.New(u.UpdatedAt),
+		Id:               u.ID,
+		Email:            u.Email,
+		Username:         u.Username,
+		DisplayName:      u.DisplayName,
+		Bio:              u.Bio,
+		AvatarUrl:        u.AvatarURL,
+		GuildIds:         u.GuildIDs,
+		CurrentGuildId:   u.CurrentGuildID,
+		CurrentGuildRole: u.CurrentGuildRole,
+		Balance:          u.Balance,
+		CreatedAt:        timestamppb.New(u.CreatedAt),
+		UpdatedAt:        timestamppb.New(u.UpdatedAt),
 	}
 }

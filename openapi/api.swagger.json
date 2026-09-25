@@ -6833,6 +6833,9 @@
         "balance": {
           "type": "string",
           "format": "int64"
+        },
+        "currentGuildRole": {
+          "type": "string"
         }
       }
     },

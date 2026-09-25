@@ -10,11 +10,13 @@ import LotteryCard from '@/components/LotteryCard';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { useGuildPermissions } from '@/lib/permissions';
 import type { Lottery } from '@/types/lottery';
 
 export default function LotteryPage() {
   const t = useTranslations('lotteryPage');
   const guildId = useCurrentGuildId();
+  const { can } = useGuildPermissions();
   const [activeTab, setActiveTab] = React.useState('all');
   const [mockLotteries, setMockLotteries] = React.useState<Lottery[]>([]);
   const pathname = usePathname();
@@ -65,13 +67,17 @@ export default function LotteryPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-end">
-        <Button onPress={createModalState.open}>
-          <Icon icon="solar:add-circle-linear" width={16} />
-          {t('createLottery')}
-        </Button>
-      </div>
-      <CreateLotteryModal state={createModalState} onCreated={() => setReloadKey(key => key + 1)} />
+      {can('createLottery') && (
+        <>
+          <div className="flex justify-end">
+            <Button onPress={createModalState.open}>
+              <Icon icon="solar:add-circle-linear" width={16} />
+              {t('createLottery')}
+            </Button>
+          </div>
+          <CreateLotteryModal state={createModalState} onCreated={() => setReloadKey(key => key + 1)} />
+        </>
+      )}
 
       {/* Status Tabs */}
       <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>

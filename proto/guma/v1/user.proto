@@ -103,6 +103,7 @@ message User {
   google.protobuf.Timestamp updated_at = 9;
   string current_guild_id = 10;
   int64 balance = 11;
+  string current_guild_role = 12;
 }
 
 message UserStats {

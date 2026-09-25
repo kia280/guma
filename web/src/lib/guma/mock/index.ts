@@ -115,6 +115,7 @@ const currentUser: User = {
   bio: '',
   guildIds: [],
   currentGuildId: '',
+  currentGuildRole: 'owner',
   balance: 1250,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),

@@ -12,6 +12,7 @@ import { LootListEditor } from '@/components/LootListEditor';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
+import { useGuildPermissions } from '@/lib/permissions';
 import { CheckinStatus, type CheckinEntry, type CheckinTemplate, type ItemTemplate, type LootEntry } from '@/types/checkin';
 import { CheckinCard, checkinStatusColor } from './CheckinCard';
 
@@ -66,6 +67,7 @@ export default function CheckinPage() {
   const t = useTranslations('checkIn');
   const router = useRouter();
   const guildId = useCurrentGuildId();
+  const { can } = useGuildPermissions();
 
   const [checkins, setCheckins] = React.useState<CheckinEntry[]>([]);
   const refetchCheckins = React.useCallback(() => {
@@ -186,64 +188,65 @@ export default function CheckinPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-end">
-        <Modal>
-          <Button onPress={applyDefaultTimes}>
-            <Icon icon="solar:add-circle-linear" width={16} />
-            {t('addCheckIn')}
-          </Button>
-          <Modal.Backdrop>
-            <Modal.Container size="md">
-              <Modal.Dialog>
-                <Modal.CloseTrigger />
-                <Modal.Header className="text-center items-center">
-                  <Icon icon="solar:add-circle-linear" width={18} />
-                  {t('addCheckIn')}
-                </Modal.Header>
-                <Modal.Body className="p-1">
-                  <form className="flex flex-col gap-4">
-                    {templatesState !== 'hidden' && (
-                      <div className="flex flex-col gap-1">
-                        <Select
-                          placeholder={
-                            templatesState === 'loading'
-                              ? t('templatesLoading')
-                              : templatesState === 'ready' && templates.length === 0
-                                ? t('noTemplates')
-                                : t('templatePlaceholder')
-                          }
-                          value={selectedTemplateId}
-                          onChange={handleTemplateChange}
-                          isDisabled={templatesState !== 'ready' || templates.length === 0}
-                        >
-                          <Label>{t('template')}</Label>
-                          <Select.Trigger>
-                            <Select.Value />
-                            <Select.Indicator />
-                          </Select.Trigger>
-                          <Select.Popover>
-                            <ListBox>
-                              {templates.map(template => (
-                                <ListBox.Item key={template.id} id={template.id} textValue={template.name}>
-                                  <div className="flex min-w-0 flex-col">
-                                    <span className="truncate">{template.name}</span>
-                                    <span className="type-caption text-hint truncate">
-                                      {t('templateSummary', { title: template.title, count: template.items.length })}
-                                    </span>
-                                  </div>
-                                  <ListBox.ItemIndicator />
-                                </ListBox.Item>
-                              ))}
-                            </ListBox>
-                          </Select.Popover>
-                          <Description className={templatesState === 'failed' ? 'text-danger' : undefined}>
-                            {templatesState === 'failed' ? t('templatesLoadFailed') : t('templateHint')}
-                          </Description>
-                        </Select>
-                        {templatesState === 'failed' && (
-                          <Button size="sm" variant="tertiary" className="self-start" onPress={loadTemplates}>
-                            {t('templatesRetry')}
-                          </Button>
+      {can('createCheckin') && (
+        <div className="flex justify-end">
+          <Modal>
+            <Button onPress={applyDefaultTimes}>
+              <Icon icon="solar:add-circle-linear" width={16} />
+              {t('addCheckIn')}
+            </Button>
+            <Modal.Backdrop>
+              <Modal.Container size="md">
+                <Modal.Dialog>
+                  <Modal.CloseTrigger />
+                  <Modal.Header className="text-center items-center">
+                    <Icon icon="solar:add-circle-linear" width={18} />
+                    {t('addCheckIn')}
+                  </Modal.Header>
+                  <Modal.Body className="p-1">
+                    <form className="flex flex-col gap-4">
+                      {templatesState !== 'hidden' && (
+                        <div className="flex flex-col gap-1">
+                          <Select
+                            placeholder={
+                              templatesState === 'loading'
+                                ? t('templatesLoading')
+                                : templatesState === 'ready' && templates.length === 0
+                                  ? t('noTemplates')
+                                  : t('templatePlaceholder')
+                            }
+                            value={selectedTemplateId}
+                            onChange={handleTemplateChange}
+                            isDisabled={templatesState !== 'ready' || templates.length === 0}
+                          >
+                            <Label>{t('template')}</Label>
+                            <Select.Trigger>
+                              <Select.Value />
+                              <Select.Indicator />
+                            </Select.Trigger>
+                            <Select.Popover>
+                              <ListBox>
+                                {templates.map(template => (
+                                  <ListBox.Item key={template.id} id={template.id} textValue={template.name}>
+                                    <div className="flex min-w-0 flex-col">
+                                      <span className="truncate">{template.name}</span>
+                                      <span className="type-caption text-hint truncate">
+                                        {t('templateSummary', { title: template.title, count: template.items.length })}
+                                      </span>
+                                    </div>
+                                    <ListBox.ItemIndicator />
+                                  </ListBox.Item>
+                                ))}
+                              </ListBox>
+                            </Select.Popover>
+                            <Description className={templatesState === 'failed' ? 'text-danger' : undefined}>
+                              {templatesState === 'failed' ? t('templatesLoadFailed') : t('templateHint')}
+                            </Description>
+                          </Select>
+                          {templatesState === 'failed' && (
+                            <Button size="sm" variant="tertiary" className="self-start" onPress={loadTemplates}>
+                              {t('templatesRetry')}
+                            </Button>
                         )}
                       </div>
                     )}
@@ -422,6 +425,7 @@ export default function CheckinPage() {
           </Modal.Backdrop>
         </Modal>
       </div>
+      )}
 
       <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
         <Tabs.ListContainer>
