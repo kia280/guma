@@ -494,6 +494,11 @@
     "sections": "Admin sections",
     "usersTable": "Users"
   },
+  "adminGuard": {
+    "title": "Administration is for guild staff",
+    "description": "Only owners, admins, and moderators of this guild can open the administration area.",
+    "backToDashboard": "Back to dashboard"
+  },
   "adminRolesPage": {
     "back": "Back to administration",
     "title": "Role permissions",
@@ -805,6 +810,9 @@
     "eventsDesc": "Reminders for upcoming guild events",
     "checkinLabel": "Roll call reminders",
     "checkinDesc": "Remind me to mark present when a roll call starts",
+    "notificationsLoadFailed": "Couldn't load your notification settings.",
+    "notificationsSaveFailed": "Couldn't save that change. Your previous setting was restored.",
+    "notificationsRetry": "Try again",
     "fontSize": "Font size",
     "fontSizeDefault": "Default",
     "fontSizeLarge": "Large",

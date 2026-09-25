@@ -14,6 +14,7 @@ import {
   type NavGroup,
   type NavLink,
 } from '@/lib/dashboard-nav';
+import { useGuildPermissions } from '@/lib/permissions';
 import { useCurrentGuild } from '@/lib/store';
 
 interface AppSidebarProps {
@@ -186,6 +187,8 @@ function NavGroupItem({
 export function AppSidebar({ isCollapsed, onNavigate }: AppSidebarProps) {
   const t = useTranslations('dashboardLayout');
   const pathname = usePathname();
+  const { can } = useGuildPermissions();
+  const sections = NAV_SECTIONS.filter(section => section.key !== 'admin' || can('accessAdmin'));
   const tab = useSearchParams().get('tab');
 
   return (
@@ -198,7 +201,7 @@ export function AppSidebar({ isCollapsed, onNavigate }: AppSidebarProps) {
       <WorkspaceIdentity isCollapsed={isCollapsed} />
 
       <nav aria-label={t('navigation')} className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
-        {NAV_SECTIONS.map(section => (
+        {sections.map(section => (
           <div key={section.key} className={cn('flex flex-col', isCollapsed && 'items-center')}>
             {section.label && !isCollapsed && (
               <p className="type-label px-2 pb-1 text-hint">{t(`sections.${section.label}`)}</p>

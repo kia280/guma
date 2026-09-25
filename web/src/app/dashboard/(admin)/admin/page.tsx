@@ -35,6 +35,7 @@ import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
 import { apiClient } from '@/lib/guma';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
+import { useGuildPermissions } from '@/lib/permissions';
 import { userStatusColor, type UserStatus } from '@/lib/status-colors';
 import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import type { AdminActivity, AdminAnnouncement, AdminGuildStats } from '@/types/admin';
@@ -122,6 +123,8 @@ export default function AdminPage() {
       : value;
   };
   const guildId = useCurrentGuildId();
+  const { can } = useGuildPermissions();
+  const canEditGuild = can('editGuild');
 
   const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
   const [recentActivity, setRecentActivity] = React.useState<AdminActivity[]>([]);
@@ -564,44 +567,46 @@ export default function AdminPage() {
                           <p role="alert" className="type-caption text-danger">{logoError}</p>
                         )}
                       </div>
-                      <div className="flex shrink-0 gap-2">
-                        <input
-                          ref={logoInputRef}
-                          type="file"
-                          accept={LOGO_TYPES.join(',')}
-                          className="sr-only"
-                          tabIndex={-1}
-                          aria-hidden
-                          onChange={event => {
-                            const file = event.target.files?.[0];
-                            event.target.value = '';
-                            if (file) void uploadLogo(file);
-                          }}
-                        />
-                        {guild?.icon && (
+                      {canEditGuild && (
+                        <div className="flex shrink-0 gap-2">
+                          <input
+                            ref={logoInputRef}
+                            type="file"
+                            accept={LOGO_TYPES.join(',')}
+                            className="sr-only"
+                            tabIndex={-1}
+                            aria-hidden
+                            onChange={event => {
+                              const file = event.target.files?.[0];
+                              event.target.value = '';
+                              if (file) void uploadLogo(file);
+                            }}
+                          />
+                          {guild?.icon && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              isPending={isRemovingLogo}
+                              isDisabled={isUploadingLogo}
+                              onPress={removeLogo}
+                            >
+                              {t('removeLogo')}
+                            </Button>
+                          )}
                           <Button
                             size="sm"
-                            variant="ghost"
-                            isPending={isRemovingLogo}
-                            isDisabled={isUploadingLogo}
-                            onPress={removeLogo}
+                            variant="secondary"
+                            isPending={isUploadingLogo}
+                            isDisabled={!guild || isRemovingLogo}
+                            onPress={() => logoInputRef.current?.click()}
                           >
-                            {t('removeLogo')}
+                            <Icon icon="solar:upload-linear" width={16} aria-hidden />
+                            {t('uploadLogo')}
                           </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          isPending={isUploadingLogo}
-                          isDisabled={!guild || isRemovingLogo}
-                          onPress={() => logoInputRef.current?.click()}
-                        >
-                          <Icon icon="solar:upload-linear" width={16} aria-hidden />
-                          {t('uploadLogo')}
-                        </Button>
-                      </div>
+                        </div>
+                      )}
                     </div>
-                    <GuildLogoPrompt guildName={guild?.name ?? ''} />
+                    {canEditGuild && <GuildLogoPrompt guildName={guild?.name ?? ''} />}
                     <div className="flex items-center justify-between gap-3 py-2">
                       {isEditingName ? (
                         <form
@@ -633,9 +638,11 @@ export default function AdminPage() {
                             <p className="type-body text-subtle">{t('guildName')}</p>
                             <p className="type-body font-medium text-foreground truncate">{guild?.name ?? '—'}</p>
                           </div>
-                          <Button size="sm" variant="secondary" isDisabled={!guild} onPress={startEditingName}>
-                            {t('edit')}
-                          </Button>
+                          {canEditGuild && (
+                            <Button size="sm" variant="secondary" isDisabled={!guild} onPress={startEditingName}>
+                              {t('edit')}
+                            </Button>
+                          )}
                         </>
                       )}
                     </div>
