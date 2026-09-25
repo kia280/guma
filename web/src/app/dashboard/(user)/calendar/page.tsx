@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Card, Button, Dropdown, Chip, Spinner, Modal, Separator, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import { useGuildEvents } from '@/hooks/useGuildEvents';
 import { GuildCalendar } from '@/components/GuildCalendar';
 import { EventFormModal } from '@/components/EventFormModal';
@@ -17,6 +18,7 @@ import {
 
 export default function CalendarPage() {
   const t = useTranslations('calendarPage');
+  const intlLocale = useIntlLocale();
   const {
     events,
     isLoading,
@@ -86,16 +88,16 @@ export default function CalendarPage() {
     const end = event.endDate ? new Date(event.endDate) : null;
 
     if (end && !event.isAllDay) {
-      return `${start.toLocaleTimeString('en-US', {
+      return `${start.toLocaleTimeString(intlLocale, {
         hour: '2-digit',
         minute: '2-digit',
-      })} - ${end.toLocaleTimeString('en-US', {
+      })} - ${end.toLocaleTimeString(intlLocale, {
         hour: '2-digit',
         minute: '2-digit',
       })}`;
     }
 
-    return start.toLocaleTimeString('en-US', {
+    return start.toLocaleTimeString(intlLocale, {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -106,18 +108,18 @@ export default function CalendarPage() {
     const end = event.endDate ? new Date(event.endDate) : null;
 
     if (end && start.toDateString() !== end.toDateString()) {
-      return `${start.toLocaleDateString('en-US', {
+      return `${start.toLocaleDateString(intlLocale, {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
-      })} - ${end.toLocaleDateString('en-US', {
+      })} - ${end.toLocaleDateString(intlLocale, {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
       })}`;
     }
 
-    return start.toLocaleDateString('en-US', {
+    return start.toLocaleDateString(intlLocale, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',

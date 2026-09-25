@@ -14,14 +14,15 @@ import {
   InputGroup,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { useUserStore } from '@/lib/store';
 import { PageHeader } from '@/components/PageHeader';
 
 export default function ProfilePage() {
   const t = useTranslations('profilePage');
-  const format = useFormatter();
+  const format = useIntlFormatter();
   const user = useUserStore(state => state.user);
   const setUser = useUserStore(state => state.setUser);
   const [isEditing, setIsEditing] = React.useState(false);

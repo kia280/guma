@@ -15,7 +15,8 @@ import {
   useOverlayState,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 
 import { ItemThumbnail, getRarityColor } from '@/components/ItemThumbnail';
 import { useLiveResource } from '@/hooks/useLiveResource';
@@ -66,7 +67,7 @@ interface RequestRowProps {
 
 function RequestRow({ requester, createdAt, reason, status, reviewNote, leading, summary, onReview }: RequestRowProps) {
   const t = useTranslations('bankRequestReview');
-  const format = useFormatter();
+  const format = useIntlFormatter();
 
   return (
     <li className="flex flex-col gap-3 rounded-lg bg-surface-secondary px-3 py-3 sm:flex-row sm:items-center">
