@@ -919,6 +919,10 @@
         "name": "太陽金",
         "description": "Logo 的亮金色搭配深色文字、暖灰色與易讀的狀態色"
       },
+      "amber-gold": {
+        "name": "琥珀金",
+        "description": "偏橘的金幣色，與成功狀態的綠色明顯區隔；深色文字、暖灰色與易讀的狀態色"
+      },
       "ink-gold": {
         "name": "墨黑與金",
         "description": "近黑色按鈕、金色焦點框、暖灰色"

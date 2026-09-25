@@ -51,6 +51,16 @@ export const DEV_PALETTES: DevPalette[] = [
     },
   },
   {
+    id: 'amber-gold',
+    tokens: {
+      ...warmNeutrals,
+      ...readableStatus,
+      '--accent': 'oklch(75% 0.15 75)',
+      '--accent-foreground': 'oklch(21% 0.02 75)',
+      '--focus': 'oklch(55% 0.12 65)',
+    },
+  },
+  {
     id: 'ink-gold',
     tokens: {
       ...warmNeutrals,

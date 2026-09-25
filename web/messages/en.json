@@ -919,6 +919,10 @@
         "name": "Sun Gold",
         "description": "Bright logo gold with dark text, warm neutrals, readable status colors"
       },
+      "amber-gold": {
+        "name": "Amber Gold",
+        "description": "Coin-like amber that stays distinct from the green success color, with dark text, warm neutrals, and readable status colors"
+      },
       "ink-gold": {
         "name": "Ink & Gold",
         "description": "Near-black buttons, gold focus ring, warm neutrals"
