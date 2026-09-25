@@ -282,7 +282,6 @@
   },
   "adminPage": {
     "users": "Users",
-    "activity": "Activity",
     "guild": "Guild",
     "announcements": "Announcements",
     "user": "USER",
@@ -290,6 +289,10 @@
     "status": "STATUS",
     "lastActive": "LAST ACTIVE",
     "recentActivity": "Recent Guild Activity",
+    "loadingActivity": "Loading activity",
+    "activityLoadError": "Couldn't load recent activity.",
+    "retry": "Retry",
+    "noActivity": "No guild activity yet. Auctions, check-ins, lotteries, and new members will appear here.",
     "totalMembers": "Total Members",
     "guildBalance": "Guild Balance",
     "activeEvents": "Active Events",
@@ -364,7 +367,7 @@
       "moderator": "Moderator",
       "member": "Member"
     },
-    "bankRequests": "Bank requests",
+    "bankRequests": "Requests",
     "rolePermissions": "Role permissions"
   },
   "adminRolesPage": {

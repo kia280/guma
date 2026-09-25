@@ -13,6 +13,7 @@ import {
   Separator,
   TextField,
   Label,
+  Spinner,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -108,33 +109,26 @@ const getActivityColor = (type: string) => {
   }
 };
 
-const formatTimeAgo = (timestamp: string) => {
-  const diff = Date.now() - new Date(timestamp).getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(mins / 60);
-  const days = Math.floor(hours / 24);
-  if (days > 0) return `${days}d ago`;
-  if (hours > 0) return `${hours}h ago`;
-  return `${mins}m ago`;
-};
-
 export default function AdminPage() {
   const t = useTranslations('adminPage');
   const locale = useLocale();
   const router = useRouter();
-  const initialTab = useSearchParams().get('tab') ?? undefined;
+  const tabParam = useSearchParams().get('tab') ?? undefined;
+  const initialTab = tabParam === 'activity' ? 'guild' : tabParam;
   const intlLocale = isLocale(locale) ? HTML_LANG[locale] : locale;
   const formatLastActive = (value?: string) => {
     if (!value) return '';
     const date = new Date(value);
     return /^\d{4}-\d{2}-\d{2}T/.test(value) && !Number.isNaN(date.getTime())
-      ? formatRelative(date, isLocale(locale) ? HTML_LANG[locale] : locale)
+      ? formatRelative(date, intlLocale)
       : value;
   };
   const guildId = useCurrentGuildId();
 
   const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
-  const [mockActivity, setMockActivity] = React.useState<AdminActivity[]>([]);
+  const [recentActivity, setRecentActivity] = React.useState<AdminActivity[]>([]);
+  const [activityStatus, setActivityStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
+  const [activityReloadKey, setActivityReloadKey] = React.useState(0);
   const [announcements, setAnnouncements] = React.useState<AdminAnnouncement[]>([]);
   const [guild, setGuild] = React.useState<Guild | null>(null);
   const [isEditingName, setIsEditingName] = React.useState(false);
@@ -163,11 +157,30 @@ export default function AdminPage() {
   React.useEffect(() => {
     let cancelled = false;
     apiClient.listMembers(guildId).then(d => { if (!cancelled) setMockUsers(d); }).catch(() => {});
-    apiClient.getAdminActivity().then(d => { if (!cancelled) setMockActivity(d); }).catch(() => {});
     apiClient.getAdminAnnouncements(guildId).then(d => { if (!cancelled) setAnnouncements(d); }).catch(() => {});
     apiClient.getCurrentGuild().then(d => { if (!cancelled) setGuild(d); }).catch(() => {});
     return () => { cancelled = true; };
   }, [guildId]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    apiClient
+      .getAdminActivity()
+      .then(d => {
+        if (cancelled) return;
+        setRecentActivity(d);
+        setActivityStatus('ready');
+      })
+      .catch(() => {
+        if (!cancelled) setActivityStatus('error');
+      });
+    return () => { cancelled = true; };
+  }, [guildId, activityReloadKey]);
+
+  const retryActivity = () => {
+    setActivityStatus('loading');
+    setActivityReloadKey(key => key + 1);
+  };
 
   const refetchAnnouncements = React.useCallback(() => {
     apiClient.getAdminAnnouncements(guildId).then(setAnnouncements).catch(() => {});
@@ -229,12 +242,6 @@ export default function AdminPage() {
             <Tabs.Tab id="bankRequests">
               <div className="flex items-center gap-2">
                 <span>{t('bankRequests')}</span>
-              </div>
-              <Tabs.Indicator />
-            </Tabs.Tab>
-            <Tabs.Tab id="activity">
-              <div className="flex items-center gap-2">
-                <span>{t('activity')}</span>
               </div>
               <Tabs.Indicator />
             </Tabs.Tab>
@@ -312,38 +319,6 @@ export default function AdminPage() {
           </Card>
         </Tabs.Panel>
 
-        {/* Activity Panel */}
-        <Tabs.Panel id="activity" className="pt-4">
-          <Card className="border border-divider shadow-none bg-surface">
-            <Card.Header>
-              <p className="type-subheading text-foreground">{t('recentActivity')}</p>
-            </Card.Header>
-            <Card.Content className="pt-0">
-              <div className="space-y-1">
-                {mockActivity.map((item, i) => (
-                  <div key={item.id}>
-                    <div className="flex items-start gap-3 py-3">
-                      <div className={`mt-0.5 shrink-0 ${getActivityColor(item.actionType)}`}>
-                        <Icon icon={getActivityIcon(item.actionType)} width={18} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="type-body text-foreground">
-                          <span className="font-medium">{item.actor}</span>{' '}
-                          <span className="text-subtle">{item.action}</span>
-                        </p>
-                        <p className="type-caption text-hint mt-0.5">
-                          {formatTimeAgo(item.timestamp)}
-                        </p>
-                      </div>
-                    </div>
-                    {i < mockActivity.length - 1 && <Separator />}
-                  </div>
-                ))}
-              </div>
-            </Card.Content>
-          </Card>
-        </Tabs.Panel>
-
         {/* Guild Panel */}
         <Tabs.Panel id="guild" className="pt-4">
           <div className="space-y-4">
@@ -395,65 +370,121 @@ export default function AdminPage() {
               ))}
             </div>
 
-            {/* Guild Settings placeholder */}
-            <Card className="border border-divider shadow-none bg-surface">
-              <Card.Header>
-                <div className="flex items-center gap-2">
-                  <Icon icon="solar:settings-linear" width={18} className="text-hint" />
-                  <p className="type-subheading text-foreground">{t('guildSettings')}</p>
-                </div>
-              </Card.Header>
-              <Card.Content className="pt-0">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-3 py-2">
-                    {isEditingName ? (
-                      <form
-                        className="flex flex-1 flex-wrap items-end gap-2"
-                        onSubmit={event => {
-                          event.preventDefault();
-                          saveGuildName();
-                        }}
-                      >
-                        <TextField className="flex-1 min-w-48" isRequired>
-                          <Label>{t('guildName')}</Label>
-                          <Input
-                            variant="secondary"
-                            value={guildNameDraft}
-                            onChange={event => setGuildNameDraft(event.target.value)}
-                            autoFocus
-                          />
-                        </TextField>
-                        <Button size="sm" variant="secondary" onPress={() => setIsEditingName(false)}>
-                          {t('cancel')}
-                        </Button>
-                        <Button size="sm" type="submit" isPending={isSavingName} isDisabled={!guildNameDraft.trim()}>
-                          {t('save')}
-                        </Button>
-                      </form>
-                    ) : (
-                      <>
-                        <div className="min-w-0">
-                          <p className="type-body text-subtle">{t('guildName')}</p>
-                          <p className="type-body font-medium text-foreground truncate">{guild?.name ?? '—'}</p>
-                        </div>
-                        <Button size="sm" variant="secondary" isDisabled={!guild} onPress={startEditingName}>
-                          {t('edit')}
-                        </Button>
-                      </>
-                    )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+              {/* Guild Settings placeholder */}
+              <Card className="border border-divider shadow-none bg-surface">
+                <Card.Header>
+                  <div className="flex items-center gap-2">
+                    <Icon icon="solar:settings-linear" width={18} className="text-hint" />
+                    <p className="type-subheading text-foreground">{t('guildSettings')}</p>
                   </div>
-                  {[
-                    { label: t('recruitment'), value: 'Open' },
-                    { label: t('serverRegion'), value: 'Asia Pacific' },
-                  ].map(setting => (
-                    <div key={setting.label} className="py-2">
-                      <p className="type-body text-subtle">{setting.label}</p>
-                      <p className="type-body font-medium text-foreground">{setting.value}</p>
+                </Card.Header>
+                <Card.Content className="pt-0">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3 py-2">
+                      {isEditingName ? (
+                        <form
+                          className="flex flex-1 flex-wrap items-end gap-2"
+                          onSubmit={event => {
+                            event.preventDefault();
+                            saveGuildName();
+                          }}
+                        >
+                          <TextField className="flex-1 min-w-48" isRequired>
+                            <Label>{t('guildName')}</Label>
+                            <Input
+                              variant="secondary"
+                              value={guildNameDraft}
+                              onChange={event => setGuildNameDraft(event.target.value)}
+                              autoFocus
+                            />
+                          </TextField>
+                          <Button size="sm" variant="secondary" onPress={() => setIsEditingName(false)}>
+                            {t('cancel')}
+                          </Button>
+                          <Button size="sm" type="submit" isPending={isSavingName} isDisabled={!guildNameDraft.trim()}>
+                            {t('save')}
+                          </Button>
+                        </form>
+                      ) : (
+                        <>
+                          <div className="min-w-0">
+                            <p className="type-body text-subtle">{t('guildName')}</p>
+                            <p className="type-body font-medium text-foreground truncate">{guild?.name ?? '—'}</p>
+                          </div>
+                          <Button size="sm" variant="secondary" isDisabled={!guild} onPress={startEditingName}>
+                            {t('edit')}
+                          </Button>
+                        </>
+                      )}
                     </div>
-                  ))}
-                </div>
-              </Card.Content>
-            </Card>
+                    {[
+                      { label: t('recruitment'), value: 'Open' },
+                      { label: t('serverRegion'), value: 'Asia Pacific' },
+                    ].map(setting => (
+                      <div key={setting.label} className="py-2">
+                        <p className="type-body text-subtle">{setting.label}</p>
+                        <p className="type-body font-medium text-foreground">{setting.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </Card.Content>
+              </Card>
+
+              <Card className="border border-divider shadow-none bg-surface">
+                <Card.Header>
+                  <div className="flex items-center gap-2">
+                    <Icon icon="solar:history-linear" width={18} className="text-hint" aria-hidden />
+                    <h2 className="type-subheading text-foreground">{t('recentActivity')}</h2>
+                  </div>
+                </Card.Header>
+                <Card.Content className="pt-0">
+                  {activityStatus === 'loading' ? (
+                    <div className="flex items-center justify-center py-10">
+                      <Spinner aria-label={t('loadingActivity')} />
+                    </div>
+                  ) : activityStatus === 'error' ? (
+                    <div role="alert" className="flex flex-col items-center justify-center gap-3 py-10">
+                      <Icon icon="solar:danger-circle-linear" width={32} className="text-danger" aria-hidden />
+                      <p className="type-body text-subtle">{t('activityLoadError')}</p>
+                      <Button size="sm" variant="secondary" onPress={retryActivity}>
+                        <Icon icon="solar:restart-linear" width={16} aria-hidden />
+                        {t('retry')}
+                      </Button>
+                    </div>
+                  ) : recentActivity.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                      <Icon icon="solar:history-linear" width={32} className="text-disabled" aria-hidden />
+                      <p className="type-body text-subtle">{t('noActivity')}</p>
+                    </div>
+                  ) : (
+                    <ul>
+                      {recentActivity.map((item, i) => (
+                        <li key={item.id}>
+                          <div className="flex items-start gap-3 py-3">
+                            <div className={`mt-0.5 shrink-0 ${getActivityColor(item.actionType)}`}>
+                              <Icon icon={getActivityIcon(item.actionType)} width={18} aria-hidden />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="type-body text-foreground">
+                                <span className="font-medium">{item.actor}</span>{' '}
+                                <span className="text-subtle">{item.action}</span>
+                              </p>
+                              <p className="type-caption text-hint mt-0.5">
+                                <time dateTime={item.timestamp}>
+                                  {formatRelative(new Date(item.timestamp), intlLocale)}
+                                </time>
+                              </p>
+                            </div>
+                          </div>
+                          {i < recentActivity.length - 1 && <Separator />}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Card.Content>
+              </Card>
+            </div>
           </div>
         </Tabs.Panel>
 
