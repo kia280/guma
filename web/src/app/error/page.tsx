@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Suspense } from 'react';
+import { safeReturnPath } from '@/lib/safe-return-path';
 
 function ErrorPageContent() {
   const searchParams = useSearchParams();
@@ -33,7 +34,7 @@ function ErrorPageContent() {
     };
 
   const errorId = searchParams.get('id') || 'unknown';
-  const returnUrl = searchParams.get('return') || '/';
+  const returnUrl = safeReturnPath(searchParams.get('return'));
 
   const error = ERROR_MESSAGES[errorId] || {
     title: t('unknownTitle'),
@@ -90,7 +91,7 @@ function ErrorPageContent() {
 
           {errorId !== 'unknown' && (
             <div className="bg-surface-secondary rounded-lg p-3">
-              <p className="type-caption text-soft font-mono">
+              <p className="type-caption text-soft font-mono break-all">
                 {t('errorIdLabel')}{' '}
                 <span className="text-foreground/90 font-semibold">{errorId}</span>
               </p>

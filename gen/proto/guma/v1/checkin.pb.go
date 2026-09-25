@@ -627,6 +627,7 @@ type SubmitAttendanceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
 	CheckinId     string                 `protobuf:"bytes,2,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
+	Notes         string                 `protobuf:"bytes,3,opt,name=notes,proto3" json:"notes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -671,6 +672,13 @@ func (x *SubmitAttendanceRequest) GetGuildId() string {
 func (x *SubmitAttendanceRequest) GetCheckinId() string {
 	if x != nil {
 		return x.CheckinId
+	}
+	return ""
+}
+
+func (x *SubmitAttendanceRequest) GetNotes() string {
+	if x != nil {
+		return x.Notes
 	}
 	return ""
 }
@@ -995,6 +1003,7 @@ type CheckInAttendee struct {
 	DisplayName   string                 `protobuf:"bytes,4,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	AvatarUrl     string                 `protobuf:"bytes,5,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	AttendedAt    *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=attended_at,json=attendedAt,proto3" json:"attended_at,omitempty"`
+	Notes         string                 `protobuf:"bytes,7,opt,name=notes,proto3" json:"notes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1071,6 +1080,13 @@ func (x *CheckInAttendee) GetAttendedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *CheckInAttendee) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
 var File_proto_guma_v1_checkin_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_checkin_proto_rawDesc = "" +
@@ -1122,11 +1138,12 @@ const file_proto_guma_v1_checkin_proto_rawDesc = "" +
 	"\n" +
 	"checkin_id\x18\x02 \x01(\tR\tcheckinId\"1\n" +
 	"\x15DeleteCheckInResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"S\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"i\n" +
 	"\x17SubmitAttendanceRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
 	"\n" +
-	"checkin_id\x18\x02 \x01(\tR\tcheckinId\"P\n" +
+	"checkin_id\x18\x02 \x01(\tR\tcheckinId\x12\x14\n" +
+	"\x05notes\x18\x03 \x01(\tR\x05notes\"P\n" +
 	"\x18SubmitAttendanceResponse\x124\n" +
 	"\battendee\x18\x01 \x01(\v2\x18.guma.v1.CheckInAttendeeR\battendee\"\x8c\x01\n" +
 	"\x14ListAttendeesRequest\x12\x19\n" +
@@ -1160,7 +1177,7 @@ const file_proto_guma_v1_checkin_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xd8\x01\n" +
+	"updated_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xee\x01\n" +
 	"\x0fCheckInAttendee\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1170,7 +1187,8 @@ const file_proto_guma_v1_checkin_proto_rawDesc = "" +
 	"\n" +
 	"avatar_url\x18\x05 \x01(\tR\tavatarUrl\x12;\n" +
 	"\vattended_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"attendedAt2\xb4\a\n" +
+	"attendedAt\x12\x14\n" +
+	"\x05notes\x18\a \x01(\tR\x05notes2\xb4\a\n" +
 	"\x0eCheckInService\x12s\n" +
 	"\fListCheckIns\x12\x1c.guma.v1.ListCheckInsRequest\x1a\x1d.guma.v1.ListCheckInsResponse\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/guilds/{guild_id}/checkins\x12z\n" +
 	"\n" +

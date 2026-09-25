@@ -131,8 +131,13 @@ export const gumaApiClient: ApiClient = {
   },
 
   // ── Guild ──
-  listGuilds: async () => {
-    const { data } = await http.get('/v1/guilds');
+  listGuilds: async (query = {}) => {
+    const { data } = await http.get('/v1/guilds', {
+      params: {
+        search: query.search || undefined,
+        page_size: query.limit,
+      },
+    });
     return (data.guilds ?? []).map(apiGuild);
   },
   getGuild: async (id) => {
@@ -341,8 +346,8 @@ export const gumaApiClient: ApiClient = {
   deleteItemTemplate: async (guildId, id) => {
     await http.delete(`/v1/guilds/${guildId}/item-templates/${id}`);
   },
-  submitAttendance: async (guildId, checkinId) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/attend`);
+  submitAttendance: async (guildId, checkinId, notes) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/attend`, { notes: notes ?? '' });
     return toAttendee(data.attendee);
   },
   listAttendees: async (guildId, checkinId) => {

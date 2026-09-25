@@ -7,9 +7,8 @@ import {
   Separator,
   Modal,
   useOverlayState,
-  Input,
+  NumberField,
   ProgressBar,
-  TextField,
   Label,
   Description,
 } from '@heroui/react';
@@ -22,7 +21,7 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
-import { GOLD_STEP, roundGold } from '@/lib/guma/money';
+import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
 
@@ -135,7 +134,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput?.auctionId === id ? bidInput.amount : minimumBid;
   const isActive = item.status === AuctionStatus.ACTIVE;
-  const canBid = isActive && bidAmount >= minimumBid && bidAmount <= userBalance;
+  const hasBidAmount = Number.isFinite(bidAmount);
+  const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
 
   const handlePlaceBid = async () => {
     if (!canBid) return;
@@ -503,26 +503,30 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     </div>
                   )}
                 </div>
-                <TextField>
+                <NumberField
+                  formatOptions={GOLD_FORMAT_OPTIONS}
+                  minValue={minimumBid}
+                  value={bidAmount}
+                  onChange={value => setBidInput({ auctionId: id, amount: Number.isFinite(value) ? roundGold(value) : value })}
+                  variant="secondary"
+                >
                   <Label>{t('yourBidAmount')}</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    step={GOLD_STEP}
-                    inputMode="decimal"
-                    placeholder={`Minimum: $${minimumBid.toLocaleString()}`}
-                    value={bidAmount.toString()}
-                    onChange={e => setBidInput({ auctionId: id, amount: roundGold(Number(e.target.value)) })}
-                    variant="secondary"
-                  />
+                  <NumberField.Group>
+                    <NumberField.DecrementButton />
+                    <NumberField.Input
+                      className="w-full min-w-0"
+                      placeholder={`${t('minimum')} $${minimumBid.toLocaleString()}`}
+                    />
+                    <NumberField.IncrementButton />
+                  </NumberField.Group>
                   <Description>
                     {bidAmount > userBalance
                       ? t('insufficientBalance')
-                      : bidAmount < minimumBid
+                      : !hasBidAmount || bidAmount < minimumBid
                         ? `${t('minimumBidIs')}${minimumBid.toLocaleString()}`
                         : t('validBidAmount')}
                   </Description>
-                </TextField>
+                </NumberField>
               </div>
             </Modal.Body>
             <Modal.Footer>

@@ -252,8 +252,8 @@ func (q *Queries) IncrementCheckinAttendance(ctx context.Context, id uuid.UUID) 
 }
 
 const insertCheckinAttendee = `-- name: InsertCheckinAttendee :one
-INSERT INTO checkin_attendees (checkin_id, user_id, display_name, avatar_url)
-VALUES ($1, $2, $3::text, $4::text)
+INSERT INTO checkin_attendees (checkin_id, user_id, display_name, avatar_url, notes)
+VALUES ($1, $2, $3::text, $4::text, $5::text)
 ON CONFLICT (checkin_id, user_id) DO NOTHING
 RETURNING id
 `
@@ -263,6 +263,7 @@ type InsertCheckinAttendeeParams struct {
 	UserID      uuid.UUID
 	DisplayName string
 	AvatarUrl   string
+	Notes       string
 }
 
 func (q *Queries) InsertCheckinAttendee(ctx context.Context, arg InsertCheckinAttendeeParams) (uuid.UUID, error) {
@@ -271,6 +272,7 @@ func (q *Queries) InsertCheckinAttendee(ctx context.Context, arg InsertCheckinAt
 		arg.UserID,
 		arg.DisplayName,
 		arg.AvatarUrl,
+		arg.Notes,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -334,6 +336,7 @@ const listCheckinAttendees = `-- name: ListCheckinAttendees :many
 SELECT id, checkin_id, user_id,
        COALESCE(display_name, '') AS display_name,
        COALESCE(avatar_url, '')   AS avatar_url,
+       notes,
        attended_at
 FROM checkin_attendees WHERE checkin_id = $1
 ORDER BY attended_at ASC
@@ -352,6 +355,7 @@ type ListCheckinAttendeesRow struct {
 	UserID      uuid.UUID
 	DisplayName string
 	AvatarUrl   string
+	Notes       string
 	AttendedAt  time.Time
 }
 
@@ -370,6 +374,7 @@ func (q *Queries) ListCheckinAttendees(ctx context.Context, arg ListCheckinAtten
 			&i.UserID,
 			&i.DisplayName,
 			&i.AvatarUrl,
+			&i.Notes,
 			&i.AttendedAt,
 		); err != nil {
 			return nil, err
