@@ -122,6 +122,7 @@ message DeleteCheckInResponse {
 message SubmitAttendanceRequest {
   string guild_id = 1;
   string checkin_id = 2;
+  string notes = 3;
 }
 
 message SubmitAttendanceResponse {
@@ -166,4 +167,5 @@ message CheckInAttendee {
   string display_name = 4;
   string avatar_url = 5;
   google.protobuf.Timestamp attended_at = 6;
+  string notes = 7;
 }

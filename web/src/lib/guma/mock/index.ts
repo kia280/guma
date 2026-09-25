@@ -412,7 +412,7 @@ const baseMockApiClient: ApiClient = {
   deleteCheckin: async (_guildId, id) => {
     store.checkins = store.checkins.filter(c => c.id !== id);
   },
-  submitAttendance: async (_guildId, checkinId): Promise<AttendanceMember> => {
+  submitAttendance: async (_guildId, checkinId, notes): Promise<AttendanceMember> => {
     const entry = store.checkins.find(c => c.id === checkinId);
     if (!entry) throw new Error('not found');
     if (entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now()) {
@@ -426,6 +426,7 @@ const baseMockApiClient: ApiClient = {
       userId: currentUser.id,
       username: currentUser.username,
       checkedInAt: new Date().toISOString(),
+      ...(notes?.trim() ? { notes: notes.trim() } : {}),
     };
     entry.attendanceList = [...entry.attendanceList, attendee];
     return attendee;

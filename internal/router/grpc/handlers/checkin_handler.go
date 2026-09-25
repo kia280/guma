@@ -135,7 +135,7 @@ func (h *CheckInHandler) SubmitAttendance(ctx context.Context, req *gumav1.Submi
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	attendee, err := h.svc.SubmitAttendance(ctx, req.GuildId, req.CheckinId, userID)
+	attendee, err := h.svc.SubmitAttendance(ctx, req.GuildId, req.CheckinId, userID, req.Notes)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -194,6 +194,7 @@ func checkinAttendeeToProto(a *checkinsvc.CheckInAttendee) *gumav1.CheckInAttend
 		DisplayName: a.DisplayName,
 		AvatarUrl:   a.AvatarURL,
 		AttendedAt:  timestamppb.New(a.AttendedAt),
+		Notes:       a.Notes,
 	}
 }
 

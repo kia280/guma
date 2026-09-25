@@ -1,7 +1,10 @@
 package checkin
 
 import (
+	"context"
+	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -42,4 +45,27 @@ func TestPrepareBankLootEmpty(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, loot)
 	assert.NotNil(t, loot)
+}
+
+func TestNormalizeAttendanceNotes(t *testing.T) {
+	notes, err := normalizeAttendanceNotes("  Late arrival \n")
+	require.NoError(t, err)
+	assert.Equal(t, "Late arrival", notes)
+
+	notes, err = normalizeAttendanceNotes(strings.Repeat("遲", maxAttendanceNotes))
+	require.NoError(t, err)
+	assert.Equal(t, maxAttendanceNotes, utf8.RuneCountInString(notes))
+
+	_, err = normalizeAttendanceNotes(strings.Repeat("a", maxAttendanceNotes+1))
+	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
+}
+
+func TestSubmitAttendanceRejectsLongNotesBeforeQuerying(t *testing.T) {
+	s := &Service{}
+	_, err := s.SubmitAttendance(context.Background(),
+		"00000000-0000-0000-0000-000000000001",
+		"00000000-0000-0000-0000-000000000002",
+		"00000000-0000-0000-0000-000000000003",
+		strings.Repeat("a", maxAttendanceNotes+1))
+	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }

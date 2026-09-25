@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -22,6 +23,7 @@ import (
 const (
 	defaultLootCategory = "misc"
 	defaultLootRarity   = "common"
+	maxAttendanceNotes  = 500
 )
 
 // CheckIn is the domain model for a check-in event.
@@ -48,6 +50,7 @@ type CheckInAttendee struct {
 	UserID      string
 	DisplayName string
 	AvatarURL   string
+	Notes       string
 	AttendedAt  time.Time
 }
 
@@ -334,7 +337,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, checkinIDStr string) e
 }
 
 // SubmitAttendance records a user's attendance for a check-in.
-func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr, userIDStr string) (*CheckInAttendee, error) {
+func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr, userIDStr, notes string) (*CheckInAttendee, error) {
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
@@ -346,6 +349,10 @@ func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	notes, err = normalizeAttendanceNotes(notes)
+	if err != nil {
+		return nil, err
 	}
 
 	expireTime, err := s.q.GetCheckinExpireTime(ctx, db.GetCheckinExpireTimeParams{ID: checkinID, GuildID: guildID})
@@ -360,7 +367,7 @@ func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr
 
 	attendeeID, err := s.q.InsertCheckinAttendee(ctx, db.InsertCheckinAttendeeParams{
 		CheckinID: checkinID, UserID: userID,
-		DisplayName: info.DisplayName, AvatarUrl: info.AvatarUrl,
+		DisplayName: info.DisplayName, AvatarUrl: info.AvatarUrl, Notes: notes,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: already attended this check-in", errs.ErrAlreadyExists)
@@ -370,7 +377,7 @@ func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr
 
 	return &CheckInAttendee{
 		ID: attendeeID.String(), CheckInID: checkinIDStr, UserID: userIDStr,
-		DisplayName: info.DisplayName, AvatarURL: info.AvatarUrl, AttendedAt: time.Now().UTC(),
+		DisplayName: info.DisplayName, AvatarURL: info.AvatarUrl, Notes: notes, AttendedAt: time.Now().UTC(),
 	}, nil
 }
 
@@ -404,7 +411,7 @@ func (s *Service) ListAttendees(ctx context.Context, guildIDStr, checkinIDStr st
 	for _, r := range rows {
 		attendees = append(attendees, &CheckInAttendee{
 			ID: r.ID.String(), CheckInID: r.CheckinID.String(), UserID: r.UserID.String(),
-			DisplayName: r.DisplayName, AvatarURL: r.AvatarUrl, AttendedAt: r.AttendedAt,
+			DisplayName: r.DisplayName, AvatarURL: r.AvatarUrl, Notes: r.Notes, AttendedAt: r.AttendedAt,
 		})
 	}
 
@@ -418,6 +425,14 @@ func (s *Service) ListAttendees(ctx context.Context, guildIDStr, checkinIDStr st
 }
 
 // --- helpers ---
+
+func normalizeAttendanceNotes(notes string) (string, error) {
+	notes = strings.TrimSpace(notes)
+	if utf8.RuneCountInString(notes) > maxAttendanceNotes {
+		return "", fmt.Errorf("%w: notes must be at most %d characters", errs.ErrInvalidArgument, maxAttendanceNotes)
+	}
+	return notes, nil
+}
 
 func toCheckIn(r checkinRow) *CheckIn {
 	c := &CheckIn{

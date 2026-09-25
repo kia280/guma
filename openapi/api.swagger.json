@@ -4053,7 +4053,12 @@
       }
     },
     "CheckInServiceSubmitAttendanceBody": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "notes": {
+          "type": "string"
+        }
+      }
     },
     "CheckInServiceUpdateCheckInBody": {
       "type": "object",
@@ -4861,6 +4866,9 @@
         "attendedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "notes": {
+          "type": "string"
         }
       }
     },
