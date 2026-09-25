@@ -595,9 +595,11 @@ const baseMockApiClient: ApiClient = {
     store.announcements = [ann, ...store.announcements];
     return { ...ann };
   },
-  updateAnnouncementDraft: async (_guildId, id, input) => {
+  updateAnnouncement: async (_guildId, id, input) => {
     const ann = findMockAnnouncement(id);
-    if (ann.status !== 'draft') throw new Error('only drafts can be edited');
+    if (ann.status === 'published' && (!input.title.trim() || !input.content.trim())) {
+      throw new Error('published announcements require a title and content');
+    }
     Object.assign(ann, input, { updatedAt: new Date().toISOString() });
     return { ...ann };
   },
@@ -607,6 +609,12 @@ const baseMockApiClient: ApiClient = {
     if (!ann.title.trim() || !ann.content.trim()) throw new Error('title and content are required to publish');
     const now = new Date().toISOString();
     Object.assign(ann, { status: 'published', publishedAt: now, updatedAt: now });
+    return { ...ann };
+  },
+  unpublishAnnouncement: async (_guildId, id) => {
+    const ann = findMockAnnouncement(id);
+    if (ann.status !== 'published') throw new Error('announcement is not published');
+    Object.assign(ann, { status: 'draft', publishedAt: undefined, updatedAt: new Date().toISOString() });
     return { ...ann };
   },
   deleteAnnouncementDraft: async (_guildId, id) => {

@@ -18,7 +18,7 @@ import {
 import { Icon } from '@iconify/react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { DeleteAnnouncementDraftDialog } from '@/components/DeleteAnnouncementDraftDialog';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { PageHeader } from '@/components/PageHeader';
 import { apiClient } from '@/lib/guma';
@@ -32,6 +32,7 @@ const MAX_CONTENT_LENGTH = 20000;
 const ANNOUNCEMENTS_HREF = '/dashboard/admin?tab=announcements';
 
 type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
+type PendingConfirm = 'delete' | 'unpublish' | 'discard' | null;
 
 const draftKey = (input: AnnouncementDraftInput) =>
   JSON.stringify([input.title, input.content, input.pinned]);
@@ -50,9 +51,10 @@ export default function AnnouncementEditorPage() {
   const [lastSavedAt, setLastSavedAt] = React.useState<string | null>(null);
   const [isPublishing, setIsPublishing] = React.useState(false);
   const [publishFailed, setPublishFailed] = React.useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+  const [pendingConfirm, setPendingConfirm] = React.useState<PendingConfirm>(null);
 
   const latest = React.useRef<AnnouncementDraftInput | null>(null);
+  const isDraftRef = React.useRef(false);
   const savedKey = React.useRef('');
   const inFlight = React.useRef<Promise<boolean> | null>(null);
   const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -63,7 +65,8 @@ export default function AnnouncementEditorPage() {
       .then(ann => {
         if (cancelled) return;
         const input = { title: ann.title, content: ann.content, pinned: ann.pinned };
-        latest.current = ann.status === 'draft' ? input : null;
+        latest.current = input;
+        isDraftRef.current = ann.status === 'draft';
         savedKey.current = draftKey(input);
         setAnnouncement(ann);
         setValues(input);
@@ -82,14 +85,14 @@ export default function AnnouncementEditorPage() {
     if (key === savedKey.current) return true;
 
     setSaveState('saving');
-    const request = apiClient.updateAnnouncementDraft(guildId, id, input)
+    const request = apiClient.updateAnnouncement(guildId, id, input)
       .then(saved => {
         savedKey.current = key;
         setLastSavedAt(saved.updatedAt);
         return true;
       })
       .catch(err => {
-        console.error('Failed to autosave announcement draft', err);
+        console.error('Failed to save announcement', err);
         return false;
       });
     inFlight.current = request;
@@ -113,7 +116,7 @@ export default function AnnouncementEditorPage() {
 
   React.useEffect(() => () => {
     clearTimeout(timer.current);
-    void flushRef.current();
+    if (isDraftRef.current) void flushRef.current();
   }, []);
 
   React.useEffect(() => {
@@ -133,7 +136,34 @@ export default function AnnouncementEditorPage() {
     setPublishFailed(false);
     setSaveState('dirty');
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => { void save(); }, AUTOSAVE_DELAY_MS);
+    if (isDraftRef.current) timer.current = setTimeout(() => { void save(); }, AUTOSAVE_DELAY_MS);
+  };
+
+  const hasUnsavedChanges = () => latest.current !== null && draftKey(latest.current) !== savedKey.current;
+
+  const unpublish = async () => {
+    const ann = await apiClient.unpublishAnnouncement(guildId, id);
+    isDraftRef.current = true;
+    setAnnouncement(ann);
+    if (hasUnsavedChanges()) {
+      setSaveState('dirty');
+      timer.current = setTimeout(() => { void save(); }, AUTOSAVE_DELAY_MS);
+    } else {
+      setLastSavedAt(ann.updatedAt);
+    }
+  };
+
+  const leave = () => {
+    if (!isDraftRef.current && hasUnsavedChanges()) {
+      setPendingConfirm('discard');
+      return;
+    }
+    router.push(ANNOUNCEMENTS_HREF);
+  };
+
+  const discardAndLeave = () => {
+    latest.current = null;
+    router.push(ANNOUNCEMENTS_HREF);
   };
 
   const publish = async () => {
@@ -172,7 +202,7 @@ export default function AnnouncementEditorPage() {
     });
 
   const backButton = (
-    <Button variant="ghost" size="sm" onPress={() => router.push(ANNOUNCEMENTS_HREF)}>
+    <Button variant="ghost" size="sm" onPress={leave}>
       <Icon icon="solar:arrow-left-linear" width={16} />
       {t('backToAnnouncements')}
     </Button>
@@ -200,34 +230,23 @@ export default function AnnouncementEditorPage() {
     );
   }
 
-  if (announcement.status !== 'draft') {
-    return (
-      <div className="space-y-5">
-        {backButton}
-        <Card className="border border-divider shadow-none bg-surface">
-          <Card.Content className="p-6 text-center">
-            <p className="type-subheading text-foreground">{t('alreadyPublished')}</p>
-            <p className="type-body text-subtle mt-1">{t('alreadyPublishedHint')}</p>
-          </Card.Content>
-        </Card>
-      </div>
-    );
-  }
-
+  const isDraft = announcement.status === 'draft';
   const canPublish = values.title.trim() !== '' && values.content.trim() !== '';
   const saveStatus = {
     saved: { icon: 'solar:check-circle-linear', className: 'text-hint', label: lastSavedAt ? t('savedAt', { time: formatSavedAt(lastSavedAt) }) : t('saved') },
     dirty: { icon: 'solar:pen-linear', className: 'text-hint', label: t('unsavedChanges') },
     saving: { icon: 'solar:refresh-linear', className: 'text-hint', label: t('saving') },
-    error: { icon: 'solar:danger-triangle-linear', className: 'text-danger', label: t('saveFailed') },
+    error: { icon: 'solar:danger-triangle-linear', className: 'text-danger', label: isDraft ? t('saveFailed') : t('saveChangesFailed') },
   }[saveState];
 
   return (
     <div className="space-y-5">
       {backButton}
 
-      <PageHeader title={t('editAnnouncement')} description={t('editAnnouncementHint')}>
-        <Chip size="sm" variant="secondary" color="warning">{t('draft')}</Chip>
+      <PageHeader title={t('editAnnouncement')} description={isDraft ? t('editAnnouncementHint') : t('editPublishedHint')}>
+        {isDraft
+          ? <Chip size="sm" variant="secondary" color="warning">{t('draft')}</Chip>
+          : <Chip size="sm" variant="secondary" color="success">{t('published')}</Chip>}
       </PageHeader>
 
       <Card className="border border-divider shadow-none bg-surface">
@@ -301,35 +320,79 @@ export default function AnnouncementEditorPage() {
         <div role="status" aria-live="polite" className={`flex items-center gap-1.5 type-caption ${saveStatus.className}`}>
           <Icon icon={saveStatus.icon} width={14} className={saveState === 'saving' ? 'animate-spin' : undefined} />
           <span>{saveStatus.label}</span>
-          {saveState === 'error' && (
+          {saveState === 'error' && isDraft && (
             <Button variant="ghost" size="sm" onPress={() => { void save(); }}>
               {t('retry')}
             </Button>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="danger" size="sm" onPress={() => setIsDeleteOpen(true)} isDisabled={isPublishing}>
-            <Icon icon="solar:trash-bin-trash-linear" width={16} />
-            {t('deleteDraft')}
-          </Button>
-          <Button variant="primary" size="sm" onPress={publish} isPending={isPublishing} isDisabled={!canPublish}>
-            <Icon icon="solar:plain-linear" width={16} />
-            {t('publish')}
-          </Button>
-        </div>
+        {isDraft ? (
+          <div className="flex items-center gap-2">
+            <Button variant="danger" size="sm" onPress={() => setPendingConfirm('delete')} isDisabled={isPublishing}>
+              <Icon icon="solar:trash-bin-trash-linear" width={16} />
+              {t('deleteDraft')}
+            </Button>
+            <Button variant="primary" size="sm" onPress={publish} isPending={isPublishing} isDisabled={!canPublish}>
+              <Icon icon="solar:plain-linear" width={16} />
+              {t('publish')}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" onPress={() => setPendingConfirm('unpublish')} isDisabled={saveState === 'saving'}>
+              <Icon icon="solar:undo-left-linear" width={16} />
+              {t('unpublish')}
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onPress={() => { void save(); }}
+              isPending={saveState === 'saving'}
+              isDisabled={!canPublish || (saveState !== 'dirty' && saveState !== 'error')}
+            >
+              <Icon icon="solar:diskette-linear" width={16} />
+              {t('saveChanges')}
+            </Button>
+          </div>
+        )}
       </div>
 
-      {!canPublish && <p className="type-caption text-hint text-right">{t('publishRequirement')}</p>}
+      {!canPublish && (
+        <p className="type-caption text-hint text-right">{isDraft ? t('publishRequirement') : t('publishedRequirement')}</p>
+      )}
       {publishFailed && (
         <p role="alert" className="type-caption text-danger text-right">{t('publishFailed')}</p>
       )}
 
-      <DeleteAnnouncementDraftDialog
-        title={values.title}
-        isOpen={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
+      <ConfirmDialog
+        heading={t('deleteDraftTitle')}
+        body={t('deleteDraftBody', { title: values.title.trim() || t('untitledDraft') })}
+        confirmLabel={t('delete')}
+        failedMessage={t('deleteDraftFailed')}
+        isOpen={pendingConfirm === 'delete'}
+        onOpenChange={open => { if (!open) setPendingConfirm(null); }}
         onConfirm={deleteDraft}
+      />
+      <ConfirmDialog
+        heading={t('unpublishTitle')}
+        body={t('unpublishBody', { title: values.title })}
+        confirmLabel={t('unpublish')}
+        failedMessage={t('unpublishFailed')}
+        status="warning"
+        isOpen={pendingConfirm === 'unpublish'}
+        onOpenChange={open => { if (!open) setPendingConfirm(null); }}
+        onConfirm={unpublish}
+      />
+      <ConfirmDialog
+        heading={t('discardChangesTitle')}
+        body={t('discardChangesBody')}
+        confirmLabel={t('discardChanges')}
+        failedMessage={t('discardChangesBody')}
+        status="warning"
+        isOpen={pendingConfirm === 'discard'}
+        onOpenChange={open => { if (!open) setPendingConfirm(null); }}
+        onConfirm={discardAndLeave}
       />
     </div>
   );
