@@ -336,6 +336,20 @@ const baseMockApiClient: ApiClient = {
       imageUrl: req.imageUrl,
     };
     store.checkins = [entry, ...store.checkins];
+    mockData.mockGuildItems.unshift(
+      ...(req.lootList ?? []).map((item, idx) => ({
+        id: entry.lootList[idx].id,
+        name: item.name,
+        description: item.description ?? '',
+        category: item.category ?? ItemCategory.MISC,
+        rarity: item.rarity ?? ItemRarity.COMMON,
+        donatedBy: currentUser.displayName,
+        donatedAt: new Date().toISOString(),
+        quantity: 1,
+        checkinId: entry.id,
+        checkinTitle: req.title,
+      })),
+    );
     return entry;
   },
   updateCheckin: async (_guildId, id, patch) => {

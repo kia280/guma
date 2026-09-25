@@ -118,7 +118,8 @@
     "removeLootItem": "Remove {name}",
     "itemTemplatePlaceholder": "Pick an item to add",
     "noItemTemplates": "No item templates yet",
-    "itemTemplateHint": "Adds the item to the end of the loot list."
+    "itemTemplateHint": "Adds the item to the end of the loot list.",
+    "lootToBankHint": "When published, these items go to the guild storage and stay linked to this roll call."
   },
   "walletPage": {
     "wallet": "Wallet",
@@ -383,7 +384,9 @@
     "errorDuplicateItemRequest": "You already have a pending request for this item.",
     "errorItemUnavailable": "This item is no longer in the guild storage.",
     "errorNotMember": "Only guild members can submit requests.",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "fromCheckin": "From roll call: {title}",
+    "untitledCheckin": "a deleted roll call"
   },
   "notificationsCard": {
     "notifications": "Notifications",
