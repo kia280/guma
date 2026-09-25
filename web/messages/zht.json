@@ -282,7 +282,6 @@
   },
   "adminPage": {
     "users": "用戶",
-    "activity": "動態",
     "guild": "公會",
     "announcements": "公告",
     "user": "用戶",
@@ -290,6 +289,10 @@
     "status": "狀態",
     "lastActive": "最後活躍",
     "recentActivity": "近期公會動態",
+    "loadingActivity": "正在載入動態",
+    "activityLoadError": "無法載入近期動態。",
+    "retry": "重試",
+    "noActivity": "目前還沒有公會動態。競標、簽到、抽獎與新成員加入都會顯示在這裡。",
     "totalMembers": "總成員數",
     "guildBalance": "公會餘額",
     "activeEvents": "進行中活動",
@@ -364,7 +367,7 @@
       "moderator": "幹部",
       "member": "成員"
     },
-    "bankRequests": "金庫申請",
+    "bankRequests": "申請",
     "rolePermissions": "角色權限"
   },
   "adminRolesPage": {
