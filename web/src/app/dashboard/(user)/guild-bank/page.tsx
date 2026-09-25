@@ -8,7 +8,6 @@ import {
   Modal,
   useOverlayState,
   Input,
-  Avatar,
   TextArea,
   TextField,
   Label,
@@ -19,12 +18,18 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { contributionStatusColor } from '@/lib/status-colors';
 import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-bank';
 
@@ -48,8 +53,12 @@ const getContributionIcon = (type: GuildContribution['type']) => {
 
 export default function GuildBankPage() {
   const t = useTranslations('guildBankPage');
+  const labels = useTranslations('createAuctionModal');
+  const format = useIntlFormatter();
+  const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
 
+  const contributeModalState = useOverlayState();
   const requestItemModalState = useOverlayState();
   const requestFundsModalState = useOverlayState();
 
@@ -60,11 +69,25 @@ export default function GuildBankPage() {
   const [selectedItem, setSelectedItem] = React.useState<GuildBankItem | null>(null);
   const [requestItemReason, setRequestItemReason] = React.useState('');
   const [isRequesting, setIsRequesting] = React.useState(false);
+  const [isContributing, setIsContributing] = React.useState(false);
   const [requestError, setRequestError] = React.useState<string | null>(null);
 
   const [bank, setBank] = React.useState<GuildBank | null>(null);
   const [mockContributions, setMockContributions] = React.useState<GuildContribution[]>([]);
   const [mockGuildItems, setMockGuildItems] = React.useState<GuildBankItem[]>([]);
+
+  const bankState = useLoadState();
+  const contributionsState = useLoadState();
+  const itemsState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = React.useState(0);
+
+  const reload = React.useCallback(() => {
+    bankState.reset();
+    contributionsState.reset();
+    itemsState.reset();
+    setReloadKey(key => key + 1);
+  }, [bankState.reset, contributionsState.reset, itemsState.reset]);
 
   const latestRefetch = React.useRef(0);
 
@@ -73,14 +96,47 @@ export default function GuildBankPage() {
     const ifLatest = <T,>(apply: (value: T) => void) => (value: T) => {
       if (refetchId === latestRefetch.current) apply(value);
     };
-    apiClient.getGuildBank(guildId).then(ifLatest(setBank)).catch(() => {});
-    apiClient.listContributions(guildId).then(ifLatest(setMockContributions)).catch(() => {});
-    apiClient.listBankItems(guildId).then(ifLatest(setMockGuildItems)).catch(() => {});
-  }, [guildId]);
+    const onLoadFailed = (markFailed: () => void) =>
+      ifLatest(() => {
+        markFailed();
+        notify.loadFailed(reload, 'guild-bank');
+      });
+    apiClient
+      .getGuildBank(guildId)
+      .then(ifLatest(data => {
+        setBank(data);
+        bankState.ready();
+      }))
+      .catch(onLoadFailed(bankState.failed));
+    apiClient
+      .listContributions(guildId)
+      .then(ifLatest(data => {
+        setMockContributions(data);
+        contributionsState.ready();
+      }))
+      .catch(onLoadFailed(contributionsState.failed));
+    apiClient
+      .listBankItems(guildId)
+      .then(ifLatest(data => {
+        setMockGuildItems(data);
+        itemsState.ready();
+      }))
+      .catch(onLoadFailed(itemsState.failed));
+  }, [
+    guildId,
+    notify,
+    reload,
+    bankState.ready,
+    bankState.failed,
+    contributionsState.ready,
+    contributionsState.failed,
+    itemsState.ready,
+    itemsState.failed,
+  ]);
 
   React.useEffect(() => {
     refetchBank();
-  }, [refetchBank]);
+  }, [refetchBank, reloadKey]);
 
   useLiveResource(['bank'], refetchBank, { guildId });
 
@@ -105,12 +161,19 @@ export default function GuildBankPage() {
   const handleContribute = async () => {
     const amount = parseGold(contributeAmount);
     if (!(amount > 0)) return;
+    setIsContributing(true);
     try {
       await apiClient.contributeFunds(guildId, { amount, note: contributeNote || undefined });
       refetchBank();
-    } catch (err) { console.error(err); }
-    setContributeAmount('');
-    setContributeNote('');
+      notify.success(t('contributeSuccess'));
+      setContributeAmount('');
+      setContributeNote('');
+      contributeModalState.close();
+    } catch {
+      notify.error(t('contributeFailed'));
+    } finally {
+      setIsContributing(false);
+    }
   };
 
   const requestErrorMessage = (err: unknown) => {
@@ -141,6 +204,7 @@ export default function GuildBankPage() {
     try {
       await apiClient.requestFunds(guildId, { amount, reason: requestReason.trim() });
       refetchBank();
+      notify.success(t('requestSuccess'));
       setRequestAmount('');
       setRequestReason('');
       requestFundsModalState.close();
@@ -158,6 +222,7 @@ export default function GuildBankPage() {
     try {
       await apiClient.requestItem(guildId, selectedItem.id, requestItemReason.trim());
       refetchBank();
+      notify.success(t('requestSuccess'));
       setSelectedItem(null);
       setRequestItemReason('');
       requestItemModalState.close();
@@ -191,18 +256,21 @@ export default function GuildBankPage() {
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="type-display text-foreground">${guildBalance.toFixed(2)}</p>
+              <AsyncValue state={bankState.state}>
+                <p className="type-display text-foreground">{formatGold(guildBalance)}</p>
+              </AsyncValue>
               <p className="type-caption text-hint mt-0.5">{t('guildGold')}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Modal>
                 <Button
                   variant="tertiary"
                   className="w-full sm:w-auto"
+                  onPress={contributeModalState.open}
                 >
                   <Icon icon="solar:arrow-down-linear" width={16} />
                   {t('contribute')}
                 </Button>
+              <Modal state={contributeModalState}>
                 <Modal.Backdrop>
                   <Modal.Container size="sm">
                     <Modal.Dialog>
@@ -253,6 +321,7 @@ export default function GuildBankPage() {
                         <Button
                           variant="tertiary"
                           onPress={handleContribute}
+                          isPending={isContributing}
                           isDisabled={!(parseGold(contributeAmount) > 0)}
                         >
                           {t('contribute')}
@@ -347,7 +416,7 @@ export default function GuildBankPage() {
             <div className="flex justify-between items-center">
               <p className="type-caption text-subtle">{t('monthlyGoal')}</p>
               <p className="type-caption text-subtle">
-                ${guildBalance.toLocaleString()} / ${guildFundGoal.toLocaleString()}
+                {formatGold(guildBalance)} / {formatGold(guildFundGoal)}
               </p>
             </div>
             <div className="w-full bg-default rounded-full overflow-hidden h-2">
@@ -371,13 +440,26 @@ export default function GuildBankPage() {
             <div className="flex items-center justify-between">
               <p className="type-subheading text-foreground">{t('storage')}</p>
               <Chip size="sm" variant="tertiary">
-                {mockGuildItems.length} {t('items')}
+                {t('items', { count: mockGuildItems.length })}
               </Chip>
             </div>
             <p className="type-caption text-hint">{t('storageDesc')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
+          <AsyncContent
+            state={itemsState.state}
+            onRetry={reload}
+            skeleton={
+              <CardGridSkeleton
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
+                cardClassName="h-20 rounded-xl"
+              />
+            }
+          >
+          {mockGuildItems.length === 0 ? (
+            <EmptyContent icon="solar:box-linear" title={t('noItems')} description={t('noItemsHint')} />
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {mockGuildItems.map(item => (
               <Card
@@ -394,8 +476,8 @@ export default function GuildBankPage() {
                       )}
                     </p>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary" className="capitalize">
-                        {item.rarity}
+                      <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
+                        {labels(`rarities.${item.rarity}`)}
                       </Chip>
                     </div>
                     {item.checkinId && (
@@ -425,6 +507,8 @@ export default function GuildBankPage() {
               </Card>
             ))}
           </div>
+          )}
+          </AsyncContent>
         </Card.Content>
       </Card>
 
@@ -439,11 +523,20 @@ export default function GuildBankPage() {
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
+          <AsyncContent state={contributionsState.state} onRetry={reload} skeleton={<ListSkeleton rows={5} />}>
+          {mockContributions.length === 0 ? (
+            <EmptyContent
+              icon="solar:history-line-duotone"
+              title={t('noActivity')}
+              description={t('noActivityHint')}
+            />
+          ) : (
+          <>
           {/* Desktop Table */}
           <div className="hidden md:block">
             <Table>
               <Table.ScrollContainer>
-                <Table.Content aria-label="Guild bank activity table" className="min-w-[700px]">
+                <Table.Content aria-label={t('activityTable')} className="min-w-[700px]">
                   <Table.Header>
                     <Table.Column isRowHeader>{t('activity')}</Table.Column>
                     <Table.Column>{t('member')}</Table.Column>
@@ -484,12 +577,7 @@ export default function GuildBankPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <div className="flex items-center gap-2">
-                            <Avatar size="sm" className="w-6 h-6">
-                              <Avatar.Image src={`https://i.pravatar.cc/150?u=${entry.member}`} />
-                              <Avatar.Fallback>
-                                {entry.member.slice(0, 2).toUpperCase()}
-                              </Avatar.Fallback>
-                            </Avatar>
+                            <UserAvatar name={entry.member} src={entry.memberAvatar} className="size-6" />
                             <p className="type-body text-foreground">{entry.member}</p>
                           </div>
                         </Table.Cell>
@@ -498,7 +586,7 @@ export default function GuildBankPage() {
                             <span
                               className={`type-body font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
                             >
-                              {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
+                              {entry.type === 'contribute' ? '+' : '-'}{formatGold(entry.amount)}
                             </span>
                           ) : (
                             <span className="type-body text-subtle line-clamp-2 max-w-[220px]">{entry.itemName}</span>
@@ -506,7 +594,7 @@ export default function GuildBankPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <p className="type-body text-subtle">
-                            {new Date(entry.date).toLocaleDateString()}
+                            {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
                           </p>
                         </Table.Cell>
                         <Table.Cell>
@@ -556,7 +644,7 @@ export default function GuildBankPage() {
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <p className="type-caption text-hint">{entry.member}</p>
                         <p className="type-caption text-hint">
-                          {new Date(entry.date).toLocaleDateString()}
+                          {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
                         </p>
                         <Chip size="sm" color={contributionStatusColor[entry.status]} variant="secondary">
                           {t(entry.status)}
@@ -569,7 +657,7 @@ export default function GuildBankPage() {
                       <span
                         className={`type-body font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
                       >
-                        {entry.type === 'contribute' ? '+' : '-'}${entry.amount.toFixed(2)}
+                        {entry.type === 'contribute' ? '+' : '-'}{formatGold(entry.amount)}
                       </span>
                     ) : (
                       <span className="type-caption text-subtle line-clamp-2 max-w-[140px] block">{entry.itemName}</span>
@@ -579,6 +667,9 @@ export default function GuildBankPage() {
               </div>
             ))}
           </div>
+          </>
+          )}
+          </AsyncContent>
         </Card.Content>
       </Card>
 
@@ -604,9 +695,12 @@ export default function GuildBankPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="type-body font-medium text-foreground">{selectedItem.name}</p>
-                      <p className="type-caption text-hint capitalize">
-                        {selectedItem.rarity} · {selectedItem.category} · x{selectedItem.quantity}{' '}
-                        {t('available')}
+                      <p className="type-caption text-hint">
+                        {t('itemSummary', {
+                          rarity: labels(`rarities.${selectedItem.rarity}`),
+                          category: labels(`categories.${selectedItem.category}`),
+                          count: selectedItem.quantity,
+                        })}
                       </p>
                     </div>
                   </div>

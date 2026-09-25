@@ -331,12 +331,14 @@ func (q *Queries) InsertBankItem(ctx context.Context, arg InsertBankItemParams) 
 const insertFundRequest = `-- name: InsertFundRequest :one
 INSERT INTO fund_requests (guild_id, requester_id, requester_name, amount, reason)
 VALUES ($1, $2, $4::text, $3, NULLIF($5::text, ''))
-RETURNING id, guild_id, requester_id, requester_name, amount,
-          COALESCE(reason, '')      AS reason,
-          status,
-          reviewer_id,
-          COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at
+RETURNING fund_requests.id, fund_requests.guild_id, fund_requests.requester_id, fund_requests.requester_name,
+          (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = fund_requests.requester_id)::text AS requester_avatar_url,
+          fund_requests.amount,
+          COALESCE(fund_requests.reason, '')      AS reason,
+          fund_requests.status,
+          fund_requests.reviewer_id,
+          COALESCE(fund_requests.review_note, '') AS review_note,
+          fund_requests.created_at, fund_requests.reviewed_at
 `
 
 type InsertFundRequestParams struct {
@@ -348,17 +350,18 @@ type InsertFundRequestParams struct {
 }
 
 type InsertFundRequestRow struct {
-	ID            uuid.UUID
-	GuildID       uuid.UUID
-	RequesterID   uuid.UUID
-	RequesterName string
-	Amount        int64
-	Reason        string
-	Status        string
-	ReviewerID    *uuid.UUID
-	ReviewNote    string
-	CreatedAt     time.Time
-	ReviewedAt    pgtype.Timestamptz
+	ID                 uuid.UUID
+	GuildID            uuid.UUID
+	RequesterID        uuid.UUID
+	RequesterName      string
+	RequesterAvatarUrl string
+	Amount             int64
+	Reason             string
+	Status             string
+	ReviewerID         *uuid.UUID
+	ReviewNote         string
+	CreatedAt          time.Time
+	ReviewedAt         pgtype.Timestamptz
 }
 
 func (q *Queries) InsertFundRequest(ctx context.Context, arg InsertFundRequestParams) (InsertFundRequestRow, error) {
@@ -375,6 +378,7 @@ func (q *Queries) InsertFundRequest(ctx context.Context, arg InsertFundRequestPa
 		&i.GuildID,
 		&i.RequesterID,
 		&i.RequesterName,
+		&i.RequesterAvatarUrl,
 		&i.Amount,
 		&i.Reason,
 		&i.Status,
@@ -392,12 +396,13 @@ SELECT bi.guild_id, bi.id, $1, $2::text,
        NULLIF($3::text, ''), bi.item
 FROM bank_items bi
 WHERE bi.id = $4 AND bi.guild_id = $5
-RETURNING id, guild_id, bank_item_id, requester_id, requester_name,
-          COALESCE(reason, '')      AS reason,
-          status,
-          reviewer_id,
-          COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at, item
+RETURNING item_requests.id, item_requests.guild_id, item_requests.bank_item_id, item_requests.requester_id, item_requests.requester_name,
+          (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = item_requests.requester_id)::text AS requester_avatar_url,
+          COALESCE(item_requests.reason, '')      AS reason,
+          item_requests.status,
+          item_requests.reviewer_id,
+          COALESCE(item_requests.review_note, '') AS review_note,
+          item_requests.created_at, item_requests.reviewed_at, item_requests.item
 `
 
 type InsertItemRequestParams struct {
@@ -409,18 +414,19 @@ type InsertItemRequestParams struct {
 }
 
 type InsertItemRequestRow struct {
-	ID            uuid.UUID
-	GuildID       uuid.UUID
-	BankItemID    *uuid.UUID
-	RequesterID   uuid.UUID
-	RequesterName string
-	Reason        string
-	Status        string
-	ReviewerID    *uuid.UUID
-	ReviewNote    string
-	CreatedAt     time.Time
-	ReviewedAt    pgtype.Timestamptz
-	Item          []byte
+	ID                 uuid.UUID
+	GuildID            uuid.UUID
+	BankItemID         *uuid.UUID
+	RequesterID        uuid.UUID
+	RequesterName      string
+	RequesterAvatarUrl string
+	Reason             string
+	Status             string
+	ReviewerID         *uuid.UUID
+	ReviewNote         string
+	CreatedAt          time.Time
+	ReviewedAt         pgtype.Timestamptz
+	Item               []byte
 }
 
 func (q *Queries) InsertItemRequest(ctx context.Context, arg InsertItemRequestParams) (InsertItemRequestRow, error) {
@@ -438,6 +444,7 @@ func (q *Queries) InsertItemRequest(ctx context.Context, arg InsertItemRequestPa
 		&i.BankItemID,
 		&i.RequesterID,
 		&i.RequesterName,
+		&i.RequesterAvatarUrl,
 		&i.Reason,
 		&i.Status,
 		&i.ReviewerID,
@@ -450,11 +457,15 @@ func (q *Queries) InsertItemRequest(ctx context.Context, arg InsertItemRequestPa
 }
 
 const listBankContributions = `-- name: ListBankContributions :many
-SELECT id, guild_id, user_id, username, amount,
-       COALESCE(note, '') AS note,
-       created_at, kind, items, checkin_id
-FROM bank_contributions WHERE guild_id = $1
-ORDER BY created_at DESC
+SELECT bc.id, bc.guild_id, bc.user_id, bc.username,
+       COALESCE(u.avatar_url, '') AS avatar_url,
+       bc.amount,
+       COALESCE(bc.note, '')      AS note,
+       bc.created_at, bc.kind, bc.items, bc.checkin_id
+FROM bank_contributions bc
+LEFT JOIN users u ON u.id = bc.user_id
+WHERE bc.guild_id = $1
+ORDER BY bc.created_at DESC
 LIMIT $3::int OFFSET $2::int
 `
 
@@ -469,6 +480,7 @@ type ListBankContributionsRow struct {
 	GuildID   uuid.UUID
 	UserID    uuid.UUID
 	Username  string
+	AvatarUrl string
 	Amount    int64
 	Note      string
 	CreatedAt time.Time
@@ -491,6 +503,7 @@ func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContrib
 			&i.GuildID,
 			&i.UserID,
 			&i.Username,
+			&i.AvatarUrl,
 			&i.Amount,
 			&i.Note,
 			&i.CreatedAt,
@@ -582,16 +595,19 @@ func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([
 }
 
 const listFundRequests = `-- name: ListFundRequests :many
-SELECT id, guild_id, requester_id, requester_name, amount,
-       COALESCE(reason, '')      AS reason,
-       status,
-       reviewer_id,
-       COALESCE(review_note, '') AS review_note,
-       created_at, reviewed_at
-FROM fund_requests
-WHERE guild_id = $1
-  AND ($2::text = '' OR status = $2::text)
-ORDER BY created_at DESC
+SELECT fr.id, fr.guild_id, fr.requester_id, fr.requester_name,
+       COALESCE(u.avatar_url, '')   AS requester_avatar_url,
+       fr.amount,
+       COALESCE(fr.reason, '')      AS reason,
+       fr.status,
+       fr.reviewer_id,
+       COALESCE(fr.review_note, '') AS review_note,
+       fr.created_at, fr.reviewed_at
+FROM fund_requests fr
+LEFT JOIN users u ON u.id = fr.requester_id
+WHERE fr.guild_id = $1
+  AND ($2::text = '' OR fr.status = $2::text)
+ORDER BY fr.created_at DESC
 LIMIT $4::int OFFSET $3::int
 `
 
@@ -603,17 +619,18 @@ type ListFundRequestsParams struct {
 }
 
 type ListFundRequestsRow struct {
-	ID            uuid.UUID
-	GuildID       uuid.UUID
-	RequesterID   uuid.UUID
-	RequesterName string
-	Amount        int64
-	Reason        string
-	Status        string
-	ReviewerID    *uuid.UUID
-	ReviewNote    string
-	CreatedAt     time.Time
-	ReviewedAt    pgtype.Timestamptz
+	ID                 uuid.UUID
+	GuildID            uuid.UUID
+	RequesterID        uuid.UUID
+	RequesterName      string
+	RequesterAvatarUrl string
+	Amount             int64
+	Reason             string
+	Status             string
+	ReviewerID         *uuid.UUID
+	ReviewNote         string
+	CreatedAt          time.Time
+	ReviewedAt         pgtype.Timestamptz
 }
 
 func (q *Queries) ListFundRequests(ctx context.Context, arg ListFundRequestsParams) ([]ListFundRequestsRow, error) {
@@ -635,6 +652,7 @@ func (q *Queries) ListFundRequests(ctx context.Context, arg ListFundRequestsPara
 			&i.GuildID,
 			&i.RequesterID,
 			&i.RequesterName,
+			&i.RequesterAvatarUrl,
 			&i.Amount,
 			&i.Reason,
 			&i.Status,
@@ -654,16 +672,18 @@ func (q *Queries) ListFundRequests(ctx context.Context, arg ListFundRequestsPara
 }
 
 const listItemRequests = `-- name: ListItemRequests :many
-SELECT id, guild_id, bank_item_id, requester_id, requester_name,
-       COALESCE(reason, '')      AS reason,
-       status,
-       reviewer_id,
-       COALESCE(review_note, '') AS review_note,
-       created_at, reviewed_at, item
-FROM item_requests
-WHERE guild_id = $1
-  AND ($2::text = '' OR status = $2::text)
-ORDER BY created_at DESC
+SELECT ir.id, ir.guild_id, ir.bank_item_id, ir.requester_id, ir.requester_name,
+       COALESCE(u.avatar_url, '')   AS requester_avatar_url,
+       COALESCE(ir.reason, '')      AS reason,
+       ir.status,
+       ir.reviewer_id,
+       COALESCE(ir.review_note, '') AS review_note,
+       ir.created_at, ir.reviewed_at, ir.item
+FROM item_requests ir
+LEFT JOIN users u ON u.id = ir.requester_id
+WHERE ir.guild_id = $1
+  AND ($2::text = '' OR ir.status = $2::text)
+ORDER BY ir.created_at DESC
 LIMIT $4::int OFFSET $3::int
 `
 
@@ -675,18 +695,19 @@ type ListItemRequestsParams struct {
 }
 
 type ListItemRequestsRow struct {
-	ID            uuid.UUID
-	GuildID       uuid.UUID
-	BankItemID    *uuid.UUID
-	RequesterID   uuid.UUID
-	RequesterName string
-	Reason        string
-	Status        string
-	ReviewerID    *uuid.UUID
-	ReviewNote    string
-	CreatedAt     time.Time
-	ReviewedAt    pgtype.Timestamptz
-	Item          []byte
+	ID                 uuid.UUID
+	GuildID            uuid.UUID
+	BankItemID         *uuid.UUID
+	RequesterID        uuid.UUID
+	RequesterName      string
+	RequesterAvatarUrl string
+	Reason             string
+	Status             string
+	ReviewerID         *uuid.UUID
+	ReviewNote         string
+	CreatedAt          time.Time
+	ReviewedAt         pgtype.Timestamptz
+	Item               []byte
 }
 
 func (q *Queries) ListItemRequests(ctx context.Context, arg ListItemRequestsParams) ([]ListItemRequestsRow, error) {
@@ -709,6 +730,7 @@ func (q *Queries) ListItemRequests(ctx context.Context, arg ListItemRequestsPara
 			&i.BankItemID,
 			&i.RequesterID,
 			&i.RequesterName,
+			&i.RequesterAvatarUrl,
 			&i.Reason,
 			&i.Status,
 			&i.ReviewerID,
@@ -852,13 +874,15 @@ UPDATE fund_requests SET
     reviewer_id = $2,
     review_note = NULLIF($3::text, ''),
     reviewed_at = NOW()
-WHERE id = $4 AND guild_id = $5 AND status = 'pending'
-RETURNING id, guild_id, requester_id, requester_name, amount,
-          COALESCE(reason, '')      AS reason,
-          status,
-          reviewer_id,
-          COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at
+WHERE fund_requests.id = $4 AND fund_requests.guild_id = $5 AND fund_requests.status = 'pending'
+RETURNING fund_requests.id, fund_requests.guild_id, fund_requests.requester_id, fund_requests.requester_name,
+          (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = fund_requests.requester_id)::text AS requester_avatar_url,
+          fund_requests.amount,
+          COALESCE(fund_requests.reason, '')      AS reason,
+          fund_requests.status,
+          fund_requests.reviewer_id,
+          COALESCE(fund_requests.review_note, '') AS review_note,
+          fund_requests.created_at, fund_requests.reviewed_at
 `
 
 type UpdateFundRequestStatusParams struct {
@@ -870,17 +894,18 @@ type UpdateFundRequestStatusParams struct {
 }
 
 type UpdateFundRequestStatusRow struct {
-	ID            uuid.UUID
-	GuildID       uuid.UUID
-	RequesterID   uuid.UUID
-	RequesterName string
-	Amount        int64
-	Reason        string
-	Status        string
-	ReviewerID    *uuid.UUID
-	ReviewNote    string
-	CreatedAt     time.Time
-	ReviewedAt    pgtype.Timestamptz
+	ID                 uuid.UUID
+	GuildID            uuid.UUID
+	RequesterID        uuid.UUID
+	RequesterName      string
+	RequesterAvatarUrl string
+	Amount             int64
+	Reason             string
+	Status             string
+	ReviewerID         *uuid.UUID
+	ReviewNote         string
+	CreatedAt          time.Time
+	ReviewedAt         pgtype.Timestamptz
 }
 
 func (q *Queries) UpdateFundRequestStatus(ctx context.Context, arg UpdateFundRequestStatusParams) (UpdateFundRequestStatusRow, error) {
@@ -897,6 +922,7 @@ func (q *Queries) UpdateFundRequestStatus(ctx context.Context, arg UpdateFundReq
 		&i.GuildID,
 		&i.RequesterID,
 		&i.RequesterName,
+		&i.RequesterAvatarUrl,
 		&i.Amount,
 		&i.Reason,
 		&i.Status,
@@ -914,13 +940,14 @@ UPDATE item_requests SET
     reviewer_id = $2,
     review_note = NULLIF($3::text, ''),
     reviewed_at = NOW()
-WHERE id = $4 AND guild_id = $5 AND status = 'pending'
-RETURNING id, guild_id, bank_item_id, requester_id, requester_name,
-          COALESCE(reason, '')      AS reason,
-          status,
-          reviewer_id,
-          COALESCE(review_note, '') AS review_note,
-          created_at, reviewed_at, item
+WHERE item_requests.id = $4 AND item_requests.guild_id = $5 AND item_requests.status = 'pending'
+RETURNING item_requests.id, item_requests.guild_id, item_requests.bank_item_id, item_requests.requester_id, item_requests.requester_name,
+          (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = item_requests.requester_id)::text AS requester_avatar_url,
+          COALESCE(item_requests.reason, '')      AS reason,
+          item_requests.status,
+          item_requests.reviewer_id,
+          COALESCE(item_requests.review_note, '') AS review_note,
+          item_requests.created_at, item_requests.reviewed_at, item_requests.item
 `
 
 type UpdateItemRequestStatusParams struct {
@@ -932,18 +959,19 @@ type UpdateItemRequestStatusParams struct {
 }
 
 type UpdateItemRequestStatusRow struct {
-	ID            uuid.UUID
-	GuildID       uuid.UUID
-	BankItemID    *uuid.UUID
-	RequesterID   uuid.UUID
-	RequesterName string
-	Reason        string
-	Status        string
-	ReviewerID    *uuid.UUID
-	ReviewNote    string
-	CreatedAt     time.Time
-	ReviewedAt    pgtype.Timestamptz
-	Item          []byte
+	ID                 uuid.UUID
+	GuildID            uuid.UUID
+	BankItemID         *uuid.UUID
+	RequesterID        uuid.UUID
+	RequesterName      string
+	RequesterAvatarUrl string
+	Reason             string
+	Status             string
+	ReviewerID         *uuid.UUID
+	ReviewNote         string
+	CreatedAt          time.Time
+	ReviewedAt         pgtype.Timestamptz
+	Item               []byte
 }
 
 func (q *Queries) UpdateItemRequestStatus(ctx context.Context, arg UpdateItemRequestStatusParams) (UpdateItemRequestStatusRow, error) {
@@ -961,6 +989,7 @@ func (q *Queries) UpdateItemRequestStatus(ctx context.Context, arg UpdateItemReq
 		&i.BankItemID,
 		&i.RequesterID,
 		&i.RequesterName,
+		&i.RequesterAvatarUrl,
 		&i.Reason,
 		&i.Status,
 		&i.ReviewerID,
