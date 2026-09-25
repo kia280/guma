@@ -9,20 +9,15 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { lotteryStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
-import type { Lottery, LotteryStatus, LotteryWinner } from '@/types/lottery';
+import type { Lottery, LotteryWinner } from '@/types/lottery';
 import { DateTimePicker } from './DateTimePicker';
 import { LotteryWheel, type WheelEntry } from './LotteryWheel';
 
 const DRAW_RETRY_MS = 3000;
 
 type DrawPhase = 'idle' | 'drawing' | 'spinning' | 'revealed';
-
-const STATUS_COLOR: Record<LotteryStatus, 'accent' | 'warning' | 'default'> = {
-  active: 'accent',
-  upcoming: 'warning',
-  ended: 'default',
-};
 
 function splitDuration(ms: number) {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -299,7 +294,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
 
       <div className={`flex flex-wrap items-start justify-between gap-3 ${onClose ? 'pr-8' : ''}`}>
         <div className="min-w-0">
-          <Chip size="sm" color={STATUS_COLOR[lottery.status]} variant="secondary" className="mb-1">
+          <Chip size="sm" color={lotteryStatusColor[lottery.status]} variant="secondary" className="mb-1">
             {t(`status.${lottery.status}`)}
           </Chip>
           <h2 className="type-title text-foreground">{lottery.title}</h2>

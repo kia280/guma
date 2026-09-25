@@ -12,8 +12,9 @@ import { LootListEditor } from '@/components/LootListEditor';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
+import { checkinStatusColor } from '@/lib/status-colors';
 import { CheckinStatus, type CheckinEntry, type CheckinTemplate, type ItemTemplate, type LootEntry } from '@/types/checkin';
-import { CheckinCard, checkinStatusColor } from './CheckinCard';
+import { CheckinCard } from './CheckinCard';
 
 const DRAFT_KEY = 'checkin_draft';
 
