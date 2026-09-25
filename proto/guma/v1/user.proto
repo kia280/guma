@@ -103,6 +103,15 @@ message User {
   google.protobuf.Timestamp updated_at = 9;
   string current_guild_id = 10;
   int64 balance = 11;
+  optional bool email_verified = 12;
+  LinkedAccount discord = 13;
+  string guild_role = 14;
+}
+
+message LinkedAccount {
+  string provider = 1;
+  string subject = 2;
+  string username = 3;
 }
 
 message UserStats {
