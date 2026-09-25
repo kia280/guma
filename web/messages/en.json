@@ -296,7 +296,6 @@
   },
   "adminPage": {
     "users": "Users",
-    "activity": "Activity",
     "guild": "Guild",
     "announcements": "Announcements",
     "user": "USER",
@@ -304,6 +303,10 @@
     "status": "STATUS",
     "lastActive": "LAST ACTIVE",
     "recentActivity": "Recent Guild Activity",
+    "loadingActivity": "Loading activity",
+    "activityLoadError": "Couldn't load recent activity.",
+    "retry": "Retry",
+    "noActivity": "No guild activity yet. Auctions, check-ins, lotteries, and new members will appear here.",
     "totalMembers": "Total Members",
     "guildBalance": "Guild Balance",
     "activeEvents": "Active Events",
@@ -319,9 +322,52 @@
     "pinAnnouncement": "Pin announcement",
     "pinNote": "Pinned announcements appear at the top",
     "cancel": "Cancel",
-    "post": "Post",
     "by": "By",
     "pinned": "Pinned",
+    "draft": "Draft",
+    "untitledDraft": "Untitled draft",
+    "noAnnouncements": "No announcements yet",
+    "createDraftFailed": "Couldn't create a draft. Please try again.",
+    "lastSaved": "Last saved {time}",
+    "editDraft": "Edit",
+    "deleteDraft": "Delete draft",
+    "deleteDraftTitle": "Delete this draft?",
+    "deleteDraftBody": "\"{title}\" will be permanently deleted. This can't be undone.",
+    "deleteDraftFailed": "Couldn't delete the draft. Please try again.",
+    "delete": "Delete",
+    "backToAnnouncements": "Back to announcements",
+    "editAnnouncement": "Edit Announcement",
+    "editAnnouncementHint": "Changes are saved as a draft automatically. Members only see it after you publish.",
+    "loadingDraft": "Loading draft",
+    "draftNotFound": "Announcement not found",
+    "draftNotFoundHint": "It may have been deleted by another admin.",
+    "announcementTitlePlaceholder": "Enter a title",
+    "announcementContentPlaceholder": "Write the announcement",
+    "contentLength": "{count} / {max} characters",
+    "write": "Write",
+    "preview": "Preview",
+    "nothingToPreview": "Nothing to preview yet.",
+    "markdownHint": "Supports Discord formatting: **bold**, *italic*, __underline__, ~~strikethrough~~, ||spoiler||, `code`, ```code block```, # heading, -# subtext, > quote, - list, [text](https://link)",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "savedAt": "Saved at {time}",
+    "unsavedChanges": "Unsaved changes",
+    "saveFailed": "Autosave failed",
+    "publish": "Publish",
+    "publishRequirement": "Add a title and content to publish.",
+    "publishFailed": "Couldn't publish the announcement. Please try again.",
+    "published": "Published",
+    "unpublish": "Unpublish",
+    "unpublishTitle": "Unpublish this announcement?",
+    "unpublishBody": "\"{title}\" will be hidden from members and moved back to drafts. Publishing it again gives it a new publish time.",
+    "unpublishFailed": "Couldn't unpublish the announcement. Please try again.",
+    "editPublishedHint": "This announcement is live. Members see your edits only after you press Save changes.",
+    "saveChanges": "Save changes",
+    "saveChangesFailed": "Couldn't save changes",
+    "publishedRequirement": "Published announcements need a title and content.",
+    "discardChangesTitle": "Discard unsaved changes?",
+    "discardChangesBody": "Your edits to this published announcement haven't been saved and will be lost.",
+    "discardChanges": "Discard",
     "save": "Save",
     "statuses": {
       "online": "Online",
@@ -334,8 +380,70 @@
       "moderator": "Moderator",
       "member": "Member"
     },
-    "bankRequests": "Bank requests",
+    "bankRequests": "Requests",
+    "rolePermissions": "Role permissions",
     "templates": "Templates"
+  },
+  "adminRolesPage": {
+    "back": "Back to administration",
+    "title": "Role permissions",
+    "subtitle": "What owners, admins, moderators, and members can do in this guild.",
+    "action": "Action",
+    "allowed": "Allowed",
+    "notAllowed": "Not allowed",
+    "roleSummaries": {
+      "owner": "Created the guild. Has every admin permission and is the only role that can delete the guild.",
+      "admin": "Manages the guild: edits settings, runs lotteries, and cancels auctions.",
+      "moderator": "Helps run day-to-day activities: creates check-ins and reviews guild bank requests.",
+      "member": "Takes part in guild activities: check-ins, auctions, lotteries, and the guild bank."
+    },
+    "sections": {
+      "guild": {
+        "title": "Guild",
+        "description": "Guild information, settings, and membership"
+      },
+      "checkin": {
+        "title": "Check-ins",
+        "description": "Attendance tracking for guild activities"
+      },
+      "bank": {
+        "title": "Guild bank",
+        "description": "Shared funds and items"
+      },
+      "auction": {
+        "title": "Auctions",
+        "description": "Item auctions and bidding"
+      },
+      "lottery": {
+        "title": "Lotteries",
+        "description": "Lotteries and prize draws"
+      },
+      "wallet": {
+        "title": "Wallet and backpack",
+        "description": "Personal funds and items"
+      }
+    },
+    "actions": {
+      "viewGuild": "View guild information and settings",
+      "viewMembers": "View the member list",
+      "editGuild": "Edit guild information and settings",
+      "deleteGuild": "Delete the guild",
+      "leaveGuild": "Leave the guild",
+      "attendCheckin": "View check-ins and record attendance",
+      "createCheckin": "Create check-ins",
+      "contribute": "Contribute funds and donate items",
+      "requestFromBank": "Request funds or items",
+      "reviewRequests": "Approve or reject fund and item requests",
+      "createAuction": "Create auctions",
+      "placeBid": "Place bids",
+      "cancelAuction": "Cancel auctions",
+      "buyTickets": "Buy lottery tickets",
+      "createLottery": "Create lotteries",
+      "drawLottery": "Draw lottery winners",
+      "changeDrawDate": "Change the draw date",
+      "manageWallet": "Manage their own wallet and backpack"
+    },
+    "ownerLeaveNote": "The owner must transfer ownership before leaving the guild."
   },
   "guildBankPage": {
     "treasury": "Guild Treasury",
@@ -906,6 +1014,9 @@
       "approved": "Approved",
       "rejected": "Rejected"
     }
+  },
+  "markdown": {
+    "revealSpoiler": "Spoiler, press to reveal"
   },
   "checkinTemplates": {
     "description": "A title plus items from the item library, used to prefill new roll calls.",

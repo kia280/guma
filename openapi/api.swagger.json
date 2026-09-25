@@ -1,10 +1,13 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/guma/v1/item.proto",
+    "title": "proto/guma/v1/announcement.proto",
     "version": "version not set"
   },
   "tags": [
+    {
+      "name": "AnnouncementService"
+    },
     {
       "name": "AuctionService"
     },
@@ -365,6 +368,285 @@
         ],
         "tags": [
           "GuildService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/announcements": {
+      "get": {
+        "operationId": "AnnouncementService_ListAnnouncements",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListAnnouncementsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "includeDrafts",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "AnnouncementService"
+        ]
+      },
+      "post": {
+        "operationId": "AnnouncementService_CreateAnnouncementDraft",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateAnnouncementDraftResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AnnouncementServiceCreateAnnouncementDraftBody"
+            }
+          }
+        ],
+        "tags": [
+          "AnnouncementService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/announcements/{announcementId}": {
+      "get": {
+        "operationId": "AnnouncementService_GetAnnouncement",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetAnnouncementResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "announcementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AnnouncementService"
+        ]
+      },
+      "delete": {
+        "operationId": "AnnouncementService_DeleteAnnouncementDraft",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteAnnouncementDraftResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "announcementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AnnouncementService"
+        ]
+      },
+      "patch": {
+        "operationId": "AnnouncementService_UpdateAnnouncement",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateAnnouncementResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "announcementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AnnouncementServiceUpdateAnnouncementBody"
+            }
+          }
+        ],
+        "tags": [
+          "AnnouncementService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/announcements/{announcementId}/publish": {
+      "post": {
+        "operationId": "AnnouncementService_PublishAnnouncement",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PublishAnnouncementResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "announcementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AnnouncementServicePublishAnnouncementBody"
+            }
+          }
+        ],
+        "tags": [
+          "AnnouncementService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/announcements/{announcementId}/unpublish": {
+      "post": {
+        "operationId": "AnnouncementService_UnpublishAnnouncement",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UnpublishAnnouncementResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "announcementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AnnouncementServiceUnpublishAnnouncementBody"
+            }
+          }
+        ],
+        "tags": [
+          "AnnouncementService"
         ]
       }
     },
@@ -3502,6 +3784,29 @@
     }
   },
   "definitions": {
+    "AnnouncementServiceCreateAnnouncementDraftBody": {
+      "type": "object"
+    },
+    "AnnouncementServicePublishAnnouncementBody": {
+      "type": "object"
+    },
+    "AnnouncementServiceUnpublishAnnouncementBody": {
+      "type": "object"
+    },
+    "AnnouncementServiceUpdateAnnouncementBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "pinned": {
+          "type": "boolean"
+        }
+      }
+    },
     "AuctionServiceCancelAuctionBody": {
       "type": "object",
       "properties": {
@@ -4067,6 +4372,47 @@
         }
       }
     },
+    "v1Announcement": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "authorId": {
+          "type": "string"
+        },
+        "authorName": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "pinned": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string"
+        },
+        "publishedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "v1AppConfig": {
       "type": "object",
       "properties": {
@@ -4427,6 +4773,14 @@
         }
       }
     },
+    "v1CreateAnnouncementDraftResponse": {
+      "type": "object",
+      "properties": {
+        "announcement": {
+          "$ref": "#/definitions/v1Announcement"
+        }
+      }
+    },
     "v1CreateAuctionResponse": {
       "type": "object",
       "properties": {
@@ -4522,6 +4876,9 @@
           "$ref": "#/definitions/v1QuickStats"
         }
       }
+    },
+    "v1DeleteAnnouncementDraftResponse": {
+      "type": "object"
     },
     "v1DeleteCheckInResponse": {
       "type": "object",
@@ -4633,6 +4990,14 @@
       "properties": {
         "invitation": {
           "$ref": "#/definitions/v1Invitation"
+        }
+      }
+    },
+    "v1GetAnnouncementResponse": {
+      "type": "object",
+      "properties": {
+        "announcement": {
+          "$ref": "#/definitions/v1Announcement"
         }
       }
     },
@@ -5190,6 +5555,18 @@
         "maxFileSizeBytes": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "v1ListAnnouncementsResponse": {
+      "type": "object",
+      "properties": {
+        "announcements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Announcement"
+          }
         }
       }
     },
@@ -5856,6 +6233,14 @@
         }
       }
     },
+    "v1PublishAnnouncementResponse": {
+      "type": "object",
+      "properties": {
+        "announcement": {
+          "$ref": "#/definitions/v1Announcement"
+        }
+      }
+    },
     "v1PurchaseTicketsResponse": {
       "type": "object",
       "properties": {
@@ -6122,6 +6507,22 @@
         },
         "updatedWallet": {
           "$ref": "#/definitions/v1Wallet"
+        }
+      }
+    },
+    "v1UnpublishAnnouncementResponse": {
+      "type": "object",
+      "properties": {
+        "announcement": {
+          "$ref": "#/definitions/v1Announcement"
+        }
+      }
+    },
+    "v1UpdateAnnouncementResponse": {
+      "type": "object",
+      "properties": {
+        "announcement": {
+          "$ref": "#/definitions/v1Announcement"
         }
       }
     },

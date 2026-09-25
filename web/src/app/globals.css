@@ -96,6 +96,7 @@
 }
 
 @theme inline {
+  --color-divider: var(--border);
   --color-soft: var(--fg-soft);
   --color-subtle: var(--fg-subtle);
   --color-hint: var(--fg-hint);

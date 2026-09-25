@@ -8,17 +8,22 @@ export interface AdminActivity {
   timestamp: string;
 }
 
+export type AnnouncementStatus = 'draft' | 'published';
+
 export interface AdminAnnouncement {
   id: string;
   title: string;
   content: string;
   pinned: boolean;
+  status: AnnouncementStatus;
   author: string;
   createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
 }
 
-export interface CreateAnnouncementRequest {
+export interface AnnouncementDraftInput {
   title: string;
   content: string;
-  pinned?: boolean;
+  pinned: boolean;
 }
