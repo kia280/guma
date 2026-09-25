@@ -27,12 +27,6 @@ const navigationItems: NavItem[] = [
     icon: 'solar:home-2-linear',
   },
   {
-    key: 'guilds',
-    label: 'Guilds',
-    href: '/guilds',
-    icon: 'solar:users-group-rounded-linear',
-  },
-  {
     key: 'events',
     label: 'Events',
     href: '/events',

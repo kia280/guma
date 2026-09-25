@@ -78,6 +78,21 @@ const transactionNote = (transaction: Transaction): string | undefined => {
   return note === DEFAULT_TRANSFER_NOTE ? undefined : note;
 };
 
+const transactionAmountSign = (amount: number): string => {
+  if (amount > 0) return '+';
+  if (amount < 0) return '\u2212';
+  return '';
+};
+
+const formatTransactionAmount = (amount: number): string =>
+  `${transactionAmountSign(amount)}$${Math.abs(amount).toFixed(2)}`;
+
+const transactionAmountClass = (amount: number): string => {
+  if (amount > 0) return 'text-success';
+  if (amount < 0) return 'text-danger';
+  return 'text-foreground';
+};
+
 const getTransactionIcon = (transaction: Transaction) => {
   switch (transaction.kind) {
     case 'DEPOSIT':
@@ -601,10 +616,9 @@ export default function WalletPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <span
-                            className={`type-body font-medium ${transaction.amount > 0 ? 'text-success' : 'text-foreground'}`}
+                            className={`type-body font-medium ${transactionAmountClass(transaction.amount)}`}
                           >
-                            {transaction.amount > 0 ? '+' : ''}$
-                            {Math.abs(transaction.amount).toFixed(2)}
+                            {formatTransactionAmount(transaction.amount)}
                           </span>
                         </Table.Cell>
                         <Table.Cell>
@@ -664,9 +678,9 @@ export default function WalletPage() {
                   </div>
                   <div className="text-right shrink-0 ml-3">
                     <span
-                      className={`type-body font-medium ${transaction.amount > 0 ? 'text-success' : 'text-foreground'}`}
+                      className={`type-body font-medium ${transactionAmountClass(transaction.amount)}`}
                     >
-                      {transaction.amount > 0 ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}
+                      {formatTransactionAmount(transaction.amount)}
                     </span>
                   </div>
                 </div>

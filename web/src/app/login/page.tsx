@@ -159,14 +159,12 @@ function Login() {
               </InputGroup>
             </TextField>
             <div className="flex w-full items-center justify-between px-1 py-2">
-              <Checkbox id="remember">
-                <Checkbox.Control className="bg-default">
-                  <Checkbox.Indicator />
-                </Checkbox.Control>
+              <Checkbox name="remember">
                 <Checkbox.Content>
-                  <Label htmlFor="remember" className="type-body font-medium text-soft">
-                    {t('rememberMe')}
-                  </Label>
+                  <Checkbox.Control className="bg-default">
+                    <Checkbox.Indicator />
+                  </Checkbox.Control>
+                  <Label className="type-body font-medium text-soft">{t('rememberMe')}</Label>
                 </Checkbox.Content>
               </Checkbox>
               <Link className="type-body font-medium text-hint" href="#">

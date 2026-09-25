@@ -49,8 +49,10 @@ PostgreSQL is accessed through `pgx` and generated `sqlc` queries.
 - Read `web/DESIGN.md` before visual changes and follow its semantic color and
   surface rules. Avoid hardcoded colors and obsolete HeroUI v2 APIs or tokens.
 - HeroUI in this project is v3. Before changing HeroUI components, consult the
-  checked-in docs under `web/.heroui-docs/react/` and the index in
-  `web/CLAUDE.md`; do not rely on remembered v2 APIs.
+  docs under `web/.heroui-docs/react/` and the index in `web/CLAUDE.md`; do not
+  rely on remembered v2 APIs. The docs are git-ignored; if they are missing, run
+  `npx heroui-cli agents-md --react --output CLAUDE.md` from `web/` first, then
+  revert any `web/.gitignore` changes it makes.
 - Preserve internationalization: user-facing strings should use the existing
   `next-intl` message catalogs in `web/messages/`.
 - Prefer accessible components and retain keyboard, focus, label, loading, empty,

@@ -4,7 +4,7 @@ import { Card, Chip, Modal, Button, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type TouchEvent } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
@@ -85,6 +86,7 @@ function StatCard({
 
 const SLIDES = ['personal', 'guild'] as const;
 type Slide = (typeof SLIDES)[number];
+const SWIPE_THRESHOLD_PX = 40;
 
 interface OverviewCarouselProps {
   guildStats: import('@/types/dashboard').GuildStats;
@@ -98,45 +100,41 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
   const t = useTranslations('dashboard');
   const [active, setActive] = useState<Slide>('personal');
   const idx = SLIDES.indexOf(active);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const activeRef = useRef<Slide>(active);
-  const scrollLock = useRef(false);
-  activeRef.current = active;
+  const intlLocale = useIntlLocale();
+  const compactNumber = useMemo(
+    () => new Intl.NumberFormat(intlLocale, { notation: 'compact', maximumFractionDigits: 1 }),
+    [intlLocale],
+  );
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const handler = (e: WheelEvent) => {
-      if (scrollLock.current) return;
-      const currentIdx = SLIDES.indexOf(activeRef.current);
-      if (e.deltaY > 0 && currentIdx < SLIDES.length - 1) {
-        e.preventDefault();
-        scrollLock.current = true;
-        setActive(SLIDES[currentIdx + 1]);
-        setTimeout(() => {
-          scrollLock.current = false;
-        }, 600);
-      } else if (e.deltaY < 0 && currentIdx > 0) {
-        e.preventDefault();
-        scrollLock.current = true;
-        setActive(SLIDES[currentIdx - 1]);
-        setTimeout(() => {
-          scrollLock.current = false;
-        }, 600);
-      }
-    };
-    el.addEventListener('wheel', handler, { passive: false });
-    return () => el.removeEventListener('wheel', handler);
-  }, []);
+  const goTo = (i: number) => setActive(SLIDES[Math.min(Math.max(i, 0), SLIDES.length - 1)]);
+
+  const handleTouchStart = (e: TouchEvent) => {
+    const touch = e.touches[0];
+    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e: TouchEvent) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) < SWIPE_THRESHOLD_PX || Math.abs(dx) <= Math.abs(dy)) return;
+    goTo(dx < 0 ? idx + 1 : idx - 1);
+  };
 
   return (
-    <div ref={containerRef}>
+    <div>
       <Card className="border border-divider shadow-none bg-surface overflow-hidden">
         <Card.Content className="p-0">
           {/* Slide track */}
           <div
             className="flex transition-transform duration-300 ease-in-out"
             style={{ transform: `translateX(-${idx * 100}%)` }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           >
             {/* ── Slide 0: Personal Overview ── */}
             <div className="min-w-full p-4 sm:p-5 space-y-5">
@@ -202,7 +200,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                       tick={{ fontSize: 12, fill: 'var(--muted)' }}
                       axisLine={false}
                       tickLine={false}
-                      tickFormatter={v => `$${(v / 1000).toFixed(0)}k`}
+                      tickFormatter={v => `$${compactNumber.format(v)}`}
                     />
                     <Tooltip
                       formatter={(v: any) => [`$${(v ?? 0).toLocaleString()}`, 'Balance']}
@@ -284,17 +282,45 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
           </div>
 
           {/* Dot navigation */}
-          <div className="flex items-center justify-center gap-2 pb-4">
-            {SLIDES.map((slide, i) => (
-              <button
-                key={slide}
-                onPointerDown={() => setActive(slide)}
-                aria-label={slide === 'personal' ? t('personalOverview') : t('guildOverview')}
-                className={`h-2.5 rounded-full transition-all duration-200 ${
-                  i === idx ? 'w-6 bg-accent' : 'w-2.5 bg-muted/30 hover:bg-muted/50'
-                }`}
-              />
-            ))}
+          <div className="flex items-center justify-center gap-2 pb-3">
+            <Button
+              isIconOnly
+              variant="ghost"
+              size="sm"
+              aria-label={t('previousSlide')}
+              isDisabled={idx === 0}
+              onPress={() => goTo(idx - 1)}
+            >
+              <Icon icon="solar:alt-arrow-left-linear" width={16} />
+            </Button>
+            <div role="group" aria-label={t('overview')} className="flex items-center">
+              {SLIDES.map((slide, i) => (
+                <button
+                  key={slide}
+                  type="button"
+                  onClick={() => setActive(slide)}
+                  aria-label={slide === 'personal' ? t('personalOverview') : t('guildOverview')}
+                  aria-current={i === idx ? 'true' : undefined}
+                  className="group flex h-8 min-w-8 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-focus"
+                >
+                  <span
+                    className={`h-2.5 rounded-full transition-all duration-200 ${
+                      i === idx ? 'w-6 bg-accent' : 'w-2.5 bg-muted/30 group-hover:bg-muted/50'
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+            <Button
+              isIconOnly
+              variant="ghost"
+              size="sm"
+              aria-label={t('nextSlide')}
+              isDisabled={idx === SLIDES.length - 1}
+              onPress={() => goTo(idx + 1)}
+            >
+              <Icon icon="solar:alt-arrow-right-linear" width={16} />
+            </Button>
           </div>
         </Card.Content>
       </Card>

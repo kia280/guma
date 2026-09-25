@@ -195,7 +195,8 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
       .catch(retryLater);
   }, [isDue, phase, guildId, id, load, startSpin]);
 
-  const ticketsLeft = lottery ? Math.max(0, lottery.maxTickets - lottery.ticketsSold) : 0;
+  const hasCap = (lottery?.maxTickets ?? 0) > 0;
+  const ticketsLeft = lottery && hasCap ? Math.max(0, lottery.maxTickets - lottery.ticketsSold) : 0;
   React.useEffect(() => {
     if (ticketsLeft > 0) setQuantity(current => Math.min(current, ticketsLeft));
   }, [ticketsLeft]);
@@ -225,7 +226,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const totalTickets = participants.reduce((sum, p) => sum + p.tickets, 0) || lottery.ticketsSold;
   const myTickets = participants.find(p => p.id === currentUserId)?.tickets ?? 0;
   const canReschedule = lottery.status !== 'ended' && phase === 'idle' && !isDue;
-  const soldPercent = Math.round((lottery.ticketsSold / lottery.maxTickets) * 100);
+  const soldPercent = hasCap ? Math.round((lottery.ticketsSold / lottery.maxTickets) * 100) : 0;
   const isOpen = lottery.status === 'active' && !isDue && phase === 'idle';
   const isSettled = lottery.status === 'ended' && (phase === 'idle' || phase === 'revealed');
   const showWinners = phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended');
@@ -385,15 +386,21 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
               </div>
             )}
             <div className="col-span-2 rounded-xl border border-divider p-3 space-y-2">
-              <div className="flex justify-between type-caption text-hint">
-                <span>{t('ticketsSold', { sold: lottery.ticketsSold, max: lottery.maxTickets })}</span>
-                <span className="tabular-nums">{soldPercent}%</span>
-              </div>
-              <ProgressBar aria-label={t('ticketsSoldLabel')} value={soldPercent} color="accent" className="w-full">
-                <ProgressBar.Track>
-                  <ProgressBar.Fill />
-                </ProgressBar.Track>
-              </ProgressBar>
+              {hasCap ? (
+                <>
+                  <div className="flex justify-between type-caption text-hint">
+                    <span>{t('ticketsSold', { sold: lottery.ticketsSold, max: lottery.maxTickets })}</span>
+                    <span className="tabular-nums">{soldPercent}%</span>
+                  </div>
+                  <ProgressBar aria-label={t('ticketsSoldLabel')} value={soldPercent} color="accent" className="w-full">
+                    <ProgressBar.Track>
+                      <ProgressBar.Fill />
+                    </ProgressBar.Track>
+                  </ProgressBar>
+                </>
+              ) : (
+                <p className="type-caption text-hint">{t('ticketsSoldUncapped', { sold: lottery.ticketsSold })}</p>
+              )}
             </div>
           </dl>
 
@@ -407,11 +414,11 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                   </span>
                 )}
               </div>
-              {ticketsLeft > 0 ? (
+              {!hasCap || ticketsLeft > 0 ? (
                 <div className="flex flex-wrap items-end gap-3">
                   <NumberField
                     minValue={1}
-                    maxValue={ticketsLeft}
+                    maxValue={hasCap ? ticketsLeft : undefined}
                     value={quantity}
                     onChange={value => setQuantity(Number.isFinite(value) ? value : 1)}
                   >
