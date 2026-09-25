@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { apiClient } from '@/lib/guma';
 import type {
   CalendarViewOptions,
   CreateEventData,
@@ -27,26 +27,45 @@ export const useGuildEvents = (guildIdOverride?: string) => {
   });
 
   const [events, setEvents] = useState<GuildEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadedGuildId, setLoadedGuildId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const refetch = useCallback(async () => {
-    setIsLoading(true);
+    setIsRefreshing(true);
     try {
       setEvents(await apiClient.listEvents(guildId));
     } catch (err) {
       setError(err);
     } finally {
-      setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, [guildId]);
 
+  const isLoading = loadedGuildId !== guildId;
+
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    let ignore = false;
+    apiClient
+      .listEvents(guildId)
+      .then(
+        data => {
+          if (!ignore) setEvents(data);
+        },
+        err => {
+          if (!ignore) setError(err);
+        },
+      )
+      .finally(() => {
+        if (!ignore) setLoadedGuildId(guildId);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [guildId]);
 
   const createEvent = async (data: CreateEventData) => {
     setIsCreating(true);
@@ -125,6 +144,7 @@ export const useGuildEvents = (guildIdOverride?: string) => {
   return {
     events,
     isLoading,
+    isRefreshing,
     error,
     calendarView,
 
