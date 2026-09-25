@@ -7,10 +7,9 @@ import { env } from '@/lib/env';
 import { clearSession } from '@/lib/session';
 import type { ApiClient } from './types';
 import type { BalancePoint, UserStats } from '@/types/user';
-import type { Guild } from '@/types/guild';
 import type { LootEntry } from '@/types/checkin';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
+import { toAdminAnnouncement, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
 
 const http: AxiosInstance = axios.create({
   baseURL: env.api.url,
@@ -65,6 +64,19 @@ const toProtoLoot = (entry: LootEntry) => ({
   category: entry.category,
   rarity: entry.rarity,
 });
+
+const apiGuild = (g: Parameters<typeof toGuild>[0]) => toGuild(g, env.api.url);
+
+const fileToBase64 = (file: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result ?? '');
+      resolve(result.slice(result.indexOf(',') + 1));
+    };
+    reader.onerror = () => reject(reader.error ?? new Error('failed to read file'));
+    reader.readAsDataURL(file);
+  });
 
 export const gumaApiClient: ApiClient = {
   // ── Dashboard / Guma ──
@@ -121,27 +133,38 @@ export const gumaApiClient: ApiClient = {
   // ── Guild ──
   listGuilds: async () => {
     const { data } = await http.get('/v1/guilds');
-    return (data.guilds ?? []) as Guild[];
+    return (data.guilds ?? []).map(apiGuild);
   },
   getGuild: async (id) => {
     const { data } = await http.get(`/v1/guilds/${id}`);
-    return data.guild as Guild;
+    return apiGuild(data.guild ?? {});
   },
   getCurrentGuild: async () => {
     try {
       const { data } = await http.get('/v1/guilds/current');
-      return (data.guild as Guild) ?? null;
+      return data.guild ? apiGuild(data.guild) : null;
     } catch {
       return null;
     }
   },
   createGuild: async (req) => {
     const { data } = await http.post('/v1/guilds', req);
-    return data.guild as Guild;
+    return apiGuild(data.guild ?? {});
   },
   updateGuild: async (id, patch) => {
     const { data } = await http.put(`/v1/guilds/${id}`, patch);
-    return data.guild as Guild;
+    return apiGuild(data.guild ?? {});
+  },
+  uploadGuildLogo: async (id, image) => {
+    const { data } = await http.put(`/v1/guilds/${id}/logo`, {
+      data: await fileToBase64(image),
+      content_type: image.type,
+    });
+    return apiGuild(data.guild ?? {});
+  },
+  deleteGuildLogo: async (id) => {
+    const { data } = await http.delete(`/v1/guilds/${id}/logo`);
+    return apiGuild(data.guild ?? {});
   },
   joinGuild: async (id) => {
     await http.post(`/v1/guilds/${id}/join`);

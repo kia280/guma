@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import {
   Tabs,
   Card,
@@ -23,13 +22,19 @@ import { BankRequestReview } from '@/components/BankRequestReview';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { TemplateSettings } from '@/components/TemplateSettings';
+import { GuildAvatar } from '@/components/GuildAvatar';
+import { GuildLogoPrompt } from '@/components/GuildLogoPrompt';
+import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
+import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
 import type { MockUser } from '@/types/user';
 import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
-import type { Guild } from '@/types/guild';
+import { isAxiosError } from 'axios';
+
 
 const STATUSES = ['online', 'offline', 'banned'] as const;
 const ROLES = ['owner', 'admin', 'moderator', 'member'] as const;
@@ -114,8 +119,7 @@ export default function AdminPage() {
   const t = useTranslations('adminPage');
   const locale = useLocale();
   const router = useRouter();
-  const tabParam = useSearchParams().get('tab') ?? undefined;
-  const initialTab = tabParam === 'activity' ? 'guild' : tabParam;
+  const selectedTab = adminTabFromParam(useSearchParams().get('tab'));
   const intlLocale = isLocale(locale) ? HTML_LANG[locale] : locale;
   const formatLastActive = (value?: string) => {
     if (!value) return '';
@@ -131,7 +135,8 @@ export default function AdminPage() {
   const [activityStatus, setActivityStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
   const [activityReloadKey, setActivityReloadKey] = React.useState(0);
   const [announcements, setAnnouncements] = React.useState<AdminAnnouncement[]>([]);
-  const [guild, setGuild] = React.useState<Guild | null>(null);
+  const { guild } = useCurrentGuild();
+  const setGuild = useCurrentGuildStore(s => s.setGuild);
   const [isEditingName, setIsEditingName] = React.useState(false);
   const [guildNameDraft, setGuildNameDraft] = React.useState('');
   const [isSavingName, setIsSavingName] = React.useState(false);
@@ -139,6 +144,57 @@ export default function AdminPage() {
   const startEditingName = () => {
     setGuildNameDraft(guild?.name ?? '');
     setIsEditingName(true);
+  };
+
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
+  const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = React.useState(false);
+  const [isRemovingLogo, setIsRemovingLogo] = React.useState(false);
+  const [logoError, setLogoError] = React.useState<string | null>(null);
+
+  React.useEffect(() => () => {
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+  }, [logoPreview]);
+
+  const logoErrorMessage = (err: unknown) => {
+    if (err instanceof LogoImageError) {
+      if (err.code === 'invalid-type') return t('logoInvalidType');
+      if (err.code === 'too-large') return t('logoTooLarge');
+      return t('logoInvalid');
+    }
+    const status = isAxiosError(err) ? err.response?.status : undefined;
+    if (status === 403) return t('logoPermissionDenied');
+    if (status === 400) return t('logoInvalid');
+    return t('logoUploadFailed');
+  };
+
+  const uploadLogo = async (file: File) => {
+    if (!guild) return;
+    setLogoError(null);
+    setIsUploadingLogo(true);
+    try {
+      const image = await prepareLogo(file);
+      setLogoPreview(URL.createObjectURL(image));
+      setGuild(await apiClient.uploadGuildLogo(guild.id, image));
+    } catch (err) {
+      setLogoError(logoErrorMessage(err));
+    } finally {
+      setIsUploadingLogo(false);
+      setLogoPreview(null);
+    }
+  };
+
+  const removeLogo = async () => {
+    if (!guild) return;
+    setLogoError(null);
+    setIsRemovingLogo(true);
+    try {
+      setGuild(await apiClient.deleteGuildLogo(guild.id));
+    } catch (err) {
+      setLogoError(logoErrorMessage(err));
+    } finally {
+      setIsRemovingLogo(false);
+    }
   };
 
   const saveGuildName = async () => {
@@ -159,7 +215,6 @@ export default function AdminPage() {
     let cancelled = false;
     apiClient.listMembers(guildId).then(d => { if (!cancelled) setMockUsers(d); }).catch(() => {});
     apiClient.getAdminAnnouncements(guildId).then(d => { if (!cancelled) setAnnouncements(d); }).catch(() => {});
-    apiClient.getCurrentGuild().then(d => { if (!cancelled) setGuild(d); }).catch(() => {});
     return () => { cancelled = true; };
   }, [guildId]);
 
@@ -219,16 +274,11 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-end">
-        <Link
-          href="/dashboard/admin/roles"
-          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 type-body text-accent transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-        >
-          <Icon icon="solar:shield-check-linear" width={16} aria-hidden />
-          {t('rolePermissions')}
-        </Link>
-      </div>
-      <Tabs aria-label="Admin sections" defaultSelectedKey={initialTab}>
+      <Tabs
+        aria-label="Admin sections"
+        selectedKey={selectedTab}
+        onSelectionChange={key => router.replace(adminTabHref(adminTabFromParam(String(key))), { scroll: false })}
+      >
         <Tabs.ListContainer>
           <Tabs.List>
             <Tabs.Tab id="users">
@@ -388,6 +438,60 @@ export default function AdminPage() {
                 </Card.Header>
                 <Card.Content className="pt-0">
                   <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-3 py-2">
+                      <div className="relative shrink-0">
+                        <GuildAvatar size="lg" name={guild?.name} src={logoPreview ?? guild?.icon} isLoading={!guild} />
+                        {isUploadingLogo && (
+                          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-surface/70">
+                            <Spinner size="sm" aria-label={t('uploadingLogo')} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="type-body text-subtle">{t('guildLogo')}</p>
+                        <p className="type-caption text-hint">{t('guildLogoHint')}</p>
+                        {logoError && (
+                          <p role="alert" className="type-caption text-danger">{logoError}</p>
+                        )}
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <input
+                          ref={logoInputRef}
+                          type="file"
+                          accept={LOGO_TYPES.join(',')}
+                          className="sr-only"
+                          tabIndex={-1}
+                          aria-hidden
+                          onChange={event => {
+                            const file = event.target.files?.[0];
+                            event.target.value = '';
+                            if (file) void uploadLogo(file);
+                          }}
+                        />
+                        {guild?.icon && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            isPending={isRemovingLogo}
+                            isDisabled={isUploadingLogo}
+                            onPress={removeLogo}
+                          >
+                            {t('removeLogo')}
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          isPending={isUploadingLogo}
+                          isDisabled={!guild || isRemovingLogo}
+                          onPress={() => logoInputRef.current?.click()}
+                        >
+                          <Icon icon="solar:upload-linear" width={16} aria-hidden />
+                          {t('uploadLogo')}
+                        </Button>
+                      </div>
+                    </div>
+                    <GuildLogoPrompt guildName={guild?.name ?? ''} />
                     <div className="flex items-center justify-between gap-3 py-2">
                       {isEditingName ? (
                         <form
