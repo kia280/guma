@@ -41,6 +41,17 @@ const toLootEntry = (item: ItemTemplate): LootEntry => ({
   rarity: item.rarity,
 });
 
+const DEFAULT_WINDOW_MS = 12 * 60 * 60 * 1000;
+
+const currentMinute = () => {
+  const now = new Date();
+  now.setSeconds(0, 0);
+  return now.toISOString();
+};
+
+const defaultExpireTime = (datetime: string) =>
+  new Date(new Date(datetime).getTime() + DEFAULT_WINDOW_MS).toISOString();
+
 const emptyDraft: CheckinDraft = {
   title: '',
   description: '',
@@ -128,6 +139,20 @@ export default function CheckinPage() {
     updateDraft({ lootList: [...draft.lootList, toLootEntry(item)] });
   };
 
+  const applyDefaultTimes = () => {
+    if (draft.datetime && draft.expireTime) return;
+    const datetime = draft.datetime || currentMinute();
+    updateDraft({ datetime, expireTime: draft.expireTime || defaultExpireTime(datetime) });
+  };
+
+  const handleDatetimeChange = (datetime: string) => {
+    const expireFollowsDefault =
+      !draft.expireTime || (draft.datetime !== '' && draft.expireTime === defaultExpireTime(draft.datetime));
+    updateDraft(
+      datetime && expireFollowsDefault ? { datetime, expireTime: defaultExpireTime(datetime) } : { datetime },
+    );
+  };
+
   const handleNewSubmit = async () => {
     if (!draft.title.trim() || !draft.datetime || !draft.expireTime) return;
     if (new Date(draft.expireTime) <= new Date(draft.datetime)) return;
@@ -163,7 +188,7 @@ export default function CheckinPage() {
     <div className="space-y-5">
       <div className="flex justify-end">
         <Modal>
-          <Button>
+          <Button onPress={applyDefaultTimes}>
             <Icon icon="solar:add-circle-linear" width={16} />
             {t('addCheckIn')}
           </Button>
@@ -248,7 +273,7 @@ export default function CheckinPage() {
                       hourCycle={24}
                       value={draft.datetime ? parseAbsoluteToLocal(new Date(draft.datetime).toISOString()) : null}
                       onChange={(val: DateValue | null) => {
-                        updateDraft({ datetime: val ? val.toDate(getLocalTimeZone()).toISOString() : '' });
+                        handleDatetimeChange(val ? val.toDate(getLocalTimeZone()).toISOString() : '');
                       }}
                     >
                       <Label>{t('eventDateTime')}</Label>
