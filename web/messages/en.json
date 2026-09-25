@@ -378,6 +378,8 @@
     "guildBalance": "Guild Balance",
     "activeEvents": "Active Events",
     "totalItems": "Total Items",
+    "loadingStats": "Loading guild statistics",
+    "statsLoadError": "Couldn't load guild statistics.",
     "guildSettings": "Guild Settings",
     "guildLogo": "Guild Logo",
     "guildLogoHint": "PNG, JPEG, WebP, or GIF. Large images are scaled down automatically (GIFs must be under 512 KB). Shown in the top-left of the sidebar; without one, the first character of the guild name is shown.",
@@ -399,7 +401,9 @@
     "logoPromptToggle": "Generate a logo with ChatGPT",
     "guildName": "Guild Name",
     "recruitment": "Recruitment",
-    "serverRegion": "Server Region",
+    "recruitmentOpen": "Open",
+    "recruitmentClosed": "Closed",
+    "recruitmentHint": "Open guilds can be joined by anyone with the guild ID.",
     "edit": "Edit",
     "postAnnouncement": "Post Announcement",
     "announcementTitle": "Title",
@@ -474,9 +478,7 @@
     "announcementPublished": "Announcement published.",
     "noUsers": "No members yet",
     "sections": "Admin sections",
-    "usersTable": "Users",
-    "recruitmentOpen": "Open",
-    "regionAsiaPacific": "Asia Pacific"
+    "usersTable": "Users"
   },
   "adminRolesPage": {
     "back": "Back to administration",

@@ -1,7 +1,7 @@
 // Transforms proto-wire (snake_case, nested Item, etc.) → UI shapes used by components.
 // Keep these pure — no I/O, no axios calls.
 
-import type { AdminAnnouncement } from '@/types/admin';
+import type { AdminAnnouncement, AdminGuildStats } from '@/types/admin';
 import { AuctionStatus } from '@/types/auction';
 import type { AuctionItem, Bid } from '@/types/auction';
 import type { BackpackItem } from '@/types/backpack';
@@ -52,6 +52,7 @@ type ProtoGuild = {
   settings?: {
     timezone?: string;
     language?: string;
+    public?: boolean;
     custom_settings?: Record<string, string>;
   };
   created_at?: string;
@@ -77,6 +78,7 @@ export const toGuild = (g: ProtoGuild, apiBase = ''): Guild => {
     settings: {
       timezone: g.settings?.timezone ?? 'UTC',
       language: g.settings?.language ?? 'en',
+      isPublic: g.settings?.public ?? false,
       currency: custom.currency ?? '',
       features: {
         economy: flag('economy'),
@@ -89,6 +91,22 @@ export const toGuild = (g: ProtoGuild, apiBase = ''): Guild => {
     updatedAt: ts(g.updated_at),
   };
 };
+
+type ProtoGuildStats = {
+  member_count?: number;
+  bank_balance?: number | string;
+  bank_currency?: string;
+  active_event_count?: number;
+  bank_item_count?: number;
+};
+
+export const toAdminGuildStats = (raw: ProtoGuildStats | undefined): AdminGuildStats => ({
+  memberCount: raw?.member_count ?? 0,
+  bankBalance: fromMinorUnits(raw?.bank_balance),
+  bankCurrency: raw?.bank_currency ?? 'gold',
+  activeEventCount: raw?.active_event_count ?? 0,
+  bankItemCount: raw?.bank_item_count ?? 0,
+});
 
 // ─── User ───────────────────────────────────────────────────────────────────
 

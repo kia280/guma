@@ -8,7 +8,7 @@ import { clearSession } from '@/lib/session';
 import type { LootEntry } from '@/types/checkin';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -517,6 +517,10 @@ export const gumaApiClient: ApiClient = {
 
   // ── Admin ──
   getAdminActivity: async () => [],
+  getGuildStats: async (guildId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/stats`);
+    return toAdminGuildStats(data.stats);
+  },
   getAdminAnnouncements: async (guildId) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/announcements`, {
       params: { include_drafts: true },

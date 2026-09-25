@@ -378,6 +378,8 @@
     "guildBalance": "公會餘額",
     "activeEvents": "進行中活動",
     "totalItems": "總物品數",
+    "loadingStats": "正在載入公會統計",
+    "statsLoadError": "無法載入公會統計。",
     "guildSettings": "公會設置",
     "guildLogo": "公會 Logo",
     "guildLogoHint": "PNG、JPEG、WebP 或 GIF，大圖會自動縮小（GIF 需小於 512 KB）。顯示在側欄左上角；沒有上傳時會顯示公會名稱的第一個字。",
@@ -399,7 +401,9 @@
     "logoPromptToggle": "用 ChatGPT 生成 Logo",
     "guildName": "公會名稱",
     "recruitment": "招募狀態",
-    "serverRegion": "伺服器區域",
+    "recruitmentOpen": "開放",
+    "recruitmentClosed": "關閉",
+    "recruitmentHint": "開放的公會可讓任何人透過公會 ID 加入。",
     "edit": "編輯",
     "postAnnouncement": "發布公告",
     "announcementTitle": "標題",
@@ -474,9 +478,7 @@
     "announcementPublished": "公告已發布。",
     "noUsers": "尚無成員",
     "sections": "管理分頁",
-    "usersTable": "使用者",
-    "recruitmentOpen": "開放中",
-    "regionAsiaPacific": "亞太地區"
+    "usersTable": "使用者"
   },
   "adminRolesPage": {
     "back": "返回管理",

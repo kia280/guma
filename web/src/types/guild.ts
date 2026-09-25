@@ -16,6 +16,7 @@ export interface Guild {
 export interface GuildSettings {
   timezone: string;
   language: string;
+  isPublic: boolean;
   currency: string;
   features: {
     economy: boolean;
