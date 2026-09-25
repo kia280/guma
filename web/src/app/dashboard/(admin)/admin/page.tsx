@@ -20,6 +20,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { BankRequestReview } from '@/components/BankRequestReview';
 import { DeleteAnnouncementDraftDialog } from '@/components/DeleteAnnouncementDraftDialog';
+import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
@@ -484,7 +485,7 @@ export default function AdminPage() {
                           </h4>
                         </div>
                         {ann.content.trim() && (
-                          <p className="type-body text-subtle line-clamp-2">{ann.content}</p>
+                          <DiscordMarkdown content={ann.content} className="type-body text-subtle" />
                         )}
                         <p className="type-caption text-hint mt-2">
                           {t('lastSaved', { time: formatRelative(new Date(ann.updatedAt), intlLocale) })}
@@ -523,7 +524,7 @@ export default function AdminPage() {
                           )}
                           <h4 className="type-subheading text-foreground">{ann.title}</h4>
                         </div>
-                        <p className="type-body text-subtle whitespace-pre-line">{ann.content}</p>
+                        <DiscordMarkdown content={ann.content} className="type-body text-subtle" />
                         <div className="flex items-center gap-2 mt-2">
                           <p className="type-caption text-hint">
                             {t('by')} {ann.author}

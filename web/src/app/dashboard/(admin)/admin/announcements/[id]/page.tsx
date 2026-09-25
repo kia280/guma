@@ -11,6 +11,7 @@ import {
   Label,
   Spinner,
   Switch,
+  Tabs,
   TextArea,
   TextField,
 } from '@heroui/react';
@@ -18,6 +19,7 @@ import { Icon } from '@iconify/react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { DeleteAnnouncementDraftDialog } from '@/components/DeleteAnnouncementDraftDialog';
+import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { PageHeader } from '@/components/PageHeader';
 import { apiClient } from '@/lib/guma';
 import { useCurrentGuildId } from '@/lib/current-guild';
@@ -240,15 +242,41 @@ export default function AnnouncementEditorPage() {
             <Input placeholder={t('announcementTitlePlaceholder')} variant="secondary" />
           </TextField>
 
-          <TextField
-            value={values.content}
-            onChange={content => update({ content })}
-            maxLength={MAX_CONTENT_LENGTH}
-          >
-            <Label>{t('announcementContent')}</Label>
-            <TextArea placeholder={t('announcementContentPlaceholder')} variant="secondary" rows={12} />
-            <Description>{t('contentLength', { count: values.content.length, max: MAX_CONTENT_LENGTH })}</Description>
-          </TextField>
+          <Tabs variant="secondary" aria-label={t('announcementContent')}>
+            <Tabs.ListContainer>
+              <Tabs.List aria-label={t('announcementContent')}>
+                <Tabs.Tab id="write">
+                  {t('write')}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+                <Tabs.Tab id="preview">
+                  {t('preview')}
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              </Tabs.List>
+            </Tabs.ListContainer>
+            <Tabs.Panel id="write" className="pt-3">
+              <TextField
+                value={values.content}
+                onChange={content => update({ content })}
+                maxLength={MAX_CONTENT_LENGTH}
+              >
+                <Label>{t('announcementContent')}</Label>
+                <TextArea placeholder={t('announcementContentPlaceholder')} variant="secondary" rows={12} />
+                <Description>{t('contentLength', { count: values.content.length, max: MAX_CONTENT_LENGTH })}</Description>
+              </TextField>
+            </Tabs.Panel>
+            <Tabs.Panel id="preview" className="pt-3">
+              <div className="min-h-64 rounded-lg border border-divider p-4">
+                {values.content.trim() ? (
+                  <DiscordMarkdown content={values.content} className="type-prose text-foreground" />
+                ) : (
+                  <p className="type-body text-disabled">{t('nothingToPreview')}</p>
+                )}
+              </div>
+            </Tabs.Panel>
+          </Tabs>
+          <p className="type-caption text-hint">{t('markdownHint')}</p>
 
           <div className="flex items-center justify-between gap-3">
             <div>

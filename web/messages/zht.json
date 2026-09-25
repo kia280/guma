@@ -329,6 +329,10 @@
     "announcementTitlePlaceholder": "輸入標題",
     "announcementContentPlaceholder": "撰寫公告內容",
     "contentLength": "{count} / {max} 字",
+    "write": "編輯",
+    "preview": "預覽",
+    "nothingToPreview": "目前沒有內容可以預覽。",
+    "markdownHint": "支援 Discord 格式：**粗體**、*斜體*、__底線__、~~刪除線~~、||防雷||、`程式碼`、```程式碼區塊```、# 標題、-# 小字、> 引用、- 清單、[文字](https://網址)",
     "saving": "儲存中…",
     "saved": "已儲存",
     "savedAt": "已於 {time} 儲存",
@@ -980,5 +984,8 @@
       "approved": "已批准",
       "rejected": "已拒絕"
     }
+  },
+  "markdown": {
+    "revealSpoiler": "防雷內容，按下以顯示"
   }
 }
