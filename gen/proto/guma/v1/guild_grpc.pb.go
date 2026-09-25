@@ -8,6 +8,7 @@ package gumav1
 
 import (
 	context "context"
+	httpbody "google.golang.org/genproto/googleapis/api/httpbody"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -23,6 +24,9 @@ const (
 	GuildService_GetGuild_FullMethodName            = "/guma.v1.GuildService/GetGuild"
 	GuildService_GetCurrentGuild_FullMethodName     = "/guma.v1.GuildService/GetCurrentGuild"
 	GuildService_UpdateGuild_FullMethodName         = "/guma.v1.GuildService/UpdateGuild"
+	GuildService_UploadGuildLogo_FullMethodName     = "/guma.v1.GuildService/UploadGuildLogo"
+	GuildService_DeleteGuildLogo_FullMethodName     = "/guma.v1.GuildService/DeleteGuildLogo"
+	GuildService_GetGuildLogo_FullMethodName        = "/guma.v1.GuildService/GetGuildLogo"
 	GuildService_DeleteGuild_FullMethodName         = "/guma.v1.GuildService/DeleteGuild"
 	GuildService_ListGuilds_FullMethodName          = "/guma.v1.GuildService/ListGuilds"
 	GuildService_JoinGuildById_FullMethodName       = "/guma.v1.GuildService/JoinGuildById"
@@ -40,6 +44,9 @@ type GuildServiceClient interface {
 	// Returns the guild the authenticated user is currently active in
 	GetCurrentGuild(ctx context.Context, in *GetCurrentGuildRequest, opts ...grpc.CallOption) (*GetCurrentGuildResponse, error)
 	UpdateGuild(ctx context.Context, in *UpdateGuildRequest, opts ...grpc.CallOption) (*UpdateGuildResponse, error)
+	UploadGuildLogo(ctx context.Context, in *UploadGuildLogoRequest, opts ...grpc.CallOption) (*UploadGuildLogoResponse, error)
+	DeleteGuildLogo(ctx context.Context, in *DeleteGuildLogoRequest, opts ...grpc.CallOption) (*DeleteGuildLogoResponse, error)
+	GetGuildLogo(ctx context.Context, in *GetGuildLogoRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error)
 	DeleteGuild(ctx context.Context, in *DeleteGuildRequest, opts ...grpc.CallOption) (*DeleteGuildResponse, error)
 	ListGuilds(ctx context.Context, in *ListGuildsRequest, opts ...grpc.CallOption) (*ListGuildsResponse, error)
 	JoinGuildById(ctx context.Context, in *JoinGuildByIdRequest, opts ...grpc.CallOption) (*JoinGuildByIdResponse, error)
@@ -90,6 +97,36 @@ func (c *guildServiceClient) UpdateGuild(ctx context.Context, in *UpdateGuildReq
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateGuildResponse)
 	err := c.cc.Invoke(ctx, GuildService_UpdateGuild_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *guildServiceClient) UploadGuildLogo(ctx context.Context, in *UploadGuildLogoRequest, opts ...grpc.CallOption) (*UploadGuildLogoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UploadGuildLogoResponse)
+	err := c.cc.Invoke(ctx, GuildService_UploadGuildLogo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *guildServiceClient) DeleteGuildLogo(ctx context.Context, in *DeleteGuildLogoRequest, opts ...grpc.CallOption) (*DeleteGuildLogoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteGuildLogoResponse)
+	err := c.cc.Invoke(ctx, GuildService_DeleteGuildLogo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *guildServiceClient) GetGuildLogo(ctx context.Context, in *GetGuildLogoRequest, opts ...grpc.CallOption) (*httpbody.HttpBody, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(httpbody.HttpBody)
+	err := c.cc.Invoke(ctx, GuildService_GetGuildLogo_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -165,6 +202,9 @@ type GuildServiceServer interface {
 	// Returns the guild the authenticated user is currently active in
 	GetCurrentGuild(context.Context, *GetCurrentGuildRequest) (*GetCurrentGuildResponse, error)
 	UpdateGuild(context.Context, *UpdateGuildRequest) (*UpdateGuildResponse, error)
+	UploadGuildLogo(context.Context, *UploadGuildLogoRequest) (*UploadGuildLogoResponse, error)
+	DeleteGuildLogo(context.Context, *DeleteGuildLogoRequest) (*DeleteGuildLogoResponse, error)
+	GetGuildLogo(context.Context, *GetGuildLogoRequest) (*httpbody.HttpBody, error)
 	DeleteGuild(context.Context, *DeleteGuildRequest) (*DeleteGuildResponse, error)
 	ListGuilds(context.Context, *ListGuildsRequest) (*ListGuildsResponse, error)
 	JoinGuildById(context.Context, *JoinGuildByIdRequest) (*JoinGuildByIdResponse, error)
@@ -192,6 +232,15 @@ func (UnimplementedGuildServiceServer) GetCurrentGuild(context.Context, *GetCurr
 }
 func (UnimplementedGuildServiceServer) UpdateGuild(context.Context, *UpdateGuildRequest) (*UpdateGuildResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateGuild not implemented")
+}
+func (UnimplementedGuildServiceServer) UploadGuildLogo(context.Context, *UploadGuildLogoRequest) (*UploadGuildLogoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UploadGuildLogo not implemented")
+}
+func (UnimplementedGuildServiceServer) DeleteGuildLogo(context.Context, *DeleteGuildLogoRequest) (*DeleteGuildLogoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteGuildLogo not implemented")
+}
+func (UnimplementedGuildServiceServer) GetGuildLogo(context.Context, *GetGuildLogoRequest) (*httpbody.HttpBody, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetGuildLogo not implemented")
 }
 func (UnimplementedGuildServiceServer) DeleteGuild(context.Context, *DeleteGuildRequest) (*DeleteGuildResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteGuild not implemented")
@@ -300,6 +349,60 @@ func _GuildService_UpdateGuild_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GuildServiceServer).UpdateGuild(ctx, req.(*UpdateGuildRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GuildService_UploadGuildLogo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadGuildLogoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GuildServiceServer).UploadGuildLogo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GuildService_UploadGuildLogo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GuildServiceServer).UploadGuildLogo(ctx, req.(*UploadGuildLogoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GuildService_DeleteGuildLogo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteGuildLogoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GuildServiceServer).DeleteGuildLogo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GuildService_DeleteGuildLogo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GuildServiceServer).DeleteGuildLogo(ctx, req.(*DeleteGuildLogoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GuildService_GetGuildLogo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGuildLogoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GuildServiceServer).GetGuildLogo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GuildService_GetGuildLogo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GuildServiceServer).GetGuildLogo(ctx, req.(*GetGuildLogoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -434,6 +537,18 @@ var GuildService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateGuild",
 			Handler:    _GuildService_UpdateGuild_Handler,
+		},
+		{
+			MethodName: "UploadGuildLogo",
+			Handler:    _GuildService_UploadGuildLogo_Handler,
+		},
+		{
+			MethodName: "DeleteGuildLogo",
+			Handler:    _GuildService_DeleteGuildLogo_Handler,
+		},
+		{
+			MethodName: "GetGuildLogo",
+			Handler:    _GuildService_GetGuildLogo_Handler,
 		},
 		{
 			MethodName: "DeleteGuild",

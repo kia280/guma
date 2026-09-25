@@ -271,3 +271,85 @@ func TestGuildService_UpdateGuildSettings_Validation(t *testing.T) {
 		})
 	}
 }
+
+func TestGuildService_GuildLogo_Validation(t *testing.T) {
+	service := NewGuildService(nil, zerolog.Nop())
+	authed := session.WithUserID(context.Background(), "test-user")
+
+	tests := []struct {
+		name     string
+		call     func() error
+		wantCode codes.Code
+	}{
+		{
+			name: "upload missing guild_id",
+			call: func() error {
+				_, err := service.UploadGuildLogo(authed, &guildv1.UploadGuildLogoRequest{})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "upload unauthenticated",
+			call: func() error {
+				_, err := service.UploadGuildLogo(context.Background(), &guildv1.UploadGuildLogoRequest{GuildId: "g"})
+				return err
+			},
+			wantCode: codes.Unauthenticated,
+		},
+		{
+			name: "upload rejects unsupported type",
+			call: func() error {
+				_, err := service.UploadGuildLogo(session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001"), &guildv1.UploadGuildLogoRequest{
+					GuildId:     "00000000-0000-0000-0000-000000000002",
+					ContentType: "image/svg+xml",
+					Data:        []byte("<svg></svg>"),
+				})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "delete missing guild_id",
+			call: func() error {
+				_, err := service.DeleteGuildLogo(authed, &guildv1.DeleteGuildLogoRequest{})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "delete unauthenticated",
+			call: func() error {
+				_, err := service.DeleteGuildLogo(context.Background(), &guildv1.DeleteGuildLogoRequest{GuildId: "g"})
+				return err
+			},
+			wantCode: codes.Unauthenticated,
+		},
+		{
+			name: "get missing guild_id",
+			call: func() error {
+				_, err := service.GetGuildLogo(authed, &guildv1.GetGuildLogoRequest{})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "get unauthenticated",
+			call: func() error {
+				_, err := service.GetGuildLogo(context.Background(), &guildv1.GetGuildLogoRequest{GuildId: "g"})
+				return err
+			},
+			wantCode: codes.Unauthenticated,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.call()
+			require.Error(t, err)
+			st, ok := status.FromError(err)
+			require.True(t, ok)
+			assert.Equal(t, tt.wantCode, st.Code())
+		})
+	}
+}

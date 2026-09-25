@@ -169,7 +169,7 @@ func newServeMux(logger zerolog.Logger) *runtime.ServeMux {
 
 	return runtime.NewServeMux(
 		runtime.WithErrorHandler(customErrorHandler(logger)),
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, jsonMarshaler),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.HTTPBodyMarshaler{Marshaler: jsonMarshaler}),
 		runtime.WithMarshalerOption(mimeEventStream, &sseMarshaler{Marshaler: jsonMarshaler}),
 		runtime.WithIncomingHeaderMatcher(customHeaderMatcher),
 		runtime.WithOutgoingHeaderMatcher(outgoingHeaderMatcher),
