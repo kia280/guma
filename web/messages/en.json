@@ -329,6 +329,10 @@
     "announcementTitlePlaceholder": "Enter a title",
     "announcementContentPlaceholder": "Write the announcement",
     "contentLength": "{count} / {max} characters",
+    "write": "Write",
+    "preview": "Preview",
+    "nothingToPreview": "Nothing to preview yet.",
+    "markdownHint": "Supports Discord formatting: **bold**, *italic*, __underline__, ~~strikethrough~~, ||spoiler||, `code`, ```code block```, # heading, -# subtext, > quote, - list, [text](https://link)",
     "saving": "Saving…",
     "saved": "Saved",
     "savedAt": "Saved at {time}",
@@ -980,5 +984,8 @@
       "approved": "Approved",
       "rejected": "Rejected"
     }
+  },
+  "markdown": {
+    "revealSpoiler": "Spoiler, press to reveal"
   }
 }
