@@ -5,6 +5,8 @@ import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
+import { useCountdown } from '@/hooks/useNow';
+import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { useUserStore } from '@/lib/store';
@@ -32,15 +34,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     [CheckinStatus.FINISHED]: { label: t('statusFinished'), color: 'accent' as const },
   };
 
-  const formatTimeRemaining = (expireTime: string) => {
-    const diff = new Date(expireTime).getTime() - Date.now();
-    if (diff <= 0) return t('expired');
-    const hours = Math.floor(diff / 3_600_000);
-    const minutes = Math.floor((diff % 3_600_000) / 60_000);
-    if (hours > 0) return `${hours}h ${minutes}m ${t('remaining')}`;
-    return `${minutes}m ${t('remaining')}`;
-  };
-
+  const formatCountdown = useCountdownFormatter();
   const guildId = useCurrentGuildId();
 
   const [entry, setEntry] = useState<CheckinEntry | null>(null);
@@ -54,23 +48,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   }, [guildId, id]);
 
   const [notes, setNotes] = useState('');
-  const [timeRemaining, setTimeRemaining] = useState('');
-  const [isExpired, setIsExpired] = useState(false);
+  const [isRejectedAsExpired, setIsRejectedAsExpired] = useState(false);
+  const { remainingMs, isExpired: hasExpireTimePassed } = useCountdown(entry?.expireTime);
+  const isExpired = hasExpireTimePassed || isRejectedAsExpired;
+  const timeRemaining = isExpired ? t('expired') : t('remaining', { time: formatCountdown(remainingMs) });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const checkinModal = useOverlayState();
   const currentUserId = useUserStore(state => state.user?.id);
-
-  useEffect(() => {
-    if (!entry?.expireTime) return;
-    const tick = () => {
-      setTimeRemaining(formatTimeRemaining(entry.expireTime!));
-      setIsExpired(new Date(entry.expireTime!).getTime() <= Date.now());
-    };
-    tick();
-    const timer = setInterval(tick, 30_000);
-    return () => clearInterval(timer);
-  }, [entry]);
 
   if (!entry) {
     return (
@@ -105,7 +90,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
       if (status === 409) {
         checkinModal.close();
       } else if (status === 400) {
-        setIsExpired(true);
+        setIsRejectedAsExpired(true);
         setSubmitError(t('checkInExpired'));
       } else {
         setSubmitError(t('checkInFailed'));

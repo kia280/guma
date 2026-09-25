@@ -4,6 +4,13 @@
     "description": "Guild management system",
     "keywords": "guild management system"
   },
+  "countdown": {
+    "days": "{days}d {hours}h",
+    "hours": "{hours}h {minutes}m",
+    "minutes": "{minutes}m",
+    "seconds": "{seconds}s",
+    "daysClock": "{days}d {clock}"
+  },
   "Index": {
     "title": "Hello world!"
   },
@@ -209,7 +216,7 @@
   },
   "lotteryCard": {
     "drawComplete": "Draw complete",
-    "remaining": "remaining",
+    "remaining": "{time} remaining",
     "prizePool": "Prize Pool",
     "ticketPrice": "Ticket price",
     "drawDate": "Draw date",
@@ -220,8 +227,7 @@
     "winners": "Winners",
     "buyTicket": "Buy Ticket",
     "viewWinners": "View Winners",
-    "starts": "Starts",
-    "fromNow": "from now"
+    "starts": "Starts in {time}"
   },
   "auctionPage": {
     "searchItems": "Search items...",
@@ -237,6 +243,7 @@
   },
   "auctionItemCard": {
     "timeRemaining": "Time remaining",
+    "ended": "Ended",
     "currentBid": "Current bid",
     "leadingBidder": "Leading bidder",
     "soldBy": "Sold by",
@@ -783,8 +790,8 @@
     "goBack": "Go Back",
     "backToAuctions": "Back to Auctions",
     "auctionStatus": "Auction Status",
-    "timeElapsed": "Time elapsed",
-    "remaining": "remaining",
+    "timeRemaining": "Time remaining",
+    "remaining": "{time} remaining",
     "startTime": "Start time",
     "endTime": "End time",
     "bidding": "Bidding",
@@ -848,7 +855,7 @@
     "statusClosed": "Closed",
     "statusFinished": "Finished",
     "expired": "Expired",
-    "remaining": "remaining",
+    "remaining": "{time} remaining",
     "checkedIn": "You're present",
     "checkInExpired": "This roll call has closed.",
     "checkInFailed": "Couldn't mark you present. Please try again."

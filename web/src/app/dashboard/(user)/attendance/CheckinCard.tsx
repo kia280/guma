@@ -3,18 +3,11 @@
 import { Button, Card, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { useCountdown } from '@/hooks/useNow';
+import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { CheckinStatus } from './data';
 
 export { CheckinStatus };
-
-const formatExpire = (iso: string) => {
-  const diff = new Date(iso).getTime() - Date.now();
-  if (diff <= 0) return null;
-  const hours = Math.floor(diff / 3_600_000);
-  const minutes = Math.floor((diff % 3_600_000) / 60_000);
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-};
 
 export const checkinStatusColor = {
   [CheckinStatus.OPEN]: 'success',
@@ -44,12 +37,15 @@ export function CheckinCard({
   onClick?: () => void;
 }) {
   const t = useTranslations('checkIn');
+  const formatCountdown = useCountdownFormatter();
+  const { remainingMs, isExpired } = useCountdown(status === CheckinStatus.OPEN ? expireTime : null);
   const statusLabel = {
     [CheckinStatus.OPEN]: t('statusActive'),
     [CheckinStatus.CLOSED]: t('statusClosed'),
     [CheckinStatus.FINISHED]: t('statusCompleted'),
   }[status];
-  const timeLeft = status === CheckinStatus.OPEN && expireTime ? formatExpire(expireTime) : null;
+  const canCheckin = status === CheckinStatus.OPEN && !isExpired;
+  const timeLeft = canCheckin && expireTime ? formatCountdown(remainingMs) : null;
 
   return (
     <Card
@@ -127,7 +123,7 @@ export function CheckinCard({
       </Card.Content>
 
       <Card.Footer className="pt-0">
-        {status === CheckinStatus.OPEN && (
+        {canCheckin && (
           <Button variant="primary" className="w-full" isDisabled={isDisabled} onPress={onClick}>
             <Icon icon="solar:check-circle-linear" width={16} />
             {t('markPresent')}
@@ -139,7 +135,7 @@ export function CheckinCard({
             {t('viewDetails')}
           </Button>
         )}
-        {status === CheckinStatus.CLOSED && (
+        {(status === CheckinStatus.CLOSED || (status === CheckinStatus.OPEN && !canCheckin)) && (
           <Chip variant="secondary" className="w-full justify-center py-2">
             <div className="flex items-center gap-1.5">
               <Icon icon="solar:lock-keyhole-linear" width={14} />
