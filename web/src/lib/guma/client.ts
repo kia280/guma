@@ -131,8 +131,13 @@ export const gumaApiClient: ApiClient = {
   },
 
   // ── Guild ──
-  listGuilds: async () => {
-    const { data } = await http.get('/v1/guilds');
+  listGuilds: async (query = {}) => {
+    const { data } = await http.get('/v1/guilds', {
+      params: {
+        search: query.search || undefined,
+        page_size: query.limit,
+      },
+    });
     return (data.guilds ?? []).map(apiGuild);
   },
   getGuild: async (id) => {
