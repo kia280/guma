@@ -59,10 +59,9 @@ export interface CalendarViewOptions {
   currentDate: Date;
 }
 
-export const EVENT_TYPE_COLORS: Record<
-  EventType,
-  'danger' | 'warning' | 'accent' | 'success' | 'default'
-> = {
+export type EventChipColor = 'default' | 'accent' | 'success' | 'warning' | 'danger';
+
+export const EVENT_TYPE_COLORS: Record<EventType, EventChipColor> = {
   boss_respawn: 'danger',
   guild_war: 'warning',
   guild_meeting: 'accent',
@@ -84,9 +83,9 @@ export const EVENT_TYPE_LABELS: Record<EventType, string> = {
   other: 'Other',
 };
 
-export const PRIORITY_COLORS: Record<EventPriority, string> = {
+export const PRIORITY_COLORS: Record<EventPriority, EventChipColor> = {
   low: 'default',
-  medium: 'primary',
+  medium: 'accent',
   high: 'warning',
   critical: 'danger',
 };

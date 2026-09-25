@@ -184,14 +184,14 @@ export default function CalendarPage() {
                     </p>
                     <div className="flex items-center gap-2">
                       <Chip
-                        color={EVENT_TYPE_COLORS[selectedEvent.type] as any}
+                        color={EVENT_TYPE_COLORS[selectedEvent.type]}
                         size="sm"
                         variant="tertiary"
                       >
                         {EVENT_TYPE_LABELS[selectedEvent.type]}
                       </Chip>
                       <Chip
-                        color={PRIORITY_COLORS[selectedEvent.priority] as any}
+                        color={PRIORITY_COLORS[selectedEvent.priority]}
                         size="sm"
                         variant="secondary"
                       >
@@ -239,7 +239,7 @@ export default function CalendarPage() {
                     <Separator />
 
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 text-small">
+                      <div className="flex items-center gap-3 type-body">
                         <Icon
                           icon="solar:clock-circle-linear"
                           width={16}
@@ -252,7 +252,7 @@ export default function CalendarPage() {
                       </div>
 
                       {selectedEvent.location && (
-                        <div className="flex items-center gap-3 text-small">
+                        <div className="flex items-center gap-3 type-body">
                           <Icon
                             icon="solar:map-point-linear"
                             width={16}
@@ -263,7 +263,7 @@ export default function CalendarPage() {
                       )}
 
                       {selectedEvent.isRecurring && (
-                        <div className="flex items-center gap-3 text-small">
+                        <div className="flex items-center gap-3 type-body">
                           <Icon
                             icon="solar:refresh-linear"
                             width={16}
@@ -279,7 +279,7 @@ export default function CalendarPage() {
                         </div>
                       )}
 
-                      <div className="flex items-center gap-3 text-small text-subtle">
+                      <div className="flex items-center gap-3 type-body text-subtle">
                         <Icon icon="solar:users-group-rounded-linear" width={16} />
                         <span>
                           {t('createdBy')} {selectedEvent.createdBy}

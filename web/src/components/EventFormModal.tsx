@@ -270,7 +270,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                         <ListBox>
                           {eventTypeOptions.map(option => (
                             <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
-                              <Chip color={option.color as any} size="sm" variant="secondary">
+                              <Chip color={option.color} size="sm" variant="secondary">
                                 {option.label}
                               </Chip>
                               <ListBox.ItemIndicator />
@@ -296,7 +296,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                         <ListBox>
                           {priorityOptions.map(option => (
                             <ListBox.Item key={option.key} id={option.key} textValue={option.label}>
-                              <Chip color={option.color as any} size="sm" variant="secondary">
+                              <Chip color={option.color} size="sm" variant="secondary">
                                 {option.label}
                               </Chip>
                               <ListBox.ItemIndicator />

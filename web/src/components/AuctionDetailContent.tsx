@@ -252,7 +252,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <Icon
                     icon="solar:eye-closed-linear"
                     width={20}
-                    className="text-secondary shrink-0"
+                    className="text-subtle shrink-0"
                   />
                   <div>
                     <p className="type-body font-medium text-foreground">{t('blindAuction')}</p>
@@ -497,7 +497,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     </span>
                   </div>
                   {item.isBlind && (
-                    <div className="flex items-center gap-2 pt-1 type-caption text-secondary">
+                    <div className="flex items-center gap-2 pt-1 type-caption text-hint">
                       <Icon icon="solar:eye-closed-linear" width={12} />
                       <span>{t('blindAuctionNote')}</span>
                     </div>
