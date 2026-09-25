@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import {
   Card,
   Button,
@@ -17,8 +14,11 @@ import {
   type UseOverlayStateReturn,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import type { Guild } from '@/types/guild';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/guma';
+import type { Guild } from '@/types/guild';
 
 export default function GuildsPage() {
   const [searchQuery, setSearchQuery] = useState('');

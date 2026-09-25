@@ -1,9 +1,9 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/navigation';
 import { Button, Card } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Suspense } from 'react';
 

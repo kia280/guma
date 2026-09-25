@@ -1,7 +1,7 @@
 // Guild member and invitation types
 
-import type { User } from './user';
 import type { GuildRole } from './guild';
+import type { User } from './user';
 
 export interface GuildMember {
   id: string;

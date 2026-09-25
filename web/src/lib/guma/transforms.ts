@@ -1,14 +1,14 @@
 // Transforms proto-wire (snake_case, nested Item, etc.) → UI shapes used by components.
 // Keep these pure — no I/O, no axios calls.
 
+import type { AdminAnnouncement } from '@/types/admin';
 import { AuctionStatus } from '@/types/auction';
-import { ItemCategory, ItemRarity } from '@/types/item';
 import type { AuctionItem, Bid } from '@/types/auction';
 import type { BackpackItem } from '@/types/backpack';
 import type { CheckinEntry, CheckinTemplate, AttendanceMember, ItemTemplate, LootItem } from '@/types/checkin';
 import { CheckinStatus } from '@/types/checkin';
-import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
-import type { Transaction, Wallet } from '@/types/wallet';
+import type { Announcement } from '@/types/dashboard';
+import type { Guild } from '@/types/guild';
 import type {
   GuildBank,
   BankContribution,
@@ -18,11 +18,11 @@ import type {
   GuildContribution,
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
-import type { MockUser, User } from '@/types/user';
+import { ItemCategory, ItemRarity } from '@/types/item';
+import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
-import type { AdminAnnouncement } from '@/types/admin';
-import type { Announcement } from '@/types/dashboard';
-import type { Guild } from '@/types/guild';
+import type { MockUser, User } from '@/types/user';
+import type { Transaction, Wallet } from '@/types/wallet';
 import { fromMinorUnits } from './money';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

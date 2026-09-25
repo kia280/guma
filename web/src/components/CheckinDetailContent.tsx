@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button, Chip, Avatar, Separator, Modal, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
-import { apiClient } from '@/lib/guma';
+import { useState, useEffect } from 'react';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { apiClient } from '@/lib/guma';
 import { useUserStore } from '@/lib/store';
+import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

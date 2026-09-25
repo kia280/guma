@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import {
   Card,
   Button,
@@ -21,21 +20,22 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useLocale, useTranslations } from 'next-intl';
+import React from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import BackpackItemCard from '@/components/BackpackItemCard';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal } from '@/components/CreateLotteryModal';
-import { BackpackItem } from '@/types/backpack';
-import type { Transaction, Wallet as WalletType } from '@/types/wallet';
-import type { MockUser } from '@/types/user';
-import { apiClient } from '@/lib/guma';
-import { useCurrentGuildId } from '@/lib/current-guild';
-import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { isLocale } from '@/i18n/locales';
+import { useCurrentGuildId } from '@/lib/current-guild';
+import { apiClient } from '@/lib/guma';
 import { walletBalanceTrend } from '@/lib/guma/mock/data';
 import { localizeMock } from '@/lib/guma/mock/i18n';
-import { isLocale } from '@/i18n/locales';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
+import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
+import { BackpackItem } from '@/types/backpack';
+import type { MockUser } from '@/types/user';
+import type { Transaction, Wallet as WalletType } from '@/types/wallet';
 
 const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
