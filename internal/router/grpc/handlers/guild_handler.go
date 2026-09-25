@@ -274,6 +274,28 @@ func (h *GuildHandler) UpdateGuildSettings(ctx context.Context, req *guildv1.Upd
 	return &guildv1.UpdateGuildSettingsResponse{Settings: settingsToProto(updated)}, nil
 }
 
+func (h *GuildHandler) GetGuildStats(ctx context.Context, req *guildv1.GetGuildStatsRequest) (*guildv1.GetGuildStatsResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	stats, err := h.svc.Stats(ctx, req.GuildId, userID)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &guildv1.GetGuildStatsResponse{Stats: &guildv1.GuildStats{
+		MemberCount:      stats.MemberCount,
+		BankBalance:      stats.BankBalance,
+		BankCurrency:     stats.BankCurrency,
+		ActiveEventCount: stats.ActiveEventCount,
+		BankItemCount:    stats.BankItemCount,
+	}}, nil
+}
+
 // --- proto conversion helpers ---
 
 func guildToProto(g *guildsvc.Guild) *guildv1.Guild {

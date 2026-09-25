@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Dropdown, Avatar, Badge, Tooltip, Chip, Label } from '@heroui/react';
+import { Button, Dropdown, Badge, Tooltip, Chip, Label } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -10,9 +10,11 @@ import { useMediaQuery } from 'usehooks-ts';
 import { NotificationBell, SidebarDrawer } from '@/components';
 import { AppSidebar, ShortcutKeys } from '@/components/AppSidebar';
 import { DashboardBreadcrumbs } from '@/components/DashboardBreadcrumbs';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useDashboardShortcuts } from '@/hooks/useDashboardShortcuts';
 import { useLiveBalance } from '@/hooks/useLiveBalance';
 import { CurrentGuildProvider } from '@/lib/current-guild';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { clearSession } from '@/lib/session';
 import { useUserStore } from '@/lib/store';
 
@@ -36,6 +38,7 @@ const saveCollapsed = (value: boolean) => {
 
 export default function DashboardLayout({ children, modal }: { children: React.ReactNode; modal: React.ReactNode }) {
   const t = useTranslations('dashboardLayout');
+  const formatGold = useFormatGold();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
@@ -74,7 +77,6 @@ export default function DashboardLayout({ children, modal }: { children: React.R
   useLiveBalance();
   const userBalance = me?.balance ?? 0;
   const displayName = me?.displayName || me?.username || '';
-  const avatarFallback = (displayName || me?.email || '?').slice(0, 2).toUpperCase();
   const toggleLabel = isCompact ? t('openMenu') : showCollapsed ? t('expandSidebar') : t('collapseSidebar');
 
   return (
@@ -124,7 +126,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                 <div className="hidden sm:flex items-center">
                   <Chip className="h-7 cursor-default gap-1.5 px-2.5 type-body font-medium tabular-nums">
                     <Icon icon="solar:wallet-linear" width={16} className="text-subtle" aria-hidden />
-                    <span>${userBalance.toLocaleString('en-US')}</span>
+                    <span>{formatGold(userBalance)}</span>
                   </Chip>
                 </div>
 
@@ -139,10 +141,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                       className="size-7 min-w-7 rounded-full relative overflow-visible p-0"
                     >
                       <Badge.Anchor>
-                        <Avatar size="sm" className="size-7">
-                          {me?.avatarUrl && <Avatar.Image src={me.avatarUrl} />}
-                          <Avatar.Fallback>{avatarFallback}</Avatar.Fallback>
-                        </Avatar>
+                        <UserAvatar name={displayName || me?.email || ''} src={me?.avatarUrl} className="size-7" />
                         <Badge color="success" placement="bottom-right" size="sm" />
                       </Badge.Anchor>
                     </Button>
@@ -156,8 +155,11 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                             case 'preference':
                               router.push('/dashboard/preference');
                               break;
-                            case 'github':
-                              window.open('https://github.com/', '_blank');
+                            case 'terms':
+                              router.push('/dashboard/terms');
+                              break;
+                            case 'contact':
+                              router.push('/dashboard/contact');
                               break;
                             case 'logout':
                               void clearSession();
@@ -186,7 +188,25 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                           </Dropdown.Item>
                         </Dropdown.Section>
                         <Dropdown.Section>
-                          <Dropdown.Item id="github" textValue={t('starOnGitHub')}>
+                          <Dropdown.Item id="contact" textValue={t('pages.contact')}>
+                            <div className="flex items-center gap-2">
+                              <Icon icon="solar:chat-round-dots-linear" width={16} />
+                              <Label>{t('pages.contact')}</Label>
+                            </div>
+                          </Dropdown.Item>
+                          <Dropdown.Item id="terms" textValue={t('pages.terms')}>
+                            <div className="flex items-center gap-2">
+                              <Icon icon="solar:document-text-linear" width={16} />
+                              <Label>{t('pages.terms')}</Label>
+                            </div>
+                          </Dropdown.Item>
+                          <Dropdown.Item
+                            id="github"
+                            textValue={t('starOnGitHub')}
+                            href="https://github.com/kia280/guma"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             <div className="flex items-center gap-2">
                               <Icon icon="mdi:github" width={16} />
                               <Label>{t('starOnGitHub')}</Label>
