@@ -36,18 +36,20 @@ func TestValidatesInputBeforeQuerying(t *testing.T) {
 		{name: "create without user", call: func() error { _, err := s.CreateDraft(ctx, testGuild, ""); return err }, want: errs.ErrUnauthenticated},
 		{name: "create bad user", call: func() error { _, err := s.CreateDraft(ctx, testGuild, "nope"); return err }, want: errs.ErrInvalidArgument},
 		{name: "update bad announcement id", call: func() error {
-			_, err := s.UpdateDraft(ctx, DraftUpdate{GuildID: testGuild, UserID: testUser, AnnouncementID: "nope"})
+			_, err := s.Update(ctx, Update{GuildID: testGuild, UserID: testUser, AnnouncementID: "nope"})
 			return err
 		}, want: errs.ErrInvalidArgument},
 		{name: "update title too long", call: func() error {
-			_, err := s.UpdateDraft(ctx, DraftUpdate{GuildID: testGuild, UserID: testUser, AnnouncementID: testAnn, Title: strings.Repeat("a", maxTitleLength+1)})
+			_, err := s.Update(ctx, Update{GuildID: testGuild, UserID: testUser, AnnouncementID: testAnn, Title: strings.Repeat("a", maxTitleLength+1)})
 			return err
 		}, want: errs.ErrInvalidArgument},
 		{name: "update content too long", call: func() error {
-			_, err := s.UpdateDraft(ctx, DraftUpdate{GuildID: testGuild, UserID: testUser, AnnouncementID: testAnn, Content: strings.Repeat("a", maxContentLength+1)})
+			_, err := s.Update(ctx, Update{GuildID: testGuild, UserID: testUser, AnnouncementID: testAnn, Content: strings.Repeat("a", maxContentLength+1)})
 			return err
 		}, want: errs.ErrInvalidArgument},
 		{name: "publish bad guild", call: func() error { _, err := s.Publish(ctx, "nope", testAnn, testUser); return err }, want: errs.ErrInvalidArgument},
+		{name: "unpublish without user", call: func() error { _, err := s.Unpublish(ctx, testGuild, testAnn, ""); return err }, want: errs.ErrUnauthenticated},
+		{name: "unpublish bad announcement id", call: func() error { _, err := s.Unpublish(ctx, testGuild, "nope", testUser); return err }, want: errs.ErrInvalidArgument},
 		{name: "delete bad announcement id", call: func() error { return s.DeleteDraft(ctx, testGuild, "", testUser) }, want: errs.ErrInvalidArgument},
 	}
 	for _, tt := range tests {
@@ -88,6 +90,15 @@ func TestCheckRole(t *testing.T) {
 		if err != nil && !errors.Is(err, errs.ErrPermissionDenied) {
 			t.Fatalf("expected permission denied, got %v", err)
 		}
+	}
+}
+
+func TestUpdateRejection(t *testing.T) {
+	if err := updateRejection(&Announcement{Status: StatusPublished}); !errors.Is(err, errs.ErrInvalidArgument) {
+		t.Fatalf("expected invalid argument for blank published update, got %v", err)
+	}
+	if err := updateRejection(&Announcement{Status: StatusDraft}); !errors.Is(err, errs.ErrFailedPrecondition) {
+		t.Fatalf("expected failed precondition for unexpected draft rejection, got %v", err)
 	}
 }
 

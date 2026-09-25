@@ -79,12 +79,12 @@ func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *
 	return &gumav1.CreateAnnouncementDraftResponse{Announcement: announcementToProto(a)}, nil
 }
 
-func (h *AnnouncementHandler) UpdateAnnouncementDraft(ctx context.Context, req *gumav1.UpdateAnnouncementDraftRequest) (*gumav1.UpdateAnnouncementDraftResponse, error) {
+func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav1.UpdateAnnouncementRequest) (*gumav1.UpdateAnnouncementResponse, error) {
 	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
 	if err != nil {
 		return nil, err
 	}
-	a, err := h.svc.UpdateDraft(ctx, announcementsvc.DraftUpdate{
+	a, err := h.svc.Update(ctx, announcementsvc.Update{
 		GuildID:        req.GuildId,
 		AnnouncementID: req.AnnouncementId,
 		UserID:         userID,
@@ -95,7 +95,7 @@ func (h *AnnouncementHandler) UpdateAnnouncementDraft(ctx context.Context, req *
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.UpdateAnnouncementDraftResponse{Announcement: announcementToProto(a)}, nil
+	return &gumav1.UpdateAnnouncementResponse{Announcement: announcementToProto(a)}, nil
 }
 
 func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *gumav1.PublishAnnouncementRequest) (*gumav1.PublishAnnouncementResponse, error) {
@@ -108,6 +108,18 @@ func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *guma
 		return nil, toStatus(err)
 	}
 	return &gumav1.PublishAnnouncementResponse{Announcement: announcementToProto(a)}, nil
+}
+
+func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gumav1.UnpublishAnnouncementRequest) (*gumav1.UnpublishAnnouncementResponse, error) {
+	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	if err != nil {
+		return nil, err
+	}
+	a, err := h.svc.Unpublish(ctx, req.GuildId, req.AnnouncementId, userID)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.UnpublishAnnouncementResponse{Announcement: announcementToProto(a)}, nil
 }
 
 func (h *AnnouncementHandler) DeleteAnnouncementDraft(ctx context.Context, req *gumav1.DeleteAnnouncementDraftRequest) (*gumav1.DeleteAnnouncementDraftResponse, error) {

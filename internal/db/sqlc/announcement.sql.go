@@ -183,13 +183,33 @@ func (q *Queries) PublishAnnouncement(ctx context.Context, arg PublishAnnounceme
 	return result.RowsAffected(), nil
 }
 
-const updateAnnouncementDraft = `-- name: UpdateAnnouncementDraft :execrows
+const unpublishAnnouncement = `-- name: UnpublishAnnouncement :execrows
 UPDATE announcements
-SET title = $3, content = $4, pinned = $5, updated_at = NOW()
-WHERE id = $1 AND guild_id = $2 AND status = 'draft'
+SET status = 'draft', published_at = NULL, updated_at = NOW()
+WHERE id = $1 AND guild_id = $2 AND status = 'published'
 `
 
-type UpdateAnnouncementDraftParams struct {
+type UnpublishAnnouncementParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+func (q *Queries) UnpublishAnnouncement(ctx context.Context, arg UnpublishAnnouncementParams) (int64, error) {
+	result, err := q.db.Exec(ctx, unpublishAnnouncement, arg.ID, arg.GuildID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const updateAnnouncement = `-- name: UpdateAnnouncement :execrows
+UPDATE announcements
+SET title = $3, content = $4, pinned = $5, updated_at = NOW()
+WHERE id = $1 AND guild_id = $2
+  AND (status = 'draft' OR (btrim($3) <> '' AND btrim($4) <> ''))
+`
+
+type UpdateAnnouncementParams struct {
 	ID      uuid.UUID
 	GuildID uuid.UUID
 	Title   string
@@ -197,8 +217,8 @@ type UpdateAnnouncementDraftParams struct {
 	Pinned  bool
 }
 
-func (q *Queries) UpdateAnnouncementDraft(ctx context.Context, arg UpdateAnnouncementDraftParams) (int64, error) {
-	result, err := q.db.Exec(ctx, updateAnnouncementDraft,
+func (q *Queries) UpdateAnnouncement(ctx context.Context, arg UpdateAnnouncementParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateAnnouncement,
 		arg.ID,
 		arg.GuildID,
 		arg.Title,

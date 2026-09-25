@@ -435,7 +435,7 @@ func (x *CreateAnnouncementDraftResponse) GetAnnouncement() *Announcement {
 	return nil
 }
 
-type UpdateAnnouncementDraftRequest struct {
+type UpdateAnnouncementRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	GuildId        string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
 	AnnouncementId string                 `protobuf:"bytes,2,opt,name=announcement_id,json=announcementId,proto3" json:"announcement_id,omitempty"`
@@ -446,20 +446,20 @@ type UpdateAnnouncementDraftRequest struct {
 	sizeCache      protoimpl.SizeCache
 }
 
-func (x *UpdateAnnouncementDraftRequest) Reset() {
-	*x = UpdateAnnouncementDraftRequest{}
+func (x *UpdateAnnouncementRequest) Reset() {
+	*x = UpdateAnnouncementRequest{}
 	mi := &file_proto_guma_v1_announcement_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpdateAnnouncementDraftRequest) String() string {
+func (x *UpdateAnnouncementRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateAnnouncementDraftRequest) ProtoMessage() {}
+func (*UpdateAnnouncementRequest) ProtoMessage() {}
 
-func (x *UpdateAnnouncementDraftRequest) ProtoReflect() protoreflect.Message {
+func (x *UpdateAnnouncementRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_guma_v1_announcement_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -471,67 +471,67 @@ func (x *UpdateAnnouncementDraftRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateAnnouncementDraftRequest.ProtoReflect.Descriptor instead.
-func (*UpdateAnnouncementDraftRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateAnnouncementRequest.ProtoReflect.Descriptor instead.
+func (*UpdateAnnouncementRequest) Descriptor() ([]byte, []int) {
 	return file_proto_guma_v1_announcement_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *UpdateAnnouncementDraftRequest) GetGuildId() string {
+func (x *UpdateAnnouncementRequest) GetGuildId() string {
 	if x != nil {
 		return x.GuildId
 	}
 	return ""
 }
 
-func (x *UpdateAnnouncementDraftRequest) GetAnnouncementId() string {
+func (x *UpdateAnnouncementRequest) GetAnnouncementId() string {
 	if x != nil {
 		return x.AnnouncementId
 	}
 	return ""
 }
 
-func (x *UpdateAnnouncementDraftRequest) GetTitle() string {
+func (x *UpdateAnnouncementRequest) GetTitle() string {
 	if x != nil {
 		return x.Title
 	}
 	return ""
 }
 
-func (x *UpdateAnnouncementDraftRequest) GetContent() string {
+func (x *UpdateAnnouncementRequest) GetContent() string {
 	if x != nil {
 		return x.Content
 	}
 	return ""
 }
 
-func (x *UpdateAnnouncementDraftRequest) GetPinned() bool {
+func (x *UpdateAnnouncementRequest) GetPinned() bool {
 	if x != nil {
 		return x.Pinned
 	}
 	return false
 }
 
-type UpdateAnnouncementDraftResponse struct {
+type UpdateAnnouncementResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Announcement  *Announcement          `protobuf:"bytes,1,opt,name=announcement,proto3" json:"announcement,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UpdateAnnouncementDraftResponse) Reset() {
-	*x = UpdateAnnouncementDraftResponse{}
+func (x *UpdateAnnouncementResponse) Reset() {
+	*x = UpdateAnnouncementResponse{}
 	mi := &file_proto_guma_v1_announcement_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UpdateAnnouncementDraftResponse) String() string {
+func (x *UpdateAnnouncementResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateAnnouncementDraftResponse) ProtoMessage() {}
+func (*UpdateAnnouncementResponse) ProtoMessage() {}
 
-func (x *UpdateAnnouncementDraftResponse) ProtoReflect() protoreflect.Message {
+func (x *UpdateAnnouncementResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_guma_v1_announcement_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -543,12 +543,12 @@ func (x *UpdateAnnouncementDraftResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateAnnouncementDraftResponse.ProtoReflect.Descriptor instead.
-func (*UpdateAnnouncementDraftResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use UpdateAnnouncementResponse.ProtoReflect.Descriptor instead.
+func (*UpdateAnnouncementResponse) Descriptor() ([]byte, []int) {
 	return file_proto_guma_v1_announcement_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *UpdateAnnouncementDraftResponse) GetAnnouncement() *Announcement {
+func (x *UpdateAnnouncementResponse) GetAnnouncement() *Announcement {
 	if x != nil {
 		return x.Announcement
 	}
@@ -651,6 +651,102 @@ func (x *PublishAnnouncementResponse) GetAnnouncement() *Announcement {
 	return nil
 }
 
+type UnpublishAnnouncementRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	GuildId        string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	AnnouncementId string                 `protobuf:"bytes,2,opt,name=announcement_id,json=announcementId,proto3" json:"announcement_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *UnpublishAnnouncementRequest) Reset() {
+	*x = UnpublishAnnouncementRequest{}
+	mi := &file_proto_guma_v1_announcement_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnpublishAnnouncementRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnpublishAnnouncementRequest) ProtoMessage() {}
+
+func (x *UnpublishAnnouncementRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_announcement_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnpublishAnnouncementRequest.ProtoReflect.Descriptor instead.
+func (*UnpublishAnnouncementRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_announcement_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *UnpublishAnnouncementRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *UnpublishAnnouncementRequest) GetAnnouncementId() string {
+	if x != nil {
+		return x.AnnouncementId
+	}
+	return ""
+}
+
+type UnpublishAnnouncementResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Announcement  *Announcement          `protobuf:"bytes,1,opt,name=announcement,proto3" json:"announcement,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UnpublishAnnouncementResponse) Reset() {
+	*x = UnpublishAnnouncementResponse{}
+	mi := &file_proto_guma_v1_announcement_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UnpublishAnnouncementResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnpublishAnnouncementResponse) ProtoMessage() {}
+
+func (x *UnpublishAnnouncementResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_announcement_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnpublishAnnouncementResponse.ProtoReflect.Descriptor instead.
+func (*UnpublishAnnouncementResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_announcement_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *UnpublishAnnouncementResponse) GetAnnouncement() *Announcement {
+	if x != nil {
+		return x.Announcement
+	}
+	return nil
+}
+
 type DeleteAnnouncementDraftRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	GuildId        string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
@@ -661,7 +757,7 @@ type DeleteAnnouncementDraftRequest struct {
 
 func (x *DeleteAnnouncementDraftRequest) Reset() {
 	*x = DeleteAnnouncementDraftRequest{}
-	mi := &file_proto_guma_v1_announcement_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_announcement_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -673,7 +769,7 @@ func (x *DeleteAnnouncementDraftRequest) String() string {
 func (*DeleteAnnouncementDraftRequest) ProtoMessage() {}
 
 func (x *DeleteAnnouncementDraftRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_announcement_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_announcement_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -686,7 +782,7 @@ func (x *DeleteAnnouncementDraftRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAnnouncementDraftRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAnnouncementDraftRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_announcement_proto_rawDescGZIP(), []int{11}
+	return file_proto_guma_v1_announcement_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DeleteAnnouncementDraftRequest) GetGuildId() string {
@@ -711,7 +807,7 @@ type DeleteAnnouncementDraftResponse struct {
 
 func (x *DeleteAnnouncementDraftResponse) Reset() {
 	*x = DeleteAnnouncementDraftResponse{}
-	mi := &file_proto_guma_v1_announcement_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_announcement_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -723,7 +819,7 @@ func (x *DeleteAnnouncementDraftResponse) String() string {
 func (*DeleteAnnouncementDraftResponse) ProtoMessage() {}
 
 func (x *DeleteAnnouncementDraftResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_announcement_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_announcement_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -736,7 +832,7 @@ func (x *DeleteAnnouncementDraftResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAnnouncementDraftResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAnnouncementDraftResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_announcement_proto_rawDescGZIP(), []int{12}
+	return file_proto_guma_v1_announcement_proto_rawDescGZIP(), []int{14}
 }
 
 var File_proto_guma_v1_announcement_proto protoreflect.FileDescriptor
@@ -774,30 +870,36 @@ const file_proto_guma_v1_announcement_proto_rawDesc = "" +
 	"\x1eCreateAnnouncementDraftRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\"\\\n" +
 	"\x1fCreateAnnouncementDraftResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xac\x01\n" +
-	"\x1eUpdateAnnouncementDraftRequest\x12\x19\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xa7\x01\n" +
+	"\x19UpdateAnnouncementRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12'\n" +
 	"\x0fannouncement_id\x18\x02 \x01(\tR\x0eannouncementId\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x18\n" +
 	"\acontent\x18\x04 \x01(\tR\acontent\x12\x16\n" +
-	"\x06pinned\x18\x05 \x01(\bR\x06pinned\"\\\n" +
-	"\x1fUpdateAnnouncementDraftResponse\x129\n" +
+	"\x06pinned\x18\x05 \x01(\bR\x06pinned\"W\n" +
+	"\x1aUpdateAnnouncementResponse\x129\n" +
 	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"`\n" +
 	"\x1aPublishAnnouncementRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12'\n" +
 	"\x0fannouncement_id\x18\x02 \x01(\tR\x0eannouncementId\"X\n" +
 	"\x1bPublishAnnouncementResponse\x129\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"b\n" +
+	"\x1cUnpublishAnnouncementRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12'\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tR\x0eannouncementId\"Z\n" +
+	"\x1dUnpublishAnnouncementResponse\x129\n" +
 	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"d\n" +
 	"\x1eDeleteAnnouncementDraftRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12'\n" +
 	"\x0fannouncement_id\x18\x02 \x01(\tR\x0eannouncementId\"!\n" +
-	"\x1fDeleteAnnouncementDraftResponse2\xe0\a\n" +
+	"\x1fDeleteAnnouncementDraftResponse2\x86\t\n" +
 	"\x13AnnouncementService\x12\x87\x01\n" +
 	"\x11ListAnnouncements\x12!.guma.v1.ListAnnouncementsRequest\x1a\".guma.v1.ListAnnouncementsResponse\"+\x82\xd3\xe4\x93\x02%\x12#/v1/guilds/{guild_id}/announcements\x12\x93\x01\n" +
 	"\x0fGetAnnouncement\x12\x1f.guma.v1.GetAnnouncementRequest\x1a .guma.v1.GetAnnouncementResponse\"=\x82\xd3\xe4\x93\x027\x125/v1/guilds/{guild_id}/announcements/{announcement_id}\x12\x9c\x01\n" +
-	"\x17CreateAnnouncementDraft\x12'.guma.v1.CreateAnnouncementDraftRequest\x1a(.guma.v1.CreateAnnouncementDraftResponse\".\x82\xd3\xe4\x93\x02(:\x01*\"#/v1/guilds/{guild_id}/announcements\x12\xae\x01\n" +
-	"\x17UpdateAnnouncementDraft\x12'.guma.v1.UpdateAnnouncementDraftRequest\x1a(.guma.v1.UpdateAnnouncementDraftResponse\"@\x82\xd3\xe4\x93\x02::\x01*25/v1/guilds/{guild_id}/announcements/{announcement_id}\x12\xaa\x01\n" +
-	"\x13PublishAnnouncement\x12#.guma.v1.PublishAnnouncementRequest\x1a$.guma.v1.PublishAnnouncementResponse\"H\x82\xd3\xe4\x93\x02B:\x01*\"=/v1/guilds/{guild_id}/announcements/{announcement_id}/publish\x12\xab\x01\n" +
+	"\x17CreateAnnouncementDraft\x12'.guma.v1.CreateAnnouncementDraftRequest\x1a(.guma.v1.CreateAnnouncementDraftResponse\".\x82\xd3\xe4\x93\x02(:\x01*\"#/v1/guilds/{guild_id}/announcements\x12\x9f\x01\n" +
+	"\x12UpdateAnnouncement\x12\".guma.v1.UpdateAnnouncementRequest\x1a#.guma.v1.UpdateAnnouncementResponse\"@\x82\xd3\xe4\x93\x02::\x01*25/v1/guilds/{guild_id}/announcements/{announcement_id}\x12\xaa\x01\n" +
+	"\x13PublishAnnouncement\x12#.guma.v1.PublishAnnouncementRequest\x1a$.guma.v1.PublishAnnouncementResponse\"H\x82\xd3\xe4\x93\x02B:\x01*\"=/v1/guilds/{guild_id}/announcements/{announcement_id}/publish\x12\xb2\x01\n" +
+	"\x15UnpublishAnnouncement\x12%.guma.v1.UnpublishAnnouncementRequest\x1a&.guma.v1.UnpublishAnnouncementResponse\"J\x82\xd3\xe4\x93\x02D:\x01*\"?/v1/guilds/{guild_id}/announcements/{announcement_id}/unpublish\x12\xab\x01\n" +
 	"\x17DeleteAnnouncementDraft\x12'.guma.v1.DeleteAnnouncementDraftRequest\x1a(.guma.v1.DeleteAnnouncementDraftResponse\"=\x82\xd3\xe4\x93\x027*5/v1/guilds/{guild_id}/announcements/{announcement_id}B1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
 var (
@@ -812,7 +914,7 @@ func file_proto_guma_v1_announcement_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_announcement_proto_rawDescData
 }
 
-var file_proto_guma_v1_announcement_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_proto_guma_v1_announcement_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_proto_guma_v1_announcement_proto_goTypes = []any{
 	(*Announcement)(nil),                    // 0: guma.v1.Announcement
 	(*ListAnnouncementsRequest)(nil),        // 1: guma.v1.ListAnnouncementsRequest
@@ -821,40 +923,45 @@ var file_proto_guma_v1_announcement_proto_goTypes = []any{
 	(*GetAnnouncementResponse)(nil),         // 4: guma.v1.GetAnnouncementResponse
 	(*CreateAnnouncementDraftRequest)(nil),  // 5: guma.v1.CreateAnnouncementDraftRequest
 	(*CreateAnnouncementDraftResponse)(nil), // 6: guma.v1.CreateAnnouncementDraftResponse
-	(*UpdateAnnouncementDraftRequest)(nil),  // 7: guma.v1.UpdateAnnouncementDraftRequest
-	(*UpdateAnnouncementDraftResponse)(nil), // 8: guma.v1.UpdateAnnouncementDraftResponse
+	(*UpdateAnnouncementRequest)(nil),       // 7: guma.v1.UpdateAnnouncementRequest
+	(*UpdateAnnouncementResponse)(nil),      // 8: guma.v1.UpdateAnnouncementResponse
 	(*PublishAnnouncementRequest)(nil),      // 9: guma.v1.PublishAnnouncementRequest
 	(*PublishAnnouncementResponse)(nil),     // 10: guma.v1.PublishAnnouncementResponse
-	(*DeleteAnnouncementDraftRequest)(nil),  // 11: guma.v1.DeleteAnnouncementDraftRequest
-	(*DeleteAnnouncementDraftResponse)(nil), // 12: guma.v1.DeleteAnnouncementDraftResponse
-	(*timestamppb.Timestamp)(nil),           // 13: google.protobuf.Timestamp
+	(*UnpublishAnnouncementRequest)(nil),    // 11: guma.v1.UnpublishAnnouncementRequest
+	(*UnpublishAnnouncementResponse)(nil),   // 12: guma.v1.UnpublishAnnouncementResponse
+	(*DeleteAnnouncementDraftRequest)(nil),  // 13: guma.v1.DeleteAnnouncementDraftRequest
+	(*DeleteAnnouncementDraftResponse)(nil), // 14: guma.v1.DeleteAnnouncementDraftResponse
+	(*timestamppb.Timestamp)(nil),           // 15: google.protobuf.Timestamp
 }
 var file_proto_guma_v1_announcement_proto_depIdxs = []int32{
-	13, // 0: guma.v1.Announcement.published_at:type_name -> google.protobuf.Timestamp
-	13, // 1: guma.v1.Announcement.created_at:type_name -> google.protobuf.Timestamp
-	13, // 2: guma.v1.Announcement.updated_at:type_name -> google.protobuf.Timestamp
+	15, // 0: guma.v1.Announcement.published_at:type_name -> google.protobuf.Timestamp
+	15, // 1: guma.v1.Announcement.created_at:type_name -> google.protobuf.Timestamp
+	15, // 2: guma.v1.Announcement.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: guma.v1.ListAnnouncementsResponse.announcements:type_name -> guma.v1.Announcement
 	0,  // 4: guma.v1.GetAnnouncementResponse.announcement:type_name -> guma.v1.Announcement
 	0,  // 5: guma.v1.CreateAnnouncementDraftResponse.announcement:type_name -> guma.v1.Announcement
-	0,  // 6: guma.v1.UpdateAnnouncementDraftResponse.announcement:type_name -> guma.v1.Announcement
+	0,  // 6: guma.v1.UpdateAnnouncementResponse.announcement:type_name -> guma.v1.Announcement
 	0,  // 7: guma.v1.PublishAnnouncementResponse.announcement:type_name -> guma.v1.Announcement
-	1,  // 8: guma.v1.AnnouncementService.ListAnnouncements:input_type -> guma.v1.ListAnnouncementsRequest
-	3,  // 9: guma.v1.AnnouncementService.GetAnnouncement:input_type -> guma.v1.GetAnnouncementRequest
-	5,  // 10: guma.v1.AnnouncementService.CreateAnnouncementDraft:input_type -> guma.v1.CreateAnnouncementDraftRequest
-	7,  // 11: guma.v1.AnnouncementService.UpdateAnnouncementDraft:input_type -> guma.v1.UpdateAnnouncementDraftRequest
-	9,  // 12: guma.v1.AnnouncementService.PublishAnnouncement:input_type -> guma.v1.PublishAnnouncementRequest
-	11, // 13: guma.v1.AnnouncementService.DeleteAnnouncementDraft:input_type -> guma.v1.DeleteAnnouncementDraftRequest
-	2,  // 14: guma.v1.AnnouncementService.ListAnnouncements:output_type -> guma.v1.ListAnnouncementsResponse
-	4,  // 15: guma.v1.AnnouncementService.GetAnnouncement:output_type -> guma.v1.GetAnnouncementResponse
-	6,  // 16: guma.v1.AnnouncementService.CreateAnnouncementDraft:output_type -> guma.v1.CreateAnnouncementDraftResponse
-	8,  // 17: guma.v1.AnnouncementService.UpdateAnnouncementDraft:output_type -> guma.v1.UpdateAnnouncementDraftResponse
-	10, // 18: guma.v1.AnnouncementService.PublishAnnouncement:output_type -> guma.v1.PublishAnnouncementResponse
-	12, // 19: guma.v1.AnnouncementService.DeleteAnnouncementDraft:output_type -> guma.v1.DeleteAnnouncementDraftResponse
-	14, // [14:20] is the sub-list for method output_type
-	8,  // [8:14] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	0,  // 8: guma.v1.UnpublishAnnouncementResponse.announcement:type_name -> guma.v1.Announcement
+	1,  // 9: guma.v1.AnnouncementService.ListAnnouncements:input_type -> guma.v1.ListAnnouncementsRequest
+	3,  // 10: guma.v1.AnnouncementService.GetAnnouncement:input_type -> guma.v1.GetAnnouncementRequest
+	5,  // 11: guma.v1.AnnouncementService.CreateAnnouncementDraft:input_type -> guma.v1.CreateAnnouncementDraftRequest
+	7,  // 12: guma.v1.AnnouncementService.UpdateAnnouncement:input_type -> guma.v1.UpdateAnnouncementRequest
+	9,  // 13: guma.v1.AnnouncementService.PublishAnnouncement:input_type -> guma.v1.PublishAnnouncementRequest
+	11, // 14: guma.v1.AnnouncementService.UnpublishAnnouncement:input_type -> guma.v1.UnpublishAnnouncementRequest
+	13, // 15: guma.v1.AnnouncementService.DeleteAnnouncementDraft:input_type -> guma.v1.DeleteAnnouncementDraftRequest
+	2,  // 16: guma.v1.AnnouncementService.ListAnnouncements:output_type -> guma.v1.ListAnnouncementsResponse
+	4,  // 17: guma.v1.AnnouncementService.GetAnnouncement:output_type -> guma.v1.GetAnnouncementResponse
+	6,  // 18: guma.v1.AnnouncementService.CreateAnnouncementDraft:output_type -> guma.v1.CreateAnnouncementDraftResponse
+	8,  // 19: guma.v1.AnnouncementService.UpdateAnnouncement:output_type -> guma.v1.UpdateAnnouncementResponse
+	10, // 20: guma.v1.AnnouncementService.PublishAnnouncement:output_type -> guma.v1.PublishAnnouncementResponse
+	12, // 21: guma.v1.AnnouncementService.UnpublishAnnouncement:output_type -> guma.v1.UnpublishAnnouncementResponse
+	14, // 22: guma.v1.AnnouncementService.DeleteAnnouncementDraft:output_type -> guma.v1.DeleteAnnouncementDraftResponse
+	16, // [16:23] is the sub-list for method output_type
+	9,  // [9:16] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_announcement_proto_init() }
@@ -868,7 +975,7 @@ func file_proto_guma_v1_announcement_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_announcement_proto_rawDesc), len(file_proto_guma_v1_announcement_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

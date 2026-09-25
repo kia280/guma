@@ -514,12 +514,12 @@
         ]
       },
       "patch": {
-        "operationId": "AnnouncementService_UpdateAnnouncementDraft",
+        "operationId": "AnnouncementService_UpdateAnnouncement",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1UpdateAnnouncementDraftResponse"
+              "$ref": "#/definitions/v1UpdateAnnouncementResponse"
             }
           },
           "default": {
@@ -547,7 +547,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/AnnouncementServiceUpdateAnnouncementDraftBody"
+              "$ref": "#/definitions/AnnouncementServiceUpdateAnnouncementBody"
             }
           }
         ],
@@ -592,6 +592,50 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/AnnouncementServicePublishAnnouncementBody"
+            }
+          }
+        ],
+        "tags": [
+          "AnnouncementService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/announcements/{announcementId}/unpublish": {
+      "post": {
+        "operationId": "AnnouncementService_UnpublishAnnouncement",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UnpublishAnnouncementResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "announcementId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AnnouncementServiceUnpublishAnnouncementBody"
             }
           }
         ],
@@ -3452,7 +3496,10 @@
     "AnnouncementServicePublishAnnouncementBody": {
       "type": "object"
     },
-    "AnnouncementServiceUpdateAnnouncementDraftBody": {
+    "AnnouncementServiceUnpublishAnnouncementBody": {
+      "type": "object"
+    },
+    "AnnouncementServiceUpdateAnnouncementBody": {
       "type": "object",
       "properties": {
         "title": {
@@ -5957,7 +6004,15 @@
         }
       }
     },
-    "v1UpdateAnnouncementDraftResponse": {
+    "v1UnpublishAnnouncementResponse": {
+      "type": "object",
+      "properties": {
+        "announcement": {
+          "$ref": "#/definitions/v1Announcement"
+        }
+      }
+    },
+    "v1UpdateAnnouncementResponse": {
       "type": "object",
       "properties": {
         "announcement": {
