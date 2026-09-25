@@ -10,14 +10,13 @@ import {
   Modal,
   Avatar,
   Separator,
-  TextField,
+  NumberField,
   Label,
-  InputGroup,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
-import { GOLD_STEP, roundGold } from '@/lib/guma/money';
+import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 
 const PROGRESS_FILL = {
   danger: 'bg-danger',
@@ -111,7 +110,8 @@ const AuctionItemCard = ({
   const timeRemaining = formatTimeRemaining(item.endTime);
   const progress = getAuctionProgress(item.startTime, item.endTime);
 
-  const canBid = isActive && bidAmount >= minimumBid && bidAmount <= userBalance;
+  const hasBidAmount = Number.isFinite(bidAmount);
+  const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
 
   const handlePlaceBid = () => {
     if (canBid) {
@@ -294,34 +294,29 @@ const AuctionItemCard = ({
                     </div>
                   </div>
 
-                  <TextField>
+                  <NumberField
+                    formatOptions={GOLD_FORMAT_OPTIONS}
+                    minValue={minimumBid}
+                    value={bidAmount}
+                    onChange={value => setBidInput(Number.isFinite(value) ? roundGold(value) : value)}
+                  >
                     <Label>{t('yourBidAmount')}</Label>
-                    <InputGroup>
-                      <InputGroup.Prefix>
-                        <Icon
-                          icon="solar:dollar-minimalistic-linear"
-                          width={14}
-                          className="text-hint"
-                        />
-                      </InputGroup.Prefix>
-                      <InputGroup.Input
-                        type="number"
-                        min={0}
-                        step={GOLD_STEP}
-                        inputMode="decimal"
+                    <NumberField.Group>
+                      <NumberField.DecrementButton />
+                      <NumberField.Input
+                        className="w-full min-w-0"
                         placeholder={`${t('minimum')} $${minimumBid.toLocaleString()}`}
-                        value={bidAmount.toString()}
-                        onChange={e => setBidInput(roundGold(Number(e.target.value)))}
                       />
-                    </InputGroup>
+                      <NumberField.IncrementButton />
+                    </NumberField.Group>
                     <p className="type-caption text-hint mt-1">
                       {bidAmount > userBalance
                         ? t('insufficientBalance')
-                        : bidAmount < minimumBid
+                        : !hasBidAmount || bidAmount < minimumBid
                           ? `${t('minimumBidIs')} $${minimumBid.toLocaleString()}`
                           : t('validBidAmount')}
                     </p>
-                  </TextField>
+                  </NumberField>
                 </div>
               </Modal.Body>
               <Modal.Footer>
