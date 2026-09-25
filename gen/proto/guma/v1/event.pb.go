@@ -929,6 +929,7 @@ type GuildEvent struct {
 	ParticipantIds   []string               `protobuf:"bytes,14,rep,name=participant_ids,json=participantIds,proto3" json:"participant_ids,omitempty"`
 	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	CreatedByName    string                 `protobuf:"bytes,17,opt,name=created_by_name,json=createdByName,proto3" json:"created_by_name,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1073,6 +1074,13 @@ func (x *GuildEvent) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *GuildEvent) GetCreatedByName() string {
+	if x != nil {
+		return x.CreatedByName
+	}
+	return ""
 }
 
 type RecurringPattern struct {
@@ -1243,7 +1251,7 @@ const file_proto_guma_v1_event_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\"I\n" +
 	"\x1aListUpcomingEventsResponse\x12+\n" +
-	"\x06events\x18\x01 \x03(\v2\x13.guma.v1.GuildEventR\x06events\"\xbc\x04\n" +
+	"\x06events\x18\x01 \x03(\v2\x13.guma.v1.GuildEventR\x06events\"\xe4\x04\n" +
 	"\n" +
 	"GuildEvent\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
@@ -1267,7 +1275,8 @@ const file_proto_guma_v1_event_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xeb\x01\n" +
+	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12&\n" +
+	"\x0fcreated_by_name\x18\x11 \x01(\tR\rcreatedByName\"\xeb\x01\n" +
 	"\x10RecurringPattern\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x1a\n" +
 	"\binterval\x18\x02 \x01(\x05R\binterval\x12 \n" +
