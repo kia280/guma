@@ -69,6 +69,7 @@ type BankItem struct {
 	Quantity  int32
 	Note      pgtype.Text
 	DonatedAt time.Time
+	CheckinID *uuid.UUID
 }
 
 type Bid struct {

@@ -108,3 +108,7 @@ LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountCheckinAttendees :one
 SELECT COUNT(*) FROM checkin_attendees WHERE checkin_id = $1;
+
+-- name: InsertCheckinBankItem :exec
+INSERT INTO bank_items (id, guild_id, donor_id, donor_name, item, checkin_id)
+VALUES ($1, $2, $3, sqlc.arg(donor_name)::text, sqlc.arg(item)::jsonb, sqlc.arg(checkin_id)::uuid);

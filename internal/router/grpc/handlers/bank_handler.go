@@ -320,14 +320,16 @@ func fundRequestToProto(fr *banksvc.FundRequest) *gumav1.FundRequest {
 
 func bankItemToProto(bi *banksvc.BankItem) *gumav1.BankItem {
 	return &gumav1.BankItem{
-		Id:        bi.ID,
-		GuildId:   bi.GuildID,
-		DonorId:   bi.DonorID,
-		DonorName: bi.DonorName,
-		Item:      itemToProto(bi.Item),
-		Quantity:  bi.Quantity,
-		Note:      bi.Note,
-		DonatedAt: timestamppb.New(bi.DonatedAt),
+		Id:           bi.ID,
+		GuildId:      bi.GuildID,
+		DonorId:      bi.DonorID,
+		DonorName:    bi.DonorName,
+		Item:         itemToProto(bi.Item),
+		Quantity:     bi.Quantity,
+		Note:         bi.Note,
+		DonatedAt:    timestamppb.New(bi.DonatedAt),
+		CheckinId:    bi.CheckinID,
+		CheckinTitle: bi.CheckinTitle,
 	}
 }
 

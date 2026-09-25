@@ -114,14 +114,17 @@ RETURNING id, guild_id, donor_id, donor_name, item, quantity,
           donated_at;
 
 -- name: ListBankItems :many
-SELECT id, guild_id, donor_id, donor_name, item, quantity,
-       COALESCE(note, '') AS note,
-       donated_at
-FROM bank_items
-WHERE guild_id = $1
-  AND (sqlc.arg(category_filter)::text = '' OR item->>'category' = sqlc.arg(category_filter)::text)
-  AND (sqlc.arg(rarity_filter)::text   = '' OR item->>'rarity'   = sqlc.arg(rarity_filter)::text)
-ORDER BY donated_at DESC
+SELECT bi.id, bi.guild_id, bi.donor_id, bi.donor_name, bi.item, bi.quantity,
+       COALESCE(bi.note, '') AS note,
+       bi.donated_at,
+       bi.checkin_id,
+       COALESCE(c.title, '') AS checkin_title
+FROM bank_items bi
+LEFT JOIN checkins c ON c.id = bi.checkin_id
+WHERE bi.guild_id = $1
+  AND (sqlc.arg(category_filter)::text = '' OR bi.item->>'category' = sqlc.arg(category_filter)::text)
+  AND (sqlc.arg(rarity_filter)::text   = '' OR bi.item->>'rarity'   = sqlc.arg(rarity_filter)::text)
+ORDER BY bi.donated_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountBankItems :one

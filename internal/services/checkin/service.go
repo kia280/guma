@@ -19,6 +19,11 @@ import (
 	"github.com/kia280/guma/internal/services/errs"
 )
 
+const (
+	defaultLootCategory = "misc"
+	defaultLootRarity   = "common"
+)
+
 // CheckIn is the domain model for a check-in event.
 type CheckIn struct {
 	ID              string
@@ -111,6 +116,7 @@ type checkinRow struct {
 
 // Service handles check-in business logic.
 type Service struct {
+	pool   *database.Pool
 	q      *db.Queries
 	logger zerolog.Logger
 }
@@ -122,6 +128,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 		q = db.New(pool.Pool)
 	}
 	return &Service{
+		pool:   pool,
 		q:      q,
 		logger: logger.With().Str("service", "checkin").Logger(),
 	}
@@ -208,18 +215,45 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 		return nil, err
 	}
 
-	lootJSON, err := marshalLoot(p.LootList)
+	loot, err := prepareBankLoot(p.LootList)
+	if err != nil {
+		return nil, err
+	}
+	lootJSON, err := marshalLoot(loot)
 	if err != nil {
 		return nil, fmt.Errorf("%w: encode loot: %v", errs.ErrInternal, err)
 	}
+	donorName, _ := s.q.GetUserDisplayName(ctx, createdBy)
 
-	r, err := s.q.CreateCheckin(ctx, db.CreateCheckinParams{
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer tx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(tx)
+
+	r, err := qtx.CreateCheckin(ctx, db.CreateCheckinParams{
 		GuildID: guildID, CreatedBy: createdBy, Title: p.Title,
 		Description: p.Description, Datetime: p.Datetime, ExpireTime: p.ExpireTime,
 		ImageUrl: p.ImageURL, LootList: lootJSON,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: create checkin: %v", errs.ErrInternal, err)
+	}
+	for _, item := range loot {
+		itemJSON, err := json.Marshal(item)
+		if err != nil {
+			return nil, fmt.Errorf("%w: encode bank item: %v", errs.ErrInternal, err)
+		}
+		if err := qtx.InsertCheckinBankItem(ctx, db.InsertCheckinBankItemParams{
+			ID: uuid.MustParse(item.ID), GuildID: guildID, DonorID: createdBy,
+			DonorName: donorName, Item: itemJSON, CheckinID: r.ID,
+		}); err != nil {
+			return nil, fmt.Errorf("%w: insert bank item: %v", errs.ErrInternal, err)
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	c := toCheckIn(checkinRow{
 		ID: r.ID, GuildID: r.GuildID, CreatedBy: r.CreatedBy,
@@ -229,7 +263,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 	})
-	s.logger.Info().Str("checkin_id", c.ID).Str("guild_id", p.GuildID).Msg("checkin created")
+	s.logger.Info().Str("checkin_id", c.ID).Str("guild_id", p.GuildID).Int("bank_items", len(loot)).Msg("checkin created")
 	return c, nil
 }
 
@@ -400,6 +434,27 @@ func marshalLoot(items []models.Item) ([]byte, error) {
 		return json.Marshal([]models.Item{})
 	}
 	return json.Marshal(items)
+}
+
+func prepareBankLoot(items []models.Item) ([]models.Item, error) {
+	loot := make([]models.Item, 0, len(items))
+	for _, item := range items {
+		item.Name = strings.TrimSpace(item.Name)
+		if item.Name == "" {
+			return nil, fmt.Errorf("%w: loot item name is required", errs.ErrInvalidArgument)
+		}
+		item.ID = uuid.NewString()
+		item.Category = strings.ToLower(strings.TrimSpace(item.Category))
+		if item.Category == "" {
+			item.Category = defaultLootCategory
+		}
+		item.Rarity = strings.ToLower(strings.TrimSpace(item.Rarity))
+		if item.Rarity == "" {
+			item.Rarity = defaultLootRarity
+		}
+		loot = append(loot, item)
+	}
+	return loot, nil
 }
 
 func validateCheckInFields(title, datetime, expireTime string) error {

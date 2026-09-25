@@ -69,14 +69,16 @@ type FundRequest struct {
 
 // BankItem is the domain model for an item in the guild bank.
 type BankItem struct {
-	ID        string
-	GuildID   string
-	DonorID   string
-	DonorName string
-	Item      models.Item
-	Quantity  int32
-	Note      string
-	DonatedAt time.Time
+	ID           string
+	GuildID      string
+	DonorID      string
+	DonorName    string
+	Item         models.Item
+	Quantity     int32
+	Note         string
+	DonatedAt    time.Time
+	CheckinID    string
+	CheckinTitle string
 }
 
 // ItemRequest is the domain model for an item request.
@@ -567,7 +569,10 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 		bi := &BankItem{
 			ID: r.ID.String(), GuildID: r.GuildID.String(), DonorID: r.DonorID.String(),
 			DonorName: r.DonorName, Quantity: r.Quantity,
-			Note: r.Note, DonatedAt: r.DonatedAt,
+			Note: r.Note, DonatedAt: r.DonatedAt, CheckinTitle: r.CheckinTitle,
+		}
+		if r.CheckinID != nil {
+			bi.CheckinID = r.CheckinID.String()
 		}
 		if len(r.Item) > 0 {
 			_ = json.Unmarshal(r.Item, &bi.Item)

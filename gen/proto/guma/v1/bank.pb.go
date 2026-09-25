@@ -1665,6 +1665,8 @@ type BankItem struct {
 	Quantity      int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Note          string                 `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
 	DonatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=donated_at,json=donatedAt,proto3" json:"donated_at,omitempty"`
+	CheckinId     string                 `protobuf:"bytes,9,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
+	CheckinTitle  string                 `protobuf:"bytes,10,opt,name=checkin_title,json=checkinTitle,proto3" json:"checkin_title,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1753,6 +1755,20 @@ func (x *BankItem) GetDonatedAt() *timestamppb.Timestamp {
 		return x.DonatedAt
 	}
 	return nil
+}
+
+func (x *BankItem) GetCheckinId() string {
+	if x != nil {
+		return x.CheckinId
+	}
+	return ""
+}
+
+func (x *BankItem) GetCheckinTitle() string {
+	if x != nil {
+		return x.CheckinTitle
+	}
+	return ""
 }
 
 type ItemRequest struct {
@@ -2024,7 +2040,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
 	"\vreviewed_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"reviewedAt\"\xfd\x01\n" +
+	"reviewedAt\"\xc1\x02\n" +
 	"\bBankItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x19\n" +
@@ -2035,7 +2051,11 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\bquantity\x18\x06 \x01(\x05R\bquantity\x12\x12\n" +
 	"\x04note\x18\a \x01(\tR\x04note\x129\n" +
 	"\n" +
-	"donated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tdonatedAt\"\xb1\x03\n" +
+	"donated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tdonatedAt\x12\x1d\n" +
+	"\n" +
+	"checkin_id\x18\t \x01(\tR\tcheckinId\x12#\n" +
+	"\rcheckin_title\x18\n" +
+	" \x01(\tR\fcheckinTitle\"\xb1\x03\n" +
 	"\vItemRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12 \n" +

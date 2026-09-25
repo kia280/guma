@@ -266,6 +266,8 @@ message BankItem {
   int32 quantity = 6;
   string note = 7;
   google.protobuf.Timestamp donated_at = 8;
+  string checkin_id = 9;
+  string checkin_title = 10;
 }
 
 message ItemRequest {

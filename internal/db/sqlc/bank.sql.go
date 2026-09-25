@@ -503,14 +503,17 @@ func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContrib
 }
 
 const listBankItems = `-- name: ListBankItems :many
-SELECT id, guild_id, donor_id, donor_name, item, quantity,
-       COALESCE(note, '') AS note,
-       donated_at
-FROM bank_items
-WHERE guild_id = $1
-  AND ($2::text = '' OR item->>'category' = $2::text)
-  AND ($3::text   = '' OR item->>'rarity'   = $3::text)
-ORDER BY donated_at DESC
+SELECT bi.id, bi.guild_id, bi.donor_id, bi.donor_name, bi.item, bi.quantity,
+       COALESCE(bi.note, '') AS note,
+       bi.donated_at,
+       bi.checkin_id,
+       COALESCE(c.title, '') AS checkin_title
+FROM bank_items bi
+LEFT JOIN checkins c ON c.id = bi.checkin_id
+WHERE bi.guild_id = $1
+  AND ($2::text = '' OR bi.item->>'category' = $2::text)
+  AND ($3::text   = '' OR bi.item->>'rarity'   = $3::text)
+ORDER BY bi.donated_at DESC
 LIMIT $5::int OFFSET $4::int
 `
 
@@ -523,14 +526,16 @@ type ListBankItemsParams struct {
 }
 
 type ListBankItemsRow struct {
-	ID        uuid.UUID
-	GuildID   uuid.UUID
-	DonorID   uuid.UUID
-	DonorName string
-	Item      []byte
-	Quantity  int32
-	Note      string
-	DonatedAt time.Time
+	ID           uuid.UUID
+	GuildID      uuid.UUID
+	DonorID      uuid.UUID
+	DonorName    string
+	Item         []byte
+	Quantity     int32
+	Note         string
+	DonatedAt    time.Time
+	CheckinID    *uuid.UUID
+	CheckinTitle string
 }
 
 func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([]ListBankItemsRow, error) {
@@ -557,6 +562,8 @@ func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([
 			&i.Quantity,
 			&i.Note,
 			&i.DonatedAt,
+			&i.CheckinID,
+			&i.CheckinTitle,
 		); err != nil {
 			return nil, err
 		}
