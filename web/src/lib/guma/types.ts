@@ -83,6 +83,8 @@ export interface ApiClient {
   getCurrentGuild(): Promise<Guild | null>;
   createGuild(req: { name: string; description?: string }): Promise<Guild>;
   updateGuild(id: string, patch: Partial<Guild>): Promise<Guild>;
+  uploadGuildLogo(id: string, image: Blob): Promise<Guild>;
+  deleteGuildLogo(id: string): Promise<Guild>;
   joinGuild(id: string): Promise<void>;
   leaveGuild(id: string): Promise<void>;
 

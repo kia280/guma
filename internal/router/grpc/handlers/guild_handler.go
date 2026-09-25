@@ -5,7 +5,10 @@ import (
 	"errors"
 
 	"github.com/rs/zerolog"
+	"google.golang.org/genproto/googleapis/api/httpbody"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -88,6 +91,66 @@ func (h *GuildHandler) UpdateGuild(ctx context.Context, req *guildv1.UpdateGuild
 		return nil, toStatus(err)
 	}
 	return &guildv1.UpdateGuildResponse{Guild: guildToProto(g)}, nil
+}
+
+func (h *GuildHandler) UploadGuildLogo(ctx context.Context, req *guildv1.UploadGuildLogoRequest) (*guildv1.UploadGuildLogoResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	g, err := h.svc.UploadLogo(ctx, guildsvc.UploadLogoParams{
+		GuildID:     req.GuildId,
+		UserID:      userID,
+		ContentType: req.ContentType,
+		Data:        req.Data,
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &guildv1.UploadGuildLogoResponse{Guild: guildToProto(g)}, nil
+}
+
+func (h *GuildHandler) DeleteGuildLogo(ctx context.Context, req *guildv1.DeleteGuildLogoRequest) (*guildv1.DeleteGuildLogoResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	g, err := h.svc.DeleteLogo(ctx, req.GuildId, userID)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &guildv1.DeleteGuildLogoResponse{Guild: guildToProto(g)}, nil
+}
+
+func (h *GuildHandler) GetGuildLogo(ctx context.Context, req *guildv1.GetGuildLogoRequest) (*httpbody.HttpBody, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	if session.UserIDFromContext(ctx) == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	logo, err := h.svc.GetLogo(ctx, req.GuildId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+
+	cacheControl := "private, no-cache"
+	if req.V != "" {
+		cacheControl = "private, max-age=31536000, immutable"
+	}
+	if err := grpc.SetHeader(ctx, metadata.Pairs("cache-control", cacheControl)); err != nil {
+		h.logger.Warn().Err(err).Msg("failed to set guild logo cache header")
+	}
+	return &httpbody.HttpBody{ContentType: logo.ContentType, Data: logo.Data}, nil
 }
 
 func (h *GuildHandler) DeleteGuild(ctx context.Context, req *guildv1.DeleteGuildRequest) (*guildv1.DeleteGuildResponse, error) {

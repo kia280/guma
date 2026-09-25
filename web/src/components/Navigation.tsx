@@ -8,6 +8,7 @@ import { useTheme } from 'next-themes';
 import { Button, Dropdown, Avatar, Label } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { Logo } from './Logo';
+import { useCurrentGuild } from '@/lib/store';
 
 interface NavItem {
   key: string;
@@ -52,6 +53,7 @@ export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const { guild } = useCurrentGuild();
 
   return (
     <header className="border-b border-divider bg-background sticky top-0 z-50">
@@ -70,14 +72,14 @@ export function Navigation() {
         {/* Logo — mobile center */}
         <div className="sm:hidden absolute left-1/2 -translate-x-1/2">
           <Link href={navigationItems[0].href}>
-            <Logo size="sm" clickable />
+            <Logo size="sm" clickable src={guild?.icon} text={guild?.name || undefined} />
           </Link>
         </div>
 
         {/* Desktop: logo + nav */}
         <div className="hidden sm:flex items-center gap-6">
           <Link href={navigationItems[0].href}>
-            <Logo size="sm" clickable priority />
+            <Logo size="sm" clickable priority src={guild?.icon} text={guild?.name || undefined} />
           </Link>
           <nav className="flex items-center gap-1">
             {navigationItems.map(item => {

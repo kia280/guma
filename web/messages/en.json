@@ -51,7 +51,29 @@
     "learnMore": "Learn More",
     "starOnGitHub": "Star on GitHub",
     "logout": "Logout",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "navigation": "Main navigation",
+    "breadcrumbs": "Current location",
+    "toggleTheme": "Toggle theme",
+    "adminMembers": "Users",
+    "adminRequests": "Requests",
+    "adminTemplates": "Templates",
+    "adminGuild": "Guild",
+    "adminAnnouncements": "Announcements",
+    "adminRoles": "Roles & permissions",
+    "sections": {
+      "activities": "Guild activities",
+      "assets": "Assets"
+    },
+    "pages": {
+      "detail": "Details",
+      "editAnnouncement": "Edit announcement",
+      "withdraw": "Withdrawals",
+      "profile": "Profile",
+      "preference": "Preferences",
+      "terms": "Terms of service",
+      "contact": "Contact us"
+    }
   },
   "dashboard": {
     "overview": "Overview",
@@ -312,6 +334,24 @@
     "activeEvents": "Active Events",
     "totalItems": "Total Items",
     "guildSettings": "Guild Settings",
+    "guildLogo": "Guild Logo",
+    "guildLogoHint": "PNG, JPEG, WebP, or GIF. Large images are scaled down automatically (GIFs must be under 512 KB). Shown in the top-left of the sidebar; without one, the first character of the guild name is shown.",
+    "guildLogoAlt": "{name} logo",
+    "uploadLogo": "Upload",
+    "removeLogo": "Remove",
+    "uploadingLogo": "Uploading logo",
+    "logoInvalidType": "Choose a PNG, JPEG, WebP, or GIF image.",
+    "logoTooLarge": "The image must be 512 KB or smaller.",
+    "logoInvalid": "This image could not be used. Try a different file.",
+    "logoPermissionDenied": "Only guild owners and admins can change the logo.",
+    "logoUploadFailed": "Could not update the logo. Please try again.",
+    "logoOpenChatGpt": "Open ChatGPT",
+    "logoPromptCopyFailed": "Could not copy. Select the prompt text manually.",
+    "logoPromptCopied": "Copied",
+    "logoPromptCopy": "Copy prompt",
+    "logoPrompt": "Design a square icon for the guild “{name}” as a 1024×1024 PNG with a transparent background (no background color, checkerboard, watermark, or text).\n\n- Use: the guild avatar in a website sidebar, shown at 32 pixels and also usable as a 16-pixel favicon.\n- Style: modern SaaS logo (like Linear or Notion), flat, minimal, solid colors; no gradients, 3D, or realistic textures.\n- Theme: build it around one game element, such as a sword, book, wings, or monster, simplified into geometric shapes and solid fills with consistent rounded corners.\n- Color: mainly {color}, with at most a little neutral gray, legible on both white and dark gray backgrounds.\n- Composition: frameless, placed directly on the transparent background with no plate, outline, or badge; centered at about 80% of the canvas.",
+    "logoPromptHelp": "Paste this into ChatGPT and upload the generated image to Guild Logo above; it is resized automatically. The color follows the site’s current accent color.",
+    "logoPromptToggle": "Generate a logo with ChatGPT",
     "guildName": "Guild Name",
     "recruitment": "Recruitment",
     "serverRegion": "Server Region",
@@ -381,7 +421,6 @@
       "member": "Member"
     },
     "bankRequests": "Requests",
-    "rolePermissions": "Role permissions",
     "templates": "Templates"
   },
   "adminRolesPage": {
@@ -879,6 +918,10 @@
       "sun-gold": {
         "name": "Sun Gold",
         "description": "Bright logo gold with dark text, warm neutrals, readable status colors"
+      },
+      "amber-gold": {
+        "name": "Amber Gold",
+        "description": "Coin-like amber that stays distinct from the green success color, with dark text, warm neutrals, and readable status colors"
       },
       "ink-gold": {
         "name": "Ink & Gold",

@@ -2,6 +2,8 @@
 'use client';
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { SharedElementTransition } from 'react-aria-components';
+import { RouterProvider } from '@heroui/react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { type ReactNode } from 'react';
 
@@ -11,6 +13,8 @@ import '@/lib/store';
 const DevTools = env.devTools ? dynamic(() => import('@/components/dev/DevTools'), { ssr: false }) : null;
 
 export function Providers({ children }: { children: ReactNode }) {
+  const router = useRouter();
+
   return (
     <NextThemesProvider
       attribute="class"
@@ -18,8 +22,10 @@ export function Providers({ children }: { children: ReactNode }) {
       enableSystem={true}
       themes={['light', 'dark']}
     >
-      <SharedElementTransition>{children}</SharedElementTransition>
-      {DevTools && <DevTools />}
+      <RouterProvider navigate={router.push}>
+        <SharedElementTransition>{children}</SharedElementTransition>
+        {DevTools && <DevTools />}
+      </RouterProvider>
     </NextThemesProvider>
   );
 }

@@ -139,6 +139,61 @@ func (q *Queries) DeleteGuild(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const deleteGuildLogo = `-- name: DeleteGuildLogo :one
+WITH removed AS (
+    DELETE FROM guild_logos WHERE guild_id = $1
+)
+UPDATE guilds SET
+    icon_url   = NULL,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, name,
+          COALESCE(description, '') AS description,
+          owner_id,
+          timezone, language, public, allow_invites,
+          custom_settings,
+          COALESCE(icon_url, '')   AS icon_url,
+          COALESCE(banner_url, '') AS banner_url,
+          created_at, updated_at
+`
+
+type DeleteGuildLogoRow struct {
+	ID             uuid.UUID
+	Name           string
+	Description    string
+	OwnerID        uuid.UUID
+	Timezone       string
+	Language       string
+	Public         bool
+	AllowInvites   bool
+	CustomSettings []byte
+	IconUrl        string
+	BannerUrl      string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
+func (q *Queries) DeleteGuildLogo(ctx context.Context, id uuid.UUID) (DeleteGuildLogoRow, error) {
+	row := q.db.QueryRow(ctx, deleteGuildLogo, id)
+	var i DeleteGuildLogoRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.OwnerID,
+		&i.Timezone,
+		&i.Language,
+		&i.Public,
+		&i.AllowInvites,
+		&i.CustomSettings,
+		&i.IconUrl,
+		&i.BannerUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const deleteGuildMember = `-- name: DeleteGuildMember :exec
 DELETE FROM members WHERE user_id = $1 AND guild_id = $2
 `
@@ -200,6 +255,25 @@ func (q *Queries) GetGuild(ctx context.Context, id uuid.UUID) (GetGuildRow, erro
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
+	return i, err
+}
+
+const getGuildLogo = `-- name: GetGuildLogo :one
+SELECT content_type, data, updated_at
+FROM guild_logos
+WHERE guild_id = $1
+`
+
+type GetGuildLogoRow struct {
+	ContentType string
+	Data        []byte
+	UpdatedAt   time.Time
+}
+
+func (q *Queries) GetGuildLogo(ctx context.Context, guildID uuid.UUID) (GetGuildLogoRow, error) {
+	row := q.db.QueryRow(ctx, getGuildLogo, guildID)
+	var i GetGuildLogoRow
+	err := row.Scan(&i.ContentType, &i.Data, &i.UpdatedAt)
 	return i, err
 }
 
@@ -678,4 +752,78 @@ func (q *Queries) UpdateGuildSettings(ctx context.Context, arg UpdateGuildSettin
 		arg.ID,
 	)
 	return err
+}
+
+const upsertGuildLogo = `-- name: UpsertGuildLogo :one
+WITH logo AS (
+    INSERT INTO guild_logos (guild_id, content_type, data, updated_at)
+    VALUES ($2, $3::text, $4::bytea, NOW())
+    ON CONFLICT (guild_id) DO UPDATE SET
+        content_type = EXCLUDED.content_type,
+        data         = EXCLUDED.data,
+        updated_at   = EXCLUDED.updated_at
+    RETURNING guild_id
+)
+UPDATE guilds g SET
+    icon_url   = $1::text,
+    updated_at = NOW()
+FROM logo
+WHERE g.id = logo.guild_id
+RETURNING g.id, g.name,
+          COALESCE(g.description, '') AS description,
+          g.owner_id,
+          g.timezone, g.language, g.public, g.allow_invites,
+          g.custom_settings,
+          COALESCE(g.icon_url, '')   AS icon_url,
+          COALESCE(g.banner_url, '') AS banner_url,
+          g.created_at, g.updated_at
+`
+
+type UpsertGuildLogoParams struct {
+	IconUrl     string
+	GuildID     uuid.UUID
+	ContentType string
+	Data        []byte
+}
+
+type UpsertGuildLogoRow struct {
+	ID             uuid.UUID
+	Name           string
+	Description    string
+	OwnerID        uuid.UUID
+	Timezone       string
+	Language       string
+	Public         bool
+	AllowInvites   bool
+	CustomSettings []byte
+	IconUrl        string
+	BannerUrl      string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+}
+
+func (q *Queries) UpsertGuildLogo(ctx context.Context, arg UpsertGuildLogoParams) (UpsertGuildLogoRow, error) {
+	row := q.db.QueryRow(ctx, upsertGuildLogo,
+		arg.IconUrl,
+		arg.GuildID,
+		arg.ContentType,
+		arg.Data,
+	)
+	var i UpsertGuildLogoRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.OwnerID,
+		&i.Timezone,
+		&i.Language,
+		&i.Public,
+		&i.AllowInvites,
+		&i.CustomSettings,
+		&i.IconUrl,
+		&i.BannerUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
