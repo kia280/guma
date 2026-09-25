@@ -18,6 +18,12 @@ import { Icon } from '@iconify/react';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
 
+const PROGRESS_FILL = {
+  danger: 'bg-danger',
+  warning: 'bg-warning',
+  success: 'bg-success',
+} as const;
+
 const getCategoryIcon = (category: ItemCategory) => {
   const icons: Record<ItemCategory, string> = {
     [ItemCategory.WEAPON]: 'tabler:sword',
@@ -189,16 +195,8 @@ const AuctionItemCard = ({
                   </div>
                   <div className="w-full bg-default rounded-full overflow-hidden h-2">
                     <div
-                      className="h-full transition-all"
-                      style={{
-                        width: `${progress}%`,
-                        backgroundColor:
-                          progressColor === 'danger'
-                            ? 'hsl(var(--heroui-danger))'
-                            : progressColor === 'warning'
-                              ? 'hsl(var(--heroui-warning))'
-                              : 'hsl(var(--heroui-success))',
-                      }}
+                      className={`h-full transition-all ${PROGRESS_FILL[progressColor]}`}
+                      style={{ width: `${progress}%` }}
                     />
                   </div>
                 </div>
