@@ -457,12 +457,16 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.post(`/v1/guilds/${guildId}/announcements`, {});
     return toAdminAnnouncement(data.announcement);
   },
-  updateAnnouncementDraft: async (guildId, id, input) => {
+  updateAnnouncement: async (guildId, id, input) => {
     const { data } = await http.patch(`/v1/guilds/${guildId}/announcements/${id}`, input);
     return toAdminAnnouncement(data.announcement);
   },
   publishAnnouncement: async (guildId, id) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/announcements/${id}/publish`, {});
+    return toAdminAnnouncement(data.announcement);
+  },
+  unpublishAnnouncement: async (guildId, id) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/announcements/${id}/unpublish`, {});
     return toAdminAnnouncement(data.announcement);
   },
   deleteAnnouncementDraft: async (guildId, id) => {

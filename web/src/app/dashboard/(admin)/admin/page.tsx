@@ -19,7 +19,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { BankRequestReview } from '@/components/BankRequestReview';
-import { DeleteAnnouncementDraftDialog } from '@/components/DeleteAnnouncementDraftDialog';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { apiClient } from '@/lib/guma';
@@ -178,6 +178,7 @@ export default function AdminPage() {
   const [isCreatingDraft, setIsCreatingDraft] = React.useState(false);
   const [createDraftFailed, setCreateDraftFailed] = React.useState(false);
   const [draftToDelete, setDraftToDelete] = React.useState<AdminAnnouncement | null>(null);
+  const [toUnpublish, setToUnpublish] = React.useState<AdminAnnouncement | null>(null);
 
   const handlePostAnnouncement = async () => {
     setIsCreatingDraft(true);
@@ -195,6 +196,11 @@ export default function AdminPage() {
   const deleteDraft = async (draft: AdminAnnouncement) => {
     await apiClient.deleteAnnouncementDraft(guildId, draft.id);
     setAnnouncements(prev => prev.filter(a => a.id !== draft.id));
+  };
+
+  const unpublish = async (ann: AdminAnnouncement) => {
+    await apiClient.unpublishAnnouncement(guildId, ann.id);
+    refetchAnnouncements();
   };
 
   return (
@@ -535,11 +541,32 @@ export default function AdminPage() {
                           </p>
                         </div>
                       </div>
-                      {ann.pinned && (
-                        <Chip size="sm" variant="secondary">
-                          {t('pinned')}
-                        </Chip>
-                      )}
+                      <div className="flex flex-col items-end gap-2 shrink-0">
+                        {ann.pinned && (
+                          <Chip size="sm" variant="secondary">
+                            {t('pinned')}
+                          </Chip>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onPress={() => router.push(`/dashboard/admin/announcements/${ann.id}`)}
+                          >
+                            <Icon icon="solar:pen-linear" width={16} />
+                            {t('editDraft')}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            isIconOnly
+                            aria-label={t('unpublish')}
+                            onPress={() => setToUnpublish(ann)}
+                          >
+                            <Icon icon="solar:undo-left-linear" width={16} />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </Card.Content>
                 </Card>
@@ -547,11 +574,24 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <DeleteAnnouncementDraftDialog
-            title={draftToDelete?.title ?? ''}
+          <ConfirmDialog
+            heading={t('deleteDraftTitle')}
+            body={t('deleteDraftBody', { title: draftToDelete?.title.trim() || t('untitledDraft') })}
+            confirmLabel={t('delete')}
+            failedMessage={t('deleteDraftFailed')}
             isOpen={draftToDelete !== null}
             onOpenChange={open => { if (!open) setDraftToDelete(null); }}
-            onConfirm={() => (draftToDelete ? deleteDraft(draftToDelete) : Promise.resolve())}
+            onConfirm={() => (draftToDelete ? deleteDraft(draftToDelete) : undefined)}
+          />
+          <ConfirmDialog
+            heading={t('unpublishTitle')}
+            body={t('unpublishBody', { title: toUnpublish?.title ?? '' })}
+            confirmLabel={t('unpublish')}
+            failedMessage={t('unpublishFailed')}
+            status="warning"
+            isOpen={toUnpublish !== null}
+            onOpenChange={open => { if (!open) setToUnpublish(null); }}
+            onConfirm={() => (toUnpublish ? unpublish(toUnpublish) : undefined)}
           />
         </Tabs.Panel>
 

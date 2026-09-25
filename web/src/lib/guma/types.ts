@@ -162,7 +162,8 @@ export interface ApiClient {
   getAdminAnnouncements(guildId: string): Promise<AdminAnnouncement[]>;
   getAnnouncement(guildId: string, id: string): Promise<AdminAnnouncement>;
   createAnnouncementDraft(guildId: string): Promise<AdminAnnouncement>;
-  updateAnnouncementDraft(guildId: string, id: string, input: AnnouncementDraftInput): Promise<AdminAnnouncement>;
+  updateAnnouncement(guildId: string, id: string, input: AnnouncementDraftInput): Promise<AdminAnnouncement>;
   publishAnnouncement(guildId: string, id: string): Promise<AdminAnnouncement>;
+  unpublishAnnouncement(guildId: string, id: string): Promise<AdminAnnouncement>;
   deleteAnnouncementDraft(guildId: string, id: string): Promise<void>;
 }
