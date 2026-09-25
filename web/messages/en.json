@@ -324,6 +324,7 @@
     "rolePermissions": "Role permissions"
   },
   "adminRolesPage": {
+    "back": "Back to administration",
     "title": "Role permissions",
     "subtitle": "What owners, admins, moderators, and members can do in this guild.",
     "action": "Action",
