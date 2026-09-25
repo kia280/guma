@@ -698,7 +698,12 @@
   "profilePage": {
     "title": "個人資料",
     "subtitle": "管理您的個人檔案和帳號詳情",
-    "guildMember": "公會成員",
+    "roles": {
+      "owner": "會長",
+      "admin": "管理員",
+      "moderator": "幹部",
+      "member": "成員"
+    },
     "cancel": "取消",
     "editProfile": "編輯個人資料",
     "profileDetails": "個人資料詳情",
@@ -711,6 +716,7 @@
     "accountSubtitle": "登入憑證與安全設定",
     "emailAddress": "電子郵件地址",
     "verified": "已驗證",
+    "unverified": "未驗證",
     "discord": "Discord",
     "connected": "已連接",
     "memberSince": "加入時間",
