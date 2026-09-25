@@ -21,6 +21,7 @@ import type { GuildEvent } from '@/types/guild-events';
 import { ItemCategory, ItemRarity } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
+import type { UserPreferences } from '@/types/preference';
 import type { LinkedAccount, MockUser, User } from '@/types/user';
 import type { Transaction, Wallet } from '@/types/wallet';
 import { fromMinorUnits } from './money';
@@ -796,4 +797,30 @@ export const toAnnouncement = (raw: ProtoAnnouncement): Announcement => ({
   content: raw.content ?? '',
   pinned: raw.pinned ?? false,
   date: formatAnnouncementDate(ts(raw.published_at ?? raw.created_at)),
+});
+
+// ─── Preferences ─────────────────────────────────────────────────────────────
+
+type ProtoNotificationPreferences = {
+  email_notifications?: boolean;
+  auction_alerts?: boolean;
+  lottery_alerts?: boolean;
+  event_reminders?: boolean;
+  checkin_reminders?: boolean;
+};
+
+type ProtoUserPreferences = {
+  notifications?: ProtoNotificationPreferences;
+  updated_at?: string;
+};
+
+export const toUserPreferences = (raw: ProtoUserPreferences): UserPreferences => ({
+  notifications: {
+    emailNotifications: raw.notifications?.email_notifications ?? false,
+    auctionAlerts: raw.notifications?.auction_alerts ?? false,
+    lotteryAlerts: raw.notifications?.lottery_alerts ?? false,
+    eventReminders: raw.notifications?.event_reminders ?? false,
+    checkinReminders: raw.notifications?.checkin_reminders ?? false,
+  },
+  updatedAt: raw.updated_at ? ts(raw.updated_at) : undefined,
 });

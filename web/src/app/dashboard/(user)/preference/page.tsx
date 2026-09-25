@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Switch, Select, Separator, Label, ListBox } from '@heroui/react';
+import { Button, Card, Switch, Select, Separator, Label, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -9,6 +9,12 @@ import React from 'react';
 import { PageHeader } from '@/components/PageHeader';
 import { HTML_LANG, LOCALE_COOKIE, LOCALE_LABELS, LOCALES, isLocale } from '@/i18n/locales';
 import { FONT_SIZES, getFontSize, setFontSize, type FontSize } from '@/lib/font-size';
+import { apiClient } from '@/lib/guma';
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  type NotificationPreferenceKey,
+  type NotificationPreferences,
+} from '@/types/preference';
 
 const fontSizePreviewClass: Record<FontSize, string> = {
   default: 'text-sm',
@@ -17,6 +23,21 @@ const fontSizePreviewClass: Record<FontSize, string> = {
 };
 
 const LOCALE_COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
+
+type NotificationStatus = 'loading' | 'ready' | 'error';
+
+const NOTIFICATION_ITEMS: ReadonlyArray<{
+  key: NotificationPreferenceKey;
+  label: 'emailLabel' | 'auctionLabel' | 'lotteryLabel' | 'eventsLabel' | 'checkinLabel';
+  description: 'emailDesc' | 'auctionDesc' | 'lotteryDesc' | 'eventsDesc' | 'checkinDesc';
+  icon: string;
+}> = [
+  { key: 'emailNotifications', label: 'emailLabel', description: 'emailDesc', icon: 'solar:letter-linear' },
+  { key: 'auctionAlerts', label: 'auctionLabel', description: 'auctionDesc', icon: 'solar:dollar-linear' },
+  { key: 'lotteryAlerts', label: 'lotteryLabel', description: 'lotteryDesc', icon: 'solar:ticket-linear' },
+  { key: 'eventReminders', label: 'eventsLabel', description: 'eventsDesc', icon: 'solar:calendar-linear' },
+  { key: 'checkinReminders', label: 'checkinLabel', description: 'checkinDesc', icon: 'solar:clipboard-list-linear' },
+];
 
 export default function PreferencePage() {
   const { theme, setTheme } = useTheme();
@@ -33,11 +54,14 @@ export default function PreferencePage() {
     dark: t('themeDark'),
     system: t('themeSystem'),
   };
-  const [emailNotifications, setEmailNotifications] = React.useState(true);
-  const [auctionAlerts, setAuctionAlerts] = React.useState(true);
-  const [lotteryAlerts, setLotteryAlerts] = React.useState(true);
-  const [eventReminders, setEventReminders] = React.useState(false);
-  const [checkinReminders, setCheckinReminders] = React.useState(true);
+  const [notificationPrefs, setNotificationPrefs] = React.useState<NotificationPreferences>(
+    DEFAULT_NOTIFICATION_PREFERENCES,
+  );
+  const [notificationStatus, setNotificationStatus] = React.useState<NotificationStatus>('loading');
+  const [notificationSaveError, setNotificationSaveError] = React.useState('');
+  const [notificationReload, setNotificationReload] = React.useState(0);
+  const confirmedPrefsRef = React.useRef<NotificationPreferences>(DEFAULT_NOTIFICATION_PREFERENCES);
+  const saveRequestRef = React.useRef<Partial<Record<NotificationPreferenceKey, number>>>({});
   const [fontSize, setFontSizeState] = React.useState<FontSize>('default');
   const fontSizeLabels: Record<FontSize, string> = {
     default: t('fontSizeDefault'),
@@ -52,6 +76,47 @@ export default function PreferencePage() {
   const handleFontSizeChange = (size: FontSize) => {
     setFontSize(size);
     setFontSizeState(size);
+  };
+
+  React.useEffect(() => {
+    let active = true;
+    apiClient
+      .getMyPreferences()
+      .then(prefs => {
+        if (!active) return;
+        confirmedPrefsRef.current = prefs.notifications;
+        setNotificationPrefs(prefs.notifications);
+        setNotificationStatus('ready');
+      })
+      .catch(() => {
+        if (active) setNotificationStatus('error');
+      });
+    return () => {
+      active = false;
+    };
+  }, [notificationReload]);
+
+  const retryNotificationPrefs = () => {
+    setNotificationStatus('loading');
+    setNotificationReload(count => count + 1);
+  };
+
+  const toggleNotification = async (key: NotificationPreferenceKey, value: boolean) => {
+    const request = (saveRequestRef.current[key] ?? 0) + 1;
+    saveRequestRef.current[key] = request;
+    setNotificationSaveError('');
+    setNotificationPrefs(current => ({ ...current, [key]: value }));
+    try {
+      const saved = await apiClient.updateNotificationPreferences({ [key]: value });
+      if (request !== saveRequestRef.current[key]) return;
+      confirmedPrefsRef.current = saved.notifications;
+      setNotificationPrefs(current => ({ ...current, [key]: saved.notifications[key] }));
+    } catch {
+      if (request !== saveRequestRef.current[key]) return;
+      const restored = confirmedPrefsRef.current[key];
+      setNotificationPrefs(current => ({ ...current, [key]: restored }));
+      setNotificationSaveError(t('notificationsSaveFailed'));
+    }
   };
 
   return (
@@ -165,67 +230,62 @@ export default function PreferencePage() {
             <p className="type-caption text-hint">{t('notificationsSubtitle')}</p>
           </div>
         </Card.Header>
-        <Card.Content className="pt-0 flex flex-col gap-1">
-          {[
-            {
-              key: 'email',
-              label: t('emailLabel'),
-              description: t('emailDesc'),
-              icon: 'solar:letter-linear',
-              value: emailNotifications,
-              onChange: setEmailNotifications,
-            },
-            {
-              key: 'auction',
-              label: t('auctionLabel'),
-              description: t('auctionDesc'),
-              icon: 'solar:dollar-linear',
-              value: auctionAlerts,
-              onChange: setAuctionAlerts,
-            },
-            {
-              key: 'lottery',
-              label: t('lotteryLabel'),
-              description: t('lotteryDesc'),
-              icon: 'solar:ticket-linear',
-              value: lotteryAlerts,
-              onChange: setLotteryAlerts,
-            },
-            {
-              key: 'events',
-              label: t('eventsLabel'),
-              description: t('eventsDesc'),
-              icon: 'solar:calendar-linear',
-              value: eventReminders,
-              onChange: setEventReminders,
-            },
-            {
-              key: 'checkin',
-              label: t('checkinLabel'),
-              description: t('checkinDesc'),
-              icon: 'solar:clipboard-list-linear',
-              value: checkinReminders,
-              onChange: setCheckinReminders,
-            },
-          ].map((item, idx, arr) => (
-            <React.Fragment key={item.key}>
-              <div className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3">
-                  <Icon icon={item.icon} width={16} className="text-hint shrink-0" />
-                  <div>
-                    <p className="type-body text-foreground">{item.label}</p>
-                    <p className="type-caption text-hint">{item.description}</p>
+        <Card.Content
+          className="pt-0 flex flex-col gap-1"
+          aria-busy={notificationStatus === 'loading'}
+        >
+          {notificationStatus === 'error' && (
+            <div
+              role="alert"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-danger/10 px-3 py-2"
+            >
+              <p className="type-caption text-danger">{t('notificationsLoadFailed')}</p>
+              <Button size="sm" variant="secondary" onPress={retryNotificationPrefs}>
+                {t('notificationsRetry')}
+              </Button>
+            </div>
+          )}
+          {notificationSaveError && (
+            <p role="alert" className="type-caption text-danger px-1 py-1">
+              {notificationSaveError}
+            </p>
+          )}
+          {NOTIFICATION_ITEMS.map((item, idx, arr) => {
+            const labelId = `notification-${item.key}-label`;
+            const descriptionId = `notification-${item.key}-description`;
+            return (
+              <React.Fragment key={item.key}>
+                <div className="flex items-center justify-between gap-3 py-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon icon={item.icon} width={16} className="text-hint shrink-0" />
+                    <div className="min-w-0">
+                      <p id={labelId} className="type-body text-foreground">
+                        {t(item.label)}
+                      </p>
+                      <p id={descriptionId} className="type-caption text-hint">
+                        {t(item.description)}
+                      </p>
+                    </div>
                   </div>
+                  <Switch
+                    aria-labelledby={labelId}
+                    aria-describedby={descriptionId}
+                    isSelected={notificationPrefs[item.key]}
+                    isDisabled={notificationStatus !== 'ready'}
+                    onChange={value => void toggleNotification(item.key, value)}
+                    size="sm"
+                  >
+                    <Switch.Content>
+                      <Switch.Control>
+                        <Switch.Thumb />
+                      </Switch.Control>
+                    </Switch.Content>
+                  </Switch>
                 </div>
-                <Switch isSelected={item.value} onChange={item.onChange} size="sm">
-                  <Switch.Control>
-                    <Switch.Thumb />
-                  </Switch.Control>
-                </Switch>
-              </div>
-              {idx < arr.length - 1 && <Separator />}
-            </React.Fragment>
-          ))}
+                {idx < arr.length - 1 && <Separator />}
+              </React.Fragment>
+            );
+          })}
         </Card.Content>
       </Card>
     </div>

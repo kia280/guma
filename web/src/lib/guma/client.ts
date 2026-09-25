@@ -8,7 +8,7 @@ import { clearSession } from '@/lib/session';
 import type { LootEntry } from '@/types/checkin';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -515,6 +515,24 @@ export const gumaApiClient: ApiClient = {
   markAllNotificationsRead: async () => {
     const { data } = await http.post('/v1/me/notifications/read-all', {});
     return Number(data.updated_count ?? 0);
+  },
+
+  // ── Preferences ──
+  getMyPreferences: async () => {
+    const { data } = await http.get('/v1/me/preferences');
+    return toUserPreferences(data);
+  },
+  updateNotificationPreferences: async (patch) => {
+    const { data } = await http.patch('/v1/me/preferences', {
+      notifications: {
+        email_notifications: patch.emailNotifications,
+        auction_alerts: patch.auctionAlerts,
+        lottery_alerts: patch.lotteryAlerts,
+        event_reminders: patch.eventReminders,
+        checkin_reminders: patch.checkinReminders,
+      },
+    });
+    return toUserPreferences(data);
   },
 
   // ── Admin ──
