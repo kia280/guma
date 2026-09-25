@@ -10,6 +10,7 @@ import {
   Separator,
   TextField,
   Label,
+  Skeleton,
   Spinner,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
@@ -36,7 +37,7 @@ import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
 import { userStatusColor, type UserStatus } from '@/lib/status-colors';
 import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
-import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
+import type { AdminActivity, AdminAnnouncement, AdminGuildStats } from '@/types/admin';
 import type { MockUser } from '@/types/user';
 
 
@@ -127,6 +128,9 @@ export default function AdminPage() {
   const [activityStatus, setActivityStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
   const [activityReloadKey, setActivityReloadKey] = React.useState(0);
   const [announcements, setAnnouncements] = React.useState<AdminAnnouncement[]>([]);
+  const [guildStats, setGuildStats] = React.useState<AdminGuildStats | null>(null);
+  const [statsStatus, setStatsStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
+  const [statsReloadKey, setStatsReloadKey] = React.useState(0);
   const usersState = useLoadState();
   const announcementsState = useLoadState();
   const notify = useToast();
@@ -270,6 +274,72 @@ export default function AdminPage() {
     setActivityStatus('loading');
     setActivityReloadKey(key => key + 1);
   };
+
+  React.useEffect(() => {
+    let cancelled = false;
+    apiClient
+      .getGuildStats(guildId)
+      .then(d => {
+        if (cancelled) return;
+        setGuildStats(d);
+        setStatsStatus('ready');
+      })
+      .catch(() => {
+        if (!cancelled) setStatsStatus('error');
+      });
+    return () => { cancelled = true; };
+  }, [guildId, statsReloadKey]);
+
+  const retryStats = () => {
+    setStatsStatus('loading');
+    setStatsReloadKey(key => key + 1);
+  };
+
+  const refetchStats = React.useCallback(() => {
+    apiClient.getGuildStats(guildId).then(d => {
+      setGuildStats(d);
+      setStatsStatus('ready');
+    }).catch(() => {});
+  }, [guildId]);
+
+  useLiveResource(['bank'], refetchStats, { guildId });
+
+  const formatCount = (value: number) => new Intl.NumberFormat(intlLocale).format(value);
+
+  const statCards = [
+    {
+      key: 'members',
+      label: t('totalMembers'),
+      value: guildStats ? formatCount(guildStats.memberCount) : '',
+      icon: 'solar:users-group-rounded-linear',
+      color: 'text-accent',
+      bg: 'bg-accent/10',
+    },
+    {
+      key: 'balance',
+      label: t('guildBalance'),
+      value: guildStats ? formatGold(guildStats.bankBalance) : '',
+      icon: 'solar:wallet-money-linear',
+      color: 'text-success',
+      bg: 'bg-success/10',
+    },
+    {
+      key: 'events',
+      label: t('activeEvents'),
+      value: guildStats ? formatCount(guildStats.activeEventCount) : '',
+      icon: 'solar:calendar-linear',
+      color: 'text-warning',
+      bg: 'bg-warning/10',
+    },
+    {
+      key: 'items',
+      label: t('totalItems'),
+      value: guildStats ? formatCount(guildStats.bankItemCount) : '',
+      icon: 'solar:backpack-linear',
+      color: 'text-subtle',
+      bg: 'bg-default',
+    },
+  ];
 
   const refetchAnnouncements = React.useCallback(() => {
     apiClient
@@ -427,52 +497,45 @@ export default function AdminPage() {
         <Tabs.Panel id="guild" className="pt-4">
           <div className="space-y-4">
             {/* Overview stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                {
-                  label: t('totalMembers'),
-                  value: '24',
-                  icon: 'solar:users-group-rounded-linear',
-                  color: 'text-accent',
-                  bg: 'bg-accent/10',
-                },
-                {
-                  label: t('guildBalance'),
-                  value: formatGold(12500),
-                  icon: 'solar:wallet-money-linear',
-                  color: 'text-success',
-                  bg: 'bg-success/10',
-                },
-                {
-                  label: t('activeEvents'),
-                  value: '3',
-                  icon: 'solar:calendar-linear',
-                  color: 'text-warning',
-                  bg: 'bg-warning/10',
-                },
-                {
-                  label: t('totalItems'),
-                  value: '47',
-                  icon: 'solar:backpack-linear',
-                  color: 'text-subtle',
-                  bg: 'bg-default',
-                },
-              ].map(stat => (
-                <Card key={stat.label} className="border border-divider shadow-none bg-surface">
-                  <Card.Content className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`${stat.bg} p-2 rounded-lg`}>
-                        <Icon icon={stat.icon} width={18} className={stat.color} />
-                      </div>
-                      <div>
-                        <p className="type-caption text-hint">{stat.label}</p>
-                        <p className="type-title tabular-nums text-foreground">{stat.value}</p>
-                      </div>
+            {statsStatus === 'error' ? (
+              <Card className="border border-divider shadow-none bg-surface">
+                <Card.Content className="p-4">
+                  <div role="alert" className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Icon icon="solar:danger-circle-linear" width={18} className="text-danger" aria-hidden />
+                      <p className="type-body text-subtle">{t('statsLoadError')}</p>
                     </div>
-                  </Card.Content>
-                </Card>
-              ))}
-            </div>
+                    <Button size="sm" variant="secondary" onPress={retryStats}>
+                      <Icon icon="solar:restart-linear" width={16} aria-hidden />
+                      {t('retry')}
+                    </Button>
+                  </div>
+                </Card.Content>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-busy={statsStatus === 'loading'}>
+                {statsStatus === 'loading' && <span className="sr-only">{t('loadingStats')}</span>}
+                {statCards.map(stat => (
+                  <Card key={stat.key} className="border border-divider shadow-none bg-surface">
+                    <Card.Content className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`${stat.bg} p-2 rounded-lg`}>
+                          <Icon icon={stat.icon} width={18} className={stat.color} aria-hidden />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="type-caption text-hint">{stat.label}</p>
+                          {statsStatus === 'loading' ? (
+                            <Skeleton className="mt-1 h-7 w-20 rounded-lg" />
+                          ) : (
+                            <p className="type-title tabular-nums text-foreground truncate">{stat.value}</p>
+                          )}
+                        </div>
+                      </div>
+                    </Card.Content>
+                  </Card>
+                ))}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
               {/* Guild Settings placeholder */}
@@ -576,15 +639,13 @@ export default function AdminPage() {
                         </>
                       )}
                     </div>
-                    {[
-                      { label: t('recruitment'), value: t('recruitmentOpen') },
-                      { label: t('serverRegion'), value: t('regionAsiaPacific') },
-                    ].map(setting => (
-                      <div key={setting.label} className="py-2">
-                        <p className="type-body text-subtle">{setting.label}</p>
-                        <p className="type-body font-medium text-foreground">{setting.value}</p>
-                      </div>
-                    ))}
+                    <div className="py-2">
+                      <p className="type-body text-subtle">{t('recruitment')}</p>
+                      <p className="type-body font-medium text-foreground">
+                        {guild ? (guild.settings.isPublic ? t('recruitmentOpen') : t('recruitmentClosed')) : '—'}
+                      </p>
+                      <p className="type-caption text-hint">{t('recruitmentHint')}</p>
+                    </div>
                   </div>
                 </Card.Content>
               </Card>

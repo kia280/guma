@@ -8,6 +8,14 @@ export interface AdminActivity {
   timestamp: string;
 }
 
+export interface AdminGuildStats {
+  memberCount: number;
+  bankBalance: number;
+  bankCurrency: string;
+  activeEventCount: number;
+  bankItemCount: number;
+}
+
 export type AnnouncementStatus = 'draft' | 'published';
 
 export interface AdminAnnouncement {
