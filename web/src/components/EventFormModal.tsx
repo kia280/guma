@@ -28,8 +28,8 @@ import {
   UpdateEventData,
   EventType,
   EventPriority,
-  EVENT_TYPE_LABELS,
-  PRIORITY_LABELS,
+  EVENT_TYPES,
+  EVENT_PRIORITIES,
   EVENT_TYPE_COLORS,
   PRIORITY_COLORS,
 } from '@/types/guild-events';
@@ -80,6 +80,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   isLoading = false,
 }) => {
   const t = useTranslations('eventFormModal');
+  const eventLabels = useTranslations('guildEvents');
   const {
     control,
     handleSubmit,
@@ -204,16 +205,16 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     }
   };
 
-  const eventTypeOptions = Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => ({
-    key: key as EventType,
-    label,
-    color: EVENT_TYPE_COLORS[key as EventType],
+  const eventTypeOptions = EVENT_TYPES.map(key => ({
+    key,
+    label: eventLabels(`types.${key}`),
+    color: EVENT_TYPE_COLORS[key],
   }));
 
-  const priorityOptions = Object.entries(PRIORITY_LABELS).map(([key, label]) => ({
-    key: key as EventPriority,
-    label,
-    color: PRIORITY_COLORS[key as EventPriority],
+  const priorityOptions = EVENT_PRIORITIES.map(key => ({
+    key,
+    label: eventLabels(`priorities.${key}`),
+    color: PRIORITY_COLORS[key],
   }));
 
   return (

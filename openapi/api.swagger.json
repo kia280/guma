@@ -5711,6 +5711,20 @@
         }
       }
     },
+    "v1LinkedAccount": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
     "v1ListAnnouncementsResponse": {
       "type": "object",
       "properties": {
@@ -6833,6 +6847,15 @@
         "balance": {
           "type": "string",
           "format": "int64"
+        },
+        "emailVerified": {
+          "type": "boolean"
+        },
+        "discord": {
+          "$ref": "#/definitions/v1LinkedAccount"
+        },
+        "guildRole": {
+          "type": "string"
         }
       }
     },
