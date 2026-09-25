@@ -60,6 +60,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	lotteryHandler := handlers.NewLotteryService(db, logger)
 	bankHandler := handlers.NewBankService(db, logger)
 	notificationHandler := handlers.NewNotificationService(db, logger)
+	announcementHandler := handlers.NewAnnouncementService(db, logger)
 	streamHandler := handlers.NewStreamService(broker, events.MemberGuildIDs(db), logger)
 
 	healthService := health.NewService(db)
@@ -77,6 +78,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	gumav1.RegisterLotteryServiceServer(grpcServer, lotteryHandler)
 	gumav1.RegisterBankServiceServer(grpcServer, bankHandler)
 	gumav1.RegisterNotificationServiceServer(grpcServer, notificationHandler)
+	gumav1.RegisterAnnouncementServiceServer(grpcServer, announcementHandler)
 	gumav1.RegisterStreamServiceServer(grpcServer, streamHandler)
 	healthHandler.Register(grpcServer)
 
