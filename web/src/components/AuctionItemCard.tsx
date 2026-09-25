@@ -154,7 +154,7 @@ const AuctionItemCard = ({
               {isActive && (
                 <div className="space-y-1.5">
                   <div className="flex justify-between type-caption text-hint">
-                    <span>{t('timeRemaining')}</span>
+                    <span>{t('timeElapsed')}</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
                   <div className="w-full bg-default rounded-full overflow-hidden h-2">

@@ -275,7 +275,7 @@
     "statusTabs": "Auction status"
   },
   "auctionItemCard": {
-    "timeRemaining": "Time remaining",
+    "timeElapsed": "Time elapsed",
     "currentBid": "Current bid",
     "leadingBidder": "Leading bidder",
     "soldBy": "Sold by",

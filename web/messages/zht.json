@@ -275,7 +275,7 @@
     "statusTabs": "競拍狀態"
   },
   "auctionItemCard": {
-    "timeRemaining": "剩餘時間",
+    "timeElapsed": "已經過時間",
     "currentBid": "目前出價",
     "leadingBidder": "領先競標者",
     "soldBy": "賣家",
