@@ -1,11 +1,10 @@
 'use client';
 
 import { Chip } from '@heroui/react';
-import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
 import { useEffect } from 'react';
 import { create } from 'zustand';
-
 import {
   applyDevPalette,
   DEFAULT_PALETTE_ID,

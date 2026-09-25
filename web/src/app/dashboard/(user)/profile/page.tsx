@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import {
   Card,
   Button,
@@ -15,10 +14,11 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import React from 'react';
+import { PageHeader } from '@/components/PageHeader';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { useUserStore } from '@/lib/store';
-import { PageHeader } from '@/components/PageHeader';
 
 export default function ProfilePage() {
   const t = useTranslations('profilePage');

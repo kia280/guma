@@ -2,13 +2,13 @@
 // Both `gumaApiClient` (HTTP) and `mockApiClient` (in-memory) implement this
 // interface — TypeScript enforces they stay in sync.
 
-import type { QueryOptions } from '@/types/common';
-import type { User, UserStats, BalancePoint, MockUser, UpdateMeRequest } from '@/types/user';
-import type { Guild } from '@/types/guild';
-import type { Invitation } from '@/types/member';
-import type { Wallet, Transaction, TransferRequest } from '@/types/wallet';
-import type { BackpackItem } from '@/types/backpack';
+import type {
+  AdminActivity,
+  AdminAnnouncement,
+  AnnouncementDraftInput,
+} from '@/types/admin';
 import type { AuctionItem, Bid, CreateAuctionRequest } from '@/types/auction';
+import type { BackpackItem } from '@/types/backpack';
 import type {
   CheckinEntry,
   AttendanceMember,
@@ -19,13 +19,13 @@ import type {
   CreateCheckinRequest,
   UpdateCheckinRequest,
 } from '@/types/checkin';
+import type { QueryOptions } from '@/types/common';
 import type {
-  Lottery,
-  LotteryTicket,
-  LotteryWinner,
-  CreateLotteryRequest,
-  UpdateLotteryRequest,
-} from '@/types/lottery';
+  DashboardData,
+  Announcement,
+  FeedEvent,
+} from '@/types/dashboard';
+import type { Guild } from '@/types/guild';
 import type {
   GuildBank,
   GuildContribution,
@@ -42,20 +42,20 @@ import type {
   UpdateEventData,
 } from '@/types/guild-events';
 import type {
-  DashboardData,
-  Announcement,
-  FeedEvent,
-} from '@/types/dashboard';
+  Lottery,
+  LotteryTicket,
+  LotteryWinner,
+  CreateLotteryRequest,
+  UpdateLotteryRequest,
+} from '@/types/lottery';
+import type { Invitation } from '@/types/member';
 import type {
   GuildNotification,
   ListNotificationsOptions,
   NotificationPage,
 } from '@/types/notification';
-import type {
-  AdminActivity,
-  AdminAnnouncement,
-  AnnouncementDraftInput,
-} from '@/types/admin';
+import type { User, UserStats, BalancePoint, MockUser, UpdateMeRequest } from '@/types/user';
+import type { Wallet, Transaction, TransferRequest } from '@/types/wallet';
 
 export interface AuctionFilters {
   status?: string;

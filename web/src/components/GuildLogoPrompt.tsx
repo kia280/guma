@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
 import { Button, Disclosure } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import React from 'react';
 
 const FALLBACK_COLOR = '#998800';
 

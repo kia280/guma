@@ -1,14 +1,14 @@
 'use client';
 
-import React from 'react';
 import { Card, Switch, Select, Separator, Label, ListBox } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useTheme } from 'next-themes';
-import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
+import React from 'react';
 import { PageHeader } from '@/components/PageHeader';
-import { FONT_SIZES, getFontSize, setFontSize, type FontSize } from '@/lib/font-size';
 import { HTML_LANG, LOCALE_COOKIE, LOCALE_LABELS, LOCALES, isLocale } from '@/i18n/locales';
+import { FONT_SIZES, getFontSize, setFontSize, type FontSize } from '@/lib/font-size';
 
 const fontSizePreviewClass: Record<FontSize, string> = {
   default: 'text-sm',

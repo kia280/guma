@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
 import { useTranslations } from 'next-intl';
-
+import React from 'react';
 import { parseDiscordMarkdown, type BlockNode, type InlineNode, type ListBlock } from '@/lib/discord-markdown';
 
 function Spoiler({ children }: { children: React.ReactNode }) {

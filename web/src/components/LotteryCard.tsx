@@ -2,8 +2,8 @@
 
 import { Card, Chip, Button, ProgressBar, Avatar } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 interface LotteryWinner {
   id: string;

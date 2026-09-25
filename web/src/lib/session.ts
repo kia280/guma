@@ -1,7 +1,7 @@
 import type { Session } from '@ory/client';
-import { kratos } from '@/lib/kratos';
 import { devLogout } from '@/lib/dev-auth';
 import { env } from '@/lib/env';
+import { kratos } from '@/lib/kratos';
 
 const LOGIN_PATH = '/login';
 

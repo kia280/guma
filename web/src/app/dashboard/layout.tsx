@@ -1,21 +1,20 @@
 'use client';
 
-import React from 'react';
 import { Button, Dropdown, Avatar, Badge, Tooltip, Chip, Label } from '@heroui/react';
-import { useMediaQuery } from 'usehooks-ts';
 import { Icon } from '@iconify/react';
-import { useTheme } from 'next-themes';
-import { useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
-
+import { useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
+import React from 'react';
+import { useMediaQuery } from 'usehooks-ts';
+import { NotificationBell, SidebarDrawer } from '@/components';
 import { AppSidebar, ShortcutKeys } from '@/components/AppSidebar';
 import { DashboardBreadcrumbs } from '@/components/DashboardBreadcrumbs';
-import { NotificationBell, SidebarDrawer } from '@/components';
+import { useDashboardShortcuts } from '@/hooks/useDashboardShortcuts';
+import { useLiveBalance } from '@/hooks/useLiveBalance';
+import { CurrentGuildProvider } from '@/lib/current-guild';
 import { clearSession } from '@/lib/session';
 import { useUserStore } from '@/lib/store';
-import { CurrentGuildProvider } from '@/lib/current-guild';
-import { useLiveBalance } from '@/hooks/useLiveBalance';
-import { useDashboardShortcuts } from '@/hooks/useDashboardShortcuts';
 
 const COLLAPSED_STORAGE_KEY = 'guma-sidebar-collapsed';
 

@@ -1,8 +1,8 @@
 'use client';
 
-import { use } from 'react';
-import { useRouter } from 'next/navigation';
 import { Modal, useOverlayState } from '@heroui/react';
+import { useRouter } from 'next/navigation';
+import { use } from 'react';
 import CheckinDetailContent from '@/components/CheckinDetailContent';
 
 export default function CheckinModalPage({ params }: { params: Promise<{ id: string }> }) {

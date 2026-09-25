@@ -3,10 +3,9 @@
 import React from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-
 import { apiClient } from '@/lib/guma';
-import type { User } from '@/types/user';
 import type { Guild } from '@/types/guild';
+import type { User } from '@/types/user';
 
 interface UserState {
   user: User | null;

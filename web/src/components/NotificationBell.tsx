@@ -1,12 +1,11 @@
 'use client';
 
-import React from 'react';
-import { useTranslations } from 'next-intl';
 import { Button, Popover } from '@heroui/react';
 import { Icon } from '@iconify/react';
-
-import { NotificationsCard } from './NotificationsCard';
+import { useTranslations } from 'next-intl';
+import React from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
+import { NotificationsCard } from './NotificationsCard';
 
 const MAX_BADGE_COUNT = 99;
 

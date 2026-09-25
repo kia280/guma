@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
 import { Card, Button, Dropdown, Chip, Spinner, Modal, Separator, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import { useIntlLocale } from '@/i18n/useIntlFormatter';
-import { useGuildEvents } from '@/hooks/useGuildEvents';
-import { GuildCalendar } from '@/components/GuildCalendar';
+import React, { useState } from 'react';
 import { EventFormModal } from '@/components/EventFormModal';
+import { GuildCalendar } from '@/components/GuildCalendar';
+import { useGuildEvents } from '@/hooks/useGuildEvents';
+import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import {
   GuildEvent,
   EVENT_TYPE_COLORS,

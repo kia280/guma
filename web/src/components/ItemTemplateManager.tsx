@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import {
   Button,
   Card,
@@ -16,7 +15,7 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-
+import React from 'react';
 import { ItemThumbnail, getRarityColor } from '@/components/ItemThumbnail';
 import {
   DeleteTemplateDialog,

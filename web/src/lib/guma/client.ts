@@ -5,11 +5,11 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import { env } from '@/lib/env';
 import { clearSession } from '@/lib/session';
-import type { ApiClient } from './types';
-import type { BalancePoint, UserStats } from '@/types/user';
 import type { LootEntry } from '@/types/checkin';
+import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
 import { toAdminAnnouncement, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
+import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
   baseURL: env.api.url,

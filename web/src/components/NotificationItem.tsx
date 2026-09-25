@@ -1,12 +1,11 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
 import { cn } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import Link from 'next/link';
 import { useNow, useTranslations } from 'next-intl';
+import React from 'react';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
-
 import { LIST_ROW_CLASS } from '@/lib/list-row';
 import type { GuildNotification, NotificationKind } from '@/types/notification';
 
