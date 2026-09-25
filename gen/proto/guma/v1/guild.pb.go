@@ -8,6 +8,7 @@ package gumav1
 
 import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
+	httpbody "google.golang.org/genproto/googleapis/api/httpbody"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -336,6 +337,250 @@ func (x *UpdateGuildResponse) GetGuild() *Guild {
 	return nil
 }
 
+type UploadGuildLogoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	ContentType   string                 `protobuf:"bytes,3,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadGuildLogoRequest) Reset() {
+	*x = UploadGuildLogoRequest{}
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadGuildLogoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadGuildLogoRequest) ProtoMessage() {}
+
+func (x *UploadGuildLogoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadGuildLogoRequest.ProtoReflect.Descriptor instead.
+func (*UploadGuildLogoRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UploadGuildLogoRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *UploadGuildLogoRequest) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *UploadGuildLogoRequest) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+type UploadGuildLogoResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Guild         *Guild                 `protobuf:"bytes,1,opt,name=guild,proto3" json:"guild,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadGuildLogoResponse) Reset() {
+	*x = UploadGuildLogoResponse{}
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadGuildLogoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadGuildLogoResponse) ProtoMessage() {}
+
+func (x *UploadGuildLogoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadGuildLogoResponse.ProtoReflect.Descriptor instead.
+func (*UploadGuildLogoResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *UploadGuildLogoResponse) GetGuild() *Guild {
+	if x != nil {
+		return x.Guild
+	}
+	return nil
+}
+
+type DeleteGuildLogoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteGuildLogoRequest) Reset() {
+	*x = DeleteGuildLogoRequest{}
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteGuildLogoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteGuildLogoRequest) ProtoMessage() {}
+
+func (x *DeleteGuildLogoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteGuildLogoRequest.ProtoReflect.Descriptor instead.
+func (*DeleteGuildLogoRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *DeleteGuildLogoRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+type DeleteGuildLogoResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Guild         *Guild                 `protobuf:"bytes,1,opt,name=guild,proto3" json:"guild,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteGuildLogoResponse) Reset() {
+	*x = DeleteGuildLogoResponse{}
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteGuildLogoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteGuildLogoResponse) ProtoMessage() {}
+
+func (x *DeleteGuildLogoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteGuildLogoResponse.ProtoReflect.Descriptor instead.
+func (*DeleteGuildLogoResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *DeleteGuildLogoResponse) GetGuild() *Guild {
+	if x != nil {
+		return x.Guild
+	}
+	return nil
+}
+
+type GetGuildLogoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	V             string                 `protobuf:"bytes,2,opt,name=v,proto3" json:"v,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetGuildLogoRequest) Reset() {
+	*x = GetGuildLogoRequest{}
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetGuildLogoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetGuildLogoRequest) ProtoMessage() {}
+
+func (x *GetGuildLogoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetGuildLogoRequest.ProtoReflect.Descriptor instead.
+func (*GetGuildLogoRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetGuildLogoRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *GetGuildLogoRequest) GetV() string {
+	if x != nil {
+		return x.V
+	}
+	return ""
+}
+
 type DeleteGuildRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
@@ -345,7 +590,7 @@ type DeleteGuildRequest struct {
 
 func (x *DeleteGuildRequest) Reset() {
 	*x = DeleteGuildRequest{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[6]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -357,7 +602,7 @@ func (x *DeleteGuildRequest) String() string {
 func (*DeleteGuildRequest) ProtoMessage() {}
 
 func (x *DeleteGuildRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[6]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -370,7 +615,7 @@ func (x *DeleteGuildRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteGuildRequest.ProtoReflect.Descriptor instead.
 func (*DeleteGuildRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{6}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *DeleteGuildRequest) GetGuildId() string {
@@ -389,7 +634,7 @@ type DeleteGuildResponse struct {
 
 func (x *DeleteGuildResponse) Reset() {
 	*x = DeleteGuildResponse{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[7]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -401,7 +646,7 @@ func (x *DeleteGuildResponse) String() string {
 func (*DeleteGuildResponse) ProtoMessage() {}
 
 func (x *DeleteGuildResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[7]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -414,7 +659,7 @@ func (x *DeleteGuildResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteGuildResponse.ProtoReflect.Descriptor instead.
 func (*DeleteGuildResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{7}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DeleteGuildResponse) GetSuccess() bool {
@@ -436,7 +681,7 @@ type ListGuildsRequest struct {
 
 func (x *ListGuildsRequest) Reset() {
 	*x = ListGuildsRequest{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[8]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -448,7 +693,7 @@ func (x *ListGuildsRequest) String() string {
 func (*ListGuildsRequest) ProtoMessage() {}
 
 func (x *ListGuildsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[8]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -461,7 +706,7 @@ func (x *ListGuildsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGuildsRequest.ProtoReflect.Descriptor instead.
 func (*ListGuildsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{8}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListGuildsRequest) GetPageSize() int32 {
@@ -503,7 +748,7 @@ type ListGuildsResponse struct {
 
 func (x *ListGuildsResponse) Reset() {
 	*x = ListGuildsResponse{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[9]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -515,7 +760,7 @@ func (x *ListGuildsResponse) String() string {
 func (*ListGuildsResponse) ProtoMessage() {}
 
 func (x *ListGuildsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[9]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -528,7 +773,7 @@ func (x *ListGuildsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListGuildsResponse.ProtoReflect.Descriptor instead.
 func (*ListGuildsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{9}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListGuildsResponse) GetGuilds() []*Guild {
@@ -561,7 +806,7 @@ type GetGuildSettingsRequest struct {
 
 func (x *GetGuildSettingsRequest) Reset() {
 	*x = GetGuildSettingsRequest{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[10]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -573,7 +818,7 @@ func (x *GetGuildSettingsRequest) String() string {
 func (*GetGuildSettingsRequest) ProtoMessage() {}
 
 func (x *GetGuildSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[10]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -586,7 +831,7 @@ func (x *GetGuildSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGuildSettingsRequest.ProtoReflect.Descriptor instead.
 func (*GetGuildSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{10}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetGuildSettingsRequest) GetGuildId() string {
@@ -605,7 +850,7 @@ type GetGuildSettingsResponse struct {
 
 func (x *GetGuildSettingsResponse) Reset() {
 	*x = GetGuildSettingsResponse{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -617,7 +862,7 @@ func (x *GetGuildSettingsResponse) String() string {
 func (*GetGuildSettingsResponse) ProtoMessage() {}
 
 func (x *GetGuildSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -630,7 +875,7 @@ func (x *GetGuildSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetGuildSettingsResponse.ProtoReflect.Descriptor instead.
 func (*GetGuildSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{11}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *GetGuildSettingsResponse) GetSettings() *GuildSettings {
@@ -650,7 +895,7 @@ type UpdateGuildSettingsRequest struct {
 
 func (x *UpdateGuildSettingsRequest) Reset() {
 	*x = UpdateGuildSettingsRequest{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -662,7 +907,7 @@ func (x *UpdateGuildSettingsRequest) String() string {
 func (*UpdateGuildSettingsRequest) ProtoMessage() {}
 
 func (x *UpdateGuildSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -675,7 +920,7 @@ func (x *UpdateGuildSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateGuildSettingsRequest.ProtoReflect.Descriptor instead.
 func (*UpdateGuildSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{12}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UpdateGuildSettingsRequest) GetGuildId() string {
@@ -701,7 +946,7 @@ type UpdateGuildSettingsResponse struct {
 
 func (x *UpdateGuildSettingsResponse) Reset() {
 	*x = UpdateGuildSettingsResponse{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[13]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -713,7 +958,7 @@ func (x *UpdateGuildSettingsResponse) String() string {
 func (*UpdateGuildSettingsResponse) ProtoMessage() {}
 
 func (x *UpdateGuildSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[13]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -726,7 +971,7 @@ func (x *UpdateGuildSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateGuildSettingsResponse.ProtoReflect.Descriptor instead.
 func (*UpdateGuildSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{13}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *UpdateGuildSettingsResponse) GetSettings() *GuildSettings {
@@ -744,7 +989,7 @@ type GetCurrentGuildRequest struct {
 
 func (x *GetCurrentGuildRequest) Reset() {
 	*x = GetCurrentGuildRequest{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[14]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -756,7 +1001,7 @@ func (x *GetCurrentGuildRequest) String() string {
 func (*GetCurrentGuildRequest) ProtoMessage() {}
 
 func (x *GetCurrentGuildRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[14]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -769,7 +1014,7 @@ func (x *GetCurrentGuildRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCurrentGuildRequest.ProtoReflect.Descriptor instead.
 func (*GetCurrentGuildRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{14}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{19}
 }
 
 type GetCurrentGuildResponse struct {
@@ -781,7 +1026,7 @@ type GetCurrentGuildResponse struct {
 
 func (x *GetCurrentGuildResponse) Reset() {
 	*x = GetCurrentGuildResponse{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -793,7 +1038,7 @@ func (x *GetCurrentGuildResponse) String() string {
 func (*GetCurrentGuildResponse) ProtoMessage() {}
 
 func (x *GetCurrentGuildResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -806,7 +1051,7 @@ func (x *GetCurrentGuildResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCurrentGuildResponse.ProtoReflect.Descriptor instead.
 func (*GetCurrentGuildResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{15}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetCurrentGuildResponse) GetGuild() *Guild {
@@ -825,7 +1070,7 @@ type JoinGuildByIdRequest struct {
 
 func (x *JoinGuildByIdRequest) Reset() {
 	*x = JoinGuildByIdRequest{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -837,7 +1082,7 @@ func (x *JoinGuildByIdRequest) String() string {
 func (*JoinGuildByIdRequest) ProtoMessage() {}
 
 func (x *JoinGuildByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -850,7 +1095,7 @@ func (x *JoinGuildByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinGuildByIdRequest.ProtoReflect.Descriptor instead.
 func (*JoinGuildByIdRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{16}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *JoinGuildByIdRequest) GetGuildId() string {
@@ -869,7 +1114,7 @@ type JoinGuildByIdResponse struct {
 
 func (x *JoinGuildByIdResponse) Reset() {
 	*x = JoinGuildByIdResponse{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -881,7 +1126,7 @@ func (x *JoinGuildByIdResponse) String() string {
 func (*JoinGuildByIdResponse) ProtoMessage() {}
 
 func (x *JoinGuildByIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -894,7 +1139,7 @@ func (x *JoinGuildByIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinGuildByIdResponse.ProtoReflect.Descriptor instead.
 func (*JoinGuildByIdResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{17}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *JoinGuildByIdResponse) GetGuild() *Guild {
@@ -913,7 +1158,7 @@ type LeaveGuildRequest struct {
 
 func (x *LeaveGuildRequest) Reset() {
 	*x = LeaveGuildRequest{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -925,7 +1170,7 @@ func (x *LeaveGuildRequest) String() string {
 func (*LeaveGuildRequest) ProtoMessage() {}
 
 func (x *LeaveGuildRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -938,7 +1183,7 @@ func (x *LeaveGuildRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveGuildRequest.ProtoReflect.Descriptor instead.
 func (*LeaveGuildRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{18}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *LeaveGuildRequest) GetGuildId() string {
@@ -957,7 +1202,7 @@ type LeaveGuildResponse struct {
 
 func (x *LeaveGuildResponse) Reset() {
 	*x = LeaveGuildResponse{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -969,7 +1214,7 @@ func (x *LeaveGuildResponse) String() string {
 func (*LeaveGuildResponse) ProtoMessage() {}
 
 func (x *LeaveGuildResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -982,7 +1227,7 @@ func (x *LeaveGuildResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveGuildResponse.ProtoReflect.Descriptor instead.
 func (*LeaveGuildResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{19}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *LeaveGuildResponse) GetSuccess() bool {
@@ -1012,7 +1257,7 @@ type Guild struct {
 
 func (x *Guild) Reset() {
 	*x = Guild{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[20]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1024,7 +1269,7 @@ func (x *Guild) String() string {
 func (*Guild) ProtoMessage() {}
 
 func (x *Guild) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[20]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1037,7 +1282,7 @@ func (x *Guild) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Guild.ProtoReflect.Descriptor instead.
 func (*Guild) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{20}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *Guild) GetId() string {
@@ -1130,7 +1375,7 @@ type Plugin struct {
 
 func (x *Plugin) Reset() {
 	*x = Plugin{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[21]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1142,7 +1387,7 @@ func (x *Plugin) String() string {
 func (*Plugin) ProtoMessage() {}
 
 func (x *Plugin) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[21]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1155,7 +1400,7 @@ func (x *Plugin) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Plugin.ProtoReflect.Descriptor instead.
 func (*Plugin) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{21}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *Plugin) GetId() string {
@@ -1206,7 +1451,7 @@ type GuildSettings struct {
 
 func (x *GuildSettings) Reset() {
 	*x = GuildSettings{}
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[22]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1218,7 +1463,7 @@ func (x *GuildSettings) String() string {
 func (*GuildSettings) ProtoMessage() {}
 
 func (x *GuildSettings) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_guild_proto_msgTypes[22]
+	mi := &file_proto_guma_v1_guild_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1231,7 +1476,7 @@ func (x *GuildSettings) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GuildSettings.ProtoReflect.Descriptor instead.
 func (*GuildSettings) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{22}
+	return file_proto_guma_v1_guild_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *GuildSettings) GetTimezone() string {
@@ -1273,7 +1518,7 @@ var File_proto_guma_v1_guild_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/guma/v1/guild.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xda\x01\n" +
+	"\x19proto/guma/v1/guild.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/api/httpbody.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xda\x01\n" +
 	"\x12CreateGuildRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12E\n" +
@@ -1295,7 +1540,20 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\n" +
 	"banner_url\x18\x06 \x01(\tR\tbannerUrlJ\x04\b\x04\x10\x05R\x04tags\";\n" +
 	"\x13UpdateGuildResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"/\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"j\n" +
+	"\x16UploadGuildLogoRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x12\n" +
+	"\x04data\x18\x02 \x01(\fR\x04data\x12!\n" +
+	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\"?\n" +
+	"\x17UploadGuildLogoResponse\x12$\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"3\n" +
+	"\x16DeleteGuildLogoRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\"?\n" +
+	"\x17DeleteGuildLogoResponse\x12$\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\">\n" +
+	"\x13GetGuildLogoRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\f\n" +
+	"\x01v\x18\x02 \x01(\tR\x01v\"/\n" +
 	"\x12DeleteGuildRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\"/\n" +
 	"\x13DeleteGuildResponse\x12\x18\n" +
@@ -1361,13 +1619,16 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\x0fcustom_settings\x18\x05 \x03(\v2*.guma.v1.GuildSettings.CustomSettingsEntryR\x0ecustomSettings\x1aA\n" +
 	"\x13CustomSettingsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xe6\b\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xc5\v\n" +
 	"\fGuildService\x12_\n" +
 	"\vCreateGuild\x12\x1b.guma.v1.CreateGuildRequest\x1a\x1c.guma.v1.CreateGuildResponse\"\x15\x82\xd3\xe4\x93\x02\x0f:\x01*\"\n" +
 	"/v1/guilds\x12^\n" +
 	"\bGetGuild\x12\x18.guma.v1.GetGuildRequest\x1a\x19.guma.v1.GetGuildResponse\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/guilds/{guild_id}\x12p\n" +
 	"\x0fGetCurrentGuild\x12\x1f.guma.v1.GetCurrentGuildRequest\x1a .guma.v1.GetCurrentGuildResponse\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/guilds/current\x12j\n" +
-	"\vUpdateGuild\x12\x1b.guma.v1.UpdateGuildRequest\x1a\x1c.guma.v1.UpdateGuildResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\x1a\x15/v1/guilds/{guild_id}\x12g\n" +
+	"\vUpdateGuild\x12\x1b.guma.v1.UpdateGuildRequest\x1a\x1c.guma.v1.UpdateGuildResponse\" \x82\xd3\xe4\x93\x02\x1a:\x01*\x1a\x15/v1/guilds/{guild_id}\x12{\n" +
+	"\x0fUploadGuildLogo\x12\x1f.guma.v1.UploadGuildLogoRequest\x1a .guma.v1.UploadGuildLogoResponse\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\x1a\x1a/v1/guilds/{guild_id}/logo\x12x\n" +
+	"\x0fDeleteGuildLogo\x12\x1f.guma.v1.DeleteGuildLogoRequest\x1a .guma.v1.DeleteGuildLogoResponse\"\"\x82\xd3\xe4\x93\x02\x1c*\x1a/v1/guilds/{guild_id}/logo\x12f\n" +
+	"\fGetGuildLogo\x12\x1c.guma.v1.GetGuildLogoRequest\x1a\x14.google.api.HttpBody\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/guilds/{guild_id}/logo\x12g\n" +
 	"\vDeleteGuild\x12\x1b.guma.v1.DeleteGuildRequest\x1a\x1c.guma.v1.DeleteGuildResponse\"\x1d\x82\xd3\xe4\x93\x02\x17*\x15/v1/guilds/{guild_id}\x12Y\n" +
 	"\n" +
 	"ListGuilds\x12\x1a.guma.v1.ListGuildsRequest\x1a\x1b.guma.v1.ListGuildsResponse\"\x12\x82\xd3\xe4\x93\x02\f\x12\n" +
@@ -1390,7 +1651,7 @@ func file_proto_guma_v1_guild_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_guild_proto_rawDescData
 }
 
-var file_proto_guma_v1_guild_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_proto_guma_v1_guild_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_proto_guma_v1_guild_proto_goTypes = []any{
 	(*CreateGuildRequest)(nil),          // 0: guma.v1.CreateGuildRequest
 	(*CreateGuildResponse)(nil),         // 1: guma.v1.CreateGuildResponse
@@ -1398,68 +1659,82 @@ var file_proto_guma_v1_guild_proto_goTypes = []any{
 	(*GetGuildResponse)(nil),            // 3: guma.v1.GetGuildResponse
 	(*UpdateGuildRequest)(nil),          // 4: guma.v1.UpdateGuildRequest
 	(*UpdateGuildResponse)(nil),         // 5: guma.v1.UpdateGuildResponse
-	(*DeleteGuildRequest)(nil),          // 6: guma.v1.DeleteGuildRequest
-	(*DeleteGuildResponse)(nil),         // 7: guma.v1.DeleteGuildResponse
-	(*ListGuildsRequest)(nil),           // 8: guma.v1.ListGuildsRequest
-	(*ListGuildsResponse)(nil),          // 9: guma.v1.ListGuildsResponse
-	(*GetGuildSettingsRequest)(nil),     // 10: guma.v1.GetGuildSettingsRequest
-	(*GetGuildSettingsResponse)(nil),    // 11: guma.v1.GetGuildSettingsResponse
-	(*UpdateGuildSettingsRequest)(nil),  // 12: guma.v1.UpdateGuildSettingsRequest
-	(*UpdateGuildSettingsResponse)(nil), // 13: guma.v1.UpdateGuildSettingsResponse
-	(*GetCurrentGuildRequest)(nil),      // 14: guma.v1.GetCurrentGuildRequest
-	(*GetCurrentGuildResponse)(nil),     // 15: guma.v1.GetCurrentGuildResponse
-	(*JoinGuildByIdRequest)(nil),        // 16: guma.v1.JoinGuildByIdRequest
-	(*JoinGuildByIdResponse)(nil),       // 17: guma.v1.JoinGuildByIdResponse
-	(*LeaveGuildRequest)(nil),           // 18: guma.v1.LeaveGuildRequest
-	(*LeaveGuildResponse)(nil),          // 19: guma.v1.LeaveGuildResponse
-	(*Guild)(nil),                       // 20: guma.v1.Guild
-	(*Plugin)(nil),                      // 21: guma.v1.Plugin
-	(*GuildSettings)(nil),               // 22: guma.v1.GuildSettings
-	nil,                                 // 23: guma.v1.CreateGuildRequest.SettingsEntry
-	nil,                                 // 24: guma.v1.GuildSettings.CustomSettingsEntry
-	(*timestamppb.Timestamp)(nil),       // 25: google.protobuf.Timestamp
+	(*UploadGuildLogoRequest)(nil),      // 6: guma.v1.UploadGuildLogoRequest
+	(*UploadGuildLogoResponse)(nil),     // 7: guma.v1.UploadGuildLogoResponse
+	(*DeleteGuildLogoRequest)(nil),      // 8: guma.v1.DeleteGuildLogoRequest
+	(*DeleteGuildLogoResponse)(nil),     // 9: guma.v1.DeleteGuildLogoResponse
+	(*GetGuildLogoRequest)(nil),         // 10: guma.v1.GetGuildLogoRequest
+	(*DeleteGuildRequest)(nil),          // 11: guma.v1.DeleteGuildRequest
+	(*DeleteGuildResponse)(nil),         // 12: guma.v1.DeleteGuildResponse
+	(*ListGuildsRequest)(nil),           // 13: guma.v1.ListGuildsRequest
+	(*ListGuildsResponse)(nil),          // 14: guma.v1.ListGuildsResponse
+	(*GetGuildSettingsRequest)(nil),     // 15: guma.v1.GetGuildSettingsRequest
+	(*GetGuildSettingsResponse)(nil),    // 16: guma.v1.GetGuildSettingsResponse
+	(*UpdateGuildSettingsRequest)(nil),  // 17: guma.v1.UpdateGuildSettingsRequest
+	(*UpdateGuildSettingsResponse)(nil), // 18: guma.v1.UpdateGuildSettingsResponse
+	(*GetCurrentGuildRequest)(nil),      // 19: guma.v1.GetCurrentGuildRequest
+	(*GetCurrentGuildResponse)(nil),     // 20: guma.v1.GetCurrentGuildResponse
+	(*JoinGuildByIdRequest)(nil),        // 21: guma.v1.JoinGuildByIdRequest
+	(*JoinGuildByIdResponse)(nil),       // 22: guma.v1.JoinGuildByIdResponse
+	(*LeaveGuildRequest)(nil),           // 23: guma.v1.LeaveGuildRequest
+	(*LeaveGuildResponse)(nil),          // 24: guma.v1.LeaveGuildResponse
+	(*Guild)(nil),                       // 25: guma.v1.Guild
+	(*Plugin)(nil),                      // 26: guma.v1.Plugin
+	(*GuildSettings)(nil),               // 27: guma.v1.GuildSettings
+	nil,                                 // 28: guma.v1.CreateGuildRequest.SettingsEntry
+	nil,                                 // 29: guma.v1.GuildSettings.CustomSettingsEntry
+	(*timestamppb.Timestamp)(nil),       // 30: google.protobuf.Timestamp
+	(*httpbody.HttpBody)(nil),           // 31: google.api.HttpBody
 }
 var file_proto_guma_v1_guild_proto_depIdxs = []int32{
-	23, // 0: guma.v1.CreateGuildRequest.settings:type_name -> guma.v1.CreateGuildRequest.SettingsEntry
-	20, // 1: guma.v1.CreateGuildResponse.guild:type_name -> guma.v1.Guild
-	20, // 2: guma.v1.GetGuildResponse.guild:type_name -> guma.v1.Guild
-	20, // 3: guma.v1.UpdateGuildResponse.guild:type_name -> guma.v1.Guild
-	20, // 4: guma.v1.ListGuildsResponse.guilds:type_name -> guma.v1.Guild
-	22, // 5: guma.v1.GetGuildSettingsResponse.settings:type_name -> guma.v1.GuildSettings
-	22, // 6: guma.v1.UpdateGuildSettingsRequest.settings:type_name -> guma.v1.GuildSettings
-	22, // 7: guma.v1.UpdateGuildSettingsResponse.settings:type_name -> guma.v1.GuildSettings
-	20, // 8: guma.v1.GetCurrentGuildResponse.guild:type_name -> guma.v1.Guild
-	20, // 9: guma.v1.JoinGuildByIdResponse.guild:type_name -> guma.v1.Guild
-	22, // 10: guma.v1.Guild.settings:type_name -> guma.v1.GuildSettings
-	25, // 11: guma.v1.Guild.created_at:type_name -> google.protobuf.Timestamp
-	25, // 12: guma.v1.Guild.updated_at:type_name -> google.protobuf.Timestamp
-	21, // 13: guma.v1.Guild.plugins:type_name -> guma.v1.Plugin
-	24, // 14: guma.v1.GuildSettings.custom_settings:type_name -> guma.v1.GuildSettings.CustomSettingsEntry
-	0,  // 15: guma.v1.GuildService.CreateGuild:input_type -> guma.v1.CreateGuildRequest
-	2,  // 16: guma.v1.GuildService.GetGuild:input_type -> guma.v1.GetGuildRequest
-	14, // 17: guma.v1.GuildService.GetCurrentGuild:input_type -> guma.v1.GetCurrentGuildRequest
-	4,  // 18: guma.v1.GuildService.UpdateGuild:input_type -> guma.v1.UpdateGuildRequest
-	6,  // 19: guma.v1.GuildService.DeleteGuild:input_type -> guma.v1.DeleteGuildRequest
-	8,  // 20: guma.v1.GuildService.ListGuilds:input_type -> guma.v1.ListGuildsRequest
-	16, // 21: guma.v1.GuildService.JoinGuildById:input_type -> guma.v1.JoinGuildByIdRequest
-	18, // 22: guma.v1.GuildService.LeaveGuild:input_type -> guma.v1.LeaveGuildRequest
-	10, // 23: guma.v1.GuildService.GetGuildSettings:input_type -> guma.v1.GetGuildSettingsRequest
-	12, // 24: guma.v1.GuildService.UpdateGuildSettings:input_type -> guma.v1.UpdateGuildSettingsRequest
-	1,  // 25: guma.v1.GuildService.CreateGuild:output_type -> guma.v1.CreateGuildResponse
-	3,  // 26: guma.v1.GuildService.GetGuild:output_type -> guma.v1.GetGuildResponse
-	15, // 27: guma.v1.GuildService.GetCurrentGuild:output_type -> guma.v1.GetCurrentGuildResponse
-	5,  // 28: guma.v1.GuildService.UpdateGuild:output_type -> guma.v1.UpdateGuildResponse
-	7,  // 29: guma.v1.GuildService.DeleteGuild:output_type -> guma.v1.DeleteGuildResponse
-	9,  // 30: guma.v1.GuildService.ListGuilds:output_type -> guma.v1.ListGuildsResponse
-	17, // 31: guma.v1.GuildService.JoinGuildById:output_type -> guma.v1.JoinGuildByIdResponse
-	19, // 32: guma.v1.GuildService.LeaveGuild:output_type -> guma.v1.LeaveGuildResponse
-	11, // 33: guma.v1.GuildService.GetGuildSettings:output_type -> guma.v1.GetGuildSettingsResponse
-	13, // 34: guma.v1.GuildService.UpdateGuildSettings:output_type -> guma.v1.UpdateGuildSettingsResponse
-	25, // [25:35] is the sub-list for method output_type
-	15, // [15:25] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	28, // 0: guma.v1.CreateGuildRequest.settings:type_name -> guma.v1.CreateGuildRequest.SettingsEntry
+	25, // 1: guma.v1.CreateGuildResponse.guild:type_name -> guma.v1.Guild
+	25, // 2: guma.v1.GetGuildResponse.guild:type_name -> guma.v1.Guild
+	25, // 3: guma.v1.UpdateGuildResponse.guild:type_name -> guma.v1.Guild
+	25, // 4: guma.v1.UploadGuildLogoResponse.guild:type_name -> guma.v1.Guild
+	25, // 5: guma.v1.DeleteGuildLogoResponse.guild:type_name -> guma.v1.Guild
+	25, // 6: guma.v1.ListGuildsResponse.guilds:type_name -> guma.v1.Guild
+	27, // 7: guma.v1.GetGuildSettingsResponse.settings:type_name -> guma.v1.GuildSettings
+	27, // 8: guma.v1.UpdateGuildSettingsRequest.settings:type_name -> guma.v1.GuildSettings
+	27, // 9: guma.v1.UpdateGuildSettingsResponse.settings:type_name -> guma.v1.GuildSettings
+	25, // 10: guma.v1.GetCurrentGuildResponse.guild:type_name -> guma.v1.Guild
+	25, // 11: guma.v1.JoinGuildByIdResponse.guild:type_name -> guma.v1.Guild
+	27, // 12: guma.v1.Guild.settings:type_name -> guma.v1.GuildSettings
+	30, // 13: guma.v1.Guild.created_at:type_name -> google.protobuf.Timestamp
+	30, // 14: guma.v1.Guild.updated_at:type_name -> google.protobuf.Timestamp
+	26, // 15: guma.v1.Guild.plugins:type_name -> guma.v1.Plugin
+	29, // 16: guma.v1.GuildSettings.custom_settings:type_name -> guma.v1.GuildSettings.CustomSettingsEntry
+	0,  // 17: guma.v1.GuildService.CreateGuild:input_type -> guma.v1.CreateGuildRequest
+	2,  // 18: guma.v1.GuildService.GetGuild:input_type -> guma.v1.GetGuildRequest
+	19, // 19: guma.v1.GuildService.GetCurrentGuild:input_type -> guma.v1.GetCurrentGuildRequest
+	4,  // 20: guma.v1.GuildService.UpdateGuild:input_type -> guma.v1.UpdateGuildRequest
+	6,  // 21: guma.v1.GuildService.UploadGuildLogo:input_type -> guma.v1.UploadGuildLogoRequest
+	8,  // 22: guma.v1.GuildService.DeleteGuildLogo:input_type -> guma.v1.DeleteGuildLogoRequest
+	10, // 23: guma.v1.GuildService.GetGuildLogo:input_type -> guma.v1.GetGuildLogoRequest
+	11, // 24: guma.v1.GuildService.DeleteGuild:input_type -> guma.v1.DeleteGuildRequest
+	13, // 25: guma.v1.GuildService.ListGuilds:input_type -> guma.v1.ListGuildsRequest
+	21, // 26: guma.v1.GuildService.JoinGuildById:input_type -> guma.v1.JoinGuildByIdRequest
+	23, // 27: guma.v1.GuildService.LeaveGuild:input_type -> guma.v1.LeaveGuildRequest
+	15, // 28: guma.v1.GuildService.GetGuildSettings:input_type -> guma.v1.GetGuildSettingsRequest
+	17, // 29: guma.v1.GuildService.UpdateGuildSettings:input_type -> guma.v1.UpdateGuildSettingsRequest
+	1,  // 30: guma.v1.GuildService.CreateGuild:output_type -> guma.v1.CreateGuildResponse
+	3,  // 31: guma.v1.GuildService.GetGuild:output_type -> guma.v1.GetGuildResponse
+	20, // 32: guma.v1.GuildService.GetCurrentGuild:output_type -> guma.v1.GetCurrentGuildResponse
+	5,  // 33: guma.v1.GuildService.UpdateGuild:output_type -> guma.v1.UpdateGuildResponse
+	7,  // 34: guma.v1.GuildService.UploadGuildLogo:output_type -> guma.v1.UploadGuildLogoResponse
+	9,  // 35: guma.v1.GuildService.DeleteGuildLogo:output_type -> guma.v1.DeleteGuildLogoResponse
+	31, // 36: guma.v1.GuildService.GetGuildLogo:output_type -> google.api.HttpBody
+	12, // 37: guma.v1.GuildService.DeleteGuild:output_type -> guma.v1.DeleteGuildResponse
+	14, // 38: guma.v1.GuildService.ListGuilds:output_type -> guma.v1.ListGuildsResponse
+	22, // 39: guma.v1.GuildService.JoinGuildById:output_type -> guma.v1.JoinGuildByIdResponse
+	24, // 40: guma.v1.GuildService.LeaveGuild:output_type -> guma.v1.LeaveGuildResponse
+	16, // 41: guma.v1.GuildService.GetGuildSettings:output_type -> guma.v1.GetGuildSettingsResponse
+	18, // 42: guma.v1.GuildService.UpdateGuildSettings:output_type -> guma.v1.UpdateGuildSettingsResponse
+	30, // [30:43] is the sub-list for method output_type
+	17, // [17:30] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_guild_proto_init() }
@@ -1473,7 +1748,7 @@ func file_proto_guma_v1_guild_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_guild_proto_rawDesc), len(file_proto_guma_v1_guild_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   25,
+			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

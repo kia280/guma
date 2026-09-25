@@ -191,6 +191,13 @@ type GuildEvent struct {
 	UpdatedAt        time.Time
 }
 
+type GuildLogo struct {
+	GuildID     uuid.UUID
+	ContentType string
+	Data        []byte
+	UpdatedAt   time.Time
+}
+
 type Invitation struct {
 	ID        uuid.UUID
 	GuildID   uuid.UUID

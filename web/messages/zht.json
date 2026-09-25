@@ -51,7 +51,29 @@
     "learnMore": "了解更多",
     "starOnGitHub": "在 GitHub 上收藏",
     "logout": "登出",
-    "openMenu": "開啟選單"
+    "openMenu": "開啟選單",
+    "navigation": "主選單",
+    "breadcrumbs": "目前位置",
+    "toggleTheme": "切換主題",
+    "adminMembers": "用戶",
+    "adminRequests": "申請",
+    "adminTemplates": "範本",
+    "adminGuild": "公會",
+    "adminAnnouncements": "公告",
+    "adminRoles": "角色權限",
+    "sections": {
+      "activities": "公會活動",
+      "assets": "資產"
+    },
+    "pages": {
+      "detail": "詳細資料",
+      "editAnnouncement": "編輯公告",
+      "withdraw": "提款",
+      "profile": "個人資料",
+      "preference": "偏好設定",
+      "terms": "服務條款",
+      "contact": "聯絡我們"
+    }
   },
   "dashboard": {
     "overview": "總覽",
@@ -312,6 +334,24 @@
     "activeEvents": "進行中活動",
     "totalItems": "總物品數",
     "guildSettings": "公會設置",
+    "guildLogo": "公會 Logo",
+    "guildLogoHint": "PNG、JPEG、WebP 或 GIF，大圖會自動縮小（GIF 需小於 512 KB）。顯示在側欄左上角；沒有上傳時會顯示公會名稱的第一個字。",
+    "guildLogoAlt": "{name} 的 Logo",
+    "uploadLogo": "上傳",
+    "removeLogo": "移除",
+    "uploadingLogo": "正在上傳 Logo",
+    "logoInvalidType": "請選擇 PNG、JPEG、WebP 或 GIF 圖片。",
+    "logoTooLarge": "圖片大小不可超過 512 KB。",
+    "logoInvalid": "無法使用這張圖片，請換一個檔案。",
+    "logoPermissionDenied": "只有公會擁有者和管理員可以變更 Logo。",
+    "logoUploadFailed": "無法更新 Logo，請再試一次。",
+    "logoOpenChatGpt": "開啟 ChatGPT",
+    "logoPromptCopyFailed": "無法複製，請手動選取 prompt 文字。",
+    "logoPromptCopied": "已複製",
+    "logoPromptCopy": "複製 prompt",
+    "logoPrompt": "請為公會「{name}」設計一個正方形圖示，輸出 1024×1024、背景透明的 PNG（不要底色、棋盤格、浮水印或任何文字）。\n\n- 用途：網站側欄的公會頭像，會縮到 32 像素，也要能當 16 像素的 favicon。\n- 風格：現代 SaaS logo（像 Linear、Notion），扁平、簡約、純色，不要漸層、立體或寫實質感。\n- 主題：融入一個遊戲元素，例如劍、書、翅膀或怪物，用簡化的幾何形狀和實心色塊表現，圓角一致。\n- 顏色：以 {color} 為主，最多再加一點中性灰，在白色和深灰色背景上都要清楚。\n- 構圖：無框，圖示直接放在透明背景上，不要底板、外框或徽章；置中，約佔畫面 80%。",
+    "logoPromptHelp": "複製後貼到 ChatGPT，把生成的圖上傳到上方的「公會 Logo」即可，尺寸會自動調整。顏色會跟著網站目前的主色。",
+    "logoPromptToggle": "用 ChatGPT 生成 Logo",
     "guildName": "公會名稱",
     "recruitment": "招募狀態",
     "serverRegion": "伺服器區域",
@@ -381,7 +421,6 @@
       "member": "成員"
     },
     "bankRequests": "申請",
-    "rolePermissions": "角色權限",
     "templates": "範本"
   },
   "adminRolesPage": {
@@ -879,6 +918,10 @@
       "sun-gold": {
         "name": "太陽金",
         "description": "Logo 的亮金色搭配深色文字、暖灰色與易讀的狀態色"
+      },
+      "amber-gold": {
+        "name": "琥珀金",
+        "description": "偏橘的金幣色，與成功狀態的綠色明顯區隔；深色文字、暖灰色與易讀的狀態色"
       },
       "ink-gold": {
         "name": "墨黑與金",

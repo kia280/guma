@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import clsx from 'clsx';
 
@@ -16,6 +17,7 @@ interface LogoProps {
   clickable?: boolean;
   /** Priority loading for the image */
   priority?: boolean;
+  src?: string;
 }
 
 // Size mappings for the logo
@@ -54,9 +56,12 @@ export function Logo({
   text = 'Guma',
   clickable = false,
   priority = false,
+  src,
 }: LogoProps) {
   const config = sizeMap[size];
-  
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const customSrc = src && src !== failedSrc ? src : undefined;
+
   const logoContent = (
     <div className={clsx(
       'flex items-center gap-2',
@@ -64,12 +69,15 @@ export function Logo({
       className
     )}>
       <Image
-        src={config.asset}
+        key={customSrc ?? config.asset}
+        src={customSrc ?? config.asset}
         alt={`${text} Logo`}
         width={config.imageSize}
         height={config.imageSize}
         priority={priority}
-        className="rounded-lg"
+        unoptimized={Boolean(customSrc)}
+        onError={customSrc ? () => setFailedSrc(customSrc) : undefined}
+        className={clsx('rounded-lg', customSrc && 'object-cover aspect-square')}
       />
       {showText && (
         <span className={clsx(

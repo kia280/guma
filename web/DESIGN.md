@@ -38,10 +38,10 @@ Sizes are in pixels at the default font size.
 
 ### Rules
 
-- Do not use raw size classes (`text-xs` to `text-3xl`), pixel sizes (`text-[10px]`), or inline `fontSize` for text. The only exceptions are: the notification count badge, the brand wordmark (`Logo`, sidebar), the font size preview buttons on the Preference page, and form inputs, which keep `text-base` (16px) so iOS does not zoom in on focus.
+- Do not use raw size classes (`text-xs` to `text-3xl`), pixel sizes (`text-[10px]`), or inline `fontSize` for text. The only exceptions are: the notification count badge, the brand wordmark (`Logo`), the font size preview buttons on the Preference page, and form inputs, which keep `text-base` (16px) so iOS does not zoom in on focus.
 - Charts (Recharts) render SVG and need numeric sizes. Use `fontSize: 12` for axis ticks and tooltips.
 - Do not use `font-bold`. Roles use 600 for emphasis; bold is reserved for the brand wordmark and the notification count badge.
-- Do not use `uppercase` or letter spacing. Labels are translated and often Chinese, where both look wrong. The brand wordmark is the only exception.
+- Do not use `uppercase` or letter spacing. Labels are translated and often Chinese, where both look wrong. The brand wordmark is the only exception. The sidebar guild name is user content, so it uses `type-subheading` without these overrides.
 - `<Modal.Heading>` keeps HeroUI's default style. HeroUI components (buttons, chips, inputs) keep their built-in sizes.
 - The app font is Noto Sans TC, loaded with `next/font` in `src/app/layout.tsx`. Do not set `font-family` in components. The dev panel's palette previews may override it for evaluation only.
 

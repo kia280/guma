@@ -1,10 +1,12 @@
 'use client';
 
+import React from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 import { apiClient } from '@/lib/guma';
 import type { User } from '@/types/user';
+import type { Guild } from '@/types/guild';
 
 interface UserState {
   user: User | null;
@@ -86,6 +88,49 @@ export const useUserStore = create<UserState>((set, get) => ({
 if (typeof window !== 'undefined') {
   void useUserStore.getState().fetchMe();
 }
+
+interface CurrentGuildState {
+  guild: Guild | null;
+  status: 'idle' | 'loading' | 'ready';
+  fetchGuild: () => Promise<Guild | null>;
+  setGuild: (guild: Guild) => void;
+}
+
+let currentGuildPromise: Promise<Guild | null> | null = null;
+
+export const useCurrentGuildStore = create<CurrentGuildState>((set, get) => ({
+  guild: null,
+  status: 'idle',
+  fetchGuild: () => {
+    if (currentGuildPromise) return currentGuildPromise;
+    if (get().status === 'ready') return Promise.resolve(get().guild);
+    set({ status: 'loading' });
+    currentGuildPromise = apiClient
+      .getCurrentGuild()
+      .catch(() => null)
+      .then(guild => {
+        set({ guild, status: 'ready' });
+        return guild;
+      })
+      .finally(() => {
+        currentGuildPromise = null;
+      });
+    return currentGuildPromise;
+  },
+  setGuild: guild => set({ guild, status: 'ready' }),
+}));
+
+export const useCurrentGuild = () => {
+  const guild = useCurrentGuildStore(s => s.guild);
+  const status = useCurrentGuildStore(s => s.status);
+  const fetchGuild = useCurrentGuildStore(s => s.fetchGuild);
+
+  React.useEffect(() => {
+    if (status === 'idle') void fetchGuild();
+  }, [status, fetchGuild]);
+
+  return { guild, status };
+};
 
 // UI State Store
 interface UIState {

@@ -173,3 +173,49 @@ LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 SELECT COUNT(*) FROM members
 WHERE guild_id = sqlc.arg(guild_id)
   AND (sqlc.arg(role_filter)::text = '' OR role = sqlc.arg(role_filter)::text);
+
+-- name: UpsertGuildLogo :one
+WITH logo AS (
+    INSERT INTO guild_logos (guild_id, content_type, data, updated_at)
+    VALUES (sqlc.arg(guild_id), sqlc.arg(content_type)::text, sqlc.arg(data)::bytea, NOW())
+    ON CONFLICT (guild_id) DO UPDATE SET
+        content_type = EXCLUDED.content_type,
+        data         = EXCLUDED.data,
+        updated_at   = EXCLUDED.updated_at
+    RETURNING guild_id
+)
+UPDATE guilds g SET
+    icon_url   = sqlc.arg(icon_url)::text,
+    updated_at = NOW()
+FROM logo
+WHERE g.id = logo.guild_id
+RETURNING g.id, g.name,
+          COALESCE(g.description, '') AS description,
+          g.owner_id,
+          g.timezone, g.language, g.public, g.allow_invites,
+          g.custom_settings,
+          COALESCE(g.icon_url, '')   AS icon_url,
+          COALESCE(g.banner_url, '') AS banner_url,
+          g.created_at, g.updated_at;
+
+-- name: DeleteGuildLogo :one
+WITH removed AS (
+    DELETE FROM guild_logos WHERE guild_id = sqlc.arg(id)
+)
+UPDATE guilds SET
+    icon_url   = NULL,
+    updated_at = NOW()
+WHERE id = sqlc.arg(id)
+RETURNING id, name,
+          COALESCE(description, '') AS description,
+          owner_id,
+          timezone, language, public, allow_invites,
+          custom_settings,
+          COALESCE(icon_url, '')   AS icon_url,
+          COALESCE(banner_url, '') AS banner_url,
+          created_at, updated_at;
+
+-- name: GetGuildLogo :one
+SELECT content_type, data, updated_at
+FROM guild_logos
+WHERE guild_id = $1;
