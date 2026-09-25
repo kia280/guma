@@ -96,6 +96,10 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 		return nil, fmt.Errorf("failed to register notification gateway: %w", err)
 	}
 
+	if err := gumav1.RegisterPreferenceServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
+		return nil, fmt.Errorf("failed to register preference gateway: %w", err)
+	}
+
 	if err := gumav1.RegisterAnnouncementServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
 		return nil, fmt.Errorf("failed to register announcement gateway: %w", err)
 	}

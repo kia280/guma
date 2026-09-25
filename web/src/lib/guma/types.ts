@@ -54,6 +54,7 @@ import type {
   ListNotificationsOptions,
   NotificationPage,
 } from '@/types/notification';
+import type { NotificationPreferencesPatch, UserPreferences } from '@/types/preference';
 import type { User, UserStats, BalancePoint, MockUser, UpdateMeRequest } from '@/types/user';
 import type { Wallet, Transaction, TransferRequest } from '@/types/wallet';
 
@@ -170,6 +171,10 @@ export interface ApiClient {
   getUnreadNotificationCount(): Promise<number>;
   markNotificationRead(id: string): Promise<GuildNotification>;
   markAllNotificationsRead(): Promise<number>;
+
+  // ── Preferences ──
+  getMyPreferences(): Promise<UserPreferences>;
+  updateNotificationPreferences(patch: NotificationPreferencesPatch): Promise<UserPreferences>;
 
   // ── Admin ──
   getAdminActivity(): Promise<AdminActivity[]>;
