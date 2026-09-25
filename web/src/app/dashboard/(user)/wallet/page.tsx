@@ -131,6 +131,20 @@ const getTransactionIcon = (transaction: Transaction) => {
   }
 };
 
+type PageNumber = number | 'ellipsis';
+
+const getPageNumbers = (page: number, totalPages: number): PageNumber[] => {
+  if (totalPages <= 1) return [];
+  const pages: PageNumber[] = [1];
+  if (page > 3) pages.push('ellipsis');
+  const start = Math.max(2, page - 1);
+  const end = Math.min(totalPages - 1, page + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (page < totalPages - 2) pages.push('ellipsis');
+  pages.push(totalPages);
+  return pages;
+};
+
 export default function WalletPage() {
   const t = useTranslations('walletPage');
   const labels = useTranslations('createAuctionModal');
@@ -155,6 +169,7 @@ export default function WalletPage() {
   const { contains } = useFilter({ sensitivity: 'base' });
   const [selectedItem, setSelectedItem] = React.useState<BackpackItem | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
+  const [paginatedGuildId, setPaginatedGuildId] = React.useState(guildId);
   const rowsPerPage = 5;
 
   const [wallet, setWallet] = React.useState<WalletType | null>(null);
@@ -252,6 +267,14 @@ export default function WalletPage() {
   useLiveResource(LIVE_BACKPACK_RESOURCES, refetchBackpack, { guildId });
 
   const balance = wallet?.balance ?? 0;
+  const totalPages = Math.max(1, Math.ceil(transactions.length / rowsPerPage));
+  if (paginatedGuildId !== guildId) {
+    setPaginatedGuildId(guildId);
+    setCurrentPage(1);
+  } else if (currentPage > totalPages) {
+    setCurrentPage(totalPages);
+  }
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   const runAction = async (
     action: WalletAction,
@@ -624,7 +647,6 @@ export default function WalletPage() {
         </Card.Header>
         <Card.Content className="pt-0">
           {(() => {
-            const totalPages = Math.ceil(transactions.length / rowsPerPage);
             const pagedTransactions = transactions.slice(
               (currentPage - 1) * rowsPerPage,
               currentPage * rowsPerPage
@@ -769,16 +791,22 @@ export default function WalletPage() {
                       <Pagination.PreviousIcon />
                     </Pagination.Previous>
                   </Pagination.Item>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                    <Pagination.Item key={p}>
-                      <Pagination.Link
-                        isActive={p === currentPage}
-                        onPress={() => setCurrentPage(p)}
-                      >
-                        {p}
-                      </Pagination.Link>
-                    </Pagination.Item>
-                  ))}
+                  {pageNumbers.map((p, i) =>
+                    p === 'ellipsis' ? (
+                      <Pagination.Item key={`ellipsis-${i}`}>
+                        <Pagination.Ellipsis />
+                      </Pagination.Item>
+                    ) : (
+                      <Pagination.Item key={p}>
+                        <Pagination.Link
+                          isActive={p === currentPage}
+                          onPress={() => setCurrentPage(p)}
+                        >
+                          {p}
+                        </Pagination.Link>
+                      </Pagination.Item>
+                    )
+                  )}
                   <Pagination.Item>
                     <Pagination.Next
                       isDisabled={currentPage === totalPages}
