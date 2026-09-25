@@ -4,6 +4,7 @@ import { Card, Chip, Button, ProgressBar, Avatar } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 
 interface LotteryWinner {
   id: string;
@@ -47,20 +48,21 @@ const LotteryCard = ({
   winners,
 }: LotteryCardProps) => {
   const t = useTranslations('lotteryCard');
+  const format = useIntlFormatter();
   const router = useRouter();
   const openDetail = () => router.push(`/dashboard/lottery/${id}`);
   const hasCap = maxTickets > 0;
   const soldPercent = hasCap ? Math.round((ticketsSold / maxTickets) * 100) : 0;
 
-  const formatCountdown = (dateStr: string, suffix = t('remaining')) => {
+  const formatCountdown = (dateStr: string) => {
     const diff = new Date(dateStr).getTime() - Date.now();
     if (diff <= 0) return t('drawComplete');
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    if (days > 0) return `${days}d ${hours}h ${suffix}`;
-    if (hours > 0) return `${hours}h ${mins}m ${suffix}`;
-    return `${mins}m ${suffix}`;
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${mins}m`;
+    return `${mins}m`;
   };
 
   const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
@@ -89,9 +91,9 @@ const LotteryCard = ({
               size="sm"
               color={getStatusColor(status)}
               variant="secondary"
-              className="capitalize mb-1"
+              className="mb-1"
             >
-              {status}
+              {t(`status.${status}`)}
             </Chip>
             <h4 className="type-subheading text-foreground">{title}</h4>
           </div>
@@ -116,13 +118,15 @@ const LotteryCard = ({
             <div className="flex justify-between type-body">
               <span className="text-subtle">{t('drawDate')}</span>
               <span className="font-medium text-foreground">
-                {new Date(drawDate).toLocaleDateString()}
+                {format.dateTime(new Date(drawDate), { dateStyle: 'medium' })}
               </span>
             </div>
             {status === 'active' && (
               <div className="flex justify-between type-body">
                 <span className="text-subtle">{t('timeLeft')}</span>
-                <span className="font-medium text-accent">{formatCountdown(drawDate)}</span>
+                <span className="font-medium text-accent">
+                  {t('timeLeftValue', { duration: formatCountdown(drawDate) })}
+                </span>
               </div>
             )}
           </div>
@@ -130,19 +134,13 @@ const LotteryCard = ({
           {/* Tickets Progress */}
           <div className="space-y-1.5">
             <div className="flex justify-between type-caption text-hint">
-              <span>
-                {ticketsSold.toLocaleString()} {t('ticketsSold')}
-              </span>
-              {hasCap && (
-                <span>
-                  {maxTickets.toLocaleString()} {t('max')}
-                </span>
-              )}
+              <span>{t('ticketsSold', { count: ticketsSold })}</span>
+              {hasCap && <span>{t('max', { count: maxTickets })}</span>}
             </div>
             {hasCap && (
               <>
                 <ProgressBar
-                  aria-label="Tickets sold"
+                  aria-label={t('ticketsSoldProgress')}
                   className="w-full"
                   value={soldPercent}
                   color={progressColor}
@@ -152,7 +150,7 @@ const LotteryCard = ({
                   </ProgressBar.Track>
                 </ProgressBar>
                 <p className="type-caption text-hint text-right">
-                  {soldPercent}% {t('filled')}
+                  {t('filled', { percent: soldPercent })}
                 </p>
               </>
             )}
@@ -198,9 +196,7 @@ const LotteryCard = ({
           <Chip color="warning" variant="secondary" className="w-full justify-center py-2">
             <div className="flex items-center gap-1.5">
               <Icon icon="solar:clock-circle-linear" width={14} />
-              <span>
-                {t('starts')} {formatCountdown(drawDate, t('fromNow'))}
-              </span>
+              <span>{t('startsIn', { duration: formatCountdown(drawDate) })}</span>
             </div>
           </Chip>
         )}
