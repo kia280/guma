@@ -3,25 +3,23 @@
 import { Card, Button, Dropdown, Chip, Spinner, Modal, Separator, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EventFormModal } from '@/components/EventFormModal';
 import { GuildCalendar } from '@/components/GuildCalendar';
 import { useGuildEvents } from '@/hooks/useGuildEvents';
+import { useToast } from '@/hooks/useToast';
 import { useIntlLocale } from '@/i18n/useIntlFormatter';
-import {
-  GuildEvent,
-  EVENT_TYPE_COLORS,
-  EVENT_TYPE_LABELS,
-  PRIORITY_COLORS,
-  PRIORITY_LABELS,
-} from '@/types/guild-events';
+import { GuildEvent, EVENT_TYPE_COLORS, PRIORITY_COLORS } from '@/types/guild-events';
 
 export default function CalendarPage() {
   const t = useTranslations('calendarPage');
+  const eventLabels = useTranslations('guildEvents');
   const intlLocale = useIntlLocale();
   const {
     events,
     isLoading,
+    error,
+    refetch,
     createEvent,
     updateEvent,
     deleteEvent,
@@ -35,6 +33,11 @@ export default function CalendarPage() {
   } = useGuildEvents();
 
   const [selectedEvent, setSelectedEvent] = useState<GuildEvent | null>(null);
+  const notify = useToast();
+
+  useEffect(() => {
+    if (error) notify.loadFailed(refetch, 'events');
+  }, [error, refetch, notify]);
 
   // Modal controls
   const formModalState = useOverlayState();
@@ -57,27 +60,22 @@ export default function CalendarPage() {
   };
 
   const handleDeleteEvent = async () => {
-    if (selectedEvent) {
-      try {
-        await deleteEvent(selectedEvent.id);
-        deleteModalState.close();
-        detailModalState.close();
-      } catch (error) {
-        console.error('Error deleting event:', error);
-      }
+    if (!selectedEvent) return;
+    try {
+      await deleteEvent(selectedEvent.id);
+      deleteModalState.close();
+      detailModalState.close();
+      notify.success(t('deleteSuccess'));
+    } catch {
+      notify.error(t('deleteFailed'));
     }
   };
 
   const handleFormSubmit = async (data: any) => {
-    try {
-      if (selectedEvent) {
-        await updateEvent({ ...data, id: selectedEvent.id });
-      } else {
-        await createEvent(data);
-      }
-      formModalState.close();
-    } catch (error) {
-      console.error('Error saving event:', error);
+    if (selectedEvent) {
+      await updateEvent({ ...data, id: selectedEvent.id });
+    } else {
+      await createEvent(data);
     }
   };
 
@@ -184,24 +182,24 @@ export default function CalendarPage() {
                     </p>
                     <div className="flex items-center gap-2">
                       <Chip
-                        color={EVENT_TYPE_COLORS[selectedEvent.type] as any}
+                        color={EVENT_TYPE_COLORS[selectedEvent.type]}
                         size="sm"
                         variant="tertiary"
                       >
-                        {EVENT_TYPE_LABELS[selectedEvent.type]}
+                        {eventLabels(`types.${selectedEvent.type}`)}
                       </Chip>
                       <Chip
-                        color={PRIORITY_COLORS[selectedEvent.priority] as any}
+                        color={PRIORITY_COLORS[selectedEvent.priority]}
                         size="sm"
                         variant="secondary"
                       >
-                        {PRIORITY_LABELS[selectedEvent.priority]}
+                        {eventLabels(`priorities.${selectedEvent.priority}`)}
                       </Chip>
                     </div>
                   </div>
 
                   <Dropdown>
-                    <Button isIconOnly variant="secondary" size="sm" aria-label="Event actions">
+                    <Button isIconOnly variant="secondary" size="sm" aria-label={t('eventActions')}>
                       <Icon icon="solar:menu-dots-bold" width={16} />
                     </Button>
                     <Dropdown.Popover>
@@ -215,11 +213,11 @@ export default function CalendarPage() {
                           }
                         }}
                       >
-                        <Dropdown.Item key="edit" textValue="Edit">
+                        <Dropdown.Item key="edit" textValue={t('editEvent')}>
                           <Icon icon="solar:pen-linear" width={16} />
                           {t('editEvent')}
                         </Dropdown.Item>
-                        <Dropdown.Item key="delete" textValue="Delete" className="text-danger">
+                        <Dropdown.Item key="delete" textValue={t('deleteEvent')} className="text-danger">
                           <Icon icon="solar:trash-bin-trash-linear" width={16} />
                           {t('deleteEvent')}
                         </Dropdown.Item>
@@ -239,7 +237,7 @@ export default function CalendarPage() {
                     <Separator />
 
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 text-small">
+                      <div className="flex items-center gap-3 type-body">
                         <Icon
                           icon="solar:clock-circle-linear"
                           width={16}
@@ -252,7 +250,7 @@ export default function CalendarPage() {
                       </div>
 
                       {selectedEvent.location && (
-                        <div className="flex items-center gap-3 text-small">
+                        <div className="flex items-center gap-3 type-body">
                           <Icon
                             icon="solar:map-point-linear"
                             width={16}
@@ -263,27 +261,24 @@ export default function CalendarPage() {
                       )}
 
                       {selectedEvent.isRecurring && (
-                        <div className="flex items-center gap-3 text-small">
+                        <div className="flex items-center gap-3 type-body">
                           <Icon
                             icon="solar:refresh-linear"
                             width={16}
                             className="text-hint"
                           />
                           <span>
-                            {t('repeats')} {selectedEvent.recurringPattern?.type}
-                            {selectedEvent.recurringPattern?.interval &&
-                            selectedEvent.recurringPattern.interval > 1
-                              ? ` (${t('every')} ${selectedEvent.recurringPattern.interval} ${selectedEvent.recurringPattern.type}s)`
-                              : ''}
+                            {t('repeatsEvery', {
+                              type: selectedEvent.recurringPattern?.type ?? 'custom',
+                              interval: selectedEvent.recurringPattern?.interval ?? 1,
+                            })}
                           </span>
                         </div>
                       )}
 
-                      <div className="flex items-center gap-3 text-small text-subtle">
+                      <div className="flex items-center gap-3 type-body text-subtle">
                         <Icon icon="solar:users-group-rounded-linear" width={16} />
-                        <span>
-                          {t('createdBy')} {selectedEvent.createdBy}
-                        </span>
+                        <span>{t('createdBy', { name: selectedEvent.createdBy })}</span>
                       </div>
                     </div>
                   </div>

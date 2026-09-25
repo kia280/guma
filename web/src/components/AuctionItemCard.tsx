@@ -5,19 +5,21 @@ import {
   Chip,
   Button,
   Modal,
-  Avatar,
   Separator,
   NumberField,
   Label,
+  useOverlayState,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
+import { UserAvatar } from './UserAvatar';
 
 const PROGRESS_FILL = {
   danger: 'bg-danger',
@@ -57,12 +59,12 @@ const getRarityColor = (rarity: ItemRarity) => {
   }
 };
 
-const formatTimeRemaining = (endTime: string) => {
+const formatTimeRemaining = (endTime: string, endedLabel: string) => {
   const now = new Date();
   const end = new Date(endTime);
   const diff = end.getTime() - now.getTime();
 
-  if (diff <= 0) return 'Ended';
+  if (diff <= 0) return endedLabel;
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -86,7 +88,7 @@ const getAuctionProgress = (startTime: string, endTime: string) => {
 
 interface AuctionItemCardProps {
   item: AuctionItem;
-  onPlaceBid: (itemId: string, amount: number) => void;
+  onPlaceBid: (itemId: string, amount: number) => Promise<boolean>;
   isLoading?: boolean;
   userBalance?: number;
 }
@@ -98,6 +100,8 @@ const AuctionItemCard = ({
   userBalance = 0,
 }: AuctionItemCardProps) => {
   const t = useTranslations('auctionItemCard');
+  const labels = useTranslations('createAuctionModal');
+  const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const [bidInput, setBidInput] = useState<number | null>(null);
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
@@ -106,16 +110,19 @@ const AuctionItemCard = ({
   const isActive = item.status === AuctionStatus.ACTIVE;
   const isUpcoming = item.status === AuctionStatus.UPCOMING;
 
-  const timeRemaining = formatTimeRemaining(item.endTime);
+  const timeRemaining = formatTimeRemaining(item.endTime, t('ended'));
   const progress = getAuctionProgress(item.startTime, item.endTime);
 
   const hasBidAmount = Number.isFinite(bidAmount);
   const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
 
-  const handlePlaceBid = () => {
-    if (canBid) {
-      onPlaceBid(item.id, bidAmount);
+  const bidModal = useOverlayState();
+
+  const handlePlaceBid = async () => {
+    if (!canBid) return;
+    if (await onPlaceBid(item.id, bidAmount)) {
       setBidInput(null);
+      bidModal.close();
     }
   };
 
@@ -148,7 +155,7 @@ const AuctionItemCard = ({
                   </h4>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
-                      {item.rarity.toUpperCase()}
+                      {labels(`rarities.${item.rarity}`)}
                     </Chip>
                   </div>
                 </div>
@@ -159,7 +166,7 @@ const AuctionItemCard = ({
                   color={isActive ? 'success' : isUpcoming ? 'warning' : 'default'}
                   variant="secondary"
                 >
-                  {item.status.toUpperCase()}
+                  {t(`status.${item.status}`)}
                 </Chip>
                 {isActive && (
                   <div className="flex items-center gap-1 type-caption text-hint">
@@ -202,12 +209,7 @@ const AuctionItemCard = ({
                   <div className="flex items-center justify-between">
                     <span className="type-caption text-hint">{t('leadingBidder')}</span>
                     <div className="flex items-center gap-2">
-                      <Avatar size="sm">
-                        <Avatar.Image src={item.currentBidder.avatar} />
-                        <Avatar.Fallback>
-                          {item.currentBidder.username?.slice(0, 2).toUpperCase()}
-                        </Avatar.Fallback>
-                      </Avatar>
+                      <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
                       <span className="type-body text-foreground">{item.currentBidder.username}</span>
                     </div>
                   </div>
@@ -219,27 +221,24 @@ const AuctionItemCard = ({
               <div className="flex items-center justify-between">
                 <span className="type-caption text-hint">{t('soldBy')}</span>
                 <div className="flex items-center gap-2">
-                  <Avatar size="sm">
-                    <Avatar.Image src={item.seller.avatar} />
-                    <Avatar.Fallback>
-                      {item.seller.username?.slice(0, 2).toUpperCase()}
-                    </Avatar.Fallback>
-                  </Avatar>
+                  <UserAvatar name={item.seller.username} src={item.seller.avatar} />
                   <span className="type-body text-foreground">{item.seller.username}</span>
                 </div>
               </div>
 
               <div className="relative z-10 flex gap-2">
                 {isActive && (
-                  <Modal>
+                  <>
                   <Button
                     variant="primary"
                     isDisabled={isLoading}
                     className="flex-1"
+                    onPress={bidModal.open}
                   >
                     {t('placeBid')}
                   </Button>
                   {/* Place Bid Modal */}
+                  <Modal state={bidModal}>
                   <Modal.Backdrop>
           <Modal.Container size="md">
             <Modal.Dialog>
@@ -252,9 +251,7 @@ const AuctionItemCard = ({
                       width={18}
                       className="text-subtle"
                     />
-                    <span>
-                      {t('placeBidTitle')} {item.name}
-                    </span>
+                    <span>{t('placeBidTitle', { name: item.name })}</span>
                   </div>
                 </Modal.Heading>
               </Modal.Header>
@@ -323,11 +320,12 @@ const AuctionItemCard = ({
           </Modal.Container>
       </Modal.Backdrop>
       </Modal>
+                  </>
                 )}
                 <Modal>
                 <Button variant="secondary" size="sm">
                   <Icon icon="solar:history-linear" width={14} />
-                  {t('history')} ({item.bidHistory.length})
+                  {t('history', { count: item.bidHistory.length })}
                 </Button>
                 {/* Bid History Modal */}
                 <Modal.Backdrop>
@@ -335,9 +333,7 @@ const AuctionItemCard = ({
             <Modal.Dialog>
               <Modal.CloseTrigger />
               <Modal.Header className="text-center items-center">
-                <Modal.Heading>
-                  {t('bidHistory')} {item.name}
-                </Modal.Heading>
+                <Modal.Heading>{t('bidHistory', { name: item.name })}</Modal.Heading>
               </Modal.Header>
               <Modal.Body className="p-1">
                 <div className="space-y-2 overflow-y-auto max-h-[60vh]">
@@ -360,18 +356,13 @@ const AuctionItemCard = ({
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <Avatar size="sm">
-                              <Avatar.Image src={bid.bidder.avatar} />
-                              <Avatar.Fallback>
-                                {bid.bidder.username?.slice(0, 2).toUpperCase()}
-                              </Avatar.Fallback>
-                            </Avatar>
+                            <UserAvatar name={bid.bidder.username} src={bid.bidder.avatar} />
                             <div>
                               <div className="type-body font-medium text-foreground">
                                 {bid.bidder.username}
                               </div>
                               <div className="type-caption text-hint">
-                                {new Date(bid.timestamp).toLocaleString()}
+                                {format.dateTime(new Date(bid.timestamp), { dateStyle: 'medium', timeStyle: 'short' })}
                               </div>
                             </div>
                           </div>

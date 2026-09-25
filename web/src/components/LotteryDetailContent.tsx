@@ -1,19 +1,24 @@
 'use client';
 
-import { Avatar, Button, Chip, Label, NumberField, ProgressBar, ScrollShadow } from '@heroui/react';
+import { Button, Chip, Label, NumberField, ProgressBar, ScrollShadow } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { isNotFoundError } from '@/lib/guma/errors';
 import { type FormatGold, formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
 import { useUserStore } from '@/lib/store';
 import type { Lottery, LotteryStatus, LotteryWinner } from '@/types/lottery';
+import { AsyncContent, DetailSkeleton } from './AsyncContent';
 import { DateTimePicker } from './DateTimePicker';
 import { LotteryWheel, type WheelEntry } from './LotteryWheel';
+import { UserAvatar } from './UserAvatar';
 
 const DRAW_RETRY_MS = 3000;
 
@@ -78,6 +83,13 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
 
   const [lottery, setLottery] = React.useState<Lottery | null>(null);
   const [isMissing, setIsMissing] = React.useState(false);
+  const loadState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = React.useState(0);
+  const reload = React.useCallback(() => {
+    loadState.reset();
+    setReloadKey(key => key + 1);
+  }, [loadState.reset]);
   const [now, setNow] = React.useState(() => Date.now());
   const [quantity, setQuantity] = React.useState(1);
   const [isBuying, setIsBuying] = React.useState(false);
@@ -101,18 +113,24 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
         .then(data => {
           setLottery(data);
           setIsMissing(false);
+          loadState.ready();
           return data;
         })
-        .catch(() => {
-          setIsMissing(true);
+        .catch(err => {
+          if (isNotFoundError(err)) {
+            setIsMissing(true);
+          } else {
+            loadState.failed();
+            notify.loadFailed(reload, 'lottery-detail');
+          }
           return null;
         }),
-    [guildId, id]
+    [guildId, id, notify, reload, loadState.ready, loadState.failed]
   );
 
   React.useEffect(() => {
     load();
-  }, [load]);
+  }, [load, reloadKey]);
 
   React.useEffect(() => {
     lotteryRef.current = lottery;
@@ -138,9 +156,10 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
         }
       })
       .catch(err => {
-        if ((err as { response?: { status?: number } }).response?.status === 404) setIsMissing(true);
+        if (isNotFoundError(err)) setIsMissing(true);
+        else notify.loadFailed(reload, 'lottery-detail');
       });
-  }, [guildId, id, startSpin]);
+  }, [guildId, id, startSpin, notify, reload]);
 
   useLiveResource(
     ['lottery'],
@@ -217,7 +236,11 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   }
 
   if (!lottery) {
-    return <div className="py-24" aria-busy="true" />;
+    return (
+      <AsyncContent state={loadState.state} onRetry={reload} skeleton={<DetailSkeleton />}>
+        {null}
+      </AsyncContent>
+    );
   }
 
   const winners = drawWinners.length > 0 ? drawWinners : (lottery.winners ?? []);
@@ -243,8 +266,9 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
       await apiClient.purchaseTickets(guildId, id, quantity);
       await load();
       setQuantity(1);
-    } catch (err) {
-      console.error(err);
+      notify.success(t('purchaseSuccess'));
+    } catch {
+      notify.error(t('purchaseFailed'));
     } finally {
       setIsBuying(false);
     }
@@ -471,9 +495,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                 <ul className="flex flex-col px-2 pb-2">
                   {participants.map(p => (
                     <li key={p.id} className="flex items-center gap-3 rounded-lg px-2 py-1.5">
-                      <Avatar size="sm" className="shrink-0">
-                        <Avatar.Fallback>{Array.from(p.username).slice(0, 2).join('')}</Avatar.Fallback>
-                      </Avatar>
+                      <UserAvatar name={p.username} src={p.avatar} className="shrink-0" />
                       <span className="type-body text-foreground flex-1 min-w-0 truncate">{p.username}</span>
                       <span className="type-caption text-hint tabular-nums">
                         {t('ticketCount', { count: p.tickets })} · {((p.tickets / totalTickets) * 100).toFixed(1)}%

@@ -115,7 +115,7 @@ export function Navigation() {
               </Avatar>
             </button>
             <Dropdown.Popover>
-              <Dropdown.Menu aria-label="Profile Actions">
+              <Dropdown.Menu aria-label={t('profileActions')}>
                 <Dropdown.Item id="settings" textValue={t('settings')}>
                   <Link href="/settings" className="w-full block">
                     <Label>{t('settings')}</Label>

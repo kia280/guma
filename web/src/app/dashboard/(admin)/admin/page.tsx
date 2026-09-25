@@ -5,7 +5,6 @@ import {
   Card,
   Table,
   Chip,
-  Avatar,
   Button,
   Input,
   Separator,
@@ -18,13 +17,17 @@ import { isAxiosError } from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import React from 'react';
+import { AsyncContent, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import { BankRequestReview } from '@/components/BankRequestReview';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { GuildAvatar } from '@/components/GuildAvatar';
 import { GuildLogoPrompt } from '@/components/GuildLogoPrompt';
 import { TemplateSettings } from '@/components/TemplateSettings';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
@@ -109,7 +112,7 @@ const getActivityColor = (type: string) => {
     case 'lottery':
       return 'text-accent';
     case 'join':
-      return 'text-secondary';
+      return 'text-subtle';
     default:
       return 'text-hint';
   }
@@ -136,6 +139,15 @@ export default function AdminPage() {
   const [activityStatus, setActivityStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
   const [activityReloadKey, setActivityReloadKey] = React.useState(0);
   const [announcements, setAnnouncements] = React.useState<AdminAnnouncement[]>([]);
+  const usersState = useLoadState();
+  const announcementsState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = React.useState(0);
+  const reload = React.useCallback(() => {
+    usersState.reset();
+    announcementsState.reset();
+    setReloadKey(key => key + 1);
+  }, [usersState.reset, announcementsState.reset]);
   const { guild } = useCurrentGuild();
   const setGuild = useCurrentGuildStore(s => s.setGuild);
   const [isEditingName, setIsEditingName] = React.useState(false);
@@ -205,8 +217,9 @@ export default function AdminPage() {
     try {
       setGuild(await apiClient.updateGuild(guild.id, { name }));
       setIsEditingName(false);
-    } catch (err) {
-      console.error('Failed to update guild name', err);
+      notify.success(t('guildNameSaved'));
+    } catch {
+      notify.error(t('guildNameFailed'));
     } finally {
       setIsSavingName(false);
     }
@@ -214,10 +227,41 @@ export default function AdminPage() {
 
   React.useEffect(() => {
     let cancelled = false;
-    apiClient.listMembers(guildId).then(d => { if (!cancelled) setMockUsers(d); }).catch(() => {});
-    apiClient.getAdminAnnouncements(guildId).then(d => { if (!cancelled) setAnnouncements(d); }).catch(() => {});
+    apiClient
+      .listMembers(guildId)
+      .then(d => {
+        if (cancelled) return;
+        setMockUsers(d);
+        usersState.ready();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        usersState.failed();
+        notify.loadFailed(reload, 'admin');
+      });
+    apiClient
+      .getAdminAnnouncements(guildId)
+      .then(d => {
+        if (cancelled) return;
+        setAnnouncements(d);
+        announcementsState.ready();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        announcementsState.failed();
+        notify.loadFailed(reload, 'admin');
+      });
     return () => { cancelled = true; };
-  }, [guildId]);
+  }, [
+    guildId,
+    reloadKey,
+    notify,
+    reload,
+    usersState.ready,
+    usersState.failed,
+    announcementsState.ready,
+    announcementsState.failed,
+  ]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -240,8 +284,11 @@ export default function AdminPage() {
   };
 
   const refetchAnnouncements = React.useCallback(() => {
-    apiClient.getAdminAnnouncements(guildId).then(setAnnouncements).catch(() => {});
-  }, [guildId]);
+    apiClient
+      .getAdminAnnouncements(guildId)
+      .then(setAnnouncements)
+      .catch(() => notify.loadFailed(reload, 'admin'));
+  }, [guildId, notify, reload]);
 
   useLiveResource(['announcement'], refetchAnnouncements, { guildId });
 
@@ -256,8 +303,7 @@ export default function AdminPage() {
     try {
       const draft = await apiClient.createAnnouncementDraft(guildId);
       router.push(`/dashboard/admin/announcements/${draft.id}`);
-    } catch (err) {
-      console.error('Failed to create announcement draft', err);
+    } catch {
       setCreateDraftFailed(true);
       setIsCreatingDraft(false);
     }
@@ -266,17 +312,19 @@ export default function AdminPage() {
   const deleteDraft = async (draft: AdminAnnouncement) => {
     await apiClient.deleteAnnouncementDraft(guildId, draft.id);
     setAnnouncements(prev => prev.filter(a => a.id !== draft.id));
+    notify.success(t('draftDeleted'));
   };
 
   const unpublish = async (ann: AdminAnnouncement) => {
     await apiClient.unpublishAnnouncement(guildId, ann.id);
     refetchAnnouncements();
+    notify.success(t('announcementUnpublished'));
   };
 
   return (
     <div className="space-y-5">
       <Tabs
-        aria-label="Admin sections"
+        aria-label={t('sections')}
         selectedKey={selectedTab}
         onSelectionChange={key => router.replace(adminTabHref(adminTabFromParam(String(key))), { scroll: false })}
       >
@@ -322,9 +370,17 @@ export default function AdminPage() {
         <Tabs.Panel id="users" className="pt-4">
           <Card className="border border-divider shadow-none bg-surface">
             <Card.Content className="p-0">
+              <AsyncContent
+                state={usersState.state}
+                onRetry={reload}
+                skeleton={<div className="p-4"><ListSkeleton rows={5} /></div>}
+              >
+              {mockUsers.length === 0 ? (
+                <EmptyContent icon="solar:users-group-rounded-linear" title={t('noUsers')} />
+              ) : (
               <Table>
                 <Table.ScrollContainer>
-                  <Table.Content aria-label="Users table">
+                  <Table.Content aria-label={t('usersTable')}>
                     <Table.Header>
                       <Table.Column isRowHeader>{t('user')}</Table.Column>
                       <Table.Column>{t('role')}</Table.Column>
@@ -336,12 +392,7 @@ export default function AdminPage() {
                         <Table.Row key={user.id}>
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
-                              <Avatar size="sm" className="shrink-0">
-                                <Avatar.Image src={user.avatar} />
-                                <Avatar.Fallback>
-                                  {user.username.slice(0, 2).toUpperCase()}
-                                </Avatar.Fallback>
-                              </Avatar>
+                              <UserAvatar name={user.username} src={user.avatar} className="shrink-0" />
                               <div className="min-w-0">
                                 <p className="type-body font-medium text-foreground truncate">
                                   {user.username}
@@ -373,6 +424,8 @@ export default function AdminPage() {
                   </Table.Content>
                 </Table.ScrollContainer>
               </Table>
+              )}
+              </AsyncContent>
             </Card.Content>
           </Card>
         </Tabs.Panel>
@@ -408,8 +461,8 @@ export default function AdminPage() {
                   label: t('totalItems'),
                   value: '47',
                   icon: 'solar:backpack-linear',
-                  color: 'text-secondary',
-                  bg: 'bg-secondary/10',
+                  color: 'text-subtle',
+                  bg: 'bg-default',
                 },
               ].map(stat => (
                 <Card key={stat.label} className="border border-divider shadow-none bg-surface">
@@ -531,8 +584,8 @@ export default function AdminPage() {
                       )}
                     </div>
                     {[
-                      { label: t('recruitment'), value: 'Open' },
-                      { label: t('serverRegion'), value: 'Asia Pacific' },
+                      { label: t('recruitment'), value: t('recruitmentOpen') },
+                      { label: t('serverRegion'), value: t('regionAsiaPacific') },
                     ].map(setting => (
                       <div key={setting.label} className="py-2">
                         <p className="type-body text-subtle">{setting.label}</p>
@@ -613,6 +666,7 @@ export default function AdminPage() {
               </Button>
             </div>
 
+            <AsyncContent state={announcementsState.state} onRetry={reload} skeleton={<ListSkeleton rows={3} />}>
             {announcements.length === 0 && (
               <Card className="border border-divider shadow-none bg-surface">
                 <Card.Content className="p-6 text-center">
@@ -715,6 +769,7 @@ export default function AdminPage() {
                 </Card>
               ))}
             </div>
+            </AsyncContent>
           </div>
 
           <ConfirmDialog

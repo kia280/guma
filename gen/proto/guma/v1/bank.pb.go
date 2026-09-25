@@ -1451,6 +1451,7 @@ type BankContribution struct {
 	Kind          string                 `protobuf:"bytes,8,opt,name=kind,proto3" json:"kind,omitempty"`
 	Items         []*Item                `protobuf:"bytes,9,rep,name=items,proto3" json:"items,omitempty"`
 	CheckinId     string                 `protobuf:"bytes,10,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
+	AvatarUrl     string                 `protobuf:"bytes,11,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1555,21 +1556,29 @@ func (x *BankContribution) GetCheckinId() string {
 	return ""
 }
 
+func (x *BankContribution) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
+	}
+	return ""
+}
+
 type FundRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	GuildId       string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	RequesterId   string                 `protobuf:"bytes,3,opt,name=requester_id,json=requesterId,proto3" json:"requester_id,omitempty"`
-	RequesterName string                 `protobuf:"bytes,4,opt,name=requester_name,json=requesterName,proto3" json:"requester_name,omitempty"`
-	Amount        int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
-	Reason        string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
-	Status        string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"` // "pending" | "approved" | "rejected"
-	ReviewerId    string                 `protobuf:"bytes,8,opt,name=reviewer_id,json=reviewerId,proto3" json:"reviewer_id,omitempty"`
-	ReviewNote    string                 `protobuf:"bytes,9,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	ReviewedAt    *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=reviewed_at,json=reviewedAt,proto3" json:"reviewed_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GuildId            string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	RequesterId        string                 `protobuf:"bytes,3,opt,name=requester_id,json=requesterId,proto3" json:"requester_id,omitempty"`
+	RequesterName      string                 `protobuf:"bytes,4,opt,name=requester_name,json=requesterName,proto3" json:"requester_name,omitempty"`
+	Amount             int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
+	Reason             string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
+	Status             string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"` // "pending" | "approved" | "rejected"
+	ReviewerId         string                 `protobuf:"bytes,8,opt,name=reviewer_id,json=reviewerId,proto3" json:"reviewer_id,omitempty"`
+	ReviewNote         string                 `protobuf:"bytes,9,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
+	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ReviewedAt         *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=reviewed_at,json=reviewedAt,proto3" json:"reviewed_at,omitempty"`
+	RequesterAvatarUrl string                 `protobuf:"bytes,12,opt,name=requester_avatar_url,json=requesterAvatarUrl,proto3" json:"requester_avatar_url,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *FundRequest) Reset() {
@@ -1677,6 +1686,13 @@ func (x *FundRequest) GetReviewedAt() *timestamppb.Timestamp {
 		return x.ReviewedAt
 	}
 	return nil
+}
+
+func (x *FundRequest) GetRequesterAvatarUrl() string {
+	if x != nil {
+		return x.RequesterAvatarUrl
+	}
+	return ""
 }
 
 type BankItem struct {
@@ -1796,21 +1812,22 @@ func (x *BankItem) GetCheckinTitle() string {
 }
 
 type ItemRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	GuildId       string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	BankItemId    string                 `protobuf:"bytes,3,opt,name=bank_item_id,json=bankItemId,proto3" json:"bank_item_id,omitempty"`
-	RequesterId   string                 `protobuf:"bytes,4,opt,name=requester_id,json=requesterId,proto3" json:"requester_id,omitempty"`
-	RequesterName string                 `protobuf:"bytes,5,opt,name=requester_name,json=requesterName,proto3" json:"requester_name,omitempty"`
-	Reason        string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
-	Status        string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"` // "pending" | "approved" | "rejected"
-	ReviewerId    string                 `protobuf:"bytes,8,opt,name=reviewer_id,json=reviewerId,proto3" json:"reviewer_id,omitempty"`
-	ReviewNote    string                 `protobuf:"bytes,9,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	ReviewedAt    *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=reviewed_at,json=reviewedAt,proto3" json:"reviewed_at,omitempty"`
-	Item          *Item                  `protobuf:"bytes,12,opt,name=item,proto3" json:"item,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GuildId            string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	BankItemId         string                 `protobuf:"bytes,3,opt,name=bank_item_id,json=bankItemId,proto3" json:"bank_item_id,omitempty"`
+	RequesterId        string                 `protobuf:"bytes,4,opt,name=requester_id,json=requesterId,proto3" json:"requester_id,omitempty"`
+	RequesterName      string                 `protobuf:"bytes,5,opt,name=requester_name,json=requesterName,proto3" json:"requester_name,omitempty"`
+	Reason             string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
+	Status             string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"` // "pending" | "approved" | "rejected"
+	ReviewerId         string                 `protobuf:"bytes,8,opt,name=reviewer_id,json=reviewerId,proto3" json:"reviewer_id,omitempty"`
+	ReviewNote         string                 `protobuf:"bytes,9,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
+	CreatedAt          *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ReviewedAt         *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=reviewed_at,json=reviewedAt,proto3" json:"reviewed_at,omitempty"`
+	Item               *Item                  `protobuf:"bytes,12,opt,name=item,proto3" json:"item,omitempty"`
+	RequesterAvatarUrl string                 `protobuf:"bytes,13,opt,name=requester_avatar_url,json=requesterAvatarUrl,proto3" json:"requester_avatar_url,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ItemRequest) Reset() {
@@ -1927,6 +1944,13 @@ func (x *ItemRequest) GetItem() *Item {
 	return nil
 }
 
+func (x *ItemRequest) GetRequesterAvatarUrl() string {
+	if x != nil {
+		return x.RequesterAvatarUrl
+	}
+	return ""
+}
+
 var File_proto_guma_v1_bank_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_bank_proto_rawDesc = "" +
@@ -2038,7 +2062,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12+\n" +
-	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\xb1\x02\n" +
+	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\xd0\x02\n" +
 	"\x10BankContribution\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x17\n" +
@@ -2052,7 +2076,9 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x05items\x18\t \x03(\v2\r.guma.v1.ItemR\x05items\x12\x1d\n" +
 	"\n" +
 	"checkin_id\x18\n" +
-	" \x01(\tR\tcheckinId\"\x84\x03\n" +
+	" \x01(\tR\tcheckinId\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\v \x01(\tR\tavatarUrl\"\xb6\x03\n" +
 	"\vFundRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12!\n" +
@@ -2069,7 +2095,8 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
 	"\vreviewed_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"reviewedAt\"\xc1\x02\n" +
+	"reviewedAt\x120\n" +
+	"\x14requester_avatar_url\x18\f \x01(\tR\x12requesterAvatarUrl\"\xc1\x02\n" +
 	"\bBankItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x19\n" +
@@ -2084,7 +2111,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\n" +
 	"checkin_id\x18\t \x01(\tR\tcheckinId\x12#\n" +
 	"\rcheckin_title\x18\n" +
-	" \x01(\tR\fcheckinTitle\"\xb1\x03\n" +
+	" \x01(\tR\fcheckinTitle\"\xe3\x03\n" +
 	"\vItemRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12 \n" +
@@ -2103,7 +2130,8 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
 	"\vreviewed_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"reviewedAt\x12!\n" +
-	"\x04item\x18\f \x01(\v2\r.guma.v1.ItemR\x04item2\xcd\v\n" +
+	"\x04item\x18\f \x01(\v2\r.guma.v1.ItemR\x04item\x120\n" +
+	"\x14requester_avatar_url\x18\r \x01(\tR\x12requesterAvatarUrl2\xcd\v\n" +
 	"\vBankService\x12`\n" +
 	"\aGetBank\x12\x17.guma.v1.GetBankRequest\x1a\x18.guma.v1.GetBankResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/guilds/{guild_id}/bank\x12\x86\x01\n" +
 	"\x0fContributeFunds\x12\x1f.guma.v1.ContributeFundsRequest\x1a .guma.v1.ContributeFundsResponse\"0\x82\xd3\xe4\x93\x02*:\x01*\"%/v1/guilds/{guild_id}/bank/contribute\x12\x80\x01\n" +

@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Avatar,
   Button,
   Chip,
   Description,
@@ -16,6 +15,7 @@ import {
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { UserAvatar } from '@/components/UserAvatar';
 import {
   createDevUser,
   devLoginAs,
@@ -41,9 +41,8 @@ const ROLE_COLOR: Record<string, 'accent' | 'danger' | 'warning' | 'default'> = 
   member: 'default',
 };
 
-function initials(user: DevUser): string {
-  const source = user.displayName || user.username || user.email;
-  return source.slice(0, 2).toUpperCase();
+function avatarName(user: DevUser): string {
+  return user.displayName || user.username || user.email;
 }
 
 export function DevAuthPanel() {
@@ -157,10 +156,7 @@ export function DevAuthPanel() {
         <div className="flex min-w-0 items-center gap-3">
           {current ? (
             <>
-              <Avatar size="sm">
-                {current.avatarUrl && <Avatar.Image alt={current.displayName} src={current.avatarUrl} />}
-                <Avatar.Fallback>{initials(current)}</Avatar.Fallback>
-              </Avatar>
+              <UserAvatar name={avatarName(current)} src={current.avatarUrl} />
               <div className="min-w-0">
                 <p className="type-caption text-subtle">{t('currentUser')}</p>
                 <p className="truncate type-body font-medium">{current.displayName || current.username}</p>
@@ -286,10 +282,7 @@ export function DevAuthPanel() {
                   className="flex items-center justify-between gap-3 rounded-lg bg-surface-secondary px-3 py-2"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <Avatar size="sm">
-                      {user.avatarUrl && <Avatar.Image alt={user.displayName} src={user.avatarUrl} />}
-                      <Avatar.Fallback>{initials(user)}</Avatar.Fallback>
-                    </Avatar>
+                    <UserAvatar name={avatarName(user)} src={user.avatarUrl} />
                     <div className="min-w-0">
                       <div className="flex min-w-0 items-center gap-1.5">
                         <p className="truncate type-body font-medium">{user.displayName || user.username}</p>
