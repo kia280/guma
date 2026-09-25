@@ -4715,6 +4715,9 @@
         },
         "checkinId": {
           "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -5135,6 +5138,9 @@
         "reviewedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "requesterAvatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -5625,6 +5631,9 @@
         },
         "item": {
           "$ref": "#/definitions/v1Item"
+        },
+        "requesterAvatarUrl": {
+          "type": "string"
         }
       }
     },
