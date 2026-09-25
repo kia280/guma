@@ -9,6 +9,7 @@ export interface User {
   bio: string;
   guildIds: string[];
   currentGuildId: string;
+  currentGuildRole: string;
   balance: number;
   createdAt: string;
   updatedAt: string;

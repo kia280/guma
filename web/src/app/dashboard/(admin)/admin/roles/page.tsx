@@ -5,13 +5,7 @@ import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { PageHeader } from '@/components/PageHeader';
-
-const ROLES = ['owner', 'admin', 'moderator', 'member'] as const;
-type Role = (typeof ROLES)[number];
-
-const ALL: Role[] = ['owner', 'admin', 'moderator', 'member'];
-const OWNER_ADMIN: Role[] = ['owner', 'admin'];
-const STAFF: Role[] = ['owner', 'admin', 'moderator'];
+import { GUILD_ROLES as ROLES, PERMISSION_SECTIONS as SECTIONS, type GuildRole as Role } from '@/lib/permissions';
 
 const ROLE_COLORS = {
   owner: 'accent',
@@ -19,61 +13,6 @@ const ROLE_COLORS = {
   moderator: 'warning',
   member: 'default',
 } as const;
-
-const SECTIONS = [
-  {
-    key: 'guild',
-    icon: 'solar:users-group-rounded-bold-duotone',
-    actions: [
-      { key: 'viewGuild', roles: ALL },
-      { key: 'viewMembers', roles: ALL },
-      { key: 'editGuild', roles: OWNER_ADMIN },
-      { key: 'deleteGuild', roles: ['owner'] as Role[] },
-      { key: 'leaveGuild', roles: ['admin', 'moderator', 'member'] as Role[] },
-    ],
-  },
-  {
-    key: 'checkin',
-    icon: 'solar:clipboard-check-bold-duotone',
-    actions: [
-      { key: 'attendCheckin', roles: ALL },
-      { key: 'createCheckin', roles: STAFF },
-    ],
-  },
-  {
-    key: 'bank',
-    icon: 'solar:safe-2-bold-duotone',
-    actions: [
-      { key: 'contribute', roles: ALL },
-      { key: 'requestFromBank', roles: ALL },
-      { key: 'reviewRequests', roles: STAFF },
-    ],
-  },
-  {
-    key: 'auction',
-    icon: 'solar:sledgehammer-bold-duotone',
-    actions: [
-      { key: 'createAuction', roles: ALL },
-      { key: 'placeBid', roles: ALL },
-      { key: 'cancelAuction', roles: OWNER_ADMIN },
-    ],
-  },
-  {
-    key: 'lottery',
-    icon: 'solar:ticket-bold-duotone',
-    actions: [
-      { key: 'buyTickets', roles: ALL },
-      { key: 'createLottery', roles: OWNER_ADMIN },
-      { key: 'drawLottery', roles: OWNER_ADMIN },
-      { key: 'changeDrawDate', roles: OWNER_ADMIN },
-    ],
-  },
-  {
-    key: 'wallet',
-    icon: 'solar:wallet-money-bold-duotone',
-    actions: [{ key: 'manageWallet', roles: ALL }],
-  },
-] as const;
 
 export default function AdminRolesPage() {
   const t = useTranslations('adminRolesPage');

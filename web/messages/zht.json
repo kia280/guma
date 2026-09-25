@@ -425,6 +425,11 @@
     "bankRequests": "申請",
     "templates": "範本"
   },
+  "adminGuard": {
+    "title": "管理區僅限管理人員",
+    "description": "只有本公會的會長、管理員與幹部可以進入管理區。",
+    "backToDashboard": "回到儀表板"
+  },
   "adminRolesPage": {
     "back": "返回管理",
     "title": "角色權限",

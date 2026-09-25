@@ -20,17 +20,18 @@ import (
 
 // User is the domain model for an authenticated user.
 type User struct {
-	ID             string
-	Email          string
-	Username       string
-	DisplayName    string
-	Bio            string
-	AvatarURL      string
-	GuildIDs       []string
-	CurrentGuildID string
-	Balance        int64
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ID               string
+	Email            string
+	Username         string
+	DisplayName      string
+	Bio              string
+	AvatarURL        string
+	GuildIDs         []string
+	CurrentGuildID   string
+	CurrentGuildRole string
+	Balance          int64
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // UpdateParams holds the fields for UpdateMe.
@@ -135,23 +136,24 @@ func (s *Service) GetMe(ctx context.Context, userID, kratosCookie string) (*User
 		return nil, fmt.Errorf("%w: query guild ids: %v", errs.ErrInternal, err)
 	}
 
-	currentGuildID, balance, err := s.currentGuildBalance(ctx, id)
+	current, err := s.currentGuild(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("%w: current guild balance: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: current guild: %v", errs.ErrInternal, err)
 	}
 
 	return &User{
-		ID:             id.String(),
-		Email:          row.Email,
-		Username:       row.Username,
-		DisplayName:    row.DisplayName,
-		Bio:            row.Bio,
-		AvatarURL:      row.AvatarUrl,
-		GuildIDs:       guildIDs,
-		CurrentGuildID: currentGuildID,
-		Balance:        balance,
-		CreatedAt:      row.CreatedAt,
-		UpdatedAt:      row.UpdatedAt,
+		ID:               id.String(),
+		Email:            row.Email,
+		Username:         row.Username,
+		DisplayName:      row.DisplayName,
+		Bio:              row.Bio,
+		AvatarURL:        row.AvatarUrl,
+		GuildIDs:         guildIDs,
+		CurrentGuildID:   current.ID,
+		CurrentGuildRole: current.Role,
+		Balance:          current.Balance,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
 	}, nil
 }
 
@@ -268,23 +270,24 @@ func (s *Service) UpdateMe(ctx context.Context, userID string, p UpdateParams) (
 		return nil, fmt.Errorf("%w: query guild ids: %v", errs.ErrInternal, err)
 	}
 
-	currentGuildID, balance, err := s.currentGuildBalance(ctx, id)
+	current, err := s.currentGuild(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("%w: current guild balance: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: current guild: %v", errs.ErrInternal, err)
 	}
 
 	return &User{
-		ID:             row.ID.String(),
-		Email:          row.Email,
-		Username:       row.Username,
-		DisplayName:    row.DisplayName,
-		Bio:            row.Bio,
-		AvatarURL:      row.AvatarUrl,
-		GuildIDs:       guildIDs,
-		CurrentGuildID: currentGuildID,
-		Balance:        balance,
-		CreatedAt:      row.CreatedAt,
-		UpdatedAt:      row.UpdatedAt,
+		ID:               row.ID.String(),
+		Email:            row.Email,
+		Username:         row.Username,
+		DisplayName:      row.DisplayName,
+		Bio:              row.Bio,
+		AvatarURL:        row.AvatarUrl,
+		GuildIDs:         guildIDs,
+		CurrentGuildID:   current.ID,
+		CurrentGuildRole: current.Role,
+		Balance:          current.Balance,
+		CreatedAt:        row.CreatedAt,
+		UpdatedAt:        row.UpdatedAt,
 	}, nil
 }
 
@@ -420,19 +423,21 @@ func (s *Service) autoJoinSingletonGuild(ctx context.Context, userID uuid.UUID) 
 	return nil
 }
 
-func (s *Service) currentGuildBalance(ctx context.Context, userID uuid.UUID) (string, int64, error) {
-	return s.currentGuildBalanceTx(ctx, s.q, userID)
+type currentGuild struct {
+	ID      string
+	Role    string
+	Balance int64
 }
 
-func (s *Service) currentGuildBalanceTx(ctx context.Context, q *db.Queries, userID uuid.UUID) (string, int64, error) {
-	row, err := q.GetUserCurrentGuildBalance(ctx, userID)
+func (s *Service) currentGuild(ctx context.Context, userID uuid.UUID) (currentGuild, error) {
+	row, err := s.q.GetUserCurrentGuildBalance(ctx, userID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return "", 0, nil
+			return currentGuild{}, nil
 		}
-		return "", 0, err
+		return currentGuild{}, err
 	}
-	return row.GuildID.String(), row.Balance, nil
+	return currentGuild{ID: row.GuildID.String(), Role: row.Role, Balance: row.Balance}, nil
 }
 
 func (s *Service) guildIDs(ctx context.Context, userID uuid.UUID) ([]string, error) {

@@ -101,6 +101,7 @@ type ProtoUser = {
   bio?: string;
   guild_ids?: string[];
   current_guild_id?: string;
+  current_guild_role?: string;
   balance?: number | string;
   created_at?: string;
   updated_at?: string;
@@ -115,6 +116,7 @@ export const toUser = (u: ProtoUser): User => ({
   bio: u.bio ?? '',
   guildIds: u.guild_ids ?? [],
   currentGuildId: u.current_guild_id ?? '',
+  currentGuildRole: u.current_guild_role ?? '',
   balance: fromMinorUnits(u.balance),
   createdAt: ts(u.created_at),
   updatedAt: ts(u.updated_at),

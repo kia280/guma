@@ -69,10 +69,12 @@ const BackpackItemCard = ({
                 <Icon icon="solar:sledgehammer-linear" width={16} />
                 <span>{t('putToAuction')}</span>
               </Dropdown.Item>
-              <Dropdown.Item id="lottery" textValue={t('putToLottery')}>
-                <Icon icon="solar:ticket-linear" width={16} />
-                <span>{t('putToLottery')}</span>
-              </Dropdown.Item>
+              {onPutToLottery && (
+                <Dropdown.Item id="lottery" textValue={t('putToLottery')}>
+                  <Icon icon="solar:ticket-linear" width={16} />
+                  <span>{t('putToLottery')}</span>
+                </Dropdown.Item>
+              )}
               <Dropdown.Item id="transfer" textValue={t('transfer')}>
                 <Icon icon="solar:arrow-right-linear" width={16} />
                 <span>{t('transfer')}</span>

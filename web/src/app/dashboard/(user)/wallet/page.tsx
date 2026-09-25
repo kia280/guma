@@ -33,6 +33,7 @@ import { walletBalanceTrend } from '@/lib/guma/mock/data';
 import { localizeMock } from '@/lib/guma/mock/i18n';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
+import { useGuildPermissions } from '@/lib/permissions';
 import { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
 import type { Transaction, Wallet as WalletType } from '@/types/wallet';
@@ -132,6 +133,7 @@ export default function WalletPage() {
     [locale]
   );
   const guildId = useCurrentGuildId();
+  const { can } = useGuildPermissions();
   const itemWithdrawModalState = useOverlayState();
   const auctionModalState = useOverlayState();
   const lotteryModalState = useOverlayState();
@@ -544,10 +546,14 @@ export default function WalletPage() {
                   });
                   auctionModalState.open();
                 }}
-                onPutToLottery={i => {
-                  setLotteryPrize(i.item.name);
-                  lotteryModalState.open();
-                }}
+                onPutToLottery={
+                  can('createLottery')
+                    ? i => {
+                        setLotteryPrize(i.item.name);
+                        lotteryModalState.open();
+                      }
+                    : undefined
+                }
                 onWithdraw={openItemWithdraw}
               />
             ))}

@@ -9,6 +9,7 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { useGuildPermissions } from '@/lib/permissions';
 import { useUserStore } from '@/lib/store';
 import type { Lottery, LotteryStatus, LotteryWinner } from '@/types/lottery';
 import { DateTimePicker } from './DateTimePicker';
@@ -90,6 +91,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const lotteryRef = React.useRef(lottery);
   const phaseRef = React.useRef(phase);
   const currentUserId = useUserStore(state => state.user?.id);
+  const { can } = useGuildPermissions();
 
   const load = React.useCallback(
     () =>
@@ -225,7 +227,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const participants = lottery.participants ?? [];
   const totalTickets = participants.reduce((sum, p) => sum + p.tickets, 0) || lottery.ticketsSold;
   const myTickets = participants.find(p => p.id === currentUserId)?.tickets ?? 0;
-  const canReschedule = lottery.status !== 'ended' && phase === 'idle' && !isDue;
+  const canReschedule = can('changeDrawDate') && lottery.status !== 'ended' && phase === 'idle' && !isDue;
   const soldPercent = hasCap ? Math.round((lottery.ticketsSold / lottery.maxTickets) * 100) : 0;
   const isOpen = lottery.status === 'active' && !isDue && phase === 'idle';
   const isSettled = lottery.status === 'ended' && (phase === 'idle' || phase === 'revealed');

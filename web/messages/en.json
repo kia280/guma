@@ -425,6 +425,11 @@
     "bankRequests": "Requests",
     "templates": "Templates"
   },
+  "adminGuard": {
+    "title": "Administration is for guild staff",
+    "description": "Only owners, admins, and moderators of this guild can open the administration area.",
+    "backToDashboard": "Back to dashboard"
+  },
   "adminRolesPage": {
     "back": "Back to administration",
     "title": "Role permissions",
