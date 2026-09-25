@@ -2,7 +2,6 @@
 
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { useTranslations } from 'next-intl';
-
 import { DevAuthPanel } from './DevAuthPanel';
 import { DevFontPanel, useApplyDevFont } from './DevFontPanel';
 import { DevPalettePanel, useApplyDevPalette } from './DevPalettePanel';

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
 import clsx from 'clsx';
+import Image from 'next/image';
+import { useState } from 'react';
 
 interface LogoProps {
   /** Size variant of the logo */

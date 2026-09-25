@@ -1,11 +1,11 @@
 import type {Metadata, Viewport} from "next";
 import {Noto_Sans_TC} from "next/font/google";
+import Script from "next/script";
 import {NextIntlClientProvider} from 'next-intl';
 import {getLocale} from 'next-intl/server';
 import {HTML_LANG, isLocale, DEFAULT_LOCALE} from "@/i18n/locales";
-import {Providers} from "./providers";
-import Script from "next/script";
 import {fontSizeInitScript} from "@/lib/font-size";
+import {Providers} from "./providers";
 import "./globals.css";
 
 const font = Noto_Sans_TC({

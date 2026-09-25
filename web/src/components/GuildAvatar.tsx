@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import { Skeleton, cn } from '@heroui/react';
+import { useState } from 'react';
 
 interface GuildAvatarProps {
   name?: string;

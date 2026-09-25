@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { apiClient } from '@/lib/guma';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { apiClient } from '@/lib/guma';
 import type { GuildNotification } from '@/types/notification';
 
 const PAGE_SIZE = 20;

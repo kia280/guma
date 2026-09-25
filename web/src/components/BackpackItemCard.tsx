@@ -1,8 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { Card, Chip, Button, Dropdown } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { useTranslations } from 'next-intl';
 import { BackpackItem } from '@/types/backpack';
 import { ItemThumbnail, getRarityColor } from './ItemThumbnail';
 

@@ -1,8 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
 import { createFormatter, useLocale, useTimeZone } from 'next-intl';
-
+import { useMemo } from 'react';
 import { HTML_LANG, isLocale } from './locales';
 
 export function useIntlLocale() {

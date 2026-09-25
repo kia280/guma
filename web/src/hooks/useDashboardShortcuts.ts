@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-
 import { NAV_SHORTCUTS } from '@/lib/dashboard-nav';
 
 const CHORD_TIMEOUT_MS = 1200;

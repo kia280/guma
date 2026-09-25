@@ -1,8 +1,8 @@
 'use client';
 
-import { use } from 'react';
-import { useRouter } from 'next/navigation';
 import { Modal, useOverlayState } from '@heroui/react';
+import { useRouter } from 'next/navigation';
+import { use } from 'react';
 import LotteryDetailContent from '@/components/LotteryDetailContent';
 
 export default function LotteryModalPage({ params }: { params: Promise<{ id: string }> }) {

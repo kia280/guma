@@ -1,12 +1,11 @@
 'use client';
 
-import React from 'react';
-import { Link as AriaLink } from 'react-aria-components';
 import { Kbd, Skeleton, Tooltip, cn } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useTranslations } from 'next-intl';
 import { usePathname, useSearchParams } from 'next/navigation';
-
+import { useTranslations } from 'next-intl';
+import React from 'react';
+import { Link as AriaLink } from 'react-aria-components';
 import { GuildAvatar } from '@/components/GuildAvatar';
 import {
   NAV_SECTIONS,

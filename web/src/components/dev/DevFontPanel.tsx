@@ -4,7 +4,6 @@ import { Chip } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { create } from 'zustand';
-
 import {
   applyDevFont,
   DEFAULT_FONT_ID,

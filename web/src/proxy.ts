@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { env } from '@/lib/env';
 import { DEV_SESSION_COOKIE } from '@/lib/dev-auth';
 import { DEV_MOCK_COOKIE } from '@/lib/dev-mock';
+import { env } from '@/lib/env';
 
 const PUBLIC_ROUTES = ['/login', '/signup', '/forgot-password', '/reset-password', '/error'];
 
