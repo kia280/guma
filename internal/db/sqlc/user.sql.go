@@ -124,46 +124,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	return i, err
 }
 
-const getUserBalanceTrend = `-- name: GetUserBalanceTrend :many
-SELECT TO_CHAR(DATE(created_at), 'YYYY-MM-DD') AS day,
-       SUM(amount)::bigint                     AS net
-FROM transactions
-WHERE user_id = $1
-  AND created_at >= NOW() - make_interval(days => $2::int)
-GROUP BY DATE(created_at)
-ORDER BY day ASC
-`
-
-type GetUserBalanceTrendParams struct {
-	UserID uuid.UUID
-	Days   int32
-}
-
-type GetUserBalanceTrendRow struct {
-	Day string
-	Net int64
-}
-
-func (q *Queries) GetUserBalanceTrend(ctx context.Context, arg GetUserBalanceTrendParams) ([]GetUserBalanceTrendRow, error) {
-	rows, err := q.db.Query(ctx, getUserBalanceTrend, arg.UserID, arg.Days)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetUserBalanceTrendRow{}
-	for rows.Next() {
-		var i GetUserBalanceTrendRow
-		if err := rows.Scan(&i.Day, &i.Net); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, email, username,
        COALESCE(display_name, '') AS display_name,
@@ -203,6 +163,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 
 const getUserCurrentGuildBalance = `-- name: GetUserCurrentGuildBalance :one
 SELECT m.guild_id,
+       m.role,
        COALESCE(w.balance, 0)::bigint AS balance
 FROM members m
 LEFT JOIN wallets w ON w.user_id = m.user_id AND w.guild_id = m.guild_id
@@ -213,13 +174,14 @@ LIMIT 1
 
 type GetUserCurrentGuildBalanceRow struct {
 	GuildID uuid.UUID
+	Role    string
 	Balance int64
 }
 
 func (q *Queries) GetUserCurrentGuildBalance(ctx context.Context, userID uuid.UUID) (GetUserCurrentGuildBalanceRow, error) {
 	row := q.db.QueryRow(ctx, getUserCurrentGuildBalance, userID)
 	var i GetUserCurrentGuildBalanceRow
-	err := row.Scan(&i.GuildID, &i.Balance)
+	err := row.Scan(&i.GuildID, &i.Role, &i.Balance)
 	return i, err
 }
 

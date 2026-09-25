@@ -3,7 +3,6 @@
 import {
   Button,
   Chip,
-  Avatar,
   Separator,
   Modal,
   useOverlayState,
@@ -13,17 +12,25 @@ import {
   Description,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { isAxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
+import { getRarityColor } from '@/components/ItemThumbnail';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useLoadState } from '@/hooks/useLoadState';
+import { useToast } from '@/hooks/useToast';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { isNotFoundError } from '@/lib/guma/errors';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
+import { auctionStatusColor } from '@/lib/status-colors';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import { ItemCategory } from '@/types/item';
+import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { UserAvatar } from './UserAvatar';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -35,15 +42,6 @@ const CATEGORY_ICONS: Record<ItemCategory, string> = {
   [ItemCategory.ACCESSORY]: 'solar:stars-linear',
   [ItemCategory.MATERIAL]: 'solar:box-linear',
   [ItemCategory.MISC]: 'solar:box-linear',
-};
-
-const RARITY_COLOR: Record<ItemRarity, 'default' | 'accent' | 'success' | 'warning' | 'danger'> = {
-  [ItemRarity.COMMON]: 'default',
-  [ItemRarity.UNCOMMON]: 'accent',
-  [ItemRarity.RARE]: 'success',
-  [ItemRarity.EPIC]: 'warning',
-  [ItemRarity.LEGENDARY]: 'danger',
-  [ItemRarity.MYTHIC]: 'success',
 };
 
 const getProgress = (startTime: string, endTime: string) => {
@@ -64,6 +62,9 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const guildId = useCurrentGuildId();
   const bidModalState = useOverlayState();
   const t = useTranslations('auctionItemPage');
+  const labels = useTranslations('createAuctionModal');
+  const format = useIntlFormatter();
+  const formatGold = useFormatGold();
   const { balance: userBalance, refresh: refreshBalance } = useWalletBalance();
 
   const formatTimeRemaining = (endTime: string) => {
@@ -78,27 +79,44 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   };
 
   const [item, setItem] = useState<AuctionItem | null>(null);
+  const [isMissing, setIsMissing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const loadState = useLoadState();
+  const notify = useToast();
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => {
+    loadState.reset();
+    setReloadKey(key => key + 1);
+  };
   const latestRequest = useRef(0);
-  const refetchItem = (background = false) => {
+  const refetchItem = () => {
     if (!id) return;
     const request = ++latestRequest.current;
     apiClient
       .getAuction(guildId, id)
       .then(next => {
-        if (request === latestRequest.current) setItem(next);
+        if (request !== latestRequest.current) return;
+        setItem(next);
+        setIsMissing(false);
+        loadState.ready();
       })
       .catch(err => {
         if (request !== latestRequest.current) return;
-        if (!background || (isAxiosError(err) && err.response?.status === 404)) setItem(null);
+        if (isNotFoundError(err)) {
+          setItem(null);
+          setIsMissing(true);
+          return;
+        }
+        loadState.failed();
+        notify.loadFailed(reload, 'auction-detail');
       });
   };
   useEffect(() => {
     refetchItem();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [guildId, id]);
+  }, [guildId, id, reloadKey]);
 
-  useLiveResource(['auction'], () => refetchItem(true), {
+  useLiveResource(['auction'], refetchItem, {
     guildId,
     match: event => event.resourceId === id,
   });
@@ -119,7 +137,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     return () => clearInterval(id);
   }, [item]);
 
-  if (!item) {
+  if (isMissing) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
         <Icon icon="solar:ghost-linear" width={48} className="text-disabled" />
@@ -128,6 +146,14 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           {t('goBack')}
         </Button>
       </div>
+    );
+  }
+
+  if (!item) {
+    return (
+      <AsyncContent state={loadState.state} onRetry={reload} skeleton={<DetailSkeleton />}>
+        {null}
+      </AsyncContent>
     );
   }
 
@@ -143,11 +169,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     try {
       await apiClient.placeBid(guildId, id, bidAmount);
       setBidInput(null);
-      refetchItem(true);
+      refetchItem();
       refreshBalance();
       bidModalState.close();
-    } catch (err) {
-      console.error(err);
+      notify.success(t('bidSuccess'));
+    } catch {
+      notify.error(t('bidFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -158,7 +185,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   );
 
   return (
-    <>
+    <div className="space-y-5">
       {/* Back button - only show in full page mode */}
       {!onClose && (
         <Button variant="secondary" size="sm" onPress={() => router.push('/dashboard/auction')}>
@@ -174,26 +201,16 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <Chip size="sm" color={RARITY_COLOR[item.rarity]} variant="tertiary">
-              {item.rarity.toUpperCase()}
+            <Chip size="sm" color={getRarityColor(item.rarity)} variant="tertiary">
+              {labels(`rarities.${item.rarity}`)}
             </Chip>
-            <Chip
-              size="sm"
-              color={
-                isActive
-                  ? 'success'
-                  : item.status === AuctionStatus.UPCOMING
-                    ? 'warning'
-                    : 'default'
-              }
-              variant="tertiary"
-            >
-              {item.status.toUpperCase()}
+            <Chip size="sm" color={auctionStatusColor[item.status]} variant="tertiary">
+              {t(`status.${item.status}`)}
             </Chip>
             {item.isBlind && (
               <Chip size="sm" color="accent" variant="tertiary">
                 <Icon icon="solar:eye-closed-linear" width={12} />
-                BLIND
+                {t('blind')}
               </Chip>
             )}
           </div>
@@ -230,11 +247,15 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
             <div className="grid grid-cols-2 gap-3 type-body">
               <div className="space-y-0.5">
                 <p className="type-caption text-hint">{t('startTime')}</p>
-                <p className="text-foreground">{new Date(item.startTime).toLocaleString()}</p>
+                <p className="text-foreground">
+                  {format.dateTime(new Date(item.startTime), { dateStyle: 'medium', timeStyle: 'short' })}
+                </p>
               </div>
               <div className="space-y-0.5">
                 <p className="type-caption text-hint">{t('endTime')}</p>
-                <p className="text-foreground">{new Date(item.endTime).toLocaleString()}</p>
+                <p className="text-foreground">
+                  {format.dateTime(new Date(item.endTime), { dateStyle: 'medium', timeStyle: 'short' })}
+                </p>
               </div>
             </div>
           </div>
@@ -252,7 +273,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <Icon
                     icon="solar:eye-closed-linear"
                     width={20}
-                    className="text-secondary shrink-0"
+                    className="text-subtle shrink-0"
                   />
                   <div>
                     <p className="type-body font-medium text-foreground">{t('blindAuction')}</p>
@@ -262,13 +283,13 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <div className="flex justify-between type-body">
                   <span className="text-subtle">{t('startingBid')}</span>
                   <span className="font-semibold text-foreground">
-                    ${item.startingBid.toLocaleString()}
+                    {formatGold(item.startingBid)}
                   </span>
                 </div>
                 <div className="flex justify-between type-body">
                   <span className="text-subtle">{t('minIncrement')}</span>
                   <span className="font-semibold text-foreground">
-                    ${item.minBidIncrement.toLocaleString()}
+                    {formatGold(item.minBidIncrement)}
                   </span>
                 </div>
                 {isActive && (
@@ -288,7 +309,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <div className="flex justify-between items-center">
                   <span className="text-subtle type-body">{t('currentBid')}</span>
                   <span className="type-display text-foreground">
-                    ${item.currentBid.toLocaleString()}
+                    {formatGold(item.currentBid)}
                   </span>
                 </div>
 
@@ -296,11 +317,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <div className="flex items-center justify-between">
                     <span className="type-caption text-hint">{t('leadingBidder')}</span>
                     <div className="flex items-center gap-2">
-                      <Avatar size="sm">
-                        <Avatar.Fallback>
-                          {item.currentBidder.username.slice(0, 2).toUpperCase()}
-                        </Avatar.Fallback>
-                      </Avatar>
+                      <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
                       <span className="type-body text-foreground">{item.currentBidder.username}</span>
                     </div>
                   </div>
@@ -310,13 +327,13 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <div className="p-3 rounded-lg bg-surface-secondary border border-divider space-y-0.5">
                     <p className="type-caption text-hint">{t('startingBid')}</p>
                     <p className="font-semibold text-foreground">
-                      ${item.startingBid.toLocaleString()}
+                      {formatGold(item.startingBid)}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-surface-secondary border border-divider space-y-0.5">
                     <p className="type-caption text-hint">{t('minIncrement')}</p>
                     <p className="font-semibold text-foreground">
-                      ${item.minBidIncrement.toLocaleString()}
+                      {formatGold(item.minBidIncrement)}
                     </p>
                   </div>
                 </div>
@@ -337,7 +354,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 {/* Bid history */}
                 <div className="space-y-2">
                   <h3 className="type-label text-subtle">
-                    {t('bidHistoryTitle')} ({item.bidHistory.length})
+                    {t('bidHistoryTitle', { count: item.bidHistory.length })}
                   </h3>
                   {sortedHistory.length === 0 ? (
                     <p className="type-body text-hint text-center py-4">{t('noBidsYet')}</p>
@@ -352,23 +369,19 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <Avatar size="sm">
-                            <Avatar.Fallback>
-                              {bid.bidder.username.slice(0, 2).toUpperCase()}
-                            </Avatar.Fallback>
-                          </Avatar>
+                          <UserAvatar name={bid.bidder.username} src={bid.bidder.avatar} />
                           <div>
                             <p className="type-body font-medium text-foreground">
                               {bid.bidder.username}
                             </p>
                             <p className="type-caption text-hint">
-                              {new Date(bid.timestamp).toLocaleString()}
+                              {format.dateTime(new Date(bid.timestamp), { dateStyle: 'medium', timeStyle: 'short' })}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="type-subheading tabular-nums text-foreground">
-                            ${bid.amount.toLocaleString()}
+                            {formatGold(bid.amount)}
                           </span>
                           {bid.isWinning && (
                             <Chip size="sm" color="success" variant="tertiary">
@@ -393,9 +406,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               {t('seller')}
             </h2>
             <div className="flex items-center gap-3">
-              <Avatar size="md">
-                <Avatar.Fallback>{item.seller.username.slice(0, 2).toUpperCase()}</Avatar.Fallback>
-              </Avatar>
+              <UserAvatar name={item.seller.username} src={item.seller.avatar} size="md" />
               <div>
                 <p className="font-medium text-foreground">{item.seller.username}</p>
                 <p className="type-caption text-hint">{t('guildMember')}</p>
@@ -411,14 +422,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
             <div className="space-y-2 type-body">
               <div className="flex justify-between">
                 <span className="text-hint">{t('category')}</span>
-                <span className="text-foreground capitalize">
-                  {item.category.replace('_', ' ')}
-                </span>
+                <span className="text-foreground">{labels(`categories.${item.category}`)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-hint">{t('rarity')}</span>
-                <Chip size="sm" color={RARITY_COLOR[item.rarity]} variant="tertiary">
-                  {item.rarity.toUpperCase()}
+                <Chip size="sm" color={getRarityColor(item.rarity)} variant="tertiary">
+                  {labels(`rarities.${item.rarity}`)}
                 </Chip>
               </div>
               <div className="flex justify-between">
@@ -432,7 +441,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               <div className="flex justify-between">
                 <span className="text-hint">{t('listed')}</span>
                 <span className="text-foreground">
-                  {new Date(item.createdAt).toLocaleDateString()}
+                  {format.dateTime(new Date(item.createdAt), { dateStyle: 'medium' })}
                 </span>
               </div>
             </div>
@@ -446,7 +455,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <span className="type-body">{t('yourBalance')}</span>
               </div>
               <span className="font-semibold text-foreground">
-                ${userBalance.toLocaleString()}
+                {formatGold(userBalance)}
               </span>
             </div>
           </div>
@@ -468,7 +477,9 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     className="text-subtle"
                   />
                   <span>
-                    {item.isBlind ? t('submitBid') : t('placeBid')} — {item.name}
+                    {item.isBlind
+                      ? t('submitBidTitle', { name: item.name })
+                      : t('placeBidTitle', { name: item.name })}
                   </span>
                 </div>
               </Modal.Heading>
@@ -480,24 +491,24 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     <div className="flex justify-between type-body">
                       <span className="text-subtle">{t('currentBid')}</span>
                       <span className="font-medium text-foreground">
-                        ${item.currentBid.toLocaleString()}
+                        {formatGold(item.currentBid)}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between type-body">
                     <span className="text-subtle">{t('minIncrement')}</span>
                     <span className="font-medium text-foreground">
-                      ${item.minBidIncrement.toLocaleString()}
+                      {formatGold(item.minBidIncrement)}
                     </span>
                   </div>
                   <div className="flex justify-between type-body">
                     <span className="text-subtle">{t('yourBalance')}</span>
                     <span className="font-medium text-foreground">
-                      ${userBalance.toLocaleString()}
+                      {formatGold(userBalance)}
                     </span>
                   </div>
                   {item.isBlind && (
-                    <div className="flex items-center gap-2 pt-1 type-caption text-secondary">
+                    <div className="flex items-center gap-2 pt-1 type-caption text-hint">
                       <Icon icon="solar:eye-closed-linear" width={12} />
                       <span>{t('blindAuctionNote')}</span>
                     </div>
@@ -515,7 +526,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     <NumberField.DecrementButton />
                     <NumberField.Input
                       className="w-full min-w-0"
-                      placeholder={`${t('minimum')} $${minimumBid.toLocaleString()}`}
+                      placeholder={`${t('minimum')} ${formatGold(minimumBid)}`}
                     />
                     <NumberField.IncrementButton />
                   </NumberField.Group>
@@ -523,7 +534,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     {bidAmount > userBalance
                       ? t('insufficientBalance')
                       : !hasBidAmount || bidAmount < minimumBid
-                        ? `${t('minimumBidIs')}${minimumBid.toLocaleString()}`
+                        ? `${t('minimumBidIs')} ${formatGold(minimumBid)}`
                         : t('validBidAmount')}
                   </Description>
                 </NumberField>
@@ -546,6 +557,6 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         </Modal.Container>
       </Modal.Backdrop>
       </Modal>
-    </>
+    </div>
   );
 }
