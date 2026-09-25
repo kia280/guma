@@ -20,6 +20,8 @@ import type {
 import type { GuildEvent } from '@/types/guild-events';
 import type { MockUser, User } from '@/types/user';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
+import type { AdminAnnouncement } from '@/types/admin';
+import type { Announcement } from '@/types/dashboard';
 import { fromMinorUnits } from './money';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -609,4 +611,44 @@ export const toNotificationPage = (raw: ProtoNotificationPage): NotificationPage
   nextPageToken: raw.next_page_token || undefined,
   totalCount: Number(raw.total_count ?? 0),
   unreadCount: Number(raw.unread_count ?? 0),
+});
+
+// ─── Announcement ───────────────────────────────────────────────────────────
+
+type ProtoAnnouncement = {
+  id: string;
+  author_name?: string;
+  title?: string;
+  content?: string;
+  pinned?: boolean;
+  status?: string;
+  published_at?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export const toAdminAnnouncement = (raw: ProtoAnnouncement): AdminAnnouncement => ({
+  id: raw.id,
+  title: raw.title ?? '',
+  content: raw.content ?? '',
+  pinned: raw.pinned ?? false,
+  status: raw.status === 'published' ? 'published' : 'draft',
+  author: raw.author_name ?? '',
+  createdAt: ts(raw.created_at),
+  updatedAt: ts(raw.updated_at),
+  publishedAt: raw.published_at ? ts(raw.published_at) : undefined,
+});
+
+const formatAnnouncementDate = (iso: string): string => {
+  const date = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
+};
+
+export const toAnnouncement = (raw: ProtoAnnouncement): Announcement => ({
+  id: raw.id,
+  title: raw.title ?? '',
+  content: raw.content ?? '',
+  pinned: raw.pinned ?? false,
+  date: formatAnnouncementDate(ts(raw.published_at ?? raw.created_at)),
 });

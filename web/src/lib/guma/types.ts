@@ -50,7 +50,7 @@ import type {
 import type {
   AdminActivity,
   AdminAnnouncement,
-  CreateAnnouncementRequest,
+  AnnouncementDraftInput,
 } from '@/types/admin';
 
 export interface AuctionFilters {
@@ -63,7 +63,7 @@ export interface AuctionFilters {
 export interface ApiClient {
   // ── Dashboard / Guma ──
   getDashboardData(guildId: string): Promise<DashboardData>;
-  getAnnouncements(): Promise<Announcement[]>;
+  getAnnouncements(guildId: string): Promise<Announcement[]>;
   getFeedEvents(): Promise<FeedEvent[]>;
 
   // ── User ──
@@ -159,6 +159,10 @@ export interface ApiClient {
 
   // ── Admin ──
   getAdminActivity(): Promise<AdminActivity[]>;
-  getAdminAnnouncements(): Promise<AdminAnnouncement[]>;
-  createAnnouncement(req: CreateAnnouncementRequest): Promise<AdminAnnouncement>;
+  getAdminAnnouncements(guildId: string): Promise<AdminAnnouncement[]>;
+  getAnnouncement(guildId: string, id: string): Promise<AdminAnnouncement>;
+  createAnnouncementDraft(guildId: string): Promise<AdminAnnouncement>;
+  updateAnnouncementDraft(guildId: string, id: string, input: AnnouncementDraftInput): Promise<AdminAnnouncement>;
+  publishAnnouncement(guildId: string, id: string): Promise<AdminAnnouncement>;
+  deleteAnnouncementDraft(guildId: string, id: string): Promise<void>;
 }

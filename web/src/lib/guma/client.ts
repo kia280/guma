@@ -8,9 +8,8 @@ import { clearSession } from '@/lib/session';
 import type { ApiClient } from './types';
 import type { BalancePoint, UserStats } from '@/types/user';
 import type { Guild } from '@/types/guild';
-import type { AdminAnnouncement } from '@/types/admin';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
+import { toAdminAnnouncement, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toFundRequest, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toWallet } from './transforms';
 
 const http: AxiosInstance = axios.create({
   baseURL: env.api.url,
@@ -59,13 +58,13 @@ http.interceptors.response.use(
   },
 );
 
-const notImpl = (name: string) => () =>
-  Promise.reject(new Error(`gumaApiClient.${name} is not yet wired to a backend endpoint`));
-
 export const gumaApiClient: ApiClient = {
   // ── Dashboard / Guma ──
   getDashboardData: async (guildId) => {
-    const { data } = await http.get(`/v1/dashboard/${guildId}`);
+    const [{ data }, announcements] = await Promise.all([
+      http.get(`/v1/dashboard/${guildId}`),
+      gumaApiClient.getAnnouncements(guildId).catch(() => []),
+    ]);
     return {
       guildStats: data.guild_stats ?? {
         members: 0, activeEvents: 0, balance: 0, checkinsThisWeek: 0, activeAuctions: 0, openLotteries: 0,
@@ -75,10 +74,13 @@ export const gumaApiClient: ApiClient = {
       },
       balanceTrend: data.balance_trend ?? [],
       incomingEvents: data.incoming_events ?? [],
-      announcements: data.announcements ?? [],
+      announcements,
     };
   },
-  getAnnouncements: async () => [],
+  getAnnouncements: async (guildId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/announcements`);
+    return (data.announcements ?? []).map(toAnnouncement);
+  },
   getFeedEvents: async () => [],
 
   // ── User ──
@@ -440,8 +442,30 @@ export const gumaApiClient: ApiClient = {
   },
 
   // ── Admin ──
-  // These don't have dedicated backend endpoints yet — return empty/stub responses.
   getAdminActivity: async () => [],
-  getAdminAnnouncements: async (): Promise<AdminAnnouncement[]> => [],
-  createAnnouncement: notImpl('createAnnouncement'),
+  getAdminAnnouncements: async (guildId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/announcements`, {
+      params: { include_drafts: true },
+    });
+    return (data.announcements ?? []).map(toAdminAnnouncement);
+  },
+  getAnnouncement: async (guildId, id) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/announcements/${id}`);
+    return toAdminAnnouncement(data.announcement);
+  },
+  createAnnouncementDraft: async (guildId) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/announcements`, {});
+    return toAdminAnnouncement(data.announcement);
+  },
+  updateAnnouncementDraft: async (guildId, id, input) => {
+    const { data } = await http.patch(`/v1/guilds/${guildId}/announcements/${id}`, input);
+    return toAdminAnnouncement(data.announcement);
+  },
+  publishAnnouncement: async (guildId, id) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/announcements/${id}/publish`, {});
+    return toAdminAnnouncement(data.announcement);
+  },
+  deleteAnnouncementDraft: async (guildId, id) => {
+    await http.delete(`/v1/guilds/${guildId}/announcements/${id}`);
+  },
 };
