@@ -112,13 +112,13 @@ func (x *ListCheckInTemplatesResponse) GetTemplates() []*CheckInTemplate {
 }
 
 type CreateCheckInTemplateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	LootList      []*Item                `protobuf:"bytes,4,rep,name=loot_list,json=lootList,proto3" json:"loot_list,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	GuildId         string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	Name            string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Title           string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	ItemTemplateIds []string               `protobuf:"bytes,4,rep,name=item_template_ids,json=itemTemplateIds,proto3" json:"item_template_ids,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *CreateCheckInTemplateRequest) Reset() {
@@ -172,9 +172,9 @@ func (x *CreateCheckInTemplateRequest) GetTitle() string {
 	return ""
 }
 
-func (x *CreateCheckInTemplateRequest) GetLootList() []*Item {
+func (x *CreateCheckInTemplateRequest) GetItemTemplateIds() []string {
 	if x != nil {
-		return x.LootList
+		return x.ItemTemplateIds
 	}
 	return nil
 }
@@ -224,14 +224,14 @@ func (x *CreateCheckInTemplateResponse) GetTemplate() *CheckInTemplate {
 }
 
 type UpdateCheckInTemplateRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	TemplateId    string                 `protobuf:"bytes,2,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Title         string                 `protobuf:"bytes,4,opt,name=title,proto3" json:"title,omitempty"`
-	LootList      []*Item                `protobuf:"bytes,5,rep,name=loot_list,json=lootList,proto3" json:"loot_list,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	GuildId         string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	TemplateId      string                 `protobuf:"bytes,2,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
+	Name            string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Title           string                 `protobuf:"bytes,4,opt,name=title,proto3" json:"title,omitempty"`
+	ItemTemplateIds []string               `protobuf:"bytes,5,rep,name=item_template_ids,json=itemTemplateIds,proto3" json:"item_template_ids,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *UpdateCheckInTemplateRequest) Reset() {
@@ -292,9 +292,9 @@ func (x *UpdateCheckInTemplateRequest) GetTitle() string {
 	return ""
 }
 
-func (x *UpdateCheckInTemplateRequest) GetLootList() []*Item {
+func (x *UpdateCheckInTemplateRequest) GetItemTemplateIds() []string {
 	if x != nil {
-		return x.LootList
+		return x.ItemTemplateIds
 	}
 	return nil
 }
@@ -445,7 +445,7 @@ type CheckInTemplate struct {
 	GuildId       string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Title         string                 `protobuf:"bytes,4,opt,name=title,proto3" json:"title,omitempty"`
-	LootList      []*Item                `protobuf:"bytes,5,rep,name=loot_list,json=lootList,proto3" json:"loot_list,omitempty"`
+	Items         []*Item                `protobuf:"bytes,5,rep,name=items,proto3" json:"items,omitempty"`
 	CreatedBy     string                 `protobuf:"bytes,6,opt,name=created_by,json=createdBy,proto3" json:"created_by,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -511,9 +511,9 @@ func (x *CheckInTemplate) GetTitle() string {
 	return ""
 }
 
-func (x *CheckInTemplate) GetLootList() []*Item {
+func (x *CheckInTemplate) GetItems() []*Item {
 	if x != nil {
-		return x.LootList
+		return x.Items
 	}
 	return nil
 }
@@ -552,7 +552,7 @@ const file_proto_guma_v1_checkin_template_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12*\n" +
-	"\tloot_list\x18\x04 \x03(\v2\r.guma.v1.ItemR\blootList\"U\n" +
+	"\x11item_template_ids\x18\x04 \x03(\tR\x0fitemTemplateIds\"U\n" +
 	"\x1dCreateCheckInTemplateResponse\x124\n" +
 	"\btemplate\x18\x01 \x01(\v2\x18.guma.v1.CheckInTemplateR\btemplate\"\xb0\x01\n" +
 	"\x1cUpdateCheckInTemplateRequest\x12\x19\n" +
@@ -561,7 +561,7 @@ const file_proto_guma_v1_checkin_template_proto_rawDesc = "" +
 	"templateId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x14\n" +
 	"\x05title\x18\x04 \x01(\tR\x05title\x12*\n" +
-	"\tloot_list\x18\x05 \x03(\v2\r.guma.v1.ItemR\blootList\"U\n" +
+	"\x11item_template_ids\x18\x05 \x03(\tR\x0fitemTemplateIds\"U\n" +
 	"\x1dUpdateCheckInTemplateResponse\x124\n" +
 	"\btemplate\x18\x01 \x01(\v2\x18.guma.v1.CheckInTemplateR\btemplate\"Z\n" +
 	"\x1cDeleteCheckInTemplateRequest\x12\x19\n" +
@@ -569,13 +569,13 @@ const file_proto_guma_v1_checkin_template_proto_rawDesc = "" +
 	"\vtemplate_id\x18\x02 \x01(\tR\n" +
 	"templateId\"9\n" +
 	"\x1dDeleteCheckInTemplateResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa7\x02\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa0\x02\n" +
 	"\x0fCheckInTemplate\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x14\n" +
-	"\x05title\x18\x04 \x01(\tR\x05title\x12*\n" +
-	"\tloot_list\x18\x05 \x03(\v2\r.guma.v1.ItemR\blootList\x12\x1d\n" +
+	"\x05title\x18\x04 \x01(\tR\x05title\x12#\n" +
+	"\x05items\x18\x05 \x03(\v2\r.guma.v1.ItemR\x05items\x12\x1d\n" +
 	"\n" +
 	"created_by\x18\x06 \x01(\tR\tcreatedBy\x129\n" +
 	"\n" +
@@ -616,26 +616,24 @@ var file_proto_guma_v1_checkin_template_proto_goTypes = []any{
 }
 var file_proto_guma_v1_checkin_template_proto_depIdxs = []int32{
 	8,  // 0: guma.v1.ListCheckInTemplatesResponse.templates:type_name -> guma.v1.CheckInTemplate
-	9,  // 1: guma.v1.CreateCheckInTemplateRequest.loot_list:type_name -> guma.v1.Item
-	8,  // 2: guma.v1.CreateCheckInTemplateResponse.template:type_name -> guma.v1.CheckInTemplate
-	9,  // 3: guma.v1.UpdateCheckInTemplateRequest.loot_list:type_name -> guma.v1.Item
-	8,  // 4: guma.v1.UpdateCheckInTemplateResponse.template:type_name -> guma.v1.CheckInTemplate
-	9,  // 5: guma.v1.CheckInTemplate.loot_list:type_name -> guma.v1.Item
-	10, // 6: guma.v1.CheckInTemplate.created_at:type_name -> google.protobuf.Timestamp
-	10, // 7: guma.v1.CheckInTemplate.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 8: guma.v1.CheckInTemplateService.ListCheckInTemplates:input_type -> guma.v1.ListCheckInTemplatesRequest
-	2,  // 9: guma.v1.CheckInTemplateService.CreateCheckInTemplate:input_type -> guma.v1.CreateCheckInTemplateRequest
-	4,  // 10: guma.v1.CheckInTemplateService.UpdateCheckInTemplate:input_type -> guma.v1.UpdateCheckInTemplateRequest
-	6,  // 11: guma.v1.CheckInTemplateService.DeleteCheckInTemplate:input_type -> guma.v1.DeleteCheckInTemplateRequest
-	1,  // 12: guma.v1.CheckInTemplateService.ListCheckInTemplates:output_type -> guma.v1.ListCheckInTemplatesResponse
-	3,  // 13: guma.v1.CheckInTemplateService.CreateCheckInTemplate:output_type -> guma.v1.CreateCheckInTemplateResponse
-	5,  // 14: guma.v1.CheckInTemplateService.UpdateCheckInTemplate:output_type -> guma.v1.UpdateCheckInTemplateResponse
-	7,  // 15: guma.v1.CheckInTemplateService.DeleteCheckInTemplate:output_type -> guma.v1.DeleteCheckInTemplateResponse
-	12, // [12:16] is the sub-list for method output_type
-	8,  // [8:12] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	8,  // 1: guma.v1.CreateCheckInTemplateResponse.template:type_name -> guma.v1.CheckInTemplate
+	8,  // 2: guma.v1.UpdateCheckInTemplateResponse.template:type_name -> guma.v1.CheckInTemplate
+	9,  // 3: guma.v1.CheckInTemplate.items:type_name -> guma.v1.Item
+	10, // 4: guma.v1.CheckInTemplate.created_at:type_name -> google.protobuf.Timestamp
+	10, // 5: guma.v1.CheckInTemplate.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 6: guma.v1.CheckInTemplateService.ListCheckInTemplates:input_type -> guma.v1.ListCheckInTemplatesRequest
+	2,  // 7: guma.v1.CheckInTemplateService.CreateCheckInTemplate:input_type -> guma.v1.CreateCheckInTemplateRequest
+	4,  // 8: guma.v1.CheckInTemplateService.UpdateCheckInTemplate:input_type -> guma.v1.UpdateCheckInTemplateRequest
+	6,  // 9: guma.v1.CheckInTemplateService.DeleteCheckInTemplate:input_type -> guma.v1.DeleteCheckInTemplateRequest
+	1,  // 10: guma.v1.CheckInTemplateService.ListCheckInTemplates:output_type -> guma.v1.ListCheckInTemplatesResponse
+	3,  // 11: guma.v1.CheckInTemplateService.CreateCheckInTemplate:output_type -> guma.v1.CreateCheckInTemplateResponse
+	5,  // 12: guma.v1.CheckInTemplateService.UpdateCheckInTemplate:output_type -> guma.v1.UpdateCheckInTemplateResponse
+	7,  // 13: guma.v1.CheckInTemplateService.DeleteCheckInTemplate:output_type -> guma.v1.DeleteCheckInTemplateResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_checkin_template_proto_init() }

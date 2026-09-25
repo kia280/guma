@@ -7,44 +7,36 @@ package sqlc
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createCheckinTemplate = `-- name: CreateCheckinTemplate :one
-INSERT INTO checkin_templates (guild_id, name, title, loot_list, created_by)
-VALUES ($1, $3::text, $4::text, $5::jsonb, $2)
-RETURNING id, guild_id, name, title, loot_list, created_by, created_at, updated_at
+INSERT INTO checkin_templates (guild_id, name, title, item_template_ids, created_by)
+VALUES ($1, $3::text, $4::text, $5::uuid[], $2)
+RETURNING id
 `
 
 type CreateCheckinTemplateParams struct {
-	GuildID   uuid.UUID
-	CreatedBy uuid.UUID
-	Name      string
-	Title     string
-	LootList  []byte
+	GuildID         uuid.UUID
+	CreatedBy       uuid.UUID
+	Name            string
+	Title           string
+	ItemTemplateIds []uuid.UUID
 }
 
-func (q *Queries) CreateCheckinTemplate(ctx context.Context, arg CreateCheckinTemplateParams) (CheckinTemplate, error) {
+func (q *Queries) CreateCheckinTemplate(ctx context.Context, arg CreateCheckinTemplateParams) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, createCheckinTemplate,
 		arg.GuildID,
 		arg.CreatedBy,
 		arg.Name,
 		arg.Title,
-		arg.LootList,
+		arg.ItemTemplateIds,
 	)
-	var i CheckinTemplate
-	err := row.Scan(
-		&i.ID,
-		&i.GuildID,
-		&i.Name,
-		&i.Title,
-		&i.LootList,
-		&i.CreatedBy,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteCheckinTemplate = `-- name: DeleteCheckinTemplate :execrows
@@ -64,31 +56,90 @@ func (q *Queries) DeleteCheckinTemplate(ctx context.Context, arg DeleteCheckinTe
 	return result.RowsAffected(), nil
 }
 
-const listCheckinTemplates = `-- name: ListCheckinTemplates :many
-SELECT id, guild_id, name, title, loot_list, created_by, created_at, updated_at
-FROM checkin_templates
-WHERE guild_id = $1
-ORDER BY name ASC
+const getCheckinTemplate = `-- name: GetCheckinTemplate :one
+SELECT ct.id, ct.guild_id, ct.name, ct.title, ct.created_by, ct.created_at, ct.updated_at,
+       (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                   'id', it.id, 'name', it.name, 'description', it.description,
+                   'category', it.category, 'rarity', it.rarity) ORDER BY u.ord), '[]'::jsonb)
+        FROM unnest(ct.item_template_ids) WITH ORDINALITY AS u(item_id, ord)
+        JOIN item_templates it ON it.id = u.item_id AND it.guild_id = ct.guild_id)::jsonb AS items
+FROM checkin_templates ct
+WHERE ct.id = $1 AND ct.guild_id = $2
 `
 
-func (q *Queries) ListCheckinTemplates(ctx context.Context, guildID uuid.UUID) ([]CheckinTemplate, error) {
+type GetCheckinTemplateParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type GetCheckinTemplateRow struct {
+	ID        uuid.UUID
+	GuildID   uuid.UUID
+	Name      string
+	Title     string
+	CreatedBy uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Items     []byte
+}
+
+func (q *Queries) GetCheckinTemplate(ctx context.Context, arg GetCheckinTemplateParams) (GetCheckinTemplateRow, error) {
+	row := q.db.QueryRow(ctx, getCheckinTemplate, arg.ID, arg.GuildID)
+	var i GetCheckinTemplateRow
+	err := row.Scan(
+		&i.ID,
+		&i.GuildID,
+		&i.Name,
+		&i.Title,
+		&i.CreatedBy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Items,
+	)
+	return i, err
+}
+
+const listCheckinTemplates = `-- name: ListCheckinTemplates :many
+SELECT ct.id, ct.guild_id, ct.name, ct.title, ct.created_by, ct.created_at, ct.updated_at,
+       (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                   'id', it.id, 'name', it.name, 'description', it.description,
+                   'category', it.category, 'rarity', it.rarity) ORDER BY u.ord), '[]'::jsonb)
+        FROM unnest(ct.item_template_ids) WITH ORDINALITY AS u(item_id, ord)
+        JOIN item_templates it ON it.id = u.item_id AND it.guild_id = ct.guild_id)::jsonb AS items
+FROM checkin_templates ct
+WHERE ct.guild_id = $1
+ORDER BY ct.name ASC
+`
+
+type ListCheckinTemplatesRow struct {
+	ID        uuid.UUID
+	GuildID   uuid.UUID
+	Name      string
+	Title     string
+	CreatedBy uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Items     []byte
+}
+
+func (q *Queries) ListCheckinTemplates(ctx context.Context, guildID uuid.UUID) ([]ListCheckinTemplatesRow, error) {
 	rows, err := q.db.Query(ctx, listCheckinTemplates, guildID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []CheckinTemplate{}
+	items := []ListCheckinTemplatesRow{}
 	for rows.Next() {
-		var i CheckinTemplate
+		var i ListCheckinTemplatesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.GuildID,
 			&i.Name,
 			&i.Title,
-			&i.LootList,
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Items,
 		); err != nil {
 			return nil, err
 		}
@@ -102,40 +153,31 @@ func (q *Queries) ListCheckinTemplates(ctx context.Context, guildID uuid.UUID) (
 
 const updateCheckinTemplate = `-- name: UpdateCheckinTemplate :one
 UPDATE checkin_templates SET
-    name       = $1::text,
-    title      = $2::text,
-    loot_list  = $3::jsonb,
-    updated_at = NOW()
+    name              = $1::text,
+    title             = $2::text,
+    item_template_ids = $3::uuid[],
+    updated_at        = NOW()
 WHERE id = $4 AND guild_id = $5
-RETURNING id, guild_id, name, title, loot_list, created_by, created_at, updated_at
+RETURNING id
 `
 
 type UpdateCheckinTemplateParams struct {
-	Name     string
-	Title    string
-	LootList []byte
-	ID       uuid.UUID
-	GuildID  uuid.UUID
+	Name            string
+	Title           string
+	ItemTemplateIds []uuid.UUID
+	ID              uuid.UUID
+	GuildID         uuid.UUID
 }
 
-func (q *Queries) UpdateCheckinTemplate(ctx context.Context, arg UpdateCheckinTemplateParams) (CheckinTemplate, error) {
+func (q *Queries) UpdateCheckinTemplate(ctx context.Context, arg UpdateCheckinTemplateParams) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, updateCheckinTemplate,
 		arg.Name,
 		arg.Title,
-		arg.LootList,
+		arg.ItemTemplateIds,
 		arg.ID,
 		arg.GuildID,
 	)
-	var i CheckinTemplate
-	err := row.Scan(
-		&i.ID,
-		&i.GuildID,
-		&i.Name,
-		&i.Title,
-		&i.LootList,
-		&i.CreatedBy,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }

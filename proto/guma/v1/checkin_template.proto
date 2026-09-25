@@ -48,7 +48,7 @@ message CreateCheckInTemplateRequest {
   string guild_id = 1;
   string name = 2;
   string title = 3;
-  repeated Item loot_list = 4;
+  repeated string item_template_ids = 4;
 }
 
 message CreateCheckInTemplateResponse {
@@ -60,7 +60,7 @@ message UpdateCheckInTemplateRequest {
   string template_id = 2;
   string name = 3;
   string title = 4;
-  repeated Item loot_list = 5;
+  repeated string item_template_ids = 5;
 }
 
 message UpdateCheckInTemplateResponse {
@@ -81,7 +81,7 @@ message CheckInTemplate {
   string guild_id = 2;
   string name = 3;
   string title = 4;
-  repeated Item loot_list = 5;
+  repeated Item items = 5;
   string created_by = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;

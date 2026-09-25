@@ -54,12 +54,10 @@ func (h *CheckInTemplateHandler) CreateCheckInTemplate(ctx context.Context, req 
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
-	t, err := h.svc.Create(ctx, checkintemplatesvc.CreateParams{
-		GuildID:  req.GuildId,
-		UserID:   userID,
-		Name:     req.Name,
-		Title:    req.Title,
-		LootList: itemsFromProto(req.LootList),
+	t, err := h.svc.Create(ctx, req.GuildId, userID, checkintemplatesvc.Fields{
+		Name:            req.Name,
+		Title:           req.Title,
+		ItemTemplateIDs: req.ItemTemplateIds,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -75,13 +73,10 @@ func (h *CheckInTemplateHandler) UpdateCheckInTemplate(ctx context.Context, req 
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
-	t, err := h.svc.Update(ctx, checkintemplatesvc.UpdateParams{
-		GuildID:    req.GuildId,
-		TemplateID: req.TemplateId,
-		UserID:     userID,
-		Name:       req.Name,
-		Title:      req.Title,
-		LootList:   itemsFromProto(req.LootList),
+	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, checkintemplatesvc.Fields{
+		Name:            req.Name,
+		Title:           req.Title,
+		ItemTemplateIDs: req.ItemTemplateIds,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -104,16 +99,16 @@ func (h *CheckInTemplateHandler) DeleteCheckInTemplate(ctx context.Context, req 
 }
 
 func checkinTemplateToProto(t *checkintemplatesvc.Template) *gumav1.CheckInTemplate {
-	lootList := make([]*gumav1.Item, len(t.LootList))
-	for i, item := range t.LootList {
-		lootList[i] = itemToProto(item)
+	items := make([]*gumav1.Item, len(t.Items))
+	for i, item := range t.Items {
+		items[i] = itemToProto(item)
 	}
 	return &gumav1.CheckInTemplate{
 		Id:        t.ID,
 		GuildId:   t.GuildID,
 		Name:      t.Name,
 		Title:     t.Title,
-		LootList:  lootList,
+		Items:     items,
 		CreatedBy: t.CreatedBy,
 		CreatedAt: timestamppb.New(t.CreatedAt),
 		UpdatedAt: timestamppb.New(t.UpdatedAt),

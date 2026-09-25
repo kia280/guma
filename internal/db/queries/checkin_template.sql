@@ -1,22 +1,37 @@
 -- name: ListCheckinTemplates :many
-SELECT id, guild_id, name, title, loot_list, created_by, created_at, updated_at
-FROM checkin_templates
-WHERE guild_id = $1
-ORDER BY name ASC;
+SELECT ct.id, ct.guild_id, ct.name, ct.title, ct.created_by, ct.created_at, ct.updated_at,
+       (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                   'id', it.id, 'name', it.name, 'description', it.description,
+                   'category', it.category, 'rarity', it.rarity) ORDER BY u.ord), '[]'::jsonb)
+        FROM unnest(ct.item_template_ids) WITH ORDINALITY AS u(item_id, ord)
+        JOIN item_templates it ON it.id = u.item_id AND it.guild_id = ct.guild_id)::jsonb AS items
+FROM checkin_templates ct
+WHERE ct.guild_id = $1
+ORDER BY ct.name ASC;
+
+-- name: GetCheckinTemplate :one
+SELECT ct.id, ct.guild_id, ct.name, ct.title, ct.created_by, ct.created_at, ct.updated_at,
+       (SELECT COALESCE(jsonb_agg(jsonb_build_object(
+                   'id', it.id, 'name', it.name, 'description', it.description,
+                   'category', it.category, 'rarity', it.rarity) ORDER BY u.ord), '[]'::jsonb)
+        FROM unnest(ct.item_template_ids) WITH ORDINALITY AS u(item_id, ord)
+        JOIN item_templates it ON it.id = u.item_id AND it.guild_id = ct.guild_id)::jsonb AS items
+FROM checkin_templates ct
+WHERE ct.id = $1 AND ct.guild_id = $2;
 
 -- name: CreateCheckinTemplate :one
-INSERT INTO checkin_templates (guild_id, name, title, loot_list, created_by)
-VALUES ($1, sqlc.arg(name)::text, sqlc.arg(title)::text, sqlc.arg(loot_list)::jsonb, $2)
-RETURNING id, guild_id, name, title, loot_list, created_by, created_at, updated_at;
+INSERT INTO checkin_templates (guild_id, name, title, item_template_ids, created_by)
+VALUES ($1, sqlc.arg(name)::text, sqlc.arg(title)::text, sqlc.arg(item_template_ids)::uuid[], $2)
+RETURNING id;
 
 -- name: UpdateCheckinTemplate :one
 UPDATE checkin_templates SET
-    name       = sqlc.arg(name)::text,
-    title      = sqlc.arg(title)::text,
-    loot_list  = sqlc.arg(loot_list)::jsonb,
-    updated_at = NOW()
+    name              = sqlc.arg(name)::text,
+    title             = sqlc.arg(title)::text,
+    item_template_ids = sqlc.arg(item_template_ids)::uuid[],
+    updated_at        = NOW()
 WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id)
-RETURNING id, guild_id, name, title, loot_list, created_by, created_at, updated_at;
+RETURNING id;
 
 -- name: DeleteCheckinTemplate :execrows
 DELETE FROM checkin_templates WHERE id = $1 AND guild_id = $2;
