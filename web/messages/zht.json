@@ -99,7 +99,9 @@
     "kindAuction": "競拍",
     "kindCheckin": "點名",
     "kindLottery": "抽獎",
-    "kindCalendar": "活動"
+    "kindCalendar": "活動",
+    "previousSlide": "上一個總覽",
+    "nextSlide": "下一個總覽"
   },
   "checkIn": {
     "checkIn": "點名",
