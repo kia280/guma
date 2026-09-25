@@ -41,6 +41,11 @@ type TopContributor struct {
 	TotalContributed int64
 }
 
+const (
+	ContributionKindGold        = "gold"
+	ContributionKindCheckinLoot = "checkin_loot"
+)
+
 // BankContribution is the domain model for a bank contribution.
 type BankContribution struct {
 	ID        string
@@ -50,6 +55,9 @@ type BankContribution struct {
 	Amount    int64
 	Note      string
 	CreatedAt time.Time
+	Kind      string
+	Items     []models.Item
+	CheckinID string
 }
 
 // FundRequest is the domain model for a fund request.
@@ -281,6 +289,7 @@ func (s *Service) ContributeFunds(ctx context.Context, guildIDStr, userIDStr str
 	contrib := &BankContribution{
 		ID: cr.ID.String(), GuildID: guildIDStr, UserID: userIDStr,
 		Username: username, Amount: amount, Note: note, CreatedAt: cr.CreatedAt,
+		Kind: ContributionKindGold, Items: []models.Item{},
 	}
 
 	bank, _ := s.GetBank(ctx, guildIDStr)
@@ -474,10 +483,18 @@ func (s *Service) ListContributions(ctx context.Context, p ListContributionsPara
 
 	contribs := make([]*BankContribution, 0, len(rows))
 	for _, r := range rows {
-		contribs = append(contribs, &BankContribution{
+		c := &BankContribution{
 			ID: r.ID.String(), GuildID: r.GuildID.String(), UserID: r.UserID.String(),
 			Username: r.Username, Amount: r.Amount, Note: r.Note, CreatedAt: r.CreatedAt,
-		})
+			Kind: r.Kind, Items: []models.Item{},
+		}
+		if len(r.Items) > 0 {
+			_ = json.Unmarshal(r.Items, &c.Items)
+		}
+		if r.CheckinID != nil {
+			c.CheckinID = r.CheckinID.String()
+		}
+		contribs = append(contribs, c)
 	}
 
 	total, _ := s.q.CountBankContributions(ctx, guildID)

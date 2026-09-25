@@ -13,7 +13,7 @@ SELECT bc.user_id,
        SUM(bc.amount)::bigint     AS total
 FROM bank_contributions bc
 LEFT JOIN users u ON u.id = bc.user_id
-WHERE bc.guild_id = $1
+WHERE bc.guild_id = $1 AND bc.kind = 'gold'
 GROUP BY bc.user_id, bc.username, u.avatar_url
 ORDER BY total DESC
 LIMIT 5;
@@ -94,7 +94,7 @@ SELECT COUNT(*) FROM fund_requests WHERE guild_id = $1
 -- name: ListBankContributions :many
 SELECT id, guild_id, user_id, username, amount,
        COALESCE(note, '') AS note,
-       created_at
+       created_at, kind, items, checkin_id
 FROM bank_contributions WHERE guild_id = $1
 ORDER BY created_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;

@@ -241,6 +241,9 @@ message BankContribution {
   int64 amount = 5;
   string note = 6;
   google.protobuf.Timestamp created_at = 7;
+  string kind = 8;
+  repeated Item items = 9;
+  string checkin_id = 10;
 }
 
 message FundRequest {

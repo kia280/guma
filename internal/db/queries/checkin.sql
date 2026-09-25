@@ -112,3 +112,8 @@ SELECT COUNT(*) FROM checkin_attendees WHERE checkin_id = $1;
 -- name: InsertCheckinBankItem :exec
 INSERT INTO bank_items (id, guild_id, donor_id, donor_name, item, checkin_id)
 VALUES ($1, $2, $3, sqlc.arg(donor_name)::text, sqlc.arg(item)::jsonb, sqlc.arg(checkin_id)::uuid);
+
+-- name: InsertCheckinLootContribution :exec
+INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind, items, checkin_id)
+VALUES ($1, $2, sqlc.arg(username)::text, 0, NULLIF(sqlc.arg(note)::text, ''), 'checkin_loot',
+        sqlc.arg(items)::jsonb, sqlc.arg(checkin_id)::uuid);

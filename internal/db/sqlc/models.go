@@ -58,6 +58,9 @@ type BankContribution struct {
 	Amount    int64
 	Note      pgtype.Text
 	CreatedAt time.Time
+	Kind      string
+	Items     []byte
+	CheckinID *uuid.UUID
 }
 
 type BankItem struct {

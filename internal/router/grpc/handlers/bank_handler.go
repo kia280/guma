@@ -10,6 +10,7 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/session"
 	banksvc "github.com/kia280/guma/internal/services/bank"
 )
@@ -296,7 +297,18 @@ func bankContributionToProto(c *banksvc.BankContribution) *gumav1.BankContributi
 		Amount:    c.Amount,
 		Note:      c.Note,
 		CreatedAt: timestamppb.New(c.CreatedAt),
+		Kind:      c.Kind,
+		Items:     protoItems(c.Items),
+		CheckinId: c.CheckinID,
 	}
+}
+
+func protoItems(items []models.Item) []*gumav1.Item {
+	protos := make([]*gumav1.Item, len(items))
+	for i, item := range items {
+		protos[i] = itemToProto(item)
+	}
+	return protos
 }
 
 func fundRequestToProto(fr *banksvc.FundRequest) *gumav1.FundRequest {

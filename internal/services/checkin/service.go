@@ -252,6 +252,14 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 			return nil, fmt.Errorf("%w: insert bank item: %v", errs.ErrInternal, err)
 		}
 	}
+	if len(loot) > 0 {
+		if err := qtx.InsertCheckinLootContribution(ctx, db.InsertCheckinLootContributionParams{
+			GuildID: guildID, UserID: createdBy, Username: donorName,
+			Note: p.Title, Items: lootJSON, CheckinID: r.ID,
+		}); err != nil {
+			return nil, fmt.Errorf("%w: record bank activity: %v", errs.ErrInternal, err)
+		}
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}

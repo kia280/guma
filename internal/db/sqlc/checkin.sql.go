@@ -303,6 +303,33 @@ func (q *Queries) InsertCheckinBankItem(ctx context.Context, arg InsertCheckinBa
 	return err
 }
 
+const insertCheckinLootContribution = `-- name: InsertCheckinLootContribution :exec
+INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind, items, checkin_id)
+VALUES ($1, $2, $3::text, 0, NULLIF($4::text, ''), 'checkin_loot',
+        $5::jsonb, $6::uuid)
+`
+
+type InsertCheckinLootContributionParams struct {
+	GuildID   uuid.UUID
+	UserID    uuid.UUID
+	Username  string
+	Note      string
+	Items     []byte
+	CheckinID uuid.UUID
+}
+
+func (q *Queries) InsertCheckinLootContribution(ctx context.Context, arg InsertCheckinLootContributionParams) error {
+	_, err := q.db.Exec(ctx, insertCheckinLootContribution,
+		arg.GuildID,
+		arg.UserID,
+		arg.Username,
+		arg.Note,
+		arg.Items,
+		arg.CheckinID,
+	)
+	return err
+}
+
 const listCheckinAttendees = `-- name: ListCheckinAttendees :many
 SELECT id, checkin_id, user_id,
        COALESCE(display_name, '') AS display_name,

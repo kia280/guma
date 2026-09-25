@@ -452,7 +452,7 @@ func (q *Queries) InsertItemRequest(ctx context.Context, arg InsertItemRequestPa
 const listBankContributions = `-- name: ListBankContributions :many
 SELECT id, guild_id, user_id, username, amount,
        COALESCE(note, '') AS note,
-       created_at
+       created_at, kind, items, checkin_id
 FROM bank_contributions WHERE guild_id = $1
 ORDER BY created_at DESC
 LIMIT $3::int OFFSET $2::int
@@ -472,6 +472,9 @@ type ListBankContributionsRow struct {
 	Amount    int64
 	Note      string
 	CreatedAt time.Time
+	Kind      string
+	Items     []byte
+	CheckinID *uuid.UUID
 }
 
 func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContributionsParams) ([]ListBankContributionsRow, error) {
@@ -491,6 +494,9 @@ func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContrib
 			&i.Amount,
 			&i.Note,
 			&i.CreatedAt,
+			&i.Kind,
+			&i.Items,
+			&i.CheckinID,
 		); err != nil {
 			return nil, err
 		}
@@ -728,7 +734,7 @@ SELECT bc.user_id,
        SUM(bc.amount)::bigint     AS total
 FROM bank_contributions bc
 LEFT JOIN users u ON u.id = bc.user_id
-WHERE bc.guild_id = $1
+WHERE bc.guild_id = $1 AND bc.kind = 'gold'
 GROUP BY bc.user_id, bc.username, u.avatar_url
 ORDER BY total DESC
 LIMIT 5
