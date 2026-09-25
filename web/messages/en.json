@@ -785,7 +785,16 @@
     "saveFailed": "Could not save your profile. Please try again.",
     "changeAvatarSoon": "Changing your avatar is coming soon",
     "comingSoon": "Coming soon",
-    "saveSuccess": "Profile updated."
+    "saveSuccess": "Profile updated.",
+    "displayNameRequired": "Display name is required.",
+    "displayNameTooLong": "Display name must be at most {max} characters.",
+    "usernameRequired": "Username is required.",
+    "usernameLength": "Username must be between {min} and {max} characters.",
+    "usernameInvalid": "Username may only contain letters, digits, dots, underscores, and hyphens, and must start with a letter or digit.",
+    "usernameTaken": "This username is already taken.",
+    "usernameHint": "{min}–{max} characters: letters, digits, dots, underscores, or hyphens.",
+    "bioTooLong": "Bio must be at most {max} characters.",
+    "saveInvalid": "Please fix the highlighted fields and try again."
   },
   "preferencePage": {
     "title": "Preference",
