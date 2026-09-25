@@ -42,6 +42,9 @@
       "name": "NotificationService"
     },
     {
+      "name": "PreferenceService"
+    },
+    {
       "name": "StreamService"
     },
     {
@@ -3733,6 +3736,60 @@
         ]
       }
     },
+    "/v1/me/preferences": {
+      "get": {
+        "summary": "Get authenticated user's preferences",
+        "operationId": "PreferenceService_GetMyPreferences",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMyPreferencesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "PreferenceService"
+        ]
+      },
+      "patch": {
+        "summary": "Partially update authenticated user's preferences; unset fields are kept",
+        "operationId": "PreferenceService_UpdateMyPreferences",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMyPreferencesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMyPreferencesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PreferenceService"
+        ]
+      }
+    },
     "/v1/me/stats": {
       "get": {
         "summary": "Get authenticated user's aggregate stats",
@@ -5344,6 +5401,18 @@
         }
       }
     },
+    "v1GetMyPreferencesResponse": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "$ref": "#/definitions/v1NotificationPreferences"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "v1GetNavigationResponse": {
       "type": "object",
       "properties": {
@@ -6446,6 +6515,46 @@
         }
       }
     },
+    "v1NotificationPreferences": {
+      "type": "object",
+      "properties": {
+        "emailNotifications": {
+          "type": "boolean"
+        },
+        "auctionAlerts": {
+          "type": "boolean"
+        },
+        "lotteryAlerts": {
+          "type": "boolean"
+        },
+        "eventReminders": {
+          "type": "boolean"
+        },
+        "checkinReminders": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1NotificationPreferencesPatch": {
+      "type": "object",
+      "properties": {
+        "emailNotifications": {
+          "type": "boolean"
+        },
+        "auctionAlerts": {
+          "type": "boolean"
+        },
+        "lotteryAlerts": {
+          "type": "boolean"
+        },
+        "eventReminders": {
+          "type": "boolean"
+        },
+        "checkinReminders": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1PlaceBidResponse": {
       "type": "object",
       "properties": {
@@ -6856,6 +6965,26 @@
       "properties": {
         "member": {
           "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
+    "v1UpdateMyPreferencesRequest": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "$ref": "#/definitions/v1NotificationPreferencesPatch"
+        }
+      }
+    },
+    "v1UpdateMyPreferencesResponse": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "$ref": "#/definitions/v1NotificationPreferences"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
