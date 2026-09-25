@@ -38,16 +38,16 @@ export function NotificationBell() {
     <Popover isOpen={isOpen} onOpenChange={handleOpenChange}>
       <Button
         isIconOnly
-        size="lg"
+        size="sm"
         aria-label={t('bellLabel', { count: unreadCount })}
-        className="rounded-full text-subtle relative overflow-visible"
+        className="size-7 min-w-7 rounded-full text-subtle relative overflow-visible"
         variant="ghost"
       >
-        <Icon icon="solar:bell-linear" width={24} aria-hidden />
+        <Icon icon="solar:bell-linear" width={18} aria-hidden />
         {unreadCount > 0 && (
           <span
             aria-hidden
-            className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-0.5 text-danger-foreground text-[11px] font-bold tabular-nums"
+            className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-0.5 text-danger-foreground text-[10px] font-bold tabular-nums"
           >
             {unreadCount > MAX_BADGE_COUNT ? `${MAX_BADGE_COUNT}+` : unreadCount}
           </span>

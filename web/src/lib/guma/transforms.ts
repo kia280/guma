@@ -22,6 +22,7 @@ import type { MockUser, User } from '@/types/user';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
 import type { AdminAnnouncement } from '@/types/admin';
 import type { Announcement } from '@/types/dashboard';
+import type { Guild } from '@/types/guild';
 import { fromMinorUnits } from './money';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -36,6 +37,57 @@ const ts = (v: unknown): string => {
   } catch {
     return new Date().toISOString();
   }
+};
+
+// ─── Guild ──────────────────────────────────────────────────────────────────
+
+type ProtoGuild = {
+  id?: string;
+  name?: string;
+  description?: string;
+  owner_id?: string;
+  member_count?: number;
+  icon_url?: string;
+  banner_url?: string;
+  settings?: {
+    timezone?: string;
+    language?: string;
+    custom_settings?: Record<string, string>;
+  };
+  created_at?: string;
+  updated_at?: string;
+};
+
+const resolveAssetUrl = (url: string | undefined, apiBase: string): string | undefined => {
+  if (!url) return undefined;
+  return url.startsWith('/') ? `${apiBase}${url}` : url;
+};
+
+export const toGuild = (g: ProtoGuild, apiBase = ''): Guild => {
+  const custom = g.settings?.custom_settings ?? {};
+  const flag = (key: string) => custom[key] === 'true';
+  return {
+    id: g.id ?? '',
+    name: g.name ?? '',
+    description: g.description || undefined,
+    icon: resolveAssetUrl(g.icon_url, apiBase),
+    banner: resolveAssetUrl(g.banner_url, apiBase),
+    ownerId: g.owner_id ?? '',
+    memberCount: g.member_count ?? 0,
+    settings: {
+      timezone: g.settings?.timezone ?? 'UTC',
+      language: g.settings?.language ?? 'en',
+      currency: custom.currency ?? '',
+      features: {
+        economy: flag('economy'),
+        events: flag('events'),
+        raids: flag('raids'),
+        voting: flag('voting'),
+      },
+    },
+    createdAt: ts(g.created_at),
+    updatedAt: ts(g.updated_at),
+  };
 };
 
 // ─── User ───────────────────────────────────────────────────────────────────

@@ -199,6 +199,14 @@ const baseMockApiClient: ApiClient = {
     Object.assign(mockGuild, patch, { updatedAt: new Date().toISOString() });
     return { ...mockGuild };
   },
+  uploadGuildLogo: async (_id, image) => {
+    Object.assign(mockGuild, { icon: URL.createObjectURL(image), updatedAt: new Date().toISOString() });
+    return { ...mockGuild };
+  },
+  deleteGuildLogo: async () => {
+    Object.assign(mockGuild, { icon: undefined, updatedAt: new Date().toISOString() });
+    return { ...mockGuild };
+  },
   joinGuild: async () => undefined,
   leaveGuild: async () => undefined,
 
