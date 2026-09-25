@@ -1,5 +1,7 @@
 // Check-in event types
 
+import type { ItemCategory, ItemRarity } from '@/types/item';
+
 export enum CheckinStatus {
   OPEN = 1,
   CLOSED = 2,
@@ -39,20 +41,38 @@ export interface CreateCheckinRequest {
   datetime?: string;
   expireTime?: string;
   imageUrl?: string;
-  lootList?: Array<{ name: string; quantity?: number }>;
+  lootList?: LootEntry[];
 }
 
 export interface UpdateCheckinRequest extends Partial<CreateCheckinRequest> {}
+
+export interface LootEntry {
+  name: string;
+  quantity?: number;
+  description?: string;
+  category?: ItemCategory;
+  rarity?: ItemRarity;
+}
+
+export interface ItemTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: ItemCategory;
+  rarity: ItemRarity;
+}
+
+export type ItemTemplateInput = Omit<ItemTemplate, 'id'>;
 
 export interface CheckinTemplate {
   id: string;
   name: string;
   title: string;
-  lootList: LootItem[];
+  items: ItemTemplate[];
 }
 
 export interface CheckinTemplateInput {
   name: string;
   title: string;
-  lootList: Array<{ name: string }>;
+  itemTemplateIds: string[];
 }

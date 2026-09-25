@@ -14,6 +14,8 @@ import type {
   AttendanceMember,
   CheckinTemplate,
   CheckinTemplateInput,
+  ItemTemplate,
+  ItemTemplateInput,
   CreateCheckinRequest,
   UpdateCheckinRequest,
 } from '@/types/checkin';
@@ -117,6 +119,10 @@ export interface ApiClient {
   createCheckinTemplate(guildId: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
   updateCheckinTemplate(guildId: string, id: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
   deleteCheckinTemplate(guildId: string, id: string): Promise<void>;
+  listItemTemplates(guildId: string): Promise<ItemTemplate[]>;
+  createItemTemplate(guildId: string, input: ItemTemplateInput): Promise<ItemTemplate>;
+  updateItemTemplate(guildId: string, id: string, input: ItemTemplateInput): Promise<ItemTemplate>;
+  deleteItemTemplate(guildId: string, id: string): Promise<void>;
 
   // ── Lottery ──
   listLotteries(guildId: string, status?: string): Promise<Lottery[]>;
