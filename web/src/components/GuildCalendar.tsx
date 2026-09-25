@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, ButtonGroup, Chip, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import {
   GuildEvent,
   EVENT_TYPE_COLORS,
@@ -26,12 +27,12 @@ const HOUR_PX = 60; // pixels per hour
 const TOTAL_HEIGHT = 24 * HOUR_PX; // 1440px
 
 const TIMELINE_COLORS: Record<string, { border: string; bg: string }> = {
-  danger: { border: 'rgb(var(--heroui-danger))', bg: 'color-mix(in oklab, rgb(var(--heroui-danger)) 12%, transparent)' },
-  warning: { border: 'rgb(var(--heroui-warning))', bg: 'color-mix(in oklab, rgb(var(--heroui-warning)) 12%, transparent)' },
-  primary: { border: 'rgb(var(--heroui-accent))', bg: 'color-mix(in oklab, rgb(var(--heroui-accent)) 12%, transparent)' },
-  secondary: { border: 'rgb(var(--heroui-accent))', bg: 'color-mix(in oklab, rgb(var(--heroui-accent)) 12%, transparent)' },
-  success: { border: 'rgb(var(--heroui-success))', bg: 'color-mix(in oklab, rgb(var(--heroui-success)) 12%, transparent)' },
-  default: { border: 'rgb(var(--heroui-default-500))', bg: 'color-mix(in oklab, rgb(var(--heroui-default-500)) 12%, transparent)' },
+  danger: { border: 'var(--danger)', bg: 'color-mix(in oklab, var(--danger) 12%, transparent)' },
+  warning: { border: 'var(--warning)', bg: 'color-mix(in oklab, var(--warning) 12%, transparent)' },
+  primary: { border: 'var(--accent)', bg: 'color-mix(in oklab, var(--accent) 12%, transparent)' },
+  secondary: { border: 'var(--accent)', bg: 'color-mix(in oklab, var(--accent) 12%, transparent)' },
+  success: { border: 'var(--success)', bg: 'color-mix(in oklab, var(--success) 12%, transparent)' },
+  default: { border: 'var(--muted)', bg: 'color-mix(in oklab, var(--muted) 12%, transparent)' },
 };
 
 export const GuildCalendar: React.FC<GuildCalendarProps> = ({
@@ -45,6 +46,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   onDateClick,
 }) => {
   const t = useTranslations('guildCalendar');
+  const intlLocale = useIntlLocale();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -54,7 +56,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   }, []);
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(intlLocale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -62,7 +64,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   };
 
   const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString('en-US', {
+    return new Date(dateStr).toLocaleTimeString(intlLocale, {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -361,7 +363,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     return (
       <div className="flex flex-col h-full min-h-[480px] border border-divider rounded-xl overflow-hidden bg-surface">
         {/* Day column headers */}
-        <div className="flex border-b border-divider">
+        <div className="flex border-b border-divider overflow-y-hidden [scrollbar-gutter:stable]">
           <div className="w-14 shrink-0 border-r border-divider" />
           {days.map((day, index) => {
             const isToday = isSameDay(day, today);
@@ -376,7 +378,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 tabIndex={0}
               >
                 <div className="type-label text-hint">
-                  {day.toLocaleDateString('en-US', { weekday: 'short' })}
+                  {day.toLocaleDateString(intlLocale, { weekday: 'short' })}
                 </div>
                 <div
                   className={`type-subheading tabular-nums mt-0.5 ${isToday ? 'text-accent' : 'text-foreground'}`}
@@ -403,7 +405,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
         </div>
 
         {/* 24h timeline grid */}
-        <div className="flex flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-1 min-h-0 overflow-y-auto [scrollbar-gutter:stable]">
           {renderHourLabels()}
           {days.map((day, index) => {
             const isToday = isSameDay(day, today);
@@ -425,13 +427,13 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   const getViewTitle = () => {
     switch (view) {
       case 'month':
-        return currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+        return currentDate.toLocaleDateString(intlLocale, { year: 'numeric', month: 'long' });
       case 'week': {
         const weekStart = new Date(currentDate);
         weekStart.setDate(currentDate.getDate() - currentDate.getDay());
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
-        return `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        return `${weekStart.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' })} – ${weekEnd.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' })}`;
       }
       case 'day':
         return formatDate(currentDate);
