@@ -149,6 +149,13 @@
     "createSuccess": "點名已建立。",
     "createFailed": "無法建立點名，請再試一次。"
   },
+  "balanceTrendChart": {
+    "balance": "餘額",
+    "loading": "正在載入餘額紀錄",
+    "empty": "尚無餘額紀錄",
+    "loadFailed": "無法載入餘額紀錄。",
+    "retry": "重試"
+  },
   "walletPage": {
     "wallet": "錢包",
     "manageBalance": "管理您的餘額和交易",

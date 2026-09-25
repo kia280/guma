@@ -66,6 +66,6 @@ export interface UserStats {
 }
 
 export interface BalancePoint {
-  day: string;
+  date: string;
   balance: number;
 }

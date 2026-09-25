@@ -33,13 +33,6 @@ service UserService {
     };
   }
 
-  // Get balance history for charts
-  rpc GetBalanceTrend(GetBalanceTrendRequest) returns (GetBalanceTrendResponse) {
-    option (google.api.http) = {
-      get: "/v1/me/balance-trend"
-    };
-  }
-
   // Get any user's public profile
   rpc GetUser(GetUserRequest) returns (GetUserResponse) {
     option (google.api.http) = {
@@ -81,14 +74,6 @@ message GetUserStatsResponse {
   UserStats stats = 1;
 }
 
-message GetBalanceTrendRequest {
-  int32 days = 1; // Default: 30
-}
-
-message GetBalanceTrendResponse {
-  repeated BalancePoint points = 1;
-}
-
 // Data structures
 
 message User {
@@ -122,9 +107,4 @@ message UserStats {
   int64 total_earned = 5;
   int64 total_spent = 6;
   int32 checkins_completed = 7;
-}
-
-message BalancePoint {
-  string date = 1; // ISO 8601 date
-  int64 balance = 2;
 }

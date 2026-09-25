@@ -383,94 +383,6 @@ func (x *GetUserStatsResponse) GetStats() *UserStats {
 	return nil
 }
 
-type GetBalanceTrendRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Days          int32                  `protobuf:"varint,1,opt,name=days,proto3" json:"days,omitempty"` // Default: 30
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetBalanceTrendRequest) Reset() {
-	*x = GetBalanceTrendRequest{}
-	mi := &file_proto_guma_v1_user_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetBalanceTrendRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetBalanceTrendRequest) ProtoMessage() {}
-
-func (x *GetBalanceTrendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_user_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetBalanceTrendRequest.ProtoReflect.Descriptor instead.
-func (*GetBalanceTrendRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_user_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *GetBalanceTrendRequest) GetDays() int32 {
-	if x != nil {
-		return x.Days
-	}
-	return 0
-}
-
-type GetBalanceTrendResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Points        []*BalancePoint        `protobuf:"bytes,1,rep,name=points,proto3" json:"points,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetBalanceTrendResponse) Reset() {
-	*x = GetBalanceTrendResponse{}
-	mi := &file_proto_guma_v1_user_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetBalanceTrendResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetBalanceTrendResponse) ProtoMessage() {}
-
-func (x *GetBalanceTrendResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_user_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetBalanceTrendResponse.ProtoReflect.Descriptor instead.
-func (*GetBalanceTrendResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_user_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *GetBalanceTrendResponse) GetPoints() []*BalancePoint {
-	if x != nil {
-		return x.Points
-	}
-	return nil
-}
-
 type User struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -493,7 +405,7 @@ type User struct {
 
 func (x *User) Reset() {
 	*x = User{}
-	mi := &file_proto_guma_v1_user_proto_msgTypes[10]
+	mi := &file_proto_guma_v1_user_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -505,7 +417,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_user_proto_msgTypes[10]
+	mi := &file_proto_guma_v1_user_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -518,7 +430,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_user_proto_rawDescGZIP(), []int{10}
+	return file_proto_guma_v1_user_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *User) GetId() string {
@@ -630,7 +542,7 @@ type LinkedAccount struct {
 
 func (x *LinkedAccount) Reset() {
 	*x = LinkedAccount{}
-	mi := &file_proto_guma_v1_user_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_user_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -642,7 +554,7 @@ func (x *LinkedAccount) String() string {
 func (*LinkedAccount) ProtoMessage() {}
 
 func (x *LinkedAccount) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_user_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_user_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -655,7 +567,7 @@ func (x *LinkedAccount) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LinkedAccount.ProtoReflect.Descriptor instead.
 func (*LinkedAccount) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_user_proto_rawDescGZIP(), []int{11}
+	return file_proto_guma_v1_user_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *LinkedAccount) GetProvider() string {
@@ -694,7 +606,7 @@ type UserStats struct {
 
 func (x *UserStats) Reset() {
 	*x = UserStats{}
-	mi := &file_proto_guma_v1_user_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_user_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -706,7 +618,7 @@ func (x *UserStats) String() string {
 func (*UserStats) ProtoMessage() {}
 
 func (x *UserStats) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_user_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_user_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -719,7 +631,7 @@ func (x *UserStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserStats.ProtoReflect.Descriptor instead.
 func (*UserStats) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_user_proto_rawDescGZIP(), []int{12}
+	return file_proto_guma_v1_user_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *UserStats) GetGuildsJoined() int32 {
@@ -771,58 +683,6 @@ func (x *UserStats) GetCheckinsCompleted() int32 {
 	return 0
 }
 
-type BalancePoint struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"` // ISO 8601 date
-	Balance       int64                  `protobuf:"varint,2,opt,name=balance,proto3" json:"balance,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *BalancePoint) Reset() {
-	*x = BalancePoint{}
-	mi := &file_proto_guma_v1_user_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *BalancePoint) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BalancePoint) ProtoMessage() {}
-
-func (x *BalancePoint) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_user_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BalancePoint.ProtoReflect.Descriptor instead.
-func (*BalancePoint) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_user_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *BalancePoint) GetDate() string {
-	if x != nil {
-		return x.Date
-	}
-	return ""
-}
-
-func (x *BalancePoint) GetBalance() int64 {
-	if x != nil {
-		return x.Balance
-	}
-	return 0
-}
-
 var File_proto_guma_v1_user_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_user_proto_rawDesc = "" +
@@ -845,11 +705,7 @@ const file_proto_guma_v1_user_proto_rawDesc = "" +
 	"\x04user\x18\x01 \x01(\v2\r.guma.v1.UserR\x04user\"\x15\n" +
 	"\x13GetUserStatsRequest\"@\n" +
 	"\x14GetUserStatsResponse\x12(\n" +
-	"\x05stats\x18\x01 \x01(\v2\x12.guma.v1.UserStatsR\x05stats\",\n" +
-	"\x16GetBalanceTrendRequest\x12\x12\n" +
-	"\x04days\x18\x01 \x01(\x05R\x04days\"H\n" +
-	"\x17GetBalanceTrendResponse\x12-\n" +
-	"\x06points\x18\x01 \x03(\v2\x15.guma.v1.BalancePointR\x06points\"\x83\x04\n" +
+	"\x05stats\x18\x01 \x01(\v2\x12.guma.v1.UserStatsR\x05stats\"\x83\x04\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12!\n" +
@@ -883,15 +739,11 @@ const file_proto_guma_v1_user_proto_rawDesc = "" +
 	"\ftotal_earned\x18\x05 \x01(\x03R\vtotalEarned\x12\x1f\n" +
 	"\vtotal_spent\x18\x06 \x01(\x03R\n" +
 	"totalSpent\x12-\n" +
-	"\x12checkins_completed\x18\a \x01(\x05R\x11checkinsCompleted\"<\n" +
-	"\fBalancePoint\x12\x12\n" +
-	"\x04date\x18\x01 \x01(\tR\x04date\x12\x18\n" +
-	"\abalance\x18\x02 \x01(\x03R\abalance2\xdb\x03\n" +
+	"\x12checkins_completed\x18\a \x01(\x05R\x11checkinsCompleted2\xe7\x02\n" +
 	"\vUserService\x12F\n" +
 	"\x05GetMe\x12\x15.guma.v1.GetMeRequest\x1a\x16.guma.v1.GetMeResponse\"\x0e\x82\xd3\xe4\x93\x02\b\x12\x06/v1/me\x12R\n" +
 	"\bUpdateMe\x12\x18.guma.v1.UpdateMeRequest\x1a\x19.guma.v1.UpdateMeResponse\"\x11\x82\xd3\xe4\x93\x02\v:\x01*2\x06/v1/me\x12a\n" +
-	"\fGetUserStats\x12\x1c.guma.v1.GetUserStatsRequest\x1a\x1d.guma.v1.GetUserStatsResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/v1/me/stats\x12r\n" +
-	"\x0fGetBalanceTrend\x12\x1f.guma.v1.GetBalanceTrendRequest\x1a .guma.v1.GetBalanceTrendResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/me/balance-trend\x12Y\n" +
+	"\fGetUserStats\x12\x1c.guma.v1.GetUserStatsRequest\x1a\x1d.guma.v1.GetUserStatsResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/v1/me/stats\x12Y\n" +
 	"\aGetUser\x12\x17.guma.v1.GetUserRequest\x1a\x18.guma.v1.GetUserResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/users/{user_id}B1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
 var (
@@ -906,48 +758,42 @@ func file_proto_guma_v1_user_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_user_proto_rawDescData
 }
 
-var file_proto_guma_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_proto_guma_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_proto_guma_v1_user_proto_goTypes = []any{
-	(*GetMeRequest)(nil),            // 0: guma.v1.GetMeRequest
-	(*GetMeResponse)(nil),           // 1: guma.v1.GetMeResponse
-	(*UpdateMeRequest)(nil),         // 2: guma.v1.UpdateMeRequest
-	(*UpdateMeResponse)(nil),        // 3: guma.v1.UpdateMeResponse
-	(*GetUserRequest)(nil),          // 4: guma.v1.GetUserRequest
-	(*GetUserResponse)(nil),         // 5: guma.v1.GetUserResponse
-	(*GetUserStatsRequest)(nil),     // 6: guma.v1.GetUserStatsRequest
-	(*GetUserStatsResponse)(nil),    // 7: guma.v1.GetUserStatsResponse
-	(*GetBalanceTrendRequest)(nil),  // 8: guma.v1.GetBalanceTrendRequest
-	(*GetBalanceTrendResponse)(nil), // 9: guma.v1.GetBalanceTrendResponse
-	(*User)(nil),                    // 10: guma.v1.User
-	(*LinkedAccount)(nil),           // 11: guma.v1.LinkedAccount
-	(*UserStats)(nil),               // 12: guma.v1.UserStats
-	(*BalancePoint)(nil),            // 13: guma.v1.BalancePoint
-	(*timestamppb.Timestamp)(nil),   // 14: google.protobuf.Timestamp
+	(*GetMeRequest)(nil),          // 0: guma.v1.GetMeRequest
+	(*GetMeResponse)(nil),         // 1: guma.v1.GetMeResponse
+	(*UpdateMeRequest)(nil),       // 2: guma.v1.UpdateMeRequest
+	(*UpdateMeResponse)(nil),      // 3: guma.v1.UpdateMeResponse
+	(*GetUserRequest)(nil),        // 4: guma.v1.GetUserRequest
+	(*GetUserResponse)(nil),       // 5: guma.v1.GetUserResponse
+	(*GetUserStatsRequest)(nil),   // 6: guma.v1.GetUserStatsRequest
+	(*GetUserStatsResponse)(nil),  // 7: guma.v1.GetUserStatsResponse
+	(*User)(nil),                  // 8: guma.v1.User
+	(*LinkedAccount)(nil),         // 9: guma.v1.LinkedAccount
+	(*UserStats)(nil),             // 10: guma.v1.UserStats
+	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
 }
 var file_proto_guma_v1_user_proto_depIdxs = []int32{
-	10, // 0: guma.v1.GetMeResponse.user:type_name -> guma.v1.User
-	10, // 1: guma.v1.UpdateMeResponse.user:type_name -> guma.v1.User
-	10, // 2: guma.v1.GetUserResponse.user:type_name -> guma.v1.User
-	12, // 3: guma.v1.GetUserStatsResponse.stats:type_name -> guma.v1.UserStats
-	13, // 4: guma.v1.GetBalanceTrendResponse.points:type_name -> guma.v1.BalancePoint
-	14, // 5: guma.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	14, // 6: guma.v1.User.updated_at:type_name -> google.protobuf.Timestamp
-	11, // 7: guma.v1.User.discord:type_name -> guma.v1.LinkedAccount
-	0,  // 8: guma.v1.UserService.GetMe:input_type -> guma.v1.GetMeRequest
-	2,  // 9: guma.v1.UserService.UpdateMe:input_type -> guma.v1.UpdateMeRequest
-	6,  // 10: guma.v1.UserService.GetUserStats:input_type -> guma.v1.GetUserStatsRequest
-	8,  // 11: guma.v1.UserService.GetBalanceTrend:input_type -> guma.v1.GetBalanceTrendRequest
-	4,  // 12: guma.v1.UserService.GetUser:input_type -> guma.v1.GetUserRequest
-	1,  // 13: guma.v1.UserService.GetMe:output_type -> guma.v1.GetMeResponse
-	3,  // 14: guma.v1.UserService.UpdateMe:output_type -> guma.v1.UpdateMeResponse
-	7,  // 15: guma.v1.UserService.GetUserStats:output_type -> guma.v1.GetUserStatsResponse
-	9,  // 16: guma.v1.UserService.GetBalanceTrend:output_type -> guma.v1.GetBalanceTrendResponse
-	5,  // 17: guma.v1.UserService.GetUser:output_type -> guma.v1.GetUserResponse
-	13, // [13:18] is the sub-list for method output_type
-	8,  // [8:13] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	8,  // 0: guma.v1.GetMeResponse.user:type_name -> guma.v1.User
+	8,  // 1: guma.v1.UpdateMeResponse.user:type_name -> guma.v1.User
+	8,  // 2: guma.v1.GetUserResponse.user:type_name -> guma.v1.User
+	10, // 3: guma.v1.GetUserStatsResponse.stats:type_name -> guma.v1.UserStats
+	11, // 4: guma.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	11, // 5: guma.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	9,  // 6: guma.v1.User.discord:type_name -> guma.v1.LinkedAccount
+	0,  // 7: guma.v1.UserService.GetMe:input_type -> guma.v1.GetMeRequest
+	2,  // 8: guma.v1.UserService.UpdateMe:input_type -> guma.v1.UpdateMeRequest
+	6,  // 9: guma.v1.UserService.GetUserStats:input_type -> guma.v1.GetUserStatsRequest
+	4,  // 10: guma.v1.UserService.GetUser:input_type -> guma.v1.GetUserRequest
+	1,  // 11: guma.v1.UserService.GetMe:output_type -> guma.v1.GetMeResponse
+	3,  // 12: guma.v1.UserService.UpdateMe:output_type -> guma.v1.UpdateMeResponse
+	7,  // 13: guma.v1.UserService.GetUserStats:output_type -> guma.v1.GetUserStatsResponse
+	5,  // 14: guma.v1.UserService.GetUser:output_type -> guma.v1.GetUserResponse
+	11, // [11:15] is the sub-list for method output_type
+	7,  // [7:11] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_user_proto_init() }
@@ -955,14 +801,14 @@ func file_proto_guma_v1_user_proto_init() {
 	if File_proto_guma_v1_user_proto != nil {
 		return
 	}
-	file_proto_guma_v1_user_proto_msgTypes[10].OneofWrappers = []any{}
+	file_proto_guma_v1_user_proto_msgTypes[8].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_user_proto_rawDesc), len(file_proto_guma_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
