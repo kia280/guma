@@ -3265,6 +3265,45 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/wallet/balance-trend": {
+      "get": {
+        "summary": "Daily balance history of the current user's wallet within this guild",
+        "operationId": "WalletService_GetBalanceTrend",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetBalanceTrendResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "days",
+            "description": "Default: 30",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/wallet/deposit": {
       "post": {
         "operationId": "WalletService_DepositFunds",
@@ -3476,39 +3515,6 @@
             "schema": {
               "$ref": "#/definitions/v1UpdateMeRequest"
             }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/v1/me/balance-trend": {
-      "get": {
-        "summary": "Get balance history for charts",
-        "operationId": "UserService_GetBalanceTrend",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetBalanceTrendResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "days",
-            "description": "Default: 30",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
           }
         ],
         "tags": [

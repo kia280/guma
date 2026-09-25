@@ -5,23 +5,16 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState, useRef, useEffect, useCallback, type TouchEvent } from 'react';
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from 'recharts';
 import { AsyncContent, EmptyContent } from '@/components/AsyncContent';
+import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
+import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
-import { useFormatGold, useFormatGoldAxisTick } from '@/lib/guma/useFormatGold';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { useUserStore } from '@/lib/store';
@@ -94,7 +87,7 @@ const SWIPE_THRESHOLD_PX = 40;
 interface OverviewCarouselProps {
   guildStats: import('@/types/dashboard').GuildStats;
   personalStats: import('@/types/user').UserStats;
-  balanceTrend: import('@/types/user').BalancePoint[];
+  balanceTrend: ReturnType<typeof useBalanceTrend>;
 }
 
 function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewCarouselProps) {
@@ -104,7 +97,6 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
   const [active, setActive] = useState<Slide>('personal');
   const idx = SLIDES.indexOf(active);
   const formatGold = useFormatGold();
-  const formatGoldAxisTick = useFormatGoldAxisTick();
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const goTo = (i: number) => setActive(SLIDES[Math.min(Math.max(i, 0), SLIDES.length - 1)]);
@@ -177,53 +169,12 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
               {/* Wallet balance chart */}
               <div className="rounded-xl p-3 -mx-3 transition-colors hover:bg-surface-secondary">
                 <p className="type-caption text-hint mb-2">{t('balanceLast30')}</p>
-                <ResponsiveContainer width="100%" height={240}>
-                  <AreaChart data={balanceTrend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="balanceFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="var(--separator)"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="day"
-                      tick={{ fontSize: 12, fill: 'var(--muted)' }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12, fill: 'var(--muted)' }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={formatGoldAxisTick}
-                    />
-                    <Tooltip
-                      formatter={(v: any) => [formatGold(Number(v ?? 0)), t('balance')]}
-                      contentStyle={{
-                        background: 'var(--overlay)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        color: 'var(--foreground)',
-                      }}
-                      labelStyle={{ color: 'var(--muted)' }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="balance"
-                      stroke="var(--accent)"
-                      strokeWidth={2}
-                      fill="url(#balanceFill)"
-                      dot={false}
-                      activeDot={{ r: 4, fill: 'var(--accent)' }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <BalanceTrendChart
+                  points={balanceTrend.points}
+                  status={balanceTrend.status}
+                  onRetry={balanceTrend.retry}
+                  height={240}
+                />
               </div>
             </div>
 
@@ -344,6 +295,8 @@ export default function DashboardPage() {
   });
 
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const balanceTrend = useBalanceTrend(guildId);
+  const refetchTrend = balanceTrend.refetch;
   const dashboardState = useLoadState();
   const notify = useToast();
   const [reloadKey, setReloadKey] = useState(0);
@@ -380,13 +333,16 @@ export default function DashboardPage() {
     const unsubscribe = subscribeLiveEvents(event => {
       if (event.kind !== 'wallet' || event.guildId !== guildId) return;
       clearTimeout(timer);
-      timer = setTimeout(refetchDashboard, LIVE_REFETCH_DEBOUNCE_MS);
+      timer = setTimeout(() => {
+        refetchDashboard();
+        refetchTrend();
+      }, LIVE_REFETCH_DEBOUNCE_MS);
     });
     return () => {
       clearTimeout(timer);
       unsubscribe();
     };
-  }, [guildId, refetchDashboard]);
+  }, [guildId, refetchDashboard, refetchTrend]);
 
   const liveBalance = useUserStore(s =>
     s.user && s.user.currentGuildId === guildId ? s.user.balance : undefined,
@@ -401,7 +357,6 @@ export default function DashboardPage() {
   const personalStats = liveBalance === undefined
     ? fetchedPersonalStats
     : { ...fetchedPersonalStats, balance: liveBalance };
-  const balanceTrend = dashboard?.balanceTrend ?? [];
   const announcements = dashboard?.announcements ?? [];
   const incomingEvents = dashboard?.incomingEvents ?? [];
 

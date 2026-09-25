@@ -19,24 +19,22 @@ import {
   useFilter,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import React from 'react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import BackpackItemCard from '@/components/BackpackItemCard';
+import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal } from '@/components/CreateLotteryModal';
+import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
-import { isLocale } from '@/i18n/locales';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
-import { walletBalanceTrend } from '@/lib/guma/mock/data';
-import { localizeMock } from '@/lib/guma/mock/i18n';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
-import { type FormatGold, useFormatGold, useFormatGoldAxisTick } from '@/lib/guma/useFormatGold';
+import { type FormatGold, useFormatGold } from '@/lib/guma/useFormatGold';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { transactionStatusColor } from '@/lib/status-colors';
 import { BackpackItem } from '@/types/backpack';
@@ -137,13 +135,8 @@ export default function WalletPage() {
   const labels = useTranslations('createAuctionModal');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
-  const formatGoldAxisTick = useFormatGoldAxisTick();
-  const locale = useLocale();
-  const balanceTrend = React.useMemo(
-    () => (isLocale(locale) ? localizeMock(walletBalanceTrend, locale) : walletBalanceTrend),
-    [locale]
-  );
   const guildId = useCurrentGuildId();
+  const balanceTrend = useBalanceTrend(guildId);
   const depositModalState = useOverlayState();
   const transferModalState = useOverlayState();
   const withdrawModalState = useOverlayState();
@@ -180,6 +173,7 @@ export default function WalletPage() {
     setReloadKey(key => key + 1);
   }, [walletState.reset, transactionsState.reset, backpackState.reset]);
 
+  const refetchTrend = balanceTrend.refetch;
   const refetchBalance = React.useCallback(() => {
     apiClient
       .getWallet(guildId)
@@ -201,7 +195,8 @@ export default function WalletPage() {
         transactionsState.failed();
         notify.loadFailed(reload, 'wallet');
       });
-  }, [guildId, notify, reload, walletState.ready, walletState.failed, transactionsState.ready, transactionsState.failed]);
+    refetchTrend();
+  }, [guildId, refetchTrend, notify, reload, walletState.ready, walletState.failed, transactionsState.ready, transactionsState.failed]);
 
   const refetchBackpack = React.useCallback(() => {
     apiClient
@@ -541,49 +536,12 @@ export default function WalletPage() {
 
           {/* Balance Chart */}
           <div>
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={balanceTrend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="walletBalanceFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--separator)" vertical={false} />
-                <XAxis
-                  dataKey="day"
-                  tick={{ fontSize: 12, fill: 'var(--muted)' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 12, fill: 'var(--muted)' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={formatGoldAxisTick}
-                />
-                <Tooltip
-                  formatter={(v: any) => [formatGold(Number(v ?? 0)), t('balance')]}
-                  contentStyle={{
-                    background: 'var(--overlay)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    color: 'var(--foreground)',
-                  }}
-                  labelStyle={{ color: 'var(--muted)' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="balance"
-                  stroke="var(--accent)"
-                  strokeWidth={2}
-                  fill="url(#walletBalanceFill)"
-                  dot={false}
-                  activeDot={{ r: 4, fill: 'var(--accent)' }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <BalanceTrendChart
+              points={balanceTrend.points}
+              status={balanceTrend.status}
+              onRetry={balanceTrend.retry}
+              height={200}
+            />
           </div>
 
         </Card.Content>

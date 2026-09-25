@@ -149,6 +149,13 @@
     "createSuccess": "Roll call created.",
     "createFailed": "Could not create the roll call. Please try again."
   },
+  "balanceTrendChart": {
+    "balance": "Balance",
+    "loading": "Loading balance history",
+    "empty": "No balance history yet",
+    "loadFailed": "Could not load balance history.",
+    "retry": "Retry"
+  },
   "walletPage": {
     "wallet": "Wallet",
     "manageBalance": "Manage your balance and transactions",
