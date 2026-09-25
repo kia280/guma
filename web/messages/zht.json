@@ -583,6 +583,7 @@
     "pending": "處理中",
     "approved": "已批准",
     "rejected": "已拒絕",
+    "amountPending": "尚未扣除",
     "contributeTitle": "貢獻至公會銀行",
     "amountLabel": "金額",
     "noteOptional": "備注（選填）",
