@@ -367,6 +367,7 @@ const baseMockApiClient: ApiClient = {
       date: req.datetime ?? new Date().toISOString(),
       description: req.title,
       expireTime: req.expireTime,
+      attendanceCount: 0,
       attendanceList: [],
       lootList: (req.lootList ?? []).map<LootItem>((i, idx) => ({
         id: `l-${Date.now()}-${idx}`,
@@ -435,6 +436,7 @@ const baseMockApiClient: ApiClient = {
       ...(notes?.trim() ? { notes: notes.trim() } : {}),
     };
     entry.attendanceList = [...entry.attendanceList, attendee];
+    entry.attendanceCount = entry.attendanceList.length;
     return attendee;
   },
   listAttendees: async (_guildId, checkinId) => {

@@ -501,7 +501,7 @@ export default function CheckinPage() {
                     date={item.date}
                     description={item.description}
                     expireTime={item.expireTime}
-                    attendanceCount={item.attendanceList.length}
+                    attendanceCount={item.attendanceCount}
                     lootCount={item.lootList.length}
                     imageUrl={item.imageUrl}
                     isDisabled={item.isDisabled}
