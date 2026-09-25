@@ -2,6 +2,7 @@
 
 import { Card, Chip, Button, ProgressBar, Avatar } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
@@ -48,7 +49,8 @@ const LotteryCard = ({
 }: LotteryCardProps) => {
   const t = useTranslations('lotteryCard');
   const router = useRouter();
-  const openDetail = () => router.push(`/dashboard/lottery/${id}`);
+  const href = `/dashboard/lottery/${id}`;
+  const openDetail = () => router.push(href);
   const hasCap = maxTickets > 0;
   const soldPercent = hasCap ? Math.round((ticketsSold / maxTickets) * 100) : 0;
 
@@ -66,22 +68,7 @@ const LotteryCard = ({
   const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
 
   return (
-    <Card
-      role="link"
-      tabIndex={0}
-      aria-label={title}
-      onClick={event => {
-        if (!(event.target as HTMLElement).closest('button')) openDetail();
-      }}
-      onKeyDown={event => {
-        if (event.target !== event.currentTarget) return;
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          openDetail();
-        }
-      }}
-      className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-    >
+    <Card className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
       <Card.Header className="pb-2">
         <div className="flex justify-between items-start w-full">
           <div>
@@ -93,7 +80,11 @@ const LotteryCard = ({
             >
               {status}
             </Chip>
-            <h4 className="type-subheading text-foreground">{title}</h4>
+            <h4 className="type-subheading text-foreground">
+              <Link href={href} className="outline-none after:absolute after:inset-0">
+                {title}
+              </Link>
+            </h4>
           </div>
           <Icon icon="solar:ticket-bold-duotone" width={28} className="text-accent/60 shrink-0" />
         </div>
@@ -169,9 +160,7 @@ const LotteryCard = ({
                     <Avatar.Fallback>{winner.username?.slice(0, 2).toUpperCase()}</Avatar.Fallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="type-label text-foreground truncate">
-                      {winner.username}
-                    </p>
+                    <p className="type-label text-foreground truncate">{winner.username}</p>
                     <p className="type-caption text-success">{winner.prize}</p>
                   </div>
                 </div>
