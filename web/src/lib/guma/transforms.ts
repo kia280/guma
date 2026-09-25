@@ -466,6 +466,8 @@ type ProtoBankItem = {
   item?: ProtoItem;
   quantity?: number;
   donated_at?: string;
+  checkin_id?: string;
+  checkin_title?: string;
 };
 
 export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
@@ -477,6 +479,8 @@ export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
   donatedBy: raw.donor_name ?? '',
   donatedAt: ts(raw.donated_at),
   quantity: raw.quantity ?? 1,
+  checkinId: raw.checkin_id || undefined,
+  checkinTitle: raw.checkin_title || undefined,
 });
 
 type ProtoItemRequest = {

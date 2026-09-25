@@ -118,7 +118,8 @@
     "removeLootItem": "移除 {name}",
     "itemTemplatePlaceholder": "選擇要加入的道具",
     "noItemTemplates": "尚無道具範本",
-    "itemTemplateHint": "會加到戰利品清單最後面。"
+    "itemTemplateHint": "會加到戰利品清單最後面。",
+    "lootToBankHint": "發布後，這些道具會自動放入公會倉庫，並與此點名關聯。"
   },
   "walletPage": {
     "wallet": "錢包",
@@ -383,7 +384,9 @@
     "errorDuplicateItemRequest": "您已經有一筆此物品的申請正在審核中。",
     "errorItemUnavailable": "此物品已不在公會倉庫中。",
     "errorNotMember": "只有公會成員可以提出申請。",
-    "errorGeneric": "發生錯誤，請再試一次。"
+    "errorGeneric": "發生錯誤，請再試一次。",
+    "fromCheckin": "來自點名：{title}",
+    "untitledCheckin": "已刪除的點名"
   },
   "notificationsCard": {
     "notifications": "通知",

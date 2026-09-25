@@ -383,6 +383,9 @@ export default function CheckinPage() {
                         />
                       )}
                     </LootListEditor>
+                    {draft.lootList.length > 0 && (
+                      <p className="type-caption text-hint -mt-2">{t('lootToBankHint')}</p>
+                    )}
 
                     <TextField>
                       <Label>{t('imageUrlPlaceholder')}</Label>

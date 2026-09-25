@@ -29,6 +29,8 @@ export interface GuildBankItem {
   donatedBy: string;
   donatedAt: string;
   quantity: number;
+  checkinId?: string;
+  checkinTitle?: string;
 }
 
 export interface GuildBank {

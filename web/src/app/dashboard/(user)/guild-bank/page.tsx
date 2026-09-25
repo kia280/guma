@@ -17,6 +17,7 @@ import {
   Alert,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
 import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-bank';
@@ -406,6 +407,15 @@ export default function GuildBankPage() {
                         {item.rarity}
                       </Chip>
                     </div>
+                    {item.checkinId && (
+                      <Link
+                        href={`/dashboard/attendance/${item.checkinId}`}
+                        className="mt-1 flex min-w-0 items-center gap-1 rounded type-caption text-hint hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      >
+                        <Icon icon="solar:clipboard-check-linear" width={14} className="shrink-0" />
+                        <span className="truncate">{t('fromCheckin', { title: item.checkinTitle || t('untitledCheckin') })}</span>
+                      </Link>
+                    )}
                   </div>
                   <Tooltip delay={0}>
                     <Button
