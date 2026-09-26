@@ -494,7 +494,6 @@ type ProtoGuildBank = {
   guild_id?: string;
   balance?: number | string;
   currency?: string;
-  goal?: number | string;
   updated_at?: string;
 };
 
@@ -503,7 +502,6 @@ export const toGuildBank = (raw: ProtoGuildBank): GuildBank => ({
   guildId: raw.guild_id ?? '',
   balance: fromMinorUnits(raw.balance),
   currency: raw.currency ?? 'gold',
-  goal: fromMinorUnits(raw.goal),
   updatedAt: ts(raw.updated_at),
 });
 
