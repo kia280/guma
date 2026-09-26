@@ -117,6 +117,7 @@ export interface ApiClient {
   createCheckin(guildId: string, req: CreateCheckinRequest): Promise<CheckinEntry>;
   updateCheckin(guildId: string, id: string, patch: UpdateCheckinRequest): Promise<CheckinEntry>;
   deleteCheckin(guildId: string, id: string): Promise<void>;
+  cancelCheckin(guildId: string, id: string): Promise<CheckinEntry>;
   submitAttendance(guildId: string, checkinId: string, notes?: string): Promise<AttendanceMember>;
   listAttendees(guildId: string, checkinId: string): Promise<AttendanceMember[]>;
   listCheckinTemplates(guildId: string): Promise<CheckinTemplate[]>;

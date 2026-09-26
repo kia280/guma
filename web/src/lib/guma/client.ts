@@ -310,6 +310,10 @@ export const gumaApiClient: ApiClient = {
   deleteCheckin: async (guildId, id) => {
     await http.delete(`/v1/guilds/${guildId}/checkins/${id}`);
   },
+  cancelCheckin: async (guildId, id) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${id}/cancel`, {});
+    return toCheckin(data.checkin);
+  },
   listCheckinTemplates: async (guildId) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/checkin-templates`);
     return (data.templates ?? []).map(toCheckinTemplate);

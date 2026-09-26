@@ -418,9 +418,21 @@ const baseMockApiClient: ApiClient = {
   deleteCheckin: async (_guildId, id) => {
     store.checkins = store.checkins.filter(c => c.id !== id);
   },
+  cancelCheckin: async (_guildId, id) => {
+    const entry = store.checkins.find(c => c.id === id);
+    if (!entry) throw new Error('not found');
+    if (entry.status !== CheckinStatus.OPEN || (entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now())) {
+      throw Object.assign(new Error('check-in is no longer open'), { response: { status: 400 } });
+    }
+    entry.status = CheckinStatus.CANCELLED;
+    return entry;
+  },
   submitAttendance: async (_guildId, checkinId, notes): Promise<AttendanceMember> => {
     const entry = store.checkins.find(c => c.id === checkinId);
     if (!entry) throw new Error('not found');
+    if (entry.status === CheckinStatus.CANCELLED) {
+      throw Object.assign(new Error('check-in has been cancelled'), { response: { status: 400 } });
+    }
     if (entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now()) {
       throw Object.assign(new Error('check-in window has expired'), { response: { status: 400 } });
     }

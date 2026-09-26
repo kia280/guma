@@ -39,6 +39,7 @@ type CheckIn struct {
 	LootList        []models.Item
 	AttendanceCount int32
 	IsExpired       bool
+	IsCancelled     bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -57,7 +58,7 @@ type CheckInAttendee struct {
 // ListParams holds the inputs for List.
 type ListParams struct {
 	GuildID  string
-	Status   string // "active" | "expired" | ""
+	Status   string // "active" | "expired" | "cancelled" | ""
 	PageSize int
 	Offset   int
 }
@@ -113,6 +114,7 @@ type checkinRow struct {
 	LootList        []byte
 	AttendanceCount int32
 	IsExpired       bool
+	IsCancelled     bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -163,7 +165,7 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 			Title: r.Title, Description: r.Description,
 			Datetime: r.Datetime, ExpireTime: r.ExpireTime,
 			ImageUrl: r.ImageUrl, LootList: r.LootList,
-			AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired,
+			AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired, IsCancelled: r.IsCancelled,
 			CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 		}))
 	}
@@ -196,7 +198,7 @@ func (s *Service) Get(ctx context.Context, guildIDStr, checkinIDStr string) (*Ch
 		Title: r.Title, Description: r.Description,
 		Datetime: r.Datetime, ExpireTime: r.ExpireTime,
 		ImageUrl: r.ImageUrl, LootList: r.LootList,
-		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired,
+		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired, IsCancelled: r.IsCancelled,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 	}), nil
 }
@@ -271,7 +273,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 		Title: r.Title, Description: r.Description,
 		Datetime: r.Datetime, ExpireTime: r.ExpireTime,
 		ImageUrl: r.ImageUrl, LootList: r.LootList,
-		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired,
+		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired, IsCancelled: r.IsCancelled,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 	})
 	s.logger.Info().Str("checkin_id", c.ID).Str("guild_id", p.GuildID).Int("bank_items", len(loot)).Msg("checkin created")
@@ -311,7 +313,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*CheckIn, error) 
 		Title: r.Title, Description: r.Description,
 		Datetime: r.Datetime, ExpireTime: r.ExpireTime,
 		ImageUrl: r.ImageUrl, LootList: r.LootList,
-		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired,
+		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired, IsCancelled: r.IsCancelled,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 	}), nil
 }
@@ -336,6 +338,50 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, checkinIDStr string) e
 	return nil
 }
 
+// Cancel marks an open check-in as cancelled so no further attendance is accepted.
+func (s *Service) Cancel(ctx context.Context, guildIDStr, checkinIDStr, userIDStr string) (*CheckIn, error) {
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
+	}
+	checkinID, err := uuid.Parse(checkinIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
+	}
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
+		return nil, err
+	}
+
+	current, err := s.q.GetCheckin(ctx, db.GetCheckinParams{ID: checkinID, GuildID: guildID})
+	if err != nil {
+		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
+	}
+	if err := checkCancellable(current.IsCancelled, current.IsExpired); err != nil {
+		return nil, err
+	}
+
+	r, err := s.q.CancelCheckin(ctx, db.CancelCheckinParams{ID: checkinID, GuildID: guildID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: check-in is no longer open", errs.ErrFailedPrecondition)
+		}
+		return nil, fmt.Errorf("%w: cancel checkin: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("checkin_id", checkinIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).Msg("checkin cancelled")
+	return toCheckIn(checkinRow{
+		ID: r.ID, GuildID: r.GuildID, CreatedBy: r.CreatedBy,
+		Title: r.Title, Description: r.Description,
+		Datetime: r.Datetime, ExpireTime: r.ExpireTime,
+		ImageUrl: r.ImageUrl, LootList: r.LootList,
+		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired, IsCancelled: r.IsCancelled,
+		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
+	}), nil
+}
+
 // SubmitAttendance records a user's attendance for a check-in.
 func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr, userIDStr, notes string) (*CheckInAttendee, error) {
 	guildID, err := uuid.Parse(guildIDStr)
@@ -355,12 +401,12 @@ func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr
 		return nil, err
 	}
 
-	expireTime, err := s.q.GetCheckinExpireTime(ctx, db.GetCheckinExpireTimeParams{ID: checkinID, GuildID: guildID})
+	window, err := s.q.GetCheckinAttendanceWindow(ctx, db.GetCheckinAttendanceWindowParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
-	if time.Now().UTC().After(expireTime) {
-		return nil, fmt.Errorf("%w: check-in window has expired", errs.ErrFailedPrecondition)
+	if err := checkAttendanceOpen(window.ExpireTime, window.IsCancelled, time.Now().UTC()); err != nil {
+		return nil, err
 	}
 
 	info, _ := s.q.GetUserDisplayAndAvatar(ctx, userID)
@@ -426,6 +472,26 @@ func (s *Service) ListAttendees(ctx context.Context, guildIDStr, checkinIDStr st
 
 // --- helpers ---
 
+func checkCancellable(isCancelled, isExpired bool) error {
+	if isCancelled {
+		return fmt.Errorf("%w: check-in is already cancelled", errs.ErrFailedPrecondition)
+	}
+	if isExpired {
+		return fmt.Errorf("%w: check-in has already finished", errs.ErrFailedPrecondition)
+	}
+	return nil
+}
+
+func checkAttendanceOpen(expireTime time.Time, isCancelled bool, now time.Time) error {
+	if isCancelled {
+		return fmt.Errorf("%w: check-in has been cancelled", errs.ErrFailedPrecondition)
+	}
+	if now.After(expireTime) {
+		return fmt.Errorf("%w: check-in window has expired", errs.ErrFailedPrecondition)
+	}
+	return nil
+}
+
 func normalizeAttendanceNotes(notes string) (string, error) {
 	notes = strings.TrimSpace(notes)
 	if utf8.RuneCountInString(notes) > maxAttendanceNotes {
@@ -440,7 +506,7 @@ func toCheckIn(r checkinRow) *CheckIn {
 		Title: r.Title, Description: r.Description,
 		Datetime: r.Datetime, ExpireTime: r.ExpireTime,
 		ImageURL: r.ImageUrl, AttendanceCount: r.AttendanceCount,
-		IsExpired: r.IsExpired, CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
+		IsExpired: r.IsExpired, IsCancelled: r.IsCancelled, CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 		LootList: []models.Item{},
 	}
 	if len(r.LootList) > 0 {

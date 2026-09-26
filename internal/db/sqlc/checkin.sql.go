@@ -12,6 +12,64 @@ import (
 	"github.com/google/uuid"
 )
 
+const cancelCheckin = `-- name: CancelCheckin :one
+UPDATE checkins SET cancelled_at = NOW(), updated_at = NOW()
+WHERE id = $1 AND guild_id = $2 AND cancelled_at IS NULL AND expire_time >= NOW()
+RETURNING id, guild_id, created_by, title,
+          COALESCE(description, '') AS description,
+          TO_CHAR(datetime    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS datetime,
+          TO_CHAR(expire_time AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS expire_time,
+          COALESCE(image_url, '') AS image_url,
+          loot_list, attendance_count,
+          (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          created_at, updated_at
+`
+
+type CancelCheckinParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type CancelCheckinRow struct {
+	ID              uuid.UUID
+	GuildID         uuid.UUID
+	CreatedBy       uuid.UUID
+	Title           string
+	Description     string
+	Datetime        string
+	ExpireTime      string
+	ImageUrl        string
+	LootList        []byte
+	AttendanceCount int32
+	IsExpired       bool
+	IsCancelled     bool
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+func (q *Queries) CancelCheckin(ctx context.Context, arg CancelCheckinParams) (CancelCheckinRow, error) {
+	row := q.db.QueryRow(ctx, cancelCheckin, arg.ID, arg.GuildID)
+	var i CancelCheckinRow
+	err := row.Scan(
+		&i.ID,
+		&i.GuildID,
+		&i.CreatedBy,
+		&i.Title,
+		&i.Description,
+		&i.Datetime,
+		&i.ExpireTime,
+		&i.ImageUrl,
+		&i.LootList,
+		&i.AttendanceCount,
+		&i.IsExpired,
+		&i.IsCancelled,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const checkinExists = `-- name: CheckinExists :one
 SELECT EXISTS(SELECT 1 FROM checkins WHERE id = $1 AND guild_id = $2)
 `
@@ -42,8 +100,9 @@ func (q *Queries) CountCheckinAttendees(ctx context.Context, checkinID uuid.UUID
 const countCheckins = `-- name: CountCheckins :one
 SELECT COUNT(*) FROM checkins WHERE guild_id = $1
   AND CASE
-    WHEN $2::text = 'active'  THEN expire_time >= NOW()
-    WHEN $2::text = 'expired' THEN expire_time < NOW()
+    WHEN $2::text = 'active'    THEN cancelled_at IS NULL AND expire_time >= NOW()
+    WHEN $2::text = 'expired'   THEN cancelled_at IS NULL AND expire_time < NOW()
+    WHEN $2::text = 'cancelled' THEN cancelled_at IS NOT NULL
     ELSE true
   END
 `
@@ -77,6 +136,7 @@ RETURNING id, guild_id, created_by, title,
           COALESCE(image_url, '') AS image_url,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
           created_at, updated_at
 `
 
@@ -103,6 +163,7 @@ type CreateCheckinRow struct {
 	LootList        []byte
 	AttendanceCount int32
 	IsExpired       bool
+	IsCancelled     bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -131,6 +192,7 @@ func (q *Queries) CreateCheckin(ctx context.Context, arg CreateCheckinParams) (C
 		&i.LootList,
 		&i.AttendanceCount,
 		&i.IsExpired,
+		&i.IsCancelled,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -162,6 +224,7 @@ SELECT id, guild_id, created_by, title,
        COALESCE(image_url, '') AS image_url,
        loot_list, attendance_count,
        (expire_time < NOW())::bool AS is_expired,
+       (cancelled_at IS NOT NULL)::bool AS is_cancelled,
        created_at, updated_at
 FROM checkins WHERE id = $1 AND guild_id = $2
 `
@@ -183,6 +246,7 @@ type GetCheckinRow struct {
 	LootList        []byte
 	AttendanceCount int32
 	IsExpired       bool
+	IsCancelled     bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -202,26 +266,33 @@ func (q *Queries) GetCheckin(ctx context.Context, arg GetCheckinParams) (GetChec
 		&i.LootList,
 		&i.AttendanceCount,
 		&i.IsExpired,
+		&i.IsCancelled,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const getCheckinExpireTime = `-- name: GetCheckinExpireTime :one
-SELECT expire_time FROM checkins WHERE id = $1 AND guild_id = $2
+const getCheckinAttendanceWindow = `-- name: GetCheckinAttendanceWindow :one
+SELECT expire_time, (cancelled_at IS NOT NULL)::bool AS is_cancelled
+FROM checkins WHERE id = $1 AND guild_id = $2
 `
 
-type GetCheckinExpireTimeParams struct {
+type GetCheckinAttendanceWindowParams struct {
 	ID      uuid.UUID
 	GuildID uuid.UUID
 }
 
-func (q *Queries) GetCheckinExpireTime(ctx context.Context, arg GetCheckinExpireTimeParams) (time.Time, error) {
-	row := q.db.QueryRow(ctx, getCheckinExpireTime, arg.ID, arg.GuildID)
-	var expire_time time.Time
-	err := row.Scan(&expire_time)
-	return expire_time, err
+type GetCheckinAttendanceWindowRow struct {
+	ExpireTime  time.Time
+	IsCancelled bool
+}
+
+func (q *Queries) GetCheckinAttendanceWindow(ctx context.Context, arg GetCheckinAttendanceWindowParams) (GetCheckinAttendanceWindowRow, error) {
+	row := q.db.QueryRow(ctx, getCheckinAttendanceWindow, arg.ID, arg.GuildID)
+	var i GetCheckinAttendanceWindowRow
+	err := row.Scan(&i.ExpireTime, &i.IsCancelled)
+	return i, err
 }
 
 const getUserDisplayAndAvatar = `-- name: GetUserDisplayAndAvatar :one
@@ -395,12 +466,14 @@ SELECT id, guild_id, created_by, title,
        COALESCE(image_url, '') AS image_url,
        loot_list, attendance_count,
        (expire_time < NOW())::bool AS is_expired,
+       (cancelled_at IS NOT NULL)::bool AS is_cancelled,
        created_at, updated_at
 FROM checkins
 WHERE guild_id = $1
   AND CASE
-    WHEN $2::text = 'active'  THEN expire_time >= NOW()
-    WHEN $2::text = 'expired' THEN expire_time < NOW()
+    WHEN $2::text = 'active'    THEN cancelled_at IS NULL AND expire_time >= NOW()
+    WHEN $2::text = 'expired'   THEN cancelled_at IS NULL AND expire_time < NOW()
+    WHEN $2::text = 'cancelled' THEN cancelled_at IS NOT NULL
     ELSE true
   END
 ORDER BY datetime DESC
@@ -426,6 +499,7 @@ type ListCheckinsRow struct {
 	LootList        []byte
 	AttendanceCount int32
 	IsExpired       bool
+	IsCancelled     bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -456,6 +530,7 @@ func (q *Queries) ListCheckins(ctx context.Context, arg ListCheckinsParams) ([]L
 			&i.LootList,
 			&i.AttendanceCount,
 			&i.IsExpired,
+			&i.IsCancelled,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -486,6 +561,7 @@ RETURNING id, guild_id, created_by, title,
           COALESCE(image_url, '') AS image_url,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
           created_at, updated_at
 `
 
@@ -512,6 +588,7 @@ type UpdateCheckinRow struct {
 	LootList        []byte
 	AttendanceCount int32
 	IsExpired       bool
+	IsCancelled     bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -540,6 +617,7 @@ func (q *Queries) UpdateCheckin(ctx context.Context, arg UpdateCheckinParams) (U
 		&i.LootList,
 		&i.AttendanceCount,
 		&i.IsExpired,
+		&i.IsCancelled,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
