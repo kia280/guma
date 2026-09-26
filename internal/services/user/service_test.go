@@ -155,6 +155,26 @@ func TestValidateUpdateParams_AllowsUnicodeUsername(t *testing.T) {
 	}
 }
 
+func TestValidateUpdateParams_NormalizesToNFC(t *testing.T) {
+	decomposed := "Zoe\u0308.Mu\u0308ller"
+	composed := "Zo\u00eb.M\u00fcller"
+	require.NotEqual(t, composed, decomposed)
+
+	got, err := validateUpdateParams(UpdateParams{DisplayName: decomposed, Username: decomposed, Bio: decomposed})
+	require.NoError(t, err)
+	assert.Equal(t, composed, got.Username)
+	assert.Equal(t, composed, got.DisplayName)
+	assert.Equal(t, composed, got.Bio)
+}
+
+func TestValidateUpdateParams_CountsNormalizedLength(t *testing.T) {
+	username := strings.Repeat("e\u0301", MaxUsernameLength)
+
+	got, err := validateUpdateParams(UpdateParams{DisplayName: "Ada", Username: username})
+	require.NoError(t, err)
+	assert.Equal(t, strings.Repeat("\u00e9", MaxUsernameLength), got.Username)
+}
+
 func TestValidateUpdateParams_RejectsInvalidUnicodeUsername(t *testing.T) {
 	tests := []struct {
 		name     string

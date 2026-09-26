@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/rs/zerolog"
+	"golang.org/x/text/unicode/norm"
 
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
@@ -385,9 +386,9 @@ func (s *Service) UpdateMe(ctx context.Context, userID, kratosCookie string, p U
 }
 
 func validateUpdateParams(p UpdateParams) (UpdateParams, error) {
-	p.DisplayName = strings.TrimSpace(p.DisplayName)
-	p.Username = strings.TrimSpace(p.Username)
-	p.Bio = strings.TrimSpace(p.Bio)
+	p.DisplayName = norm.NFC.String(strings.TrimSpace(p.DisplayName))
+	p.Username = norm.NFC.String(strings.TrimSpace(p.Username))
+	p.Bio = norm.NFC.String(strings.TrimSpace(p.Bio))
 	p.AvatarURL = strings.TrimSpace(p.AvatarURL)
 
 	switch {
