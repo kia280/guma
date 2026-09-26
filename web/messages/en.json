@@ -237,10 +237,14 @@
     "ended": "Ended",
     "noLotteries": "No lotteries in this category",
     "createLottery": "Create lottery",
-    "statusTabs": "Lottery status"
+    "statusTabs": "Lottery status",
+    "drawStarted": "{title} is drawing now",
+    "watchDraw": "Watch draw"
   },
   "lotteryCard": {
     "drawComplete": "Draw complete",
+    "drawingNow": "Drawing now",
+    "watchDraw": "Watch draw",
     "prizePool": "Prize Pool",
     "ticketPrice": "Ticket price",
     "drawDate": "Draw date",
