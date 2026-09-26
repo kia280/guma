@@ -703,6 +703,7 @@
     "description": "發生錯誤",
     "goBack": "返回",
     "goHome": "回到首頁",
+    "signIn": "登入",
     "loading": "載入中...",
     "errorIdLabel": "錯誤 ID：",
     "debugInfoLabel": "除錯資訊：",
