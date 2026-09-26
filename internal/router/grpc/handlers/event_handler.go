@@ -179,6 +179,7 @@ func eventToProto(e *eventsvc.GuildEvent) *gumav1.GuildEvent {
 		Id:               e.ID,
 		GuildId:          e.GuildID,
 		CreatedBy:        e.CreatedBy,
+		CreatedByName:    e.CreatedByName,
 		Title:            e.Title,
 		Description:      e.Description,
 		Type:             e.Type,

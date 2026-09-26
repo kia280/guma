@@ -20,6 +20,7 @@ type GuildEvent struct {
 	ID               string
 	GuildID          string
 	CreatedBy        string
+	CreatedByName    string
 	Title            string
 	Description      string
 	Type             string
@@ -100,6 +101,7 @@ type eventRow struct {
 	ID               uuid.UUID
 	GuildID          uuid.UUID
 	CreatedBy        uuid.UUID
+	CreatedByName    string
 	Title            string
 	Description      string
 	Type             string
@@ -311,7 +313,7 @@ func (s *Service) ListUpcoming(ctx context.Context, guildIDStr string, limit int
 
 func toEvent(r eventRow) *GuildEvent {
 	e := &GuildEvent{
-		ID: r.ID.String(), GuildID: r.GuildID.String(), CreatedBy: r.CreatedBy.String(),
+		ID: r.ID.String(), GuildID: r.GuildID.String(), CreatedBy: r.CreatedBy.String(), CreatedByName: r.CreatedByName,
 		Title: r.Title, Description: r.Description, Type: r.Type,
 		StartDate: r.StartDate, EndDate: r.EndDate, IsAllDay: r.IsAllDay,
 		Location: r.Location, Priority: r.Priority, IsRecurring: r.IsRecurring,
