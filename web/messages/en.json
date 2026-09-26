@@ -188,6 +188,7 @@
     "recipient": "Recipient",
     "searchRecipient": "Search by username or email",
     "available": "Available:",
+    "insufficientBalance": "Insufficient balance",
     "cancel": "Cancel",
     "depositMoney": "Deposit Money",
     "currentBalanceLabel": "Current balance:",
