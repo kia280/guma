@@ -687,6 +687,7 @@ type ProtoGuildEvent = {
   recurring_pattern?: unknown;
   priority?: string;
   created_by?: string;
+  created_by_name?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -705,6 +706,7 @@ export const toGuildEvent = (raw: ProtoGuildEvent): GuildEvent => ({
   recurringPattern: raw.recurring_pattern as GuildEvent['recurringPattern'],
   priority: (raw.priority as GuildEvent['priority']) || 'medium',
   createdBy: raw.created_by ?? '',
+  createdByName: raw.created_by_name || undefined,
   createdAt: ts(raw.created_at),
   updatedAt: ts(raw.updated_at),
 });
