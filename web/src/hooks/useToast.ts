@@ -4,6 +4,16 @@ import { toast } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 
+type ToastAction = {
+  label: string;
+  onPress: () => void;
+};
+
+type InfoToastOptions = {
+  description?: string;
+  action?: ToastAction;
+};
+
 type ErrorToastOptions = {
   description?: string;
   retry?: () => void;
@@ -11,6 +21,7 @@ type ErrorToastOptions = {
 };
 
 const RETRY_TIMEOUT_MS = 8000;
+const ACTION_TIMEOUT_MS = 10000;
 
 const openErrorToasts = new Map<string, string>();
 
@@ -47,9 +58,27 @@ export function useToast() {
       return id;
     };
 
+    const info = (title: string, { description, action }: InfoToastOptions = {}) => {
+      const id: string = toast.info(title, {
+        description,
+        timeout: action ? ACTION_TIMEOUT_MS : undefined,
+        actionProps: action
+          ? {
+              children: action.label,
+              variant: 'tertiary',
+              onPress: () => {
+                toast.close(id);
+                action.onPress();
+              },
+            }
+          : undefined,
+      });
+      return id;
+    };
+
     return {
       success: (title: string, description?: string) => toast.success(title, { description }),
-      info: (title: string, description?: string) => toast.info(title, { description }),
+      info,
       error,
       actionFailed: () => error(translate.current('actionFailed')),
       loadFailed: (retry?: () => void, key = 'load') =>
