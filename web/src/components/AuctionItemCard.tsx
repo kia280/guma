@@ -16,7 +16,6 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { getRarityColor } from '@/components/ItemThumbnail';
 import { useCountdown } from '@/hooks/useNow';
-import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
@@ -44,14 +43,11 @@ const getCategoryIcon = (category: ItemCategory) => {
   return icons[category] ?? 'solar:box-linear';
 };
 
-const getAuctionProgress = (now: number, startTime: string, endTime: string) => {
-  const start = new Date(startTime);
-  const end = new Date(endTime);
+const getRemainingPercent = (now: number, startTime: string, endTime: string) => {
+  const start = new Date(startTime).getTime();
+  const end = new Date(endTime).getTime();
 
-  const total = end.getTime() - start.getTime();
-  const elapsed = now - start.getTime();
-
-  return Math.min(100, Math.max(0, (elapsed / total) * 100));
+  return Math.min(100, Math.max(0, ((end - now) / (end - start)) * 100));
 };
 
 interface AuctionItemCardProps {
@@ -71,16 +67,20 @@ const AuctionItemCard = ({
   const labels = useTranslations('createAuctionModal');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
-  const formatCountdown = useCountdownFormatter();
   const [bidInput, setBidInput] = useState<number | null>(null);
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput ?? minimumBid;
 
   const isActive = item.status === AuctionStatus.ACTIVE;
 
-  const { now, remainingMs, isExpired } = useCountdown(item.endTime);
-  const timeRemaining = isExpired ? t('ended') : formatCountdown(remainingMs);
-  const progress = getAuctionProgress(now, item.startTime, item.endTime);
+  const { now } = useCountdown(item.endTime);
+  const endsAt = format.dateTime(new Date(item.endTime), {
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const remainingPercent = getRemainingPercent(now, item.startTime, item.endTime);
 
   const hasBidAmount = Number.isFinite(bidAmount);
   const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
@@ -95,7 +95,7 @@ const AuctionItemCard = ({
     }
   };
 
-  const progressColor = progress > 80 ? 'danger' : progress > 50 ? 'warning' : 'success';
+  const progressColor = remainingPercent < 20 ? 'danger' : remainingPercent < 50 ? 'warning' : 'success';
 
   return (
     <>
@@ -138,9 +138,9 @@ const AuctionItemCard = ({
                   {t(`status.${item.status}`)}
                 </Chip>
                 {isActive && (
-                  <div className="flex items-center gap-1 type-caption text-hint">
+                  <div className="flex items-center gap-1 whitespace-nowrap type-caption text-hint">
                     <Icon icon="solar:clock-circle-linear" width={12} />
-                    <span>{timeRemaining}</span>
+                    <span>{t('endsAt', { time: endsAt })}</span>
                   </div>
                 )}
               </div>
@@ -154,13 +154,13 @@ const AuctionItemCard = ({
               {isActive && (
                 <div className="space-y-1.5">
                   <div className="flex justify-between type-caption text-hint">
-                    <span>{t('timeElapsed')}</span>
-                    <span>{Math.round(progress)}%</span>
+                    <span>{t('timeRemaining')}</span>
+                    <span>{Math.round(remainingPercent)}%</span>
                   </div>
                   <div className="w-full bg-default rounded-full overflow-hidden h-2">
                     <div
                       className={`h-full transition-all ${PROGRESS_FILL[progressColor]}`}
-                      style={{ width: `${progress}%` }}
+                      style={{ width: `${remainingPercent}%` }}
                     />
                   </div>
                 </div>
