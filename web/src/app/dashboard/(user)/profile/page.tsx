@@ -41,6 +41,8 @@ const USERNAME_MAX_LENGTH = 32;
 const BIO_MAX_LENGTH = 500;
 const USERNAME_PATTERN = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}._-]*$/u;
 
+const normalizeField = (value: string) => value.trim().normalize('NFC');
+
 type DraftErrors = {
   displayName?: string;
   username?: string;
@@ -71,8 +73,8 @@ export default function ProfilePage() {
 
   const draftErrors = React.useMemo<DraftErrors>(() => {
     const errors: DraftErrors = {};
-    const trimmedDisplayName = displayName.trim();
-    const trimmedUsername = username.trim();
+    const trimmedDisplayName = normalizeField(displayName);
+    const trimmedUsername = normalizeField(username);
     if (!trimmedDisplayName) {
       errors.displayName = t('displayNameRequired');
     } else if ([...trimmedDisplayName].length > DISPLAY_NAME_MAX_LENGTH) {
@@ -87,7 +89,7 @@ export default function ProfilePage() {
     } else if (usernameTaken && trimmedUsername === usernameTaken) {
       errors.username = t('usernameTaken');
     }
-    if ([...bio.trim()].length > BIO_MAX_LENGTH) {
+    if ([...normalizeField(bio)].length > BIO_MAX_LENGTH) {
       errors.bio = t('bioTooLong', { max: BIO_MAX_LENGTH });
     }
     return errors;
@@ -111,12 +113,12 @@ export default function ProfilePage() {
     }
     setIsSaving(true);
     setSaveError('');
-    const trimmedUsername = username.trim();
+    const trimmedUsername = normalizeField(username);
     try {
       const updated = await apiClient.updateMe({
-        displayName: displayName.trim(),
+        displayName: normalizeField(displayName),
         username: trimmedUsername,
-        bio: bio.trim(),
+        bio: normalizeField(bio),
       });
       setUser(updated);
       setIsEditing(false);
