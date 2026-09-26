@@ -188,6 +188,7 @@
     "recipient": "收款人",
     "searchRecipient": "以用戶名或電子郵件搜尋",
     "available": "可用：",
+    "insufficientBalance": "餘額不足",
     "cancel": "取消",
     "depositMoney": "存款",
     "currentBalanceLabel": "當前餘額：",
