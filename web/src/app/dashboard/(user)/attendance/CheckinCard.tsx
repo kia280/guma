@@ -48,7 +48,7 @@ export function CheckinCard({
   const { remainingMs, isExpired } = useCountdown(status === CheckinStatus.OPEN ? expireTime : null);
   const statusLabel = {
     [CheckinStatus.OPEN]: t('statusActive'),
-    [CheckinStatus.CLOSED]: t('statusClosed'),
+    [CheckinStatus.CANCELLED]: t('statusCancelled'),
     [CheckinStatus.FINISHED]: t('statusCompleted'),
   }[status];
   const canCheckin = status === CheckinStatus.OPEN && !isExpired;
@@ -146,7 +146,15 @@ export function CheckinCard({
             {t('viewDetails')}
           </Button>
         )}
-        {(status === CheckinStatus.CLOSED || (status === CheckinStatus.OPEN && !canCheckin)) && (
+        {status === CheckinStatus.CANCELLED && (
+          <Chip variant="secondary" className="w-full justify-center py-2">
+            <div className="flex items-center gap-1.5">
+              <Icon icon="solar:forbidden-circle-linear" width={14} />
+              <span>{t('checkinCancelled')}</span>
+            </div>
+          </Chip>
+        )}
+        {status === CheckinStatus.OPEN && !canCheckin && (
           <Chip variant="secondary" className="w-full justify-center py-2">
             <div className="flex items-center gap-1.5">
               <Icon icon="solar:lock-keyhole-linear" width={14} />

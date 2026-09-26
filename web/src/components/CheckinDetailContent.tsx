@@ -13,10 +13,12 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { isNotFoundError } from '@/lib/guma/errors';
+import { useGuildPermissions } from '@/lib/permissions';
 import { checkinStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { ConfirmDialog } from './ConfirmDialog';
 import { UserAvatar } from './UserAvatar';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -36,7 +38,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
 
   const statusLabels = {
     [CheckinStatus.OPEN]: t('statusOpen'),
-    [CheckinStatus.CLOSED]: t('statusClosed'),
+    [CheckinStatus.CANCELLED]: t('statusCancelled'),
     [CheckinStatus.FINISHED]: t('statusFinished'),
   };
 
@@ -85,6 +87,8 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const [submitError, setSubmitError] = useState('');
   const checkinModal = useOverlayState();
   const currentUserId = useUserStore(state => state.user?.id);
+  const { can } = useGuildPermissions();
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
 
   if (isMissing) {
     return (
@@ -110,6 +114,17 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const statusColor = checkinStatusColor[entry.status];
   const isOpen_ = entry.status === CheckinStatus.OPEN && !isExpired;
   const hasCheckedIn = !!currentUserId && entry.attendanceList.some(member => member.userId === currentUserId);
+
+  const canCancel = isOpen_ && can('cancelCheckin');
+
+  const handleCancelConfirm = async () => {
+    try {
+      await apiClient.cancelCheckin(guildId, id);
+      notify.success(t('cancelSuccess'));
+    } finally {
+      refetchEntry();
+    }
+  };
 
   const openCheckinModal = () => {
     setSubmitError('');
@@ -187,6 +202,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             {t('checkIn')}
           </Button>
         ) : null}
+        {canCancel && (
+          <Button variant="danger-soft" className="shrink-0" onPress={() => setIsCancelConfirmOpen(true)}>
+            <Icon icon="solar:forbidden-circle-linear" width={16} />
+            {t('cancelCheckin')}
+          </Button>
+        )}
         {!hasCheckedIn && (
           <Modal state={checkinModal}>
           <Modal.Backdrop>
@@ -238,6 +259,16 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           </Modal>
         )}
       </div>
+
+      <ConfirmDialog
+        heading={t('cancelConfirmTitle')}
+        body={t('cancelConfirmBody')}
+        confirmLabel={t('cancelConfirm')}
+        failedMessage={t('cancelFailed')}
+        isOpen={isCancelConfirmOpen}
+        onOpenChange={setIsCancelConfirmOpen}
+        onConfirm={handleCancelConfirm}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Left — attendance + loot */}

@@ -257,6 +257,7 @@ type ProtoCheckIn = {
   loot_list?: ProtoItem[];
   attendance_count?: number;
   is_expired?: boolean;
+  is_cancelled?: boolean;
 };
 
 export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = []): CheckinEntry => {
@@ -264,9 +265,11 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     id: i.id ?? `l-${idx}`,
     name: i.name ?? '',
   }));
-  const status: CheckinStatus = raw.is_expired
-    ? CheckinStatus.FINISHED
-    : CheckinStatus.OPEN;
+  const status: CheckinStatus = raw.is_cancelled
+    ? CheckinStatus.CANCELLED
+    : raw.is_expired
+      ? CheckinStatus.FINISHED
+      : CheckinStatus.OPEN;
   return {
     id: raw.id,
     status,

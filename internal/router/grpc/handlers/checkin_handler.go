@@ -10,9 +10,9 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	"github.com/kia280/guma/internal/session"
 	"github.com/kia280/guma/internal/models"
 	checkinsvc "github.com/kia280/guma/internal/services/checkin"
+	"github.com/kia280/guma/internal/session"
 )
 
 // CheckInHandler is a thin gRPC adapter over the check-in service.
@@ -126,6 +126,22 @@ func (h *CheckInHandler) DeleteCheckIn(ctx context.Context, req *gumav1.DeleteCh
 	return &gumav1.DeleteCheckInResponse{Success: true}, nil
 }
 
+func (h *CheckInHandler) CancelCheckIn(ctx context.Context, req *gumav1.CancelCheckInRequest) (*gumav1.CancelCheckInResponse, error) {
+	if req.GuildId == "" || req.CheckinId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	c, err := h.svc.Cancel(ctx, req.GuildId, req.CheckinId, userID)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.CancelCheckInResponse{Checkin: checkinToProto(c)}, nil
+}
+
 func (h *CheckInHandler) SubmitAttendance(ctx context.Context, req *gumav1.SubmitAttendanceRequest) (*gumav1.SubmitAttendanceResponse, error) {
 	if req.GuildId == "" || req.CheckinId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
@@ -181,6 +197,7 @@ func checkinToProto(c *checkinsvc.CheckIn) *gumav1.CheckIn {
 		LootList:        lootList,
 		AttendanceCount: c.AttendanceCount,
 		IsExpired:       c.IsExpired,
+		IsCancelled:     c.IsCancelled,
 		CreatedAt:       timestamppb.New(c.CreatedAt),
 		UpdatedAt:       timestamppb.New(c.UpdatedAt),
 	}

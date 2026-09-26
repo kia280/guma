@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 	"unicode/utf8"
 
 	"github.com/google/uuid"
@@ -67,5 +68,32 @@ func TestSubmitAttendanceRejectsLongNotesBeforeQuerying(t *testing.T) {
 		"00000000-0000-0000-0000-000000000002",
 		"00000000-0000-0000-0000-000000000003",
 		strings.Repeat("a", maxAttendanceNotes+1))
+	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
+}
+
+func TestCheckCancellable(t *testing.T) {
+	assert.NoError(t, checkCancellable(false, false))
+	assert.ErrorIs(t, checkCancellable(true, false), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkCancellable(false, true), errs.ErrFailedPrecondition)
+}
+
+func TestCheckAttendanceOpen(t *testing.T) {
+	now := time.Date(2026, 9, 26, 12, 0, 0, 0, time.UTC)
+	assert.NoError(t, checkAttendanceOpen(now.Add(time.Hour), false, now))
+	assert.ErrorIs(t, checkAttendanceOpen(now.Add(time.Hour), true, now), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkAttendanceOpen(now.Add(-time.Hour), false, now), errs.ErrFailedPrecondition)
+}
+
+func TestCancelRejectsMalformedIDsBeforeQuerying(t *testing.T) {
+	s := &Service{}
+	const valid = "00000000-0000-0000-0000-000000000001"
+
+	_, err := s.Cancel(context.Background(), "bad", valid, valid)
+	assert.ErrorIs(t, err, errs.ErrNotFound)
+
+	_, err = s.Cancel(context.Background(), valid, "bad", valid)
+	assert.ErrorIs(t, err, errs.ErrNotFound)
+
+	_, err = s.Cancel(context.Background(), valid, valid, "bad")
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }

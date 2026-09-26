@@ -110,6 +110,7 @@ type Checkin struct {
 	AttendanceCount int32
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+	CancelledAt     pgtype.Timestamptz
 }
 
 type CheckinAttendee struct {
