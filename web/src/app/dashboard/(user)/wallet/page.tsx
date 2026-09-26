@@ -14,6 +14,7 @@ import {
   SearchField,
   EmptyState,
   Description,
+  FieldError,
   TextField,
   Pagination,
   useFilter,
@@ -252,6 +253,12 @@ export default function WalletPage() {
   useLiveResource(LIVE_BACKPACK_RESOURCES, refetchBackpack, { guildId });
 
   const balance = wallet?.balance ?? 0;
+  const transferAmountValue = parseGold(transferAmount);
+  const withdrawAmountValue = parseGold(withdrawAmount);
+  const transferExceedsBalance = transferAmountValue > balance;
+  const withdrawExceedsBalance = withdrawAmountValue > balance;
+  const canTransfer = transferAmountValue > 0 && !transferExceedsBalance && Boolean(transferRecipient);
+  const canWithdraw = withdrawAmountValue > 0 && !withdrawExceedsBalance;
 
   const runAction = async (
     action: WalletAction,
@@ -272,8 +279,8 @@ export default function WalletPage() {
   };
 
   const handleTransfer = () => {
-    const amount = parseGold(transferAmount);
-    if (!(amount > 0) || !transferRecipient) return;
+    if (!canTransfer) return;
+    const amount = transferAmountValue;
     return runAction(
       'transfer',
       () => apiClient.transfer(guildId, { recipientId: transferRecipient, amount }),
@@ -286,9 +293,8 @@ export default function WalletPage() {
   };
 
   const handleWithdraw = () => {
-    const amount = parseGold(withdrawAmount);
-    if (!(amount > 0)) return;
-    return runAction('withdraw', () => apiClient.withdraw(guildId, amount), () => {
+    if (!canWithdraw) return;
+    return runAction('withdraw', () => apiClient.withdraw(guildId, withdrawAmountValue), () => {
       setWithdrawAmount('');
       withdrawModalState.close();
     });
@@ -405,19 +411,21 @@ export default function WalletPage() {
                       <Modal.Heading>{t('transferMoney')}</Modal.Heading>
                     </Modal.Header>
                     <Modal.Body className="p-1 flex flex-col gap-3">
-                      <TextField>
+                      <TextField isInvalid={transferExceedsBalance}>
                         <Label>{t('amountLabel')}</Label>
                         <Input
                           autoFocus
                           placeholder="0.00"
                           type="number"
                           min={0}
+                          max={balance}
                           step={GOLD_STEP}
                           inputMode="decimal"
                           value={transferAmount}
                           variant="secondary"
                           onChange={e => setTransferAmount(e.target.value)}
                         />
+                        <FieldError>{t('insufficientBalance')}</FieldError>
                       </TextField>
                       <Autocomplete
                         className="w-full"
@@ -466,7 +474,7 @@ export default function WalletPage() {
                         variant="primary"
                         onPress={handleTransfer}
                         isPending={pendingAction === 'transfer'}
-                        isDisabled={!(parseGold(transferAmount) > 0) || !transferRecipient}
+                        isDisabled={!canTransfer}
                       >
                         {t('transfer')}
                       </Button>
@@ -488,19 +496,21 @@ export default function WalletPage() {
                       <Modal.Heading>{t('withdrawMoney')}</Modal.Heading>
                     </Modal.Header>
                     <Modal.Body className="p-1 flex flex-col gap-3">
-                      <TextField>
+                      <TextField isInvalid={withdrawExceedsBalance}>
                         <Label>{t('amountLabel')}</Label>
                         <Input
                           autoFocus
                           placeholder="0.00"
                           type="number"
                           min={0}
+                          max={balance}
                           step={GOLD_STEP}
                           inputMode="decimal"
                           value={withdrawAmount}
                           variant="secondary"
                           onChange={e => setWithdrawAmount(e.target.value)}
                         />
+                        <FieldError>{t('insufficientBalance')}</FieldError>
                       </TextField>
                       <p className="type-caption text-hint px-1">
                         {t('available')} {formatGold(balance)}
@@ -524,7 +534,7 @@ export default function WalletPage() {
                         variant="primary"
                         onPress={handleWithdraw}
                         isPending={pendingAction === 'withdraw'}
-                        isDisabled={!(parseGold(withdrawAmount) > 0)}
+                        isDisabled={!canWithdraw}
                       >
                         {t('withdraw')}
                       </Button>
