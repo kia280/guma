@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { getRarityColor } from '@/components/ItemThumbnail';
 import { useCountdown } from '@/hooks/useNow';
+import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
@@ -67,13 +68,15 @@ const AuctionItemCard = ({
   const labels = useTranslations('createAuctionModal');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
+  const formatCountdown = useCountdownFormatter();
   const [bidInput, setBidInput] = useState<number | null>(null);
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput ?? minimumBid;
 
   const isActive = item.status === AuctionStatus.ACTIVE;
 
-  const { now } = useCountdown(item.endTime);
+  const { now, remainingMs, isExpired } = useCountdown(item.endTime);
+  const timeRemaining = isExpired ? t('ended') : formatCountdown(remainingMs);
   const endsAt = format.dateTime(new Date(item.endTime), {
     month: 'numeric',
     day: 'numeric',
@@ -155,7 +158,7 @@ const AuctionItemCard = ({
                 <div className="space-y-1.5">
                   <div className="flex justify-between type-caption text-hint">
                     <span>{t('timeRemaining')}</span>
-                    <span>{Math.round(remainingPercent)}%</span>
+                    <span>{timeRemaining}</span>
                   </div>
                   <div className="w-full bg-default rounded-full overflow-hidden h-2">
                     <div
