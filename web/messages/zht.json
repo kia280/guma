@@ -277,6 +277,9 @@
   "auctionItemCard": {
     "timeRemaining": "剩餘時間",
     "endsAt": "{time} 結束",
+    "startsAt": "{time} 開始",
+    "startsIn": "距離開始",
+    "viewBids": "查看出價",
     "currentBid": "目前出價",
     "leadingBidder": "領先競標者",
     "soldBy": "賣家",
