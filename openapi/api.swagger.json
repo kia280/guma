@@ -5606,6 +5606,9 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "createdByName": {
+          "type": "string"
         }
       }
     },

@@ -647,6 +647,7 @@ const baseMockApiClient: ApiClient = {
       id: `evt-${Date.now()}`,
       participants: [],
       createdBy: currentUser.id,
+      createdByName: currentUser.displayName,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
