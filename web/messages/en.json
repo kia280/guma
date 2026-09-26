@@ -277,6 +277,9 @@
   "auctionItemCard": {
     "timeRemaining": "Time remaining",
     "endsAt": "Ends {time}",
+    "startsAt": "Starts {time}",
+    "startsIn": "Starts in",
+    "viewBids": "View bids",
     "currentBid": "Current bid",
     "leadingBidder": "Leading bidder",
     "soldBy": "Sold by",
