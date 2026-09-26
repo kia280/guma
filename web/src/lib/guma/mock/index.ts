@@ -158,7 +158,6 @@ const mockGuildBankData = (guildId: string): GuildBank => ({
   guildId,
   balance: 8750,
   currency: 'gold',
-  goal: 10000,
   updatedAt: new Date().toISOString(),
 });
 
