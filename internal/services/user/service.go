@@ -63,7 +63,7 @@ const (
 	uniqueViolation      = "23505"
 )
 
-var usernamePattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+var usernamePattern = regexp.MustCompile(`^[\p{L}\p{N}][\p{L}\p{M}\p{N}._-]*$`)
 
 // Stats holds aggregate stats for a user.
 type Stats struct {
@@ -397,10 +397,10 @@ func validateUpdateParams(p UpdateParams) (UpdateParams, error) {
 		return p, fmt.Errorf("%w: display_name must be at most %d characters", errs.ErrInvalidArgument, MaxDisplayNameLength)
 	case p.Username == "":
 		return p, fmt.Errorf("%w: username is required", errs.ErrInvalidArgument)
-	case len(p.Username) < MinUsernameLength || len(p.Username) > MaxUsernameLength:
+	case utf8.RuneCountInString(p.Username) < MinUsernameLength || utf8.RuneCountInString(p.Username) > MaxUsernameLength:
 		return p, fmt.Errorf("%w: username must be between %d and %d characters", errs.ErrInvalidArgument, MinUsernameLength, MaxUsernameLength)
 	case !usernamePattern.MatchString(p.Username):
-		return p, fmt.Errorf("%w: username may only contain letters, digits, dots, underscores, and hyphens", errs.ErrInvalidArgument)
+		return p, fmt.Errorf("%w: username may only contain letters, digits, dots, underscores, and hyphens and must start with a letter or digit", errs.ErrInvalidArgument)
 	case utf8.RuneCountInString(p.Bio) > MaxBioLength:
 		return p, fmt.Errorf("%w: bio must be at most %d characters", errs.ErrInvalidArgument, MaxBioLength)
 	}

@@ -39,7 +39,7 @@ const DISPLAY_NAME_MAX_LENGTH = 50;
 const USERNAME_MIN_LENGTH = 3;
 const USERNAME_MAX_LENGTH = 32;
 const BIO_MAX_LENGTH = 500;
-const USERNAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const USERNAME_PATTERN = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}._-]*$/u;
 
 type DraftErrors = {
   displayName?: string;
@@ -80,7 +80,7 @@ export default function ProfilePage() {
     }
     if (!trimmedUsername) {
       errors.username = t('usernameRequired');
-    } else if (trimmedUsername.length < USERNAME_MIN_LENGTH || trimmedUsername.length > USERNAME_MAX_LENGTH) {
+    } else if ([...trimmedUsername].length < USERNAME_MIN_LENGTH || [...trimmedUsername].length > USERNAME_MAX_LENGTH) {
       errors.username = t('usernameLength', { min: USERNAME_MIN_LENGTH, max: USERNAME_MAX_LENGTH });
     } else if (!USERNAME_PATTERN.test(trimmedUsername)) {
       errors.username = t('usernameInvalid');

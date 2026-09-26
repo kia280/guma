@@ -145,6 +145,38 @@ func TestValidateUpdateParams(t *testing.T) {
 	}
 }
 
+func TestValidateUpdateParams_AllowsUnicodeUsername(t *testing.T) {
+	for _, username := range []string{"小明明", "測試_成員", "Zoë.Müller", "ユーザー1", "사용자-2", "नमस्ते", strings.Repeat("名", MaxUsernameLength)} {
+		t.Run(username, func(t *testing.T) {
+			got, err := validateUpdateParams(UpdateParams{DisplayName: "Ada", Username: " " + username + " "})
+			require.NoError(t, err)
+			assert.Equal(t, username, got.Username)
+		})
+	}
+}
+
+func TestValidateUpdateParams_RejectsInvalidUnicodeUsername(t *testing.T) {
+	tests := []struct {
+		name     string
+		username string
+		want     string
+	}{
+		{name: "too short in runes", username: "小明", want: "username must be between"},
+		{name: "too long in runes", username: strings.Repeat("名", MaxUsernameLength+1), want: "username must be between"},
+		{name: "ideographic space", username: "小明　明", want: "username may only contain"},
+		{name: "emoji", username: "ada😀", want: "username may only contain"},
+		{name: "full-width punctuation", username: "小明！", want: "username may only contain"},
+		{name: "starts with combining mark", username: "\u0301abc", want: "username may only contain"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := validateUpdateParams(UpdateParams{DisplayName: "Ada", Username: tt.username})
+			require.ErrorIs(t, err, errs.ErrInvalidArgument)
+			assert.Contains(t, err.Error(), tt.want)
+		})
+	}
+}
+
 func TestValidateUpdateParams_DisplayNameCountsRunes(t *testing.T) {
 	p := UpdateParams{DisplayName: strings.Repeat("名", MaxDisplayNameLength), Username: "ada"}
 
