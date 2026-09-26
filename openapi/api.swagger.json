@@ -1021,7 +1021,7 @@
     },
     "/v1/guilds/{guildId}/bank": {
       "get": {
-        "summary": "Get the guild bank summary (balance, goal, top contributors)",
+        "summary": "Get the guild bank summary (balance, top contributors)",
         "operationId": "BankService_GetBank",
         "responses": {
           "200": {
@@ -5527,10 +5527,6 @@
         },
         "currency": {
           "type": "string"
-        },
-        "goal": {
-          "type": "string",
-          "format": "int64"
         },
         "topContributors": {
           "type": "array",
