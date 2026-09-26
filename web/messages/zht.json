@@ -296,6 +296,7 @@
     "leading": "領先",
     "close": "關閉",
     "noBids": "尚無出價",
+    "ended": "已結束",
     "status": {
       "upcoming": "即將開始",
       "active": "進行中",
