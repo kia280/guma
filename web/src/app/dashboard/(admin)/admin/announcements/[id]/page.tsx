@@ -39,7 +39,6 @@ type PendingConfirm = 'delete' | 'unpublish' | 'discard' | null;
 
 const draftKey = (input: AnnouncementDraftInput) =>
   JSON.stringify([input.title, input.content, input.pinned]);
-const hasTitle = (input: AnnouncementDraftInput) => input.title.trim() !== '';
 
 export default function AnnouncementEditorPage() {
   const t = useTranslations('adminPage');
@@ -102,10 +101,6 @@ export default function AnnouncementEditorPage() {
     if (!input) return true;
     const key = draftKey(input);
     if (key === savedKey.current) return true;
-    if (!hasTitle(input)) {
-      setSaveState('dirty');
-      return false;
-    }
 
     setSaveState('saving');
     const request = apiClient.updateAnnouncement(guildId, id, input)
@@ -152,9 +147,7 @@ export default function AnnouncementEditorPage() {
 
   const scheduleSave = () => {
     clearTimeout(timer.current);
-    if (latest.current && hasTitle(latest.current)) {
-      timer.current = setTimeout(() => { void save(); }, AUTOSAVE_DELAY_MS);
-    }
+    timer.current = setTimeout(() => { void save(); }, AUTOSAVE_DELAY_MS);
   };
 
   const update = (patch: Partial<AnnouncementDraftInput>) => {
@@ -181,7 +174,7 @@ export default function AnnouncementEditorPage() {
   };
 
   const leave = async () => {
-    if (hasUnsavedChanges() && (!isDraftRef.current || !hasTitle(latest.current!))) {
+    if (!isDraftRef.current && hasUnsavedChanges()) {
       setPendingConfirm('discard');
       return;
     }
@@ -276,7 +269,7 @@ export default function AnnouncementEditorPage() {
   const canPublish = values.title.trim() !== '' && values.content.trim() !== '';
   const saveStatus = {
     saved: { icon: 'solar:check-circle-linear', className: 'text-hint', label: lastSavedAt ? t('savedAt', { time: formatSavedAt(lastSavedAt) }) : t('saved') },
-    dirty: { icon: 'solar:pen-linear', className: 'text-hint', label: isDraft && !hasTitle(values) ? t('draftTitleRequired') : t('unsavedChanges') },
+    dirty: { icon: 'solar:pen-linear', className: 'text-hint', label: t('unsavedChanges') },
     saving: { icon: 'solar:refresh-linear', className: 'text-hint', label: t('saving') },
     error: { icon: 'solar:danger-triangle-linear', className: 'text-danger', label: isDraft ? t('saveFailed') : t('saveChangesFailed') },
   }[saveState];
@@ -428,7 +421,7 @@ export default function AnnouncementEditorPage() {
       />
       <ConfirmDialog
         heading={t('discardChangesTitle')}
-        body={isDraft ? t('discardUntitledDraftBody') : t('discardChangesBody')}
+        body={t('discardChangesBody')}
         confirmLabel={t('discardChanges')}
         failedMessage={t('discardFailed')}
         status="warning"
