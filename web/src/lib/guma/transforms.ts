@@ -280,12 +280,13 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     id: raw.id,
     status,
     date: raw.datetime ?? '',
-    description: raw.title ?? '',
+    title: raw.title ?? '',
+    description: raw.description || undefined,
     expireTime: raw.expire_time,
     attendanceCount: raw.attendance_count ?? attendees.length,
     attendanceList: attendees,
     lootList: loot,
-    imageUrl: raw.image_url,
+    imageUrl: raw.image_url || undefined,
   };
 };
 

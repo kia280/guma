@@ -1,14 +1,14 @@
 'use client';
 
-import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Description, FieldError, DatePicker, DateField, Calendar, ListBox, Select, useOverlayState, type Key } from '@heroui/react';
+import { Button, Card, Chip, Modal, Tabs, Label, Description, ListBox, Select, useOverlayState, type Key } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
-import type { DateValue } from '@internationalized/date';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, CardGridSkeleton } from '@/components/AsyncContent';
+import { CheckinFormFields, hasCheckinFormErrors, useCheckinFormErrors, type CheckinFormValues } from '@/components/CheckinFormFields';
 import { ItemTemplatePicker } from '@/components/ItemTemplatePicker';
 import { LootListEditor } from '@/components/LootListEditor';
+import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
@@ -29,12 +29,7 @@ const STATUS_TABS = [
   { id: 'cancelled', status: CheckinStatus.CANCELLED },
 ] as const;
 
-interface CheckinDraft {
-  title: string;
-  description: string;
-  datetime: string;
-  expireTime: string;
-  imageUrl: string;
+interface CheckinDraft extends CheckinFormValues {
   lootInput: string;
   lootList: LootEntry[];
 }
@@ -118,6 +113,7 @@ export default function CheckinPage() {
   React.useEffect(() => {
     refetchCheckins();
   }, [refetchCheckins, reloadKey]);
+  useLiveResource(['checkin'], refetchCheckins, { guildId });
 
   const [activeTab, setActiveTab] = React.useState<string>('all');
   const tabLabels: Record<string, string> = {
@@ -134,18 +130,7 @@ export default function CheckinPage() {
   const [draft, setDraft] = React.useState<CheckinDraft>(emptyDraft);
   const [showCreateErrors, setShowCreateErrors] = React.useState(false);
 
-  const titleError = draft.title.trim() ? null : t('titleRequired');
-  const datetimeError = draft.datetime ? null : t('eventDateTimeRequired');
-  const expireBeforeStart =
-    Boolean(draft.datetime && draft.expireTime) && new Date(draft.expireTime) <= new Date(draft.datetime);
-  const expireTimeError = !draft.expireTime
-    ? t('expireTimeRequired')
-    : expireBeforeStart
-      ? t('expireBeforeStart')
-      : null;
-  const showTitleError = Boolean(titleError) && showCreateErrors;
-  const showDatetimeError = Boolean(datetimeError) && showCreateErrors;
-  const showExpireTimeError = Boolean(expireTimeError) && (showCreateErrors || expireBeforeStart);
+  const draftErrors = useCheckinFormErrors(draft);
 
   const draftTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -227,7 +212,7 @@ export default function CheckinPage() {
   };
 
   const handleNewSubmit = async (trigger: Element) => {
-    if (titleError || datetimeError || expireTimeError) {
+    if (hasCheckinFormErrors(draftErrors)) {
       setShowCreateErrors(true);
       focusFirstInvalidField(trigger);
       return;
@@ -275,8 +260,13 @@ export default function CheckinPage() {
                   <Modal.Heading>{t('addCheckIn')}</Modal.Heading>
                 </Modal.Header>
                 <Modal.Body>
-                  <form className="flex flex-col gap-4">
-                    {templatesState !== 'hidden' && (
+                  <CheckinFormFields
+                    values={draft}
+                    errors={draftErrors}
+                    showErrors={showCreateErrors}
+                    onChange={updateDraft}
+                    onDatetimeChange={handleDatetimeChange}
+                    header={templatesState !== 'hidden' && (
                       <div className="flex flex-col gap-1">
                         <Select
                           placeholder={
@@ -321,164 +311,36 @@ export default function CheckinPage() {
                         )}
                       </div>
                     )}
-                    <TextField isRequired validationBehavior="aria" isInvalid={showTitleError}>
-                      <Label>{t('title')}</Label>
-                      <Input
-                        placeholder={t('titlePlaceholder')}
-                        value={draft.title}
-                        onChange={e => updateDraft({ title: e.target.value })}
-                        variant="secondary"
-                        autoFocus
-                      />
-                      {showTitleError && <FieldError>{titleError}</FieldError>}
-                    </TextField>
-                    <TextField>
-                      <Label>{t('description')}</Label>
-                      <TextArea
-                        placeholder={t('descriptionPlaceholder')}
-                        value={draft.description}
-                        onChange={e => updateDraft({ description: e.target.value })}
-                        variant="secondary"
-                        rows={2}
-                      />
-                    </TextField>
-                    <DatePicker
-                      isRequired
-                      validationBehavior="aria"
-                      isInvalid={showDatetimeError}
-                      granularity="minute"
-                      hourCycle={24}
-                      value={draft.datetime ? parseAbsoluteToLocal(new Date(draft.datetime).toISOString()) : null}
-                      onChange={(val: DateValue | null) => {
-                        handleDatetimeChange(val ? val.toDate(getLocalTimeZone()).toISOString() : '');
-                      }}
-                    >
-                      <Label>{t('eventDateTime')}</Label>
-                      <DateField.Group fullWidth>
-                        <DateField.Input>
-                          {(segment) => <DateField.Segment segment={segment} />}
-                        </DateField.Input>
-                        <DateField.Suffix>
-                          <DatePicker.Trigger>
-                            <DatePicker.TriggerIndicator />
-                          </DatePicker.Trigger>
-                        </DateField.Suffix>
-                      </DateField.Group>
-                      {showDatetimeError && <FieldError>{datetimeError}</FieldError>}
-                      <DatePicker.Popover>
-                        <Calendar aria-label={t('eventDateTime')}>
-                          <Calendar.Header>
-                            <Calendar.YearPickerTrigger>
-                              <Calendar.YearPickerTriggerHeading />
-                              <Calendar.YearPickerTriggerIndicator />
-                            </Calendar.YearPickerTrigger>
-                            <Calendar.NavButton slot="previous" />
-                            <Calendar.NavButton slot="next" />
-                          </Calendar.Header>
-                          <Calendar.Grid>
-                            <Calendar.GridHeader>
-                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
-                            </Calendar.GridHeader>
-                            <Calendar.GridBody>
-                              {(date) => <Calendar.Cell date={date} />}
-                            </Calendar.GridBody>
-                          </Calendar.Grid>
-                          <Calendar.YearPickerGrid>
-                            <Calendar.YearPickerGridBody>
-                              {({ year }) => <Calendar.YearPickerCell year={year} />}
-                            </Calendar.YearPickerGridBody>
-                          </Calendar.YearPickerGrid>
-                        </Calendar>
-                      </DatePicker.Popover>
-                    </DatePicker>
-                    <DatePicker
-                      isRequired
-                      validationBehavior="aria"
-                      isInvalid={showExpireTimeError}
-                      granularity="minute"
-                      hourCycle={24}
-                      value={draft.expireTime ? parseAbsoluteToLocal(new Date(draft.expireTime).toISOString()) : null}
-                      onChange={(val: DateValue | null) => {
-                        updateDraft({ expireTime: val ? val.toDate(getLocalTimeZone()).toISOString() : '' });
-                      }}
-                    >
-                      <Label>{t('expireTime')}</Label>
-                      <DateField.Group fullWidth>
-                        <DateField.Input>
-                          {(segment) => <DateField.Segment segment={segment} />}
-                        </DateField.Input>
-                        <DateField.Suffix>
-                          <DatePicker.Trigger>
-                            <DatePicker.TriggerIndicator />
-                          </DatePicker.Trigger>
-                        </DateField.Suffix>
-                      </DateField.Group>
-                      <Description>{t('expirePlaceholder')}</Description>
-                      {showExpireTimeError && <FieldError>{expireTimeError}</FieldError>}
-                      <DatePicker.Popover>
-                        <Calendar aria-label={t('expireTime')}>
-                          <Calendar.Header>
-                            <Calendar.YearPickerTrigger>
-                              <Calendar.YearPickerTriggerHeading />
-                              <Calendar.YearPickerTriggerIndicator />
-                            </Calendar.YearPickerTrigger>
-                            <Calendar.NavButton slot="previous" />
-                            <Calendar.NavButton slot="next" />
-                          </Calendar.Header>
-                          <Calendar.Grid>
-                            <Calendar.GridHeader>
-                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
-                            </Calendar.GridHeader>
-                            <Calendar.GridBody>
-                              {(date) => <Calendar.Cell date={date} />}
-                            </Calendar.GridBody>
-                          </Calendar.Grid>
-                          <Calendar.YearPickerGrid>
-                            <Calendar.YearPickerGridBody>
-                              {({ year }) => <Calendar.YearPickerCell year={year} />}
-                            </Calendar.YearPickerGridBody>
-                          </Calendar.YearPickerGrid>
-                        </Calendar>
-                      </DatePicker.Popover>
-                    </DatePicker>
-
-                    {/* Loot list */}
-                    <LootListEditor
-                      items={draft.lootList}
-                      inputValue={draft.lootInput}
-                      onChange={(lootList, lootInput) => updateDraft({ lootList, lootInput })}
-                    >
-                      {templatesState !== 'hidden' && (
-                        <ItemTemplatePicker
-                          templates={itemTemplates}
-                          onPick={handleItemTemplatePick}
-                          isDisabled={templatesState !== 'ready'}
-                          placeholder={
-                            templatesState === 'loading'
-                              ? t('templatesLoading')
-                              : itemTemplates.length === 0
-                                ? t('noItemTemplates')
-                                : t('itemTemplatePlaceholder')
-                          }
-                          description={t('itemTemplateHint')}
-                        />
-                      )}
-                    </LootListEditor>
-                    {draft.lootList.length > 0 && (
-                      <p className="type-caption text-hint -mt-2">{t('lootToBankHint')}</p>
-                    )}
-
-                    <TextField>
-                      <Label>{t('imageUrlPlaceholder')}</Label>
-                      <Input
-                        placeholder="https://..."
-                        value={draft.imageUrl}
-                        onChange={e => updateDraft({ imageUrl: e.target.value })}
-                        variant="secondary"
-                      />
-                    </TextField>
-                    <p className="type-caption text-hint px-1">{t('draftSaved')}</p>
-                  </form>
+                    loot={
+                      <>
+                        <LootListEditor
+                          items={draft.lootList}
+                          inputValue={draft.lootInput}
+                          onChange={(lootList, lootInput) => updateDraft({ lootList, lootInput })}
+                        >
+                          {templatesState !== 'hidden' && (
+                            <ItemTemplatePicker
+                              templates={itemTemplates}
+                              onPick={handleItemTemplatePick}
+                              isDisabled={templatesState !== 'ready'}
+                              placeholder={
+                                templatesState === 'loading'
+                                  ? t('templatesLoading')
+                                  : itemTemplates.length === 0
+                                    ? t('noItemTemplates')
+                                    : t('itemTemplatePlaceholder')
+                              }
+                              description={t('itemTemplateHint')}
+                            />
+                          )}
+                        </LootListEditor>
+                        {draft.lootList.length > 0 && (
+                          <p className="type-caption text-hint -mt-2">{t('lootToBankHint')}</p>
+                        )}
+                      </>
+                    }
+                    footer={<p className="type-caption text-hint px-1">{t('draftSaved')}</p>}
+                  />
                 </Modal.Body>
                 <Modal.Footer>
                   <Button slot="close" variant="secondary" onPress={handleNewCancel}>
@@ -553,7 +415,7 @@ export default function CheckinPage() {
                     key={item.id}
                     status={item.status}
                     date={item.date}
-                    description={item.description}
+                    title={item.title}
                     expireTime={item.expireTime}
                     attendanceCount={item.attendanceCount}
                     lootCount={item.lootList.length}

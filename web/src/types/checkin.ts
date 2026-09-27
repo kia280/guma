@@ -28,7 +28,8 @@ export interface CheckinEntry {
   id: string;
   status: CheckinStatus;
   date: string;
-  description: string;
+  title: string;
+  description?: string;
   expireTime?: string;
   attendanceCount: number;
   attendanceList: AttendanceMember[];
@@ -46,7 +47,13 @@ export interface CreateCheckinRequest {
   lootList?: LootEntry[];
 }
 
-export interface UpdateCheckinRequest extends Partial<CreateCheckinRequest> {}
+export interface UpdateCheckinRequest {
+  title: string;
+  description: string;
+  datetime: string;
+  expireTime: string;
+  imageUrl: string;
+}
 
 export interface LootEntry {
   name: string;

@@ -23,7 +23,7 @@ const formatEventDate = (value: string, format: ReturnType<typeof useIntlFormatt
 export function CheckinCard({
   status,
   date,
-  description,
+  title,
   expireTime,
   attendanceCount,
   lootCount,
@@ -33,7 +33,7 @@ export function CheckinCard({
 }: {
   status: CheckinStatus;
   date: string;
-  description: string;
+  title: string;
   expireTime?: string;
   attendanceCount: number;
   lootCount: number;
@@ -70,10 +70,10 @@ export function CheckinCard({
             <div className="flex flex-col min-w-0">
               <h4 className="type-subheading text-foreground truncate">
                 {isDisabled ? (
-                  description
+                  title
                 ) : (
                   <Link href={href} className="outline-none after:absolute after:inset-0">
-                    {description}
+                    {title}
                   </Link>
                 )}
               </h4>
@@ -99,7 +99,7 @@ export function CheckinCard({
           <div className="aspect-video overflow-hidden rounded-lg bg-surface-secondary">
             {imageUrl ? (
               <img
-                alt={description}
+                alt={title}
                 loading="lazy"
                 className={
                   'h-full w-full object-cover' +

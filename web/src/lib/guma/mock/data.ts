@@ -338,7 +338,7 @@ function generateCheckins(): CheckinEntry[] {
       imageUrl: `/mock/checkin/checkin-${(i % 4) + 1}.webp`,
       status,
       date: formatCheckinDate(start),
-      description: CHECKIN_BOSSES[i % CHECKIN_BOSSES.length],
+      title: CHECKIN_BOSSES[i % CHECKIN_BOSSES.length],
       expireTime: new Date(status === CheckinStatus.OPEN ? now + (i + 1) * 2 * HOUR : start + 2 * HOUR).toISOString(),
       attendanceCount: attendanceList.length,
       attendanceList,
@@ -633,7 +633,7 @@ mockGuildItems.push(
         pendingRequestCount: 0,
         requestedByMe: false,
         checkinId: checkin.id,
-        checkinTitle: checkin.description,
+        checkinTitle: checkin.title,
       })),
     ),
 );
