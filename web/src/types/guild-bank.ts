@@ -33,6 +33,8 @@ export interface GuildBankItem {
   quantity: number;
   checkinId?: string;
   checkinTitle?: string;
+  pendingRequestCount: number;
+  requestedByMe: boolean;
   lock?: ItemLock;
 }
 

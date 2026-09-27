@@ -237,7 +237,11 @@
     "noTransactionsHint": "您的存款、提款與轉帳會顯示在這裡。",
     "balance": "餘額",
     "amountMustBePositive": "請輸入大於 0 的金額",
-    "recipientRequired": "請選擇收款人"
+    "recipientRequired": "請選擇收款人",
+    "availableBalance": "可用餘額",
+    "lockedInBids": "{amount} 暫扣於 {count} 筆領先出價",
+    "lockedBidsLabel": "暫扣你出價的拍賣",
+    "unnamedAuction": "拍賣"
   },
   "lotteryPage": {
     "all": "全部",
@@ -342,9 +346,19 @@
       "auction": "競拍",
       "lottery": "抽獎",
       "transfer": "轉讓",
-      "admin": "管理員"
+      "admin": "管理員",
+      "bank": "公會銀行申請",
+      "checkin": "點名戰利品"
     },
-    "donate": "捐給公會銀行"
+    "donate": "捐給公會銀行",
+    "sourceWithLabel": {
+      "transfer": "來自 {label}",
+      "lottery": "抽獎：{label}",
+      "checkin": "點名：{label}",
+      "bank": "公會銀行申請",
+      "auction": "拍賣",
+      "admin": "管理員"
+    }
   },
   "calendarPage": {
     "loadingEvents": "載入活動中...",
@@ -652,7 +666,11 @@
     "amountMustBePositive": "請輸入大於 0 的金額",
     "reasonRequired": "請輸入申請原因",
     "typeAuctionProceeds": "拍賣收入",
-    "typeLotteryRevenue": "彩券收入"
+    "typeLotteryRevenue": "彩券收入",
+    "requestedByMe": "你已申請",
+    "pendingRequestCount": "{count} 筆待審申請",
+    "otherPendingRequests": "另有 {count} 位成員也在申請",
+    "alreadyRequested": "你已申請過這個物品"
   },
   "notificationsCard": {
     "notifications": "通知",

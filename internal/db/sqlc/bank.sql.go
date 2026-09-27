@@ -533,19 +533,25 @@ SELECT bi.id, bi.guild_id, bi.donor_id, bi.donor_name, bi.item, bi.quantity,
        bi.donated_at,
        bi.checkin_id,
        COALESCE(c.title, '') AS checkin_title,
+       (SELECT COUNT(*) FROM item_requests ir WHERE ir.bank_item_id = bi.id AND ir.status = 'pending')::int AS pending_request_count,
+       EXISTS (
+           SELECT 1 FROM item_requests ir
+           WHERE ir.bank_item_id = bi.id AND ir.status = 'pending' AND ir.requester_id = $2
+       ) AS requested_by_me,
        COALESCE(bi.locked_by_type, '') AS locked_by_type,
        bi.locked_by_id
 FROM bank_items bi
 LEFT JOIN checkins c ON c.id = bi.checkin_id
 WHERE bi.guild_id = $1
-  AND ($2::text = '' OR bi.item->>'category' = $2::text)
-  AND ($3::text   = '' OR bi.item->>'rarity'   = $3::text)
+  AND ($3::text = '' OR bi.item->>'category' = $3::text)
+  AND ($4::text   = '' OR bi.item->>'rarity'   = $4::text)
 ORDER BY bi.donated_at DESC
-LIMIT $5::int OFFSET $4::int
+LIMIT $6::int OFFSET $5::int
 `
 
 type ListBankItemsParams struct {
 	GuildID        uuid.UUID
+	ViewerID       uuid.UUID
 	CategoryFilter string
 	RarityFilter   string
 	PageOffset     int32
@@ -553,23 +559,26 @@ type ListBankItemsParams struct {
 }
 
 type ListBankItemsRow struct {
-	ID           uuid.UUID
-	GuildID      uuid.UUID
-	DonorID      uuid.UUID
-	DonorName    string
-	Item         []byte
-	Quantity     int32
-	Note         string
-	DonatedAt    time.Time
-	CheckinID    *uuid.UUID
-	CheckinTitle string
-	LockedByType string
-	LockedByID   *uuid.UUID
+	ID                  uuid.UUID
+	GuildID             uuid.UUID
+	DonorID             uuid.UUID
+	DonorName           string
+	Item                []byte
+	Quantity            int32
+	Note                string
+	DonatedAt           time.Time
+	CheckinID           *uuid.UUID
+	CheckinTitle        string
+	PendingRequestCount int32
+	RequestedByMe       bool
+	LockedByType        string
+	LockedByID          *uuid.UUID
 }
 
 func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([]ListBankItemsRow, error) {
 	rows, err := q.db.Query(ctx, listBankItems,
 		arg.GuildID,
+		arg.ViewerID,
 		arg.CategoryFilter,
 		arg.RarityFilter,
 		arg.PageOffset,
@@ -593,6 +602,8 @@ func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([
 			&i.DonatedAt,
 			&i.CheckinID,
 			&i.CheckinTitle,
+			&i.PendingRequestCount,
+			&i.RequestedByMe,
 			&i.LockedByType,
 			&i.LockedByID,
 		); err != nil {

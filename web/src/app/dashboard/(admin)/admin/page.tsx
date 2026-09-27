@@ -98,7 +98,9 @@ export default function AdminPage() {
   const formatGold = useFormatGold();
   const locale = useLocale();
   const router = useRouter();
-  const selectedTab = adminTabFromParam(useSearchParams().get('tab'));
+  const searchParams = useSearchParams();
+  const selectedTab = adminTabFromParam(searchParams.get('tab'));
+  const focusRequestId = searchParams.get('request');
   const intlLocale = isLocale(locale) ? HTML_LANG[locale] : locale;
   const formatLastActive = (value?: string) => {
     if (!value) return '';
@@ -840,7 +842,7 @@ export default function AdminPage() {
         </Tabs.Panel>
 
         <Tabs.Panel id="bankRequests" className="pt-4">
-          <BankRequestReview guildId={guildId} />
+          <BankRequestReview guildId={guildId} focusRequestId={focusRequestId} />
         </Tabs.Panel>
 
         <Tabs.Panel id="templates" className="pt-4">

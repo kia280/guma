@@ -210,13 +210,24 @@ func (h *WalletHandler) TransferBackpackItem(ctx context.Context, req *gumav1.Tr
 // --- proto conversion helpers ---
 
 func walletToProto(w *walletsvc.Wallet) *gumav1.Wallet {
+	lockedBids := make([]*gumav1.LockedBid, len(w.LockedBids))
+	for i, b := range w.LockedBids {
+		lockedBids[i] = &gumav1.LockedBid{
+			AuctionId: b.AuctionID,
+			ItemName:  b.ItemName,
+			Amount:    b.Amount,
+			EndTime:   timestamppb.New(b.EndTime),
+		}
+	}
 	return &gumav1.Wallet{
-		UserId:    w.UserID,
-		GuildId:   w.GuildID,
-		Balance:   w.Balance,
-		Currency:  w.Currency,
-		CreatedAt: timestamppb.New(w.CreatedAt),
-		UpdatedAt: timestamppb.New(w.UpdatedAt),
+		UserId:       w.UserID,
+		GuildId:      w.GuildID,
+		Balance:      w.Balance,
+		Currency:     w.Currency,
+		CreatedAt:    timestamppb.New(w.CreatedAt),
+		UpdatedAt:    timestamppb.New(w.UpdatedAt),
+		LockedInBids: w.LockedInBids,
+		LockedBids:   lockedBids,
 	}
 }
 
@@ -237,14 +248,15 @@ func transactionToProto(t *walletsvc.Transaction) *gumav1.Transaction {
 
 func backpackItemToProto(bi *walletsvc.BackpackItem) *gumav1.BackpackItem {
 	return &gumav1.BackpackItem{
-		Id:         bi.ID,
-		OwnerId:    bi.OwnerID,
-		GuildId:    bi.GuildID,
-		Item:       itemToProto(bi.Item),
-		Source:     bi.Source,
-		SourceId:   bi.SourceID,
-		Note:       bi.Note,
-		AcquiredAt: timestamppb.New(bi.AcquiredAt),
-		Lock:       itemLockToProto(bi.Lock),
+		Id:          bi.ID,
+		OwnerId:     bi.OwnerID,
+		GuildId:     bi.GuildID,
+		Item:        itemToProto(bi.Item),
+		Source:      bi.Source,
+		SourceId:    bi.SourceID,
+		Note:        bi.Note,
+		AcquiredAt:  timestamppb.New(bi.AcquiredAt),
+		SourceLabel: bi.SourceLabel,
+		Lock:        itemLockToProto(bi.Lock),
 	}
 }

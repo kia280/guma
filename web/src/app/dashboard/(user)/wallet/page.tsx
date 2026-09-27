@@ -20,6 +20,8 @@ import {
   useFilter,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
@@ -88,6 +90,23 @@ const transactionNote = (transaction: Transaction): string | undefined => {
   if (!note || !transaction.kind || !USER_NOTE_KINDS.has(transaction.kind)) return undefined;
   return note === DEFAULT_TRANSFER_NOTE ? undefined : note;
 };
+
+const transactionHref = (transaction: Transaction): string | undefined => {
+  if (!transaction.referenceId) return undefined;
+  switch (transaction.referenceType) {
+    case 'auction':
+      return `/dashboard/auction/${transaction.referenceId}`;
+    case 'lottery':
+      return `/dashboard/lottery/${transaction.referenceId}`;
+    case 'fund_request':
+      return `/dashboard/guild-bank?request=${transaction.referenceId}`;
+    default:
+      return undefined;
+  }
+};
+
+const TRANSACTION_LINK_CLASS =
+  'rounded hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
 
 const transactionAmountSign = (amount: number): string => {
   if (amount > 0) return '+';
@@ -158,6 +177,7 @@ export default function WalletPage() {
   const guildId = useCurrentGuildId();
   const { can } = useGuildPermissions();
   const balanceTrend = useBalanceTrend(guildId);
+  const highlightedSourceId = useSearchParams().get('source');
   const depositModalState = useOverlayState();
   const transferModalState = useOverlayState();
   const withdrawModalState = useOverlayState();
@@ -379,8 +399,19 @@ export default function WalletPage() {
 
   const transactionTitle = (transaction: Transaction) => {
     const key = transactionLabelKey(transaction);
-    return key ? t(`transactionKinds.${key}`) : transaction.description;
+    const title = key ? t(`transactionKinds.${key}`) : transaction.description;
+    const href = transactionHref(transaction);
+    return href ? (
+      <Link href={href} className={TRANSACTION_LINK_CLASS}>
+        {title}
+      </Link>
+    ) : (
+      title
+    );
   };
+
+  const lockedInBids = wallet?.lockedInBids ?? 0;
+  const lockedBids = wallet?.lockedBids ?? [];
 
   return (
     <div className="space-y-5">
@@ -398,8 +429,30 @@ export default function WalletPage() {
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
+              <p className="type-caption text-hint">{t('availableBalance')}</p>
               <AsyncValue state={walletState.state}>
                 <p className="type-display text-foreground">{formatGold(balance)}</p>
+                {lockedBids.length > 0 && (
+                  <div className="mt-2 flex flex-col gap-1">
+                    <p className="type-caption text-subtle">
+                      {t('lockedInBids', { amount: formatGold(lockedInBids), count: lockedBids.length })}
+                    </p>
+                    <ul className="flex flex-wrap gap-1.5" aria-label={t('lockedBidsLabel')}>
+                      {lockedBids.map(bid => (
+                        <li key={bid.auctionId}>
+                          <Link
+                            href={`/dashboard/auction/${bid.auctionId}`}
+                            className="inline-flex items-center gap-1 rounded-full bg-default px-2 py-0.5 type-caption text-soft hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                          >
+                            <Icon icon="solar:sledgehammer-linear" width={12} aria-hidden />
+                            <span className="max-w-[160px] truncate">{bid.itemName || t('unnamedAuction')}</span>
+                            <span className="tabular-nums">{formatGold(bid.amount)}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </AsyncValue>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -670,6 +723,7 @@ export default function WalletPage() {
                 onDonate={openItemMove('donate')}
                 onTransfer={openItemMove('transfer')}
                 onWithdraw={openItemWithdraw}
+                isHighlighted={Boolean(highlightedSourceId) && item.sourceId === highlightedSourceId}
               />
             ))}
           </div>

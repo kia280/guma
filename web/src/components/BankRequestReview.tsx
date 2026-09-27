@@ -11,6 +11,7 @@ import {
   Tabs,
   TextArea,
   TextField,
+  cn,
   useOverlayState,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
@@ -53,14 +54,26 @@ interface RequestRowProps {
   leading: React.ReactNode;
   summary: React.ReactNode;
   onReview: (decision: ReviewDecision) => void;
+  isHighlighted?: boolean;
 }
 
-function RequestRow({ requester, createdAt, reason, status, reviewNote, leading, summary, onReview }: RequestRowProps) {
+function RequestRow({ requester, createdAt, reason, status, reviewNote, leading, summary, onReview, isHighlighted = false }: RequestRowProps) {
   const t = useTranslations('bankRequestReview');
   const format = useIntlFormatter();
+  const rowRef = React.useRef<HTMLLIElement>(null);
+
+  React.useEffect(() => {
+    if (isHighlighted) rowRef.current?.scrollIntoView({ block: 'center' });
+  }, [isHighlighted]);
 
   return (
-    <li className="flex flex-col gap-3 rounded-lg bg-surface-secondary px-3 py-3 sm:flex-row sm:items-center">
+    <li
+      ref={rowRef}
+      className={cn(
+        'flex flex-col gap-3 rounded-lg bg-surface-secondary px-3 py-3 sm:flex-row sm:items-center',
+        isHighlighted && 'ring-2 ring-accent',
+      )}
+    >
       <div className="flex min-w-0 flex-1 items-start gap-3">
         {leading}
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -128,7 +141,7 @@ function RequestSection({ title, icon, count, emptyText, children }: RequestSect
   );
 }
 
-export function BankRequestReview({ guildId }: { guildId: string }) {
+export function BankRequestReview({ guildId, focusRequestId }: { guildId: string; focusRequestId?: string | null }) {
   const t = useTranslations('bankRequestReview');
   const formatGold = useFormatGold();
   const reviewModal = useOverlayState();
@@ -146,6 +159,7 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
 
   const latestLoad = React.useRef(0);
   const foregroundPending = React.useRef(false);
+  const [focusResolvedFor, setFocusResolvedFor] = React.useState<string | null>(null);
 
   const load = React.useCallback(async ({ background = false }: { background?: boolean } = {}) => {
     const loadId = ++latestLoad.current;
@@ -184,6 +198,13 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
   }, [load]);
 
   useLiveResource(['bank'], refresh, { guildId });
+
+  const focusFound =
+    !!focusRequestId && (fundRequests.some(r => r.id === focusRequestId) || itemRequests.some(r => r.id === focusRequestId));
+  if (focusRequestId && focusResolvedFor !== focusRequestId && !isLoading && !loadFailed) {
+    setFocusResolvedFor(focusRequestId);
+    if (!focusFound && view === 'pending') setView('reviewed');
+  }
 
   const openReview = (next: ReviewTarget) => {
     setTarget(next);
@@ -277,6 +298,7 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
                   </p>
                 }
                 onReview={decision => openReview({ kind: 'fund', request: r, decision })}
+                isHighlighted={r.id === focusRequestId}
               />
             ))}
           </RequestSection>
@@ -307,6 +329,7 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
                   </div>
                 }
                 onReview={decision => openReview({ kind: 'item', request: r, decision })}
+                isHighlighted={r.id === focusRequestId}
               />
             ))}
           </RequestSection>

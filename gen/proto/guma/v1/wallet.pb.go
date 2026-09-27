@@ -912,6 +912,8 @@ type Wallet struct {
 	Currency      string                 `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	LockedInBids  int64                  `protobuf:"varint,7,opt,name=locked_in_bids,json=lockedInBids,proto3" json:"locked_in_bids,omitempty"`
+	LockedBids    []*LockedBid           `protobuf:"bytes,8,rep,name=locked_bids,json=lockedBids,proto3" json:"locked_bids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -988,6 +990,88 @@ func (x *Wallet) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Wallet) GetLockedInBids() int64 {
+	if x != nil {
+		return x.LockedInBids
+	}
+	return 0
+}
+
+func (x *Wallet) GetLockedBids() []*LockedBid {
+	if x != nil {
+		return x.LockedBids
+	}
+	return nil
+}
+
+type LockedBid struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AuctionId     string                 `protobuf:"bytes,1,opt,name=auction_id,json=auctionId,proto3" json:"auction_id,omitempty"`
+	ItemName      string                 `protobuf:"bytes,2,opt,name=item_name,json=itemName,proto3" json:"item_name,omitempty"`
+	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	EndTime       *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LockedBid) Reset() {
+	*x = LockedBid{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LockedBid) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LockedBid) ProtoMessage() {}
+
+func (x *LockedBid) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LockedBid.ProtoReflect.Descriptor instead.
+func (*LockedBid) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *LockedBid) GetAuctionId() string {
+	if x != nil {
+		return x.AuctionId
+	}
+	return ""
+}
+
+func (x *LockedBid) GetItemName() string {
+	if x != nil {
+		return x.ItemName
+	}
+	return ""
+}
+
+func (x *LockedBid) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *LockedBid) GetEndTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EndTime
+	}
+	return nil
+}
+
 type BalancePoint struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"` // ISO 8601 date
@@ -998,7 +1082,7 @@ type BalancePoint struct {
 
 func (x *BalancePoint) Reset() {
 	*x = BalancePoint{}
-	mi := &file_proto_guma_v1_wallet_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1010,7 +1094,7 @@ func (x *BalancePoint) String() string {
 func (*BalancePoint) ProtoMessage() {}
 
 func (x *BalancePoint) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_wallet_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1023,7 +1107,7 @@ func (x *BalancePoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BalancePoint.ProtoReflect.Descriptor instead.
 func (*BalancePoint) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{17}
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *BalancePoint) GetDate() string {
@@ -1058,7 +1142,7 @@ type Transaction struct {
 
 func (x *Transaction) Reset() {
 	*x = Transaction{}
-	mi := &file_proto_guma_v1_wallet_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1070,7 +1154,7 @@ func (x *Transaction) String() string {
 func (*Transaction) ProtoMessage() {}
 
 func (x *Transaction) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_wallet_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1083,7 +1167,7 @@ func (x *Transaction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Transaction.ProtoReflect.Descriptor instead.
 func (*Transaction) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{18}
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *Transaction) GetId() string {
@@ -1166,6 +1250,7 @@ type BackpackItem struct {
 	SourceId      string                 `protobuf:"bytes,6,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"` // ID of the originating auction/lottery
 	Note          string                 `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
 	AcquiredAt    *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=acquired_at,json=acquiredAt,proto3" json:"acquired_at,omitempty"`
+	SourceLabel   string                 `protobuf:"bytes,9,opt,name=source_label,json=sourceLabel,proto3" json:"source_label,omitempty"`
 	Lock          *ItemLock              `protobuf:"bytes,20,opt,name=lock,proto3" json:"lock,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1173,7 +1258,7 @@ type BackpackItem struct {
 
 func (x *BackpackItem) Reset() {
 	*x = BackpackItem{}
-	mi := &file_proto_guma_v1_wallet_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1185,7 +1270,7 @@ func (x *BackpackItem) String() string {
 func (*BackpackItem) ProtoMessage() {}
 
 func (x *BackpackItem) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_wallet_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1198,7 +1283,7 @@ func (x *BackpackItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BackpackItem.ProtoReflect.Descriptor instead.
 func (*BackpackItem) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{19}
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *BackpackItem) GetId() string {
@@ -1255,6 +1340,13 @@ func (x *BackpackItem) GetAcquiredAt() *timestamppb.Timestamp {
 		return x.AcquiredAt
 	}
 	return nil
+}
+
+func (x *BackpackItem) GetSourceLabel() string {
+	if x != nil {
+		return x.SourceLabel
+	}
+	return ""
 }
 
 func (x *BackpackItem) GetLock() *ItemLock {
@@ -1328,7 +1420,7 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x12\n" +
 	"\x04days\x18\x02 \x01(\x05R\x04days\"H\n" +
 	"\x17GetBalanceTrendResponse\x12-\n" +
-	"\x06points\x18\x01 \x03(\v2\x15.guma.v1.BalancePointR\x06points\"\xe8\x01\n" +
+	"\x06points\x18\x01 \x03(\v2\x15.guma.v1.BalancePointR\x06points\"\xc3\x02\n" +
 	"\x06Wallet\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x18\n" +
@@ -1337,7 +1429,16 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"<\n" +
+	"updated_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12$\n" +
+	"\x0elocked_in_bids\x18\a \x01(\x03R\flockedInBids\x123\n" +
+	"\vlocked_bids\x18\b \x03(\v2\x12.guma.v1.LockedBidR\n" +
+	"lockedBids\"\x96\x01\n" +
+	"\tLockedBid\x12\x1d\n" +
+	"\n" +
+	"auction_id\x18\x01 \x01(\tR\tauctionId\x12\x1b\n" +
+	"\titem_name\x18\x02 \x01(\tR\bitemName\x12\x16\n" +
+	"\x06amount\x18\x03 \x01(\x03R\x06amount\x125\n" +
+	"\bend_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\"<\n" +
 	"\fBalancePoint\x12\x12\n" +
 	"\x04date\x18\x01 \x01(\tR\x04date\x12\x18\n" +
 	"\abalance\x18\x02 \x01(\x03R\abalance\"\xc9\x02\n" +
@@ -1353,7 +1454,7 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\x0ereference_type\x18\t \x01(\tR\rreferenceType\x129\n" +
 	"\n" +
 	"created_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xa4\x02\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xc7\x02\n" +
 	"\fBackpackItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bowner_id\x18\x02 \x01(\tR\aownerId\x12\x19\n" +
@@ -1363,7 +1464,8 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\tsource_id\x18\x06 \x01(\tR\bsourceId\x12\x12\n" +
 	"\x04note\x18\a \x01(\tR\x04note\x12;\n" +
 	"\vacquired_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"acquiredAt\x12%\n" +
+	"acquiredAt\x12!\n" +
+	"\fsource_label\x18\t \x01(\tR\vsourceLabel\x12%\n" +
 	"\x04lock\x18\x14 \x01(\v2\x11.guma.v1.ItemLockR\x04lock2\xdb\t\n" +
 	"\rWalletService\x12h\n" +
 	"\tGetWallet\x12\x19.guma.v1.GetWalletRequest\x1a\x1a.guma.v1.GetWalletResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/guilds/{guild_id}/wallet\x12{\n" +
@@ -1388,7 +1490,7 @@ func file_proto_guma_v1_wallet_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_wallet_proto_rawDescData
 }
 
-var file_proto_guma_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_proto_guma_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_proto_guma_v1_wallet_proto_goTypes = []any{
 	(*GetWalletRequest)(nil),             // 0: guma.v1.GetWalletRequest
 	(*GetWalletResponse)(nil),            // 1: guma.v1.GetWalletResponse
@@ -1407,51 +1509,54 @@ var file_proto_guma_v1_wallet_proto_goTypes = []any{
 	(*GetBalanceTrendRequest)(nil),       // 14: guma.v1.GetBalanceTrendRequest
 	(*GetBalanceTrendResponse)(nil),      // 15: guma.v1.GetBalanceTrendResponse
 	(*Wallet)(nil),                       // 16: guma.v1.Wallet
-	(*BalancePoint)(nil),                 // 17: guma.v1.BalancePoint
-	(*Transaction)(nil),                  // 18: guma.v1.Transaction
-	(*BackpackItem)(nil),                 // 19: guma.v1.BackpackItem
-	(*timestamppb.Timestamp)(nil),        // 20: google.protobuf.Timestamp
-	(*Item)(nil),                         // 21: guma.v1.Item
-	(*ItemLock)(nil),                     // 22: guma.v1.ItemLock
+	(*LockedBid)(nil),                    // 17: guma.v1.LockedBid
+	(*BalancePoint)(nil),                 // 18: guma.v1.BalancePoint
+	(*Transaction)(nil),                  // 19: guma.v1.Transaction
+	(*BackpackItem)(nil),                 // 20: guma.v1.BackpackItem
+	(*timestamppb.Timestamp)(nil),        // 21: google.protobuf.Timestamp
+	(*Item)(nil),                         // 22: guma.v1.Item
+	(*ItemLock)(nil),                     // 23: guma.v1.ItemLock
 }
 var file_proto_guma_v1_wallet_proto_depIdxs = []int32{
 	16, // 0: guma.v1.GetWalletResponse.wallet:type_name -> guma.v1.Wallet
-	18, // 1: guma.v1.TransactionResponse.transaction:type_name -> guma.v1.Transaction
+	19, // 1: guma.v1.TransactionResponse.transaction:type_name -> guma.v1.Transaction
 	16, // 2: guma.v1.TransactionResponse.updated_wallet:type_name -> guma.v1.Wallet
-	18, // 3: guma.v1.ListTransactionsResponse.transactions:type_name -> guma.v1.Transaction
-	19, // 4: guma.v1.ListBackpackItemsResponse.items:type_name -> guma.v1.BackpackItem
-	19, // 5: guma.v1.WithdrawBackpackItemResponse.item:type_name -> guma.v1.BackpackItem
-	19, // 6: guma.v1.TransferBackpackItemResponse.item:type_name -> guma.v1.BackpackItem
-	17, // 7: guma.v1.GetBalanceTrendResponse.points:type_name -> guma.v1.BalancePoint
-	20, // 8: guma.v1.Wallet.created_at:type_name -> google.protobuf.Timestamp
-	20, // 9: guma.v1.Wallet.updated_at:type_name -> google.protobuf.Timestamp
-	20, // 10: guma.v1.Transaction.created_at:type_name -> google.protobuf.Timestamp
-	21, // 11: guma.v1.BackpackItem.item:type_name -> guma.v1.Item
-	20, // 12: guma.v1.BackpackItem.acquired_at:type_name -> google.protobuf.Timestamp
-	22, // 13: guma.v1.BackpackItem.lock:type_name -> guma.v1.ItemLock
-	0,  // 14: guma.v1.WalletService.GetWallet:input_type -> guma.v1.GetWalletRequest
-	2,  // 15: guma.v1.WalletService.DepositFunds:input_type -> guma.v1.DepositFundsRequest
-	3,  // 16: guma.v1.WalletService.WithdrawFunds:input_type -> guma.v1.WithdrawFundsRequest
-	4,  // 17: guma.v1.WalletService.TransferFunds:input_type -> guma.v1.TransferFundsRequest
-	6,  // 18: guma.v1.WalletService.ListTransactions:input_type -> guma.v1.ListTransactionsRequest
-	14, // 19: guma.v1.WalletService.GetBalanceTrend:input_type -> guma.v1.GetBalanceTrendRequest
-	8,  // 20: guma.v1.WalletService.ListBackpackItems:input_type -> guma.v1.ListBackpackItemsRequest
-	10, // 21: guma.v1.WalletService.WithdrawBackpackItem:input_type -> guma.v1.WithdrawBackpackItemRequest
-	12, // 22: guma.v1.WalletService.TransferBackpackItem:input_type -> guma.v1.TransferBackpackItemRequest
-	1,  // 23: guma.v1.WalletService.GetWallet:output_type -> guma.v1.GetWalletResponse
-	5,  // 24: guma.v1.WalletService.DepositFunds:output_type -> guma.v1.TransactionResponse
-	5,  // 25: guma.v1.WalletService.WithdrawFunds:output_type -> guma.v1.TransactionResponse
-	5,  // 26: guma.v1.WalletService.TransferFunds:output_type -> guma.v1.TransactionResponse
-	7,  // 27: guma.v1.WalletService.ListTransactions:output_type -> guma.v1.ListTransactionsResponse
-	15, // 28: guma.v1.WalletService.GetBalanceTrend:output_type -> guma.v1.GetBalanceTrendResponse
-	9,  // 29: guma.v1.WalletService.ListBackpackItems:output_type -> guma.v1.ListBackpackItemsResponse
-	11, // 30: guma.v1.WalletService.WithdrawBackpackItem:output_type -> guma.v1.WithdrawBackpackItemResponse
-	13, // 31: guma.v1.WalletService.TransferBackpackItem:output_type -> guma.v1.TransferBackpackItemResponse
-	23, // [23:32] is the sub-list for method output_type
-	14, // [14:23] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	19, // 3: guma.v1.ListTransactionsResponse.transactions:type_name -> guma.v1.Transaction
+	20, // 4: guma.v1.ListBackpackItemsResponse.items:type_name -> guma.v1.BackpackItem
+	20, // 5: guma.v1.WithdrawBackpackItemResponse.item:type_name -> guma.v1.BackpackItem
+	20, // 6: guma.v1.TransferBackpackItemResponse.item:type_name -> guma.v1.BackpackItem
+	18, // 7: guma.v1.GetBalanceTrendResponse.points:type_name -> guma.v1.BalancePoint
+	21, // 8: guma.v1.Wallet.created_at:type_name -> google.protobuf.Timestamp
+	21, // 9: guma.v1.Wallet.updated_at:type_name -> google.protobuf.Timestamp
+	17, // 10: guma.v1.Wallet.locked_bids:type_name -> guma.v1.LockedBid
+	21, // 11: guma.v1.LockedBid.end_time:type_name -> google.protobuf.Timestamp
+	21, // 12: guma.v1.Transaction.created_at:type_name -> google.protobuf.Timestamp
+	22, // 13: guma.v1.BackpackItem.item:type_name -> guma.v1.Item
+	21, // 14: guma.v1.BackpackItem.acquired_at:type_name -> google.protobuf.Timestamp
+	23, // 15: guma.v1.BackpackItem.lock:type_name -> guma.v1.ItemLock
+	0,  // 16: guma.v1.WalletService.GetWallet:input_type -> guma.v1.GetWalletRequest
+	2,  // 17: guma.v1.WalletService.DepositFunds:input_type -> guma.v1.DepositFundsRequest
+	3,  // 18: guma.v1.WalletService.WithdrawFunds:input_type -> guma.v1.WithdrawFundsRequest
+	4,  // 19: guma.v1.WalletService.TransferFunds:input_type -> guma.v1.TransferFundsRequest
+	6,  // 20: guma.v1.WalletService.ListTransactions:input_type -> guma.v1.ListTransactionsRequest
+	14, // 21: guma.v1.WalletService.GetBalanceTrend:input_type -> guma.v1.GetBalanceTrendRequest
+	8,  // 22: guma.v1.WalletService.ListBackpackItems:input_type -> guma.v1.ListBackpackItemsRequest
+	10, // 23: guma.v1.WalletService.WithdrawBackpackItem:input_type -> guma.v1.WithdrawBackpackItemRequest
+	12, // 24: guma.v1.WalletService.TransferBackpackItem:input_type -> guma.v1.TransferBackpackItemRequest
+	1,  // 25: guma.v1.WalletService.GetWallet:output_type -> guma.v1.GetWalletResponse
+	5,  // 26: guma.v1.WalletService.DepositFunds:output_type -> guma.v1.TransactionResponse
+	5,  // 27: guma.v1.WalletService.WithdrawFunds:output_type -> guma.v1.TransactionResponse
+	5,  // 28: guma.v1.WalletService.TransferFunds:output_type -> guma.v1.TransactionResponse
+	7,  // 29: guma.v1.WalletService.ListTransactions:output_type -> guma.v1.ListTransactionsResponse
+	15, // 30: guma.v1.WalletService.GetBalanceTrend:output_type -> guma.v1.GetBalanceTrendResponse
+	9,  // 31: guma.v1.WalletService.ListBackpackItems:output_type -> guma.v1.ListBackpackItemsResponse
+	11, // 32: guma.v1.WalletService.WithdrawBackpackItem:output_type -> guma.v1.WithdrawBackpackItemResponse
+	13, // 33: guma.v1.WalletService.TransferBackpackItem:output_type -> guma.v1.TransferBackpackItemResponse
+	25, // [25:34] is the sub-list for method output_type
+	16, // [16:25] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_wallet_proto_init() }
@@ -1466,7 +1571,7 @@ func file_proto_guma_v1_wallet_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_wallet_proto_rawDesc), len(file_proto_guma_v1_wallet_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

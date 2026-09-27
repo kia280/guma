@@ -133,6 +133,11 @@ SELECT bi.id, bi.guild_id, bi.donor_id, bi.donor_name, bi.item, bi.quantity,
        bi.donated_at,
        bi.checkin_id,
        COALESCE(c.title, '') AS checkin_title,
+       (SELECT COUNT(*) FROM item_requests ir WHERE ir.bank_item_id = bi.id AND ir.status = 'pending')::int AS pending_request_count,
+       EXISTS (
+           SELECT 1 FROM item_requests ir
+           WHERE ir.bank_item_id = bi.id AND ir.status = 'pending' AND ir.requester_id = sqlc.arg(viewer_id)
+       ) AS requested_by_me,
        COALESCE(bi.locked_by_type, '') AS locked_by_type,
        bi.locked_by_id
 FROM bank_items bi

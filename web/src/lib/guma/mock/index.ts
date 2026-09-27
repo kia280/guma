@@ -179,6 +179,13 @@ const mockMembers = () =>
     ? mockData.mockUsers.map(user => (user.id === defaultOwner.id ? { ...user, role: 'admin' } : user))
     : mockData.mockUsers;
 
+const mockLockedBids = (): Pick<Wallet, 'lockedInBids' | 'lockedBids'> => {
+  const lockedBids = store.auctions
+    .filter(a => a.currentBidder?.id === currentUser.id && (a.status === AuctionStatus.ACTIVE || a.status === AuctionStatus.UPCOMING))
+    .map(a => ({ auctionId: a.id, itemName: a.name, amount: a.currentBid, endTime: a.endTime }));
+  return { lockedBids, lockedInBids: lockedBids.reduce((sum, bid) => sum + bid.amount, 0) };
+};
+
 const mockWallet = (guildId: string): Wallet => ({
   id: `wallet-${guildId}`,
   userId: currentUser.id,
@@ -187,6 +194,7 @@ const mockWallet = (guildId: string): Wallet => ({
   currency: 'gold',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
+  ...mockLockedBids(),
 });
 
 const mockGuildBankData = (guildId: string): GuildBank => ({
@@ -431,6 +439,8 @@ const baseMockApiClient: ApiClient = {
         donatedBy: currentUser.displayName,
         donatedAt: new Date().toISOString(),
         quantity: 1,
+        pendingRequestCount: 0,
+        requestedByMe: false,
         checkinId: entry.id,
         checkinTitle: req.title,
       })),
@@ -669,6 +679,8 @@ const baseMockApiClient: ApiClient = {
       donatedBy: currentUser.username,
       donatedAt: new Date().toISOString(),
       quantity: 1,
+      pendingRequestCount: 0,
+      requestedByMe: false,
     };
     mockData.mockGuildItems.unshift(donated);
     return donated;
@@ -677,6 +689,9 @@ const baseMockApiClient: ApiClient = {
   requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => {
     const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
     if (!bankItem) throw new Error('not found');
+    if (bankItem.requestedByMe) throw conflict();
+    bankItem.requestedByMe = true;
+    bankItem.pendingRequestCount += 1;
     return {
       id: `ir-${Date.now()}`,
       guildId,

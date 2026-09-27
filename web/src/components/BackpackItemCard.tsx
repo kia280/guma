@@ -1,24 +1,36 @@
 'use client';
 
-import { Card, Chip, Button, Dropdown } from '@heroui/react';
+import { Card, Chip, Button, Dropdown, cn } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import React from 'react';
 import { BackpackItem } from '@/types/backpack';
 import { ItemLockChip } from './ItemLockChip';
 import { ItemThumbnail, getRarityColor } from './ItemThumbnail';
 
-const getAcquiredColor = (acquiredFrom: BackpackItem['acquiredFrom']) => {
-  switch (acquiredFrom) {
+const SOURCE_ICONS: Record<BackpackItem['acquiredFrom'], string> = {
+  auction: 'solar:sledgehammer-linear',
+  lottery: 'solar:ticket-linear',
+  transfer: 'solar:users-group-rounded-linear',
+  bank: 'solar:safe-2-linear',
+  checkin: 'solar:clipboard-check-linear',
+  admin: 'solar:shield-user-linear',
+};
+
+const sourceHref = (item: BackpackItem): string | undefined => {
+  if (!item.sourceId) return undefined;
+  switch (item.acquiredFrom) {
     case 'auction':
-      return 'warning';
+      return `/dashboard/auction/${item.sourceId}`;
     case 'lottery':
-      return 'success';
-    case 'transfer':
-      return 'accent';
-    case 'admin':
-      return 'default';
+      return `/dashboard/lottery/${item.sourceId}`;
+    case 'checkin':
+      return `/dashboard/attendance/${item.sourceId}`;
+    case 'bank':
+      return `/dashboard/guild-bank?request=${item.sourceId}`;
     default:
-      return 'default';
+      return undefined;
   }
 };
 
@@ -29,6 +41,7 @@ interface BackpackItemCardProps {
   onDonate?: (item: BackpackItem) => void;
   onTransfer?: (item: BackpackItem) => void;
   onWithdraw?: (item: BackpackItem) => void;
+  isHighlighted?: boolean;
 }
 
 const BackpackItemCard = ({
@@ -38,12 +51,28 @@ const BackpackItemCard = ({
   onDonate,
   onTransfer,
   onWithdraw,
+  isHighlighted = false,
 }: BackpackItemCardProps) => {
   const t = useTranslations('backpackItemCard');
   const labels = useTranslations('createAuctionModal');
+  const cardRef = React.useRef<HTMLDivElement>(null);
+  const href = sourceHref(item);
+  const sourceText = item.sourceLabel
+    ? t(`sourceWithLabel.${item.acquiredFrom}`, { label: item.sourceLabel })
+    : t(`acquiredFrom.${item.acquiredFrom}`);
+
+  React.useEffect(() => {
+    if (isHighlighted) cardRef.current?.scrollIntoView({ block: 'center' });
+  }, [isHighlighted]);
 
   return (
-    <Card className="border border-divider shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors p-2.5 rounded-xl">
+    <Card
+      ref={cardRef}
+      className={cn(
+        'border shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors p-2.5 rounded-xl',
+        isHighlighted ? 'border-accent ring-2 ring-accent/30' : 'border-divider',
+      )}
+    >
       <Card.Content className="flex flex-row items-center gap-3 p-0">
         <ItemThumbnail category={item.item.category} rarity={item.item.rarity} imageUrl={item.item.imageUrl} />
         <div className="flex-1 min-w-0">
@@ -52,11 +81,22 @@ const BackpackItemCard = ({
             <Chip size="sm" color={getRarityColor(item.item.rarity)} variant="secondary">
               {labels(`rarities.${item.item.rarity}`)}
             </Chip>
-            <Chip size="sm" color={getAcquiredColor(item.acquiredFrom)} variant="secondary">
-              {t(`acquiredFrom.${item.acquiredFrom}`)}
-            </Chip>
             {item.lock && <ItemLockChip lock={item.lock} />}
           </div>
+          {href ? (
+            <Link
+              href={href}
+              className="mt-1 flex min-w-0 items-center gap-1 rounded type-caption text-hint hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              <Icon icon={SOURCE_ICONS[item.acquiredFrom]} width={14} className="shrink-0" aria-hidden />
+              <span className="truncate">{sourceText}</span>
+            </Link>
+          ) : (
+            <p className="mt-1 flex min-w-0 items-center gap-1 type-caption text-hint">
+              <Icon icon={SOURCE_ICONS[item.acquiredFrom]} width={14} className="shrink-0" aria-hidden />
+              <span className="truncate">{sourceText}</span>
+            </p>
+          )}
         </div>
         <Dropdown>
           <Button isIconOnly variant="ghost" size="sm" className="text-hint shrink-0 max-sm:size-11" aria-label={t('actions')}>

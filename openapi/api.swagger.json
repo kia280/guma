@@ -4860,6 +4860,9 @@
           "type": "string",
           "format": "date-time"
         },
+        "sourceLabel": {
+          "type": "string"
+        },
         "lock": {
           "$ref": "#/definitions/v1ItemLock"
         }
@@ -4962,6 +4965,13 @@
         },
         "checkinTitle": {
           "type": "string"
+        },
+        "pendingRequestCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "requestedByMe": {
+          "type": "boolean"
         },
         "lock": {
           "$ref": "#/definitions/v1ItemLock"
@@ -6391,6 +6401,25 @@
         }
       }
     },
+    "v1LockedBid": {
+      "type": "object",
+      "properties": {
+        "auctionId": {
+          "type": "string"
+        },
+        "itemName": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "v1Lottery": {
       "type": "object",
       "properties": {
@@ -7328,6 +7357,17 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "lockedInBids": {
+          "type": "string",
+          "format": "int64"
+        },
+        "lockedBids": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LockedBid"
+          }
         }
       }
     },

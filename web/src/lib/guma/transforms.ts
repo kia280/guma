@@ -4,7 +4,7 @@
 import type { AdminAnnouncement, AdminGuildStats } from '@/types/admin';
 import { AuctionStatus } from '@/types/auction';
 import type { AuctionItem, Bid } from '@/types/auction';
-import type { BackpackItem } from '@/types/backpack';
+import type { BackpackItem, BackpackItemSource } from '@/types/backpack';
 import type { CheckinEntry, CheckinTemplate, AttendanceMember, ItemTemplate, LootItem } from '@/types/checkin';
 import { CheckinStatus } from '@/types/checkin';
 import type { Announcement } from '@/types/dashboard';
@@ -431,6 +431,15 @@ type ProtoTransaction = {
   status?: string;
   description?: string;
   created_at?: string;
+  reference_id?: string;
+  reference_type?: string;
+};
+
+type ProtoLockedBid = {
+  auction_id?: string;
+  item_name?: string;
+  amount?: number | string;
+  end_time?: string;
 };
 
 type ProtoWallet = {
@@ -440,6 +449,8 @@ type ProtoWallet = {
   currency?: string;
   created_at?: string;
   updated_at?: string;
+  locked_in_bids?: number | string;
+  locked_bids?: ProtoLockedBid[];
 };
 
 export const toWallet = (w: ProtoWallet): Wallet => ({
@@ -450,6 +461,13 @@ export const toWallet = (w: ProtoWallet): Wallet => ({
   currency: w.currency ?? 'gold',
   createdAt: ts(w.created_at),
   updatedAt: ts(w.updated_at),
+  lockedInBids: fromMinorUnits(w.locked_in_bids),
+  lockedBids: (w.locked_bids ?? []).map(b => ({
+    auctionId: b.auction_id ?? '',
+    itemName: b.item_name ?? '',
+    amount: fromMinorUnits(b.amount),
+    endTime: ts(b.end_time),
+  })),
 });
 
 export const toTransaction = (raw: ProtoTransaction): Transaction => {
@@ -467,18 +485,30 @@ export const toTransaction = (raw: ProtoTransaction): Transaction => {
     date: ts(raw.created_at).slice(0, 10),
     status: (raw.status?.toLowerCase() as Transaction['status']) || 'completed',
     description: raw.description,
+    referenceType: raw.reference_type || undefined,
+    referenceId: raw.reference_id || undefined,
   };
 };
 
 type ProtoBackpackItem = {
   id: string;
   item?: ProtoItem;
-  acquired_from?: string;
+  source?: string;
+  source_id?: string;
+  source_label?: string;
   acquired_at?: string;
   owner_id?: string;
   guild_id?: string;
   note?: string;
   lock?: ProtoItemLock;
+};
+
+const BACKPACK_SOURCES: Record<string, BackpackItemSource> = {
+  auction: 'auction',
+  lottery: 'lottery',
+  transfer: 'transfer',
+  checkin: 'checkin',
+  bank_item_request: 'bank',
 };
 
 export const toBackpackItem = (raw: ProtoBackpackItem): BackpackItem => ({
@@ -491,7 +521,9 @@ export const toBackpackItem = (raw: ProtoBackpackItem): BackpackItem => ({
     rarity: toRarity(raw.item?.rarity),
     imageUrl: raw.item?.image_url,
   },
-  acquiredFrom: (raw.acquired_from as BackpackItem['acquiredFrom']) || 'admin',
+  acquiredFrom: BACKPACK_SOURCES[raw.source ?? ''] ?? 'admin',
+  sourceId: raw.source_id || undefined,
+  sourceLabel: raw.source_label || undefined,
   acquiredAt: ts(raw.acquired_at),
   ownerId: raw.owner_id ?? '',
   guildId: raw.guild_id ?? '',
@@ -600,6 +632,8 @@ type ProtoBankItem = {
   donated_at?: string;
   checkin_id?: string;
   checkin_title?: string;
+  pending_request_count?: number;
+  requested_by_me?: boolean;
   lock?: ProtoItemLock;
 };
 
@@ -614,6 +648,8 @@ export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
   quantity: raw.quantity ?? 1,
   checkinId: raw.checkin_id || undefined,
   checkinTitle: raw.checkin_title || undefined,
+  pendingRequestCount: raw.pending_request_count ?? 0,
+  requestedByMe: raw.requested_by_me ?? false,
   lock: toItemLock(raw.lock),
 });
 

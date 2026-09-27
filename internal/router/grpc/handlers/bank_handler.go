@@ -175,12 +175,14 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
-	if session.UserIDFromContext(ctx) == "" {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
 	result, err := h.svc.ListBankItems(ctx, banksvc.ListBankItemsParams{
 		GuildID:  req.GuildId,
+		ViewerID: userID,
 		Category: req.Category,
 		Rarity:   req.Rarity,
 		PageSize: int(req.PageSize),
@@ -335,17 +337,19 @@ func fundRequestToProto(fr *banksvc.FundRequest) *gumav1.FundRequest {
 
 func bankItemToProto(bi *banksvc.BankItem) *gumav1.BankItem {
 	return &gumav1.BankItem{
-		Id:           bi.ID,
-		GuildId:      bi.GuildID,
-		DonorId:      bi.DonorID,
-		DonorName:    bi.DonorName,
-		Item:         itemToProto(bi.Item),
-		Quantity:     bi.Quantity,
-		Note:         bi.Note,
-		DonatedAt:    timestamppb.New(bi.DonatedAt),
-		CheckinId:    bi.CheckinID,
-		CheckinTitle: bi.CheckinTitle,
-		Lock:         itemLockToProto(bi.Lock),
+		Id:                  bi.ID,
+		GuildId:             bi.GuildID,
+		DonorId:             bi.DonorID,
+		DonorName:           bi.DonorName,
+		Item:                itemToProto(bi.Item),
+		Quantity:            bi.Quantity,
+		Note:                bi.Note,
+		DonatedAt:           timestamppb.New(bi.DonatedAt),
+		CheckinId:           bi.CheckinID,
+		CheckinTitle:        bi.CheckinTitle,
+		PendingRequestCount: bi.PendingRequestCount,
+		RequestedByMe:       bi.RequestedByMe,
+		Lock:                itemLockToProto(bi.Lock),
 	}
 }
 

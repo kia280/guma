@@ -1704,20 +1704,22 @@ func (x *FundRequest) GetRequesterAvatarUrl() string {
 }
 
 type BankItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	GuildId       string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	DonorId       string                 `protobuf:"bytes,3,opt,name=donor_id,json=donorId,proto3" json:"donor_id,omitempty"`
-	DonorName     string                 `protobuf:"bytes,4,opt,name=donor_name,json=donorName,proto3" json:"donor_name,omitempty"`
-	Item          *Item                  `protobuf:"bytes,5,opt,name=item,proto3" json:"item,omitempty"`
-	Quantity      int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	Note          string                 `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
-	DonatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=donated_at,json=donatedAt,proto3" json:"donated_at,omitempty"`
-	CheckinId     string                 `protobuf:"bytes,9,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
-	CheckinTitle  string                 `protobuf:"bytes,10,opt,name=checkin_title,json=checkinTitle,proto3" json:"checkin_title,omitempty"`
-	Lock          *ItemLock              `protobuf:"bytes,20,opt,name=lock,proto3" json:"lock,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Id                  string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GuildId             string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	DonorId             string                 `protobuf:"bytes,3,opt,name=donor_id,json=donorId,proto3" json:"donor_id,omitempty"`
+	DonorName           string                 `protobuf:"bytes,4,opt,name=donor_name,json=donorName,proto3" json:"donor_name,omitempty"`
+	Item                *Item                  `protobuf:"bytes,5,opt,name=item,proto3" json:"item,omitempty"`
+	Quantity            int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	Note                string                 `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
+	DonatedAt           *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=donated_at,json=donatedAt,proto3" json:"donated_at,omitempty"`
+	CheckinId           string                 `protobuf:"bytes,9,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
+	CheckinTitle        string                 `protobuf:"bytes,10,opt,name=checkin_title,json=checkinTitle,proto3" json:"checkin_title,omitempty"`
+	PendingRequestCount int32                  `protobuf:"varint,11,opt,name=pending_request_count,json=pendingRequestCount,proto3" json:"pending_request_count,omitempty"`
+	RequestedByMe       bool                   `protobuf:"varint,12,opt,name=requested_by_me,json=requestedByMe,proto3" json:"requested_by_me,omitempty"`
+	Lock                *ItemLock              `protobuf:"bytes,20,opt,name=lock,proto3" json:"lock,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *BankItem) Reset() {
@@ -1818,6 +1820,20 @@ func (x *BankItem) GetCheckinTitle() string {
 		return x.CheckinTitle
 	}
 	return ""
+}
+
+func (x *BankItem) GetPendingRequestCount() int32 {
+	if x != nil {
+		return x.PendingRequestCount
+	}
+	return 0
+}
+
+func (x *BankItem) GetRequestedByMe() bool {
+	if x != nil {
+		return x.RequestedByMe
+	}
+	return false
 }
 
 func (x *BankItem) GetLock() *ItemLock {
@@ -2113,7 +2129,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
 	"\vreviewed_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"reviewedAt\x120\n" +
-	"\x14requester_avatar_url\x18\f \x01(\tR\x12requesterAvatarUrl\"\xe8\x02\n" +
+	"\x14requester_avatar_url\x18\f \x01(\tR\x12requesterAvatarUrl\"\xc4\x03\n" +
 	"\bBankItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x19\n" +
@@ -2128,7 +2144,9 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\n" +
 	"checkin_id\x18\t \x01(\tR\tcheckinId\x12#\n" +
 	"\rcheckin_title\x18\n" +
-	" \x01(\tR\fcheckinTitle\x12%\n" +
+	" \x01(\tR\fcheckinTitle\x122\n" +
+	"\x15pending_request_count\x18\v \x01(\x05R\x13pendingRequestCount\x12&\n" +
+	"\x0frequested_by_me\x18\f \x01(\bR\rrequestedByMe\x12%\n" +
 	"\x04lock\x18\x14 \x01(\v2\x11.guma.v1.ItemLockR\x04lock\"\xe3\x03\n" +
 	"\vItemRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +

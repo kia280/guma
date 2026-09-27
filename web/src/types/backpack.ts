@@ -1,9 +1,13 @@
 import type { Item, ItemLock } from './item';
 
+export type BackpackItemSource = 'auction' | 'lottery' | 'transfer' | 'bank' | 'checkin' | 'admin';
+
 export interface BackpackItem {
   id: string;
   item: Item;
-  acquiredFrom: 'auction' | 'lottery' | 'transfer' | 'admin';
+  acquiredFrom: BackpackItemSource;
+  sourceId?: string;
+  sourceLabel?: string;
   acquiredAt: string;
   ownerId: string;
   guildId: string;

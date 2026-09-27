@@ -14,9 +14,11 @@ import {
   Tooltip,
   Alert,
   FieldError,
+  cn,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
@@ -105,6 +107,7 @@ export default function GuildBankPage() {
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
+  const highlightedRequestId = useSearchParams().get('request');
 
   const contributeModalState = useOverlayState();
   const requestItemModalState = useOverlayState();
@@ -314,6 +317,15 @@ export default function GuildBankPage() {
       setIsRequesting(false);
     }
   };
+
+  const isHighlightedEntry = (entry: GuildContribution) =>
+    Boolean(highlightedRequestId) && (entry.id === `r-${highlightedRequestId}` || entry.id === `i-${highlightedRequestId}`);
+
+  React.useEffect(() => {
+    if (!highlightedRequestId || contributionsState.state !== 'ready') return;
+    const rows = document.querySelectorAll<HTMLElement>('[data-highlighted="true"]');
+    Array.from(rows).find(row => row.offsetParent !== null)?.scrollIntoView({ block: 'center' });
+  }, [highlightedRequestId, contributionsState.state, mockContributions]);
 
   const openItemRequest = (item: GuildBankItem) => {
     setSelectedItem(item);
@@ -541,12 +553,26 @@ export default function GuildBankPage() {
                         <span className="text-hint tabular-nums"> ×{item.quantity}</span>
                       )}
                     </p>
-                    <div className="flex items-center gap-1 mt-0.5">
+                    <div className="flex flex-wrap items-center gap-1 mt-0.5">
                       <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
                         {labels(`rarities.${item.rarity}`)}
                       </Chip>
                       {item.lock && <ItemLockChip lock={item.lock} />}
+                      {item.requestedByMe ? (
+                        <Chip size="sm" color="accent" variant="secondary">
+                          {t('requestedByMe')}
+                        </Chip>
+                      ) : item.pendingRequestCount > 0 && (
+                        <Chip size="sm" color="warning" variant="secondary">
+                          {t('pendingRequestCount', { count: item.pendingRequestCount })}
+                        </Chip>
+                      )}
                     </div>
+                    {item.requestedByMe && item.pendingRequestCount > 1 && (
+                      <p className="mt-1 type-caption text-hint">
+                        {t('otherPendingRequests', { count: item.pendingRequestCount - 1 })}
+                      </p>
+                    )}
                     {item.checkinId && (
                       <Link
                         href={`/dashboard/attendance/${item.checkinId}`}
@@ -563,13 +589,13 @@ export default function GuildBankPage() {
                       size="sm"
                       variant="ghost"
                       className="text-hint shrink-0 max-sm:size-11"
-                      aria-label={t('requestItem')}
-                      isDisabled={Boolean(item.lock)}
+                      aria-label={item.requestedByMe ? t('alreadyRequested') : t('requestItem')}
+                      isDisabled={item.requestedByMe || Boolean(item.lock)}
                       onPress={() => openItemRequest(item)}
                     >
-                      <Icon icon="solar:hand-shake-linear" width={16} />
+                      <Icon icon={item.requestedByMe ? 'solar:check-circle-linear' : 'solar:hand-shake-linear'} width={16} />
                     </Button>
-                    <Tooltip.Content>{t('requestItem')}</Tooltip.Content>
+                    <Tooltip.Content>{item.requestedByMe ? t('alreadyRequested') : t('requestItem')}</Tooltip.Content>
                   </Tooltip>
                 </Card.Content>
               </Card>
@@ -614,7 +640,11 @@ export default function GuildBankPage() {
                   </Table.Header>
                   <Table.Body>
                     {mockContributions.map(entry => (
-                      <Table.Row key={entry.id}>
+                      <Table.Row
+                        key={entry.id}
+                        data-highlighted={isHighlightedEntry(entry) || undefined}
+                        className={cn(isHighlightedEntry(entry) && 'bg-accent/10')}
+                      >
                         <Table.Cell>
                           <div className="flex items-center gap-3">
                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default">
@@ -681,7 +711,11 @@ export default function GuildBankPage() {
           {/* Mobile Card View */}
           <div className="block md:hidden divide-y divide-divider">
             {mockContributions.map(entry => (
-              <div key={entry.id} className="py-3 first:pt-0 last:pb-0">
+              <div
+                key={entry.id}
+                data-highlighted={isHighlightedEntry(entry) || undefined}
+                className={cn('py-3 first:pt-0 last:pb-0', isHighlightedEntry(entry) && 'bg-accent/10 rounded-lg px-2')}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">

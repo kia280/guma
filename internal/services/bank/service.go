@@ -81,17 +81,19 @@ type FundRequest struct {
 
 // BankItem is the domain model for an item in the guild bank.
 type BankItem struct {
-	ID           string
-	GuildID      string
-	DonorID      string
-	DonorName    string
-	Item         models.Item
-	Quantity     int32
-	Note         string
-	DonatedAt    time.Time
-	CheckinID    string
-	CheckinTitle string
-	Lock         *models.ItemLock
+	ID                  string
+	GuildID             string
+	DonorID             string
+	DonorName           string
+	Item                models.Item
+	Quantity            int32
+	Note                string
+	DonatedAt           time.Time
+	CheckinID           string
+	CheckinTitle        string
+	PendingRequestCount int32
+	RequestedByMe       bool
+	Lock                *models.ItemLock
 }
 
 // ItemRequest is the domain model for an item request.
@@ -166,6 +168,7 @@ type ListContributionsResult struct {
 // ListBankItemsParams holds inputs for ListBankItems.
 type ListBankItemsParams struct {
 	GuildID  string
+	ViewerID string
 	Category string
 	Rarity   string
 	PageSize int
@@ -581,10 +584,14 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
 	}
+	viewerID, err := uuid.Parse(p.ViewerID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
 
 	rows, err := s.q.ListBankItems(ctx, db.ListBankItemsParams{
 		GuildID: guildID, CategoryFilter: p.Category, RarityFilter: p.Rarity,
-		PageSize: int32(pageSize), PageOffset: int32(p.Offset),
+		PageSize: int32(pageSize), PageOffset: int32(p.Offset), ViewerID: viewerID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: list bank items: %v", errs.ErrInternal, err)
@@ -596,6 +603,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 			ID: r.ID.String(), GuildID: r.GuildID.String(), DonorID: r.DonorID.String(),
 			DonorName: r.DonorName, Quantity: r.Quantity,
 			Note: r.Note, DonatedAt: r.DonatedAt, CheckinTitle: r.CheckinTitle,
+			PendingRequestCount: r.PendingRequestCount, RequestedByMe: r.RequestedByMe,
 			Lock: models.NewItemLock(r.LockedByType, r.LockedByID),
 		}
 		if r.CheckinID != nil {

@@ -21,12 +21,21 @@ import (
 
 // Wallet is the domain model for a user's guild wallet.
 type Wallet struct {
-	UserID    string
-	GuildID   string
-	Balance   int64
-	Currency  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	UserID       string
+	GuildID      string
+	Balance      int64
+	Currency     string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	LockedInBids int64
+	LockedBids   []LockedBid
+}
+
+type LockedBid struct {
+	AuctionID string
+	ItemName  string
+	Amount    int64
+	EndTime   time.Time
 }
 
 // Transaction is the domain model for a wallet transaction.
@@ -45,15 +54,16 @@ type Transaction struct {
 
 // BackpackItem is the domain model for an item in a user's backpack.
 type BackpackItem struct {
-	ID         string
-	OwnerID    string
-	GuildID    string
-	Item       models.Item
-	Source     string
-	SourceID   string
-	Note       string
-	AcquiredAt time.Time
-	Lock       *models.ItemLock
+	ID          string
+	OwnerID     string
+	GuildID     string
+	Item        models.Item
+	Source      string
+	SourceID    string
+	Note        string
+	AcquiredAt  time.Time
+	SourceLabel string
+	Lock        *models.ItemLock
 }
 
 // ListTransactionsParams holds the inputs for ListTransactions.
@@ -122,14 +132,26 @@ func (s *Service) GetWallet(ctx context.Context, userIDStr, guildIDStr string) (
 	if err != nil {
 		return nil, fmt.Errorf("%w: wallet", errs.ErrNotFound)
 	}
-	return &Wallet{
-		UserID:    w.UserID.String(),
-		GuildID:   w.GuildID.String(),
-		Balance:   w.Balance,
-		Currency:  w.Currency,
-		CreatedAt: w.CreatedAt,
-		UpdatedAt: w.UpdatedAt,
-	}, nil
+	bids, err := s.q.ListActiveLeadingBids(ctx, db.ListActiveLeadingBidsParams{GuildID: guildID, CurrentBidderID: &userID})
+	if err != nil {
+		return nil, fmt.Errorf("%w: list leading bids: %v", errs.ErrInternal, err)
+	}
+	wallet := &Wallet{
+		UserID:     w.UserID.String(),
+		GuildID:    w.GuildID.String(),
+		Balance:    w.Balance,
+		Currency:   w.Currency,
+		CreatedAt:  w.CreatedAt,
+		UpdatedAt:  w.UpdatedAt,
+		LockedBids: make([]LockedBid, 0, len(bids)),
+	}
+	for _, b := range bids {
+		wallet.LockedInBids += b.CurrentBid
+		wallet.LockedBids = append(wallet.LockedBids, LockedBid{
+			AuctionID: b.ID.String(), ItemName: b.ItemName, Amount: b.CurrentBid, EndTime: b.EndTime,
+		})
+	}
+	return wallet, nil
 }
 
 // Deposit adds funds to a wallet (admin or system operation).
@@ -350,6 +372,7 @@ func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (
 	items := make([]*BackpackItem, 0, len(rows))
 	for _, r := range rows {
 		item := toBackpackItem(r.ID, r.OwnerID, r.GuildID, r.Item, r.Source, r.SourceID, r.Note, r.AcquiredAt)
+		item.SourceLabel = r.SourceLabel
 		item.Lock = models.NewItemLock(r.LockedByType, r.LockedByID)
 		items = append(items, item)
 	}

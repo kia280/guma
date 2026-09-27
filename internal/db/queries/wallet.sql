@@ -58,15 +58,23 @@ WHERE user_id = $1 AND guild_id = $2
 ORDER BY created_at ASC;
 
 -- name: ListBackpackItems :many
-SELECT id, owner_id, guild_id, item,
-       source, source_id,
-       COALESCE(note, '') AS note,
-       acquired_at,
-       COALESCE(locked_by_type, '') AS locked_by_type,
-       locked_by_id
-FROM backpack_items
-WHERE owner_id = $1 AND guild_id = $2
-ORDER BY acquired_at DESC
+SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
+       bi.source, bi.source_id,
+       COALESCE(bi.note, '') AS note,
+       bi.acquired_at,
+       COALESCE(
+           CASE bi.source
+               WHEN 'transfer' THEN (SELECT COALESCE(NULLIF(u.display_name, ''), u.username) FROM users u WHERE u.id = bi.source_id)
+               WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
+               WHEN 'checkin'  THEN (SELECT c.title FROM checkins c WHERE c.id = bi.source_id)
+           END,
+           ''
+       )::text AS source_label,
+       COALESCE(bi.locked_by_type, '') AS locked_by_type,
+       bi.locked_by_id
+FROM backpack_items bi
+WHERE bi.owner_id = $1 AND bi.guild_id = $2
+ORDER BY bi.acquired_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountBackpackItems :one
@@ -92,3 +100,9 @@ WHERE backpack_items.id = sqlc.arg(id)
 RETURNING backpack_items.id, backpack_items.owner_id, backpack_items.guild_id, backpack_items.item,
           backpack_items.source, backpack_items.source_id,
           COALESCE(backpack_items.note, '') AS note, backpack_items.acquired_at;
+
+-- name: ListActiveLeadingBids :many
+SELECT id, COALESCE(item->>'name', '')::text AS item_name, current_bid, end_time
+FROM auctions
+WHERE guild_id = $1 AND current_bidder_id = $2 AND status IN ('UPCOMING', 'ACTIVE')
+ORDER BY end_time ASC;

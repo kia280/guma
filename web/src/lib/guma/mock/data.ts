@@ -576,6 +576,8 @@ export const mockGuildItems: GuildBankItem[] = [
     donatedBy: member(23).username,
     donatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     quantity: 5,
+    pendingRequestCount: 2,
+    requestedByMe: false,
   },
   {
     id: 'gi2',
@@ -586,6 +588,8 @@ export const mockGuildItems: GuildBankItem[] = [
     donatedBy: member(1).username,
     donatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     quantity: 12,
+    pendingRequestCount: 0,
+    requestedByMe: false,
   },
   {
     id: 'gi3',
@@ -596,6 +600,8 @@ export const mockGuildItems: GuildBankItem[] = [
     donatedBy: member(31).username,
     donatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
     quantity: 1,
+    pendingRequestCount: 0,
+    requestedByMe: false,
   },
   {
     id: 'gi4',
@@ -606,6 +612,8 @@ export const mockGuildItems: GuildBankItem[] = [
     donatedBy: member(40).username,
     donatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     quantity: 50,
+    pendingRequestCount: 0,
+    requestedByMe: false,
   },
 ];
 
