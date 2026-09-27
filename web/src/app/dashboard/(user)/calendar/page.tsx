@@ -179,7 +179,7 @@ export default function CalendarPage() {
                     <p className="type-subheading text-foreground truncate">
                       {selectedEvent.title}
                     </p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 type-caption">
                       <Chip
                         color={EVENT_TYPE_COLORS[selectedEvent.type]}
                         size="sm"

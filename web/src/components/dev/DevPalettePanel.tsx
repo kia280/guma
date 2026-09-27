@@ -80,8 +80,8 @@ export function DevPalettePanel() {
                 isSelected ? 'border-accent bg-accent/10' : 'border-divider bg-surface hover:border-foreground/20'
               }`}
             >
-              <div className="flex items-center justify-between gap-2">
-                <span className="type-body font-medium">{t(`palettes.${palette.id}.name`)}</span>
+              <div className="flex items-center justify-between gap-2 type-body">
+                <span className="font-medium">{t(`palettes.${palette.id}.name`)}</span>
                 {isSelected && (
                   <Chip size="sm" color="accent">
                     {t('active')}

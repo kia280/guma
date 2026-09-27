@@ -32,7 +32,7 @@ export default function AdminRolesPage() {
         {ROLES.map(role => (
           <li key={role}>
             <Card className="h-full border border-divider shadow-none bg-surface">
-              <Card.Content className="gap-2">
+              <Card.Content className="gap-2 type-body">
                 <Chip
                   size="sm"
                   color={ROLE_COLORS[role]}
@@ -41,7 +41,7 @@ export default function AdminRolesPage() {
                 >
                   {tRoles(role)}
                 </Chip>
-                <p className="type-body text-subtle">{t(`roleSummaries.${role}`)}</p>
+                <p className="text-subtle">{t(`roleSummaries.${role}`)}</p>
               </Card.Content>
             </Card>
           </li>
@@ -69,9 +69,9 @@ export default function AdminRolesPage() {
               {section.actions.map(action => (
                 <li
                   key={action.key}
-                  className="flex flex-col gap-2 rounded-lg bg-surface-secondary px-3 py-2.5"
+                  className="flex flex-col gap-2 rounded-lg bg-surface-secondary px-3 py-2.5 type-body"
                 >
-                  <span className="type-body text-foreground">{t(`actions.${action.key}`)}</span>
+                  <span className="text-foreground">{t(`actions.${action.key}`)}</span>
                   <div className="flex flex-wrap gap-1.5">
                     {(action.roles as readonly Role[]).map(role => (
                       <Chip key={role} size="sm" color={ROLE_COLORS[role]} variant="secondary">

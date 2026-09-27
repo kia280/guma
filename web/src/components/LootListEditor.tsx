@@ -62,13 +62,13 @@ export function LootListEditor({ items, inputValue, onChange, children }: LootLi
               key={`${idx}-${item.name}`}
               className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-surface-secondary border border-divider"
             >
-              <div className="flex min-w-0 items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2 type-body">
                 <Icon
                   icon={item.category ? getCategoryIcon(item.category) : 'solar:box-linear'}
                   width={14}
                   className="shrink-0 text-hint"
                 />
-                <span className="type-body text-foreground truncate">{item.name}</span>
+                <span className="text-foreground truncate">{item.name}</span>
                 {item.rarity && (
                   <Chip size="sm" variant="secondary" color={getRarityColor(item.rarity)} className="shrink-0">
                     {labels(`rarities.${item.rarity}`)}
