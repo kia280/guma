@@ -711,7 +711,7 @@ export default function WalletPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <span
-                            className={`type-body font-medium ${transactionAmountClass(transaction.amount)}`}
+                            className={`type-body font-medium tabular-nums ${transactionAmountClass(transaction.amount)}`}
                           >
                             {formatTransactionAmount(transaction.amount, formatGold)}
                           </span>
@@ -778,7 +778,7 @@ export default function WalletPage() {
                   </div>
                   <div className="text-right shrink-0 ml-3">
                     <span
-                      className={`type-body font-medium ${transactionAmountClass(transaction.amount)}`}
+                      className={`type-body font-medium tabular-nums ${transactionAmountClass(transaction.amount)}`}
                     >
                       {formatTransactionAmount(transaction.amount, formatGold)}
                     </span>
