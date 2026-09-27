@@ -35,7 +35,7 @@ let source: EventSource | null = null;
 let streamOpen = false;
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 
-const emit = (event: LiveEvent) => {
+export const emitLiveEvent = (event: LiveEvent) => {
   listeners.forEach(listener => listener(event));
 };
 
@@ -65,7 +65,7 @@ export const parseLiveEvent = (data: string): LiveEvent | null => {
 const setClosed = () => {
   if (!streamOpen) return;
   streamOpen = false;
-  emit({ kind: 'closed' });
+  emitLiveEvent({ kind: 'closed' });
 };
 
 const connect = () => {
@@ -73,11 +73,11 @@ const connect = () => {
   source = new EventSource(new URL('/v1/me/events', env.api.url), { withCredentials: true });
   source.onopen = () => {
     streamOpen = true;
-    emit({ kind: 'open' });
+    emitLiveEvent({ kind: 'open' });
   };
   source.onmessage = message => {
     const event = parseLiveEvent(message.data);
-    if (event) emit(event);
+    if (event) emitLiveEvent(event);
   };
   source.onerror = () => {
     setClosed();
