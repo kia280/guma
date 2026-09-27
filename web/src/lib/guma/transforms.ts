@@ -273,6 +273,7 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     date: raw.datetime ?? '',
     description: raw.title ?? '',
     expireTime: raw.expire_time,
+    attendanceCount: raw.attendance_count ?? attendees.length,
     attendanceList: attendees,
     lootList: loot,
     imageUrl: raw.image_url,
