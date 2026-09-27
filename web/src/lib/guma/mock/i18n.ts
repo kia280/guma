@@ -104,8 +104,6 @@ const ZHT_TEXT: Record<string, string> = {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const PLACES: Record<string, string> = { '1st': '第一名', '2nd': '第二名', '3rd': '第三名' };
-
 const ZHT_PATTERNS: Array<[RegExp, (...groups: string[]) => string]> = [
   [/^Transfer to (.+)$/, name => `轉帳給 ${name}`],
   [/^(.+) ×(\d+)$/, (item, qty) => `${translateZht(item)} ×${qty}`],
@@ -114,8 +112,7 @@ const ZHT_PATTERNS: Array<[RegExp, (...groups: string[]) => string]> = [
   [/^(\S+) remaining$/, time => `剩餘 ${time}`],
   [/^Tomorrow (\d{2}:\d{2})$/, time => `明天 ${time}`],
   [/^You have (\d+) tickets$/, count => `你有 ${count} 張彩券`],
-  [/^(\$[\d,]+) prize pool$/, amount => `獎金池 ${amount}`],
-  [/^(\$[\d,]+) \((1st|2nd|3rd) place\)$/, (amount, place) => `${amount}（${PLACES[place]}）`],
+  [/^([\d,.]+) prize pool$/, amount => `獎金池 ${amount}`],
   [/^(\d+) min ago$/, n => `${n} 分鐘前`],
   [/^(\d+)h ago$/, n => `${n} 小時前`],
   [/^(\d+)d ago$/, n => `${n} 天前`],

@@ -134,7 +134,7 @@ export const mockBalanceTrend = (days: number): BalancePoint[] => {
 export const INCOMING_EVENTS: FeedEvent[] = [
   { id: '1', kind: 'auction', title: 'Dragon Slayer Sword', subtitle: 'Auction ending soon', timeLabel: '6h remaining', urgency: 'high' },
   { id: '2', kind: 'checkin', title: 'Weekly Guild Check-in', subtitle: 'Open — awaiting your check-in', timeLabel: 'Open now', urgency: 'high' },
-  { id: '3', kind: 'lottery', title: 'Spring Giveaway Draw', subtitle: '$2,500 prize pool', timeLabel: 'Draws in 2d 4h', urgency: 'medium' },
+  { id: '3', kind: 'lottery', title: 'Spring Giveaway Draw', subtitle: '2,500.00 prize pool', timeLabel: 'Draws in 2d 4h', urgency: 'medium' },
   { id: '4', kind: 'auction', title: 'Mystic Shield of Protection', subtitle: 'Active auction', timeLabel: '12h remaining', urgency: 'medium' },
   { id: '5', kind: 'calendar', title: 'Guild Strategy Meeting', subtitle: 'Recurring weekly event', timeLabel: 'Tomorrow 20:00', urgency: 'low' },
   { id: '6', kind: 'lottery', title: 'Monthly Mega Draw', subtitle: 'You have 3 tickets', timeLabel: 'Draws in 5d', urgency: 'low' },
@@ -519,9 +519,9 @@ const BASE_LOTTERIES: Lottery[] = [
     maxTickets: 125,
     status: 'ended',
     winners: [
-      { id: 'w1', username: member(7).username, prize: '$12,500 (1st place)' },
-      { id: 'w2', username: member(12).username, prize: '$7,500 (2nd place)' },
-      { id: 'w3', username: member(23).username, prize: '$5,000 (3rd place)' },
+      { id: 'w1', username: member(7).username, prize: '', prizeAmount: 12500 },
+      { id: 'w2', username: member(12).username, prize: '', prizeAmount: 7500 },
+      { id: 'w3', username: member(23).username, prize: '', prizeAmount: 5000 },
     ],
   },
   {
