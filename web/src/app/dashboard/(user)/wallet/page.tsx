@@ -8,16 +8,11 @@ import {
   Modal,
   useOverlayState,
   Input,
-  ComboBox,
   Label,
-  ListBox,
-  EmptyState,
-  Description,
   FieldError,
   TextField,
   Pagination,
   Spinner,
-  useFilter,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
@@ -28,6 +23,7 @@ import BackpackItemCard from '@/components/BackpackItemCard';
 import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal } from '@/components/CreateLotteryModal';
+import { MemberComboBox } from '@/components/MemberComboBox';
 import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -167,11 +163,9 @@ export default function WalletPage() {
 
   const [transferAmount, setTransferAmount] = React.useState('');
   const [transferRecipient, setTransferRecipient] = React.useState('');
-  const [recipientInput, setRecipientInput] = React.useState('');
   const [showTransferErrors, setShowTransferErrors] = React.useState(false);
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
   const [depositAmount, setDepositAmount] = React.useState('');
-  const { contains } = useFilter({ sensitivity: 'base' });
   const [selectedItem, setSelectedItem] = React.useState<BackpackItem | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [paginatedGuildId, setPaginatedGuildId] = React.useState(guildId);
@@ -291,11 +285,6 @@ export default function WalletPage() {
       ? t('insufficientBalance')
       : null;
   const transferRecipientError = transferRecipient ? null : t('recipientRequired');
-  const selectedRecipient = mockUsers.find(user => user.id === transferRecipient);
-  const recipientQuery = selectedRecipient?.username === recipientInput ? '' : recipientInput.trim();
-  const recipientOptions = recipientQuery
-    ? mockUsers.filter(user => contains(user.username, recipientQuery) || contains(user.email, recipientQuery))
-    : mockUsers;
   const showTransferAmountError = Boolean(transferAmountError) && (showTransferErrors || transferAmount !== '');
   const showTransferRecipientError = Boolean(transferRecipientError) && showTransferErrors;
   const canWithdraw = withdrawAmountValue > 0 && !withdrawExceedsBalance;
@@ -330,24 +319,6 @@ export default function WalletPage() {
     openActionModal(transferModalState);
   };
 
-  const handleRecipientInputChange = (value: string) => {
-    setRecipientInput(value);
-    const query = value.trim();
-    const exactMatch = mockUsers.find(
-      user => user.username.localeCompare(query, undefined, { sensitivity: 'base' }) === 0
-        || user.email.localeCompare(query, undefined, { sensitivity: 'base' }) === 0,
-    );
-    setTransferRecipient(current =>
-      mockUsers.find(user => user.id === current)?.username === value ? current : (exactMatch?.id ?? ''),
-    );
-  };
-
-  const handleRecipientChange = (key: React.Key | null) => {
-    const user = mockUsers.find(member => member.id === key);
-    setTransferRecipient(user?.id ?? '');
-    if (user) setRecipientInput(user.username);
-  };
-
   const handleTransfer = (trigger: Element) => {
     if (transferAmountError || transferRecipientError) {
       setShowTransferErrors(true);
@@ -363,7 +334,6 @@ export default function WalletPage() {
       () => {
         setTransferAmount('');
         setTransferRecipient('');
-        setRecipientInput('');
       },
     );
   };
@@ -523,40 +493,16 @@ export default function WalletPage() {
                             />
                             {showTransferAmountError && <FieldError>{transferAmountError}</FieldError>}
                           </TextField>
-                          <ComboBox
-                            fullWidth
-                            allowsCustomValue
-                            allowsEmptyCollection
-                            menuTrigger="input"
-                            variant="secondary"
-                            validationBehavior="aria"
+                          <MemberComboBox
+                            members={mockUsers}
+                            value={transferRecipient}
+                            onChange={setTransferRecipient}
+                            label={t('recipient')}
+                            placeholder={t('searchRecipient')}
+                            emptyMessage={t('noResults')}
                             isInvalid={showTransferRecipientError}
-                            defaultFilter={() => true}
-                            value={transferRecipient || null}
-                            onChange={handleRecipientChange}
-                            inputValue={recipientInput}
-                            onInputChange={handleRecipientInputChange}
-                          >
-                            <Label>{t('recipient')}</Label>
-                            <ComboBox.InputGroup>
-                              <Input placeholder={t('searchRecipient')} />
-                              <ComboBox.Trigger />
-                            </ComboBox.InputGroup>
-                            <ComboBox.Popover>
-                              <ListBox renderEmptyState={() => <EmptyState>{t('noResults')}</EmptyState>}>
-                                {recipientOptions.map(user => (
-                                  <ListBox.Item key={user.id} id={user.id} textValue={user.username}>
-                                    <div className="flex min-w-0 flex-col">
-                                      <Label>{user.username}</Label>
-                                      <Description>{user.email}</Description>
-                                    </div>
-                                    <ListBox.ItemIndicator />
-                                  </ListBox.Item>
-                                ))}
-                              </ListBox>
-                            </ComboBox.Popover>
-                            {showTransferRecipientError && <FieldError>{transferRecipientError}</FieldError>}
-                          </ComboBox>
+                            errorMessage={transferRecipientError}
+                          />
                           <p className="type-caption text-hint px-1">
                             {t('available')} {formatGold(balance)}
                           </p>
