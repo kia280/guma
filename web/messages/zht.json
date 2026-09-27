@@ -197,6 +197,7 @@
     "amountLabel": "金額",
     "recipient": "收款人",
     "searchRecipient": "以用戶名或電子郵件搜尋",
+    "noResults": "找不到符合的成員",
     "available": "可用：",
     "insufficientBalance": "餘額不足",
     "cancel": "取消",

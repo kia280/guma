@@ -197,6 +197,7 @@
     "amountLabel": "Amount",
     "recipient": "Recipient",
     "searchRecipient": "Search by username or email",
+    "noResults": "No members found",
     "available": "Available:",
     "insufficientBalance": "Insufficient balance",
     "cancel": "Cancel",

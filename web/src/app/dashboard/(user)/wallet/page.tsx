@@ -8,17 +8,11 @@ import {
   Modal,
   useOverlayState,
   Input,
-  Autocomplete,
   Label,
-  ListBox,
-  SearchField,
-  EmptyState,
-  Description,
   FieldError,
   TextField,
   Pagination,
   Spinner,
-  useFilter,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
@@ -29,6 +23,7 @@ import BackpackItemCard from '@/components/BackpackItemCard';
 import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal } from '@/components/CreateLotteryModal';
+import { MemberComboBox } from '@/components/MemberComboBox';
 import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -171,7 +166,6 @@ export default function WalletPage() {
   const [showTransferErrors, setShowTransferErrors] = React.useState(false);
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
   const [depositAmount, setDepositAmount] = React.useState('');
-  const { contains } = useFilter({ sensitivity: 'base' });
   const [selectedItem, setSelectedItem] = React.useState<BackpackItem | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [paginatedGuildId, setPaginatedGuildId] = React.useState(guildId);
@@ -499,44 +493,16 @@ export default function WalletPage() {
                             />
                             {showTransferAmountError && <FieldError>{transferAmountError}</FieldError>}
                           </TextField>
-                          <Autocomplete
-                            className="w-full"
-                            placeholder={t('searchRecipient')}
-                            selectionMode="single"
-                            validationBehavior="aria"
-                            isInvalid={showTransferRecipientError}
+                          <MemberComboBox
+                            members={mockUsers}
                             value={transferRecipient}
-                            onChange={key => setTransferRecipient(key as string)}
-                          >
-                            <Label>{t('recipient')}</Label>
-                            <Autocomplete.Trigger>
-                              <Autocomplete.Value />
-                              <Autocomplete.Indicator />
-                            </Autocomplete.Trigger>
-                            <Autocomplete.Popover>
-                              <Autocomplete.Filter filter={contains}>
-                                <SearchField autoFocus name="search" variant="secondary">
-                                  <SearchField.Group>
-                                    <SearchField.SearchIcon />
-                                    <SearchField.Input placeholder={t('searchRecipient')} />
-                                    <SearchField.ClearButton />
-                                  </SearchField.Group>
-                                </SearchField>
-                                <ListBox renderEmptyState={() => <EmptyState>{t('noResults')}</EmptyState>}>
-                                  {mockUsers.map(user => (
-                                    <ListBox.Item key={user.id} id={user.id} textValue={user.username}>
-                                      <div className="flex flex-col">
-                                        <Label>{user.username}</Label>
-                                        <Description>{user.email}</Description>
-                                      </div>
-                                      <ListBox.ItemIndicator />
-                                    </ListBox.Item>
-                                  ))}
-                                </ListBox>
-                              </Autocomplete.Filter>
-                            </Autocomplete.Popover>
-                            {showTransferRecipientError && <FieldError>{transferRecipientError}</FieldError>}
-                          </Autocomplete>
+                            onChange={setTransferRecipient}
+                            label={t('recipient')}
+                            placeholder={t('searchRecipient')}
+                            emptyMessage={t('noResults')}
+                            isInvalid={showTransferRecipientError}
+                            errorMessage={transferRecipientError}
+                          />
                           <p className="type-caption text-hint px-1">
                             {t('available')} {formatGold(balance)}
                           </p>
