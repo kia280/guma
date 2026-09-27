@@ -30,6 +30,7 @@ export interface CheckinEntry {
   date: string;
   description: string;
   expireTime?: string;
+  attendanceCount: number;
   attendanceList: AttendanceMember[];
   lootList: LootItem[];
   isDisabled?: boolean;
