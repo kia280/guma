@@ -1,3 +1,5 @@
+import type { GuildAction } from '@/lib/permissions';
+
 export type NavLabelKey =
   | 'dashboard'
   | 'checkin'
@@ -14,7 +16,7 @@ export type NavLabelKey =
   | 'adminAnnouncements'
   | 'adminRoles';
 
-export type NavSectionKey = 'activities' | 'assets';
+export type NavSectionKey = 'activities' | 'assets' | 'admin';
 
 export interface NavLink {
   key: string;
@@ -31,6 +33,7 @@ export interface NavGroup extends NavLink {
 export interface NavSection {
   key: string;
   label?: NavSectionKey;
+  requires?: GuildAction;
   items: Array<NavLink | NavGroup>;
 }
 
@@ -72,6 +75,8 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     key: 'admin',
+    label: 'admin',
+    requires: 'accessAdmin',
     items: [
       {
         key: 'admin',

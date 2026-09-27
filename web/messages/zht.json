@@ -74,7 +74,8 @@
     "adminRoles": "角色權限",
     "sections": {
       "activities": "公會活動",
-      "assets": "資產"
+      "assets": "資產",
+      "admin": "公會管理"
     },
     "pages": {
       "detail": "詳細資料",
