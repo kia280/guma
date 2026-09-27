@@ -35,7 +35,7 @@ import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
 import { apiClient } from '@/lib/guma';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
-import { useGuildPermissions } from '@/lib/permissions';
+import { roleChipColor, useGuildPermissions } from '@/lib/permissions';
 import { userStatusColor, type UserStatus } from '@/lib/status-colors';
 import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import type { AdminActivity, AdminAnnouncement, AdminGuildStats } from '@/types/admin';
@@ -61,21 +61,6 @@ const formatRelative = (date: Date, intlLocale: string) => {
     if (Math.abs(seconds) >= size) return rtf.format(Math.round(seconds / size), unit);
   }
   return rtf.format(seconds, 'second');
-};
-
-const getRoleColor = (role: string) => {
-  switch (role) {
-    case 'owner':
-      return 'accent';
-    case 'admin':
-      return 'danger';
-    case 'moderator':
-      return 'warning';
-    case 'member':
-      return 'default';
-    default:
-      return 'default';
-  }
 };
 
 const getActivityIcon = (type: string) => {
@@ -463,7 +448,7 @@ export default function AdminPage() {
                             </div>
                           </Table.Cell>
                           <Table.Cell>
-                            <Chip size="sm" color={getRoleColor(user.role ?? '')} variant="secondary" className="capitalize">
+                            <Chip size="sm" color={roleChipColor(user.role)} variant="secondary" className="capitalize">
                               {user.role && ROLES.includes(user.role as (typeof ROLES)[number])
                                 ? t(`roles.${user.role as (typeof ROLES)[number]}`)
                                 : user.role}
