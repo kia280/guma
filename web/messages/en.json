@@ -21,8 +21,6 @@
     "password": "Password",
     "logIn": "Log In",
     "emailAddress": "Email Address",
-    "enterYourEmail": "Enter your email",
-    "enterYourPassword": "Enter your password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot password?",
     "or": "or",
@@ -32,7 +30,11 @@
     "retry": "Try again",
     "welcomeBack": "Welcome back",
     "showPassword": "Show password",
-    "hidePassword": "Hide password"
+    "hidePassword": "Hide password",
+    "title": "Sign in to Guma",
+    "emailRequired": "Enter your email address.",
+    "emailInvalid": "Enter a valid email address, such as name@example.com.",
+    "passwordRequired": "Enter your password."
   },
   "sidebar": {
     "dashboard": "Dashboard",

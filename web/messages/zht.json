@@ -21,8 +21,6 @@
     "password": "密碼",
     "logIn": "登入",
     "emailAddress": "電子郵件地址",
-    "enterYourEmail": "請輸入您的電子郵件",
-    "enterYourPassword": "請輸入您的密碼",
     "rememberMe": "記住我",
     "forgotPassword": "忘記密碼？",
     "or": "或",
@@ -32,7 +30,11 @@
     "retry": "Try again",
     "welcomeBack": "歡迎回來",
     "showPassword": "顯示密碼",
-    "hidePassword": "隱藏密碼"
+    "hidePassword": "隱藏密碼",
+    "title": "登入 Guma",
+    "emailRequired": "請輸入電子郵件地址。",
+    "emailInvalid": "請輸入有效的電子郵件地址，例如 name@example.com。",
+    "passwordRequired": "請輸入密碼。"
   },
   "sidebar": {
     "dashboard": "主頁",
