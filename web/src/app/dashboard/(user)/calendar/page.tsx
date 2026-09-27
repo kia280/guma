@@ -197,7 +197,7 @@ export default function CalendarPage() {
                   </div>
 
                   <Dropdown>
-                    <Button isIconOnly variant="secondary" size="sm" aria-label={t('eventActions')}>
+                    <Button isIconOnly variant="secondary" size="sm" className="max-sm:size-11" aria-label={t('eventActions')}>
                       <Icon icon="solar:menu-dots-bold" width={16} />
                     </Button>
                     <Dropdown.Popover>

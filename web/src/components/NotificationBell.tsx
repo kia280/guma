@@ -39,14 +39,14 @@ export function NotificationBell() {
         isIconOnly
         size="sm"
         aria-label={t('bellLabel', { count: unreadCount })}
-        className="size-7 min-w-7 rounded-full text-subtle relative overflow-visible"
+        className="size-11 min-w-11 rounded-full text-subtle relative overflow-visible sm:size-7 sm:min-w-7"
         variant="ghost"
       >
         <Icon icon="solar:bell-linear" width={18} aria-hidden />
         {unreadCount > 0 && (
           <span
             aria-hidden
-            className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-0.5 text-danger-foreground text-[10px] font-bold tabular-nums"
+            className="absolute top-1.5 right-1.5 flex sm:-top-1 sm:-right-1 h-4 min-w-4 items-center justify-center rounded-full bg-danger px-0.5 text-danger-foreground text-[10px] font-bold tabular-nums"
           >
             {unreadCount > MAX_BADGE_COUNT ? `${MAX_BADGE_COUNT}+` : unreadCount}
           </span>

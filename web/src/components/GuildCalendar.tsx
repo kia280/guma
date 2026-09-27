@@ -511,6 +511,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 isIconOnly
                 variant="secondary"
                 size="sm"
+                className="max-sm:size-11"
                 aria-label={t('previous')}
                 onPress={() => onNavigate('prev')}
               >
@@ -525,6 +526,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 isIconOnly
                 variant="secondary"
                 size="sm"
+                className="max-sm:size-11"
                 aria-label={t('next')}
                 onPress={() => onNavigate('next')}
               >
