@@ -753,14 +753,14 @@
     "unread": "未讀",
     "note": "備註：{note}",
     "reason": "原因：{reason}",
-    "fundRequestApproved": "<b>{actor}</b> 核准了你 <b>${amount, number}</b> 的公會銀行申請",
-    "fundRequestRejected": "<b>{actor}</b> 拒絕了你 <b>${amount, number}</b> 的公會銀行申請",
+    "fundRequestApproved": "<b>{actor}</b> 核准了你 <b>{amount}</b> 的公會銀行申請",
+    "fundRequestRejected": "<b>{actor}</b> 拒絕了你 <b>{amount}</b> 的公會銀行申請",
     "itemRequestApproved": "<b>{actor}</b> 核准了你申請的 <b>{item}</b>",
     "itemRequestRejected": "<b>{actor}</b> 拒絕了你申請的 <b>{item}</b>",
-    "fundRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>${amount, number}</b>",
+    "fundRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{amount}</b>",
     "itemRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{item}</b>",
-    "auctionOutbid": "<b>{actor}</b> 以 ${amount, number} 超過你在 <b>{item}</b> 的出價",
-    "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {${amount, number}}}</b>"
+    "auctionOutbid": "<b>{actor}</b> 以 {amount} 超過你在 <b>{item}</b> 的出價",
+    "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {{amount}}}</b>"
   },
   "profilePage": {
     "title": "個人資料",
