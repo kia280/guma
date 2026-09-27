@@ -123,8 +123,8 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                   <Icon icon={theme === 'dark' ? 'solar:sun-linear' : 'solar:moon-linear'} width={18} aria-hidden />
                 </Button>
 
-                <div className="hidden sm:flex items-center">
-                  <Chip className="h-7 cursor-default gap-1.5 px-2.5 type-body font-medium tabular-nums">
+                <div className="hidden sm:flex items-center type-body">
+                  <Chip size="lg" className="cursor-default gap-1.5 tabular-nums">
                     <Icon icon="solar:wallet-linear" width={16} className="text-subtle" aria-hidden />
                     <span>{formatGold(userBalance)}</span>
                   </Chip>

@@ -340,20 +340,20 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 <span className="block leading-none">{day.getDate()}</span>
               </button>
 
-              <div className="relative z-10 mt-6 px-1.5 pb-1.5 space-y-0.5 pointer-events-none">
+              <div className="relative z-10 mt-6 px-1.5 pb-1.5 space-y-0.5 pointer-events-none type-caption">
                 {dayEvents.slice(0, 2).map(({ key, event, start }) => (
                   <Tooltip key={key}>
                     <Focusable>
                       <button
                         type="button"
                         onClick={() => onEventClick(event)}
-                        className="block w-full text-left cursor-pointer pointer-events-auto rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                        className="flex min-h-6 w-full items-center text-left cursor-pointer pointer-events-auto rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                       >
                         <Chip
                           color={EVENT_TYPE_COLORS[event.type]}
                           size="sm"
                           variant="secondary"
-                          className="type-caption truncate max-w-full"
+                          className="truncate max-w-full"
                         >
                           {event.title.length > 8 ? `${event.title.slice(0, 8)}...` : event.title}
                         </Chip>
@@ -366,7 +366,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 ))}
 
                 {dayEvents.length > 2 && (
-                  <div className="type-caption text-hint text-center">+{dayEvents.length - 2}</div>
+                  <div className="text-hint text-center">+{dayEvents.length - 2}</div>
                 )}
               </div>
             </Card>
@@ -389,12 +389,12 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
             {formatDate(currentDate)}
           </h3>
           {allDayEvents.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
+            <div className="flex flex-wrap gap-1 mt-2 type-caption">
               {allDayEvents.map(({ key, event }) => (
                 <button
                   key={key}
                   type="button"
-                  className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  className="inline-flex min-h-6 items-center cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   onClick={() => onEventClick(event)}
                 >
                   <Chip size="sm" color={EVENT_TYPE_COLORS[event.type]} variant="secondary">
