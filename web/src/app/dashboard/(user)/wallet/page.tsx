@@ -701,11 +701,6 @@ export default function WalletPage() {
                               {transactionNote(transaction) && (
                                 <p className="type-caption text-hint">{transactionNote(transaction)}</p>
                               )}
-                              {transaction.recipient && (
-                                <p className="type-caption text-hint">
-                                  {t('to')} {transaction.recipient}
-                                </p>
-                              )}
                             </div>
                           </div>
                         </Table.Cell>
