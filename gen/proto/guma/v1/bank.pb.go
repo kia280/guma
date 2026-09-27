@@ -1277,7 +1277,6 @@ type GuildBank struct {
 	GuildId         string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
 	Balance         int64                  `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
 	Currency        string                 `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
-	Goal            int64                  `protobuf:"varint,5,opt,name=goal,proto3" json:"goal,omitempty"`
 	TopContributors []*TopContributor      `protobuf:"bytes,6,rep,name=top_contributors,json=topContributors,proto3" json:"top_contributors,omitempty"`
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -1341,13 +1340,6 @@ func (x *GuildBank) GetCurrency() string {
 		return x.Currency
 	}
 	return ""
-}
-
-func (x *GuildBank) GetGoal() int64 {
-	if x != nil {
-		return x.Goal
-	}
-	return 0
 }
 
 func (x *GuildBank) GetTopContributors() []*TopContributor {
@@ -2045,18 +2037,17 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\brequests\x18\x01 \x03(\v2\x14.guma.v1.ItemRequestR\brequests\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\xba\x02\n" +
+	"totalCount\"\xb2\x02\n" +
 	"\tGuildBank\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x18\n" +
 	"\abalance\x18\x03 \x01(\x03R\abalance\x12\x1a\n" +
-	"\bcurrency\x18\x04 \x01(\tR\bcurrency\x12\x12\n" +
-	"\x04goal\x18\x05 \x01(\x03R\x04goal\x12B\n" +
+	"\bcurrency\x18\x04 \x01(\tR\bcurrency\x12B\n" +
 	"\x10top_contributors\x18\x06 \x03(\v2\x17.guma.v1.TopContributorR\x0ftopContributors\x129\n" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x91\x01\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtJ\x04\b\x05\x10\x06R\x04goal\"\x91\x01\n" +
 	"\x0eTopContributor\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1d\n" +

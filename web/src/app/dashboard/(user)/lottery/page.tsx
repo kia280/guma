@@ -26,7 +26,7 @@ export default function LotteryPage() {
   const pathname = usePathname();
   const router = useRouter();
   const watchedSince = React.useRef(Date.now());
-  const autoOpened = React.useRef(new Set<string>());
+  const announcedDraws = React.useRef(new Set<string>());
 
   const createModalState = useOverlayState();
   const [reloadKey, setReloadKey] = React.useState(0);
@@ -66,15 +66,17 @@ export default function LotteryPage() {
           lottery.status !== 'upcoming' &&
           drawAt > watchedSince.current &&
           drawAt <= now &&
-          !autoOpened.current.has(lottery.id)
+          !announcedDraws.current.has(lottery.id)
         );
       });
       if (!due) return;
-      autoOpened.current.add(due.id);
-      router.push(`/dashboard/lottery/${due.id}`);
+      announcedDraws.current.add(due.id);
+      notify.info(t('drawStarted', { title: due.title }), {
+        action: { label: t('watchDraw'), onPress: () => router.push(`/dashboard/lottery/${due.id}`) },
+      });
     }, 1000);
     return () => clearInterval(timer);
-  }, [mockLotteries, pathname, router]);
+  }, [mockLotteries, pathname, router, notify, t]);
 
   const filtered =
     activeTab === 'all' ? mockLotteries : mockLotteries.filter(l => l.status === activeTab);

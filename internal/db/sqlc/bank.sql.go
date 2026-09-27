@@ -194,7 +194,7 @@ func (q *Queries) EnsureGuildBank(ctx context.Context, guildID uuid.UUID) error 
 }
 
 const getGuildBank = `-- name: GetGuildBank :one
-SELECT id, guild_id, balance, currency, goal, created_at, updated_at
+SELECT id, guild_id, balance, currency, created_at, updated_at
 FROM guild_bank WHERE guild_id = $1
 `
 
@@ -206,7 +206,6 @@ func (q *Queries) GetGuildBank(ctx context.Context, guildID uuid.UUID) (GuildBan
 		&i.GuildID,
 		&i.Balance,
 		&i.Currency,
-		&i.Goal,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
