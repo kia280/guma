@@ -169,7 +169,6 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
 
   const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-divider bg-surface';
   const sectionGap = onClose ? 'gap-6' : 'gap-4';
-  const sectionStack = onClose ? 'space-y-6' : 'space-y-4';
 
   return (
     <div className="space-y-5">
@@ -194,6 +193,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
             <Chip size="sm" color={auctionStatusColor[item.status]} variant="tertiary">
               {t(`status.${item.status}`)}
             </Chip>
+            {isActive && (
+              <Chip size="sm" variant="tertiary">
+                <Icon icon="solar:clock-circle-linear" width={12} />
+                {timeRemaining}
+              </Chip>
+            )}
             {item.isBlind && (
               <Chip size="sm" color="accent" variant="tertiary">
                 <Icon icon="solar:eye-closed-linear" width={12} />
@@ -208,7 +213,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
 
       <div className={`grid grid-cols-1 lg:grid-cols-5 ${sectionGap}`}>
         {/* Left column — bid info + history */}
-        <div className={`lg:col-span-3 ${sectionStack}`}>
+        <div className={`lg:col-span-3 flex flex-col ${sectionGap}`}>
           {/* Auction status */}
           <div className={`space-y-4 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
@@ -252,7 +257,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           </div>
 
           {/* Bid section */}
-          <div className={`space-y-4 ${sectionClass}`}>
+          <div className={`max-lg:order-first space-y-4 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
               {t('bidding')}
             </h2>
@@ -390,7 +395,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         </div>
 
         {/* Right column — seller + metadata */}
-        <div className={`lg:col-span-2 ${sectionStack}`}>
+        <div className={`lg:col-span-2 flex flex-col ${sectionGap}`}>
           {/* Seller info */}
           <div className={`space-y-3 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
