@@ -25,6 +25,17 @@ interface GuildCalendarProps {
 
 const HOUR_PX = 60; // pixels per hour
 const TOTAL_HEIGHT = 24 * HOUR_PX; // 1440px
+const MIN_EVENT_PX = 24;
+const EVENT_INSET_PX = 3;
+const EVENT_GAP_PX = 2;
+
+interface PositionedEvent {
+  event: GuildEvent;
+  top: number;
+  height: number;
+  column: number;
+  columns: number;
+}
 
 const TIMELINE_COLORS: Record<string, { border: string; bg: string }> = {
   danger: { border: 'var(--danger)', bg: 'color-mix(in oklab, var(--danger) 12%, transparent)' },
@@ -138,6 +149,47 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     return currentTime.getHours() * HOUR_PX + currentTime.getMinutes();
   };
 
+  const layoutTimedEvents = (timedEvents: GuildEvent[]): PositionedEvent[] => {
+    const sorted = timedEvents
+      .map(event => {
+        const top = getEventTop(event.startDate);
+        const height = Math.max(getEventHeight(event.startDate, event.endDate), MIN_EVENT_PX);
+        return { event, top, height, bottom: top + height, column: 0 };
+      })
+      .sort((a, b) => a.top - b.top || b.height - a.height);
+
+    const positioned: PositionedEvent[] = [];
+    let group: typeof sorted = [];
+    let columnEnds: number[] = [];
+    let groupEnd = 0;
+
+    const flushGroup = () => {
+      const columns = columnEnds.length;
+      group.forEach(({ event, top, height, column }) => {
+        positioned.push({ event, top, height, column, columns });
+      });
+      group = [];
+      columnEnds = [];
+    };
+
+    sorted.forEach(item => {
+      if (item.top >= groupEnd) flushGroup();
+      let column = columnEnds.findIndex(end => end <= item.top);
+      if (column === -1) {
+        column = columnEnds.length;
+        columnEnds.push(item.bottom);
+      } else {
+        columnEnds[column] = item.bottom;
+      }
+      item.column = column;
+      group.push(item);
+      groupEnd = Math.max(groupEnd, item.bottom);
+    });
+    flushGroup();
+
+    return positioned;
+  };
+
   // --- Shared timeline sub-renderers ---
 
   const renderHourLabels = () => (
@@ -183,11 +235,10 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
         )}
 
         {/* Timed events */}
-        {timedEvents.map(event => {
+        {layoutTimedEvents(timedEvents).map(({ event, top, height, column, columns }) => {
           const colorKey = EVENT_TYPE_COLORS[event.type];
           const colors = TIMELINE_COLORS[colorKey] ?? TIMELINE_COLORS.default;
-          const top = getEventTop(event.startDate);
-          const height = Math.max(getEventHeight(event.startDate, event.endDate), 24);
+          const columnWidth = `calc((100% - ${2 * EVENT_INSET_PX}px) / ${columns})`;
           return (
             <button
               key={event.id}
@@ -195,10 +246,11 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               style={{
                 top,
                 height,
-                left: '3px',
-                right: '3px',
+                left: `calc(${EVENT_INSET_PX}px + ${column} * ${columnWidth})`,
+                width: columns > 1 ? `calc(${columnWidth} - ${EVENT_GAP_PX}px)` : columnWidth,
                 backgroundColor: colors.bg,
                 borderLeft: `3px solid ${colors.border}`,
+                boxShadow: '0 0 0 1px var(--surface)',
               }}
               className="absolute block text-left rounded-r-md overflow-hidden cursor-pointer z-20 hover:opacity-80 transition-opacity px-1.5 py-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               onClick={() => onEventClick(event)}
@@ -207,7 +259,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 {event.title}
               </p>
               {height >= 40 && (
-                <p className="type-caption text-subtle">
+                <p className="type-caption text-subtle truncate">
                   {formatTime(event.startDate)}
                 </p>
               )}
