@@ -118,7 +118,13 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   });
 
   const [bidInput, setBidInput] = useState<{ auctionId: string; amount: number } | null>(null);
-  const { now, remainingMs, isExpired } = useCountdown(item?.endTime);
+  const countdownTarget =
+    item?.status === AuctionStatus.UPCOMING
+      ? item.startTime
+      : item?.status === AuctionStatus.ACTIVE
+        ? item.endTime
+        : null;
+  const { now, remainingMs, isExpired } = useCountdown(countdownTarget);
 
   if (isMissing) {
     return (
@@ -143,7 +149,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput?.auctionId === id ? bidInput.amount : minimumBid;
   const isActive = item.status === AuctionStatus.ACTIVE;
-  const timeRemaining = isExpired ? t('ended') : t('remaining', { time: formatCountdown(remainingMs) });
+  const isUpcoming = item.status === AuctionStatus.UPCOMING;
+  const isEnded = item.status === AuctionStatus.ENDED;
+  const isClosed = !isActive && !isUpcoming;
+  const countdown = formatCountdown(remainingMs);
+  const timeRemaining = isExpired ? t('ended') : t('remaining', { time: countdown });
+  const startsIn = t('startsInTime', { time: countdown });
   const remainingPercent = getRemainingPercent(now, item.startTime, item.endTime);
   const hasBidAmount = Number.isFinite(bidAmount);
   const cannotAffordMinimumBid = isBalanceLoaded && userBalance < minimumBid;
@@ -210,6 +221,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 {timeRemaining}
               </Chip>
             )}
+            {isUpcoming && !isExpired && (
+              <Chip size="sm" variant="tertiary">
+                <Icon icon="solar:clock-circle-linear" width={12} />
+                {startsIn}
+              </Chip>
+            )}
             {item.isBlind && (
               <Chip size="sm" color="accent" variant="tertiary">
                 <Icon icon="solar:eye-closed-linear" width={12} />
@@ -235,7 +252,9 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               <div className="space-y-2">
                 <div className="flex justify-between type-caption text-hint">
                   <span>{t('timeRemaining')}</span>
-                  <span className="font-medium text-foreground">{timeRemaining}</span>
+                  <span className="font-medium text-foreground">
+                    {isExpired ? t('ended') : countdown}
+                  </span>
                 </div>
                 <ProgressBar
                   aria-label={t('timeRemaining')}
@@ -248,6 +267,13 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     <ProgressBar.Fill />
                   </ProgressBar.Track>
                 </ProgressBar>
+              </div>
+            )}
+
+            {isUpcoming && !isExpired && (
+              <div className="flex justify-between type-caption text-hint">
+                <span>{t('startsIn')}</span>
+                <span className="font-medium text-foreground">{countdown}</span>
               </div>
             )}
 
@@ -318,15 +344,23 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               /* ── Standard auction ── */
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-subtle type-body">{t('currentBid')}</span>
-                  <span className="type-display text-foreground">
-                    {formatGold(item.currentBid)}
+                  <span className="text-subtle type-body">
+                    {isEnded ? t('finalPrice') : t('currentBid')}
                   </span>
+                  {isEnded && !item.currentBidder ? (
+                    <span className="type-body text-hint">{t('noBids')}</span>
+                  ) : (
+                    <span className="type-display text-foreground">
+                      {formatGold(item.currentBid)}
+                    </span>
+                  )}
                 </div>
 
                 {item.currentBidder && (
                   <div className="flex items-center justify-between">
-                    <span className="type-caption text-hint">{t('leadingBidder')}</span>
+                    <span className="type-caption text-hint">
+                      {isEnded ? t('winner') : t('leadingBidder')}
+                    </span>
                     <div className="flex items-center gap-2">
                       <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
                       <span className="type-body text-foreground">{item.currentBidder.username}</span>
@@ -372,7 +406,9 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     {t('bidHistoryTitle', { count: item.bidHistory.length })}
                   </h3>
                   {sortedHistory.length === 0 ? (
-                    <p className="type-body text-hint text-center py-4">{t('noBidsYet')}</p>
+                    <p className="type-body text-hint text-center py-4">
+                      {isClosed ? t('noBids') : t('noBidsYet')}
+                    </p>
                   ) : (
                     sortedHistory.map(bid => (
                       <div
@@ -400,7 +436,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                           </span>
                           {bid.isWinning && (
                             <Chip size="sm" color="success" variant="tertiary">
-                              {t('leading')}
+                              {isEnded ? t('won') : t('leading')}
                             </Chip>
                           )}
                         </div>
@@ -540,12 +576,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 >
                   <Label>{t('yourBidAmount')}</Label>
                   <NumberField.Group>
-                    <NumberField.DecrementButton />
+                    <NumberField.DecrementButton aria-label={t('decreaseBid')} />
                     <NumberField.Input
                       className="w-full min-w-0"
                       placeholder={`${t('minimum')} ${formatGold(minimumBid)}`}
                     />
-                    <NumberField.IncrementButton />
+                    <NumberField.IncrementButton aria-label={t('increaseBid')} />
                   </NumberField.Group>
                   {isBelowMinimum || exceedsBalance ? (
                     <FieldError>
