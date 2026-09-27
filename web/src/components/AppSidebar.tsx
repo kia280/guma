@@ -41,7 +41,7 @@ function WorkspaceIdentity({ isCollapsed }: { isCollapsed: boolean }) {
   const name = guild?.name || t('sunbaby');
 
   return (
-    <div className={cn('flex h-10 min-w-0 items-center gap-2', isCollapsed ? 'w-10 justify-center' : 'w-full px-1.5')}>
+    <div className={cn('flex h-10 min-w-0 items-center gap-2 px-1.5', isCollapsed ? 'w-10' : 'w-full')}>
       <GuildAvatar name={name} src={guild?.icon} isLoading={isLoading} />
       {!isCollapsed &&
         (isLoading ? (
@@ -79,9 +79,9 @@ function NavItemLink({
       onPress={onNavigate}
       className={({ isFocusVisible }) =>
         cn(
-          'group flex h-8 items-center gap-2.5 rounded-lg type-body font-medium outline-none transition-colors',
-          isCollapsed ? 'w-10 justify-center' : 'w-full px-2',
-          isNested && !isCollapsed && 'pl-9',
+          'group flex h-8 items-center gap-2.5 rounded-lg px-[11px] type-body font-medium outline-none transition-colors',
+          isCollapsed ? 'w-10' : 'w-full',
+          isNested && !isCollapsed && 'pl-[39px]',
           isActive ? 'bg-default text-foreground' : 'text-subtle hover:bg-default/60 hover:text-foreground',
           isFocusVisible && 'ring-2 ring-focus',
         ) ?? ''
@@ -128,11 +128,13 @@ function NavGroupItem({
   const t = useTranslations('dashboardLayout');
   const isInside = isLinkActive(group.href, pathname, tab);
   const [isExpanded, setIsExpanded] = React.useState(isInside);
+  const [wasInside, setWasInside] = React.useState(isInside);
   const panelId = React.useId();
 
-  React.useEffect(() => {
+  if (isInside !== wasInside) {
+    setWasInside(isInside);
     if (isInside) setIsExpanded(true);
-  }, [isInside]);
+  }
 
   if (isCollapsed) {
     return <NavItemLink item={group} isActive={isInside} isCollapsed onNavigate={onNavigate} />;
@@ -146,7 +148,7 @@ function NavGroupItem({
         aria-controls={panelId}
         onClick={() => setIsExpanded(value => !value)}
         className={cn(
-          'group flex h-8 w-full items-center gap-2.5 rounded-lg px-2 type-body font-medium outline-none transition-colors',
+          'group flex h-8 w-full items-center gap-2.5 rounded-lg pl-[11px] pr-2 type-body font-medium outline-none transition-colors',
           'focus-visible:ring-2 focus-visible:ring-focus',
           isInside && !isExpanded ? 'bg-default text-foreground' : 'text-subtle hover:bg-default/60 hover:text-foreground',
         )}
@@ -194,21 +196,29 @@ export function AppSidebar({ isCollapsed, onNavigate }: AppSidebarProps) {
   return (
     <div
       className={cn(
-        'flex h-full flex-col bg-surface py-3 transition-[width] duration-200',
-        isCollapsed ? 'w-14 items-center px-2' : 'w-60 px-3',
+        'flex h-full flex-col bg-surface px-2 py-3 transition-[width] duration-200',
+        isCollapsed ? 'w-14' : 'w-60',
       )}
     >
       <WorkspaceIdentity isCollapsed={isCollapsed} />
 
-      <nav aria-label={t('navigation')} className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+      <nav aria-label={t('navigation')} className="-mx-2 mt-3 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2 py-1">
         {sections.map(section => (
-          <div key={section.key} className={cn('flex flex-col', isCollapsed && 'items-center')}>
-            {section.label && !isCollapsed && (
-              <p className="type-label px-2 pb-1 text-hint">{t(`sections.${section.label}`)}</p>
+          <div key={section.key} className="flex flex-col">
+            {section.label && (
+              <p
+                aria-hidden={isCollapsed || undefined}
+                className={cn(
+                  'type-label truncate px-[11px] pb-1 text-hint transition-opacity duration-200',
+                  isCollapsed && 'select-none opacity-0',
+                )}
+              >
+                {t(`sections.${section.label}`)}
+              </p>
             )}
-            <ul className={cn('space-y-0.5', isCollapsed && 'flex flex-col items-center')}>
+            <ul className="space-y-0.5">
               {section.items.map(item => (
-                <li key={item.key} className={cn(!isCollapsed && 'w-full')}>
+                <li key={item.key}>
                   {isNavGroup(item) ? (
                     <NavGroupItem
                       group={item}
