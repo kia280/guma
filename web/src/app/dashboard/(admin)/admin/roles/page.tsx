@@ -5,14 +5,12 @@ import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { PageHeader } from '@/components/PageHeader';
-import { GUILD_ROLES as ROLES, PERMISSION_SECTIONS as SECTIONS, type GuildRole as Role } from '@/lib/permissions';
-
-const ROLE_COLORS = {
-  owner: 'accent',
-  admin: 'danger',
-  moderator: 'warning',
-  member: 'default',
-} as const;
+import {
+  GUILD_ROLES as ROLES,
+  PERMISSION_SECTIONS as SECTIONS,
+  ROLE_CHIP_COLORS as ROLE_COLORS,
+  type GuildRole as Role,
+} from '@/lib/permissions';
 
 export default function AdminRolesPage() {
   const t = useTranslations('adminRolesPage');

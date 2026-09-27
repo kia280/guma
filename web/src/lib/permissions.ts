@@ -6,6 +6,15 @@ import { useUserStore } from '@/lib/store';
 export const GUILD_ROLES = ['owner', 'admin', 'moderator', 'member'] as const;
 export type GuildRole = (typeof GUILD_ROLES)[number];
 
+export type RoleChipColor = 'accent' | 'warning' | 'success' | 'default';
+
+export const ROLE_CHIP_COLORS: Record<GuildRole, RoleChipColor> = {
+  owner: 'accent',
+  admin: 'warning',
+  moderator: 'success',
+  member: 'default',
+};
+
 const ALL: readonly GuildRole[] = GUILD_ROLES;
 const OWNER_ADMIN: readonly GuildRole[] = ['owner', 'admin'];
 const STAFF: readonly GuildRole[] = ['owner', 'admin', 'moderator'];
@@ -82,6 +91,9 @@ const ACTION_ROLES: Record<GuildAction, readonly GuildRole[]> = {
 
 export const isGuildRole = (value: string | undefined | null): value is GuildRole =>
   (GUILD_ROLES as readonly string[]).includes(value ?? '');
+
+export const roleChipColor = (role: string | undefined | null): RoleChipColor =>
+  isGuildRole(role) ? ROLE_CHIP_COLORS[role] : 'default';
 
 export const roleCan = (role: string | undefined | null, action: GuildAction): boolean =>
   isGuildRole(role) && ACTION_ROLES[action].includes(role);
