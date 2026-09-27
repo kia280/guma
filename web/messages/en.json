@@ -83,7 +83,8 @@
       "preference": "Preferences",
       "terms": "Terms of service",
       "contact": "Contact us"
-    }
+    },
+    "adminInbox": "Inbox"
   },
   "dashboard": {
     "overview": "Overview",
@@ -533,7 +534,8 @@
     "announcementPublished": "Announcement published.",
     "noUsers": "No members yet",
     "sections": "Admin sections",
-    "usersTable": "Users"
+    "usersTable": "Users",
+    "inbox": "Inbox"
   },
   "adminGuard": {
     "title": "Administration is for guild staff",
@@ -1373,5 +1375,46 @@
     "assignSuccess": "{item} was given to {name}.",
     "assignConflict": "This item is no longer in the guild bank.",
     "assignFailed": "Could not give the item. Please try again."
+  },
+  "adminInbox": {
+    "loading": "Loading",
+    "loadFailed": "Could not load this section.",
+    "retry": "Retry",
+    "summaryRequests": "{count, plural, =0 {No pending requests} one {# pending request} other {# pending requests}}",
+    "summaryAuctions": "{count, plural, =0 {No auctions need attention} one {# auction needs attention} other {# auctions need attention}}",
+    "summaryLoot": "{count, plural, =0 {All roll call loot distributed} one {# loot item waiting} other {# loot items waiting}}",
+    "pendingRequests": "Pending requests",
+    "noPendingRequests": "No fund or item requests are waiting for review.",
+    "selectAll": "Select all",
+    "approveSelected": "Approve ({count})",
+    "rejectSelected": "Reject ({count})",
+    "fundRequestLabel": "{name} requested funds: {amount}",
+    "itemRequestLabel": "{name} requested {item}",
+    "unknownItem": "an item",
+    "review": "Review",
+    "auctionsNeedingAttention": "Auctions needing attention",
+    "noAuctionAttention": "Every auction is running on schedule.",
+    "auctionReason": {
+      "overdue": "Awaiting settlement",
+      "notStarted": "Not started",
+      "endingWithoutBids": "No bids yet"
+    },
+    "auctionReasonDetail": {
+      "overdue": "Ended {time}",
+      "notStarted": "Was due to start {time}",
+      "endingWithoutBids": "Ends {time}"
+    },
+    "undistributedLoot": "Undistributed roll call loot",
+    "noUndistributedLoot": "All roll call loot has been handed out.",
+    "untitledCheckin": "Untitled roll call",
+    "lootWaiting": "Banked {time}",
+    "lootCount": "{count, plural, one {# item} other {# items}}",
+    "batchTitle": "{decision, select, approved {Approve} other {Reject}} {count, plural, one {# request} other {# requests}}",
+    "batchHint": "Each selected request is reviewed in turn. Requests that can no longer be {decision, select, approved {approved} other {rejected}} are skipped.",
+    "noteLabel": "Review note (optional)",
+    "notePlaceholder": "Shared with every requester",
+    "cancel": "Cancel",
+    "batchSuccess": "{decision, select, approved {Approved} other {Rejected}} {count, plural, one {# request} other {# requests}}.",
+    "batchPartial": "{decision, select, approved {Approved} other {Rejected}} {succeeded}; {failed} could not be processed."
   }
 }

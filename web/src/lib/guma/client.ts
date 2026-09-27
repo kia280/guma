@@ -237,7 +237,10 @@ export const gumaApiClient: ApiClient = {
 
   // ── Auction ──
   listAuctions: async (guildId, filters) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/auctions`, { params: filters });
+    const { pageSize, ...rest } = filters ?? {};
+    const { data } = await http.get(`/v1/guilds/${guildId}/auctions`, {
+      params: { ...rest, page_size: pageSize },
+    });
     return (data.auctions ?? []).map(toAuctionItem);
   },
   getAuction: async (guildId, id) => {

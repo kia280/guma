@@ -64,6 +64,7 @@ export interface AuctionFilters {
   category?: string;
   rarity?: string;
   search?: string;
+  pageSize?: number;
 }
 
 export interface ApiClient {

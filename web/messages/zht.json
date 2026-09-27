@@ -83,7 +83,8 @@
       "preference": "偏好設定",
       "terms": "服務條款",
       "contact": "聯絡我們"
-    }
+    },
+    "adminInbox": "待辦"
   },
   "dashboard": {
     "overview": "總覽",
@@ -533,7 +534,8 @@
     "announcementPublished": "公告已發布。",
     "noUsers": "尚無成員",
     "sections": "管理分頁",
-    "usersTable": "使用者"
+    "usersTable": "使用者",
+    "inbox": "待辦"
   },
   "adminGuard": {
     "title": "管理區僅限管理人員",
@@ -1373,5 +1375,46 @@
     "assignSuccess": "已將 {item} 分配給 {name}。",
     "assignConflict": "這個物品已不在公會銀行。",
     "assignFailed": "無法分配物品，請再試一次。"
+  },
+  "adminInbox": {
+    "loading": "載入中",
+    "loadFailed": "無法載入此區塊。",
+    "retry": "重試",
+    "summaryRequests": "{count, plural, =0 {沒有待審申請} other {# 筆待審申請}}",
+    "summaryAuctions": "{count, plural, =0 {沒有需要處理的競拍} other {# 場競拍需要處理}}",
+    "summaryLoot": "{count, plural, =0 {點名戰利品已全部分配} other {# 件戰利品待分配}}",
+    "pendingRequests": "待審申請",
+    "noPendingRequests": "目前沒有待審的資金或物品申請。",
+    "selectAll": "全選",
+    "approveSelected": "核准（{count}）",
+    "rejectSelected": "駁回（{count}）",
+    "fundRequestLabel": "{name} 申請資金：{amount}",
+    "itemRequestLabel": "{name} 申請 {item}",
+    "unknownItem": "物品",
+    "review": "審核",
+    "auctionsNeedingAttention": "需要處理的競拍",
+    "noAuctionAttention": "所有競拍都依排程進行。",
+    "auctionReason": {
+      "overdue": "等待結算",
+      "notStarted": "尚未開始",
+      "endingWithoutBids": "尚無出價"
+    },
+    "auctionReasonDetail": {
+      "overdue": "{time}結束",
+      "notStarted": "原定{time}開始",
+      "endingWithoutBids": "{time}結束"
+    },
+    "undistributedLoot": "尚未分配的點名戰利品",
+    "noUndistributedLoot": "點名戰利品都已分配完畢。",
+    "untitledCheckin": "未命名點名",
+    "lootWaiting": "{time}存入銀行",
+    "lootCount": "{count} 件",
+    "batchTitle": "{decision, select, approved {核准} other {駁回}} {count} 筆申請",
+    "batchHint": "會依序審核所選申請，已無法{decision, select, approved {核准} other {駁回}}的申請將略過。",
+    "noteLabel": "審核備註（選填）",
+    "notePlaceholder": "所有申請人都會看到",
+    "cancel": "取消",
+    "batchSuccess": "已{decision, select, approved {核准} other {駁回}} {count} 筆申請。",
+    "batchPartial": "已{decision, select, approved {核准} other {駁回}} {succeeded} 筆；{failed} 筆無法處理。"
   }
 }

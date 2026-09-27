@@ -18,6 +18,7 @@ import { isAxiosError } from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import React from 'react';
+import { AdminInbox } from '@/components/AdminInbox';
 import { AsyncContent, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import { BankRequestReview } from '@/components/BankRequestReview';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -378,6 +379,12 @@ export default function AdminPage() {
       >
         <Tabs.ListContainer>
           <Tabs.List>
+            <Tabs.Tab id="inbox">
+              <div className="flex items-center gap-2">
+                <span>{t('inbox')}</span>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
             <Tabs.Tab id="users">
               <div className="flex items-center gap-2">
                 <span>{t('users')}</span>
@@ -413,6 +420,10 @@ export default function AdminPage() {
             </Tabs.Tab>
           </Tabs.List>
         </Tabs.ListContainer>
+
+        <Tabs.Panel id="inbox" className="pt-4">
+          <AdminInbox guildId={guildId} />
+        </Tabs.Panel>
 
         {/* Users Panel */}
         <Tabs.Panel id="users" className="pt-4">

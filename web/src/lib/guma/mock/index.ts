@@ -49,6 +49,8 @@ const store = {
   notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
   notificationPreferences: { ...DEFAULT_NOTIFICATION_PREFERENCES } as NotificationPreferences,
   preferencesUpdatedAt: undefined as string | undefined,
+  fundRequests: [] as FundRequest[],
+  itemRequests: [] as ItemRequest[],
 };
 
 type StoredCheckinTemplate = Omit<CheckinTemplate, 'items'> & { itemTemplateIds: string[] };
@@ -325,7 +327,7 @@ const baseMockApiClient: ApiClient = {
   listAuctions: async (_guildId, filters) => {
     let items = localizeMock(store.auctions);
     if (filters?.status && filters.status !== 'all') {
-      items = items.filter(i => i.status === filters.status);
+      items = items.filter(i => i.status === filters.status?.toLowerCase());
     }
     if (filters?.category && filters.category !== 'all') {
       items = items.filter(i => i.category === filters.category);
@@ -645,29 +647,28 @@ const baseMockApiClient: ApiClient = {
     kind: 'gold',
     itemNames: [],
   }),
-  requestFunds: async (guildId, req): Promise<FundRequest> => ({
-    id: `fr-${Date.now()}`,
-    guildId,
-    requesterId: currentUser.id,
-    requesterName: currentUser.username,
-    amount: req.amount,
-    reason: req.reason,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-  }),
-  reviewFundRequest: async (guildId, reqId, status, note): Promise<FundRequest> => ({
-    id: reqId,
-    guildId,
-    requesterId: '',
-    requesterName: '',
-    amount: 0,
-    reason: '',
-    status,
-    reviewNote: note,
-    createdAt: new Date().toISOString(),
-    reviewedAt: new Date().toISOString(),
-  }),
-  listFundRequests: async (): Promise<FundRequest[]> => [],
+  requestFunds: async (guildId, req): Promise<FundRequest> => {
+    const request: FundRequest = {
+      id: `fr-${Date.now()}`,
+      guildId,
+      requesterId: currentUser.id,
+      requesterName: currentUser.username,
+      amount: req.amount,
+      reason: req.reason,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+    store.fundRequests.push(request);
+    return request;
+  },
+  reviewFundRequest: async (_guildId, reqId, status, note): Promise<FundRequest> => {
+    const request = store.fundRequests.find(r => r.id === reqId);
+    if (!request || request.status !== 'pending') throw new Error('not found');
+    Object.assign(request, { status, reviewNote: note, reviewedAt: new Date().toISOString() });
+    return request;
+  },
+  listFundRequests: async (_guildId, status): Promise<FundRequest[]> =>
+    store.fundRequests.filter(r => !status || r.status === status),
   listContributions: async () => mockData.mockContributions,
   donateItem: async (_guildId, backpackItemId): Promise<GuildBankItem> => {
     const bp = mockData.mockBackpackItems.find(i => i.id === backpackItemId);
@@ -698,7 +699,7 @@ const baseMockApiClient: ApiClient = {
     if (bankItem.requestedByMe) throw conflict();
     bankItem.requestedByMe = true;
     bankItem.pendingRequestCount += 1;
-    return {
+    const request: ItemRequest = {
       id: `ir-${Date.now()}`,
       guildId,
       bankItemId,
@@ -711,23 +712,23 @@ const baseMockApiClient: ApiClient = {
       itemRarity: bankItem.rarity,
       createdAt: new Date().toISOString(),
     };
+    store.itemRequests.push(request);
+    return request;
   },
-  reviewItemRequest: async (guildId, reqId, status, note): Promise<ItemRequest> => ({
-    id: reqId,
-    guildId,
-    bankItemId: '',
-    requesterId: '',
-    requesterName: '',
-    reason: '',
-    status,
-    itemName: '',
-    itemCategory: ItemCategory.MISC,
-    itemRarity: ItemRarity.COMMON,
-    reviewNote: note,
-    createdAt: new Date().toISOString(),
-    reviewedAt: new Date().toISOString(),
-  }),
-  listItemRequests: async (): Promise<ItemRequest[]> => [],
+  reviewItemRequest: async (_guildId, reqId, status, note): Promise<ItemRequest> => {
+    const request = store.itemRequests.find(r => r.id === reqId);
+    if (!request || request.status !== 'pending') throw new Error('not found');
+    Object.assign(request, { status, reviewNote: note, reviewedAt: new Date().toISOString() });
+    const bankItem = mockData.mockGuildItems.find(i => i.id === request.bankItemId);
+    if (bankItem) {
+      bankItem.pendingRequestCount = Math.max(0, bankItem.pendingRequestCount - 1);
+      if (request.requesterId === currentUser.id) bankItem.requestedByMe = false;
+      if (status === 'approved') removeById(mockData.mockGuildItems, bankItem.id);
+    }
+    return request;
+  },
+  listItemRequests: async (_guildId, status): Promise<ItemRequest[]> =>
+    store.itemRequests.filter(r => !status || r.status === status),
 
   // ── Events ──
   listEvents: async () => store.events,
