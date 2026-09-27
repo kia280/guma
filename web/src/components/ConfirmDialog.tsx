@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertDialog, Button } from '@heroui/react';
+import { AlertDialog, Button, Spinner } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { ActionSuccess } from './ActionSuccess';
@@ -84,7 +84,12 @@ export function ConfirmDialog({
                     {t('cancel')}
                   </Button>
                   <Button variant={status === 'danger' ? 'danger' : 'primary'} onPress={confirm} isPending={isPending}>
-                    {confirmLabel}
+                    {({ isPending }) => (
+                      <>
+                        {isPending && <Spinner color="current" size="sm" />}
+                        {confirmLabel}
+                      </>
+                    )}
                   </Button>
                 </AlertDialog.Footer>
               </>

@@ -17,6 +17,7 @@ import {
   FieldError,
   TextField,
   Pagination,
+  Spinner,
   useFilter,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
@@ -450,7 +451,12 @@ export default function WalletPage() {
                             isPending={pendingAction === 'deposit'}
                             isDisabled={!(parseGold(depositAmount) > 0)}
                           >
-                            {t('deposit')}
+                            {({ isPending }) => (
+                              <>
+                                {isPending && <Spinner color="current" size="sm" />}
+                                {t('deposit')}
+                              </>
+                            )}
                           </Button>
                         </Modal.Footer>
                       </>
@@ -543,7 +549,12 @@ export default function WalletPage() {
                             onPress={e => handleTransfer(e.target)}
                             isPending={pendingAction === 'transfer'}
                           >
-                            {t('transfer')}
+                            {({ isPending }) => (
+                              <>
+                                {isPending && <Spinner color="current" size="sm" />}
+                                {t('transfer')}
+                              </>
+                            )}
                           </Button>
                         </Modal.Footer>
                       </>
@@ -609,7 +620,12 @@ export default function WalletPage() {
                             isPending={pendingAction === 'withdraw'}
                             isDisabled={!canWithdraw}
                           >
-                            {t('withdraw')}
+                            {({ isPending }) => (
+                              <>
+                                {isPending && <Spinner color="current" size="sm" />}
+                                {t('withdraw')}
+                              </>
+                            )}
                           </Button>
                         </Modal.Footer>
                       </>
@@ -935,7 +951,12 @@ export default function WalletPage() {
                     {t('cancel')}
                   </Button>
                   <Button variant="danger" onPress={handleItemWithdraw} isPending={pendingAction === 'withdrawItem'}>
-                    {t('withdrawItem')}
+                    {({ isPending }) => (
+                      <>
+                        {isPending && <Spinner color="current" size="sm" />}
+                        {t('withdrawItem')}
+                      </>
+                    )}
                   </Button>
                 </Modal.Footer>
               </>
