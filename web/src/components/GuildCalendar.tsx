@@ -28,6 +28,17 @@ interface GuildCalendarProps {
 
 const HOUR_PX = 60; // pixels per hour
 const TOTAL_HEIGHT = 24 * HOUR_PX; // 1440px
+const MIN_EVENT_PX = 24;
+const EVENT_INSET_PX = 3;
+const EVENT_GAP_PX = 2;
+
+interface PositionedEvent {
+  occurrence: EventOccurrence;
+  top: number;
+  height: number;
+  column: number;
+  columns: number;
+}
 
 const isSameDay = (date1: Date, date2: Date) => {
   return date1.toDateString() === date2.toDateString();
@@ -156,12 +167,52 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     } else {
       bottom = TOTAL_HEIGHT;
     }
-    const height = Math.min(Math.max(bottom - top, 30), TOTAL_HEIGHT - top);
+    const height = Math.min(Math.max(bottom - top, 30, MIN_EVENT_PX), TOTAL_HEIGHT - top);
     return { top, height };
   };
 
   const getCurrentTimeTop = (): number => {
     return currentTime.getHours() * HOUR_PX + currentTime.getMinutes();
+  };
+
+  const layoutTimedEvents = (timedEvents: EventOccurrence[], day: Date): PositionedEvent[] => {
+    const sorted = timedEvents
+      .map(occurrence => {
+        const { top, height } = getDaySegment(occurrence, day);
+        return { occurrence, top, height, bottom: top + height, column: 0 };
+      })
+      .sort((a, b) => a.top - b.top || b.height - a.height);
+
+    const positioned: PositionedEvent[] = [];
+    let group: typeof sorted = [];
+    let columnEnds: number[] = [];
+    let groupEnd = 0;
+
+    const flushGroup = () => {
+      const columns = columnEnds.length;
+      group.forEach(({ occurrence, top, height, column }) => {
+        positioned.push({ occurrence, top, height, column, columns });
+      });
+      group = [];
+      columnEnds = [];
+    };
+
+    sorted.forEach(item => {
+      if (item.top >= groupEnd) flushGroup();
+      let column = columnEnds.findIndex(end => end <= item.top);
+      if (column === -1) {
+        column = columnEnds.length;
+        columnEnds.push(item.bottom);
+      } else {
+        columnEnds[column] = item.bottom;
+      }
+      item.column = column;
+      group.push(item);
+      groupEnd = Math.max(groupEnd, item.bottom);
+    });
+    flushGroup();
+
+    return positioned;
   };
 
   // --- Shared timeline sub-renderers ---
@@ -209,11 +260,11 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
         )}
 
         {/* Timed events */}
-        {timedEvents.map(occurrence => {
+        {layoutTimedEvents(timedEvents, day).map(({ occurrence, top, height, column, columns }) => {
           const { event } = occurrence;
           const colorKey = EVENT_TYPE_COLORS[event.type];
           const colors = TIMELINE_COLORS[colorKey] ?? TIMELINE_COLORS.default;
-          const { top, height } = getDaySegment(occurrence, day);
+          const columnWidth = `calc((100% - ${2 * EVENT_INSET_PX}px) / ${columns})`;
           return (
             <button
               key={occurrence.key}
@@ -221,10 +272,11 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               style={{
                 top,
                 height,
-                left: '3px',
-                right: '3px',
+                left: `calc(${EVENT_INSET_PX}px + ${column} * ${columnWidth})`,
+                width: columns > 1 ? `calc(${columnWidth} - ${EVENT_GAP_PX}px)` : columnWidth,
                 backgroundColor: colors.bg,
                 borderLeft: `3px solid ${colors.border}`,
+                boxShadow: '0 0 0 1px var(--surface)',
               }}
               className="absolute block text-left rounded-r-md overflow-hidden cursor-pointer z-20 hover:opacity-80 transition-opacity px-1.5 py-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               onClick={() => onEventClick(event)}
@@ -233,7 +285,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 {event.title}
               </p>
               {height >= 40 && (
-                <p className="type-caption text-subtle">
+                <p className="type-caption text-subtle truncate">
                   {formatTime(occurrence.start)}
                 </p>
               )}
