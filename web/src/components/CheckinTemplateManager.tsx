@@ -139,8 +139,8 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
                   {template.items.length === 0 ? (
                     <p className="type-caption text-hint">{t('noItems')}</p>
                   ) : (
-                    <div className="flex flex-col gap-2">
-                      <p className="type-caption text-hint">{t('itemCount', { count: template.items.length })}</p>
+                    <div className="flex flex-col gap-2 type-caption">
+                      <p className="text-hint">{t('itemCount', { count: template.items.length })}</p>
                       <div className="flex flex-wrap gap-1.5">
                         {template.items.map((item, idx) => (
                           <Chip key={`${idx}-${item.id}`} size="sm" variant="secondary" color={getRarityColor(item.rarity)}>
@@ -212,9 +212,9 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
                             key={`${idx}-${item.id}`}
                             className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-surface-secondary border border-divider"
                           >
-                            <div className="flex min-w-0 items-center gap-2">
+                            <div className="flex min-w-0 items-center gap-2 type-body">
                               <Icon icon={getCategoryIcon(item.category)} width={14} className="shrink-0 text-hint" />
-                              <span className="type-body text-foreground truncate">{item.name}</span>
+                              <span className="text-foreground truncate">{item.name}</span>
                               <Chip size="sm" variant="secondary" color={getRarityColor(item.rarity)} className="shrink-0">
                                 {labels(`rarities.${item.rarity}`)}
                               </Chip>

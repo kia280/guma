@@ -187,6 +187,13 @@ html[data-font-size='x-large'] {
 }
 
 @layer components {
+  .chip,
+  .chip--sm,
+  .chip--md,
+  .chip--lg {
+    font-size: inherit;
+  }
+
   .tabs__tab {
     white-space: nowrap;
   }
