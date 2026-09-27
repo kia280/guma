@@ -39,7 +39,6 @@ export interface GuildBank {
   guildId: string;
   balance: number;
   currency: string;
-  goal: number;
   updatedAt: string;
 }
 

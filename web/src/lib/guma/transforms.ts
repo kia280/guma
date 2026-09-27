@@ -273,6 +273,7 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     date: raw.datetime ?? '',
     description: raw.title ?? '',
     expireTime: raw.expire_time,
+    attendanceCount: raw.attendance_count ?? attendees.length,
     attendanceList: attendees,
     lootList: loot,
     imageUrl: raw.image_url,
@@ -494,7 +495,6 @@ type ProtoGuildBank = {
   guild_id?: string;
   balance?: number | string;
   currency?: string;
-  goal?: number | string;
   updated_at?: string;
 };
 
@@ -503,7 +503,6 @@ export const toGuildBank = (raw: ProtoGuildBank): GuildBank => ({
   guildId: raw.guild_id ?? '',
   balance: fromMinorUnits(raw.balance),
   currency: raw.currency ?? 'gold',
-  goal: fromMinorUnits(raw.goal),
   updatedAt: ts(raw.updated_at),
 });
 
@@ -687,6 +686,7 @@ type ProtoGuildEvent = {
   recurring_pattern?: unknown;
   priority?: string;
   created_by?: string;
+  created_by_name?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -705,6 +705,7 @@ export const toGuildEvent = (raw: ProtoGuildEvent): GuildEvent => ({
   recurringPattern: raw.recurring_pattern as GuildEvent['recurringPattern'],
   priority: (raw.priority as GuildEvent['priority']) || 'medium',
   createdBy: raw.created_by ?? '',
+  createdByName: raw.created_by_name || undefined,
   createdAt: ts(raw.created_at),
   updatedAt: ts(raw.updated_at),
 });
