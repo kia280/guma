@@ -305,6 +305,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   };
 
   const sectionClass = onClose ? '' : 'rounded-xl border border-divider p-4';
+  const stackGap = onClose ? 'gap-y-6' : 'gap-y-4';
 
   return (
     <div className="flex flex-col gap-5">
@@ -328,27 +329,8 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] gap-5">
-        <section className="flex flex-col items-center justify-center gap-4 rounded-xl border border-divider bg-surface-secondary p-4 sm:p-6">
-          <LotteryWheel
-            entries={entries}
-            winnerId={topWinner}
-            spinKey={spinKey}
-            isRevealed={phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended')}
-            onSpinEnd={finishSpin}
-          />
-          <p className="type-subheading text-foreground tabular-nums text-center" aria-live={phase === 'idle' ? 'off' : 'polite'}>
-            {wheelCaption()}
-          </p>
-          {isSettled && winners.length > 0 && (
-            <Button size="sm" variant="ghost" onPress={replay}>
-              <Icon icon="solar:restart-linear" width={16} />
-              {t('replay')}
-            </Button>
-          )}
-        </section>
-
-        <div className={`flex flex-col ${onClose ? 'gap-6' : 'gap-4'}`}>
+      <div className={`grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] lg:grid-rows-[auto_1fr] gap-x-5 ${stackGap}`}>
+        <div className={`lg:col-start-2 lg:row-start-1 flex flex-col ${stackGap}`}>
           <dl className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-divider p-3">
               <dt className="type-caption text-hint">{t('ticketPrice')}</dt>
@@ -458,6 +440,28 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
             </section>
           )}
 
+        </div>
+
+        <section className="lg:col-start-1 lg:row-start-1 lg:row-span-2 flex flex-col items-center justify-center gap-4 rounded-xl border border-divider bg-surface-secondary p-4 sm:p-6">
+          <LotteryWheel
+            entries={entries}
+            winnerId={topWinner}
+            spinKey={spinKey}
+            isRevealed={phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended')}
+            onSpinEnd={finishSpin}
+          />
+          <p className="type-subheading text-foreground tabular-nums text-center" aria-live={phase === 'idle' ? 'off' : 'polite'}>
+            {wheelCaption()}
+          </p>
+          {isSettled && winners.length > 0 && (
+            <Button size="sm" variant="ghost" onPress={replay}>
+              <Icon icon="solar:restart-linear" width={16} />
+              {t('replay')}
+            </Button>
+          )}
+        </section>
+
+        <div className={`lg:col-start-2 lg:row-start-2 flex flex-col ${stackGap}`}>
           {showWinners && winners.length > 0 && (
             <section className={`space-y-2 ${sectionClass}`}>
               <h3 className="type-subheading text-foreground">{t('winners')}</h3>
