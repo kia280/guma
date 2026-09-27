@@ -46,10 +46,10 @@ const CATEGORY_ICONS: Record<ItemCategory, string> = {
   [ItemCategory.MISC]: 'solar:box-linear',
 };
 
-const getProgress = (now: number, startTime: string, endTime: string) => {
-  const total = new Date(endTime).getTime() - new Date(startTime).getTime();
-  const elapsed = now - new Date(startTime).getTime();
-  return Math.min(100, Math.max(0, (elapsed / total) * 100));
+const getRemainingPercent = (now: number, startTime: string, endTime: string) => {
+  const start = new Date(startTime).getTime();
+  const end = new Date(endTime).getTime();
+  return Math.min(100, Math.max(0, ((end - now) / (end - start)) * 100));
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -140,7 +140,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const bidAmount = bidInput?.auctionId === id ? bidInput.amount : minimumBid;
   const isActive = item.status === AuctionStatus.ACTIVE;
   const timeRemaining = isExpired ? t('ended') : t('remaining', { time: formatCountdown(remainingMs) });
-  const progress = getProgress(now, item.startTime, item.endTime);
+  const remainingPercent = getRemainingPercent(now, item.startTime, item.endTime);
   const hasBidAmount = Number.isFinite(bidAmount);
   const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
 
@@ -216,10 +216,16 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <span className="font-medium text-foreground">{timeRemaining}</span>
                 </div>
                 <ProgressBar
-                  value={progress}
-                  color={progress > 80 ? 'danger' : progress > 50 ? 'warning' : 'success'}
+                  aria-label={t('timeRemaining')}
+                  className="w-full"
+                  value={remainingPercent}
+                  color={remainingPercent < 20 ? 'danger' : remainingPercent < 50 ? 'warning' : 'success'}
                   size="sm"
-                />
+                >
+                  <ProgressBar.Track>
+                    <ProgressBar.Fill />
+                  </ProgressBar.Track>
+                </ProgressBar>
               </div>
             )}
 
