@@ -3,7 +3,7 @@ INSERT INTO guild_bank (guild_id) VALUES ($1)
 ON CONFLICT (guild_id) DO NOTHING;
 
 -- name: GetGuildBank :one
-SELECT id, guild_id, balance, currency, goal, created_at, updated_at
+SELECT id, guild_id, balance, currency, created_at, updated_at
 FROM guild_bank WHERE guild_id = $1;
 
 -- name: ListTopBankContributors :many

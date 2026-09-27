@@ -281,7 +281,6 @@ func bankToProto(b *banksvc.GuildBank) *gumav1.GuildBank {
 		GuildId:         b.GuildID,
 		Balance:         b.Balance,
 		Currency:        b.Currency,
-		Goal:            b.Goal,
 		TopContributors: contributors,
 		CreatedAt:       timestamppb.New(b.CreatedAt),
 		UpdatedAt:       timestamppb.New(b.UpdatedAt),
