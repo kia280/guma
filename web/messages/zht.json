@@ -1027,6 +1027,8 @@
     "mockData": "使用模擬資料",
     "mockDataDescription": "所有 API 呼叫改用記憶體中的模擬資料,不登入也能開啟 dashboard 頁面。切換後頁面會重新載入。",
     "mockDataForcedByEnv": "已由 NEXT_PUBLIC_USE_MOCK 強制開啟。",
+    "mockRole": "模擬角色",
+    "mockRoleDescription": "模擬使用者在公會中的角色。擁有者與管理員可使用管理頁面與管理操作。切換後頁面會重新載入。",
     "paletteTab": "配色",
     "paletteDescription": "預覽淺色主題的候選配色。只影響這個瀏覽器,重新整理後仍會保留。",
     "paletteLightOnly": "配色只會改變淺色主題,請切換到淺色主題查看。",

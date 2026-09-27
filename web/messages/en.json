@@ -1027,6 +1027,8 @@
     "mockData": "Use mock data",
     "mockDataDescription": "Serve all API calls from the in-memory mock client. Dashboard pages open without logging in. The page reloads when toggled.",
     "mockDataForcedByEnv": "Forced on by NEXT_PUBLIC_USE_MOCK.",
+    "mockRole": "Mock role",
+    "mockRoleDescription": "Guild role of the mock user. Owner and admin unlock the admin pages and management actions. The page reloads when changed.",
     "paletteTab": "Palette",
     "paletteDescription": "Preview candidate light-theme color palettes. Only this browser is affected, and the choice is kept across reloads.",
     "paletteLightOnly": "Palettes only change the light theme. Switch to the light theme to see them.",
