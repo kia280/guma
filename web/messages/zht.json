@@ -774,8 +774,6 @@
     "moreEventsTitle": "另外 {count} 個活動",
     "openDay": "以日檢視開啟 {date}",
     "noEventsDay": "這天沒有活動。",
-    "noEventsPeriod": "{period, select, month {本月沒有活動} week {本週沒有活動} other {這天沒有活動}}",
-    "noEventsHint": "建立活動，讓公會成員知道接下來的安排。",
     "upcoming": "接下來",
     "noUpcoming": "接下來 {days} 天沒有排定的活動。"
   },

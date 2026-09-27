@@ -82,11 +82,6 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   }, [events, visibleDays, upcomingDays]);
 
   const selectedOccurrences = occurrencesByDay.get(dayKey(selectedDay)) ?? [];
-  const periodDays =
-    view === 'month' || view === 'agenda'
-      ? visibleDays.filter(day => day.getMonth() === currentDate.getMonth())
-      : visibleDays;
-  const periodIsEmpty = periodDays.every(day => (occurrencesByDay.get(dayKey(day)) ?? []).length === 0);
 
   const title = (() => {
     if (view === 'week') return format.weekRange(visibleDays[0], visibleDays[6]);
@@ -256,24 +251,6 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           </div>
         )}
       </div>
-
-      {periodIsEmpty && view !== 'agenda' && (
-        <div
-          role="status"
-          className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-divider bg-surface px-4 py-3"
-        >
-          <Icon icon="solar:calendar-linear" width={22} className="shrink-0 text-disabled" aria-hidden />
-          <div className="min-w-0 flex-1">
-            <p className="type-body font-medium text-foreground">{t('noEventsPeriod', { period: view })}</p>
-            <p className="type-caption text-hint">{t('noEventsHint')}</p>
-          </div>
-          {!isPhone && (
-            <Button size="sm" variant="secondary" onPress={onCreate}>
-              {t('createEvent')}
-            </Button>
-          )}
-        </div>
-      )}
 
       <div className={fillsViewport(view, device) ? 'min-h-0 flex-1' : ''}>
         {view === 'month' && renderMonth()}
