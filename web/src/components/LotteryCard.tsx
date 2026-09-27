@@ -1,9 +1,8 @@
 'use client';
 
-import { Card, Chip, Button, ProgressBar } from '@heroui/react';
+import { Card, Chip, ProgressBar, buttonVariants } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCountdown } from '@/hooks/useNow';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
@@ -46,9 +45,7 @@ const LotteryCard = ({
   const t = useTranslations('lotteryCard');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
-  const router = useRouter();
   const href = `/dashboard/lottery/${id}`;
-  const openDetail = () => router.push(href);
   const hasCap = maxTickets > 0;
   const soldPercent = hasCap ? Math.round((ticketsSold / maxTickets) * 100) : 0;
 
@@ -160,22 +157,43 @@ const LotteryCard = ({
 
       <Card.Footer className="pt-0">
         {isDrawing && (
-          <Button variant="primary" className="w-full" onPress={openDetail}>
+          <span
+            aria-hidden="true"
+            className={buttonVariants({
+              variant: 'primary',
+              fullWidth: true,
+              className: 'pointer-events-none',
+            })}
+          >
             <Icon icon="solar:play-circle-linear" width={16} />
             {t('watchDraw')}
-          </Button>
+          </span>
         )}
         {status === 'active' && !isDrawing && (
-          <Button variant="primary" className="w-full" onPress={openDetail}>
+          <span
+            aria-hidden="true"
+            className={buttonVariants({
+              variant: 'primary',
+              fullWidth: true,
+              className: 'pointer-events-none',
+            })}
+          >
             <Icon icon="solar:ticket-linear" width={16} />
             {t('buyTicket')}
-          </Button>
+          </span>
         )}
         {status === 'ended' && (
-          <Button variant="secondary" className="w-full" onPress={openDetail}>
+          <span
+            aria-hidden="true"
+            className={buttonVariants({
+              variant: 'secondary',
+              fullWidth: true,
+              className: 'pointer-events-none',
+            })}
+          >
             <Icon icon="solar:cup-star-linear" width={16} />
             {t('viewWinners')}
-          </Button>
+          </span>
         )}
         {status === 'upcoming' && (
           <Chip color="warning" variant="secondary" className="w-full justify-center py-2">
