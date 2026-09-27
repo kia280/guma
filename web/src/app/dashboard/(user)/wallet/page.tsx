@@ -8,10 +8,9 @@ import {
   Modal,
   useOverlayState,
   Input,
-  Autocomplete,
+  ComboBox,
   Label,
   ListBox,
-  SearchField,
   EmptyState,
   Description,
   FieldError,
@@ -168,6 +167,7 @@ export default function WalletPage() {
 
   const [transferAmount, setTransferAmount] = React.useState('');
   const [transferRecipient, setTransferRecipient] = React.useState('');
+  const [recipientInput, setRecipientInput] = React.useState('');
   const [showTransferErrors, setShowTransferErrors] = React.useState(false);
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
   const [depositAmount, setDepositAmount] = React.useState('');
@@ -291,6 +291,11 @@ export default function WalletPage() {
       ? t('insufficientBalance')
       : null;
   const transferRecipientError = transferRecipient ? null : t('recipientRequired');
+  const selectedRecipient = mockUsers.find(user => user.id === transferRecipient);
+  const recipientQuery = selectedRecipient?.username === recipientInput ? '' : recipientInput.trim();
+  const recipientOptions = recipientQuery
+    ? mockUsers.filter(user => contains(user.username, recipientQuery) || contains(user.email, recipientQuery))
+    : mockUsers;
   const showTransferAmountError = Boolean(transferAmountError) && (showTransferErrors || transferAmount !== '');
   const showTransferRecipientError = Boolean(transferRecipientError) && showTransferErrors;
   const canWithdraw = withdrawAmountValue > 0 && !withdrawExceedsBalance;
@@ -325,6 +330,24 @@ export default function WalletPage() {
     openActionModal(transferModalState);
   };
 
+  const handleRecipientInputChange = (value: string) => {
+    setRecipientInput(value);
+    const query = value.trim();
+    const exactMatch = mockUsers.find(
+      user => user.username.localeCompare(query, undefined, { sensitivity: 'base' }) === 0
+        || user.email.localeCompare(query, undefined, { sensitivity: 'base' }) === 0,
+    );
+    setTransferRecipient(current =>
+      mockUsers.find(user => user.id === current)?.username === value ? current : (exactMatch?.id ?? ''),
+    );
+  };
+
+  const handleRecipientChange = (key: React.Key | null) => {
+    const user = mockUsers.find(member => member.id === key);
+    setTransferRecipient(user?.id ?? '');
+    if (user) setRecipientInput(user.username);
+  };
+
   const handleTransfer = (trigger: Element) => {
     if (transferAmountError || transferRecipientError) {
       setShowTransferErrors(true);
@@ -340,6 +363,7 @@ export default function WalletPage() {
       () => {
         setTransferAmount('');
         setTransferRecipient('');
+        setRecipientInput('');
       },
     );
   };
@@ -499,44 +523,40 @@ export default function WalletPage() {
                             />
                             {showTransferAmountError && <FieldError>{transferAmountError}</FieldError>}
                           </TextField>
-                          <Autocomplete
-                            className="w-full"
-                            placeholder={t('searchRecipient')}
-                            selectionMode="single"
+                          <ComboBox
+                            fullWidth
+                            allowsCustomValue
+                            allowsEmptyCollection
+                            menuTrigger="input"
+                            variant="secondary"
                             validationBehavior="aria"
                             isInvalid={showTransferRecipientError}
-                            value={transferRecipient}
-                            onChange={key => setTransferRecipient(key as string)}
+                            defaultFilter={() => true}
+                            value={transferRecipient || null}
+                            onChange={handleRecipientChange}
+                            inputValue={recipientInput}
+                            onInputChange={handleRecipientInputChange}
                           >
                             <Label>{t('recipient')}</Label>
-                            <Autocomplete.Trigger>
-                              <Autocomplete.Value />
-                              <Autocomplete.Indicator />
-                            </Autocomplete.Trigger>
-                            <Autocomplete.Popover>
-                              <Autocomplete.Filter filter={contains}>
-                                <SearchField autoFocus name="search" variant="secondary">
-                                  <SearchField.Group>
-                                    <SearchField.SearchIcon />
-                                    <SearchField.Input placeholder={t('searchRecipient')} />
-                                    <SearchField.ClearButton />
-                                  </SearchField.Group>
-                                </SearchField>
-                                <ListBox renderEmptyState={() => <EmptyState>{t('noResults')}</EmptyState>}>
-                                  {mockUsers.map(user => (
-                                    <ListBox.Item key={user.id} id={user.id} textValue={user.username}>
-                                      <div className="flex flex-col">
-                                        <Label>{user.username}</Label>
-                                        <Description>{user.email}</Description>
-                                      </div>
-                                      <ListBox.ItemIndicator />
-                                    </ListBox.Item>
-                                  ))}
-                                </ListBox>
-                              </Autocomplete.Filter>
-                            </Autocomplete.Popover>
+                            <ComboBox.InputGroup>
+                              <Input placeholder={t('searchRecipient')} />
+                              <ComboBox.Trigger />
+                            </ComboBox.InputGroup>
+                            <ComboBox.Popover>
+                              <ListBox renderEmptyState={() => <EmptyState>{t('noResults')}</EmptyState>}>
+                                {recipientOptions.map(user => (
+                                  <ListBox.Item key={user.id} id={user.id} textValue={user.username}>
+                                    <div className="flex min-w-0 flex-col">
+                                      <Label>{user.username}</Label>
+                                      <Description>{user.email}</Description>
+                                    </div>
+                                    <ListBox.ItemIndicator />
+                                  </ListBox.Item>
+                                ))}
+                              </ListBox>
+                            </ComboBox.Popover>
                             {showTransferRecipientError && <FieldError>{transferRecipientError}</FieldError>}
-                          </Autocomplete>
+                          </ComboBox>
                           <p className="type-caption text-hint px-1">
                             {t('available')} {formatGold(balance)}
                           </p>
