@@ -173,7 +173,7 @@ export default function CalendarPage() {
               <>
                 <Modal.Header className="flex flex-col items-start gap-2 pr-10">
                   <Modal.Heading className="break-words">{selectedEvent.title}</Modal.Heading>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 type-body">
                     <Chip color={EVENT_TYPE_COLORS[selectedEvent.type]} size="sm" variant="tertiary">
                       {eventLabels(`types.${selectedEvent.type}`)}
                     </Chip>

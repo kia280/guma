@@ -107,8 +107,8 @@ export function ItemTemplateManager({ guildId }: { guildId: string }) {
                 <li key={template.id} className="flex items-center gap-3 rounded-lg px-3 py-2.5">
                   <ItemThumbnail category={template.category} rarity={template.rarity} />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <p className="type-body font-medium text-foreground truncate">{template.name}</p>
+                    <div className="flex min-w-0 items-center gap-2 type-body">
+                      <p className="font-medium text-foreground truncate">{template.name}</p>
                       <Chip size="sm" variant="secondary" color={getRarityColor(template.rarity)} className="shrink-0">
                         {labels(`rarities.${template.rarity}`)}
                       </Chip>

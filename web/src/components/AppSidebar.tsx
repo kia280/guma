@@ -209,7 +209,7 @@ export function AppSidebar({ isCollapsed, onNavigate }: AppSidebarProps) {
   const t = useTranslations('dashboardLayout');
   const pathname = usePathname();
   const { can } = useGuildPermissions();
-  const sections = NAV_SECTIONS.filter(section => section.key !== 'admin' || can('accessAdmin'));
+  const sections = NAV_SECTIONS.filter(section => !section.requires || can(section.requires));
   const tab = useSearchParams().get('tab');
 
   return (

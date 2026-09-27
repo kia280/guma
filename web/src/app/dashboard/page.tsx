@@ -474,11 +474,11 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Meta */}
-                        <div className="flex flex-col items-end gap-1 shrink-0">
+                        <div className="flex flex-col items-end gap-1 shrink-0 type-caption">
                           <Chip size="sm" variant="secondary" color={meta.color}>
                             {t(meta.labelKey as any)}
                           </Chip>
-                          <span className="type-caption text-hint">{event.timeLabel}</span>
+                          <span className="text-hint">{event.timeLabel}</span>
                         </div>
                       </Link>
                     </li>

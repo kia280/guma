@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, ToggleButton, ToggleButtonGroup } from '@heroui/react';
+import { Button, Card, Separator, ToggleButton, ToggleButtonGroup } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React, { useMemo, useRef } from 'react';
@@ -243,6 +243,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           <div className="flex flex-wrap items-center gap-2">
             {todayButton}
             {viewSwitcher}
+            <Separator orientation="vertical" className="h-6" />
             <Button size="sm" variant="primary" onPress={onCreate}>
               <Icon icon="solar:add-circle-linear" width={16} aria-hidden />
               {t('createEvent')}

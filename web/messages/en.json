@@ -49,7 +49,7 @@
     "dashboard": "Dashboard",
     "checkin": "Attendance",
     "wallet": "Wallet",
-    "guildBank": "Guild Bank",
+    "guildBank": "Guild Vault",
     "auction": "Auction",
     "lottery": "Lottery",
     "admin": "Admin",
@@ -74,7 +74,8 @@
     "adminRoles": "Roles & permissions",
     "sections": {
       "activities": "Guild activities",
-      "assets": "Assets"
+      "assets": "Assets",
+      "admin": "Administration"
     },
     "pages": {
       "detail": "Details",
@@ -155,9 +156,13 @@
     "itemTemplatePlaceholder": "Pick an item to add",
     "noItemTemplates": "No item templates yet",
     "itemTemplateHint": "Adds the item to the end of the loot list.",
-    "lootToBankHint": "When published, these items go to the guild storage and stay linked to this roll call.",
+    "lootToBankHint": "When published, these items go to the guild vault and stay linked to this roll call.",
     "createSuccess": "Roll call created.",
-    "createFailed": "Could not create the roll call. Please try again."
+    "createFailed": "Could not create the roll call. Please try again.",
+    "titleRequired": "Enter a title",
+    "eventDateTimeRequired": "Choose when the event starts",
+    "expireTimeRequired": "Choose when roll call closes",
+    "expireBeforeStart": "Roll call must close after the event starts"
   },
   "balanceTrendChart": {
     "balance": "Balance",
@@ -165,6 +170,9 @@
     "empty": "No balance history yet",
     "loadFailed": "Could not load balance history.",
     "retry": "Retry"
+  },
+  "actionSuccess": {
+    "done": "Done"
   },
   "walletPage": {
     "wallet": "Wallet",
@@ -215,22 +223,28 @@
       "auctionWin": "Auction won",
       "lotteryTicket": "Lottery ticket purchase",
       "lotteryWin": "Lottery prize",
-      "bankContribution": "Guild bank contribution",
+      "bankContribution": "Guild vault contribution",
       "fundRequestApproved": "Fund request approved"
     },
-    "depositSuccess": "Deposit completed.",
+    "depositSuccess": "Deposit completed",
+    "depositSuccessDetail": "{amount} was added to your wallet.",
     "depositFailed": "Could not complete the deposit. Please try again.",
-    "transferSuccess": "Transfer completed.",
+    "transferSuccess": "Transfer completed",
+    "transferSuccessDetail": "{amount} was sent to {recipient}.",
     "transferFailed": "Could not complete the transfer. Please try again.",
-    "withdrawSuccess": "Withdrawal completed.",
+    "withdrawSuccess": "Withdrawal submitted",
+    "withdrawSuccessDetail": "{amount} is on its way. Withdrawals may take 1–3 business days to process.",
     "withdrawFailed": "Could not complete the withdrawal. Please try again.",
-    "withdrawItemSuccess": "Item submitted for withdrawal.",
+    "withdrawItemSuccess": "Item submitted for withdrawal",
+    "withdrawItemSuccessDetail": "{name} was removed from your backpack and submitted for processing.",
     "withdrawItemFailed": "Could not withdraw the item. Please try again.",
     "noItems": "No items in your backpack",
-    "noItemsHint": "Items you receive from the guild bank or events will show up here.",
+    "noItemsHint": "Items you receive from the guild vault or events will show up here.",
     "noTransactions": "No transactions yet",
     "noTransactionsHint": "Your deposits, withdrawals, and transfers will show up here.",
-    "balance": "Balance"
+    "balance": "Balance",
+    "amountMustBePositive": "Enter an amount greater than 0",
+    "recipientRequired": "Choose a recipient"
   },
   "lotteryPage": {
     "all": "All",
@@ -255,7 +269,7 @@
     "max": "{count} max",
     "filled": "{percent}% filled",
     "winners": "Winners",
-    "buyTicket": "Buy Ticket",
+    "viewAndBuy": "View & buy tickets",
     "viewWinners": "View Winners",
     "ticketsSoldProgress": "Tickets sold",
     "timeLeftValue": "{duration} remaining",
@@ -533,8 +547,8 @@
     "roleSummaries": {
       "owner": "Created the guild. Has every admin permission and is the only role that can delete the guild.",
       "admin": "Manages the guild: edits settings, runs lotteries, and cancels auctions.",
-      "moderator": "Helps run day-to-day activities: creates roll calls and reviews guild bank requests.",
-      "member": "Takes part in guild activities: roll calls, auctions, lotteries, and the guild bank."
+      "moderator": "Helps run day-to-day activities: creates roll calls and reviews guild vault requests.",
+      "member": "Takes part in guild activities: roll calls, auctions, lotteries, and the guild vault."
     },
     "sections": {
       "guild": {
@@ -546,7 +560,7 @@
         "description": "Attendance tracking for guild activities"
       },
       "bank": {
-        "title": "Guild bank",
+        "title": "Guild vault",
         "description": "Shared funds and items"
       },
       "auction": {
@@ -586,13 +600,13 @@
     "ownerLeaveNote": "The owner must transfer ownership before leaving the guild."
   },
   "guildBankPage": {
-    "treasury": "Guild Treasury",
+    "treasury": "Funds",
     "treasuryDesc": "Shared funds for all guild members",
-    "guildGold": "Guild Gold",
+    "guildGold": "Vault balance",
     "contribute": "Contribute",
     "requestFunds": "Request Funds",
     "topContributors": "Top Contributors",
-    "storage": "Guild Storage",
+    "storage": "Items",
     "storageDesc": "Items shared by guild members",
     "items": "{count, plural, one {# item} other {# items}}",
     "by": "by",
@@ -608,7 +622,7 @@
     "approved": "Approved",
     "rejected": "Rejected",
     "amountPending": "Not yet deducted",
-    "contributeTitle": "Contribute to Guild Bank",
+    "contributeTitle": "Contribute to Guild Vault",
     "amountLabel": "Amount",
     "noteOptional": "Note (optional)",
     "notePlaceholder": "Leave a note for your contribution…",
@@ -628,9 +642,9 @@
     "typeRequest": "Fund Request",
     "typeItemDonate": "Item Donated",
     "typeItemDistribute": "Item Distributed",
-    "errorExceedsBalance": "The amount exceeds the current guild bank balance.",
+    "errorExceedsBalance": "The amount exceeds the guild vault's current balance.",
     "errorDuplicateItemRequest": "You already have a pending request for this item.",
-    "errorItemUnavailable": "This item is no longer in the guild storage.",
+    "errorItemUnavailable": "This item is no longer in the guild vault.",
     "errorNotMember": "Only guild members can submit requests.",
     "errorGeneric": "Something went wrong. Please try again.",
     "fromCheckin": "From roll call: {title}",
@@ -639,12 +653,14 @@
     "contributeSuccess": "Contribution completed.",
     "contributeFailed": "Could not complete the contribution. Please try again.",
     "requestSuccess": "Request submitted.",
-    "noItems": "No items in storage",
+    "noItems": "No items in the vault",
     "noItemsHint": "Donated items and roll call loot will show up here.",
     "noActivity": "No activity yet",
     "noActivityHint": "Contributions and requests will show up here.",
-    "activityTable": "Guild bank activity",
-    "itemSummary": "{rarity} · {category} · {count, plural, one {# available} other {# available}}"
+    "activityTable": "Guild vault activity",
+    "itemSummary": "{rarity} · {category} · {count, plural, one {# available} other {# available}}",
+    "amountMustBePositive": "Enter an amount greater than 0",
+    "reasonRequired": "Enter a reason for the request"
   },
   "notificationsCard": {
     "notifications": "Notifications",
@@ -784,12 +800,12 @@
     "unread": "Unread",
     "note": "Note: {note}",
     "reason": "Reason: {reason}",
-    "fundRequestApproved": "<b>{actor}</b> approved your guild bank request for <b>{amount}</b>",
-    "fundRequestRejected": "<b>{actor}</b> rejected your guild bank request for <b>{amount}</b>",
+    "fundRequestApproved": "<b>{actor}</b> approved your guild vault request for <b>{amount}</b>",
+    "fundRequestRejected": "<b>{actor}</b> rejected your guild vault request for <b>{amount}</b>",
     "itemRequestApproved": "<b>{actor}</b> approved your request for <b>{item}</b>",
     "itemRequestRejected": "<b>{actor}</b> rejected your request for <b>{item}</b>",
-    "fundRequestSubmitted": "<b>{actor}</b> requested <b>{amount}</b> from the guild bank",
-    "itemRequestSubmitted": "<b>{actor}</b> requested <b>{item}</b> from the guild bank",
+    "fundRequestSubmitted": "<b>{actor}</b> requested <b>{amount}</b> from the guild vault",
+    "itemRequestSubmitted": "<b>{actor}</b> requested <b>{item}</b> from the guild vault",
     "auctionOutbid": "<b>{actor}</b> outbid you on <b>{item}</b> with {amount}",
     "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>"
   },
@@ -1017,7 +1033,8 @@
     "cancelConfirmTitle": "Cancel this roll call?",
     "cancelConfirmBody": "Members will no longer be able to mark themselves present. Existing attendance stays on record. This cannot be undone.",
     "cancelConfirm": "Cancel roll call",
-    "cancelSuccess": "Roll call cancelled.",
+    "cancelSuccess": "Roll call cancelled",
+    "cancelSuccessDetail": "Members can no longer mark themselves present. Existing attendance stays on record.",
     "cancelFailed": "Couldn't cancel the roll call. Please try again.",
     "expired": "Expired",
     "remaining": "{time} remaining",
@@ -1025,7 +1042,8 @@
     "checkInExpired": "This roll call has closed.",
     "checkInCancelled": "This roll call has been cancelled.",
     "checkInFailed": "Couldn't mark you present. Please try again.",
-    "checkInSuccess": "You're marked present.",
+    "checkInSuccess": "You're marked present",
+    "checkInSuccessDetail": "Checked in at {time}.",
     "alreadyCheckedIn": "You have already been marked present.",
     "checkInTitle": "Mark present — {title}"
   },
@@ -1182,7 +1200,7 @@
     "pending": "Pending",
     "reviewed": "Reviewed",
     "loading": "Loading requests",
-    "loadFailed": "Could not load bank requests.",
+    "loadFailed": "Could not load vault requests.",
     "retry": "Retry",
     "fundRequests": "Fund requests",
     "itemRequests": "Item requests",
@@ -1194,7 +1212,7 @@
     "approveTitle": "Approve request",
     "rejectTitle": "Reject request",
     "requestedBy": "Requested by {name}",
-    "approveFundHint": "The amount will be transferred from the guild bank to the member's wallet.",
+    "approveFundHint": "The amount will be transferred from the guild vault to the member's wallet.",
     "approveItemHint": "The item will be moved to the member's backpack. Other pending requests for this item will be rejected.",
     "rejectHint": "The member will see this request as rejected.",
     "noteLabel": "Review note (optional)",
@@ -1202,7 +1220,7 @@
     "reviewNoteLabel": "Review note",
     "cancel": "Cancel",
     "errorForbidden": "You don't have permission to review this request.",
-    "errorConflict": "This request can no longer be approved. It may have been reviewed already, or the bank lacks funds or the item.",
+    "errorConflict": "This request can no longer be approved. It may have been reviewed already, or the guild vault lacks funds or the item.",
     "errorNotFound": "This request no longer exists.",
     "errorGeneric": "Something went wrong. Please try again.",
     "statuses": {
