@@ -489,6 +489,7 @@
     "publishedRequirement": "已發布的公告必須有標題與內容。",
     "discardChangesTitle": "要捨棄未儲存的變更嗎？",
     "discardChangesBody": "你對這則已發布公告的修改尚未儲存，離開後將會遺失。",
+    "discardFailed": "無法捨棄變更，請再試一次。",
     "discardChanges": "捨棄",
     "save": "儲存",
     "statuses": {
