@@ -170,6 +170,9 @@
     "loadFailed": "Could not load balance history.",
     "retry": "Retry"
   },
+  "actionSuccess": {
+    "done": "Done"
+  },
   "walletPage": {
     "wallet": "Wallet",
     "manageBalance": "Manage your balance and transactions",
@@ -222,13 +225,17 @@
       "bankContribution": "Guild bank contribution",
       "fundRequestApproved": "Fund request approved"
     },
-    "depositSuccess": "Deposit completed.",
+    "depositSuccess": "Deposit completed",
+    "depositSuccessDetail": "{amount} was added to your wallet.",
     "depositFailed": "Could not complete the deposit. Please try again.",
-    "transferSuccess": "Transfer completed.",
+    "transferSuccess": "Transfer completed",
+    "transferSuccessDetail": "{amount} was sent to {recipient}.",
     "transferFailed": "Could not complete the transfer. Please try again.",
-    "withdrawSuccess": "Withdrawal completed.",
+    "withdrawSuccess": "Withdrawal submitted",
+    "withdrawSuccessDetail": "{amount} is on its way. Withdrawals may take 1–3 business days to process.",
     "withdrawFailed": "Could not complete the withdrawal. Please try again.",
-    "withdrawItemSuccess": "Item submitted for withdrawal.",
+    "withdrawItemSuccess": "Item submitted for withdrawal",
+    "withdrawItemSuccessDetail": "{name} was removed from your backpack and submitted for processing.",
     "withdrawItemFailed": "Could not withdraw the item. Please try again.",
     "noItems": "No items in your backpack",
     "noItemsHint": "Items you receive from the guild bank or events will show up here.",
@@ -1004,7 +1011,8 @@
     "cancelConfirmTitle": "Cancel this roll call?",
     "cancelConfirmBody": "Members will no longer be able to mark themselves present. Existing attendance stays on record. This cannot be undone.",
     "cancelConfirm": "Cancel roll call",
-    "cancelSuccess": "Roll call cancelled.",
+    "cancelSuccess": "Roll call cancelled",
+    "cancelSuccessDetail": "Members can no longer mark themselves present. Existing attendance stays on record.",
     "cancelFailed": "Couldn't cancel the roll call. Please try again.",
     "expired": "Expired",
     "remaining": "{time} remaining",
@@ -1012,7 +1020,8 @@
     "checkInExpired": "This roll call has closed.",
     "checkInCancelled": "This roll call has been cancelled.",
     "checkInFailed": "Couldn't mark you present. Please try again.",
-    "checkInSuccess": "You're marked present.",
+    "checkInSuccess": "You're marked present",
+    "checkInSuccessDetail": "Checked in at {time}.",
     "alreadyCheckedIn": "You have already been marked present.",
     "checkInTitle": "Mark present — {title}"
   },
