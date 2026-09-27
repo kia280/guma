@@ -41,16 +41,20 @@ function WorkspaceIdentity({ isCollapsed }: { isCollapsed: boolean }) {
   const name = guild?.name || t('sunbaby');
 
   return (
-    <div className={cn('flex h-10 min-w-0 items-center gap-2 px-1.5', isCollapsed ? 'w-10' : 'w-full')}>
+    <div className="flex h-10 w-full min-w-0 items-center gap-2 px-1.5">
       <GuildAvatar name={name} src={guild?.icon} isLoading={isLoading} />
-      {!isCollapsed &&
-        (isLoading ? (
+      <div
+        aria-hidden={isCollapsed || undefined}
+        className={cn('flex min-w-0 flex-1 transition-opacity duration-200 motion-reduce:transition-none', isCollapsed && 'opacity-0')}
+      >
+        {isLoading ? (
           <Skeleton className="h-4 w-24 rounded-lg" />
         ) : (
           <span className="type-body min-w-0 flex-1 truncate font-medium text-foreground" title={name}>
             {name}
           </span>
-        ))}
+        )}
+      </div>
     </div>
   );
 }
@@ -80,7 +84,7 @@ function NavItemLink({
       className={({ isFocusVisible }) =>
         cn(
           'group flex h-8 items-center gap-2.5 rounded-lg px-[11px] type-body font-medium outline-none transition-colors',
-          isCollapsed ? 'w-10' : 'w-full',
+          'w-full',
           isNested && !isCollapsed && 'pl-[39px]',
           isActive ? 'bg-default text-foreground' : 'text-subtle hover:bg-default/60 hover:text-foreground',
           isFocusVisible && 'ring-2 ring-focus',
@@ -95,14 +99,20 @@ function NavItemLink({
           className={cn('shrink-0', isActive ? 'text-foreground' : 'text-hint group-hover:text-subtle')}
         />
       )}
-      {!isCollapsed && <span className="truncate">{label}</span>}
+      <span
+        aria-hidden={isCollapsed || undefined}
+        className={cn(
+          'min-w-0 truncate whitespace-nowrap transition-opacity duration-200 motion-reduce:transition-none',
+          isCollapsed && 'opacity-0',
+        )}
+      >
+        {label}
+      </span>
     </AriaLink>
   );
 
-  if (!isCollapsed) return link;
-
   return (
-    <Tooltip delay={0}>
+    <Tooltip delay={0} isDisabled={!isCollapsed}>
       {link}
       <Tooltip.Content placement="right" className="flex items-center gap-2">
         <span>{label}</span>
@@ -167,21 +177,30 @@ function NavGroupItem({
           className={cn('shrink-0 text-hint transition-transform', isExpanded && 'rotate-90')}
         />
       </button>
-      {isExpanded && (
-        <ul id={panelId} className="mt-0.5 space-y-0.5">
-          {group.children.map(child => (
-            <li key={child.key}>
-              <NavItemLink
-                item={child}
-                isNested
-                isCollapsed={false}
-                isActive={isLinkActive(child.href, pathname, tab)}
-                onNavigate={onNavigate}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      <div
+        id={panelId}
+        inert={!isExpanded}
+        className={cn(
+          'grid transition-[grid-template-rows,opacity] duration-200 motion-reduce:transition-none',
+          isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr] opacity-0',
+        )}
+      >
+        <div className="-mx-1 min-h-0 overflow-hidden">
+          <ul className="space-y-0.5 px-1 py-0.5">
+            {group.children.map(child => (
+              <li key={child.key}>
+                <NavItemLink
+                  item={child}
+                  isNested
+                  isCollapsed={false}
+                  isActive={isLinkActive(child.href, pathname, tab)}
+                  onNavigate={onNavigate}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
@@ -202,19 +221,25 @@ export function AppSidebar({ isCollapsed, onNavigate }: AppSidebarProps) {
     >
       <WorkspaceIdentity isCollapsed={isCollapsed} />
 
-      <nav aria-label={t('navigation')} className="-mx-2 mt-3 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2 py-1">
-        {sections.map(section => (
+      <nav aria-label={t('navigation')} className="-mx-2 mt-3 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-1">
+        {sections.map((section, index) => (
           <div key={section.key} className="flex flex-col">
-            {section.label && (
-              <p
+            {(index > 0 || section.label) && (
+              <div
                 aria-hidden={isCollapsed || undefined}
                 className={cn(
-                  'type-label truncate px-[11px] pb-1 text-hint transition-opacity duration-200',
-                  isCollapsed && 'select-none opacity-0',
+                  'grid transition-[grid-template-rows,opacity] duration-200 motion-reduce:transition-none',
+                  isCollapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr]',
                 )}
               >
-                {t(`sections.${section.label}`)}
-              </p>
+                <div className="overflow-hidden">
+                  <div className={cn(index > 0 && 'pt-3.5')}>
+                    {section.label && (
+                      <p className="type-label truncate px-[11px] pb-1 text-hint">{t(`sections.${section.label}`)}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
             <ul className="space-y-0.5">
               {section.items.map(item => (
