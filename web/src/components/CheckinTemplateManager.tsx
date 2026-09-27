@@ -169,10 +169,10 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
                   handleSave();
                 }}
               >
-                <Modal.Header className="text-center items-center">
+                <Modal.Header>
                   <Modal.Heading>{editing ? t('editTitle') : t('createTitle')}</Modal.Heading>
                 </Modal.Header>
-                <Modal.Body className="p-1 flex flex-col gap-4">
+                <Modal.Body className="flex flex-col gap-4">
                   <TextField isRequired maxLength={NAME_MAX_LENGTH}>
                     <Label>{t('name')}</Label>
                     <Input

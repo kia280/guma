@@ -254,11 +254,11 @@ export default function CheckinPage() {
               <Modal.Container size="md">
                 <Modal.Dialog>
                   <Modal.CloseTrigger />
-                  <Modal.Header className="text-center items-center">
-                    <Icon icon="solar:add-circle-linear" width={18} />
-                    {t('addCheckIn')}
+                  <Modal.Header className="flex-row items-center gap-2 pr-8">
+                    <Icon icon="solar:add-circle-linear" width={18} className="shrink-0" />
+                    <Modal.Heading>{t('addCheckIn')}</Modal.Heading>
                   </Modal.Header>
-                  <Modal.Body className="p-1">
+                  <Modal.Body>
                     <form className="flex flex-col gap-4">
                       {templatesState !== 'hidden' && (
                         <div className="flex flex-col gap-1">

@@ -194,7 +194,7 @@ export default function ProfilePage() {
 
       {/* Profile Details */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
             <Icon className="text-accent" icon="solar:user-bold-duotone" width={20} />
           </div>
@@ -272,7 +272,7 @@ export default function ProfilePage() {
 
       {/* Account Info */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-subtle" icon="solar:shield-user-bold-duotone" width={20} />
           </div>
@@ -341,7 +341,7 @@ export default function ProfilePage() {
 
       {/* Danger Zone */}
       <Card className="border border-danger/20 shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-danger/10 shrink-0">
             <Icon className="text-danger" icon="solar:danger-bold-duotone" width={20} />
           </div>

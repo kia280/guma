@@ -112,7 +112,7 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
               <h2 className="type-heading text-foreground">{t('createNewAuction')}</h2>
               <p className="type-caption text-hint">{t('subtitle')}</p>
             </Modal.Header>
-            <Modal.Body className="p-1">
+            <Modal.Body>
               <form
                 className="flex flex-col gap-4"
                 onSubmit={event => {
