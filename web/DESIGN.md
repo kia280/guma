@@ -38,12 +38,30 @@ Sizes are in pixels at the default font size.
 
 ### Rules
 
-- Do not use raw size classes (`text-xs` to `text-3xl`), pixel sizes (`text-[10px]`), or inline `fontSize` for text. The only exceptions are: the notification count badge, the brand wordmark (`Logo`), the font size preview buttons on the Preference page, and form inputs, which keep `text-base` (16px) so iOS does not zoom in on focus.
+- Do not use raw size classes (`text-xs` to `text-3xl`), pixel sizes (`text-[10px]`), or inline `fontSize` for text. The only exceptions are: the notification count badge (HeroUI `<Badge size="sm">`, 10px), the brand wordmark (`Logo`), the font size preview buttons on the Preference page, and form inputs, which keep `text-base` (16px) so iOS does not zoom in on focus.
 - Charts (Recharts) render SVG and need numeric sizes. Use `fontSize: 12` for axis ticks and tooltips.
 - Do not use `font-bold`. Roles use 600 for emphasis; bold is reserved for the brand wordmark and the notification count badge.
 - Do not use `uppercase` or letter spacing. Labels are translated and often Chinese, where both look wrong. The brand wordmark is the only exception. The sidebar guild name is user content, so it uses `type-subheading` without these overrides.
-- `<Modal.Heading>` keeps HeroUI's default style. HeroUI components (buttons, chips, inputs) keep their built-in sizes.
+- `<Modal.Heading>` keeps HeroUI's default style. HeroUI buttons and inputs keep their built-in sizes. Chips follow the convention in Chips and Badges below.
 - The app font is Noto Sans TC, loaded with `next/font` in `src/app/layout.tsx`. Do not set `font-family` in components. The dev panel's palette previews may override it for evaluation only.
+
+### Chips and Badges
+
+A chip's text is the same size as the text around it. `globals.css` sets `font-size: inherit` on `.chip`, so a chip takes its size from its parent instead of HeroUI's fixed 12px, and it scales with the font size preference like every role.
+
+- Use `size="sm"` for every chip. The size prop only sets padding and height (20px at the default font size), never the text size.
+- Do not put `type-*`, `text-*`, `leading-*`, or height classes on a chip. Put the role on the chip's shared parent (the row, stack, or header that also holds the adjacent text), and drop the now redundant role from the siblings.
+- Pick the parent's role from the text the chip sits with:
+  - Inline in a list row, table cell, or settings row next to body text: `type-body`.
+  - Stacked with metadata in a card (a status above a caption timestamp, a tag row under an item name, a status above a card title): `type-caption`.
+  - Detail page headers (status and tag chips above the page title, next to the body date line): `type-body`.
+  - Next to a heading role (a count beside a card or section title, a status beside a price): `type-body`. Chips never take heading sizes.
+  - Inside HeroUI tabs, list box items, and table cells the component already sets 14px, so no extra class is needed.
+- Align a chip in a row with `items-center`; a stretched chip grows to the row's line height.
+- A chip inside a button or link must not be the whole target when it is smaller than 24px. Give the wrapping button `min-h-6` and center the chip in it.
+- Chips are for short statuses, tags, and counts. Do not stretch a chip into a full-width bar. A card footer that states why the card cannot be opened uses `CardFooterStatus`, which matches `CardLinkHint`.
+- The one exception is the header wallet balance, which uses `size="lg"` (28px) to line up with the 28px header buttons and avatar.
+- Notification counts use HeroUI `<Badge size="sm" color="danger">` on a `Badge.Anchor`, with the accessible count on the button's `aria-label` and the badge `aria-hidden`. Status dots use `<Badge size="sm">` with no content.
 
 ## Text Colors
 

@@ -43,7 +43,7 @@ const BackpackItemCard = ({
         <ItemThumbnail category={item.item.category} rarity={item.item.rarity} imageUrl={item.item.imageUrl} />
         <div className="flex-1 min-w-0">
           <p className="type-body font-medium text-foreground truncate">{item.item.name}</p>
-          <div className="flex items-center gap-1 mt-0.5">
+          <div className="flex items-center gap-1 mt-0.5 type-caption">
             <Chip size="sm" color={getRarityColor(item.item.rarity)} variant="secondary">
               {labels(`rarities.${item.item.rarity}`)}
             </Chip>

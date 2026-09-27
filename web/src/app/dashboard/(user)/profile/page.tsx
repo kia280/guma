@@ -23,18 +23,8 @@ import { useToast } from '@/hooks/useToast';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
+import { isGuildRole, roleChipColor } from '@/lib/permissions';
 import { useUserStore } from '@/lib/store';
-
-const ROLE_COLORS = {
-  owner: 'accent',
-  admin: 'danger',
-  moderator: 'warning',
-  member: 'default',
-} as const;
-
-type KnownRole = keyof typeof ROLE_COLORS;
-
-const isKnownRole = (role: string): role is KnownRole => role in ROLE_COLORS;
 
 const DISPLAY_NAME_MAX_LENGTH = 50;
 const USERNAME_MIN_LENGTH = 3;
@@ -143,8 +133,8 @@ export default function ProfilePage() {
 
   const shownName = user?.displayName || user?.username || '';
   const guildRole = user?.guildRole ?? '';
-  const roleLabel = isKnownRole(guildRole) ? t(`roles.${guildRole}`) : guildRole;
-  const roleColor = isKnownRole(guildRole) ? ROLE_COLORS[guildRole] : 'default';
+  const roleLabel = isGuildRole(guildRole) ? t(`roles.${guildRole}`) : guildRole;
+  const roleColor = roleChipColor(guildRole);
 
   return (
     <div className="flex flex-col gap-5 w-full">
@@ -172,7 +162,7 @@ export default function ProfilePage() {
               <Icon icon="solar:camera-linear" width={14} />
             </button>
           </div>
-          <div className="flex flex-col gap-1 flex-1 min-w-0">
+          <div className="flex flex-col gap-1 flex-1 min-w-0 type-caption">
             <p className="type-subheading text-foreground truncate">{shownName}</p>
             {guildRole && (
               <Chip size="sm" variant="secondary" color={roleColor} className="w-fit mt-0.5 whitespace-nowrap">
@@ -282,7 +272,7 @@ export default function ProfilePage() {
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-3 py-2">
+          <div className="flex items-center justify-between gap-3 py-2 type-body">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <Icon icon="solar:letter-linear" width={16} className="text-hint shrink-0" />
               <div className="min-w-0 flex-1">
@@ -306,7 +296,7 @@ export default function ProfilePage() {
           <Separator />
           {user?.discord && (
             <>
-              <div className="flex items-center justify-between gap-3 py-2">
+              <div className="flex items-center justify-between gap-3 py-2 type-body">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <Icon icon="ic:baseline-discord" width={16} className="text-hint shrink-0" />
                   <div className="min-w-0 flex-1">

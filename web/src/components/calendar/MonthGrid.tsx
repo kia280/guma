@@ -129,7 +129,7 @@ function MonthChip({ occurrence, day, format, showTime, onEventClick }: MonthChi
       type="button"
       onClick={() => onEventClick(occurrence)}
       aria-label={`${event.title}, ${format.rangeLabel(occurrence, day)}`}
-      className="relative flex w-full min-w-0 items-center gap-1 rounded-md px-1.5 text-left type-caption transition-colors hover:bg-surface-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+      className="relative flex min-h-6 w-full min-w-0 items-center gap-1 rounded-md px-1.5 text-left type-caption transition-colors hover:bg-surface-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
       style={isBar ? { backgroundColor: tone.tint, boxShadow: `inset 3px 0 0 ${tone.accent}` } : undefined}
     >
       {!isBar && (

@@ -200,7 +200,7 @@ export function TimelineView({ days, occurrencesByDay, format, onEventClick, onO
                       type="button"
                       onClick={() => onEventClick(occurrence)}
                       aria-label={`${occurrence.event.title}, ${format.rangeLabel(occurrence, day)}`}
-                      className="w-full min-w-0 truncate rounded-md px-1.5 text-left type-caption text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+                      className="min-h-6 w-full min-w-0 truncate rounded-md px-1.5 text-left type-caption text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
                       style={{ backgroundColor: tone.tint, boxShadow: `inset 3px 0 0 ${tone.accent}` }}
                     >
                       {occurrence.event.title}

@@ -35,7 +35,7 @@ import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
 import { apiClient } from '@/lib/guma';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LOGO_TYPES, LogoImageError, prepareLogo } from '@/lib/logo-image';
-import { useGuildPermissions } from '@/lib/permissions';
+import { roleChipColor, useGuildPermissions } from '@/lib/permissions';
 import { userStatusColor, type UserStatus } from '@/lib/status-colors';
 import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import type { AdminActivity, AdminAnnouncement, AdminGuildStats } from '@/types/admin';
@@ -61,21 +61,6 @@ const formatRelative = (date: Date, intlLocale: string) => {
     if (Math.abs(seconds) >= size) return rtf.format(Math.round(seconds / size), unit);
   }
   return rtf.format(seconds, 'second');
-};
-
-const getRoleColor = (role: string) => {
-  switch (role) {
-    case 'owner':
-      return 'accent';
-    case 'admin':
-      return 'danger';
-    case 'moderator':
-      return 'warning';
-    case 'member':
-      return 'default';
-    default:
-      return 'default';
-  }
 };
 
 const getActivityIcon = (type: string) => {
@@ -463,7 +448,7 @@ export default function AdminPage() {
                             </div>
                           </Table.Cell>
                           <Table.Cell>
-                            <Chip size="sm" color={getRoleColor(user.role ?? '')} variant="secondary" className="capitalize">
+                            <Chip size="sm" color={roleChipColor(user.role)} variant="secondary" className="capitalize">
                               {user.role && ROLES.includes(user.role as (typeof ROLES)[number])
                                 ? t(`roles.${user.role as (typeof ROLES)[number]}`)
                                 : user.role}
@@ -742,7 +727,7 @@ export default function AdminPage() {
                   <Card.Content className="p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 min-w-0 type-body">
                           <Chip size="sm" variant="secondary" color="warning">{t('draft')}</Chip>
                           <h4 className={`type-subheading truncate ${ann.title.trim() ? 'text-foreground' : 'text-hint'}`}>
                             {ann.title.trim() || t('untitledDraft')}
@@ -799,7 +784,7 @@ export default function AdminPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2 shrink-0">
+                      <div className="flex flex-col items-end gap-2 shrink-0 type-body">
                         {ann.pinned && (
                           <Chip size="sm" variant="secondary">
                             {t('pinned')}
