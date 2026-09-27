@@ -113,10 +113,10 @@ message UpdateCheckInRequest {
   string guild_id = 1;
   string checkin_id = 2;
   string title = 3;
-  string description = 4;
+  optional string description = 4;
   string datetime = 5;
   string expire_time = 6;
-  string image_url = 7;
+  optional string image_url = 7;
   repeated Item loot_list = 8;
 }
 

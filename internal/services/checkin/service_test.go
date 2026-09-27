@@ -97,3 +97,54 @@ func TestCancelRejectsMalformedIDsBeforeQuerying(t *testing.T) {
 	_, err = s.Cancel(context.Background(), valid, valid, "bad")
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }
+
+func TestCheckEditable(t *testing.T) {
+	assert.NoError(t, checkEditable(false, false))
+	assert.ErrorIs(t, checkEditable(true, false), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkEditable(false, true), errs.ErrFailedPrecondition)
+}
+
+func TestCheckExpireTimeInFuture(t *testing.T) {
+	now := time.Date(2026, 9, 26, 12, 0, 0, 0, time.UTC)
+	assert.NoError(t, checkExpireTimeInFuture("2026-09-26T13:00:00Z", now))
+	assert.ErrorIs(t, checkExpireTimeInFuture("2026-09-26T12:00:00Z", now), errs.ErrInvalidArgument)
+	assert.ErrorIs(t, checkExpireTimeInFuture("2026-09-26T11:00:00Z", now), errs.ErrInvalidArgument)
+	assert.ErrorIs(t, checkExpireTimeInFuture("not-a-time", now), errs.ErrInvalidArgument)
+}
+
+func TestUpdateValidatesBeforeQuerying(t *testing.T) {
+	s := &Service{}
+	const valid = "00000000-0000-0000-0000-000000000001"
+	future := time.Now().UTC().Add(time.Hour)
+	datetime := future.Format(time.RFC3339)
+	expireTime := future.Add(time.Hour).Format(time.RFC3339)
+	base := UpdateParams{
+		GuildID: valid, CheckInID: valid, UpdatedBy: valid,
+		Title: "Raid", Datetime: datetime, ExpireTime: expireTime,
+	}
+
+	tests := []struct {
+		name    string
+		mutate  func(p *UpdateParams)
+		wantErr error
+	}{
+		{name: "blank title", mutate: func(p *UpdateParams) { p.Title = "  " }, wantErr: errs.ErrInvalidArgument},
+		{name: "expire before datetime", mutate: func(p *UpdateParams) { p.ExpireTime = p.Datetime }, wantErr: errs.ErrInvalidArgument},
+		{name: "expire in the past", mutate: func(p *UpdateParams) {
+			p.Datetime = "2020-01-01T00:00:00Z"
+			p.ExpireTime = "2020-01-02T00:00:00Z"
+		}, wantErr: errs.ErrInvalidArgument},
+		{name: "loot change", mutate: func(p *UpdateParams) { p.LootList = []models.Item{{Name: "Sword"}} }, wantErr: errs.ErrInvalidArgument},
+		{name: "malformed guild", mutate: func(p *UpdateParams) { p.GuildID = "bad" }, wantErr: errs.ErrNotFound},
+		{name: "malformed checkin", mutate: func(p *UpdateParams) { p.CheckInID = "bad" }, wantErr: errs.ErrNotFound},
+		{name: "malformed user", mutate: func(p *UpdateParams) { p.UpdatedBy = "bad" }, wantErr: errs.ErrInvalidArgument},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := base
+			tt.mutate(&p)
+			_, err := s.Update(context.Background(), p)
+			assert.ErrorIs(t, err, tt.wantErr)
+		})
+	}
+}
