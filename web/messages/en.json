@@ -489,6 +489,7 @@
     "publishedRequirement": "Published announcements need a title and content.",
     "discardChangesTitle": "Discard unsaved changes?",
     "discardChangesBody": "Your edits to this published announcement haven't been saved and will be lost.",
+    "discardFailed": "Couldn't discard your changes. Please try again.",
     "discardChanges": "Discard",
     "save": "Save",
     "statuses": {
