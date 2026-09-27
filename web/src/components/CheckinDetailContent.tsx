@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Chip, Separator, Modal, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
+import { Button, Chip, Separator, Modal, Spinner, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -17,6 +17,7 @@ import { useGuildPermissions } from '@/lib/permissions';
 import { checkinStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
+import { ActionSuccess } from './ActionSuccess';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
 import { ConfirmDialog } from './ConfirmDialog';
 import { UserAvatar } from './UserAvatar';
@@ -85,6 +86,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const timeRemaining = isExpired ? t('expired') : t('remaining', { time: formatCountdown(remainingMs) });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<'closed' | 'failed' | null>(null);
+  const [checkedInAt, setCheckedInAt] = useState<string | null>(null);
   const checkinModal = useOverlayState();
   const currentUserId = useUserStore(state => state.user?.id);
   const { can } = useGuildPermissions();
@@ -121,7 +123,6 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const handleCancelConfirm = async () => {
     try {
       await apiClient.cancelCheckin(guildId, id);
-      notify.success(t('cancelSuccess'));
     } finally {
       refetchEntry();
     }
@@ -129,6 +130,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
 
   const openCheckinModal = () => {
     setSubmitError(null);
+    setCheckedInAt(null);
     checkinModal.open();
   };
 
@@ -136,10 +138,9 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      await apiClient.submitAttendance(guildId, id, notes.trim());
+      const attendee = await apiClient.submitAttendance(guildId, id, notes.trim());
       setNotes('');
-      checkinModal.close();
-      notify.success(t('checkInSuccess'));
+      setCheckedInAt(attendee.checkedInAt || new Date().toISOString());
     } catch (err) {
       const status = (err as { response?: { status?: number } }).response?.status;
       if (status === 409) {
@@ -213,51 +214,65 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             {t('cancelCheckin')}
           </Button>
         )}
-        {!hasCheckedIn && (
+        {(!hasCheckedIn || checkedInAt) && (
           <Modal state={checkinModal}>
-          <Modal.Backdrop>
+          <Modal.Backdrop isDismissable={!isSubmitting} isKeyboardDismissDisabled={isSubmitting}>
             <Modal.Container size="sm">
               <Modal.Dialog>
-                <Modal.CloseTrigger />
-                <Modal.Header className="flex-row items-center gap-2 pr-8">
-                  <Icon
-                    icon="heroicons:clipboard-document-check"
-                    width={18}
-                    className="text-subtle shrink-0"
+                <Modal.CloseTrigger isDisabled={isSubmitting} />
+                {checkedInAt ? (
+                  <ActionSuccess
+                    title={t('checkInSuccess')}
+                    detail={t('checkInSuccessDetail', { time: formatDateTime(checkedInAt) })}
                   />
-                  <Modal.Heading>{t('checkInTitle', { title: entry.description })}</Modal.Heading>
-                </Modal.Header>
-                <Modal.Body className="flex flex-col gap-3">
-                  <p className="type-body text-subtle">{formatDateTime(entry.date)}</p>
-                  <TextField>
-                    <Label>{t('notesOptional')}</Label>
-                    <TextArea
-                      placeholder={t('notesPlaceholder')}
-                      value={notes}
-                      onChange={e => setNotes(e.target.value)}
-                      variant="secondary"
-                      rows={2}
-                      maxLength={500}
-                    />
-                  </TextField>
-                  {submitError && (
-                    <p role="alert" className="type-caption text-danger">
-                      {submitError === 'failed'
-                        ? t('checkInFailed')
-                        : entry.status === CheckinStatus.CANCELLED
-                          ? t('checkInCancelled')
-                          : t('checkInExpired')}
-                    </p>
-                  )}
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button slot="close" variant="secondary">
-                    {t('cancel')}
-                  </Button>
-                  <Button variant="primary" isPending={isSubmitting} isDisabled={!isOpen_} onPress={handleCheckinConfirm}>
-                    {t('confirmCheckIn')}
-                  </Button>
-                </Modal.Footer>
+                ) : (
+                  <>
+                    <Modal.Header className="flex-row items-center gap-2 pr-8">
+                      <Icon
+                        icon="heroicons:clipboard-document-check"
+                        width={18}
+                        className="text-subtle shrink-0"
+                      />
+                      <Modal.Heading>{t('checkInTitle', { title: entry.description })}</Modal.Heading>
+                    </Modal.Header>
+                    <Modal.Body className="flex flex-col gap-3">
+                      <p className="type-body text-subtle">{formatDateTime(entry.date)}</p>
+                      <TextField>
+                        <Label>{t('notesOptional')}</Label>
+                        <TextArea
+                          placeholder={t('notesPlaceholder')}
+                          value={notes}
+                          onChange={e => setNotes(e.target.value)}
+                          variant="secondary"
+                          rows={2}
+                          maxLength={500}
+                        />
+                      </TextField>
+                      {submitError && (
+                        <p role="alert" className="type-caption text-danger">
+                          {submitError === 'failed'
+                            ? t('checkInFailed')
+                            : entry.status === CheckinStatus.CANCELLED
+                              ? t('checkInCancelled')
+                              : t('checkInExpired')}
+                        </p>
+                      )}
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button slot="close" variant="secondary" isDisabled={isSubmitting}>
+                        {t('cancel')}
+                      </Button>
+                      <Button variant="primary" isPending={isSubmitting} isDisabled={!isOpen_} onPress={handleCheckinConfirm}>
+                        {({ isPending }) => (
+                          <>
+                            {isPending && <Spinner color="current" size="sm" />}
+                            {t('confirmCheckIn')}
+                          </>
+                        )}
+                      </Button>
+                    </Modal.Footer>
+                  </>
+                )}
               </Modal.Dialog>
             </Modal.Container>
           </Modal.Backdrop>
@@ -273,6 +288,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         isOpen={isCancelConfirmOpen}
         onOpenChange={setIsCancelConfirmOpen}
         onConfirm={handleCancelConfirm}
+        success={{ title: t('cancelSuccess'), detail: t('cancelSuccessDetail') }}
       />
 
       <div className={`grid grid-cols-1 lg:grid-cols-5 ${sectionGap}`}>
