@@ -304,6 +304,9 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     });
   };
 
+  const sectionClass = onClose ? '' : 'rounded-xl border border-divider p-4';
+  const stackGap = onClose ? 'gap-y-6' : 'gap-y-4';
+
   return (
     <div className="flex flex-col gap-5">
       {!onClose && (
@@ -326,27 +329,8 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] gap-5">
-        <section className="flex flex-col items-center justify-center gap-4 rounded-xl border border-divider bg-surface-secondary p-4 sm:p-6">
-          <LotteryWheel
-            entries={entries}
-            winnerId={topWinner}
-            spinKey={spinKey}
-            isRevealed={phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended')}
-            onSpinEnd={finishSpin}
-          />
-          <p className="type-subheading text-foreground tabular-nums text-center" aria-live={phase === 'idle' ? 'off' : 'polite'}>
-            {wheelCaption()}
-          </p>
-          {isSettled && winners.length > 0 && (
-            <Button size="sm" variant="ghost" onPress={replay}>
-              <Icon icon="solar:restart-linear" width={16} />
-              {t('replay')}
-            </Button>
-          )}
-        </section>
-
-        <div className="flex flex-col gap-4">
+      <div className={`grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] lg:grid-rows-[auto_1fr] gap-x-5 ${stackGap}`}>
+        <div className={`lg:col-start-2 lg:row-start-1 flex flex-col ${stackGap}`}>
           <dl className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-divider p-3">
               <dt className="type-caption text-hint">{t('ticketPrice')}</dt>
@@ -421,7 +405,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           </dl>
 
           {isOpen && (
-            <section className="rounded-xl border border-divider p-4 space-y-3">
+            <section className={`space-y-3 ${sectionClass}`}>
               <div className="flex items-center justify-between gap-3">
                 <h3 className="type-subheading text-foreground">{t('buyTickets')}</h3>
                 {myTickets > 0 && (
@@ -456,8 +440,30 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
             </section>
           )}
 
+        </div>
+
+        <section className="lg:col-start-1 lg:row-start-1 lg:row-span-2 flex flex-col items-center justify-center gap-4 rounded-xl border border-divider bg-surface-secondary p-4 sm:p-6">
+          <LotteryWheel
+            entries={entries}
+            winnerId={topWinner}
+            spinKey={spinKey}
+            isRevealed={phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended')}
+            onSpinEnd={finishSpin}
+          />
+          <p className="type-subheading text-foreground tabular-nums text-center" aria-live={phase === 'idle' ? 'off' : 'polite'}>
+            {wheelCaption()}
+          </p>
+          {isSettled && winners.length > 0 && (
+            <Button size="sm" variant="ghost" onPress={replay}>
+              <Icon icon="solar:restart-linear" width={16} />
+              {t('replay')}
+            </Button>
+          )}
+        </section>
+
+        <div className={`lg:col-start-2 lg:row-start-2 flex flex-col ${stackGap}`}>
           {showWinners && winners.length > 0 && (
-            <section className="rounded-xl border border-divider p-4 space-y-2">
+            <section className={`space-y-2 ${sectionClass}`}>
               <h3 className="type-subheading text-foreground">{t('winners')}</h3>
               <ul className="flex flex-col gap-2">
                 {winners.map(winner => (
@@ -471,16 +477,16 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
             </section>
           )}
 
-          <section className="rounded-xl border border-divider">
-            <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <section className={onClose ? undefined : 'rounded-xl border border-divider'}>
+            <div className={`flex items-center justify-between pb-2 ${onClose ? '' : 'px-4 pt-3'}`}>
               <h3 className="type-subheading text-foreground">{t('participants')}</h3>
               <span className="type-caption text-hint tabular-nums">{participants.length}</span>
             </div>
             {participants.length > 0 ? (
               <ScrollShadow className="max-h-80">
-                <ul className="flex flex-col px-2 pb-2">
+                <ul className={`flex flex-col ${onClose ? '' : 'px-2 pb-2'}`}>
                   {participants.map(p => (
-                    <li key={p.id} className="flex items-center gap-3 rounded-lg px-2 py-1.5">
+                    <li key={p.id} className={`flex items-center gap-3 rounded-lg py-1.5 ${onClose ? '' : 'px-2'}`}>
                       <UserAvatar name={p.username} src={p.avatar} className="shrink-0" />
                       <span className="type-body text-foreground flex-1 min-w-0 truncate">{p.username}</span>
                       <span className="type-caption text-hint tabular-nums">
@@ -491,7 +497,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                 </ul>
               </ScrollShadow>
             ) : (
-              <p className="type-body text-subtle px-4 pb-4">{t('noParticipants')}</p>
+              <p className={`type-body text-subtle ${onClose ? '' : 'px-4 pb-4'}`}>{t('noParticipants')}</p>
             )}
           </section>
         </div>

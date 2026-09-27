@@ -157,6 +157,10 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     }
   };
 
+  const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-divider bg-surface';
+  const sectionGap = onClose ? 'gap-6' : 'gap-4';
+  const sectionStack = onClose ? 'space-y-6' : 'space-y-4';
+
   return (
     <div className="space-y-5">
       {/* Back button - only show if not in modal mode */}
@@ -174,7 +178,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
       )}
 
             {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start gap-4 p-5 rounded-xl border border-divider bg-surface">
+      <div className={`flex flex-col sm:flex-row items-start gap-4 ${onClose ? 'pr-8' : sectionClass}`}>
         <div className="p-4 rounded-xl bg-default shrink-0">
           <Icon icon="heroicons:clipboard-document-check" width={36} className="text-subtle" />
         </div>
@@ -271,50 +275,11 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         onConfirm={handleCancelConfirm}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Left — attendance + loot */}
-        <div className="lg:col-span-3 space-y-4">
-          {/* Attendance List */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="type-subheading text-foreground">
-                {t('attendance')}
-              </h2>
-              <Chip size="sm" variant="secondary">
-                {t('members', { count: entry.attendanceList.length })}
-              </Chip>
-            </div>
-
-            {entry.attendanceList.length === 0 ? (
-              <p className="type-body text-subtle text-center py-4">{t('noCheckinsYet')}</p>
-            ) : (
-              <div className="space-y-2">
-                {entry.attendanceList.map((member, idx) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-divider bg-surface-secondary"
-                  >
-                    <span className="type-caption text-hint w-5 text-right shrink-0">
-                      {idx + 1}
-                    </span>
-                    <UserAvatar name={member.username} src={member.avatar} />
-                    <div className="flex-1 min-w-0">
-                      <p className="type-body font-medium text-foreground">{member.username}</p>
-                      {member.notes && (
-                        <p className="type-caption text-hint truncate">{member.notes}</p>
-                      )}
-                    </div>
-                    <span className="type-caption text-hint shrink-0">
-                      {formatDateTime(member.checkedInAt)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
+      <div className={`grid grid-cols-1 lg:grid-cols-5 ${sectionGap}`}>
+        {/* Left — loot + attendance */}
+        <div className={`lg:col-span-3 ${sectionStack}`}>
           {/* Loot List */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
+          <div className={`space-y-4 ${sectionClass}`}>
             <div className="flex items-center justify-between">
               <h2 className="type-subheading text-foreground">
                 {t('loot')}
@@ -352,12 +317,53 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
               </div>
             )}
           </div>
+
+          {/* Attendance List */}
+          <div className={`space-y-4 ${sectionClass}`}>
+            <div className="flex items-center justify-between">
+              <h2 className="type-subheading text-foreground">
+                {t('attendance')}
+              </h2>
+              <Chip size="sm" variant="secondary">
+                {t('members', { count: entry.attendanceList.length })}
+              </Chip>
+            </div>
+
+            {entry.attendanceList.length === 0 ? (
+              <p className="type-body text-subtle text-center py-4">{t('noCheckinsYet')}</p>
+            ) : (
+              <div className="space-y-2">
+                {entry.attendanceList.map((member, idx) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-divider bg-surface-secondary"
+                  >
+                    <span className="type-caption text-hint w-5 text-right shrink-0">
+                      {idx + 1}
+                    </span>
+                    <UserAvatar name={member.username} src={member.avatar} className="shrink-0" />
+                    <div className="flex-1 min-w-0 sm:flex sm:items-center sm:gap-3">
+                      <div className="min-w-0 sm:flex-1">
+                        <p className="type-body font-medium text-foreground truncate">{member.username}</p>
+                        {member.notes && (
+                          <p className="type-caption text-hint truncate">{member.notes}</p>
+                        )}
+                      </div>
+                      <span className="block type-caption text-hint sm:shrink-0">
+                        {formatDateTime(member.checkedInAt)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right — details */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className={`lg:col-span-2 ${sectionStack}`}>
           {/* Timing */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
+          <div className={`space-y-3 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
               {t('timing')}
             </h2>
@@ -385,7 +391,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           </div>
 
           {/* Summary */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
+          <div className={`space-y-3 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
               {t('summary')}
             </h2>
@@ -397,10 +403,6 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                 </Chip>
               </div>
               <div className="flex justify-between">
-                <span className="text-subtle">{t('attendees')}</span>
-                <span className="text-foreground">{entry.attendanceList.length}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-subtle">{t('lootItems')}</span>
                 <span className="text-foreground">{entry.lootList.length}</span>
               </div>
@@ -409,6 +411,10 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                 <span className="text-foreground">
                   {entry.lootList.filter(l => l.winner).length}
                 </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-subtle">{t('attendees')}</span>
+                <span className="text-foreground">{entry.attendanceList.length}</span>
               </div>
             </div>
           </div>
