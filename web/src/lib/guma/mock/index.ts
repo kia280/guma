@@ -118,7 +118,7 @@ const currentUser: User = {
   bio: '',
   guildIds: [],
   currentGuildId: '',
-  balance: 1250,
+  balance: 1250.75,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   emailVerified: true,
@@ -147,7 +147,7 @@ const mockWallet = (guildId: string): Wallet => ({
   id: `wallet-${guildId}`,
   userId: currentUser.id,
   guildId,
-  balance: 1250.75,
+  balance: currentUser.balance,
   currency: 'gold',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -165,7 +165,7 @@ const baseMockApiClient: ApiClient = {
   // ── Dashboard ──
   getDashboardData: async () => ({
     guildStats: mockData.GUILD_STATS,
-    personalStats: mockData.PERSONAL_STATS,
+    personalStats: { ...mockData.PERSONAL_STATS, balance: currentUser.balance },
     incomingEvents: mockData.INCOMING_EVENTS,
     announcements: publishedMockAnnouncements(),
   }),

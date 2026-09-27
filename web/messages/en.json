@@ -753,14 +753,14 @@
     "unread": "Unread",
     "note": "Note: {note}",
     "reason": "Reason: {reason}",
-    "fundRequestApproved": "<b>{actor}</b> approved your guild bank request for <b>${amount, number}</b>",
-    "fundRequestRejected": "<b>{actor}</b> rejected your guild bank request for <b>${amount, number}</b>",
+    "fundRequestApproved": "<b>{actor}</b> approved your guild bank request for <b>{amount}</b>",
+    "fundRequestRejected": "<b>{actor}</b> rejected your guild bank request for <b>{amount}</b>",
     "itemRequestApproved": "<b>{actor}</b> approved your request for <b>{item}</b>",
     "itemRequestRejected": "<b>{actor}</b> rejected your request for <b>{item}</b>",
-    "fundRequestSubmitted": "<b>{actor}</b> requested <b>${amount, number}</b> from the guild bank",
+    "fundRequestSubmitted": "<b>{actor}</b> requested <b>{amount}</b> from the guild bank",
     "itemRequestSubmitted": "<b>{actor}</b> requested <b>{item}</b> from the guild bank",
-    "auctionOutbid": "<b>{actor}</b> outbid you on <b>{item}</b> with ${amount, number}",
-    "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {${amount, number}}}</b>"
+    "auctionOutbid": "<b>{actor}</b> outbid you on <b>{item}</b> with {amount}",
+    "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>"
   },
   "profilePage": {
     "title": "Personal Information",

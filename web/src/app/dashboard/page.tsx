@@ -66,7 +66,7 @@ function StatCard({
   value: string | number;
 }) {
   return (
-    <div className="flex items-center min-w-0 gap-2.5 sm:gap-3 p-3 rounded-xl border border-divider bg-surface-secondary">
+    <div className="flex items-center min-w-0 gap-2.5 sm:gap-3 p-3 rounded-xl border border-divider bg-surface">
       <div className={`${iconBg} p-2 sm:p-2.5 rounded-lg shrink-0`}>
         <Icon icon={icon} width={18} className={iconClass} />
       </div>
@@ -118,56 +118,57 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
   };
 
   return (
-    <div>
-      <Card className="border border-divider shadow-none bg-surface overflow-hidden">
-        <Card.Content className="p-0">
-          {/* Slide track */}
-          <div
-            className="flex transition-transform duration-300 ease-in-out"
-            style={{ transform: `translateX(-${idx * 100}%)` }}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-            {/* ── Slide 0: Personal Overview ── */}
-            <div className="min-w-full p-4 sm:p-5 space-y-5">
-              <p className="type-label text-hint">
-                {t('personalOverview')}
-              </p>
+    <section>
+      <div className="overflow-hidden">
+        {/* Slide track */}
+        <div
+          className="flex transition-transform duration-300 ease-in-out"
+          style={{ transform: `translateX(-${idx * 100}%)` }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* ── Slide 0: Personal Overview ── */}
+          <div className="min-w-full space-y-3">
+            <div className="flex items-center gap-2">
+              <Icon icon="solar:user-linear" width={18} className="text-hint" />
+              <h2 className="type-heading text-foreground">{t('personalOverview')}</h2>
+            </div>
 
-              {/* Stat row */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                <StatCard
-                  icon="solar:wallet-linear"
-                  iconClass="text-accent"
-                  iconBg="bg-accent/10"
-                  label={t('balance')}
-                  value={formatGold(PERSONAL_STATS.balance)}
-                />
-                <StatCard
-                  icon="solar:check-circle-linear"
-                  iconClass="text-success"
-                  iconBg="bg-success/10"
-                  label={t('checkIns')}
-                  value={PERSONAL_STATS.checkinsThisMonth}
-                />
-                <StatCard
-                  icon="solar:sledgehammer-linear"
-                  iconClass="text-warning"
-                  iconBg="bg-warning/10"
-                  label={t('activeAuctions')}
-                  value={PERSONAL_STATS.activeAuctions}
-                />
-                <StatCard
-                  icon="solar:star-linear"
-                  iconClass="text-accent"
-                  iconBg="bg-accent/10"
-                  label={t('activityPts')}
-                  value={PERSONAL_STATS.activityPoints}
-                />
-              </div>
+            {/* Stat row */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+              <StatCard
+                icon="solar:wallet-linear"
+                iconClass="text-accent"
+                iconBg="bg-accent/10"
+                label={t('balance')}
+                value={formatGold(PERSONAL_STATS.balance)}
+              />
+              <StatCard
+                icon="solar:check-circle-linear"
+                iconClass="text-success"
+                iconBg="bg-success/10"
+                label={t('checkIns')}
+                value={PERSONAL_STATS.checkinsThisMonth}
+              />
+              <StatCard
+                icon="solar:sledgehammer-linear"
+                iconClass="text-warning"
+                iconBg="bg-warning/10"
+                label={t('activeAuctions')}
+                value={PERSONAL_STATS.activeAuctions}
+              />
+              <StatCard
+                icon="solar:star-linear"
+                iconClass="text-accent"
+                iconBg="bg-accent/10"
+                label={t('activityPts')}
+                value={PERSONAL_STATS.activityPoints}
+              />
+            </div>
 
-              {/* Wallet balance chart */}
-              <div className="rounded-xl p-3 -mx-3 transition-colors hover:bg-surface-secondary">
+            {/* Wallet balance chart */}
+            <Card className="border border-divider shadow-none bg-surface">
+              <Card.Content>
                 <p className="type-caption text-hint mb-2">{t('balanceLast30')}</p>
                 <BalanceTrendChart
                   points={balanceTrend.points}
@@ -175,107 +176,108 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                   onRetry={balanceTrend.retry}
                   height={240}
                 />
-              </div>
-            </div>
-
-            {/* ── Slide 1: Guild Overview ── */}
-            <div className="min-w-full p-4 sm:p-5 space-y-5">
-              <p className="type-label text-hint">
-                {t('guildOverview')}
-              </p>
-
-              {/* Stat row */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                <StatCard
-                  icon="solar:users-group-rounded-linear"
-                  iconClass="text-accent"
-                  iconBg="bg-accent/10"
-                  label={t('members')}
-                  value={GUILD_STATS.members}
-                />
-                <StatCard
-                  icon="solar:calendar-mark-linear"
-                  iconClass="text-success"
-                  iconBg="bg-success/10"
-                  label={t('activeEvents')}
-                  value={GUILD_STATS.activeEvents}
-                />
-                <StatCard
-                  icon="solar:wallet-linear"
-                  iconClass="text-warning"
-                  iconBg="bg-warning/10"
-                  label={t('guildBalance')}
-                  value={formatGold(GUILD_STATS.balance)}
-                />
-                <StatCard
-                  icon="solar:check-square-linear"
-                  iconClass="text-success"
-                  iconBg="bg-success/10"
-                  label={t('checkInsPerWeek')}
-                  value={GUILD_STATS.checkinsThisWeek}
-                />
-                <StatCard
-                  icon="solar:sledgehammer-linear"
-                  iconClass="text-warning"
-                  iconBg="bg-warning/10"
-                  label={t('activeAuctions')}
-                  value={GUILD_STATS.activeAuctions}
-                />
-                <StatCard
-                  icon="solar:ticket-linear"
-                  iconClass="text-accent"
-                  iconBg="bg-accent/10"
-                  label={t('openLotteries')}
-                  value={GUILD_STATS.openLotteries}
-                />
-              </div>
-            </div>
+              </Card.Content>
+            </Card>
           </div>
 
-          {/* Dot navigation */}
-          <div className="flex items-center justify-center gap-2 pb-3">
-            <Button
-              isIconOnly
-              variant="ghost"
-              size="sm"
-              aria-label={t('previousSlide')}
-              isDisabled={idx === 0}
-              onPress={() => goTo(idx - 1)}
-            >
-              <Icon icon="solar:alt-arrow-left-linear" width={16} />
-            </Button>
-            <div role="group" aria-label={t('overview')} className="flex items-center">
-              {SLIDES.map((slide, i) => (
-                <button
-                  key={slide}
-                  type="button"
-                  onClick={() => setActive(slide)}
-                  aria-label={slide === 'personal' ? t('personalOverview') : t('guildOverview')}
-                  aria-current={i === idx ? 'true' : undefined}
-                  className="group flex h-8 min-w-8 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-focus"
-                >
-                  <span
-                    className={`h-2.5 rounded-full transition-all duration-200 ${
-                      i === idx ? 'w-6 bg-accent' : 'w-2.5 bg-muted/30 group-hover:bg-muted/50'
-                    }`}
-                  />
-                </button>
-              ))}
+          {/* ── Slide 1: Guild Overview ── */}
+          <div className="min-w-full space-y-3">
+            <div className="flex items-center gap-2">
+              <Icon icon="solar:users-group-rounded-linear" width={18} className="text-hint" />
+              <h2 className="type-heading text-foreground">{t('guildOverview')}</h2>
             </div>
-            <Button
-              isIconOnly
-              variant="ghost"
-              size="sm"
-              aria-label={t('nextSlide')}
-              isDisabled={idx === SLIDES.length - 1}
-              onPress={() => goTo(idx + 1)}
-            >
-              <Icon icon="solar:alt-arrow-right-linear" width={16} />
-            </Button>
+
+            {/* Stat row */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              <StatCard
+                icon="solar:users-group-rounded-linear"
+                iconClass="text-accent"
+                iconBg="bg-accent/10"
+                label={t('members')}
+                value={GUILD_STATS.members}
+              />
+              <StatCard
+                icon="solar:calendar-mark-linear"
+                iconClass="text-success"
+                iconBg="bg-success/10"
+                label={t('activeEvents')}
+                value={GUILD_STATS.activeEvents}
+              />
+              <StatCard
+                icon="solar:wallet-linear"
+                iconClass="text-warning"
+                iconBg="bg-warning/10"
+                label={t('guildBalance')}
+                value={formatGold(GUILD_STATS.balance)}
+              />
+              <StatCard
+                icon="solar:check-square-linear"
+                iconClass="text-success"
+                iconBg="bg-success/10"
+                label={t('checkInsPerWeek')}
+                value={GUILD_STATS.checkinsThisWeek}
+              />
+              <StatCard
+                icon="solar:sledgehammer-linear"
+                iconClass="text-warning"
+                iconBg="bg-warning/10"
+                label={t('activeAuctions')}
+                value={GUILD_STATS.activeAuctions}
+              />
+              <StatCard
+                icon="solar:ticket-linear"
+                iconClass="text-accent"
+                iconBg="bg-accent/10"
+                label={t('openLotteries')}
+                value={GUILD_STATS.openLotteries}
+              />
+            </div>
           </div>
-        </Card.Content>
-      </Card>
-    </div>
+        </div>
+      </div>
+
+      {/* Dot navigation */}
+      <div className="flex items-center justify-center gap-2 pt-2">
+        <Button
+          isIconOnly
+          variant="ghost"
+          size="sm"
+          aria-label={t('previousSlide')}
+          isDisabled={idx === 0}
+          onPress={() => goTo(idx - 1)}
+        >
+          <Icon icon="solar:alt-arrow-left-linear" width={16} />
+        </Button>
+        <div role="group" aria-label={t('overview')} className="flex items-center">
+          {SLIDES.map((slide, i) => (
+            <button
+              key={slide}
+              type="button"
+              onClick={() => setActive(slide)}
+              aria-label={slide === 'personal' ? t('personalOverview') : t('guildOverview')}
+              aria-current={i === idx ? 'true' : undefined}
+              className="group flex h-8 min-w-8 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-focus"
+            >
+              <span
+                className={`h-2.5 rounded-full transition-all duration-200 ${
+                  i === idx ? 'w-6 bg-accent' : 'w-2.5 bg-muted/30 group-hover:bg-muted/50'
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+        <Button
+          isIconOnly
+          variant="ghost"
+          size="sm"
+          aria-label={t('nextSlide')}
+          isDisabled={idx === SLIDES.length - 1}
+          onPress={() => goTo(idx + 1)}
+        >
+          <Icon icon="solar:alt-arrow-right-linear" width={16} />
+        </Button>
+      </div>
+    </section>
   );
 }
 
