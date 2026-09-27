@@ -1,10 +1,10 @@
 'use client';
 
-import { Button, Card, Chip } from '@heroui/react';
+import { Card, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { CardLinkHint } from '@/components/CardLinkHint';
 import { useCountdown } from '@/hooks/useNow';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
@@ -41,8 +41,6 @@ export function CheckinCard({
   href: string;
 }) {
   const t = useTranslations('checkIn');
-  const router = useRouter();
-  const openDetail = () => router.push(href);
   const format = useIntlFormatter();
   const formatCountdown = useCountdownFormatter();
   const { remainingMs, isExpired } = useCountdown(status === CheckinStatus.OPEN ? expireTime : null);
@@ -58,7 +56,7 @@ export function CheckinCard({
     <Card
       className={`border border-divider shadow-none bg-surface ${
         !isDisabled
-          ? 'hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus'
+          ? 'group hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus'
           : 'opacity-50'
       }`}
     >
@@ -130,21 +128,18 @@ export function CheckinCard({
 
       <Card.Footer className="pt-0">
         {canCheckin && (
-          <Button variant="primary" className="w-full" isDisabled={isDisabled} onPress={openDetail}>
-            <Icon icon="solar:check-circle-linear" width={16} />
-            {t('openCheckin')}
-          </Button>
+          <CardLinkHint
+            icon="solar:check-circle-linear"
+            label={t('openCheckin')}
+            tone={isDisabled ? 'disabled' : 'accent'}
+          />
         )}
         {status === CheckinStatus.FINISHED && (
-          <Button
-            variant="secondary"
-            className="w-full"
-            isDisabled={isDisabled}
-            onPress={openDetail}
-          >
-            <Icon icon="solar:eye-linear" width={16} />
-            {t('viewDetails')}
-          </Button>
+          <CardLinkHint
+            icon="solar:eye-linear"
+            label={t('viewDetails')}
+            tone={isDisabled ? 'disabled' : 'subtle'}
+          />
         )}
         {status === CheckinStatus.CANCELLED && (
           <Chip variant="secondary" className="w-full justify-center py-2">

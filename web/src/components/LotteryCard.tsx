@@ -1,15 +1,15 @@
 'use client';
 
-import { Card, Chip, Button, ProgressBar } from '@heroui/react';
+import { Card, Chip, ProgressBar } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCountdown } from '@/hooks/useNow';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
 import { lotteryStatusColor } from '@/lib/status-colors';
+import { CardLinkHint } from './CardLinkHint';
 import { UserAvatar } from './UserAvatar';
 
 interface LotteryWinner {
@@ -46,9 +46,7 @@ const LotteryCard = ({
   const t = useTranslations('lotteryCard');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
-  const router = useRouter();
   const href = `/dashboard/lottery/${id}`;
-  const openDetail = () => router.push(href);
   const hasCap = maxTickets > 0;
   const soldPercent = hasCap ? Math.round((ticketsSold / maxTickets) * 100) : 0;
 
@@ -61,7 +59,7 @@ const LotteryCard = ({
   const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
 
   return (
-    <Card className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
+    <Card className="group border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
       <Card.Header className="pb-2">
         <div className="flex justify-between items-start w-full">
           <div>
@@ -160,22 +158,13 @@ const LotteryCard = ({
 
       <Card.Footer className="pt-0">
         {isDrawing && (
-          <Button variant="primary" className="w-full" onPress={openDetail}>
-            <Icon icon="solar:play-circle-linear" width={16} />
-            {t('watchDraw')}
-          </Button>
+          <CardLinkHint icon="solar:play-circle-linear" label={t('watchDraw')} tone="accent" />
         )}
         {status === 'active' && !isDrawing && (
-          <Button variant="primary" className="w-full" onPress={openDetail}>
-            <Icon icon="solar:ticket-linear" width={16} />
-            {t('buyTicket')}
-          </Button>
+          <CardLinkHint icon="solar:ticket-linear" label={t('viewAndBuy')} tone="accent" />
         )}
         {status === 'ended' && (
-          <Button variant="secondary" className="w-full" onPress={openDetail}>
-            <Icon icon="solar:cup-star-linear" width={16} />
-            {t('viewWinners')}
-          </Button>
+          <CardLinkHint icon="solar:cup-star-linear" label={t('viewWinners')} tone="subtle" />
         )}
         {status === 'upcoming' && (
           <Chip color="warning" variant="secondary" className="w-full justify-center py-2">
