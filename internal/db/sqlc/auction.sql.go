@@ -219,12 +219,14 @@ func (q *Queries) GetAuctionForUpdate(ctx context.Context, arg GetAuctionForUpda
 }
 
 const insertBackpackItem = `-- name: InsertBackpackItem :one
-INSERT INTO backpack_items (owner_id, guild_id, item, source, source_id, note)
-VALUES ($1, $2, $3::jsonb, $4::text, $5, NULLIF($6::text, ''))
+INSERT INTO backpack_items (id, owner_id, guild_id, item, source, source_id, note)
+VALUES (COALESCE($1::uuid, uuid_generate_v4()), $2, $3, $4::jsonb,
+        $5::text, $6, NULLIF($7::text, ''))
 RETURNING id
 `
 
 type InsertBackpackItemParams struct {
+	ID       *uuid.UUID
 	OwnerID  uuid.UUID
 	GuildID  uuid.UUID
 	Item     []byte
@@ -235,6 +237,7 @@ type InsertBackpackItemParams struct {
 
 func (q *Queries) InsertBackpackItem(ctx context.Context, arg InsertBackpackItemParams) (uuid.UUID, error) {
 	row := q.db.QueryRow(ctx, insertBackpackItem,
+		arg.ID,
 		arg.OwnerID,
 		arg.GuildID,
 		arg.Item,

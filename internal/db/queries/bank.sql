@@ -121,8 +121,9 @@ WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL
 RETURNING item;
 
 -- name: InsertBankItem :one
-INSERT INTO bank_items (guild_id, donor_id, donor_name, item, note)
-VALUES ($1, $2, sqlc.arg(donor_name)::text, sqlc.arg(item)::jsonb, NULLIF(sqlc.arg(note)::text, ''))
+INSERT INTO bank_items (id, guild_id, donor_id, donor_name, item, note)
+VALUES (sqlc.arg(id), sqlc.arg(guild_id), sqlc.arg(donor_id), sqlc.arg(donor_name)::text, sqlc.arg(item)::jsonb,
+        NULLIF(sqlc.arg(note)::text, ''))
 RETURNING id, guild_id, donor_id, donor_name, item, quantity,
           COALESCE(note, '') AS note,
           donated_at;
@@ -207,8 +208,8 @@ DELETE FROM bank_items WHERE id = $1 AND guild_id = $2 AND locked_by_type IS NUL
 RETURNING item;
 
 -- name: InsertBackpackItemFromRequest :exec
-INSERT INTO backpack_items (owner_id, guild_id, item, source, source_id)
-VALUES ($1, $2, sqlc.arg(item)::jsonb, 'bank_item_request', sqlc.arg(source_id));
+INSERT INTO backpack_items (id, owner_id, guild_id, item, source, source_id)
+VALUES (sqlc.arg(id), sqlc.arg(owner_id), sqlc.arg(guild_id), sqlc.arg(item)::jsonb, 'bank_item_request', sqlc.arg(source_id));
 
 -- name: UpdateItemRequestStatus :one
 UPDATE item_requests SET

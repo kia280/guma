@@ -22,6 +22,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
+import { ItemHistoryModal } from '@/components/ItemHistoryModal';
 import { ItemLockChip } from '@/components/ItemLockChip';
 import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
 import { UserAvatar } from '@/components/UserAvatar';
@@ -112,6 +113,8 @@ export default function GuildBankPage() {
   const contributeModalState = useOverlayState();
   const requestItemModalState = useOverlayState();
   const requestFundsModalState = useOverlayState();
+  const historyModalState = useOverlayState();
+  const [historyItem, setHistoryItem] = React.useState<GuildBankItem | null>(null);
 
   const [contributeAmount, setContributeAmount] = React.useState('');
   const [contributeNote, setContributeNote] = React.useState('');
@@ -583,26 +586,45 @@ export default function GuildBankPage() {
                       </Link>
                     )}
                   </div>
-                  <Tooltip delay={0}>
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="ghost"
-                      className="text-hint shrink-0 max-sm:size-11"
-                      aria-label={item.requestedByMe ? t('alreadyRequested') : t('requestItem')}
-                      isDisabled={item.requestedByMe || Boolean(item.lock)}
-                      onPress={() => openItemRequest(item)}
-                    >
-                      <Icon icon={item.requestedByMe ? 'solar:check-circle-linear' : 'solar:hand-shake-linear'} width={16} />
-                    </Button>
-                    <Tooltip.Content>{item.requestedByMe ? t('alreadyRequested') : t('requestItem')}</Tooltip.Content>
-                  </Tooltip>
+                  <div className="flex shrink-0 flex-col gap-1">
+                    <Tooltip delay={0}>
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="ghost"
+                        className="text-hint shrink-0 max-sm:size-11"
+                        aria-label={t('viewHistory', { item: item.name })}
+                        onPress={() => {
+                          setHistoryItem(item);
+                          historyModalState.open();
+                        }}
+                      >
+                        <Icon icon="solar:history-linear" width={16} />
+                      </Button>
+                      <Tooltip.Content>{t('viewHistory', { item: item.name })}</Tooltip.Content>
+                    </Tooltip>
+                    <Tooltip delay={0}>
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="ghost"
+                        className="text-hint shrink-0 max-sm:size-11"
+                        aria-label={item.requestedByMe ? t('alreadyRequested') : t('requestItem')}
+                        isDisabled={item.requestedByMe || Boolean(item.lock)}
+                        onPress={() => openItemRequest(item)}
+                      >
+                        <Icon icon={item.requestedByMe ? 'solar:check-circle-linear' : 'solar:hand-shake-linear'} width={16} />
+                      </Button>
+                      <Tooltip.Content>{item.requestedByMe ? t('alreadyRequested') : t('requestItem')}</Tooltip.Content>
+                    </Tooltip>
+                  </div>
                 </Card.Content>
               </Card>
             ))}
           </div>
           )}
           </AsyncContent>
+          <ItemHistoryModal state={historyModalState} itemId={historyItem?.id ?? null} itemName={historyItem?.name ?? ''} />
         </Card.Content>
       </Card>
 

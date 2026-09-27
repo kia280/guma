@@ -233,11 +233,12 @@ func (q *Queries) GetUserDisplayName(ctx context.Context, id uuid.UUID) (string,
 }
 
 const insertBackpackItemFromRequest = `-- name: InsertBackpackItemFromRequest :exec
-INSERT INTO backpack_items (owner_id, guild_id, item, source, source_id)
-VALUES ($1, $2, $3::jsonb, 'bank_item_request', $4)
+INSERT INTO backpack_items (id, owner_id, guild_id, item, source, source_id)
+VALUES ($1, $2, $3, $4::jsonb, 'bank_item_request', $5)
 `
 
 type InsertBackpackItemFromRequestParams struct {
+	ID       uuid.UUID
 	OwnerID  uuid.UUID
 	GuildID  uuid.UUID
 	Item     []byte
@@ -246,6 +247,7 @@ type InsertBackpackItemFromRequestParams struct {
 
 func (q *Queries) InsertBackpackItemFromRequest(ctx context.Context, arg InsertBackpackItemFromRequestParams) error {
 	_, err := q.db.Exec(ctx, insertBackpackItemFromRequest,
+		arg.ID,
 		arg.OwnerID,
 		arg.GuildID,
 		arg.Item,
@@ -287,14 +289,16 @@ func (q *Queries) InsertBankContribution(ctx context.Context, arg InsertBankCont
 }
 
 const insertBankItem = `-- name: InsertBankItem :one
-INSERT INTO bank_items (guild_id, donor_id, donor_name, item, note)
-VALUES ($1, $2, $3::text, $4::jsonb, NULLIF($5::text, ''))
+INSERT INTO bank_items (id, guild_id, donor_id, donor_name, item, note)
+VALUES ($1, $2, $3, $4::text, $5::jsonb,
+        NULLIF($6::text, ''))
 RETURNING id, guild_id, donor_id, donor_name, item, quantity,
           COALESCE(note, '') AS note,
           donated_at
 `
 
 type InsertBankItemParams struct {
+	ID        uuid.UUID
 	GuildID   uuid.UUID
 	DonorID   uuid.UUID
 	DonorName string
@@ -315,6 +319,7 @@ type InsertBankItemRow struct {
 
 func (q *Queries) InsertBankItem(ctx context.Context, arg InsertBankItemParams) (InsertBankItemRow, error) {
 	row := q.db.QueryRow(ctx, insertBankItem,
+		arg.ID,
 		arg.GuildID,
 		arg.DonorID,
 		arg.DonorName,

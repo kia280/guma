@@ -397,7 +397,14 @@ func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerIDStr, guildIDS
 		return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
 	}
 
-	row, err := s.q.DeleteBackpackItem(ctx, db.DeleteBackpackItemParams{
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	row, err := qtx.DeleteBackpackItem(ctx, db.DeleteBackpackItemParams{
 		ID: itemID, OwnerID: ownerID, GuildID: guildID,
 	})
 	if err != nil {
@@ -405,6 +412,14 @@ func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerIDStr, guildIDS
 			return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
 		}
 		return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
+	}
+	if err := qtx.InsertItemEvent(ctx, db.InsertItemEventParams{
+		GuildID: guildID, ItemID: row.ID, Kind: "withdrawn", ActorID: &ownerID,
+	}); err != nil {
+		return nil, fmt.Errorf("%w: log withdrawal: %v", errs.ErrInternal, err)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	return toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt), nil
 }

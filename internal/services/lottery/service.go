@@ -548,7 +548,9 @@ func awardPrize(ctx context.Context, qtx *db.Queries, guildID, lotteryID, winner
 	if err != nil {
 		return err
 	}
+	itemID := prize.SourceItemID
 	if itemJSON == nil {
+		itemID = nil
 		item, ok := prizeItem(prize)
 		if !ok {
 			return nil
@@ -558,7 +560,7 @@ func awardPrize(ctx context.Context, qtx *db.Queries, guildID, lotteryID, winner
 		}
 	}
 	if _, err := qtx.InsertBackpackItem(ctx, db.InsertBackpackItemParams{
-		OwnerID: winnerID, GuildID: guildID, Item: itemJSON,
+		ID: itemID, OwnerID: winnerID, GuildID: guildID, Item: itemJSON,
 		Source: "lottery", SourceID: &lotteryID,
 	}); err != nil {
 		return fmt.Errorf("%w: deliver prize item: %v", errs.ErrInternal, err)

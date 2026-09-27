@@ -560,6 +560,24 @@ func (q *Queries) ListCheckins(ctx context.Context, arg ListCheckinsParams) ([]L
 	return items, nil
 }
 
+const logRetractedCheckinLoot = `-- name: LogRetractedCheckinLoot :exec
+INSERT INTO item_events (guild_id, item_id, kind, actor_id, source, reference_id)
+SELECT bi.guild_id, bi.id, 'retracted', $1::uuid, 'checkin', bi.checkin_id
+FROM bank_items bi
+WHERE bi.checkin_id = $2 AND bi.guild_id = $3 AND bi.locked_by_type IS NULL
+`
+
+type LogRetractedCheckinLootParams struct {
+	ActorID   uuid.UUID
+	CheckinID *uuid.UUID
+	GuildID   uuid.UUID
+}
+
+func (q *Queries) LogRetractedCheckinLoot(ctx context.Context, arg LogRetractedCheckinLootParams) error {
+	_, err := q.db.Exec(ctx, logRetractedCheckinLoot, arg.ActorID, arg.CheckinID, arg.GuildID)
+	return err
+}
+
 const rejectPendingRequestsForCheckinLoot = `-- name: RejectPendingRequestsForCheckinLoot :execrows
 UPDATE item_requests SET
     status = 'rejected',

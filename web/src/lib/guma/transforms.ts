@@ -19,7 +19,7 @@ import type {
   GuildContribution,
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
-import { ItemCategory, ItemRarity, type ItemLock } from '@/types/item';
+import { ItemCategory, ItemRarity, type ItemHistoryEvent, type ItemHistoryKind, type ItemLock } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
 import type { UserPreferences } from '@/types/preference';
@@ -927,4 +927,30 @@ export const toUserPreferences = (raw: ProtoUserPreferences): UserPreferences =>
     checkinReminders: raw.notifications?.checkin_reminders ?? false,
   },
   updatedAt: raw.updated_at ? ts(raw.updated_at) : undefined,
+});
+
+type ProtoItemHistoryEvent = {
+  id?: string;
+  kind?: string;
+  source?: string;
+  actor_id?: string;
+  actor_name?: string;
+  subject_id?: string;
+  subject_name?: string;
+  reference_id?: string;
+  reference_label?: string;
+  created_at?: string;
+};
+
+export const toItemHistoryEvent = (raw: ProtoItemHistoryEvent): ItemHistoryEvent => ({
+  id: raw.id ?? '',
+  kind: (raw.kind ?? 'received') as ItemHistoryKind,
+  source: raw.source ?? '',
+  actorId: raw.actor_id || undefined,
+  actorName: raw.actor_name ?? '',
+  subjectId: raw.subject_id || undefined,
+  subjectName: raw.subject_name ?? '',
+  referenceId: raw.reference_id || undefined,
+  referenceLabel: raw.reference_label ?? '',
+  createdAt: ts(raw.created_at),
 });

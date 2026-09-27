@@ -2619,6 +2619,42 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/items/{itemId}/history": {
+      "get": {
+        "operationId": "BankService_GetItemHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetItemHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/join": {
       "post": {
         "operationId": "GuildService_JoinGuildById",
@@ -5575,6 +5611,18 @@
         }
       }
     },
+    "v1GetItemHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ItemHistoryEvent"
+          }
+        }
+      }
+    },
     "v1GetLotteryResponse": {
       "type": "object",
       "properties": {
@@ -5935,6 +5983,42 @@
         }
       },
       "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, check-in loot, lotteries).\n\nItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC\nItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC"
+    },
+    "v1ItemHistoryEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "actorId": {
+          "type": "string"
+        },
+        "actorName": {
+          "type": "string"
+        },
+        "subjectId": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "referenceId": {
+          "type": "string"
+        },
+        "referenceLabel": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     },
     "v1ItemLock": {
       "type": "object",

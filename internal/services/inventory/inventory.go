@@ -89,6 +89,13 @@ func Lock(ctx context.Context, qtx *db.Queries, guildID, actorID uuid.UUID, ref 
 		return nil, nil
 	}
 
+	if err := qtx.InsertItemEvent(ctx, db.InsertItemEventParams{
+		GuildID: guildID, ItemID: itemID, Kind: holder.Type + "_listed", ActorID: &actorID,
+		Source: holder.Type, ReferenceID: &holder.ID,
+	}); err != nil {
+		return nil, fmt.Errorf("%w: log listing: %v", errs.ErrInternal, err)
+	}
+
 	var item models.Item
 	if err := json.Unmarshal(rawItem, &item); err != nil {
 		return nil, fmt.Errorf("%w: decode item: %v", errs.ErrInternal, err)
@@ -102,19 +109,36 @@ func Release(ctx context.Context, qtx *db.Queries, sourceType string, itemID *uu
 	}
 	switch sourceType {
 	case SourceBackpack:
-		if _, err := qtx.ReleaseBackpackItem(ctx, db.ReleaseBackpackItemParams{ID: *itemID, HolderType: holder.Type, HolderID: holder.ID}); err != nil {
+		rows, err := qtx.ReleaseBackpackItem(ctx, db.ReleaseBackpackItemParams{ID: *itemID, HolderType: holder.Type, HolderID: holder.ID})
+		if err != nil {
 			return fmt.Errorf("%w: release backpack item: %v", errs.ErrInternal, err)
 		}
+		for _, guildID := range rows {
+			if err := logEvent(ctx, qtx, guildID, *itemID, "returned", SourceBackpack, nil); err != nil {
+				return err
+			}
+		}
 	case SourceBank:
-		deleted, err := qtx.DeleteReleasedCancelledLoot(ctx, db.DeleteReleasedCancelledLootParams{ID: *itemID, HolderType: holder.Type, HolderID: holder.ID})
+		dropped, err := qtx.DeleteReleasedCancelledLoot(ctx, db.DeleteReleasedCancelledLootParams{ID: *itemID, HolderType: holder.Type, HolderID: holder.ID})
 		if err != nil {
 			return fmt.Errorf("%w: drop cancelled loot: %v", errs.ErrInternal, err)
 		}
-		if deleted > 0 {
+		for _, r := range dropped {
+			if err := logEvent(ctx, qtx, r.GuildID, *itemID, "retracted", "checkin", r.CheckinID); err != nil {
+				return err
+			}
+		}
+		if len(dropped) > 0 {
 			return nil
 		}
-		if _, err := qtx.ReleaseBankItem(ctx, db.ReleaseBankItemParams{ID: *itemID, HolderType: holder.Type, HolderID: holder.ID}); err != nil {
+		rows, err := qtx.ReleaseBankItem(ctx, db.ReleaseBankItemParams{ID: *itemID, HolderType: holder.Type, HolderID: holder.ID})
+		if err != nil {
 			return fmt.Errorf("%w: release bank item: %v", errs.ErrInternal, err)
+		}
+		for _, guildID := range rows {
+			if err := logEvent(ctx, qtx, guildID, *itemID, "returned", SourceBank, nil); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -143,6 +167,15 @@ func Consume(ctx context.Context, qtx *db.Queries, sourceType string, itemID *uu
 		return nil, fmt.Errorf("%w: consume %s item: %v", errs.ErrInternal, sourceType, err)
 	}
 	return rawItem, nil
+}
+
+func logEvent(ctx context.Context, qtx *db.Queries, guildID, itemID uuid.UUID, kind, source string, referenceID *uuid.UUID) error {
+	if err := qtx.InsertItemEvent(ctx, db.InsertItemEventParams{
+		GuildID: guildID, ItemID: itemID, Kind: kind, Source: source, ReferenceID: referenceID,
+	}); err != nil {
+		return fmt.Errorf("%w: log item event: %v", errs.ErrInternal, err)
+	}
+	return nil
 }
 
 func lockError(err error, what string, exists func() (bool, error)) error {

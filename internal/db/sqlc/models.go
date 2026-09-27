@@ -231,6 +231,18 @@ type Item struct {
 	Rarity      pgtype.Text
 }
 
+type ItemEvent struct {
+	Seq         int64
+	GuildID     uuid.UUID
+	ItemID      uuid.UUID
+	Kind        string
+	ActorID     *uuid.UUID
+	SubjectID   *uuid.UUID
+	Source      string
+	ReferenceID *uuid.UUID
+	CreatedAt   time.Time
+}
+
 type ItemRequest struct {
 	ID            uuid.UUID
 	GuildID       uuid.UUID

@@ -100,11 +100,12 @@ func (s *Service) deliverToWinner(ctx context.Context, qtx *db.Queries, a db.Loc
 	if err != nil {
 		return err
 	}
+	itemID := a.SourceItemID
 	if item == nil {
-		item = a.Item
+		item, itemID = a.Item, nil
 	}
 	if _, err := qtx.InsertBackpackItem(ctx, db.InsertBackpackItemParams{
-		OwnerID: winnerID, GuildID: a.GuildID, Item: item,
+		ID: itemID, OwnerID: winnerID, GuildID: a.GuildID, Item: item,
 		Source: "auction", SourceID: &auctionID,
 	}); err != nil {
 		return fmt.Errorf("deliver item to winner: %w", err)

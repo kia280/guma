@@ -42,6 +42,7 @@ import type {
   CreateEventData,
   UpdateEventData,
 } from '@/types/guild-events';
+import type { ItemHistoryEvent } from '@/types/item';
 import type {
   Lottery,
   LotteryTicket,
@@ -163,6 +164,7 @@ export interface ApiClient {
     note?: string,
   ): Promise<ItemRequest>;
   listItemRequests(guildId: string, status?: RequestStatus): Promise<ItemRequest[]>;
+  getItemHistory(guildId: string, itemId: string): Promise<ItemHistoryEvent[]>;
 
   // ── Event / Calendar ──
   listEvents(guildId: string): Promise<GuildEvent[]>;

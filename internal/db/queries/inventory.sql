@@ -25,24 +25,27 @@ SELECT EXISTS (
 -- name: BankItemExists :one
 SELECT EXISTS (SELECT 1 FROM bank_items WHERE bank_items.id = $1 AND bank_items.guild_id = $2);
 
--- name: ReleaseBackpackItem :execrows
+-- name: ReleaseBackpackItem :many
 UPDATE backpack_items SET locked_by_type = NULL, locked_by_id = NULL, locked_at = NULL
 WHERE backpack_items.id = sqlc.arg(id)
   AND backpack_items.locked_by_type = sqlc.arg(holder_type)::text
-  AND backpack_items.locked_by_id = sqlc.arg(holder_id)::uuid;
+  AND backpack_items.locked_by_id = sqlc.arg(holder_id)::uuid
+RETURNING backpack_items.guild_id;
 
--- name: ReleaseBankItem :execrows
+-- name: ReleaseBankItem :many
 UPDATE bank_items SET locked_by_type = NULL, locked_by_id = NULL, locked_at = NULL
 WHERE bank_items.id = sqlc.arg(id)
   AND bank_items.locked_by_type = sqlc.arg(holder_type)::text
-  AND bank_items.locked_by_id = sqlc.arg(holder_id)::uuid;
+  AND bank_items.locked_by_id = sqlc.arg(holder_id)::uuid
+RETURNING bank_items.guild_id;
 
--- name: DeleteReleasedCancelledLoot :execrows
+-- name: DeleteReleasedCancelledLoot :many
 DELETE FROM bank_items
 WHERE bank_items.id = sqlc.arg(id)
   AND bank_items.locked_by_type = sqlc.arg(holder_type)::text
   AND bank_items.locked_by_id = sqlc.arg(holder_id)::uuid
-  AND bank_items.checkin_id IN (SELECT c.id FROM checkins c WHERE c.cancelled_at IS NOT NULL);
+  AND bank_items.checkin_id IN (SELECT c.id FROM checkins c WHERE c.cancelled_at IS NOT NULL)
+RETURNING bank_items.guild_id, bank_items.checkin_id;
 
 -- name: ConsumeBackpackItem :one
 DELETE FROM backpack_items

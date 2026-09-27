@@ -556,7 +556,7 @@ func (s *Service) DonateItem(ctx context.Context, guildIDStr, userIDStr, backpac
 	}
 
 	r, err := qtx.InsertBankItem(ctx, db.InsertBankItemParams{
-		GuildID: guildID, DonorID: userID, DonorName: donorName, Item: itemJSON, Note: note,
+		ID: backpackItemID, GuildID: guildID, DonorID: userID, DonorName: donorName, Item: itemJSON, Note: note,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: insert bank item: %v", errs.ErrInternal, err)
@@ -712,6 +712,14 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 		return nil, err
 	}
 
+	r, err := qtx.UpdateItemRequestStatus(ctx, db.UpdateItemRequestStatusParams{
+		Status: status, ReviewerID: &reviewerID, ReviewNote: note,
+		ID: requestID, GuildID: guildID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: update item request: %v", errs.ErrInternal, err)
+	}
+
 	if status == StatusApproved {
 		if pending.BankItemID == nil {
 			return nil, fmt.Errorf("%w: bank item is no longer available", errs.ErrFailedPrecondition)
@@ -734,18 +742,10 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 		}
 
 		if err := qtx.InsertBackpackItemFromRequest(ctx, db.InsertBackpackItemFromRequestParams{
-			OwnerID: pending.RequesterID, GuildID: guildID, Item: itemJSON, SourceID: &requestID,
+			ID: *pending.BankItemID, OwnerID: pending.RequesterID, GuildID: guildID, Item: itemJSON, SourceID: &requestID,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: add to backpack: %v", errs.ErrInternal, err)
 		}
-	}
-
-	r, err := qtx.UpdateItemRequestStatus(ctx, db.UpdateItemRequestStatusParams{
-		Status: status, ReviewerID: &reviewerID, ReviewNote: note,
-		ID: requestID, GuildID: guildID,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("%w: update item request: %v", errs.ErrInternal, err)
 	}
 
 	if err := pgtx.Commit(ctx); err != nil {

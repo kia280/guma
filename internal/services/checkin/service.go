@@ -383,6 +383,11 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, checkinIDStr, userIDSt
 	}); err != nil {
 		return nil, fmt.Errorf("%w: reject loot requests: %v", errs.ErrInternal, err)
 	}
+	if err := qtx.LogRetractedCheckinLoot(ctx, db.LogRetractedCheckinLootParams{
+		ActorID: userID, CheckinID: &checkinID, GuildID: guildID,
+	}); err != nil {
+		return nil, fmt.Errorf("%w: log retracted loot: %v", errs.ErrInternal, err)
+	}
 	retracted, err := qtx.RetractCheckinLoot(ctx, db.RetractCheckinLootParams{CheckinID: &checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: retract loot: %v", errs.ErrInternal, err)
@@ -547,7 +552,7 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, checkinIDStr, item
 		return "", fmt.Errorf("%w: take loot item: %v", errs.ErrInternal, err)
 	}
 	backpackItemID, err := qtx.InsertBackpackItem(ctx, db.InsertBackpackItemParams{
-		OwnerID: recipientID, GuildID: guildID, Item: itemJSON, Source: "checkin", SourceID: &checkinID,
+		ID: &itemID, OwnerID: recipientID, GuildID: guildID, Item: itemJSON, Source: "checkin", SourceID: &checkinID,
 	})
 	if err != nil {
 		return "", fmt.Errorf("%w: deliver loot: %v", errs.ErrInternal, err)

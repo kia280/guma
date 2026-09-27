@@ -374,3 +374,34 @@ func itemRequestToProto(ir *banksvc.ItemRequest) *gumav1.ItemRequest {
 	}
 	return proto
 }
+
+func (h *BankHandler) GetItemHistory(ctx context.Context, req *gumav1.GetItemHistoryRequest) (*gumav1.GetItemHistoryResponse, error) {
+	if req.GuildId == "" || req.ItemId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and item_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	events, err := h.svc.GetItemHistory(ctx, req.GuildId, userID, req.ItemId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	protos := make([]*gumav1.ItemHistoryEvent, len(events))
+	for i, e := range events {
+		protos[i] = &gumav1.ItemHistoryEvent{
+			Id:             e.ID,
+			Kind:           e.Kind,
+			Source:         e.Source,
+			ActorId:        e.ActorID,
+			ActorName:      e.ActorName,
+			SubjectId:      e.SubjectID,
+			SubjectName:    e.SubjectName,
+			ReferenceId:    e.ReferenceID,
+			ReferenceLabel: e.ReferenceLabel,
+			CreatedAt:      timestamppb.New(e.CreatedAt),
+		}
+	}
+	return &gumav1.GetItemHistoryResponse{Events: protos}, nil
+}

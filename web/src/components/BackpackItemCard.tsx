@@ -41,6 +41,7 @@ interface BackpackItemCardProps {
   onDonate?: (item: BackpackItem) => void;
   onTransfer?: (item: BackpackItem) => void;
   onWithdraw?: (item: BackpackItem) => void;
+  onShowHistory?: (item: BackpackItem) => void;
   isHighlighted?: boolean;
 }
 
@@ -51,6 +52,7 @@ const BackpackItemCard = ({
   onDonate,
   onTransfer,
   onWithdraw,
+  onShowHistory,
   isHighlighted = false,
 }: BackpackItemCardProps) => {
   const t = useTranslations('backpackItemCard');
@@ -112,6 +114,7 @@ const BackpackItemCard = ({
                 if (key === 'donate') onDonate?.(item);
                 if (key === 'transfer') onTransfer?.(item);
                 if (key === 'withdraw') onWithdraw?.(item);
+                if (key === 'history') onShowHistory?.(item);
               }}
             >
               <Dropdown.Item id="auction" textValue={t('putToAuction')}>
@@ -134,6 +137,12 @@ const BackpackItemCard = ({
                 <Dropdown.Item id="transfer" textValue={t('transfer')}>
                   <Icon icon="solar:arrow-right-linear" width={16} />
                   <span>{t('transfer')}</span>
+                </Dropdown.Item>
+              )}
+              {onShowHistory && (
+                <Dropdown.Item id="history" textValue={t('history')}>
+                  <Icon icon="solar:history-linear" width={16} />
+                  <span>{t('history')}</span>
                 </Dropdown.Item>
               )}
               <Dropdown.Item id="withdraw" variant="danger" textValue={t('withdraw')}>

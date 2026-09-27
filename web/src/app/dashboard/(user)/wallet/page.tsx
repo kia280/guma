@@ -30,6 +30,7 @@ import { BackpackItemMoveModal, type BackpackMoveMode } from '@/components/Backp
 import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal, type LotteryPrizeItem } from '@/components/CreateLotteryModal';
+import { ItemHistoryModal } from '@/components/ItemHistoryModal';
 import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -185,6 +186,8 @@ export default function WalletPage() {
   const auctionModalState = useOverlayState();
   const lotteryModalState = useOverlayState();
   const moveModalState = useOverlayState();
+  const historyModalState = useOverlayState();
+  const [historyItem, setHistoryItem] = React.useState<BackpackItem | null>(null);
   const [moveMode, setMoveMode] = React.useState<BackpackMoveMode>('donate');
   const [moveItem, setMoveItem] = React.useState<BackpackItem | null>(null);
   const [auctionItem, setAuctionItem] = React.useState<AuctionDraftItem | null>(null);
@@ -723,6 +726,10 @@ export default function WalletPage() {
                 onDonate={openItemMove('donate')}
                 onTransfer={openItemMove('transfer')}
                 onWithdraw={openItemWithdraw}
+                onShowHistory={i => {
+                  setHistoryItem(i);
+                  historyModalState.open();
+                }}
                 isHighlighted={Boolean(highlightedSourceId) && item.sourceId === highlightedSourceId}
               />
             ))}
@@ -738,6 +745,7 @@ export default function WalletPage() {
             members={mockUsers}
             onMoved={refetchBackpack}
           />
+          <ItemHistoryModal state={historyModalState} itemId={historyItem?.id ?? null} itemName={historyItem?.item.name ?? ''} />
         </Card.Content>
       </Card>
 

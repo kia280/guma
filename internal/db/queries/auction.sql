@@ -96,8 +96,9 @@ UPDATE auctions SET status = 'ENDED', settled_at = NOW(), updated_at = NOW()
 WHERE id = $1;
 
 -- name: InsertBackpackItem :one
-INSERT INTO backpack_items (owner_id, guild_id, item, source, source_id, note)
-VALUES ($1, $2, sqlc.arg(item)::jsonb, sqlc.arg(source)::text, sqlc.arg(source_id), NULLIF(sqlc.arg(note)::text, ''))
+INSERT INTO backpack_items (id, owner_id, guild_id, item, source, source_id, note)
+VALUES (COALESCE(sqlc.narg(id)::uuid, uuid_generate_v4()), sqlc.arg(owner_id), sqlc.arg(guild_id), sqlc.arg(item)::jsonb,
+        sqlc.arg(source)::text, sqlc.arg(source_id), NULLIF(sqlc.arg(note)::text, ''))
 RETURNING id;
 
 -- name: InsertBankProceeds :exec

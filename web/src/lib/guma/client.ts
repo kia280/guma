@@ -9,7 +9,7 @@ import type { LootEntry } from '@/types/checkin';
 import type { ItemSourceRef } from '@/types/item';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -500,6 +500,10 @@ export const gumaApiClient: ApiClient = {
       params: { status, page_size: 100 },
     });
     return (data.requests ?? []).map(toItemRequest);
+  },
+  getItemHistory: async (guildId, itemId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/items/${itemId}/history`);
+    return (data.events ?? []).map(toItemHistoryEvent);
   },
 
   // ── Event / Calendar ──

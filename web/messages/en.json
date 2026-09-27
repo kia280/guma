@@ -359,7 +359,8 @@
       "bank": "Guild bank request",
       "auction": "Auction",
       "admin": "Admin"
-    }
+    },
+    "history": "History"
   },
   "calendarPage": {
     "loadingEvents": "Loading events...",
@@ -673,7 +674,8 @@
     "requestedByMe": "You requested this",
     "pendingRequestCount": "{count, plural, one {# pending request} other {# pending requests}}",
     "otherPendingRequests": "{count, plural, one {# other member also asked for it} other {# other members also asked for it}}",
-    "alreadyRequested": "You already requested this item"
+    "alreadyRequested": "You already requested this item",
+    "viewHistory": "View history of {item}"
   },
   "notificationsCard": {
     "notifications": "Notifications",
@@ -1424,5 +1426,43 @@
     "addIncrementLabel": "Raise bid by {amount}",
     "balanceAfterBid": "Available after this bid",
     "raiseOwnBid": "You already hold the top bid, so only the extra {amount} is held."
+  },
+  "itemHistory": {
+    "title": "History — {item}",
+    "timeline": "Item history",
+    "loading": "Loading history",
+    "loadFailed": "Could not load this item's history.",
+    "retry": "Retry",
+    "empty": "No history has been recorded for this item yet.",
+    "close": "Close",
+    "someone": "A member",
+    "kinds": {
+      "looted": "Dropped at roll call {label}",
+      "donated": "{actor} donated it to the guild bank",
+      "requested": "{actor} requested it from the guild bank",
+      "request_approved": "{actor} approved {subject}'s request",
+      "request_rejected": "{actor} declined {subject}'s request",
+      "auction_listed": "{actor} put it up for auction",
+      "lottery_listed": "{actor} offered it as a prize in {label}",
+      "withdrawn": "{actor} withdrew it",
+      "retracted": "Removed when roll call {label} was cancelled"
+    },
+    "received": {
+      "auction": "{actor} won it at auction",
+      "lottery": "{actor} won it in {label}",
+      "transfer": "{subject} gave it to {actor}",
+      "checkin": "{actor} received it as roll call loot",
+      "bank": "{actor} received it from the guild bank",
+      "other": "{actor} received it"
+    },
+    "returned": {
+      "bank": "Unlocked and back in the guild bank",
+      "backpack": "Unlocked and back in the backpack"
+    },
+    "view": {
+      "auction": "View auction",
+      "lottery": "View lottery",
+      "checkin": "View roll call"
+    }
   }
 }

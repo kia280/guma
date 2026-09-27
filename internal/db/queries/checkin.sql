@@ -152,6 +152,12 @@ WHERE item_requests.guild_id = sqlc.arg(guild_id)
       WHERE bi.checkin_id = sqlc.arg(checkin_id) AND bi.guild_id = sqlc.arg(guild_id)
   );
 
+-- name: LogRetractedCheckinLoot :exec
+INSERT INTO item_events (guild_id, item_id, kind, actor_id, source, reference_id)
+SELECT bi.guild_id, bi.id, 'retracted', sqlc.arg(actor_id)::uuid, 'checkin', bi.checkin_id
+FROM bank_items bi
+WHERE bi.checkin_id = sqlc.arg(checkin_id) AND bi.guild_id = sqlc.arg(guild_id) AND bi.locked_by_type IS NULL;
+
 -- name: RetractCheckinLoot :execrows
 DELETE FROM bank_items
 WHERE checkin_id = sqlc.arg(checkin_id) AND guild_id = sqlc.arg(guild_id) AND locked_by_type IS NULL;

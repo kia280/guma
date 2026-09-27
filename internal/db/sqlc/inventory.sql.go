@@ -89,12 +89,13 @@ func (q *Queries) ConsumeBankItem(ctx context.Context, arg ConsumeBankItemParams
 	return item, err
 }
 
-const deleteReleasedCancelledLoot = `-- name: DeleteReleasedCancelledLoot :execrows
+const deleteReleasedCancelledLoot = `-- name: DeleteReleasedCancelledLoot :many
 DELETE FROM bank_items
 WHERE bank_items.id = $1
   AND bank_items.locked_by_type = $2::text
   AND bank_items.locked_by_id = $3::uuid
   AND bank_items.checkin_id IN (SELECT c.id FROM checkins c WHERE c.cancelled_at IS NOT NULL)
+RETURNING bank_items.guild_id, bank_items.checkin_id
 `
 
 type DeleteReleasedCancelledLootParams struct {
@@ -103,12 +104,29 @@ type DeleteReleasedCancelledLootParams struct {
 	HolderID   uuid.UUID
 }
 
-func (q *Queries) DeleteReleasedCancelledLoot(ctx context.Context, arg DeleteReleasedCancelledLootParams) (int64, error) {
-	result, err := q.db.Exec(ctx, deleteReleasedCancelledLoot, arg.ID, arg.HolderType, arg.HolderID)
+type DeleteReleasedCancelledLootRow struct {
+	GuildID   uuid.UUID
+	CheckinID *uuid.UUID
+}
+
+func (q *Queries) DeleteReleasedCancelledLoot(ctx context.Context, arg DeleteReleasedCancelledLootParams) ([]DeleteReleasedCancelledLootRow, error) {
+	rows, err := q.db.Query(ctx, deleteReleasedCancelledLoot, arg.ID, arg.HolderType, arg.HolderID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected(), nil
+	defer rows.Close()
+	items := []DeleteReleasedCancelledLootRow{}
+	for rows.Next() {
+		var i DeleteReleasedCancelledLootRow
+		if err := rows.Scan(&i.GuildID, &i.CheckinID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const lockBackpackItem = `-- name: LockBackpackItem :one
@@ -200,11 +218,12 @@ func (q *Queries) RejectPendingRequestsForBankItem(ctx context.Context, arg Reje
 	return result.RowsAffected(), nil
 }
 
-const releaseBackpackItem = `-- name: ReleaseBackpackItem :execrows
+const releaseBackpackItem = `-- name: ReleaseBackpackItem :many
 UPDATE backpack_items SET locked_by_type = NULL, locked_by_id = NULL, locked_at = NULL
 WHERE backpack_items.id = $1
   AND backpack_items.locked_by_type = $2::text
   AND backpack_items.locked_by_id = $3::uuid
+RETURNING backpack_items.guild_id
 `
 
 type ReleaseBackpackItemParams struct {
@@ -213,19 +232,32 @@ type ReleaseBackpackItemParams struct {
 	HolderID   uuid.UUID
 }
 
-func (q *Queries) ReleaseBackpackItem(ctx context.Context, arg ReleaseBackpackItemParams) (int64, error) {
-	result, err := q.db.Exec(ctx, releaseBackpackItem, arg.ID, arg.HolderType, arg.HolderID)
+func (q *Queries) ReleaseBackpackItem(ctx context.Context, arg ReleaseBackpackItemParams) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, releaseBackpackItem, arg.ID, arg.HolderType, arg.HolderID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected(), nil
+	defer rows.Close()
+	items := []uuid.UUID{}
+	for rows.Next() {
+		var guild_id uuid.UUID
+		if err := rows.Scan(&guild_id); err != nil {
+			return nil, err
+		}
+		items = append(items, guild_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-const releaseBankItem = `-- name: ReleaseBankItem :execrows
+const releaseBankItem = `-- name: ReleaseBankItem :many
 UPDATE bank_items SET locked_by_type = NULL, locked_by_id = NULL, locked_at = NULL
 WHERE bank_items.id = $1
   AND bank_items.locked_by_type = $2::text
   AND bank_items.locked_by_id = $3::uuid
+RETURNING bank_items.guild_id
 `
 
 type ReleaseBankItemParams struct {
@@ -234,10 +266,22 @@ type ReleaseBankItemParams struct {
 	HolderID   uuid.UUID
 }
 
-func (q *Queries) ReleaseBankItem(ctx context.Context, arg ReleaseBankItemParams) (int64, error) {
-	result, err := q.db.Exec(ctx, releaseBankItem, arg.ID, arg.HolderType, arg.HolderID)
+func (q *Queries) ReleaseBankItem(ctx context.Context, arg ReleaseBankItemParams) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, releaseBankItem, arg.ID, arg.HolderType, arg.HolderID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return result.RowsAffected(), nil
+	defer rows.Close()
+	items := []uuid.UUID{}
+	for rows.Next() {
+		var guild_id uuid.UUID
+		if err := rows.Scan(&guild_id); err != nil {
+			return nil, err
+		}
+		items = append(items, guild_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

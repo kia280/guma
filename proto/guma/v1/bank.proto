@@ -86,6 +86,12 @@ service BankService {
       get: "/v1/guilds/{guild_id}/bank/item-requests"
     };
   }
+
+  rpc GetItemHistory(GetItemHistoryRequest) returns (GetItemHistoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/items/{item_id}/history"
+    };
+  }
 }
 
 // Request/Response messages
@@ -296,4 +302,26 @@ message ItemRequest {
   google.protobuf.Timestamp reviewed_at = 11;
   Item item = 12;
   string requester_avatar_url = 13;
+}
+
+message GetItemHistoryRequest {
+  string guild_id = 1;
+  string item_id = 2;
+}
+
+message ItemHistoryEvent {
+  string id = 1;
+  string kind = 2;
+  string source = 3;
+  string actor_id = 4;
+  string actor_name = 5;
+  string subject_id = 6;
+  string subject_name = 7;
+  string reference_id = 8;
+  string reference_label = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message GetItemHistoryResponse {
+  repeated ItemHistoryEvent events = 1;
 }

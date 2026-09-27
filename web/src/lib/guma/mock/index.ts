@@ -25,7 +25,7 @@ import type {
   ItemRequest,
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
-import { ItemCategory, ItemRarity, type ItemLock, type ItemSourceRef } from '@/types/item';
+import { ItemCategory, ItemRarity, type ItemHistoryEvent, type ItemLock, type ItemSourceRef } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
 import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from '@/types/preference';
@@ -729,6 +729,35 @@ const baseMockApiClient: ApiClient = {
   },
   listItemRequests: async (_guildId, status): Promise<ItemRequest[]> =>
     store.itemRequests.filter(r => !status || r.status === status),
+  getItemHistory: async (_guildId, itemId): Promise<ItemHistoryEvent[]> => {
+    const backpackItem = mockData.mockBackpackItems.find(i => i.id === itemId);
+    const bankItem = mockData.mockGuildItems.find(i => i.id === itemId);
+    const events: ItemHistoryEvent[] = [];
+    const event = (kind: ItemHistoryEvent['kind'], createdAt: string, extra: Partial<ItemHistoryEvent> = {}) =>
+      events.push({ id: `${itemId}-${events.length}`, kind, source: '', actorName: '', subjectName: '', referenceLabel: '', createdAt, ...extra });
+    if (bankItem) {
+      if (bankItem.checkinId) {
+        event('looted', bankItem.donatedAt, { source: 'checkin', actorName: bankItem.donatedBy, referenceId: bankItem.checkinId, referenceLabel: bankItem.checkinTitle ?? '' });
+      } else {
+        event('donated', bankItem.donatedAt, { actorName: bankItem.donatedBy });
+      }
+      store.itemRequests
+        .filter(r => r.bankItemId === itemId)
+        .forEach(r => event('requested', r.createdAt, { actorName: r.requesterName, referenceId: r.id }));
+    }
+    if (backpackItem) {
+      const earlier = new Date(new Date(backpackItem.acquiredAt).getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
+      event('looted', earlier, { source: 'checkin', actorName: 'Night吃貨', referenceLabel: 'Boss raid' });
+      event('received', backpackItem.acquiredAt, {
+        source: backpackItem.acquiredFrom,
+        actorName: currentUser.username,
+        referenceId: backpackItem.sourceId,
+        referenceLabel: backpackItem.sourceLabel ?? '',
+        subjectName: backpackItem.acquiredFrom === 'transfer' ? backpackItem.sourceLabel ?? '' : '',
+      });
+    }
+    return events;
+  },
 
   // ── Events ──
   listEvents: async () => store.events,

@@ -359,7 +359,8 @@
       "bank": "公會銀行申請",
       "auction": "拍賣",
       "admin": "管理員"
-    }
+    },
+    "history": "歷程"
   },
   "calendarPage": {
     "loadingEvents": "載入活動中...",
@@ -673,7 +674,8 @@
     "requestedByMe": "你已申請",
     "pendingRequestCount": "{count} 筆待審申請",
     "otherPendingRequests": "另有 {count} 位成員也在申請",
-    "alreadyRequested": "你已申請過這個物品"
+    "alreadyRequested": "你已申請過這個物品",
+    "viewHistory": "查看 {item} 的歷程"
   },
   "notificationsCard": {
     "notifications": "通知",
@@ -1424,5 +1426,43 @@
     "addIncrementLabel": "出價再加 {amount}",
     "balanceAfterBid": "出價後可用餘額",
     "raiseOwnBid": "你已是最高出價者，只會再凍結差額 {amount}。"
+  },
+  "itemHistory": {
+    "title": "歷程 — {item}",
+    "timeline": "物品歷程",
+    "loading": "正在載入歷程",
+    "loadFailed": "無法載入此物品的歷程。",
+    "retry": "重試",
+    "empty": "此物品尚無歷程紀錄。",
+    "close": "關閉",
+    "someone": "某位成員",
+    "kinds": {
+      "looted": "在點名「{label}」中掉落",
+      "donated": "{actor} 捐給了公會銀行",
+      "requested": "{actor} 向公會銀行申請",
+      "request_approved": "{actor} 核准了 {subject} 的申請",
+      "request_rejected": "{actor} 駁回了 {subject} 的申請",
+      "auction_listed": "{actor} 放入競拍",
+      "lottery_listed": "{actor} 作為「{label}」的抽獎獎品",
+      "withdrawn": "{actor} 已提取",
+      "retracted": "點名「{label}」取消後移除"
+    },
+    "received": {
+      "auction": "{actor} 在競拍中得標",
+      "lottery": "{actor} 在「{label}」中抽中",
+      "transfer": "{subject} 轉讓給 {actor}",
+      "checkin": "{actor} 獲得點名戰利品",
+      "bank": "{actor} 從公會銀行取得",
+      "other": "{actor} 取得"
+    },
+    "returned": {
+      "bank": "解除鎖定，回到公會銀行",
+      "backpack": "解除鎖定，回到背包"
+    },
+    "view": {
+      "auction": "查看競拍",
+      "lottery": "查看抽獎",
+      "checkin": "查看點名"
+    }
   }
 }
