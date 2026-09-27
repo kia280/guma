@@ -158,7 +158,7 @@ const AuctionPage = () => {
               <Select
                 className="lg:max-w-xs"
                 value={selectedCategory}
-                onChange={value => setSelectedCategory(String(value) || 'all')}
+                onChange={value => setSelectedCategory(value == null ? 'all' : String(value))}
               >
                 <Label className="sr-only">{t('allCategories')}</Label>
                 <Select.Trigger>
@@ -180,7 +180,7 @@ const AuctionPage = () => {
               <Select
                 className="lg:max-w-xs"
                 value={selectedRarity}
-                onChange={value => setSelectedRarity(String(value) || 'all')}
+                onChange={value => setSelectedRarity(value == null ? 'all' : String(value))}
               >
                 <Label className="sr-only">{t('allRarities')}</Label>
                 <Select.Trigger>
