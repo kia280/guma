@@ -41,23 +41,26 @@ type TopContributor struct {
 }
 
 const (
-	ContributionKindGold        = "gold"
-	ContributionKindCheckinLoot = "checkin_loot"
+	ContributionKindGold            = "gold"
+	ContributionKindCheckinLoot     = "checkin_loot"
+	ContributionKindAuctionProceeds = "auction_proceeds"
 )
 
 // BankContribution is the domain model for a bank contribution.
 type BankContribution struct {
-	ID        string
-	GuildID   string
-	UserID    string
-	Username  string
-	AvatarURL string
-	Amount    int64
-	Note      string
-	CreatedAt time.Time
-	Kind      string
-	Items     []models.Item
-	CheckinID string
+	ID            string
+	GuildID       string
+	UserID        string
+	Username      string
+	AvatarURL     string
+	Amount        int64
+	Note          string
+	CreatedAt     time.Time
+	Kind          string
+	Items         []models.Item
+	CheckinID     string
+	ReferenceType string
+	ReferenceID   string
 }
 
 // FundRequest is the domain model for a fund request.
@@ -488,7 +491,10 @@ func (s *Service) ListContributions(ctx context.Context, p ListContributionsPara
 		c := &BankContribution{
 			ID: r.ID.String(), GuildID: r.GuildID.String(), UserID: r.UserID.String(),
 			Username: r.Username, AvatarURL: r.AvatarUrl, Amount: r.Amount, Note: r.Note, CreatedAt: r.CreatedAt,
-			Kind: r.Kind, Items: []models.Item{},
+			Kind: r.Kind, Items: []models.Item{}, ReferenceType: r.ReferenceType,
+		}
+		if r.ReferenceID != nil {
+			c.ReferenceID = r.ReferenceID.String()
 		}
 		if len(r.Items) > 0 {
 			_ = json.Unmarshal(r.Items, &c.Items)

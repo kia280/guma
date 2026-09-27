@@ -246,6 +246,8 @@ message BankContribution {
   repeated Item items = 9;
   string checkin_id = 10;
   string avatar_url = 11;
+  string reference_type = 12;
+  string reference_id = 13;
 }
 
 message FundRequest {

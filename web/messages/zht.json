@@ -220,7 +220,8 @@
       "lotteryTicket": "購買彩券",
       "lotteryWin": "彩券獎金",
       "bankContribution": "公會銀行捐獻",
-      "fundRequestApproved": "資金申請核准"
+      "fundRequestApproved": "資金申請核准",
+      "auctionSale": "拍賣售出"
     },
     "depositSuccess": "存款完成。",
     "depositFailed": "無法完成存款，請再試一次。",
@@ -648,7 +649,8 @@
     "activityTable": "公會銀行活動記錄",
     "itemSummary": "{rarity} · {category} · 剩餘 {count} 件",
     "amountMustBePositive": "請輸入大於 0 的金額",
-    "reasonRequired": "請輸入申請原因"
+    "reasonRequired": "請輸入申請原因",
+    "typeAuctionProceeds": "拍賣收入"
   },
   "notificationsCard": {
     "notifications": "通知",
@@ -778,7 +780,10 @@
     "fundRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{amount}</b>",
     "itemRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{item}</b>",
     "auctionOutbid": "<b>{actor}</b> 以 {amount} 超過你在 <b>{item}</b> 的出價",
-    "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {{amount}}}</b>"
+    "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
+    "auctionWon": "你以 <b>{amount}</b> 得標 <b>{item}</b>，物品已放入背包",
+    "auctionSold": "<b>{actor}</b> 以 <b>{amount}</b> 得標 <b>{item}</b>，款項已存入{destination, select, wallet {你的錢包} other {公會銀行}}",
+    "auctionUnsold": "<b>{item}</b> 已結束，無人出價"
   },
   "profilePage": {
     "title": "個人資料",

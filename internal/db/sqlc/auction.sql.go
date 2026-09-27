@@ -10,7 +10,21 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const activateDueAuctions = `-- name: ActivateDueAuctions :execrows
+UPDATE auctions SET status = 'ACTIVE', updated_at = NOW()
+WHERE status = 'UPCOMING' AND start_time <= NOW()
+`
+
+func (q *Queries) ActivateDueAuctions(ctx context.Context) (int64, error) {
+	result, err := q.db.Exec(ctx, activateDueAuctions)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
 
 const auctionExists = `-- name: AuctionExists :one
 SELECT EXISTS(SELECT 1 FROM auctions WHERE id = $1 AND guild_id = $2)
@@ -76,7 +90,8 @@ INSERT INTO auctions (
 ) VALUES ($1, $2, $8::jsonb, $3, 0, $4, $5, $6, $9::text, $7)
 RETURNING id, guild_id, seller_id, item, starting_bid, current_bid,
           current_bidder_id, min_bid_increment, start_time, end_time,
-          status, is_blind, created_at, updated_at
+          status, is_blind, created_at, updated_at,
+          source_type, source_snapshot, settled_at
 `
 
 type CreateAuctionParams struct {
@@ -119,6 +134,9 @@ func (q *Queries) CreateAuction(ctx context.Context, arg CreateAuctionParams) (A
 		&i.IsBlind,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SourceType,
+		&i.SourceSnapshot,
+		&i.SettledAt,
 	)
 	return i, err
 }
@@ -126,7 +144,8 @@ func (q *Queries) CreateAuction(ctx context.Context, arg CreateAuctionParams) (A
 const getAuction = `-- name: GetAuction :one
 SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
        current_bidder_id, min_bid_increment, start_time, end_time,
-       status, is_blind, created_at, updated_at
+       status, is_blind, created_at, updated_at,
+       source_type, source_snapshot, settled_at
 FROM auctions WHERE id = $1 AND guild_id = $2
 `
 
@@ -153,6 +172,9 @@ func (q *Queries) GetAuction(ctx context.Context, arg GetAuctionParams) (Auction
 		&i.IsBlind,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.SourceType,
+		&i.SourceSnapshot,
+		&i.SettledAt,
 	)
 	return i, err
 }
@@ -210,6 +232,66 @@ func (q *Queries) GetAuctionForUpdate(ctx context.Context, arg GetAuctionForUpda
 	return i, err
 }
 
+const insertBackpackItem = `-- name: InsertBackpackItem :one
+INSERT INTO backpack_items (owner_id, guild_id, item, source, source_id, note)
+VALUES ($1, $2, $3::jsonb, $4::text, $5, NULLIF($6::text, ''))
+RETURNING id
+`
+
+type InsertBackpackItemParams struct {
+	OwnerID  uuid.UUID
+	GuildID  uuid.UUID
+	Item     []byte
+	Source   string
+	SourceID *uuid.UUID
+	Note     string
+}
+
+func (q *Queries) InsertBackpackItem(ctx context.Context, arg InsertBackpackItemParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, insertBackpackItem,
+		arg.OwnerID,
+		arg.GuildID,
+		arg.Item,
+		arg.Source,
+		arg.SourceID,
+		arg.Note,
+	)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const insertBankProceeds = `-- name: InsertBankProceeds :exec
+INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind, reference_type, reference_id)
+VALUES ($1, $2, $4::text, $3, NULLIF($5::text, ''),
+        $6::text, $7::text, $8::uuid)
+`
+
+type InsertBankProceedsParams struct {
+	GuildID       uuid.UUID
+	UserID        uuid.UUID
+	Amount        int64
+	Username      string
+	Note          string
+	Kind          string
+	ReferenceType string
+	ReferenceID   uuid.UUID
+}
+
+func (q *Queries) InsertBankProceeds(ctx context.Context, arg InsertBankProceedsParams) error {
+	_, err := q.db.Exec(ctx, insertBankProceeds,
+		arg.GuildID,
+		arg.UserID,
+		arg.Amount,
+		arg.Username,
+		arg.Note,
+		arg.Kind,
+		arg.ReferenceType,
+		arg.ReferenceID,
+	)
+	return err
+}
+
 const insertBid = `-- name: InsertBid :one
 INSERT INTO bids (auction_id, bidder_id, amount, is_winning)
 VALUES ($1, $2, $3, true)
@@ -237,7 +319,8 @@ func (q *Queries) InsertBid(ctx context.Context, arg InsertBidParams) (InsertBid
 const listAuctions = `-- name: ListAuctions :many
 SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
        current_bidder_id, min_bid_increment, start_time, end_time,
-       status, is_blind, created_at, updated_at
+       status, is_blind, created_at, updated_at,
+       source_type, source_snapshot, settled_at
 FROM auctions
 WHERE guild_id = $1
   AND ($2::text   = '' OR status             = $2::text)
@@ -290,6 +373,9 @@ func (q *Queries) ListAuctions(ctx context.Context, arg ListAuctionsParams) ([]A
 			&i.IsBlind,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.SourceType,
+			&i.SourceSnapshot,
+			&i.SettledAt,
 		); err != nil {
 			return nil, err
 		}
@@ -341,6 +427,71 @@ func (q *Queries) ListBids(ctx context.Context, arg ListBidsParams) ([]Bid, erro
 	return items, nil
 }
 
+const listDueAuctions = `-- name: ListDueAuctions :many
+SELECT id FROM auctions
+WHERE status = 'ACTIVE' AND end_time <= NOW()
+ORDER BY end_time ASC
+LIMIT $1::int
+`
+
+func (q *Queries) ListDueAuctions(ctx context.Context, maxRows int32) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, listDueAuctions, maxRows)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []uuid.UUID{}
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const lockAuctionForSettlement = `-- name: LockAuctionForSettlement :one
+SELECT id, guild_id, seller_id, item, current_bid, current_bidder_id,
+       status, end_time, source_type, source_snapshot
+FROM auctions WHERE id = $1
+FOR UPDATE
+`
+
+type LockAuctionForSettlementRow struct {
+	ID              uuid.UUID
+	GuildID         uuid.UUID
+	SellerID        uuid.UUID
+	Item            []byte
+	CurrentBid      int64
+	CurrentBidderID *uuid.UUID
+	Status          string
+	EndTime         time.Time
+	SourceType      pgtype.Text
+	SourceSnapshot  []byte
+}
+
+func (q *Queries) LockAuctionForSettlement(ctx context.Context, id uuid.UUID) (LockAuctionForSettlementRow, error) {
+	row := q.db.QueryRow(ctx, lockAuctionForSettlement, id)
+	var i LockAuctionForSettlementRow
+	err := row.Scan(
+		&i.ID,
+		&i.GuildID,
+		&i.SellerID,
+		&i.Item,
+		&i.CurrentBid,
+		&i.CurrentBidderID,
+		&i.Status,
+		&i.EndTime,
+		&i.SourceType,
+		&i.SourceSnapshot,
+	)
+	return i, err
+}
+
 const markAllBidsNotWinning = `-- name: MarkAllBidsNotWinning :exec
 UPDATE bids SET is_winning = false WHERE auction_id = $1
 `
@@ -348,6 +499,49 @@ UPDATE bids SET is_winning = false WHERE auction_id = $1
 func (q *Queries) MarkAllBidsNotWinning(ctx context.Context, auctionID uuid.UUID) error {
 	_, err := q.db.Exec(ctx, markAllBidsNotWinning, auctionID)
 	return err
+}
+
+const markAuctionEnded = `-- name: MarkAuctionEnded :exec
+UPDATE auctions SET status = 'ENDED', settled_at = NOW(), updated_at = NOW()
+WHERE id = $1
+`
+
+func (q *Queries) MarkAuctionEnded(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, markAuctionEnded, id)
+	return err
+}
+
+const restoreBackpackItemSnapshot = `-- name: RestoreBackpackItemSnapshot :execrows
+INSERT INTO backpack_items (id, owner_id, guild_id, item, source, source_id, note, acquired_at)
+SELECT r.id, r.owner_id, r.guild_id, r.item, r.source, r.source_id, r.note, r.acquired_at
+FROM jsonb_populate_record(NULL::backpack_items, $1::jsonb) AS r
+WHERE EXISTS (SELECT 1 FROM users u WHERE u.id = r.owner_id)
+ON CONFLICT (id) DO NOTHING
+`
+
+func (q *Queries) RestoreBackpackItemSnapshot(ctx context.Context, snapshot []byte) (int64, error) {
+	result, err := q.db.Exec(ctx, restoreBackpackItemSnapshot, snapshot)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const restoreBankItemSnapshot = `-- name: RestoreBankItemSnapshot :execrows
+INSERT INTO bank_items (id, guild_id, donor_id, donor_name, item, quantity, note, donated_at, checkin_id)
+SELECT r.id, r.guild_id, r.donor_id, r.donor_name, r.item, r.quantity, r.note, r.donated_at,
+       (SELECT c.id FROM checkins c WHERE c.id = r.checkin_id)
+FROM jsonb_populate_record(NULL::bank_items, $1::jsonb) AS r
+WHERE EXISTS (SELECT 1 FROM users u WHERE u.id = r.donor_id)
+ON CONFLICT (id) DO NOTHING
+`
+
+func (q *Queries) RestoreBankItemSnapshot(ctx context.Context, snapshot []byte) (int64, error) {
+	result, err := q.db.Exec(ctx, restoreBankItemSnapshot, snapshot)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const updateAuctionBid = `-- name: UpdateAuctionBid :exec

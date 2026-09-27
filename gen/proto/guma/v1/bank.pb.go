@@ -1444,6 +1444,8 @@ type BankContribution struct {
 	Items         []*Item                `protobuf:"bytes,9,rep,name=items,proto3" json:"items,omitempty"`
 	CheckinId     string                 `protobuf:"bytes,10,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
 	AvatarUrl     string                 `protobuf:"bytes,11,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	ReferenceType string                 `protobuf:"bytes,12,opt,name=reference_type,json=referenceType,proto3" json:"reference_type,omitempty"`
+	ReferenceId   string                 `protobuf:"bytes,13,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1551,6 +1553,20 @@ func (x *BankContribution) GetCheckinId() string {
 func (x *BankContribution) GetAvatarUrl() string {
 	if x != nil {
 		return x.AvatarUrl
+	}
+	return ""
+}
+
+func (x *BankContribution) GetReferenceType() string {
+	if x != nil {
+		return x.ReferenceType
+	}
+	return ""
+}
+
+func (x *BankContribution) GetReferenceId() string {
+	if x != nil {
+		return x.ReferenceId
 	}
 	return ""
 }
@@ -2053,7 +2069,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12+\n" +
-	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\xd0\x02\n" +
+	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\x9a\x03\n" +
 	"\x10BankContribution\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x17\n" +
@@ -2069,7 +2085,9 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"checkin_id\x18\n" +
 	" \x01(\tR\tcheckinId\x12\x1d\n" +
 	"\n" +
-	"avatar_url\x18\v \x01(\tR\tavatarUrl\"\xb6\x03\n" +
+	"avatar_url\x18\v \x01(\tR\tavatarUrl\x12%\n" +
+	"\x0ereference_type\x18\f \x01(\tR\rreferenceType\x12!\n" +
+	"\freference_id\x18\r \x01(\tR\vreferenceId\"\xb6\x03\n" +
 	"\vFundRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12!\n" +

@@ -49,8 +49,13 @@ const getContributionIcon = (type: GuildContribution['type']) => {
       return 'solar:arrow-right-linear';
     case 'checkin_loot':
       return 'solar:clipboard-check-linear';
+    case 'auction_proceeds':
+      return 'solar:sledgehammer-linear';
   }
 };
+
+const isInflowContribution = (type: GuildContribution['type']) =>
+  type === 'contribute' || type === 'auction_proceeds';
 
 
 const isSettledContribution = (status: GuildContribution['status']) =>
@@ -84,9 +89,9 @@ function ContributionAmount({
   }
   return (
     <span
-      className={`type-body font-medium tabular-nums ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
+      className={`type-body font-medium tabular-nums ${isInflowContribution(entry.type) ? 'text-success' : 'text-foreground'}`}
     >
-      {entry.type === 'contribute' ? '+' : '-'}{formatGold(entry.amount)}
+      {isInflowContribution(entry.type) ? '+' : '-'}{formatGold(entry.amount)}
     </span>
   );
 }
@@ -211,6 +216,8 @@ export default function GuildBankPage() {
         return t('typeItemDistribute');
       case 'checkin_loot':
         return t('typeCheckinLoot');
+      case 'auction_proceeds':
+        return t('typeAuctionProceeds');
     }
   };
 
@@ -614,9 +621,9 @@ export default function GuildBankPage() {
                               <p className="type-body font-medium text-foreground">
                                 {getContributionLabel(entry.type)}
                               </p>
-                              {entry.note && entry.checkinId ? (
+                              {entry.note && entry.href ? (
                                 <Link
-                                  href={`/dashboard/attendance/${entry.checkinId}`}
+                                  href={entry.href}
                                   className="rounded type-caption text-hint hover:text-accent truncate max-w-[180px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                                 >
                                   {entry.note}
@@ -683,9 +690,9 @@ export default function GuildBankPage() {
                           {getContributionLabel(entry.type)}
                         </p>
                       </div>
-                      {entry.checkinId && entry.note && (
+                      {entry.href && entry.note && (
                         <Link
-                          href={`/dashboard/attendance/${entry.checkinId}`}
+                          href={entry.href}
                           className="self-start rounded type-caption text-hint hover:text-accent truncate max-w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                         >
                           {entry.note}

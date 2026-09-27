@@ -63,7 +63,8 @@ type DevConfig struct {
 
 // SchedulerConfig holds background job scheduling configuration
 type SchedulerConfig struct {
-	LotteryDrawInterval time.Duration `mapstructure:"lottery_draw_interval"`
+	LotteryDrawInterval   time.Duration `mapstructure:"lottery_draw_interval"`
+	AuctionSettleInterval time.Duration `mapstructure:"auction_settle_interval"`
 }
 
 // LoggingConfig holds logging configuration
@@ -113,6 +114,7 @@ func Load() (*Config, error) {
 	v.BindEnv("rate_limit.burst", "RATE_LIMIT_BURST")
 	v.BindEnv("dev.auth_enabled", "DEV_AUTH_ENABLED")
 	v.BindEnv("scheduler.lottery_draw_interval", "SCHEDULER_LOTTERY_DRAW_INTERVAL")
+	v.BindEnv("scheduler.auction_settle_interval", "SCHEDULER_AUCTION_SETTLE_INTERVAL")
 
 	// Try to read config file
 	v.SetConfigName("config")
@@ -167,6 +169,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("rate_limit.burst", 10)
 
 	v.SetDefault("scheduler.lottery_draw_interval", "15s")
+	v.SetDefault("scheduler.auction_settle_interval", "15s")
 }
 
 // Validate validates the configuration

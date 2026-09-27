@@ -289,17 +289,19 @@ func bankToProto(b *banksvc.GuildBank) *gumav1.GuildBank {
 
 func bankContributionToProto(c *banksvc.BankContribution) *gumav1.BankContribution {
 	return &gumav1.BankContribution{
-		Id:        c.ID,
-		GuildId:   c.GuildID,
-		UserId:    c.UserID,
-		Username:  c.Username,
-		AvatarUrl: c.AvatarURL,
-		Amount:    c.Amount,
-		Note:      c.Note,
-		CreatedAt: timestamppb.New(c.CreatedAt),
-		Kind:      c.Kind,
-		Items:     protoItems(c.Items),
-		CheckinId: c.CheckinID,
+		Id:            c.ID,
+		GuildId:       c.GuildID,
+		UserId:        c.UserID,
+		Username:      c.Username,
+		AvatarUrl:     c.AvatarURL,
+		Amount:        c.Amount,
+		Note:          c.Note,
+		CreatedAt:     timestamppb.New(c.CreatedAt),
+		Kind:          c.Kind,
+		Items:         protoItems(c.Items),
+		CheckinId:     c.CheckinID,
+		ReferenceType: c.ReferenceType,
+		ReferenceId:   c.ReferenceID,
 	}
 }
 

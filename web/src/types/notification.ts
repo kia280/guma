@@ -6,6 +6,9 @@ export type NotificationKind =
   | 'fundRequestSubmitted'
   | 'itemRequestSubmitted'
   | 'auctionOutbid'
+  | 'auctionWon'
+  | 'auctionSold'
+  | 'auctionUnsold'
   | 'lotteryWon';
 
 export type NotificationParams = Record<string, string | number>;

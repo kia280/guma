@@ -12,6 +12,7 @@ import type { Guild } from '@/types/guild';
 import type {
   GuildBank,
   BankContribution,
+  BankContributionKind,
   FundRequest,
   GuildBankItem,
   ItemRequest,
@@ -521,7 +522,14 @@ type ProtoBankContribution = {
   kind?: string;
   items?: ProtoItem[];
   checkin_id?: string;
+  reference_type?: string;
+  reference_id?: string;
 };
+
+const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = ['gold', 'checkin_loot', 'auction_proceeds'];
+
+const toContributionKind = (kind: string | undefined): BankContributionKind =>
+  BANK_CONTRIBUTION_KINDS.find(k => k === kind) ?? 'gold';
 
 export const toBankContribution = (raw: ProtoBankContribution): BankContribution => ({
   id: raw.id,
@@ -532,9 +540,11 @@ export const toBankContribution = (raw: ProtoBankContribution): BankContribution
   amount: fromMinorUnits(raw.amount),
   note: raw.note,
   createdAt: ts(raw.created_at),
-  kind: raw.kind === 'checkin_loot' ? 'checkin_loot' : 'gold',
+  kind: toContributionKind(raw.kind),
   itemNames: (raw.items ?? []).map(i => i.name ?? '').filter(Boolean),
   checkinId: raw.checkin_id || undefined,
+  referenceType: raw.reference_type || undefined,
+  referenceId: raw.reference_id || undefined,
 });
 
 type ProtoFundRequest = {
@@ -638,11 +648,13 @@ export const toGuildContributions = (
           status: 'completed',
           note: b.note,
           checkinId: b.checkinId,
+          href: b.checkinId ? `/dashboard/attendance/${b.checkinId}` : undefined,
         }
       : {
           id: `c-${b.id}`,
-          type: 'contribute',
+          type: b.kind === 'auction_proceeds' ? 'auction_proceeds' : 'contribute',
           amount: b.amount,
+          href: b.referenceType === 'auction' && b.referenceId ? `/dashboard/auction/${b.referenceId}` : undefined,
           member: b.username,
           memberAvatar: b.avatarUrl,
           date: b.createdAt.slice(0, 10),

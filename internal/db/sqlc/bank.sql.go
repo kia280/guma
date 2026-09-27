@@ -460,7 +460,9 @@ SELECT bc.id, bc.guild_id, bc.user_id, bc.username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        bc.amount,
        COALESCE(bc.note, '')      AS note,
-       bc.created_at, bc.kind, bc.items, bc.checkin_id
+       bc.created_at, bc.kind, bc.items, bc.checkin_id,
+       COALESCE(bc.reference_type, '') AS reference_type,
+       bc.reference_id
 FROM bank_contributions bc
 LEFT JOIN users u ON u.id = bc.user_id
 WHERE bc.guild_id = $1
@@ -475,17 +477,19 @@ type ListBankContributionsParams struct {
 }
 
 type ListBankContributionsRow struct {
-	ID        uuid.UUID
-	GuildID   uuid.UUID
-	UserID    uuid.UUID
-	Username  string
-	AvatarUrl string
-	Amount    int64
-	Note      string
-	CreatedAt time.Time
-	Kind      string
-	Items     []byte
-	CheckinID *uuid.UUID
+	ID            uuid.UUID
+	GuildID       uuid.UUID
+	UserID        uuid.UUID
+	Username      string
+	AvatarUrl     string
+	Amount        int64
+	Note          string
+	CreatedAt     time.Time
+	Kind          string
+	Items         []byte
+	CheckinID     *uuid.UUID
+	ReferenceType string
+	ReferenceID   *uuid.UUID
 }
 
 func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContributionsParams) ([]ListBankContributionsRow, error) {
@@ -509,6 +513,8 @@ func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContrib
 			&i.Kind,
 			&i.Items,
 			&i.CheckinID,
+			&i.ReferenceType,
+			&i.ReferenceID,
 		); err != nil {
 			return nil, err
 		}

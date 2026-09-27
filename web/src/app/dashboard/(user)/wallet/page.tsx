@@ -55,6 +55,7 @@ const TRANSACTION_KIND_LABELS: Record<string, string> = {
   REWARD: 'reward',
   PENALTY: 'penalty',
   AUCTION_WIN: 'auctionWin',
+  AUCTION_SALE: 'auctionSale',
   LOTTERY_TICKET: 'lotteryTicket',
   LOTTERY_WIN: 'lotteryWin',
   BANK_CONTRIBUTION: 'bankContribution',
@@ -113,6 +114,7 @@ const getTransactionIcon = (transaction: Transaction) => {
       return 'solar:arrow-right-linear';
     case 'AUCTION_BID':
     case 'AUCTION_WIN':
+    case 'AUCTION_SALE':
       return 'solar:sledgehammer-linear';
     case 'LOTTERY_TICKET':
     case 'LOTTERY_WIN':

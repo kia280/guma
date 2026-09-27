@@ -4858,6 +4858,12 @@
         },
         "avatarUrl": {
           "type": "string"
+        },
+        "referenceType": {
+          "type": "string"
+        },
+        "referenceId": {
+          "type": "string"
         }
       }
     },

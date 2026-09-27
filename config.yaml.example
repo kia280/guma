@@ -50,3 +50,4 @@ rate_limit:
 # Background job scheduling
 scheduler:
   lottery_draw_interval: 15s  # set to 0 to disable
+  auction_settle_interval: 15s  # set to 0 to disable

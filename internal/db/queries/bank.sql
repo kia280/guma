@@ -103,7 +103,9 @@ SELECT bc.id, bc.guild_id, bc.user_id, bc.username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        bc.amount,
        COALESCE(bc.note, '')      AS note,
-       bc.created_at, bc.kind, bc.items, bc.checkin_id
+       bc.created_at, bc.kind, bc.items, bc.checkin_id,
+       COALESCE(bc.reference_type, '') AS reference_type,
+       bc.reference_id
 FROM bank_contributions bc
 LEFT JOIN users u ON u.id = bc.user_id
 WHERE bc.guild_id = $1

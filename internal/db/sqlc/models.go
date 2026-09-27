@@ -50,6 +50,9 @@ type Auction struct {
 	IsBlind         bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+	SourceType      pgtype.Text
+	SourceSnapshot  []byte
+	SettledAt       pgtype.Timestamptz
 }
 
 type BackpackItem struct {
@@ -64,16 +67,18 @@ type BackpackItem struct {
 }
 
 type BankContribution struct {
-	ID        uuid.UUID
-	GuildID   uuid.UUID
-	UserID    uuid.UUID
-	Username  string
-	Amount    int64
-	Note      pgtype.Text
-	CreatedAt time.Time
-	Kind      string
-	Items     []byte
-	CheckinID *uuid.UUID
+	ID            uuid.UUID
+	GuildID       uuid.UUID
+	UserID        uuid.UUID
+	Username      string
+	Amount        int64
+	Note          pgtype.Text
+	CreatedAt     time.Time
+	Kind          string
+	Items         []byte
+	CheckinID     *uuid.UUID
+	ReferenceType pgtype.Text
+	ReferenceID   *uuid.UUID
 }
 
 type BankItem struct {

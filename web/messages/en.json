@@ -220,7 +220,8 @@
       "lotteryTicket": "Lottery ticket purchase",
       "lotteryWin": "Lottery prize",
       "bankContribution": "Guild bank contribution",
-      "fundRequestApproved": "Fund request approved"
+      "fundRequestApproved": "Fund request approved",
+      "auctionSale": "Auction sale"
     },
     "depositSuccess": "Deposit completed.",
     "depositFailed": "Could not complete the deposit. Please try again.",
@@ -648,7 +649,8 @@
     "activityTable": "Guild bank activity",
     "itemSummary": "{rarity} · {category} · {count, plural, one {# available} other {# available}}",
     "amountMustBePositive": "Enter an amount greater than 0",
-    "reasonRequired": "Enter a reason for the request"
+    "reasonRequired": "Enter a reason for the request",
+    "typeAuctionProceeds": "Auction proceeds"
   },
   "notificationsCard": {
     "notifications": "Notifications",
@@ -778,7 +780,10 @@
     "fundRequestSubmitted": "<b>{actor}</b> requested <b>{amount}</b> from the guild bank",
     "itemRequestSubmitted": "<b>{actor}</b> requested <b>{item}</b> from the guild bank",
     "auctionOutbid": "<b>{actor}</b> outbid you on <b>{item}</b> with {amount}",
-    "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>"
+    "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
+    "auctionWon": "You won <b>{item}</b> for <b>{amount}</b>. It's in your backpack now",
+    "auctionSold": "<b>{actor}</b> won <b>{item}</b> for <b>{amount}</b>, paid to {destination, select, wallet {your wallet} other {the guild bank}}",
+    "auctionUnsold": "<b>{item}</b> ended without bids"
   },
   "profilePage": {
     "title": "Personal Information",
