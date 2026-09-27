@@ -15,6 +15,7 @@ interface MonthGridProps {
   occurrencesByDay: Map<string, EventOccurrence[]>;
   format: CalendarFormat;
   showTimes: boolean;
+  compact?: boolean;
   onSelectDate: (date: Date) => void;
   onShowDay: (date: Date) => void;
   onEventClick: (occurrence: EventOccurrence) => void;
@@ -26,6 +27,7 @@ export function MonthGrid({
   occurrencesByDay,
   format,
   showTimes,
+  compact = false,
   onSelectDate,
   onShowDay,
   onEventClick,
@@ -45,7 +47,7 @@ export function MonthGrid({
 
       <div
         className="grid flex-1 grid-cols-7"
-        style={{ gridTemplateRows: `repeat(${days.length / 7}, minmax(6.75rem, 1fr))` }}
+        style={{ gridTemplateRows: `repeat(${days.length / 7}, minmax(${compact ? '5.25rem' : '6.75rem'}, 1fr))` }}
       >
         {days.map((day, index) => {
           const occurrences = sortForDay(occurrencesByDay.get(dayKey(day)) ?? [], day);
@@ -65,43 +67,65 @@ export function MonthGrid({
             <div
               key={dayKey(day)}
               data-cell
-              className={`relative flex min-w-0 flex-col gap-0.5 border-divider p-1 ${index % 7 ? 'border-l' : ''} ${index >= 7 ? 'border-t' : ''} ${background}`}
+              className={`relative flex min-w-0 flex-col gap-0.5 border-divider ${compact ? 'p-0.5' : 'p-1'} ${index % 7 ? 'border-l' : ''} ${index >= 7 ? 'border-t' : ''} ${background}`}
             >
               <button
                 type="button"
                 aria-pressed={isSelected}
                 aria-current={isToday ? 'date' : undefined}
                 aria-label={`${format.fullDate(day)}, ${t('eventCount', { count: occurrences.length })}`}
-                onClick={() => onSelectDate(day)}
+                onClick={() => (compact ? onShowDay(day) : onSelectDate(day))}
                 className="absolute inset-0 cursor-pointer transition-colors hover:bg-surface-secondary/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
               />
               <span
                 aria-hidden
-                className={`pointer-events-none relative flex size-7 items-center justify-center rounded-full type-label tabular-nums ${numberClass}`}
+                className={`pointer-events-none relative flex items-center justify-center rounded-full type-label tabular-nums ${compact ? 'size-6 self-center' : 'size-7'} ${numberClass}`}
               >
                 {day.getDate()}
               </span>
 
-              {visible.map(occurrence => (
-                <MonthChip
-                  key={occurrence.key}
-                  occurrence={occurrence}
-                  day={day}
-                  format={format}
-                  showTime={showTimes}
-                  onEventClick={onEventClick}
-                />
-              ))}
+              {compact ? (
+                <span aria-hidden className="pointer-events-none relative flex min-w-0 flex-col gap-0.5">
+                  {visible.map(occurrence => {
+                    const tone = eventTone(occurrence.event);
+                    return (
+                      <span
+                        key={occurrence.key}
+                        className="overflow-hidden whitespace-nowrap text-clip rounded-sm px-1 type-caption text-foreground"
+                        style={{ backgroundColor: tone.tint, boxShadow: `inset 2px 0 0 ${tone.accent}` }}
+                      >
+                        {occurrence.event.title}
+                      </span>
+                    );
+                  })}
+                  {hiddenCount > 0 && (
+                    <span className="px-1 type-caption tabular-nums text-soft">+{hiddenCount}</span>
+                  )}
+                </span>
+              ) : (
+                <>
+                  {visible.map(occurrence => (
+                    <MonthChip
+                      key={occurrence.key}
+                      occurrence={occurrence}
+                      day={day}
+                      format={format}
+                      showTime={showTimes}
+                      onEventClick={onEventClick}
+                    />
+                  ))}
 
-              {hiddenCount > 0 && (
-                <button
-                  type="button"
-                  onClick={() => onShowDay(day)}
-                  aria-label={t('showMore', { count: hiddenCount, date: format.fullDate(day) })}
-                  className="relative self-start rounded-md px-1.5 type-label tabular-nums text-soft transition-colors hover:bg-surface-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
-                >
-                  {t('more', { count: hiddenCount })}
-                </button>
+                  {hiddenCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => onShowDay(day)}
+                      aria-label={t('showMore', { count: hiddenCount, date: format.fullDate(day) })}
+                      className="relative self-start rounded-md px-1.5 type-label tabular-nums text-soft transition-colors hover:bg-surface-tertiary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+                    >
+                      {t('more', { count: hiddenCount })}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           );

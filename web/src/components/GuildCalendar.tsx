@@ -96,7 +96,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
 
   const showDay = (date: Date) => {
     onDateChange(date);
-    if (device === 'tablet') {
+    if (device !== 'desktop') {
       requestAnimationFrame(() => panelRef.current?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior() }));
     }
   };
@@ -124,6 +124,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
         occurrencesByDay={occurrencesByDay}
         format={format}
         showTimes={device === 'desktop'}
+        compact={isPhone}
         onSelectDate={onDateChange}
         onShowDay={showDay}
         onEventClick={onEventClick}
