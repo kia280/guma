@@ -69,7 +69,7 @@ export interface UpdateEventData extends Partial<CreateEventData> {
 }
 
 export interface CalendarViewOptions {
-  view: 'month' | 'week' | 'day';
+  view: 'month' | 'week' | 'day' | 'agenda';
   currentDate: Date;
 }
 

@@ -1,21 +1,32 @@
 'use client';
 
-import { Card, Button, Dropdown, Chip, Spinner, Modal, Separator, useOverlayState } from '@heroui/react';
+import { Button, Chip, Spinner, Modal, Separator, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 import { EventFormModal } from '@/components/EventFormModal';
 import { GuildCalendar } from '@/components/GuildCalendar';
+import { useCalendarFormat } from '@/hooks/useCalendarFormat';
+import { useDeviceClass } from '@/hooks/useDeviceClass';
 import { useGuildEvents } from '@/hooks/useGuildEvents';
 import { useToast } from '@/hooks/useToast';
-import { useIntlLocale } from '@/i18n/useIntlFormatter';
-import { GuildEvent, EVENT_TYPE_COLORS, PRIORITY_COLORS } from '@/types/guild-events';
+import { type CalendarView, fillsViewport, isSameDay, readStoredView, storeView } from '@/lib/calendar';
+import type { EventOccurrence } from '@/lib/event-occurrences';
+import {
+  type CreateEventData,
+  GuildEvent,
+  EVENT_TYPE_COLORS,
+  PRIORITY_COLORS,
+  type UpdateEventData,
+} from '@/types/guild-events';
 
 export default function CalendarPage() {
   const t = useTranslations('calendarPage');
   const eventLabels = useTranslations('guildEvents');
   const nav = useTranslations('dashboardLayout');
-  const intlLocale = useIntlLocale();
+  const calendarLabels = useTranslations('guildCalendar');
+  const format = useCalendarFormat();
+  const device = useDeviceClass();
   const {
     events,
     isLoading,
@@ -34,7 +45,17 @@ export default function CalendarPage() {
   } = useGuildEvents();
 
   const [selectedEvent, setSelectedEvent] = useState<GuildEvent | null>(null);
+  const [selectedOccurrence, setSelectedOccurrence] = useState<EventOccurrence | null>(null);
   const notify = useToast();
+
+  useEffect(() => {
+    if (device) setViewType(readStoredView(device));
+  }, [device, setViewType]);
+
+  const handleViewChange = (view: CalendarView) => {
+    setViewType(view);
+    if (device) storeView(device, view);
+  };
 
   useEffect(() => {
     if (error) notify.loadFailed(refetch, 'events');
@@ -55,8 +76,9 @@ export default function CalendarPage() {
     formModalState.open();
   };
 
-  const handleEventClick = (event: GuildEvent) => {
-    setSelectedEvent(event);
+  const handleEventClick = (occurrence: EventOccurrence) => {
+    setSelectedEvent(occurrence.event);
+    setSelectedOccurrence(occurrence);
     detailModalState.open();
   };
 
@@ -72,59 +94,41 @@ export default function CalendarPage() {
     }
   };
 
-  const handleFormSubmit = async (data: any) => {
+  const handleFormSubmit = async (data: CreateEventData | UpdateEventData) => {
     if (selectedEvent) {
       await updateEvent({ ...data, id: selectedEvent.id });
     } else {
-      await createEvent(data);
+      await createEvent(data as CreateEventData);
     }
   };
 
-  const formatEventTime = (event: GuildEvent) => {
-    if (event.isAllDay) return t('allDay');
+  const describeWhen = (event: GuildEvent, occurrence: EventOccurrence | null) => {
+    const start = occurrence?.start ?? new Date(event.startDate);
+    const end = occurrence?.end ?? (event.endDate ? new Date(event.endDate) : start);
+    const lastDay = end > start ? new Date(end.getTime() - 1) : start;
+    const singleDay = !event.endDate || isSameDay(start, lastDay);
 
-    const start = new Date(event.startDate);
-    const end = event.endDate ? new Date(event.endDate) : null;
-
-    if (end && !event.isAllDay) {
-      return `${start.toLocaleTimeString(intlLocale, {
-        hour: '2-digit',
-        minute: '2-digit',
-      })} - ${end.toLocaleTimeString(intlLocale, {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}`;
-    }
-
-    return start.toLocaleTimeString(intlLocale, {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatEventDate = (event: GuildEvent) => {
-    const start = new Date(event.startDate);
-    const end = event.endDate ? new Date(event.endDate) : null;
-
-    if (end && start.toDateString() !== end.toDateString()) {
-      const rangeOptions: Intl.DateTimeFormatOptions = {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        ...(start.getFullYear() !== end.getFullYear() && { year: 'numeric' }),
+    if (event.isAllDay) {
+      return {
+        date: singleDay ? format.fullDate(start) : `${format.dayHeading(start)} – ${format.dayHeading(lastDay)}`,
+        time: t('allDay'),
       };
-      return `${start.toLocaleDateString(intlLocale, rangeOptions)} - ${end.toLocaleDateString(intlLocale, rangeOptions)}`;
     }
-
-    return start.toLocaleDateString(intlLocale, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    if (singleDay) {
+      return {
+        date: format.fullDate(start),
+        time: event.endDate ? `${format.time(start)} – ${format.time(end)}` : format.time(start),
+      };
+    }
+    return {
+      date: `${format.dayHeading(start)} ${format.time(start)}`,
+      time: calendarLabels('until', { time: `${format.dayHeading(end)} ${format.time(end)}` }),
+    };
   };
 
-  if (isLoading) {
+  const selectedWhen = selectedEvent ? describeWhen(selectedEvent, selectedOccurrence) : null;
+
+  if (isLoading || !device) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
@@ -136,27 +140,20 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 h-full">
+    <div className={`flex flex-col ${fillsViewport(calendarView.view, device) ? 'h-full' : ''}`}>
       <h1 className="sr-only">{nav('calendar')}</h1>
 
-      {/* Calendar */}
-      <div className="flex-1 min-h-0">
-        <GuildCalendar
-          events={events}
-          currentDate={calendarView.currentDate}
-          view={calendarView.view}
-          onDateChange={setCalendarDate}
-          onViewChange={setViewType}
-          onNavigate={navigateCalendar}
-          onEventClick={handleEventClick}
-          actions={
-            <Button size="sm" variant="primary" className="max-sm:h-11 max-sm:w-full" onPress={handleCreateEvent}>
-              <Icon icon="solar:add-circle-linear" width={16} />
-              {t('createEvent')}
-            </Button>
-          }
-        />
-      </div>
+      <GuildCalendar
+        events={events}
+        currentDate={calendarView.currentDate}
+        view={calendarView.view}
+        device={device}
+        onDateChange={setCalendarDate}
+        onViewChange={handleViewChange}
+        onNavigate={navigateCalendar}
+        onEventClick={handleEventClick}
+        onCreate={handleCreateEvent}
+      />
 
       {/* Event Form Modal */}
       <EventFormModal
@@ -172,118 +169,92 @@ export default function CalendarPage() {
         <Modal.Container size="md">
           <Modal.Dialog>
             <Modal.CloseTrigger />
-            {selectedEvent && (
+            {selectedEvent && selectedWhen && (
               <>
-                <Modal.Header className="text-center items-center">
-                  <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                    <p className="type-subheading text-foreground truncate">
-                      {selectedEvent.title}
-                    </p>
-                    <div className="flex items-center gap-2 type-caption">
-                      <Chip
-                        color={EVENT_TYPE_COLORS[selectedEvent.type]}
-                        size="sm"
-                        variant="tertiary"
-                      >
-                        {eventLabels(`types.${selectedEvent.type}`)}
-                      </Chip>
-                      <Chip
-                        color={PRIORITY_COLORS[selectedEvent.priority]}
-                        size="sm"
-                        variant="secondary"
-                      >
-                        {eventLabels(`priorities.${selectedEvent.priority}`)}
-                      </Chip>
-                    </div>
+                <Modal.Header className="flex flex-col items-start gap-2 pr-10">
+                  <Modal.Heading className="break-words">{selectedEvent.title}</Modal.Heading>
+                  <div className="flex flex-wrap items-center gap-2 type-body">
+                    <Chip color={EVENT_TYPE_COLORS[selectedEvent.type]} size="sm" variant="tertiary">
+                      {eventLabels(`types.${selectedEvent.type}`)}
+                    </Chip>
+                    <Chip color={PRIORITY_COLORS[selectedEvent.priority]} size="sm" variant="secondary">
+                      {eventLabels(`priorities.${selectedEvent.priority}`)}
+                    </Chip>
                   </div>
-
-                  <Dropdown>
-                    <Button isIconOnly variant="secondary" size="sm" className="max-sm:size-11" aria-label={t('eventActions')}>
-                      <Icon icon="solar:menu-dots-bold" width={16} />
-                    </Button>
-                    <Dropdown.Popover>
-                      <Dropdown.Menu
-                        onAction={key => {
-                          if (key === 'edit') {
-                            detailModalState.close();
-                            handleEditEvent(selectedEvent);
-                          } else if (key === 'delete') {
-                            deleteModalState.open();
-                          }
-                        }}
-                      >
-                        <Dropdown.Item key="edit" textValue={t('editEvent')}>
-                          <Icon icon="solar:pen-linear" width={16} />
-                          {t('editEvent')}
-                        </Dropdown.Item>
-                        <Dropdown.Item key="delete" textValue={t('deleteEvent')} className="text-danger">
-                          <Icon icon="solar:trash-bin-trash-linear" width={16} />
-                          {t('deleteEvent')}
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown.Popover>
-                  </Dropdown>
                 </Modal.Header>
 
-                <Modal.Body className="p-1">
-                  <div className="space-y-4">
-                    {selectedEvent.description && (
-                      <div>
-                        <p className="text-subtle">{selectedEvent.description}</p>
+                <Modal.Body className="flex flex-col gap-4">
+                  {selectedEvent.description && (
+                    <p className="type-prose text-soft whitespace-pre-line break-words">{selectedEvent.description}</p>
+                  )}
+
+                  <Separator />
+
+                  <dl className="flex flex-col gap-3 type-body">
+                    <div className="flex items-start gap-3">
+                      <dt className="pt-0.5">
+                        <Icon icon="solar:clock-circle-linear" width={18} className="text-hint" aria-hidden />
+                        <span className="sr-only">{t('when')}</span>
+                      </dt>
+                      <dd className="min-w-0 tabular-nums">
+                        <div className="font-medium text-foreground">{selectedWhen.date}</div>
+                        <div className="text-subtle">{selectedWhen.time}</div>
+                      </dd>
+                    </div>
+
+                    {selectedEvent.location && (
+                      <div className="flex items-start gap-3">
+                        <dt className="pt-0.5">
+                          <Icon icon="solar:map-point-linear" width={18} className="text-hint" aria-hidden />
+                          <span className="sr-only">{t('where')}</span>
+                        </dt>
+                        <dd className="min-w-0 break-words text-foreground">{selectedEvent.location}</dd>
                       </div>
                     )}
 
-                    <Separator />
-
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3 type-body">
-                        <Icon
-                          icon="solar:clock-circle-linear"
-                          width={16}
-                          className="text-hint"
-                        />
-                        <div>
-                          <div className="font-medium">{formatEventDate(selectedEvent)}</div>
-                          <div className="text-subtle">{formatEventTime(selectedEvent)}</div>
-                        </div>
+                    {selectedEvent.isRecurring && (
+                      <div className="flex items-start gap-3">
+                        <dt className="pt-0.5">
+                          <Icon icon="solar:refresh-linear" width={18} className="text-hint" aria-hidden />
+                          <span className="sr-only">{t('recurrence')}</span>
+                        </dt>
+                        <dd className="text-foreground">
+                          {t('repeatsEvery', {
+                            type: selectedEvent.recurringPattern?.type ?? 'custom',
+                            interval: selectedEvent.recurringPattern?.interval ?? 1,
+                          })}
+                        </dd>
                       </div>
+                    )}
 
-                      {selectedEvent.location && (
-                        <div className="flex items-center gap-3 type-body">
-                          <Icon
-                            icon="solar:map-point-linear"
-                            width={16}
-                            className="text-hint"
-                          />
-                          <span>{selectedEvent.location}</span>
-                        </div>
-                      )}
-
-                      {selectedEvent.isRecurring && (
-                        <div className="flex items-center gap-3 type-body">
-                          <Icon
-                            icon="solar:refresh-linear"
-                            width={16}
-                            className="text-hint"
-                          />
-                          <span>
-                            {t('repeatsEvery', {
-                              type: selectedEvent.recurringPattern?.type ?? 'custom',
-                              interval: selectedEvent.recurringPattern?.interval ?? 1,
-                            })}
-                          </span>
-                        </div>
-                      )}
-
-                      {selectedEvent.createdByName && (
-                        <div className="flex items-center gap-3 type-body text-subtle">
-                          <Icon icon="solar:users-group-rounded-linear" width={16} />
-                          <span>{t('createdBy', { name: selectedEvent.createdByName })}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                    {selectedEvent.createdByName && (
+                      <div className="flex items-start gap-3">
+                        <dt className="pt-0.5">
+                          <Icon icon="solar:users-group-rounded-linear" width={18} className="text-hint" aria-hidden />
+                          <span className="sr-only">{t('organizer')}</span>
+                        </dt>
+                        <dd className="text-subtle">{t('createdBy', { name: selectedEvent.createdByName })}</dd>
+                      </div>
+                    )}
+                  </dl>
                 </Modal.Body>
+
+                <Modal.Footer className="flex-wrap justify-between gap-2">
+                  <Button variant="ghost" className="text-danger" onPress={deleteModalState.open}>
+                    <Icon icon="solar:trash-bin-trash-linear" width={16} aria-hidden />
+                    {t('deleteEvent')}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onPress={() => {
+                      detailModalState.close();
+                      handleEditEvent(selectedEvent);
+                    }}
+                  >
+                    <Icon icon="solar:pen-linear" width={16} aria-hidden />
+                    {t('editEvent')}
+                  </Button>
+                </Modal.Footer>
               </>
             )}
           </Modal.Dialog>
@@ -305,7 +276,11 @@ export default function CalendarPage() {
               {selectedEvent && (
                 <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg">
                   <p className="type-body font-medium text-danger">{selectedEvent.title}</p>
-                  <p className="type-caption text-danger/60 mt-0.5">{formatEventDate(selectedEvent)}</p>
+                  {selectedWhen && (
+                    <p className="type-caption text-subtle mt-0.5 tabular-nums">
+                      {selectedWhen.date} · {selectedWhen.time}
+                    </p>
+                  )}
                 </div>
               )}
             </Modal.Body>
