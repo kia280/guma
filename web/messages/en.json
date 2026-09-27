@@ -1113,6 +1113,10 @@
     "rescheduleFailed": "Could not change the draw time. Please try again.",
     "noWinners": "No tickets were sold, so there is no winner.",
     "purchaseSuccess": "Tickets purchased.",
+    "purchaseSoldOut": "{count, plural, =0 {The tickets sold out before your purchase went through.} one {Only # ticket is left.} other {Only # tickets are left.}}",
+    "purchaseClosed": "This lottery is no longer selling tickets.",
+    "insufficientBalance": "Your balance is too low for this purchase.",
+    "yourBalance": "Your balance: {amount}",
     "purchaseFailed": "Could not purchase tickets. Please try again."
   },
   "createLotteryModal": {

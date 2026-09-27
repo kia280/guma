@@ -1,6 +1,7 @@
 // Mock implementation of ApiClient. Returns data from `./data`.
 // Used when `NEXT_PUBLIC_USE_MOCK=true` for local frontend development.
 
+import { emitLiveEvent } from '@/lib/live-events';
 import type { AdminAnnouncement } from '@/types/admin';
 import { AuctionStatus, type AuctionItem } from '@/types/auction';
 import type {
@@ -55,6 +56,12 @@ const conflict = () =>
   Object.assign(new Error('a template with this name already exists'), {
     isAxiosError: true,
     response: { status: 409, data: { code: 'AlreadyExists' } },
+  });
+
+const failedPrecondition = (message: string) =>
+  Object.assign(new Error(message), {
+    isAxiosError: true,
+    response: { status: 400, data: { code: 'FailedPrecondition' } },
   });
 
 const assertUniqueName = (list: Array<{ id: string; name: string }>, id: string, name: string) => {
@@ -522,19 +529,26 @@ const baseMockApiClient: ApiClient = {
     lottery.drawDate = patch.drawDate;
     return lottery;
   },
-  purchaseTickets: async (_guildId, lotteryId, quantity): Promise<LotteryTicket[]> => {
+  purchaseTickets: async (guildId, lotteryId, quantity): Promise<LotteryTicket[]> => {
     const lottery = store.lotteries.find(x => x.id === lotteryId);
     if (!lottery) throw new Error('not found');
-    const bought = lottery.maxTickets > 0 ? Math.min(quantity, lottery.maxTickets - lottery.ticketsSold) : quantity;
+    if (lottery.status === 'ended') throw failedPrecondition('lottery is not open for ticket purchase');
+    if (lottery.maxTickets > 0 && lottery.ticketsSold + quantity > lottery.maxTickets) {
+      throw failedPrecondition('not enough tickets available');
+    }
+    const cost = quantity * lottery.ticketPrice;
+    if (cost > currentUser.balance) throw failedPrecondition('insufficient funds');
+    currentUser.balance = Math.round((currentUser.balance - cost) * 100) / 100;
+    emitLiveEvent({ kind: 'wallet', guildId, balance: currentUser.balance });
     const participants = [...(lottery.participants ?? [])];
     const mine = participants.find(p => p.id === currentUser.id);
-    if (mine) mine.tickets += bought;
-    else participants.unshift({ id: currentUser.id, username: currentUser.username, tickets: bought });
+    if (mine) mine.tickets += quantity;
+    else participants.unshift({ id: currentUser.id, username: currentUser.username, tickets: quantity });
     Object.assign(lottery, {
-      ticketsSold: lottery.ticketsSold + bought,
+      ticketsSold: lottery.ticketsSold + quantity,
       participants: participants.sort((a, b) => b.tickets - a.tickets),
     });
-    return Array.from({ length: bought }, (_, i) => ({
+    return Array.from({ length: quantity }, (_, i) => ({
       id: `ticket-${Date.now()}-${i}`,
       lotteryId,
       userId: currentUser.id,
