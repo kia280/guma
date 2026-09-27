@@ -280,7 +280,7 @@ export default function GuildBankPage() {
     <div className="space-y-5">
       {/* Guild Treasury */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 shrink-0">
             <Icon className="text-warning" icon="solar:safe-2-bold-duotone" width={20} />
           </div>
@@ -312,10 +312,10 @@ export default function GuildBankPage() {
                   <Modal.Container size="sm">
                     <Modal.Dialog>
                       <Modal.CloseTrigger />
-                      <Modal.Header className="text-center items-center">
+                      <Modal.Header>
                         <Modal.Heading>{t('contributeTitle')}</Modal.Heading>
                       </Modal.Header>
-                      <Modal.Body className="p-1 flex flex-col gap-3">
+                      <Modal.Body className="flex flex-col gap-3">
                         <TextField>
                           <Label>{t('amountLabel')}</Label>
                           <Input
@@ -381,10 +381,10 @@ export default function GuildBankPage() {
                   <Modal.Container size="sm">
                     <Modal.Dialog>
                       <Modal.CloseTrigger />
-                      <Modal.Header className="text-center items-center">
+                      <Modal.Header>
                         <Modal.Heading>{t('requestFundsTitle')}</Modal.Heading>
                       </Modal.Header>
-                      <Modal.Body className="p-1 flex flex-col gap-3">
+                      <Modal.Body className="flex flex-col gap-3">
                         <TextField>
                           <Label>{t('amountLabel')}</Label>
                           <Input
@@ -452,7 +452,7 @@ export default function GuildBankPage() {
 
       {/* Guild Item Storage */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
             <Icon className="text-accent" icon="solar:box-bold-duotone" width={20} />
           </div>
@@ -534,7 +534,7 @@ export default function GuildBankPage() {
 
       {/* Contribution History */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-subtle" icon="solar:history-line-duotone" width={20} />
           </div>
@@ -554,7 +554,7 @@ export default function GuildBankPage() {
           <>
           {/* Desktop Table */}
           <div className="hidden md:block">
-            <Table>
+            <Table variant="secondary">
               <Table.ScrollContainer>
                 <Table.Content aria-label={t('activityTable')} className="min-w-[700px]">
                   <Table.Header>
@@ -691,10 +691,10 @@ export default function GuildBankPage() {
         <Modal.Container size="sm">
           <Modal.Dialog>
             <Modal.CloseTrigger />
-            <Modal.Header className="text-center items-center">
+            <Modal.Header>
               <Modal.Heading>{t('requestItemTitle')}</Modal.Heading>
             </Modal.Header>
-            <Modal.Body className="p-1 flex flex-col gap-3">
+            <Modal.Body className="flex flex-col gap-3">
               {selectedItem && (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary">

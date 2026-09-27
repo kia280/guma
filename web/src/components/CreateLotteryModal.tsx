@@ -105,7 +105,7 @@ export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLo
               <h2 className="type-heading text-foreground">{t('title')}</h2>
               <p className="type-caption text-hint">{t('subtitle')}</p>
             </Modal.Header>
-            <Modal.Body className="p-1">
+            <Modal.Body>
               <form
                 className="flex flex-col gap-4"
                 onSubmit={event => {

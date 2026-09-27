@@ -519,23 +519,19 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         <Modal.Container size="md">
           <Modal.Dialog>
             <Modal.CloseTrigger />
-            <Modal.Header className="text-center items-center">
+            <Modal.Header className="flex-row items-center gap-2 pr-8">
+              <Icon
+                icon={CATEGORY_ICONS[item.category]}
+                width={18}
+                className="text-subtle shrink-0"
+              />
               <Modal.Heading>
-                <div className="flex items-center gap-2">
-                  <Icon
-                    icon={CATEGORY_ICONS[item.category]}
-                    width={18}
-                    className="text-subtle"
-                  />
-                  <span>
-                    {item.isBlind
-                      ? t('submitBidTitle', { name: item.name })
-                      : t('placeBidTitle', { name: item.name })}
-                  </span>
-                </div>
+                {item.isBlind
+                  ? t('submitBidTitle', { name: item.name })
+                  : t('placeBidTitle', { name: item.name })}
               </Modal.Heading>
             </Modal.Header>
-            <Modal.Body className="p-1">
+            <Modal.Body>
               <div className="space-y-4">
                 <div className="bg-surface-secondary rounded-lg p-4 space-y-2">
                   {!item.isBlind && (
