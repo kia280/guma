@@ -340,16 +340,18 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     <span className="type-caption text-hint w-5 text-right shrink-0">
                       {idx + 1}
                     </span>
-                    <UserAvatar name={member.username} src={member.avatar} />
-                    <div className="flex-1 min-w-0">
-                      <p className="type-body font-medium text-foreground">{member.username}</p>
-                      {member.notes && (
-                        <p className="type-caption text-hint truncate">{member.notes}</p>
-                      )}
+                    <UserAvatar name={member.username} src={member.avatar} className="shrink-0" />
+                    <div className="flex-1 min-w-0 sm:flex sm:items-center sm:gap-3">
+                      <div className="min-w-0 sm:flex-1">
+                        <p className="type-body font-medium text-foreground truncate">{member.username}</p>
+                        {member.notes && (
+                          <p className="type-caption text-hint truncate">{member.notes}</p>
+                        )}
+                      </div>
+                      <span className="block type-caption text-hint sm:shrink-0">
+                        {formatDateTime(member.checkedInAt)}
+                      </span>
                     </div>
-                    <span className="type-caption text-hint shrink-0">
-                      {formatDateTime(member.checkedInAt)}
-                    </span>
                   </div>
                 ))}
               </div>
