@@ -19,6 +19,7 @@ import { ItemCategory, ItemRarity } from '@/types/item';
 const AuctionPage = () => {
   const t = useTranslations('auctionPage');
   const labels = useTranslations('createAuctionModal');
+  const nav = useTranslations('dashboardLayout');
   const guildId = useCurrentGuildId();
   const { balance: userBalance, refresh: refreshBalance } = useWalletBalance();
   const createModalState = useOverlayState();
@@ -135,12 +136,7 @@ const AuctionPage = () => {
 
   return (
     <div className="space-y-5">
-      <div className="flex justify-end">
-        <Button onPress={createModalState.open}>
-          <Icon icon="solar:add-circle-linear" width={16} />
-          {t('createAuction')}
-        </Button>
-      </div>
+      <h1 className="sr-only">{nav('auction')}</h1>
       <CreateAuctionModal state={createModalState} onCreated={refetchAuctions} />
 
       {/* Search and Filters */}
@@ -206,46 +202,52 @@ const AuctionPage = () => {
 
       {/* Status Tabs */}
       <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
-        <Tabs.ListContainer>
-          <Tabs.List aria-label={t('statusTabs')}>
-            <Tabs.Tab id="all">
-              <div className="flex items-center gap-2">
-                <span>{t('all')}</span>
-                <Chip size="sm" variant="secondary">
-                  {statusCounts.all}
-                </Chip>
-              </div>
-              <Tabs.Indicator />
-            </Tabs.Tab>
-            <Tabs.Tab id={AuctionStatus.ACTIVE}>
-              <div className="flex items-center gap-2">
-                <span>{t('active')}</span>
-                <Chip size="sm" color="success" variant="secondary">
-                  {statusCounts.active}
-                </Chip>
-              </div>
-              <Tabs.Indicator />
-            </Tabs.Tab>
-            <Tabs.Tab id={AuctionStatus.UPCOMING}>
-              <div className="flex items-center gap-2">
-                <span>{t('upcoming')}</span>
-                <Chip size="sm" color="warning" variant="secondary">
-                  {statusCounts.upcoming}
-                </Chip>
-              </div>
-              <Tabs.Indicator />
-            </Tabs.Tab>
-            <Tabs.Tab id={AuctionStatus.ENDED}>
-              <div className="flex items-center gap-2">
-                <span>{t('ended')}</span>
-                <Chip size="sm" variant="secondary">
-                  {statusCounts.ended}
-                </Chip>
-              </div>
-              <Tabs.Indicator />
-            </Tabs.Tab>
-          </Tabs.List>
-        </Tabs.ListContainer>
+        <div className="flex items-center gap-3">
+          <Tabs.ListContainer className="min-w-0 flex-1">
+            <Tabs.List aria-label={t('statusTabs')}>
+              <Tabs.Tab id="all">
+                <div className="flex items-center gap-2">
+                  <span>{t('all')}</span>
+                  <Chip size="sm" variant="secondary">
+                    {statusCounts.all}
+                  </Chip>
+                </div>
+                <Tabs.Indicator />
+              </Tabs.Tab>
+              <Tabs.Tab id={AuctionStatus.ACTIVE}>
+                <div className="flex items-center gap-2">
+                  <span>{t('active')}</span>
+                  <Chip size="sm" color="success" variant="secondary">
+                    {statusCounts.active}
+                  </Chip>
+                </div>
+                <Tabs.Indicator />
+              </Tabs.Tab>
+              <Tabs.Tab id={AuctionStatus.UPCOMING}>
+                <div className="flex items-center gap-2">
+                  <span>{t('upcoming')}</span>
+                  <Chip size="sm" color="warning" variant="secondary">
+                    {statusCounts.upcoming}
+                  </Chip>
+                </div>
+                <Tabs.Indicator />
+              </Tabs.Tab>
+              <Tabs.Tab id={AuctionStatus.ENDED}>
+                <div className="flex items-center gap-2">
+                  <span>{t('ended')}</span>
+                  <Chip size="sm" variant="secondary">
+                    {statusCounts.ended}
+                  </Chip>
+                </div>
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            </Tabs.List>
+          </Tabs.ListContainer>
+          <Button className="shrink-0 max-sm:aspect-square max-sm:px-0" aria-label={t('createAuction')} onPress={createModalState.open}>
+            <Icon icon="solar:add-circle-linear" width={16} />
+            <span className="max-sm:hidden">{t('createAuction')}</span>
+          </Button>
+        </div>
         <Tabs.Panel id="all" className="pt-4">
           <AsyncContent
             state={auctionsState.state}

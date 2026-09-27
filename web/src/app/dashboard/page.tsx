@@ -290,6 +290,7 @@ const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
 export default function DashboardPage() {
   const t = useTranslations('dashboard');
+  const nav = useTranslations('dashboardLayout');
   const guildId = useCurrentGuildId();
   const [selectedAnn, setSelectedAnn] = useState<Announcement | null>(null);
   const annModalState = useOverlayState({
@@ -386,6 +387,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-5">
+      <h1 className="sr-only">{nav('dashboard')}</h1>
       {/* Overview Carousel */}
       <OverviewCarousel
         guildStats={guildStats}
