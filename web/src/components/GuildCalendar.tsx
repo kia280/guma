@@ -24,6 +24,7 @@ interface GuildCalendarProps {
   onNavigate: (direction: 'prev' | 'next') => void;
   onEventClick: (event: GuildEvent) => void;
   onDateClick?: (date: Date) => void;
+  actions?: React.ReactNode;
 }
 
 const HOUR_PX = 60; // pixels per hour
@@ -105,6 +106,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   onNavigate,
   onEventClick,
   onDateClick,
+  actions,
 }) => {
   const t = useTranslations('guildCalendar');
   const intlLocale = useIntlLocale();
@@ -564,6 +566,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                   {t('month')}
                 </Button>
               </ButtonGroup>
+              {actions}
             </div>
           </div>
         </Card.Content>

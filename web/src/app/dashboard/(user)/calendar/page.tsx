@@ -14,6 +14,7 @@ import { GuildEvent, EVENT_TYPE_COLORS, PRIORITY_COLORS } from '@/types/guild-ev
 export default function CalendarPage() {
   const t = useTranslations('calendarPage');
   const eventLabels = useTranslations('guildEvents');
+  const nav = useTranslations('dashboardLayout');
   const intlLocale = useIntlLocale();
   const {
     events,
@@ -136,13 +137,7 @@ export default function CalendarPage() {
 
   return (
     <div className="flex flex-col gap-5 h-full">
-      {/* Header */}
-      <div className="flex justify-end shrink-0">
-        <Button variant="primary" onPress={handleCreateEvent}>
-          <Icon icon="solar:add-circle-linear" width={16} />
-          {t('createEvent')}
-        </Button>
-      </div>
+      <h1 className="sr-only">{nav('calendar')}</h1>
 
       {/* Calendar */}
       <div className="flex-1 min-h-0">
@@ -154,6 +149,12 @@ export default function CalendarPage() {
           onViewChange={setViewType}
           onNavigate={navigateCalendar}
           onEventClick={handleEventClick}
+          actions={
+            <Button size="sm" variant="primary" className="shrink-0 max-sm:aspect-square max-sm:px-0" aria-label={t('createEvent')} onPress={handleCreateEvent}>
+              <Icon icon="solar:add-circle-linear" width={16} />
+              <span className="max-sm:hidden">{t('createEvent')}</span>
+            </Button>
+          }
         />
       </div>
 
