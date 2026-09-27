@@ -180,7 +180,6 @@
     "amount": "金額",
     "date": "日期",
     "status": "狀態",
-    "to": "收款人：",
     "completed": "已完成",
     "pending": "處理中",
     "failed": "失敗",
