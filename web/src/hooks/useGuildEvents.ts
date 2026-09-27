@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { expandEventOccurrences } from '@/lib/event-occurrences';
 import { apiClient } from '@/lib/guma';
 import type {
   CalendarViewOptions,
@@ -126,11 +127,11 @@ export const useGuildEvents = (guildIdOverride?: string) => {
   }, []);
 
   const getEventsForDateRange = useCallback((startDate: Date, endDate: Date) => {
-    return events.filter(event => {
-      const eventStart = new Date(event.startDate);
-      const eventEnd = event.endDate ? new Date(event.endDate) : eventStart;
-      return eventStart <= endDate && eventEnd >= startDate;
-    });
+    const matched = new Map<string, GuildEvent>();
+    for (const occurrence of expandEventOccurrences(events, startDate, endDate)) {
+      if (!matched.has(occurrence.event.id)) matched.set(occurrence.event.id, occurrence.event);
+    }
+    return Array.from(matched.values());
   }, [events]);
 
   const getEventsForDay = useCallback((date: Date) => {
