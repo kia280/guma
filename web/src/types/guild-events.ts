@@ -12,6 +12,7 @@ export interface GuildEvent {
   recurringPattern?: RecurringPattern;
   priority: EventPriority;
   createdBy: string;
+  createdByName?: string;
   createdAt: string;
   updatedAt: string;
 }

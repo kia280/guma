@@ -46,13 +46,12 @@ const CATEGORY_ICONS: Record<ItemCategory, string> = {
   [ItemCategory.MISC]: 'solar:box-linear',
 };
 
-const getProgress = (now: number, startTime: string, endTime: string) => {
+const getRemainingPercent = (now: number, startTime: string, endTime: string) => {
   const start = new Date(startTime).getTime();
   const end = new Date(endTime).getTime();
   const total = end - start;
-  if (!(total > 0)) return now >= end ? 100 : 0;
-  const elapsed = now - start;
-  return Math.min(100, Math.max(0, (elapsed / total) * 100));
+  if (!(total > 0)) return now >= end ? 0 : 100;
+  return Math.min(100, Math.max(0, ((end - now) / total) * 100));
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -143,7 +142,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const bidAmount = bidInput?.auctionId === id ? bidInput.amount : minimumBid;
   const isActive = item.status === AuctionStatus.ACTIVE;
   const timeRemaining = isExpired ? t('ended') : t('remaining', { time: formatCountdown(remainingMs) });
-  const progress = getProgress(now, item.startTime, item.endTime);
+  const remainingPercent = getRemainingPercent(now, item.startTime, item.endTime);
   const hasBidAmount = Number.isFinite(bidAmount);
   const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
 
@@ -221,8 +220,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <ProgressBar
                   aria-label={t('timeRemaining')}
                   className="w-full"
-                  value={progress}
-                  color={progress > 80 ? 'danger' : progress > 50 ? 'warning' : 'success'}
+                  value={remainingPercent}
+                  color={remainingPercent < 20 ? 'danger' : remainingPercent < 50 ? 'warning' : 'success'}
                   size="sm"
                 >
                   <ProgressBar.Track>

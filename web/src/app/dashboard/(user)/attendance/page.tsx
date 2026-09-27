@@ -66,6 +66,26 @@ const emptyDraft: CheckinDraft = {
   lootList: [],
 };
 
+const readStoredDraft = (): CheckinDraft | null => {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<CheckinDraft> | null;
+    if (!parsed || typeof parsed !== 'object') return null;
+    return {
+      title: typeof parsed.title === 'string' ? parsed.title : '',
+      description: typeof parsed.description === 'string' ? parsed.description : '',
+      datetime: typeof parsed.datetime === 'string' ? parsed.datetime : '',
+      expireTime: typeof parsed.expireTime === 'string' ? parsed.expireTime : '',
+      imageUrl: typeof parsed.imageUrl === 'string' ? parsed.imageUrl : '',
+      lootInput: typeof parsed.lootInput === 'string' ? parsed.lootInput : '',
+      lootList: Array.isArray(parsed.lootList) ? parsed.lootList : [],
+    };
+  } catch {
+    return null;
+  }
+};
+
 export default function CheckinPage() {
   const t = useTranslations('checkIn');
   const guildId = useCurrentGuildId();
@@ -113,13 +133,26 @@ export default function CheckinPage() {
 
   const draftTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const updateDraft = (updates: Partial<CheckinDraft>) => {
-    const newDraft = { ...draft, ...updates };
+  const persistDraft = (newDraft: CheckinDraft) => {
     setDraft(newDraft);
     if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
     draftTimerRef.current = setTimeout(() => {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(newDraft));
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(newDraft));
+      } catch {}
     }, 500);
+  };
+
+  const updateDraft = (updates: Partial<CheckinDraft>) => {
+    persistDraft({ ...draft, ...updates });
+  };
+
+  const clearStoredDraft = () => {
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = null;
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {}
   };
 
   const [templates, setTemplates] = React.useState<CheckinTemplate[]>([]);
@@ -161,10 +194,11 @@ export default function CheckinPage() {
     updateDraft({ lootList: [...draft.lootList, toLootEntry(item)] });
   };
 
-  const applyDefaultTimes = () => {
-    if (draft.datetime && draft.expireTime) return;
-    const datetime = draft.datetime || currentMinute();
-    updateDraft({ datetime, expireTime: draft.expireTime || defaultExpireTime(datetime) });
+  const openCreateModal = () => {
+    const restored = readStoredDraft() ?? draft;
+    const datetime = restored.datetime || currentMinute();
+    persistDraft({ ...restored, datetime, expireTime: restored.expireTime || defaultExpireTime(datetime) });
+    createModalState.open();
   };
 
   const handleDatetimeChange = (datetime: string) => {
@@ -191,7 +225,7 @@ export default function CheckinPage() {
       refetchCheckins();
       setDraft(emptyDraft);
       setSelectedTemplateId(null);
-      localStorage.removeItem(DRAFT_KEY);
+      clearStoredDraft();
       notify.success(t('createSuccess'));
       createModalState.close();
     } catch {
@@ -204,19 +238,14 @@ export default function CheckinPage() {
   const handleNewCancel = () => {
     setDraft(emptyDraft);
     setSelectedTemplateId(null);
-    localStorage.removeItem(DRAFT_KEY);
+    clearStoredDraft();
   };
 
   return (
     <div className="space-y-5">
       {can('createCheckin') && (
         <div className="flex justify-end">
-          <Button
-            onPress={() => {
-              applyDefaultTimes();
-              createModalState.open();
-            }}
-          >
+          <Button onPress={openCreateModal}>
             <Icon icon="solar:add-circle-linear" width={16} />
             {t('addCheckIn')}
           </Button>
@@ -501,7 +530,7 @@ export default function CheckinPage() {
                     date={item.date}
                     description={item.description}
                     expireTime={item.expireTime}
-                    attendanceCount={item.attendanceList.length}
+                    attendanceCount={item.attendanceCount}
                     lootCount={item.lootList.length}
                     imageUrl={item.imageUrl}
                     isDisabled={item.isDisabled}
