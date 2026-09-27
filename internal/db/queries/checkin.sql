@@ -138,3 +138,20 @@ VALUES ($1, $2, $3, sqlc.arg(donor_name)::text, sqlc.arg(item)::jsonb, sqlc.arg(
 INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind, items, checkin_id)
 VALUES ($1, $2, sqlc.arg(username)::text, 0, NULLIF(sqlc.arg(note)::text, ''), 'checkin_loot',
         sqlc.arg(items)::jsonb, sqlc.arg(checkin_id)::uuid);
+
+-- name: RejectPendingRequestsForCheckinLoot :execrows
+UPDATE item_requests SET
+    status = 'rejected',
+    reviewer_id = sqlc.arg(reviewer_id),
+    review_note = NULLIF(sqlc.arg(review_note)::text, ''),
+    reviewed_at = NOW()
+WHERE item_requests.guild_id = sqlc.arg(guild_id)
+  AND item_requests.status = 'pending'
+  AND item_requests.bank_item_id IN (
+      SELECT bi.id FROM bank_items bi
+      WHERE bi.checkin_id = sqlc.arg(checkin_id) AND bi.guild_id = sqlc.arg(guild_id)
+  );
+
+-- name: RetractCheckinLoot :execrows
+DELETE FROM bank_items
+WHERE checkin_id = sqlc.arg(checkin_id) AND guild_id = sqlc.arg(guild_id) AND locked_by_type IS NULL;

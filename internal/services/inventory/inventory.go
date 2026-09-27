@@ -106,6 +106,13 @@ func Release(ctx context.Context, qtx *db.Queries, sourceType string, itemID *uu
 			return fmt.Errorf("%w: release backpack item: %v", errs.ErrInternal, err)
 		}
 	case SourceBank:
+		deleted, err := qtx.DeleteReleasedCancelledLoot(ctx, db.DeleteReleasedCancelledLootParams{ID: *itemID, HolderType: holder.Type, HolderID: holder.ID})
+		if err != nil {
+			return fmt.Errorf("%w: drop cancelled loot: %v", errs.ErrInternal, err)
+		}
+		if deleted > 0 {
+			return nil
+		}
 		if _, err := qtx.ReleaseBankItem(ctx, db.ReleaseBankItemParams{ID: *itemID, HolderType: holder.Type, HolderID: holder.ID}); err != nil {
 			return fmt.Errorf("%w: release bank item: %v", errs.ErrInternal, err)
 		}

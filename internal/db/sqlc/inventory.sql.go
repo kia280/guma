@@ -89,6 +89,28 @@ func (q *Queries) ConsumeBankItem(ctx context.Context, arg ConsumeBankItemParams
 	return item, err
 }
 
+const deleteReleasedCancelledLoot = `-- name: DeleteReleasedCancelledLoot :execrows
+DELETE FROM bank_items
+WHERE bank_items.id = $1
+  AND bank_items.locked_by_type = $2::text
+  AND bank_items.locked_by_id = $3::uuid
+  AND bank_items.checkin_id IN (SELECT c.id FROM checkins c WHERE c.cancelled_at IS NOT NULL)
+`
+
+type DeleteReleasedCancelledLootParams struct {
+	ID         uuid.UUID
+	HolderType string
+	HolderID   uuid.UUID
+}
+
+func (q *Queries) DeleteReleasedCancelledLoot(ctx context.Context, arg DeleteReleasedCancelledLootParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteReleasedCancelledLoot, arg.ID, arg.HolderType, arg.HolderID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const lockBackpackItem = `-- name: LockBackpackItem :one
 UPDATE backpack_items SET
     locked_by_type = $1::text,

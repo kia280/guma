@@ -364,14 +364,33 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, checkinIDStr, userIDSt
 		return nil, err
 	}
 
-	r, err := s.q.CancelCheckin(ctx, db.CancelCheckinParams{ID: checkinID, GuildID: guildID})
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	r, err := qtx.CancelCheckin(ctx, db.CancelCheckinParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: check-in is no longer open", errs.ErrFailedPrecondition)
 		}
 		return nil, fmt.Errorf("%w: cancel checkin: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("checkin_id", checkinIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).Msg("checkin cancelled")
+	if _, err := qtx.RejectPendingRequestsForCheckinLoot(ctx, db.RejectPendingRequestsForCheckinLootParams{
+		ReviewerID: &userID, ReviewNote: retractedLootNote, GuildID: guildID, CheckinID: &checkinID,
+	}); err != nil {
+		return nil, fmt.Errorf("%w: reject loot requests: %v", errs.ErrInternal, err)
+	}
+	retracted, err := qtx.RetractCheckinLoot(ctx, db.RetractCheckinLootParams{CheckinID: &checkinID, GuildID: guildID})
+	if err != nil {
+		return nil, fmt.Errorf("%w: retract loot: %v", errs.ErrInternal, err)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("checkin_id", checkinIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).Int64("retracted_loot", retracted).Msg("checkin cancelled")
 	return toCheckIn(checkinRow{
 		ID: r.ID, GuildID: r.GuildID, CreatedBy: r.CreatedBy,
 		Title: r.Title, Description: r.Description,
@@ -471,6 +490,8 @@ func (s *Service) ListAttendees(ctx context.Context, guildIDStr, checkinIDStr st
 }
 
 // --- helpers ---
+
+const retractedLootNote = "The roll call was cancelled, so its loot was removed from the guild bank."
 
 func checkCancellable(isCancelled, isExpired bool) error {
 	if isCancelled {

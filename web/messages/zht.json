@@ -1015,7 +1015,7 @@
     "statusFinished": "已完成",
     "cancelCheckin": "取消點名",
     "cancelConfirmTitle": "確定要取消這次點名？",
-    "cancelConfirmBody": "成員將無法再登記出席，已登記的出席紀錄會保留。此操作無法復原。",
+    "cancelConfirmBody": "成員將無法再登記出席，已登記的出席紀錄會保留。這次點名仍可在公會銀行申請的戰利品會被移除，相關的待審申請也會被拒絕；已在競拍或抽獎中的戰利品依該活動結果處理。此操作無法復原。",
     "cancelConfirm": "取消點名",
     "cancelSuccess": "點名已取消。",
     "cancelFailed": "無法取消點名，請再試一次。",

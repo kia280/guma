@@ -470,6 +470,9 @@ const baseMockApiClient: ApiClient = {
       throw Object.assign(new Error('check-in is no longer open'), { response: { status: 400 } });
     }
     entry.status = CheckinStatus.CANCELLED;
+    mockData.mockGuildItems
+      .filter(item => item.checkinId === id)
+      .forEach(item => removeById(mockData.mockGuildItems, item.id));
     return entry;
   },
   submitAttendance: async (_guildId, checkinId, notes): Promise<AttendanceMember> => {

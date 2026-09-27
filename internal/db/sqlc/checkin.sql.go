@@ -544,6 +544,58 @@ func (q *Queries) ListCheckins(ctx context.Context, arg ListCheckinsParams) ([]L
 	return items, nil
 }
 
+const rejectPendingRequestsForCheckinLoot = `-- name: RejectPendingRequestsForCheckinLoot :execrows
+UPDATE item_requests SET
+    status = 'rejected',
+    reviewer_id = $1,
+    review_note = NULLIF($2::text, ''),
+    reviewed_at = NOW()
+WHERE item_requests.guild_id = $3
+  AND item_requests.status = 'pending'
+  AND item_requests.bank_item_id IN (
+      SELECT bi.id FROM bank_items bi
+      WHERE bi.checkin_id = $4 AND bi.guild_id = $3
+  )
+`
+
+type RejectPendingRequestsForCheckinLootParams struct {
+	ReviewerID *uuid.UUID
+	ReviewNote string
+	GuildID    uuid.UUID
+	CheckinID  *uuid.UUID
+}
+
+func (q *Queries) RejectPendingRequestsForCheckinLoot(ctx context.Context, arg RejectPendingRequestsForCheckinLootParams) (int64, error) {
+	result, err := q.db.Exec(ctx, rejectPendingRequestsForCheckinLoot,
+		arg.ReviewerID,
+		arg.ReviewNote,
+		arg.GuildID,
+		arg.CheckinID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const retractCheckinLoot = `-- name: RetractCheckinLoot :execrows
+DELETE FROM bank_items
+WHERE checkin_id = $1 AND guild_id = $2 AND locked_by_type IS NULL
+`
+
+type RetractCheckinLootParams struct {
+	CheckinID *uuid.UUID
+	GuildID   uuid.UUID
+}
+
+func (q *Queries) RetractCheckinLoot(ctx context.Context, arg RetractCheckinLootParams) (int64, error) {
+	result, err := q.db.Exec(ctx, retractCheckinLoot, arg.CheckinID, arg.GuildID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const updateCheckin = `-- name: UpdateCheckin :one
 UPDATE checkins SET
     title       = CASE WHEN $1::text       != '' THEN $1::text       ELSE title END,

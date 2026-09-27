@@ -1015,7 +1015,7 @@
     "statusFinished": "Finished",
     "cancelCheckin": "Cancel roll call",
     "cancelConfirmTitle": "Cancel this roll call?",
-    "cancelConfirmBody": "Members will no longer be able to mark themselves present. Existing attendance stays on record. This cannot be undone.",
+    "cancelConfirmBody": "Members will no longer be able to mark themselves present. Existing attendance stays on record. Loot from this roll call that is still available in the guild bank is removed, and pending requests for it are rejected; loot already in an auction or lottery follows that listing. This cannot be undone.",
     "cancelConfirm": "Cancel roll call",
     "cancelSuccess": "Roll call cancelled.",
     "cancelFailed": "Couldn't cancel the roll call. Please try again.",
