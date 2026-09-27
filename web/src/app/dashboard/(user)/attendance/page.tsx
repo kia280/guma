@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Description, DatePicker, DateField, Calendar, ListBox, Select, useOverlayState, type Key } from '@heroui/react';
+import { Button, Card, Chip, Modal, Input, Tabs, TextArea, TextField, Label, Description, FieldError, DatePicker, DateField, Calendar, ListBox, Select, useOverlayState, type Key } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { parseAbsoluteToLocal, getLocalTimeZone } from '@internationalized/date';
 import type { DateValue } from '@internationalized/date';
@@ -12,6 +12,7 @@ import { LootListEditor } from '@/components/LootListEditor';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { useGuildPermissions } from '@/lib/permissions';
@@ -131,6 +132,20 @@ export default function CheckinPage() {
   const filtered = activeStatus === null ? checkins : checkins.filter(c => c.status === activeStatus);
 
   const [draft, setDraft] = React.useState<CheckinDraft>(emptyDraft);
+  const [showCreateErrors, setShowCreateErrors] = React.useState(false);
+
+  const titleError = draft.title.trim() ? null : t('titleRequired');
+  const datetimeError = draft.datetime ? null : t('eventDateTimeRequired');
+  const expireBeforeStart =
+    Boolean(draft.datetime && draft.expireTime) && new Date(draft.expireTime) <= new Date(draft.datetime);
+  const expireTimeError = !draft.expireTime
+    ? t('expireTimeRequired')
+    : expireBeforeStart
+      ? t('expireBeforeStart')
+      : null;
+  const showTitleError = Boolean(titleError) && showCreateErrors;
+  const showDatetimeError = Boolean(datetimeError) && showCreateErrors;
+  const showExpireTimeError = Boolean(expireTimeError) && (showCreateErrors || expireBeforeStart);
 
   const draftTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -199,6 +214,7 @@ export default function CheckinPage() {
     const restored = readStoredDraft() ?? draft;
     const datetime = restored.datetime || currentMinute();
     persistDraft({ ...restored, datetime, expireTime: restored.expireTime || defaultExpireTime(datetime) });
+    setShowCreateErrors(false);
     createModalState.open();
   };
 
@@ -210,9 +226,12 @@ export default function CheckinPage() {
     );
   };
 
-  const handleNewSubmit = async () => {
-    if (!draft.title.trim() || !draft.datetime || !draft.expireTime) return;
-    if (new Date(draft.expireTime) <= new Date(draft.datetime)) return;
+  const handleNewSubmit = async (trigger: Element) => {
+    if (titleError || datetimeError || expireTimeError) {
+      setShowCreateErrors(true);
+      focusFirstInvalidField(trigger);
+      return;
+    }
     setIsCreating(true);
     try {
       await apiClient.createCheckin(guildId, {
@@ -302,7 +321,7 @@ export default function CheckinPage() {
                         )}
                       </div>
                     )}
-                    <TextField>
+                    <TextField isRequired validationBehavior="aria" isInvalid={showTitleError}>
                       <Label>{t('title')}</Label>
                       <Input
                         placeholder={t('titlePlaceholder')}
@@ -311,6 +330,7 @@ export default function CheckinPage() {
                         variant="secondary"
                         autoFocus
                       />
+                      {showTitleError && <FieldError>{titleError}</FieldError>}
                     </TextField>
                     <TextField>
                       <Label>{t('description')}</Label>
@@ -324,6 +344,8 @@ export default function CheckinPage() {
                     </TextField>
                     <DatePicker
                       isRequired
+                      validationBehavior="aria"
+                      isInvalid={showDatetimeError}
                       granularity="minute"
                       hourCycle={24}
                       value={draft.datetime ? parseAbsoluteToLocal(new Date(draft.datetime).toISOString()) : null}
@@ -342,6 +364,7 @@ export default function CheckinPage() {
                           </DatePicker.Trigger>
                         </DateField.Suffix>
                       </DateField.Group>
+                      {showDatetimeError && <FieldError>{datetimeError}</FieldError>}
                       <DatePicker.Popover>
                         <Calendar aria-label={t('eventDateTime')}>
                           <Calendar.Header>
@@ -370,6 +393,8 @@ export default function CheckinPage() {
                     </DatePicker>
                     <DatePicker
                       isRequired
+                      validationBehavior="aria"
+                      isInvalid={showExpireTimeError}
                       granularity="minute"
                       hourCycle={24}
                       value={draft.expireTime ? parseAbsoluteToLocal(new Date(draft.expireTime).toISOString()) : null}
@@ -389,6 +414,7 @@ export default function CheckinPage() {
                         </DateField.Suffix>
                       </DateField.Group>
                       <Description>{t('expirePlaceholder')}</Description>
+                      {showExpireTimeError && <FieldError>{expireTimeError}</FieldError>}
                       <DatePicker.Popover>
                         <Calendar aria-label={t('expireTime')}>
                           <Calendar.Header>
@@ -460,14 +486,8 @@ export default function CheckinPage() {
                   </Button>
                   <Button
                     variant="primary"
-                    onPress={handleNewSubmit}
+                    onPress={e => handleNewSubmit(e.target)}
                     isPending={isCreating}
-                    isDisabled={
-                      !draft.title.trim() ||
-                      !draft.datetime ||
-                      !draft.expireTime ||
-                      new Date(draft.expireTime) <= new Date(draft.datetime)
-                    }
                   >
                     {t('create')}
                   </Button>

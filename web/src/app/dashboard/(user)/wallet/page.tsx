@@ -33,6 +33,7 @@ import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
 import { apiClient } from '@/lib/guma';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 import { type FormatGold, useFormatGold } from '@/lib/guma/useFormatGold';
@@ -165,6 +166,7 @@ export default function WalletPage() {
 
   const [transferAmount, setTransferAmount] = React.useState('');
   const [transferRecipient, setTransferRecipient] = React.useState('');
+  const [showTransferErrors, setShowTransferErrors] = React.useState(false);
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
   const [depositAmount, setDepositAmount] = React.useState('');
   const { contains } = useFilter({ sensitivity: 'base' });
@@ -280,7 +282,14 @@ export default function WalletPage() {
   const withdrawAmountValue = parseGold(withdrawAmount);
   const transferExceedsBalance = transferAmountValue > balance;
   const withdrawExceedsBalance = withdrawAmountValue > balance;
-  const canTransfer = transferAmountValue > 0 && !transferExceedsBalance && Boolean(transferRecipient);
+  const transferAmountError = !(transferAmountValue > 0)
+    ? t('amountMustBePositive')
+    : transferExceedsBalance
+      ? t('insufficientBalance')
+      : null;
+  const transferRecipientError = transferRecipient ? null : t('recipientRequired');
+  const showTransferAmountError = Boolean(transferAmountError) && (showTransferErrors || transferAmount !== '');
+  const showTransferRecipientError = Boolean(transferRecipientError) && showTransferErrors;
   const canWithdraw = withdrawAmountValue > 0 && !withdrawExceedsBalance;
 
   const runAction = async (
@@ -301,8 +310,17 @@ export default function WalletPage() {
     }
   };
 
-  const handleTransfer = () => {
-    if (!canTransfer) return;
+  const openTransfer = () => {
+    setShowTransferErrors(false);
+    transferModalState.open();
+  };
+
+  const handleTransfer = (trigger: Element) => {
+    if (transferAmountError || transferRecipientError) {
+      setShowTransferErrors(true);
+      focusFirstInvalidField(trigger);
+      return;
+    }
     const amount = transferAmountValue;
     return runAction(
       'transfer',
@@ -421,7 +439,7 @@ export default function WalletPage() {
                 </Modal.Container>
               </Modal.Backdrop>
               </Modal>
-              <Button variant="primary" className="w-full sm:w-auto" onPress={transferModalState.open}>
+              <Button variant="primary" className="w-full sm:w-auto" onPress={openTransfer}>
                 <Icon icon="solar:arrow-right-linear" width={16} />
                 {t('transfer')}
               </Button>
@@ -434,7 +452,7 @@ export default function WalletPage() {
                       <Modal.Heading>{t('transferMoney')}</Modal.Heading>
                     </Modal.Header>
                     <Modal.Body className="flex flex-col gap-3">
-                      <TextField isInvalid={transferExceedsBalance}>
+                      <TextField validationBehavior="aria" isInvalid={showTransferAmountError}>
                         <Label>{t('amountLabel')}</Label>
                         <Input
                           autoFocus
@@ -448,12 +466,14 @@ export default function WalletPage() {
                           variant="secondary"
                           onChange={e => setTransferAmount(e.target.value)}
                         />
-                        <FieldError>{t('insufficientBalance')}</FieldError>
+                        {showTransferAmountError && <FieldError>{transferAmountError}</FieldError>}
                       </TextField>
                       <Autocomplete
                         className="w-full"
                         placeholder={t('searchRecipient')}
                         selectionMode="single"
+                        validationBehavior="aria"
+                        isInvalid={showTransferRecipientError}
                         value={transferRecipient}
                         onChange={key => setTransferRecipient(key as string)}
                       >
@@ -484,6 +504,7 @@ export default function WalletPage() {
                             </ListBox>
                           </Autocomplete.Filter>
                         </Autocomplete.Popover>
+                        {showTransferRecipientError && <FieldError>{transferRecipientError}</FieldError>}
                       </Autocomplete>
                       <p className="type-caption text-hint px-1">
                         {t('available')} {formatGold(balance)}
@@ -495,9 +516,8 @@ export default function WalletPage() {
                       </Button>
                       <Button
                         variant="primary"
-                        onPress={handleTransfer}
+                        onPress={e => handleTransfer(e.target)}
                         isPending={pendingAction === 'transfer'}
-                        isDisabled={!canTransfer}
                       >
                         {t('transfer')}
                       </Button>
