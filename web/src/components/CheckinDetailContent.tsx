@@ -156,6 +156,10 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     }
   };
 
+  const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-divider bg-surface';
+  const sectionGap = onClose ? 'gap-6' : 'gap-4';
+  const sectionStack = onClose ? 'space-y-6' : 'space-y-4';
+
   return (
     <div className="space-y-5">
       {/* Back button - only show if not in modal mode */}
@@ -173,7 +177,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
       )}
 
             {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start gap-4 p-5 rounded-xl border border-divider bg-surface">
+      <div className={`flex flex-col sm:flex-row items-start gap-4 ${onClose ? 'pr-8' : sectionClass}`}>
         <div className="p-4 rounded-xl bg-default shrink-0">
           <Icon icon="heroicons:clipboard-document-check" width={36} className="text-subtle" />
         </div>
@@ -270,11 +274,11 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         onConfirm={handleCancelConfirm}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <div className={`grid grid-cols-1 lg:grid-cols-5 ${sectionGap}`}>
         {/* Left — attendance + loot */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className={`lg:col-span-3 ${sectionStack}`}>
           {/* Attendance List */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
+          <div className={`space-y-4 ${sectionClass}`}>
             <div className="flex items-center justify-between">
               <h2 className="type-subheading text-foreground">
                 {t('attendance')}
@@ -313,7 +317,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           </div>
 
           {/* Loot List */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
+          <div className={`space-y-4 ${sectionClass}`}>
             <div className="flex items-center justify-between">
               <h2 className="type-subheading text-foreground">
                 {t('loot')}
@@ -354,9 +358,9 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         </div>
 
         {/* Right — details */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className={`lg:col-span-2 ${sectionStack}`}>
           {/* Timing */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
+          <div className={`space-y-3 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
               {t('timing')}
             </h2>
@@ -384,7 +388,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           </div>
 
           {/* Summary */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
+          <div className={`space-y-3 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
               {t('summary')}
             </h2>

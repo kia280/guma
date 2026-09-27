@@ -84,7 +84,7 @@ export default function AdminRolesPage() {
                 </li>
               ))}
             </ul>
-            <Table className="hidden sm:grid">
+            <Table variant="secondary" className="hidden sm:grid">
               <Table.ScrollContainer>
                 <Table.Content
                   aria-labelledby={`roles-section-${section.key}`}
