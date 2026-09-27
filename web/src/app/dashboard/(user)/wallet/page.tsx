@@ -409,7 +409,7 @@ export default function WalletPage() {
                         {t('cancel')}
                       </Button>
                       <Button
-                        variant="tertiary"
+                        variant="primary"
                         onPress={handleDeposit}
                         isPending={pendingAction === 'deposit'}
                         isDisabled={!(parseGold(depositAmount) > 0)}
