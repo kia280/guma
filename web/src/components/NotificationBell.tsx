@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Popover } from '@heroui/react';
+import { Badge, Button, Popover } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
@@ -42,15 +42,14 @@ export function NotificationBell() {
         className="size-11 min-w-11 rounded-full text-subtle relative overflow-visible sm:size-7 sm:min-w-7"
         variant="ghost"
       >
-        <Icon icon="solar:bell-linear" width={18} aria-hidden />
-        {unreadCount > 0 && (
-          <span
-            aria-hidden
-            className="absolute top-1.5 right-1.5 flex sm:-top-1 sm:-right-1 h-4 min-w-4 items-center justify-center rounded-full bg-danger px-0.5 text-danger-foreground text-[10px] font-bold tabular-nums"
-          >
-            {unreadCount > MAX_BADGE_COUNT ? `${MAX_BADGE_COUNT}+` : unreadCount}
-          </span>
-        )}
+        <Badge.Anchor>
+          <Icon icon="solar:bell-linear" width={18} aria-hidden />
+          {unreadCount > 0 && (
+            <Badge aria-hidden color="danger" size="sm" className="font-bold tabular-nums">
+              {unreadCount > MAX_BADGE_COUNT ? `${MAX_BADGE_COUNT}+` : unreadCount}
+            </Badge>
+          )}
+        </Badge.Anchor>
       </Button>
       <Popover.Content className="w-[min(92vw,400px)] p-0">
         <Popover.Dialog className="p-0 m-0" aria-label={t('notifications')}>
