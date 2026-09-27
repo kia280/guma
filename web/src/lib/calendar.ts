@@ -10,7 +10,7 @@ export type CalendarView = CalendarViewOptions['view'];
 export type DeviceClass = 'phone' | 'tablet' | 'desktop';
 
 export const VIEWS_BY_DEVICE: Record<DeviceClass, readonly CalendarView[]> = {
-  phone: ['agenda', 'day'],
+  phone: ['agenda', 'month', 'day'],
   tablet: ['month', 'week', 'day', 'agenda'],
   desktop: ['month', 'week', 'day', 'agenda'],
 };
