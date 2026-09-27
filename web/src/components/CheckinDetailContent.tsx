@@ -165,7 +165,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     <div className="space-y-5">
       {/* Back button - only show if not in modal mode */}
       {!onClose && (
-        <Button variant="secondary" size="sm" onPress={() => router.push('/dashboard/attendance')}>
+        <Button variant="secondary" size="sm" className="max-sm:h-11" onPress={() => router.push('/dashboard/attendance')}>
           <Icon icon="solar:arrow-left-linear" width={16} />
           {t('backToCheckins')}
         </Button>
@@ -203,12 +203,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             {t('checkedIn')}
           </Chip>
         ) : isOpen_ ? (
-          <Button variant="primary" className="shrink-0" onPress={openCheckinModal}>
+          <Button variant="primary" className="shrink-0 max-sm:h-11" onPress={openCheckinModal}>
             {t('checkIn')}
           </Button>
         ) : null}
         {canCancel && (
-          <Button variant="danger-soft" className="shrink-0" onPress={() => setIsCancelConfirmOpen(true)}>
+          <Button variant="danger-soft" className="shrink-0 max-sm:h-11" onPress={() => setIsCancelConfirmOpen(true)}>
             <Icon icon="solar:forbidden-circle-linear" width={16} />
             {t('cancelCheckin')}
           </Button>

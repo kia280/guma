@@ -255,33 +255,32 @@ export default function PreferencePage() {
             const descriptionId = `notification-${item.key}-description`;
             return (
               <React.Fragment key={item.key}>
-                <div className="flex items-center justify-between gap-3 py-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Icon icon={item.icon} width={16} className="text-hint shrink-0" />
-                    <div className="min-w-0">
-                      <p id={labelId} className="type-body text-foreground">
-                        {t(item.label)}
-                      </p>
-                      <p id={descriptionId} className="type-caption text-hint">
-                        {t(item.description)}
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    aria-labelledby={labelId}
-                    aria-describedby={descriptionId}
-                    isSelected={notificationPrefs[item.key]}
-                    isDisabled={notificationStatus !== 'ready'}
-                    onChange={value => void toggleNotification(item.key, value)}
-                    size="sm"
-                  >
-                    <Switch.Content>
-                      <Switch.Control>
-                        <Switch.Thumb />
-                      </Switch.Control>
-                    </Switch.Content>
-                  </Switch>
-                </div>
+                <Switch
+                  aria-labelledby={labelId}
+                  aria-describedby={descriptionId}
+                  isSelected={notificationPrefs[item.key]}
+                  isDisabled={notificationStatus !== 'ready'}
+                  onChange={value => void toggleNotification(item.key, value)}
+                  size="sm"
+                  className="w-full"
+                >
+                  <Switch.Content className="w-full min-h-11 justify-between gap-3 py-3 font-normal">
+                    <span className="flex items-center gap-3 min-w-0">
+                      <Icon icon={item.icon} width={16} className="text-hint shrink-0" />
+                      <span className="min-w-0">
+                        <span id={labelId} className="block type-body text-foreground">
+                          {t(item.label)}
+                        </span>
+                        <span id={descriptionId} className="block type-caption text-hint">
+                          {t(item.description)}
+                        </span>
+                      </span>
+                    </span>
+                    <Switch.Control>
+                      <Switch.Thumb />
+                    </Switch.Control>
+                  </Switch.Content>
+                </Switch>
                 {idx < arr.length - 1 && <Separator />}
               </React.Fragment>
             );

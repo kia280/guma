@@ -242,6 +242,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
           isIconOnly
           variant="ghost"
           size="sm"
+          className="max-sm:size-11"
           aria-label={t('previousSlide')}
           isDisabled={idx === 0}
           onPress={() => goTo(idx - 1)}
@@ -256,7 +257,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
               onClick={() => setActive(slide)}
               aria-label={slide === 'personal' ? t('personalOverview') : t('guildOverview')}
               aria-current={i === idx ? 'true' : undefined}
-              className="group flex h-8 min-w-8 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              className="group flex h-11 min-w-11 items-center sm:h-8 sm:min-w-8 justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-focus"
             >
               <span
                 className={`h-2.5 rounded-full transition-all duration-200 ${
@@ -270,6 +271,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
           isIconOnly
           variant="ghost"
           size="sm"
+          className="max-sm:size-11"
           aria-label={t('nextSlide')}
           isDisabled={idx === SLIDES.length - 1}
           onPress={() => goTo(idx + 1)}

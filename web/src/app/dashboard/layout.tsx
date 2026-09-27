@@ -88,13 +88,13 @@ export default function DashboardLayout({ children, modal }: { children: React.R
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="shrink-0 bg-background px-3 pt-3">
-            <div className="flex h-10 items-center gap-2 px-1.5">
+            <div className="flex h-11 items-center gap-2 px-1.5 sm:h-10">
               <Tooltip delay={300}>
                 <Button
                   isIconOnly
                   size="sm"
                   variant="ghost"
-                  className="size-7 min-w-7 text-subtle"
+                  className="size-11 min-w-11 text-subtle sm:size-7 sm:min-w-7"
                   aria-label={toggleLabel}
                   aria-expanded={isCompact ? isDrawerOpen : !showCollapsed}
                   onPress={toggleSidebar}
@@ -115,7 +115,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                 <Button
                   isIconOnly
                   size="sm"
-                  className="size-7 min-w-7 text-subtle"
+                  className="size-11 min-w-11 text-subtle sm:size-7 sm:min-w-7"
                   variant="ghost"
                   aria-label={t('toggleTheme')}
                   onPress={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -138,7 +138,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                     <Button
                       isIconOnly
                       variant="ghost"
-                      className="size-7 min-w-7 rounded-full relative overflow-visible p-0"
+                      className="size-11 min-w-11 rounded-full relative overflow-visible p-0 sm:size-7 sm:min-w-7"
                     >
                       <Badge.Anchor>
                         <UserAvatar name={displayName || me?.email || ''} src={me?.avatarUrl} className="size-7" />
