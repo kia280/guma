@@ -13,6 +13,7 @@ import {
   Label,
   Tooltip,
   Alert,
+  FieldError,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
@@ -26,6 +27,7 @@ import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
+import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
@@ -104,6 +106,8 @@ export default function GuildBankPage() {
   const [contributeNote, setContributeNote] = React.useState('');
   const [requestAmount, setRequestAmount] = React.useState('');
   const [requestReason, setRequestReason] = React.useState('');
+  const [showContributeErrors, setShowContributeErrors] = React.useState(false);
+  const [showRequestErrors, setShowRequestErrors] = React.useState(false);
   const [selectedItem, setSelectedItem] = React.useState<GuildBankItem | null>(null);
   const [requestItemReason, setRequestItemReason] = React.useState('');
   const [isRequesting, setIsRequesting] = React.useState(false);
@@ -180,6 +184,21 @@ export default function GuildBankPage() {
 
   const guildBalance = bank?.balance ?? 0;
 
+  const contributeAmountValue = parseGold(contributeAmount);
+  const contributeAmountError = contributeAmountValue > 0 ? null : t('amountMustBePositive');
+  const showContributeAmountError =
+    Boolean(contributeAmountError) && (showContributeErrors || contributeAmount !== '');
+
+  const requestAmountValue = parseGold(requestAmount);
+  const requestAmountError = !(requestAmountValue > 0)
+    ? t('amountMustBePositive')
+    : bank && requestAmountValue > bank.balance
+      ? t('errorExceedsBalance')
+      : null;
+  const requestReasonError = requestReason.trim() ? null : t('reasonRequired');
+  const showRequestAmountError = Boolean(requestAmountError) && (showRequestErrors || requestAmount !== '');
+  const showRequestReasonError = Boolean(requestReasonError) && showRequestErrors;
+
   const getContributionLabel = (type: GuildContribution['type']) => {
     switch (type) {
       case 'contribute':
@@ -195,9 +214,18 @@ export default function GuildBankPage() {
     }
   };
 
-  const handleContribute = async () => {
-    const amount = parseGold(contributeAmount);
-    if (!(amount > 0)) return;
+  const openContribute = () => {
+    setShowContributeErrors(false);
+    contributeModalState.open();
+  };
+
+  const handleContribute = async (trigger: Element) => {
+    if (contributeAmountError) {
+      setShowContributeErrors(true);
+      focusFirstInvalidField(trigger);
+      return;
+    }
+    const amount = contributeAmountValue;
     setIsContributing(true);
     try {
       await apiClient.contributeFunds(guildId, { amount, note: contributeNote || undefined });
@@ -230,12 +258,17 @@ export default function GuildBankPage() {
 
   const openFundRequest = () => {
     setRequestError(null);
+    setShowRequestErrors(false);
     requestFundsModalState.open();
   };
 
-  const handleRequest = async () => {
-    const amount = parseGold(requestAmount);
-    if (!(amount > 0) || !requestReason.trim()) return;
+  const handleRequest = async (trigger: Element) => {
+    if (requestAmountError || requestReasonError) {
+      setShowRequestErrors(true);
+      focusFirstInvalidField(trigger);
+      return;
+    }
+    const amount = requestAmountValue;
     setIsRequesting(true);
     setRequestError(null);
     try {
@@ -302,7 +335,7 @@ export default function GuildBankPage() {
                 <Button
                   variant="primary"
                   className="w-full sm:w-auto"
-                  onPress={contributeModalState.open}
+                  onPress={openContribute}
                 >
                   <Icon icon="solar:arrow-down-linear" width={16} />
                   {t('contribute')}
@@ -316,7 +349,7 @@ export default function GuildBankPage() {
                         <Modal.Heading>{t('contributeTitle')}</Modal.Heading>
                       </Modal.Header>
                       <Modal.Body className="flex flex-col gap-3">
-                        <TextField>
+                        <TextField validationBehavior="aria" isInvalid={showContributeAmountError}>
                           <Label>{t('amountLabel')}</Label>
                           <Input
                             autoFocus
@@ -329,6 +362,7 @@ export default function GuildBankPage() {
                             variant="secondary"
                             onChange={e => setContributeAmount(e.target.value)}
                           />
+                          {showContributeAmountError && <FieldError>{contributeAmountError}</FieldError>}
                         </TextField>
                         <TextField>
                           <Label>{t('noteOptional')}</Label>
@@ -357,9 +391,8 @@ export default function GuildBankPage() {
                         </Button>
                         <Button
                           variant="primary"
-                          onPress={handleContribute}
+                          onPress={e => handleContribute(e.target)}
                           isPending={isContributing}
-                          isDisabled={!(parseGold(contributeAmount) > 0)}
                         >
                           {t('contribute')}
                         </Button>
@@ -385,7 +418,7 @@ export default function GuildBankPage() {
                         <Modal.Heading>{t('requestFundsTitle')}</Modal.Heading>
                       </Modal.Header>
                       <Modal.Body className="flex flex-col gap-3">
-                        <TextField>
+                        <TextField validationBehavior="aria" isInvalid={showRequestAmountError}>
                           <Label>{t('amountLabel')}</Label>
                           <Input
                             autoFocus
@@ -398,8 +431,9 @@ export default function GuildBankPage() {
                             variant="secondary"
                             onChange={e => setRequestAmount(e.target.value)}
                           />
+                          {showRequestAmountError && <FieldError>{requestAmountError}</FieldError>}
                         </TextField>
-                        <TextField>
+                        <TextField validationBehavior="aria" isInvalid={showRequestReasonError}>
                           <Label>{t('reason')}</Label>
                           <TextArea
                             placeholder={t('reasonPlaceholder')}
@@ -408,6 +442,7 @@ export default function GuildBankPage() {
                             rows={3}
                             onChange={e => setRequestReason(e.target.value)}
                           />
+                          {showRequestReasonError && <FieldError>{requestReasonError}</FieldError>}
                         </TextField>
                         <div className="bg-surface-secondary rounded-lg p-3">
                           <div className="flex items-start gap-2">
@@ -434,9 +469,8 @@ export default function GuildBankPage() {
                         </Button>
                         <Button
                           variant="primary"
-                          onPress={handleRequest}
+                          onPress={e => handleRequest(e.target)}
                           isPending={isRequesting}
-                          isDisabled={!(parseGold(requestAmount) > 0) || !requestReason.trim()}
                         >
                           {t('submitRequest')}
                         </Button>

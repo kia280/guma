@@ -157,7 +157,11 @@
     "itemTemplateHint": "Adds the item to the end of the loot list.",
     "lootToBankHint": "When published, these items go to the guild storage and stay linked to this roll call.",
     "createSuccess": "Roll call created.",
-    "createFailed": "Could not create the roll call. Please try again."
+    "createFailed": "Could not create the roll call. Please try again.",
+    "titleRequired": "Enter a title",
+    "eventDateTimeRequired": "Choose when the event starts",
+    "expireTimeRequired": "Choose when roll call closes",
+    "expireBeforeStart": "Roll call must close after the event starts"
   },
   "balanceTrendChart": {
     "balance": "Balance",
@@ -230,7 +234,9 @@
     "noItemsHint": "Items you receive from the guild bank or events will show up here.",
     "noTransactions": "No transactions yet",
     "noTransactionsHint": "Your deposits, withdrawals, and transfers will show up here.",
-    "balance": "Balance"
+    "balance": "Balance",
+    "amountMustBePositive": "Enter an amount greater than 0",
+    "recipientRequired": "Choose a recipient"
   },
   "lotteryPage": {
     "all": "All",
@@ -640,7 +646,9 @@
     "noActivity": "No activity yet",
     "noActivityHint": "Contributions and requests will show up here.",
     "activityTable": "Guild bank activity",
-    "itemSummary": "{rarity} · {category} · {count, plural, one {# available} other {# available}}"
+    "itemSummary": "{rarity} · {category} · {count, plural, one {# available} other {# available}}",
+    "amountMustBePositive": "Enter an amount greater than 0",
+    "reasonRequired": "Enter a reason for the request"
   },
   "notificationsCard": {
     "notifications": "Notifications",
