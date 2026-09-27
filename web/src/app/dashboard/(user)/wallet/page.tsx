@@ -294,6 +294,7 @@ export default function WalletPage() {
   const showTransferAmountError = Boolean(transferAmountError) && (showTransferErrors || transferAmount !== '');
   const showTransferRecipientError = Boolean(transferRecipientError) && showTransferErrors;
   const canWithdraw = withdrawAmountValue > 0 && !withdrawExceedsBalance;
+  const isActionPending = pendingAction !== null;
 
   const runAction = async (
     action: WalletAction,
@@ -411,10 +412,10 @@ export default function WalletPage() {
                 {t('deposit')}
               </Button>
               <Modal state={depositModalState}>
-              <Modal.Backdrop>
+              <Modal.Backdrop isDismissable={!isActionPending} isKeyboardDismissDisabled={isActionPending}>
                 <Modal.Container size="sm">
                   <Modal.Dialog>
-                    <Modal.CloseTrigger />
+                    <Modal.CloseTrigger isDisabled={isActionPending} />
                     {completedAction?.action === 'deposit' ? (
                       <ActionSuccess title={t('depositSuccess')} detail={completedAction.detail} />
                     ) : (
@@ -442,7 +443,7 @@ export default function WalletPage() {
                           </p>
                         </Modal.Body>
                         <Modal.Footer>
-                          <Button slot="close" variant="secondary">
+                          <Button slot="close" variant="secondary" isDisabled={isActionPending}>
                             {t('cancel')}
                           </Button>
                           <Button
@@ -470,10 +471,10 @@ export default function WalletPage() {
                 {t('transfer')}
               </Button>
               <Modal state={transferModalState}>
-              <Modal.Backdrop>
+              <Modal.Backdrop isDismissable={!isActionPending} isKeyboardDismissDisabled={isActionPending}>
                 <Modal.Container size="sm">
                   <Modal.Dialog>
-                    <Modal.CloseTrigger />
+                    <Modal.CloseTrigger isDisabled={isActionPending} />
                     {completedAction?.action === 'transfer' ? (
                       <ActionSuccess title={t('transferSuccess')} detail={completedAction.detail} />
                     ) : (
@@ -541,7 +542,7 @@ export default function WalletPage() {
                           </p>
                         </Modal.Body>
                         <Modal.Footer>
-                          <Button slot="close" variant="secondary">
+                          <Button slot="close" variant="secondary" isDisabled={isActionPending}>
                             {t('cancel')}
                           </Button>
                           <Button
@@ -568,10 +569,10 @@ export default function WalletPage() {
                 {t('withdraw')}
               </Button>
               <Modal state={withdrawModalState}>
-              <Modal.Backdrop>
+              <Modal.Backdrop isDismissable={!isActionPending} isKeyboardDismissDisabled={isActionPending}>
                 <Modal.Container size="sm">
                   <Modal.Dialog>
-                    <Modal.CloseTrigger />
+                    <Modal.CloseTrigger isDisabled={isActionPending} />
                     {completedAction?.action === 'withdraw' ? (
                       <ActionSuccess title={t('withdrawSuccess')} detail={completedAction.detail} />
                     ) : (
@@ -611,7 +612,7 @@ export default function WalletPage() {
                           </div>
                         </Modal.Body>
                         <Modal.Footer>
-                          <Button slot="close" variant="secondary">
+                          <Button slot="close" variant="secondary" isDisabled={isActionPending}>
                             {t('cancel')}
                           </Button>
                           <Button
@@ -902,10 +903,10 @@ export default function WalletPage() {
 
       {/* Withdraw Item Modal */}
       <Modal state={itemWithdrawModalState}>
-      <Modal.Backdrop>
+      <Modal.Backdrop isDismissable={!isActionPending} isKeyboardDismissDisabled={isActionPending}>
         <Modal.Container size="sm">
           <Modal.Dialog>
-            <Modal.CloseTrigger />
+            <Modal.CloseTrigger isDisabled={isActionPending} />
             {completedAction?.action === 'withdrawItem' ? (
               <ActionSuccess title={t('withdrawItemSuccess')} detail={completedAction.detail} />
             ) : (
@@ -947,7 +948,7 @@ export default function WalletPage() {
                   )}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button slot="close" variant="secondary">
+                  <Button slot="close" variant="secondary" isDisabled={isActionPending}>
                     {t('cancel')}
                   </Button>
                   <Button variant="danger" onPress={handleItemWithdraw} isPending={pendingAction === 'withdrawItem'}>
