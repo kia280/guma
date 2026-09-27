@@ -110,9 +110,10 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     );
   }
 
-  const statusLabel = statusLabels[entry.status];
-  const statusColor = checkinStatusColor[entry.status];
   const isOpen_ = entry.status === CheckinStatus.OPEN && !isExpired;
+  const displayStatus = entry.status === CheckinStatus.OPEN && isExpired ? CheckinStatus.FINISHED : entry.status;
+  const statusLabel = statusLabels[displayStatus];
+  const statusColor = checkinStatusColor[displayStatus];
   const hasCheckedIn = !!currentUserId && entry.attendanceList.some(member => member.userId === currentUserId);
 
   const canCancel = isOpen_ && can('cancelCheckin');
