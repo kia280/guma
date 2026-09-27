@@ -168,6 +168,7 @@ message GuildEvent {
   repeated string participant_ids = 14;
   google.protobuf.Timestamp created_at = 15;
   google.protobuf.Timestamp updated_at = 16;
+  string created_by_name = 17;
 }
 
 message RecurringPattern {

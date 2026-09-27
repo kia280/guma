@@ -340,6 +340,7 @@ function generateCheckins(): CheckinEntry[] {
       date: formatCheckinDate(start),
       description: CHECKIN_BOSSES[i % CHECKIN_BOSSES.length],
       expireTime: new Date(status === CheckinStatus.OPEN ? now + (i + 1) * 2 * HOUR : start + 2 * HOUR).toISOString(),
+      attendanceCount: attendanceList.length,
       attendanceList,
       lootList,
     };

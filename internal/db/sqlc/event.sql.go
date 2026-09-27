@@ -40,17 +40,19 @@ INSERT INTO guild_events (
     $11::bool,
     $12::jsonb
 )
-RETURNING id, guild_id, created_by, title,
-          COALESCE(description, '') AS description,
-          type,
-          TO_CHAR(start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
-          TO_CHAR(end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
-          is_all_day,
-          COALESCE(location, '') AS location,
-          priority,
-          is_recurring, recurring_pattern,
-          participant_ids,
-          created_at, updated_at
+RETURNING guild_events.id, guild_events.guild_id, guild_events.created_by,
+          COALESCE((SELECT COALESCE(u.display_name, u.username) FROM users u WHERE u.id = guild_events.created_by), '')::text AS created_by_name,
+          guild_events.title,
+          COALESCE(guild_events.description, '') AS description,
+          guild_events.type,
+          TO_CHAR(guild_events.start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
+          TO_CHAR(guild_events.end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
+          guild_events.is_all_day,
+          COALESCE(guild_events.location, '') AS location,
+          guild_events.priority,
+          guild_events.is_recurring, guild_events.recurring_pattern,
+          guild_events.participant_ids,
+          guild_events.created_at, guild_events.updated_at
 `
 
 type CreateEventParams struct {
@@ -72,6 +74,7 @@ type CreateEventRow struct {
 	ID               uuid.UUID
 	GuildID          uuid.UUID
 	CreatedBy        uuid.UUID
+	CreatedByName    string
 	Title            string
 	Description      string
 	Type             string
@@ -107,6 +110,7 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Creat
 		&i.ID,
 		&i.GuildID,
 		&i.CreatedBy,
+		&i.CreatedByName,
 		&i.Title,
 		&i.Description,
 		&i.Type,
@@ -142,18 +146,22 @@ func (q *Queries) DeleteEvent(ctx context.Context, arg DeleteEventParams) (int64
 }
 
 const getEvent = `-- name: GetEvent :one
-SELECT id, guild_id, created_by, title,
-       COALESCE(description, '') AS description,
-       type,
-       TO_CHAR(start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
-       TO_CHAR(end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
-       is_all_day,
-       COALESCE(location, '') AS location,
-       priority,
-       is_recurring, recurring_pattern,
-       participant_ids,
-       created_at, updated_at
-FROM guild_events WHERE id = $1 AND guild_id = $2
+SELECT e.id, e.guild_id, e.created_by,
+       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       e.title,
+       COALESCE(e.description, '') AS description,
+       e.type,
+       TO_CHAR(e.start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
+       TO_CHAR(e.end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
+       e.is_all_day,
+       COALESCE(e.location, '') AS location,
+       e.priority,
+       e.is_recurring, e.recurring_pattern,
+       e.participant_ids,
+       e.created_at, e.updated_at
+FROM guild_events e
+LEFT JOIN users u ON u.id = e.created_by
+WHERE e.id = $1 AND e.guild_id = $2
 `
 
 type GetEventParams struct {
@@ -165,6 +173,7 @@ type GetEventRow struct {
 	ID               uuid.UUID
 	GuildID          uuid.UUID
 	CreatedBy        uuid.UUID
+	CreatedByName    string
 	Title            string
 	Description      string
 	Type             string
@@ -187,6 +196,7 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) (GetEventRow
 		&i.ID,
 		&i.GuildID,
 		&i.CreatedBy,
+		&i.CreatedByName,
 		&i.Title,
 		&i.Description,
 		&i.Type,
@@ -205,20 +215,23 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) (GetEventRow
 }
 
 const listEvents = `-- name: ListEvents :many
-SELECT id, guild_id, created_by, title,
-       COALESCE(description, '') AS description,
-       type,
-       TO_CHAR(start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
-       TO_CHAR(end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
-       is_all_day,
-       COALESCE(location, '') AS location,
-       priority,
-       is_recurring, recurring_pattern,
-       participant_ids,
-       created_at, updated_at
-FROM guild_events
-WHERE guild_id = $1
-ORDER BY start_date ASC
+SELECT e.id, e.guild_id, e.created_by,
+       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       e.title,
+       COALESCE(e.description, '') AS description,
+       e.type,
+       TO_CHAR(e.start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
+       TO_CHAR(e.end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
+       e.is_all_day,
+       COALESCE(e.location, '') AS location,
+       e.priority,
+       e.is_recurring, e.recurring_pattern,
+       e.participant_ids,
+       e.created_at, e.updated_at
+FROM guild_events e
+LEFT JOIN users u ON u.id = e.created_by
+WHERE e.guild_id = $1
+ORDER BY e.start_date ASC
 LIMIT $3::int OFFSET $2::int
 `
 
@@ -232,6 +245,7 @@ type ListEventsRow struct {
 	ID               uuid.UUID
 	GuildID          uuid.UUID
 	CreatedBy        uuid.UUID
+	CreatedByName    string
 	Title            string
 	Description      string
 	Type             string
@@ -260,6 +274,7 @@ func (q *Queries) ListEvents(ctx context.Context, arg ListEventsParams) ([]ListE
 			&i.ID,
 			&i.GuildID,
 			&i.CreatedBy,
+			&i.CreatedByName,
 			&i.Title,
 			&i.Description,
 			&i.Type,
@@ -285,22 +300,25 @@ func (q *Queries) ListEvents(ctx context.Context, arg ListEventsParams) ([]ListE
 }
 
 const listEventsByRange = `-- name: ListEventsByRange :many
-SELECT id, guild_id, created_by, title,
-       COALESCE(description, '') AS description,
-       type,
-       TO_CHAR(start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
-       TO_CHAR(end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
-       is_all_day,
-       COALESCE(location, '') AS location,
-       priority,
-       is_recurring, recurring_pattern,
-       participant_ids,
-       created_at, updated_at
-FROM guild_events
-WHERE guild_id = $1
-  AND start_date >= $2::text::timestamptz
-  AND end_date   <= $3::text::timestamptz
-ORDER BY start_date ASC
+SELECT e.id, e.guild_id, e.created_by,
+       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       e.title,
+       COALESCE(e.description, '') AS description,
+       e.type,
+       TO_CHAR(e.start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
+       TO_CHAR(e.end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
+       e.is_all_day,
+       COALESCE(e.location, '') AS location,
+       e.priority,
+       e.is_recurring, e.recurring_pattern,
+       e.participant_ids,
+       e.created_at, e.updated_at
+FROM guild_events e
+LEFT JOIN users u ON u.id = e.created_by
+WHERE e.guild_id = $1
+  AND e.start_date >= $2::text::timestamptz
+  AND e.end_date   <= $3::text::timestamptz
+ORDER BY e.start_date ASC
 `
 
 type ListEventsByRangeParams struct {
@@ -313,6 +331,7 @@ type ListEventsByRangeRow struct {
 	ID               uuid.UUID
 	GuildID          uuid.UUID
 	CreatedBy        uuid.UUID
+	CreatedByName    string
 	Title            string
 	Description      string
 	Type             string
@@ -341,6 +360,7 @@ func (q *Queries) ListEventsByRange(ctx context.Context, arg ListEventsByRangePa
 			&i.ID,
 			&i.GuildID,
 			&i.CreatedBy,
+			&i.CreatedByName,
 			&i.Title,
 			&i.Description,
 			&i.Type,
@@ -366,20 +386,23 @@ func (q *Queries) ListEventsByRange(ctx context.Context, arg ListEventsByRangePa
 }
 
 const listUpcomingEvents = `-- name: ListUpcomingEvents :many
-SELECT id, guild_id, created_by, title,
-       COALESCE(description, '') AS description,
-       type,
-       TO_CHAR(start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
-       TO_CHAR(end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
-       is_all_day,
-       COALESCE(location, '') AS location,
-       priority,
-       is_recurring, recurring_pattern,
-       participant_ids,
-       created_at, updated_at
-FROM guild_events
-WHERE guild_id = $1 AND start_date > NOW()
-ORDER BY start_date ASC
+SELECT e.id, e.guild_id, e.created_by,
+       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       e.title,
+       COALESCE(e.description, '') AS description,
+       e.type,
+       TO_CHAR(e.start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
+       TO_CHAR(e.end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
+       e.is_all_day,
+       COALESCE(e.location, '') AS location,
+       e.priority,
+       e.is_recurring, e.recurring_pattern,
+       e.participant_ids,
+       e.created_at, e.updated_at
+FROM guild_events e
+LEFT JOIN users u ON u.id = e.created_by
+WHERE e.guild_id = $1 AND e.start_date > NOW()
+ORDER BY e.start_date ASC
 LIMIT $2::int
 `
 
@@ -392,6 +415,7 @@ type ListUpcomingEventsRow struct {
 	ID               uuid.UUID
 	GuildID          uuid.UUID
 	CreatedBy        uuid.UUID
+	CreatedByName    string
 	Title            string
 	Description      string
 	Type             string
@@ -420,6 +444,7 @@ func (q *Queries) ListUpcomingEvents(ctx context.Context, arg ListUpcomingEvents
 			&i.ID,
 			&i.GuildID,
 			&i.CreatedBy,
+			&i.CreatedByName,
 			&i.Title,
 			&i.Description,
 			&i.Type,
@@ -457,18 +482,20 @@ UPDATE guild_events SET
     is_recurring      = $9::bool,
     recurring_pattern = CASE WHEN $10::jsonb IS NOT NULL THEN $10::jsonb ELSE recurring_pattern END,
     updated_at        = NOW()
-WHERE id = $11 AND guild_id = $12
-RETURNING id, guild_id, created_by, title,
-          COALESCE(description, '') AS description,
-          type,
-          TO_CHAR(start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
-          TO_CHAR(end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
-          is_all_day,
-          COALESCE(location, '') AS location,
-          priority,
-          is_recurring, recurring_pattern,
-          participant_ids,
-          created_at, updated_at
+WHERE guild_events.id = $11 AND guild_events.guild_id = $12
+RETURNING guild_events.id, guild_events.guild_id, guild_events.created_by,
+          COALESCE((SELECT COALESCE(u.display_name, u.username) FROM users u WHERE u.id = guild_events.created_by), '')::text AS created_by_name,
+          guild_events.title,
+          COALESCE(guild_events.description, '') AS description,
+          guild_events.type,
+          TO_CHAR(guild_events.start_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS start_date,
+          TO_CHAR(guild_events.end_date   AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS end_date,
+          guild_events.is_all_day,
+          COALESCE(guild_events.location, '') AS location,
+          guild_events.priority,
+          guild_events.is_recurring, guild_events.recurring_pattern,
+          guild_events.participant_ids,
+          guild_events.created_at, guild_events.updated_at
 `
 
 type UpdateEventParams struct {
@@ -490,6 +517,7 @@ type UpdateEventRow struct {
 	ID               uuid.UUID
 	GuildID          uuid.UUID
 	CreatedBy        uuid.UUID
+	CreatedByName    string
 	Title            string
 	Description      string
 	Type             string
@@ -525,6 +553,7 @@ func (q *Queries) UpdateEvent(ctx context.Context, arg UpdateEventParams) (Updat
 		&i.ID,
 		&i.GuildID,
 		&i.CreatedBy,
+		&i.CreatedByName,
 		&i.Title,
 		&i.Description,
 		&i.Type,
