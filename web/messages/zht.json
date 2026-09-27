@@ -157,7 +157,11 @@
     "itemTemplateHint": "會加到戰利品清單最後面。",
     "lootToBankHint": "發布後，這些道具會自動放入公會倉庫，並與此點名關聯。",
     "createSuccess": "點名已建立。",
-    "createFailed": "無法建立點名，請再試一次。"
+    "createFailed": "無法建立點名，請再試一次。",
+    "titleRequired": "請輸入標題",
+    "eventDateTimeRequired": "請選擇活動開始時間",
+    "expireTimeRequired": "請選擇點名截止時間",
+    "expireBeforeStart": "點名截止時間必須晚於活動開始時間"
   },
   "balanceTrendChart": {
     "balance": "餘額",
@@ -230,7 +234,9 @@
     "noItemsHint": "從公會倉庫或活動獲得的物品會顯示在這裡。",
     "noTransactions": "尚無交易紀錄",
     "noTransactionsHint": "您的存款、提款與轉帳會顯示在這裡。",
-    "balance": "餘額"
+    "balance": "餘額",
+    "amountMustBePositive": "請輸入大於 0 的金額",
+    "recipientRequired": "請選擇收款人"
   },
   "lotteryPage": {
     "all": "全部",
@@ -640,7 +646,9 @@
     "noActivity": "尚無活動紀錄",
     "noActivityHint": "貢獻與申請會顯示在這裡。",
     "activityTable": "公會銀行活動記錄",
-    "itemSummary": "{rarity} · {category} · 剩餘 {count} 件"
+    "itemSummary": "{rarity} · {category} · 剩餘 {count} 件",
+    "amountMustBePositive": "請輸入大於 0 的金額",
+    "reasonRequired": "請輸入申請原因"
   },
   "notificationsCard": {
     "notifications": "通知",
