@@ -74,6 +74,20 @@ const localDateTimeToISO = (date: string, time: string, seconds = 0, millisecond
   return new Date(year, month - 1, day, hours, minutes, seconds, milliseconds).toISOString();
 };
 
+const MIN_EVENT_DATE = parseDate('2000-01-01');
+const MAX_EVENT_DATE = parseDate('2099-12-31');
+
+const isDateInRange = (value: string) => {
+  const date = parseDate(value);
+  return date.compare(MIN_EVENT_DATE) >= 0 && date.compare(MAX_EVENT_DATE) <= 0;
+};
+
+const isEndAfterStart = ({ isAllDay, startDate, startTime, endDate, endTime }: FormData) => {
+  if (!startDate || !endDate) return true;
+  if (isAllDay) return parseDate(endDate).compare(parseDate(startDate)) >= 0;
+  return localDateTimeToISO(endDate, endTime) > localDateTimeToISO(startDate, startTime);
+};
+
 export const EventFormModal: React.FC<EventFormModalProps> = ({
   state,
   onSubmit,
@@ -90,6 +104,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     watch,
     formState: { errors },
   } = useForm<FormData>({
+    mode: 'onChange',
     defaultValues: {
       title: '',
       description: '',
@@ -159,6 +174,11 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
       });
     }
   }, [event, reset]);
+
+  const dateRangeMessage = t('dateOutOfRange', {
+    min: MIN_EVENT_DATE.year,
+    max: MAX_EVENT_DATE.year,
+  });
 
   const onFormSubmit = async (data: FormData) => {
     try {
@@ -317,6 +337,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               <Controller
                 name="isAllDay"
                 control={control}
+                rules={{ deps: ['endDate'] }}
                 render={({ field }) => (
                   <Switch isSelected={field.value} onChange={field.onChange}>
                     <Switch.Control>
@@ -334,11 +355,18 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 <Controller
                   name="startDate"
                   control={control}
-                  rules={{ required: t('startDateRequired') }}
+                  rules={{
+                    required: t('startDateRequired'),
+                    validate: value => !value || isDateInRange(value) || dateRangeMessage,
+                    deps: ['endDate'],
+                  }}
                   render={({ field }) => (
                     <DateField
                       className="flex-1"
                       isRequired
+                      validationBehavior="aria"
+                      minValue={MIN_EVENT_DATE}
+                      maxValue={MAX_EVENT_DATE}
                       isInvalid={!!errors.startDate}
                       value={field.value ? parseDate(field.value) : null}
                       onChange={(val: DateValue | null) => field.onChange(val ? val.toString() : '')}
@@ -357,6 +385,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   <Controller
                     name="startTime"
                     control={control}
+                    rules={{ deps: ['endDate'] }}
                     render={({ field }) => {
                       const [h, m] = (field.value || '00:00').split(':').map(Number);
                       return (
@@ -388,9 +417,19 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 <Controller
                   name="endDate"
                   control={control}
+                  rules={{
+                    validate: {
+                      inRange: value => !value || isDateInRange(value) || dateRangeMessage,
+                      afterStart: (_, values) => isEndAfterStart(values) || t('endBeforeStart'),
+                    },
+                  }}
                   render={({ field }) => (
                     <DateField
                       className="flex-1"
+                      validationBehavior="aria"
+                      minValue={MIN_EVENT_DATE}
+                      maxValue={MAX_EVENT_DATE}
+                      isInvalid={!!errors.endDate}
                       value={field.value ? parseDate(field.value) : null}
                       onChange={(val: DateValue | null) => field.onChange(val ? val.toString() : '')}
                     >
@@ -400,6 +439,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                           {(segment) => <DateField.Segment segment={segment} />}
                         </DateField.Input>
                       </DateField.Group>
+                      <FieldError>{errors.endDate?.message}</FieldError>
                     </DateField>
                   )}
                 />
@@ -407,6 +447,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   <Controller
                     name="endTime"
                     control={control}
+                    rules={{ deps: ['endDate'] }}
                     render={({ field }) => {
                       const [h, m] = (field.value || '00:00').split(':').map(Number);
                       return (

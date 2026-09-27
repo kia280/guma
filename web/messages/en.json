@@ -383,7 +383,9 @@
     "createEvent": "Create Event",
     "createSuccess": "Event created.",
     "updateSuccess": "Event updated.",
-    "saveFailed": "Could not save the event. Please try again."
+    "saveFailed": "Could not save the event. Please try again.",
+    "dateOutOfRange": "Enter a date between {min} and {max}.",
+    "endBeforeStart": "End must be after the start."
   },
   "adminPage": {
     "users": "Users",
