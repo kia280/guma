@@ -5,13 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/rs/zerolog"
+	"golang.org/x/text/unicode/norm"
 
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
@@ -51,6 +55,16 @@ type UpdateParams struct {
 	Bio         string
 	AvatarURL   string
 }
+
+const (
+	MaxDisplayNameLength = 50
+	MinUsernameLength    = 3
+	MaxUsernameLength    = 32
+	MaxBioLength         = 500
+	uniqueViolation      = "23505"
+)
+
+var usernamePattern = regexp.MustCompile(`^[\p{L}\p{N}][\p{L}\p{M}\p{N}._-]*$`)
 
 // Stats holds aggregate stats for a user.
 type Stats struct {
@@ -335,6 +349,11 @@ func (s *Service) UpdateMe(ctx context.Context, userID, kratosCookie string, p U
 		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
 	}
 
+	p, err = validateUpdateParams(p)
+	if err != nil {
+		return nil, err
+	}
+
 	row, err := s.q.UpdateUser(ctx, db.UpdateUserParams{
 		DisplayName: p.DisplayName,
 		Username:    p.Username,
@@ -343,8 +362,12 @@ func (s *Service) UpdateMe(ctx context.Context, userID, kratosCookie string, p U
 		ID:          id,
 	})
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		var pgErr *pgconn.PgError
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
 			return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
+		case errors.As(err, &pgErr) && pgErr.Code == uniqueViolation:
+			return nil, fmt.Errorf("%w: username", errs.ErrAlreadyExists)
 		}
 		return nil, fmt.Errorf("%w: update user: %v", errs.ErrInternal, err)
 	}
@@ -360,6 +383,29 @@ func (s *Service) UpdateMe(ctx context.Context, userID, kratosCookie string, p U
 	}
 
 	return s.assembleUser(ctx, id, db.GetUserByIDRow(row), ident)
+}
+
+func validateUpdateParams(p UpdateParams) (UpdateParams, error) {
+	p.DisplayName = norm.NFC.String(strings.TrimSpace(p.DisplayName))
+	p.Username = norm.NFC.String(strings.TrimSpace(p.Username))
+	p.Bio = norm.NFC.String(strings.TrimSpace(p.Bio))
+	p.AvatarURL = strings.TrimSpace(p.AvatarURL)
+
+	switch {
+	case p.DisplayName == "":
+		return p, fmt.Errorf("%w: display_name is required", errs.ErrInvalidArgument)
+	case utf8.RuneCountInString(p.DisplayName) > MaxDisplayNameLength:
+		return p, fmt.Errorf("%w: display_name must be at most %d characters", errs.ErrInvalidArgument, MaxDisplayNameLength)
+	case p.Username == "":
+		return p, fmt.Errorf("%w: username is required", errs.ErrInvalidArgument)
+	case utf8.RuneCountInString(p.Username) < MinUsernameLength || utf8.RuneCountInString(p.Username) > MaxUsernameLength:
+		return p, fmt.Errorf("%w: username must be between %d and %d characters", errs.ErrInvalidArgument, MinUsernameLength, MaxUsernameLength)
+	case !usernamePattern.MatchString(p.Username):
+		return p, fmt.Errorf("%w: username may only contain letters, digits, dots, underscores, and hyphens and must start with a letter or digit", errs.ErrInvalidArgument)
+	case utf8.RuneCountInString(p.Bio) > MaxBioLength:
+		return p, fmt.Errorf("%w: bio must be at most %d characters", errs.ErrInvalidArgument, MaxBioLength)
+	}
+	return p, nil
 }
 
 // GetUser returns the public profile for any user by ID.

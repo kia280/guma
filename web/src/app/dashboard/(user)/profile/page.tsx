@@ -10,6 +10,8 @@ import {
   TextField,
   Label,
   InputGroup,
+  Description,
+  FieldError,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
@@ -19,6 +21,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { useToast } from '@/hooks/useToast';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
+import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { useUserStore } from '@/lib/store';
 
 const ROLE_COLORS = {
@@ -32,6 +35,20 @@ type KnownRole = keyof typeof ROLE_COLORS;
 
 const isKnownRole = (role: string): role is KnownRole => role in ROLE_COLORS;
 
+const DISPLAY_NAME_MAX_LENGTH = 50;
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 32;
+const BIO_MAX_LENGTH = 500;
+const USERNAME_PATTERN = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}._-]*$/u;
+
+const normalizeField = (value: string) => value.trim().normalize('NFC');
+
+type DraftErrors = {
+  displayName?: string;
+  username?: string;
+  bio?: string;
+};
+
 export default function ProfilePage() {
   const t = useTranslations('profilePage');
   const format = useIntlFormatter();
@@ -44,13 +61,41 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = React.useState('');
   const [username, setUsername] = React.useState('');
   const [bio, setBio] = React.useState('');
+  const [usernameTaken, setUsernameTaken] = React.useState('');
 
   const resetDraft = React.useCallback(() => {
     setDisplayName(user?.displayName ?? '');
     setUsername(user?.username ?? '');
     setBio(user?.bio ?? '');
+    setUsernameTaken('');
     setSaveError('');
   }, [user]);
+
+  const draftErrors = React.useMemo<DraftErrors>(() => {
+    const errors: DraftErrors = {};
+    const trimmedDisplayName = normalizeField(displayName);
+    const trimmedUsername = normalizeField(username);
+    if (!trimmedDisplayName) {
+      errors.displayName = t('displayNameRequired');
+    } else if ([...trimmedDisplayName].length > DISPLAY_NAME_MAX_LENGTH) {
+      errors.displayName = t('displayNameTooLong', { max: DISPLAY_NAME_MAX_LENGTH });
+    }
+    if (!trimmedUsername) {
+      errors.username = t('usernameRequired');
+    } else if ([...trimmedUsername].length < USERNAME_MIN_LENGTH || [...trimmedUsername].length > USERNAME_MAX_LENGTH) {
+      errors.username = t('usernameLength', { min: USERNAME_MIN_LENGTH, max: USERNAME_MAX_LENGTH });
+    } else if (!USERNAME_PATTERN.test(trimmedUsername)) {
+      errors.username = t('usernameInvalid');
+    } else if (usernameTaken && trimmedUsername === usernameTaken) {
+      errors.username = t('usernameTaken');
+    }
+    if ([...normalizeField(bio)].length > BIO_MAX_LENGTH) {
+      errors.bio = t('bioTooLong', { max: BIO_MAX_LENGTH });
+    }
+    return errors;
+  }, [displayName, username, bio, usernameTaken, t]);
+
+  const hasDraftErrors = Object.keys(draftErrors).length > 0;
 
   React.useEffect(() => {
     if (!isEditing) resetDraft();
@@ -62,19 +107,34 @@ export default function ProfilePage() {
   };
 
   const saveProfile = async () => {
+    if (hasDraftErrors) {
+      setSaveError(t('saveInvalid'));
+      return;
+    }
     setIsSaving(true);
     setSaveError('');
+    const trimmedUsername = normalizeField(username);
     try {
       const updated = await apiClient.updateMe({
-        displayName: displayName.trim(),
-        username: username.trim(),
-        bio: bio.trim(),
+        displayName: normalizeField(displayName),
+        username: trimmedUsername,
+        bio: normalizeField(bio),
       });
       setUser(updated);
       setIsEditing(false);
       notify.success(t('saveSuccess'));
-    } catch {
-      setSaveError(t('saveFailed'));
+    } catch (err) {
+      switch (apiErrorCode(err)) {
+        case GrpcCode.AlreadyExists:
+          setUsernameTaken(trimmedUsername);
+          setSaveError(t('saveInvalid'));
+          break;
+        case GrpcCode.InvalidArgument:
+          setSaveError(t('saveInvalid'));
+          break;
+        default:
+          setSaveError(t('saveFailed'));
+      }
     } finally {
       setIsSaving(false);
     }
@@ -144,11 +204,20 @@ export default function ProfilePage() {
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <TextField isReadOnly={!isEditing}>
+            <TextField
+              isReadOnly={!isEditing}
+              isRequired={isEditing}
+              isInvalid={isEditing && !!draftErrors.displayName}
+            >
               <Label>{t('displayName')}</Label>
               <Input value={displayName} onChange={e => setDisplayName(e.target.value)} />
+              {isEditing && draftErrors.displayName && <FieldError>{draftErrors.displayName}</FieldError>}
             </TextField>
-            <TextField isReadOnly={!isEditing}>
+            <TextField
+              isReadOnly={!isEditing}
+              isRequired={isEditing}
+              isInvalid={isEditing && !!draftErrors.username}
+            >
               <Label>{t('username')}</Label>
               <InputGroup>
                 <InputGroup.Prefix>
@@ -156,11 +225,19 @@ export default function ProfilePage() {
                 </InputGroup.Prefix>
                 <InputGroup.Input value={username} onChange={e => setUsername(e.target.value)} />
               </InputGroup>
+              {isEditing && (
+                draftErrors.username ? (
+                  <FieldError>{draftErrors.username}</FieldError>
+                ) : (
+                  <Description>{t('usernameHint', { min: USERNAME_MIN_LENGTH, max: USERNAME_MAX_LENGTH })}</Description>
+                )
+              )}
             </TextField>
           </div>
-          <TextField isReadOnly={!isEditing}>
+          <TextField isReadOnly={!isEditing} isInvalid={isEditing && !!draftErrors.bio}>
             <Label>{t('bio')}</Label>
             <TextArea value={bio} onChange={e => setBio(e.target.value)} rows={2} />
+            {isEditing && draftErrors.bio && <FieldError>{draftErrors.bio}</FieldError>}
           </TextField>
           {isEditing && (
             <div className="flex items-center justify-end gap-3">
@@ -169,7 +246,13 @@ export default function ProfilePage() {
                   {saveError}
                 </p>
               )}
-              <Button size="sm" variant="primary" isPending={isSaving} onPress={saveProfile}>
+              <Button
+                size="sm"
+                variant="primary"
+                isPending={isSaving}
+                isDisabled={hasDraftErrors}
+                onPress={saveProfile}
+              >
                 <Icon icon="solar:check-circle-linear" width={16} />
                 {t('saveChanges')}
               </Button>
