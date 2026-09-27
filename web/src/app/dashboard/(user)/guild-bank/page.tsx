@@ -141,7 +141,6 @@ export default function GuildBankPage() {
   useLiveResource(['bank'], refetchBank, { guildId });
 
   const guildBalance = bank?.balance ?? 0;
-  const guildFundGoal = bank?.goal || 10000;
 
   const getContributionLabel = (type: GuildContribution['type']) => {
     switch (type) {
@@ -410,23 +409,6 @@ export default function GuildBankPage() {
               </Modal>
             </div>
           </div>
-
-          {/* Fund Goal Progress */}
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <p className="type-caption text-subtle">{t('monthlyGoal')}</p>
-              <p className="type-caption text-subtle">
-                {formatGold(guildBalance)} / {formatGold(guildFundGoal)}
-              </p>
-            </div>
-            <div className="w-full bg-default rounded-full overflow-hidden h-2">
-              <div
-                className="h-full bg-warning transition-all"
-                style={{ width: `${Math.min(100, (guildBalance / guildFundGoal) * 100)}%` }}
-              />
-            </div>
-          </div>
-
         </Card.Content>
       </Card>
 

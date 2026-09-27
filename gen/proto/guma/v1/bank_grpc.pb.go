@@ -36,7 +36,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BankServiceClient interface {
-	// Get the guild bank summary (balance, goal, top contributors)
+	// Get the guild bank summary (balance, top contributors)
 	GetBank(ctx context.Context, in *GetBankRequest, opts ...grpc.CallOption) (*GetBankResponse, error)
 	// Contribute funds from personal wallet to guild bank
 	ContributeFunds(ctx context.Context, in *ContributeFundsRequest, opts ...grpc.CallOption) (*ContributeFundsResponse, error)
@@ -177,7 +177,7 @@ func (c *bankServiceClient) ListItemRequests(ctx context.Context, in *ListItemRe
 // All implementations must embed UnimplementedBankServiceServer
 // for forward compatibility.
 type BankServiceServer interface {
-	// Get the guild bank summary (balance, goal, top contributors)
+	// Get the guild bank summary (balance, top contributors)
 	GetBank(context.Context, *GetBankRequest) (*GetBankResponse, error)
 	// Contribute funds from personal wallet to guild bank
 	ContributeFunds(context.Context, *ContributeFundsRequest) (*ContributeFundsResponse, error)
