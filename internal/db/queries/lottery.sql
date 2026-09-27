@@ -64,7 +64,8 @@ UPDATE lotteries SET tickets_sold = tickets_sold + sqlc.arg(n)::int, updated_at 
 SELECT EXISTS(SELECT 1 FROM lotteries WHERE id = $1 AND guild_id = $2);
 
 -- name: GetLotteryForDraw :one
-SELECT prizes, status FROM lotteries WHERE id = $1 AND guild_id = $2 FOR UPDATE;
+SELECT prizes, status, created_by, title, ticket_price
+FROM lotteries WHERE id = $1 AND guild_id = $2 FOR UPDATE;
 
 -- name: ListAllLotteryTickets :many
 SELECT id, user_id, ticket_number FROM lottery_tickets WHERE lottery_id = $1;

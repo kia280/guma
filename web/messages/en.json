@@ -651,7 +651,8 @@
     "itemSummary": "{rarity} · {category} · {count, plural, one {# available} other {# available}}",
     "amountMustBePositive": "Enter an amount greater than 0",
     "reasonRequired": "Enter a reason for the request",
-    "typeAuctionProceeds": "Auction proceeds"
+    "typeAuctionProceeds": "Auction proceeds",
+    "typeLotteryRevenue": "Lottery ticket revenue"
   },
   "notificationsCard": {
     "notifications": "Notifications",

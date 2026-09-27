@@ -224,7 +224,8 @@ func (q *Queries) GetLottery(ctx context.Context, arg GetLotteryParams) (GetLott
 }
 
 const getLotteryForDraw = `-- name: GetLotteryForDraw :one
-SELECT prizes, status FROM lotteries WHERE id = $1 AND guild_id = $2 FOR UPDATE
+SELECT prizes, status, created_by, title, ticket_price
+FROM lotteries WHERE id = $1 AND guild_id = $2 FOR UPDATE
 `
 
 type GetLotteryForDrawParams struct {
@@ -233,14 +234,23 @@ type GetLotteryForDrawParams struct {
 }
 
 type GetLotteryForDrawRow struct {
-	Prizes []byte
-	Status string
+	Prizes      []byte
+	Status      string
+	CreatedBy   uuid.UUID
+	Title       string
+	TicketPrice int64
 }
 
 func (q *Queries) GetLotteryForDraw(ctx context.Context, arg GetLotteryForDrawParams) (GetLotteryForDrawRow, error) {
 	row := q.db.QueryRow(ctx, getLotteryForDraw, arg.ID, arg.GuildID)
 	var i GetLotteryForDrawRow
-	err := row.Scan(&i.Prizes, &i.Status)
+	err := row.Scan(
+		&i.Prizes,
+		&i.Status,
+		&i.CreatedBy,
+		&i.Title,
+		&i.TicketPrice,
+	)
 	return i, err
 }
 

@@ -10,7 +10,7 @@ import type { ItemCategory, ItemLock, ItemRarity } from './item';
  */
 export interface GuildContribution {
   id: string;
-  type: 'contribute' | 'request' | 'item_donate' | 'item_distribute' | 'checkin_loot' | 'auction_proceeds';
+  type: 'contribute' | 'request' | 'item_donate' | 'item_distribute' | 'checkin_loot' | 'auction_proceeds' | 'lottery_revenue';
   amount?: number;
   itemName?: string;
   member: string;
@@ -60,7 +60,7 @@ export interface BankContribution {
   referenceId?: string;
 }
 
-export type BankContributionKind = 'gold' | 'checkin_loot' | 'auction_proceeds';
+export type BankContributionKind = 'gold' | 'checkin_loot' | 'auction_proceeds' | 'lottery_revenue';
 
 export type RequestStatus = 'pending' | 'approved' | 'rejected';
 

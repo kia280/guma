@@ -651,7 +651,8 @@
     "itemSummary": "{rarity} · {category} · 剩餘 {count} 件",
     "amountMustBePositive": "請輸入大於 0 的金額",
     "reasonRequired": "請輸入申請原因",
-    "typeAuctionProceeds": "拍賣收入"
+    "typeAuctionProceeds": "拍賣收入",
+    "typeLotteryRevenue": "彩券收入"
   },
   "notificationsCard": {
     "notifications": "通知",

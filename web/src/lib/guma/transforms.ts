@@ -533,7 +533,17 @@ type ProtoBankContribution = {
   reference_id?: string;
 };
 
-const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = ['gold', 'checkin_loot', 'auction_proceeds'];
+const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = ['gold', 'checkin_loot', 'auction_proceeds', 'lottery_revenue'];
+
+const contributionReferenceHref = (b: BankContribution): string | undefined => {
+  if (!b.referenceId) return undefined;
+  if (b.referenceType === 'auction') return `/dashboard/auction/${b.referenceId}`;
+  if (b.referenceType === 'lottery') return `/dashboard/lottery/${b.referenceId}`;
+  return undefined;
+};
+
+const contributionType = (kind: BankContributionKind): GuildContribution['type'] =>
+  kind === 'auction_proceeds' || kind === 'lottery_revenue' ? kind : 'contribute';
 
 const toContributionKind = (kind: string | undefined): BankContributionKind =>
   BANK_CONTRIBUTION_KINDS.find(k => k === kind) ?? 'gold';
@@ -661,9 +671,9 @@ export const toGuildContributions = (
         }
       : {
           id: `c-${b.id}`,
-          type: b.kind === 'auction_proceeds' ? 'auction_proceeds' : 'contribute',
+          type: contributionType(b.kind),
           amount: b.amount,
-          href: b.referenceType === 'auction' && b.referenceId ? `/dashboard/auction/${b.referenceId}` : undefined,
+          href: contributionReferenceHref(b),
           member: b.username,
           memberAvatar: b.avatarUrl,
           date: b.createdAt.slice(0, 10),

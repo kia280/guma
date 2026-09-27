@@ -52,11 +52,13 @@ const getContributionIcon = (type: GuildContribution['type']) => {
       return 'solar:clipboard-check-linear';
     case 'auction_proceeds':
       return 'solar:sledgehammer-linear';
+    case 'lottery_revenue':
+      return 'solar:ticket-linear';
   }
 };
 
 const isInflowContribution = (type: GuildContribution['type']) =>
-  type === 'contribute' || type === 'auction_proceeds';
+  type === 'contribute' || type === 'auction_proceeds' || type === 'lottery_revenue';
 
 
 const isSettledContribution = (status: GuildContribution['status']) =>
@@ -219,6 +221,8 @@ export default function GuildBankPage() {
         return t('typeCheckinLoot');
       case 'auction_proceeds':
         return t('typeAuctionProceeds');
+      case 'lottery_revenue':
+        return t('typeLotteryRevenue');
     }
   };
 
