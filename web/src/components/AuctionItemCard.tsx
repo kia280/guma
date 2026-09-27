@@ -44,14 +44,11 @@ const getCategoryIcon = (category: ItemCategory) => {
   return icons[category] ?? 'solar:box-linear';
 };
 
-const getAuctionProgress = (now: number, startTime: string, endTime: string) => {
-  const start = new Date(startTime);
-  const end = new Date(endTime);
+const getRemainingPercent = (now: number, startTime: string, endTime: string) => {
+  const start = new Date(startTime).getTime();
+  const end = new Date(endTime).getTime();
 
-  const total = end.getTime() - start.getTime();
-  const elapsed = now - start.getTime();
-
-  return Math.min(100, Math.max(0, (elapsed / total) * 100));
+  return Math.min(100, Math.max(0, ((end - now) / (end - start)) * 100));
 };
 
 interface AuctionItemCardProps {
@@ -77,15 +74,37 @@ const AuctionItemCard = ({
   const bidAmount = bidInput ?? minimumBid;
 
   const isActive = item.status === AuctionStatus.ACTIVE;
+  const isUpcoming = item.status === AuctionStatus.UPCOMING;
+  const isClosed = !isActive && !isUpcoming;
 
-  const { now, remainingMs, isExpired } = useCountdown(item.endTime);
-  const timeRemaining = isExpired ? t('ended') : formatCountdown(remainingMs);
-  const progress = getAuctionProgress(now, item.startTime, item.endTime);
+  const scheduleTarget = isUpcoming ? item.startTime : item.endTime;
+  const { now, remainingMs, isExpired } = useCountdown(isClosed ? null : scheduleTarget);
+  const scheduleTime = format.dateTime(new Date(scheduleTarget), {
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+  const scheduleLabel = isUpcoming
+    ? t('startsAt', { time: scheduleTime })
+    : t('endsAt', { time: scheduleTime });
+  const timeLabel = isUpcoming ? t('startsIn') : t('timeRemaining');
+  const timeValue = isClosed
+    ? t(`status.${item.status}`)
+    : isActive && isExpired
+      ? t('ended')
+      : formatCountdown(remainingMs);
+  const remainingPercent = isUpcoming
+    ? 100
+    : isClosed
+      ? 0
+      : getRemainingPercent(now, item.startTime, item.endTime);
 
   const hasBidAmount = Number.isFinite(bidAmount);
   const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
 
   const bidModal = useOverlayState();
+  const historyModal = useOverlayState();
 
   const handlePlaceBid = async () => {
     if (!canBid) return;
@@ -95,14 +114,14 @@ const AuctionItemCard = ({
     }
   };
 
-  const progressColor = progress > 80 ? 'danger' : progress > 50 ? 'warning' : 'success';
+  const progressColor = remainingPercent < 20 ? 'danger' : remainingPercent < 50 ? 'warning' : 'success';
 
   return (
     <>
       <div
-        className="relative border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors rounded-lg"
+        className="relative flex h-full flex-col border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors rounded-lg"
       >
-        <Card className="border-0 shadow-none bg-transparent">
+        <Card className="flex-1 border-0 shadow-none bg-transparent">
           <Card.Header className="pb-2">
             <div className="flex justify-between items-start w-full">
               <div className="flex items-center gap-3">
@@ -137,34 +156,30 @@ const AuctionItemCard = ({
                 >
                   {t(`status.${item.status}`)}
                 </Chip>
-                {isActive && (
-                  <div className="flex items-center gap-1 type-caption text-hint">
-                    <Icon icon="solar:clock-circle-linear" width={12} />
-                    <span>{timeRemaining}</span>
-                  </div>
-                )}
+                <div className="flex items-center gap-1 whitespace-nowrap type-caption text-hint">
+                  <Icon icon="solar:clock-circle-linear" width={12} />
+                  <span>{scheduleLabel}</span>
+                </div>
               </div>
             </div>
           </Card.Header>
 
-          <Card.Content className="pt-0">
-            <div className="space-y-4">
-              <p className="type-body text-subtle">{item.description}</p>
+          <Card.Content className="flex flex-1 flex-col pt-0">
+            <div className="flex flex-1 flex-col gap-4">
+              <p className="type-body text-subtle line-clamp-2 min-h-11">{item.description}</p>
 
-              {isActive && (
-                <div className="space-y-1.5">
-                  <div className="flex justify-between type-caption text-hint">
-                    <span>{t('timeRemaining')}</span>
-                    <span>{Math.round(progress)}%</span>
-                  </div>
-                  <div className="w-full bg-default rounded-full overflow-hidden h-2">
-                    <div
-                      className={`h-full transition-all ${PROGRESS_FILL[progressColor]}`}
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between type-caption text-hint">
+                  <span>{timeLabel}</span>
+                  <span>{timeValue}</span>
                 </div>
-              )}
+                <div className="w-full bg-default rounded-full overflow-hidden h-2">
+                  <div
+                    className={`h-full transition-all ${PROGRESS_FILL[progressColor]}`}
+                    style={{ width: `${remainingPercent}%` }}
+                  />
+                </div>
+              </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
@@ -174,15 +189,17 @@ const AuctionItemCard = ({
                   </span>
                 </div>
 
-                {item.currentBidder && (
-                  <div className="flex items-center justify-between">
-                    <span className="type-caption text-hint">{t('leadingBidder')}</span>
+                <div className="flex min-h-8 items-center justify-between">
+                  <span className="type-caption text-hint">{t('leadingBidder')}</span>
+                  {item.currentBidder ? (
                     <div className="flex items-center gap-2">
                       <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
                       <span className="type-body text-foreground">{item.currentBidder.username}</span>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <span className="type-body text-hint">{t('noBids')}</span>
+                  )}
+                </div>
               </div>
 
               <Separator />
@@ -195,7 +212,12 @@ const AuctionItemCard = ({
                 </div>
               </div>
 
-              <div className="relative z-10 flex gap-2">
+              <div className="relative z-10 mt-auto flex gap-2">
+                {isUpcoming && (
+                  <Button variant="primary" isDisabled className="flex-1">
+                    {t('placeBid')}
+                  </Button>
+                )}
                 {isActive && (
                   <>
                   <Button
@@ -291,11 +313,18 @@ const AuctionItemCard = ({
       </Modal>
                   </>
                 )}
-                <Modal>
-                <Button variant="secondary" size="sm">
-                  <Icon icon="solar:history-linear" width={14} />
-                  {t('history', { count: item.bidHistory.length })}
-                </Button>
+                {isClosed ? (
+                  <Button variant="secondary" className="w-full" onPress={historyModal.open}>
+                    <Icon icon="solar:history-linear" width={16} />
+                    {t('viewBids')}
+                  </Button>
+                ) : (
+                  <Button variant="secondary" size="sm" onPress={historyModal.open}>
+                    <Icon icon="solar:history-linear" width={14} />
+                    {t('history', { count: item.bidHistory.length })}
+                  </Button>
+                )}
+                <Modal state={historyModal}>
                 {/* Bid History Modal */}
                 <Modal.Backdrop>
           <Modal.Container size="lg">

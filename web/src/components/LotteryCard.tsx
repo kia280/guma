@@ -54,6 +54,7 @@ const LotteryCard = ({
 
   const formatCountdown = useCountdownFormatter();
   const { remainingMs, isExpired } = useCountdown(drawDate);
+  const isDrawing = status === 'active' && isExpired;
   const countdown = (key: 'timeLeftValue' | 'startsIn') =>
     isExpired ? t('drawComplete') : t(key, { duration: formatCountdown(remainingMs) });
 
@@ -66,11 +67,11 @@ const LotteryCard = ({
           <div>
             <Chip
               size="sm"
-              color={lotteryStatusColor[status]}
+              color={isDrawing ? 'accent' : lotteryStatusColor[status]}
               variant="secondary"
               className="mb-1"
             >
-              {t(`status.${status}`)}
+              {isDrawing ? t('drawingNow') : t(`status.${status}`)}
             </Chip>
             <h4 className="type-subheading text-foreground">
               <Link href={href} className="outline-none after:absolute after:inset-0">
@@ -106,7 +107,7 @@ const LotteryCard = ({
               <div className="flex justify-between type-body">
                 <span className="text-subtle">{t('timeLeft')}</span>
                 <span className="font-medium text-accent">
-                  {countdown('timeLeftValue')}
+                  {isDrawing ? t('drawingNow') : countdown('timeLeftValue')}
                 </span>
               </div>
             )}
@@ -158,7 +159,13 @@ const LotteryCard = ({
       </Card.Content>
 
       <Card.Footer className="pt-0">
-        {status === 'active' && (
+        {isDrawing && (
+          <Button variant="primary" className="w-full" onPress={openDetail}>
+            <Icon icon="solar:play-circle-linear" width={16} />
+            {t('watchDraw')}
+          </Button>
+        )}
+        {status === 'active' && !isDrawing && (
           <Button variant="primary" className="w-full" onPress={openDetail}>
             <Icon icon="solar:ticket-linear" width={16} />
             {t('buyTicket')}

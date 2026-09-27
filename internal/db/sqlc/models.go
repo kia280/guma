@@ -168,7 +168,6 @@ type GuildBank struct {
 	GuildID   uuid.UUID
 	Balance   int64
 	Currency  string
-	Goal      int64
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
