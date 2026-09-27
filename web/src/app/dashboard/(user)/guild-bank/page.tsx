@@ -300,7 +300,7 @@ export default function GuildBankPage() {
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button
-                  variant="tertiary"
+                  variant="primary"
                   className="w-full sm:w-auto"
                   onPress={contributeModalState.open}
                 >
@@ -356,7 +356,7 @@ export default function GuildBankPage() {
                           {t('cancel')}
                         </Button>
                         <Button
-                          variant="tertiary"
+                          variant="primary"
                           onPress={handleContribute}
                           isPending={isContributing}
                           isDisabled={!(parseGold(contributeAmount) > 0)}
