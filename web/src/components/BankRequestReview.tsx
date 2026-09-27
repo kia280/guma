@@ -60,7 +60,7 @@ function RequestRow({ requester, createdAt, reason, status, reviewNote, leading,
   const format = useIntlFormatter();
 
   return (
-    <li className="flex flex-col gap-3 rounded-lg bg-surface-secondary px-3 py-3 sm:flex-row sm:items-center">
+    <li className="flex flex-col gap-3 rounded-lg bg-surface-secondary px-3 py-3 type-body sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 items-start gap-3">
         {leading}
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -108,7 +108,7 @@ interface RequestSectionProps {
 function RequestSection({ title, icon, count, emptyText, children }: RequestSectionProps) {
   return (
     <Card className="border border-divider shadow-none bg-surface">
-      <Card.Header className="flex flex-row items-center gap-3 pb-2">
+      <Card.Header className="flex flex-row items-center gap-3 pb-2 type-body">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-default">
           <Icon className="text-subtle" icon={icon} width={20} />
         </div>
@@ -297,8 +297,8 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
                 reviewNote={r.reviewNote}
                 leading={<ItemThumbnail category={r.itemCategory} rarity={r.itemRarity} />}
                 summary={
-                  <div className="flex min-w-0 items-center gap-2">
-                    <p className="type-body font-medium text-foreground truncate">
+                  <div className="flex min-w-0 items-center gap-2 type-body">
+                    <p className="font-medium text-foreground truncate">
                       {r.itemName || t('unknownItem')}
                     </p>
                     <Chip size="sm" variant="secondary" color={getRarityColor(r.itemRarity)} className="capitalize">

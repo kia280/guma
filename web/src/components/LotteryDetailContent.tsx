@@ -339,7 +339,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
       )}
 
       <div className={`flex flex-wrap items-start justify-between gap-3 ${onClose ? 'pr-8' : ''}`}>
-        <div className="min-w-0">
+        <div className="min-w-0 type-body">
           <Chip size="sm" color={lotteryStatusColor[lottery.status]} variant="secondary" className="mb-1">
             {t(`status.${lottery.status}`)}
           </Chip>

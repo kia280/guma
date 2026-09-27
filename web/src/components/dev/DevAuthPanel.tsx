@@ -284,7 +284,7 @@ export function DevAuthPanel() {
       )}
 
       <section className="flex min-h-0 flex-col gap-2 rounded-xl border border-divider bg-surface p-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 type-body">
           <div className="min-w-0">
             <h3 className="type-subheading text-soft">{t('loginAs')}</h3>
             <p className="truncate type-caption text-hint">
@@ -314,13 +314,13 @@ export function DevAuthPanel() {
               return (
                 <li
                   key={user.id}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-surface-secondary px-3 py-2"
+                  className="flex items-center justify-between gap-3 rounded-lg bg-surface-secondary px-3 py-2 type-body"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <UserAvatar name={avatarName(user)} src={user.avatarUrl} />
                     <div className="min-w-0">
                       <div className="flex min-w-0 items-center gap-1.5">
-                        <p className="truncate type-body font-medium">{user.displayName || user.username}</p>
+                        <p className="truncate font-medium">{user.displayName || user.username}</p>
                         {user.role && user.role !== 'member' && (
                           <Chip size="sm" variant="secondary" color={roleChipColor(user.role)} className="shrink-0">
                             {roleLabel(user.role)}
