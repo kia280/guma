@@ -74,7 +74,8 @@
     "adminRoles": "Roles & permissions",
     "sections": {
       "activities": "Guild activities",
-      "assets": "Assets"
+      "assets": "Assets",
+      "admin": "Administration"
     },
     "pages": {
       "detail": "Details",
