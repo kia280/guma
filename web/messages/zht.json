@@ -255,7 +255,7 @@
     "max": "上限 {count} 張",
     "filled": "已售 {percent}%",
     "winners": "得獎者",
-    "buyTicket": "購買票券",
+    "viewAndBuy": "查看並購票",
     "viewWinners": "查看得獎者",
     "ticketsSoldProgress": "售票進度",
     "timeLeftValue": "剩餘 {duration}",
