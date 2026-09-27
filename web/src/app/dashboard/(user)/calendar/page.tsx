@@ -276,10 +276,12 @@ export default function CalendarPage() {
                         </div>
                       )}
 
-                      <div className="flex items-center gap-3 type-body text-subtle">
-                        <Icon icon="solar:users-group-rounded-linear" width={16} />
-                        <span>{t('createdBy', { name: selectedEvent.createdBy })}</span>
-                      </div>
+                      {selectedEvent.createdByName && (
+                        <div className="flex items-center gap-3 type-body text-subtle">
+                          <Icon icon="solar:users-group-rounded-linear" width={16} />
+                          <span>{t('createdBy', { name: selectedEvent.createdByName })}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Modal.Body>

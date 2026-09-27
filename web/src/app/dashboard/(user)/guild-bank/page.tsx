@@ -51,6 +51,44 @@ const getContributionIcon = (type: GuildContribution['type']) => {
 };
 
 
+const isSettledContribution = (status: GuildContribution['status']) =>
+  status === 'completed' || status === 'approved';
+
+function ContributionAmount({
+  entry,
+  align,
+}: {
+  entry: Pick<GuildContribution, 'type' | 'status'> & { amount: number };
+  align: 'start' | 'end';
+}) {
+  const t = useTranslations('guildBankPage');
+  const formatGold = useFormatGold();
+  const alignClass = align === 'end' ? 'items-end' : 'items-start';
+
+  if (entry.status === 'pending') {
+    return (
+      <span className={`flex flex-col ${alignClass}`}>
+        <span className="type-body font-medium tabular-nums text-subtle">{formatGold(entry.amount)}</span>
+        <span className="type-caption text-hint">{t('amountPending')}</span>
+      </span>
+    );
+  }
+  if (!isSettledContribution(entry.status)) {
+    return (
+      <span className="type-body font-medium tabular-nums text-hint line-through">
+        {formatGold(entry.amount)}
+      </span>
+    );
+  }
+  return (
+    <span
+      className={`type-body font-medium tabular-nums ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
+    >
+      {entry.type === 'contribute' ? '+' : '-'}{formatGold(entry.amount)}
+    </span>
+  );
+}
+
 export default function GuildBankPage() {
   const t = useTranslations('guildBankPage');
   const labels = useTranslations('createAuctionModal');
@@ -141,7 +179,6 @@ export default function GuildBankPage() {
   useLiveResource(['bank'], refetchBank, { guildId });
 
   const guildBalance = bank?.balance ?? 0;
-  const guildFundGoal = bank?.goal || 10000;
 
   const getContributionLabel = (type: GuildContribution['type']) => {
     switch (type) {
@@ -410,23 +447,6 @@ export default function GuildBankPage() {
               </Modal>
             </div>
           </div>
-
-          {/* Fund Goal Progress */}
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <p className="type-caption text-subtle">{t('monthlyGoal')}</p>
-              <p className="type-caption text-subtle">
-                {formatGold(guildBalance)} / {formatGold(guildFundGoal)}
-              </p>
-            </div>
-            <div className="w-full bg-default rounded-full overflow-hidden h-2">
-              <div
-                className="h-full bg-warning transition-all"
-                style={{ width: `${Math.min(100, (guildBalance / guildFundGoal) * 100)}%` }}
-              />
-            </div>
-          </div>
-
         </Card.Content>
       </Card>
 
@@ -583,11 +603,7 @@ export default function GuildBankPage() {
                         </Table.Cell>
                         <Table.Cell>
                           {entry.amount !== undefined ? (
-                            <span
-                              className={`type-body font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
-                            >
-                              {entry.type === 'contribute' ? '+' : '-'}{formatGold(entry.amount)}
-                            </span>
+                            <ContributionAmount entry={{ ...entry, amount: entry.amount }} align="start" />
                           ) : (
                             <span className="type-body text-subtle line-clamp-2 max-w-[220px]">{entry.itemName}</span>
                           )}
@@ -654,11 +670,7 @@ export default function GuildBankPage() {
                   </div>
                   <div className="text-right shrink-0 ml-3">
                     {entry.amount !== undefined ? (
-                      <span
-                        className={`type-body font-medium ${entry.type === 'contribute' ? 'text-success' : 'text-foreground'}`}
-                      >
-                        {entry.type === 'contribute' ? '+' : '-'}{formatGold(entry.amount)}
-                      </span>
+                      <ContributionAmount entry={{ ...entry, amount: entry.amount }} align="end" />
                     ) : (
                       <span className="type-caption text-subtle line-clamp-2 max-w-[140px] block">{entry.itemName}</span>
                     )}
