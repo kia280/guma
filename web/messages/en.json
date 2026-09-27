@@ -182,7 +182,6 @@
     "amount": "AMOUNT",
     "date": "DATE",
     "status": "STATUS",
-    "to": "To:",
     "completed": "Completed",
     "pending": "Pending",
     "failed": "Failed",
