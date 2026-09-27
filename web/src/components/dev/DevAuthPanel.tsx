@@ -28,18 +28,12 @@ import {
 } from '@/lib/dev-auth';
 import { isDevMockEnabled, setDevMockEnabled } from '@/lib/dev-mock';
 import { env } from '@/lib/env';
+import { roleChipColor } from '@/lib/permissions';
 
 const AFTER_LOGIN_PATH = '/dashboard';
 const DEFAULT_SEED_COUNT = 20;
 const MAX_SEED_COUNT = 200;
 const ROLES = ['owner', 'admin', 'moderator', 'member'] as const;
-
-const ROLE_COLOR: Record<string, 'accent' | 'danger' | 'warning' | 'default'> = {
-  owner: 'accent',
-  admin: 'danger',
-  moderator: 'warning',
-  member: 'default',
-};
 
 function avatarName(user: DevUser): string {
   return user.displayName || user.username || user.email;
@@ -287,7 +281,7 @@ export function DevAuthPanel() {
                       <div className="flex min-w-0 items-center gap-1.5">
                         <p className="truncate type-body font-medium">{user.displayName || user.username}</p>
                         {user.role && user.role !== 'member' && (
-                          <Chip size="sm" variant="secondary" color={ROLE_COLOR[user.role] ?? 'default'} className="shrink-0">
+                          <Chip size="sm" variant="secondary" color={roleChipColor(user.role)} className="shrink-0">
                             {roleLabel(user.role)}
                           </Chip>
                         )}
