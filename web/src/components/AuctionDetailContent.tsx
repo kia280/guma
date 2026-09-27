@@ -49,7 +49,9 @@ const CATEGORY_ICONS: Record<ItemCategory, string> = {
 const getRemainingPercent = (now: number, startTime: string, endTime: string) => {
   const start = new Date(startTime).getTime();
   const end = new Date(endTime).getTime();
-  return Math.min(100, Math.max(0, ((end - now) / (end - start)) * 100));
+  const total = end - start;
+  if (!(total > 0)) return now >= end ? 0 : 100;
+  return Math.min(100, Math.max(0, ((end - now) / total) * 100));
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
