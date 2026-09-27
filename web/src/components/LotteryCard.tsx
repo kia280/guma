@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Chip, ProgressBar, buttonVariants } from '@heroui/react';
+import { Card, Chip, ProgressBar } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -9,6 +9,7 @@ import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
 import { lotteryStatusColor } from '@/lib/status-colors';
+import { CardLinkHint } from './CardLinkHint';
 import { UserAvatar } from './UserAvatar';
 
 interface LotteryWinner {
@@ -58,7 +59,7 @@ const LotteryCard = ({
   const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
 
   return (
-    <Card className="border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
+    <Card className="group border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
       <Card.Header className="pb-2">
         <div className="flex justify-between items-start w-full">
           <div>
@@ -157,43 +158,13 @@ const LotteryCard = ({
 
       <Card.Footer className="pt-0">
         {isDrawing && (
-          <span
-            aria-hidden="true"
-            className={buttonVariants({
-              variant: 'primary',
-              fullWidth: true,
-              className: 'pointer-events-none',
-            })}
-          >
-            <Icon icon="solar:play-circle-linear" width={16} />
-            {t('watchDraw')}
-          </span>
+          <CardLinkHint icon="solar:play-circle-linear" label={t('watchDraw')} tone="accent" />
         )}
         {status === 'active' && !isDrawing && (
-          <span
-            aria-hidden="true"
-            className={buttonVariants({
-              variant: 'primary',
-              fullWidth: true,
-              className: 'pointer-events-none',
-            })}
-          >
-            <Icon icon="solar:ticket-linear" width={16} />
-            {t('buyTicket')}
-          </span>
+          <CardLinkHint icon="solar:ticket-linear" label={t('viewAndBuy')} tone="accent" />
         )}
         {status === 'ended' && (
-          <span
-            aria-hidden="true"
-            className={buttonVariants({
-              variant: 'secondary',
-              fullWidth: true,
-              className: 'pointer-events-none',
-            })}
-          >
-            <Icon icon="solar:cup-star-linear" width={16} />
-            {t('viewWinners')}
-          </span>
+          <CardLinkHint icon="solar:cup-star-linear" label={t('viewWinners')} tone="subtle" />
         )}
         {status === 'upcoming' && (
           <Chip color="warning" variant="secondary" className="w-full justify-center py-2">

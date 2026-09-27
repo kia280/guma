@@ -1,9 +1,10 @@
 'use client';
 
-import { Card, Chip, buttonVariants } from '@heroui/react';
+import { Card, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { CardLinkHint } from '@/components/CardLinkHint';
 import { useCountdown } from '@/hooks/useNow';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
@@ -55,7 +56,7 @@ export function CheckinCard({
     <Card
       className={`border border-divider shadow-none bg-surface ${
         !isDisabled
-          ? 'hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus'
+          ? 'group hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus'
           : 'opacity-50'
       }`}
     >
@@ -127,32 +128,18 @@ export function CheckinCard({
 
       <Card.Footer className="pt-0">
         {canCheckin && (
-          <span
-            aria-hidden="true"
-            aria-disabled={isDisabled || undefined}
-            className={buttonVariants({
-              variant: 'primary',
-              fullWidth: true,
-              className: 'pointer-events-none',
-            })}
-          >
-            <Icon icon="solar:check-circle-linear" width={16} />
-            {t('openCheckin')}
-          </span>
+          <CardLinkHint
+            icon="solar:check-circle-linear"
+            label={t('openCheckin')}
+            tone={isDisabled ? 'disabled' : 'accent'}
+          />
         )}
         {status === CheckinStatus.FINISHED && (
-          <span
-            aria-hidden="true"
-            aria-disabled={isDisabled || undefined}
-            className={buttonVariants({
-              variant: 'secondary',
-              fullWidth: true,
-              className: 'pointer-events-none',
-            })}
-          >
-            <Icon icon="solar:eye-linear" width={16} />
-            {t('viewDetails')}
-          </span>
+          <CardLinkHint
+            icon="solar:eye-linear"
+            label={t('viewDetails')}
+            tone={isDisabled ? 'disabled' : 'subtle'}
+          />
         )}
         {status === CheckinStatus.CANCELLED && (
           <Chip variant="secondary" className="w-full justify-center py-2">

@@ -255,7 +255,7 @@
     "max": "{count} max",
     "filled": "{percent}% filled",
     "winners": "Winners",
-    "buyTicket": "Buy Ticket",
+    "viewAndBuy": "View & buy tickets",
     "viewWinners": "View Winners",
     "ticketsSoldProgress": "Tickets sold",
     "timeLeftValue": "{duration} remaining",
