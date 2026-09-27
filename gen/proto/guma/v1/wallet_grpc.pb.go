@@ -19,15 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	WalletService_GetWallet_FullMethodName            = "/guma.v1.WalletService/GetWallet"
-	WalletService_DepositFunds_FullMethodName         = "/guma.v1.WalletService/DepositFunds"
-	WalletService_WithdrawFunds_FullMethodName        = "/guma.v1.WalletService/WithdrawFunds"
-	WalletService_TransferFunds_FullMethodName        = "/guma.v1.WalletService/TransferFunds"
-	WalletService_ListTransactions_FullMethodName     = "/guma.v1.WalletService/ListTransactions"
-	WalletService_GetBalanceTrend_FullMethodName      = "/guma.v1.WalletService/GetBalanceTrend"
-	WalletService_ListBackpackItems_FullMethodName    = "/guma.v1.WalletService/ListBackpackItems"
-	WalletService_WithdrawBackpackItem_FullMethodName = "/guma.v1.WalletService/WithdrawBackpackItem"
-	WalletService_TransferBackpackItem_FullMethodName = "/guma.v1.WalletService/TransferBackpackItem"
+	WalletService_GetWallet_FullMethodName                = "/guma.v1.WalletService/GetWallet"
+	WalletService_DepositFunds_FullMethodName             = "/guma.v1.WalletService/DepositFunds"
+	WalletService_WithdrawFunds_FullMethodName            = "/guma.v1.WalletService/WithdrawFunds"
+	WalletService_TransferFunds_FullMethodName            = "/guma.v1.WalletService/TransferFunds"
+	WalletService_ListTransactions_FullMethodName         = "/guma.v1.WalletService/ListTransactions"
+	WalletService_GetBalanceTrend_FullMethodName          = "/guma.v1.WalletService/GetBalanceTrend"
+	WalletService_ListBackpackItems_FullMethodName        = "/guma.v1.WalletService/ListBackpackItems"
+	WalletService_WithdrawBackpackItem_FullMethodName     = "/guma.v1.WalletService/WithdrawBackpackItem"
+	WalletService_TransferBackpackItem_FullMethodName     = "/guma.v1.WalletService/TransferBackpackItem"
+	WalletService_CancelBackpackWithdrawal_FullMethodName = "/guma.v1.WalletService/CancelBackpackWithdrawal"
+	WalletService_ListPendingDeliveries_FullMethodName    = "/guma.v1.WalletService/ListPendingDeliveries"
+	WalletService_ConfirmBackpackDelivery_FullMethodName  = "/guma.v1.WalletService/ConfirmBackpackDelivery"
 )
 
 // WalletServiceClient is the client API for WalletService service.
@@ -46,6 +49,9 @@ type WalletServiceClient interface {
 	ListBackpackItems(ctx context.Context, in *ListBackpackItemsRequest, opts ...grpc.CallOption) (*ListBackpackItemsResponse, error)
 	WithdrawBackpackItem(ctx context.Context, in *WithdrawBackpackItemRequest, opts ...grpc.CallOption) (*WithdrawBackpackItemResponse, error)
 	TransferBackpackItem(ctx context.Context, in *TransferBackpackItemRequest, opts ...grpc.CallOption) (*TransferBackpackItemResponse, error)
+	CancelBackpackWithdrawal(ctx context.Context, in *CancelBackpackWithdrawalRequest, opts ...grpc.CallOption) (*CancelBackpackWithdrawalResponse, error)
+	ListPendingDeliveries(ctx context.Context, in *ListPendingDeliveriesRequest, opts ...grpc.CallOption) (*ListPendingDeliveriesResponse, error)
+	ConfirmBackpackDelivery(ctx context.Context, in *ConfirmBackpackDeliveryRequest, opts ...grpc.CallOption) (*ConfirmBackpackDeliveryResponse, error)
 }
 
 type walletServiceClient struct {
@@ -146,6 +152,36 @@ func (c *walletServiceClient) TransferBackpackItem(ctx context.Context, in *Tran
 	return out, nil
 }
 
+func (c *walletServiceClient) CancelBackpackWithdrawal(ctx context.Context, in *CancelBackpackWithdrawalRequest, opts ...grpc.CallOption) (*CancelBackpackWithdrawalResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelBackpackWithdrawalResponse)
+	err := c.cc.Invoke(ctx, WalletService_CancelBackpackWithdrawal_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletServiceClient) ListPendingDeliveries(ctx context.Context, in *ListPendingDeliveriesRequest, opts ...grpc.CallOption) (*ListPendingDeliveriesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPendingDeliveriesResponse)
+	err := c.cc.Invoke(ctx, WalletService_ListPendingDeliveries_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletServiceClient) ConfirmBackpackDelivery(ctx context.Context, in *ConfirmBackpackDeliveryRequest, opts ...grpc.CallOption) (*ConfirmBackpackDeliveryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ConfirmBackpackDeliveryResponse)
+	err := c.cc.Invoke(ctx, WalletService_ConfirmBackpackDelivery_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WalletServiceServer is the server API for WalletService service.
 // All implementations must embed UnimplementedWalletServiceServer
 // for forward compatibility.
@@ -162,6 +198,9 @@ type WalletServiceServer interface {
 	ListBackpackItems(context.Context, *ListBackpackItemsRequest) (*ListBackpackItemsResponse, error)
 	WithdrawBackpackItem(context.Context, *WithdrawBackpackItemRequest) (*WithdrawBackpackItemResponse, error)
 	TransferBackpackItem(context.Context, *TransferBackpackItemRequest) (*TransferBackpackItemResponse, error)
+	CancelBackpackWithdrawal(context.Context, *CancelBackpackWithdrawalRequest) (*CancelBackpackWithdrawalResponse, error)
+	ListPendingDeliveries(context.Context, *ListPendingDeliveriesRequest) (*ListPendingDeliveriesResponse, error)
+	ConfirmBackpackDelivery(context.Context, *ConfirmBackpackDeliveryRequest) (*ConfirmBackpackDeliveryResponse, error)
 	mustEmbedUnimplementedWalletServiceServer()
 }
 
@@ -198,6 +237,15 @@ func (UnimplementedWalletServiceServer) WithdrawBackpackItem(context.Context, *W
 }
 func (UnimplementedWalletServiceServer) TransferBackpackItem(context.Context, *TransferBackpackItemRequest) (*TransferBackpackItemResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method TransferBackpackItem not implemented")
+}
+func (UnimplementedWalletServiceServer) CancelBackpackWithdrawal(context.Context, *CancelBackpackWithdrawalRequest) (*CancelBackpackWithdrawalResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelBackpackWithdrawal not implemented")
+}
+func (UnimplementedWalletServiceServer) ListPendingDeliveries(context.Context, *ListPendingDeliveriesRequest) (*ListPendingDeliveriesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPendingDeliveries not implemented")
+}
+func (UnimplementedWalletServiceServer) ConfirmBackpackDelivery(context.Context, *ConfirmBackpackDeliveryRequest) (*ConfirmBackpackDeliveryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ConfirmBackpackDelivery not implemented")
 }
 func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}
 func (UnimplementedWalletServiceServer) testEmbeddedByValue()                       {}
@@ -382,6 +430,60 @@ func _WalletService_TransferBackpackItem_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletService_CancelBackpackWithdrawal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelBackpackWithdrawalRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).CancelBackpackWithdrawal(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_CancelBackpackWithdrawal_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).CancelBackpackWithdrawal(ctx, req.(*CancelBackpackWithdrawalRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WalletService_ListPendingDeliveries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPendingDeliveriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).ListPendingDeliveries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_ListPendingDeliveries_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).ListPendingDeliveries(ctx, req.(*ListPendingDeliveriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WalletService_ConfirmBackpackDelivery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfirmBackpackDeliveryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).ConfirmBackpackDelivery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_ConfirmBackpackDelivery_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).ConfirmBackpackDelivery(ctx, req.(*ConfirmBackpackDeliveryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WalletService_ServiceDesc is the grpc.ServiceDesc for WalletService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -424,6 +526,18 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TransferBackpackItem",
 			Handler:    _WalletService_TransferBackpackItem_Handler,
+		},
+		{
+			MethodName: "CancelBackpackWithdrawal",
+			Handler:    _WalletService_CancelBackpackWithdrawal_Handler,
+		},
+		{
+			MethodName: "ListPendingDeliveries",
+			Handler:    _WalletService_ListPendingDeliveries_Handler,
+		},
+		{
+			MethodName: "ConfirmBackpackDelivery",
+			Handler:    _WalletService_ConfirmBackpackDelivery_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

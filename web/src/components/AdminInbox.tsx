@@ -17,6 +17,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useNow } from '@/hooks/useNow';
 import { useToast } from '@/hooks/useToast';
@@ -25,6 +26,7 @@ import { adminTabHref } from '@/lib/dashboard-nav';
 import { apiClient } from '@/lib/guma';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { AuctionStatus, type AuctionItem } from '@/types/auction';
+import type { BackpackItem } from '@/types/backpack';
 import type { FundRequest, GuildBankItem, ItemRequest, ReviewDecision } from '@/types/guild-bank';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -145,6 +147,9 @@ export function AdminInbox({ guildId }: { guildId: string }) {
   const [requestStatus, setRequestStatus] = React.useState<LoadStatus>('loading');
   const [auctions, setAuctions] = React.useState<AuctionItem[]>([]);
   const [auctionStatus, setAuctionStatus] = React.useState<LoadStatus>('loading');
+  const [deliveries, setDeliveries] = React.useState<BackpackItem[]>([]);
+  const [deliveryStatus, setDeliveryStatus] = React.useState<LoadStatus>('loading');
+  const [deliveryTarget, setDeliveryTarget] = React.useState<BackpackItem | null>(null);
   const [loot, setLoot] = React.useState<GuildBankItem[]>([]);
   const [lootStatus, setLootStatus] = React.useState<LoadStatus>('loading');
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
@@ -178,6 +183,16 @@ export function AdminInbox({ guildId }: { guildId: string }) {
       .catch(() => setAuctionStatus('error'));
   }, [guildId]);
 
+  const loadDeliveries = React.useCallback(() => {
+    apiClient
+      .listPendingDeliveries(guildId)
+      .then(items => {
+        setDeliveries(items);
+        setDeliveryStatus('ready');
+      })
+      .catch(() => setDeliveryStatus('error'));
+  }, [guildId]);
+
   const loadLoot = React.useCallback(() => {
     apiClient
       .listBankItems(guildId)
@@ -191,14 +206,26 @@ export function AdminInbox({ guildId }: { guildId: string }) {
   React.useEffect(() => {
     loadRequests();
     loadAuctions();
+    loadDeliveries();
     loadLoot();
-  }, [loadRequests, loadAuctions, loadLoot]);
+  }, [loadRequests, loadAuctions, loadDeliveries, loadLoot]);
 
   useLiveResource(['bank'], () => {
     loadRequests();
     loadLoot();
   }, { guildId });
   useLiveResource(['auction'], loadAuctions, { guildId });
+  useLiveResource(['delivery'], loadDeliveries, { guildId });
+
+  const confirmDelivery = async () => {
+    if (!deliveryTarget) return;
+    try {
+      await apiClient.confirmBackpackDelivery(guildId, deliveryTarget.id);
+    } finally {
+      loadDeliveries();
+    }
+    notify.success(t('deliveryConfirmed', { item: deliveryTarget.item.name, name: deliveryTarget.ownerName ?? '' }));
+  };
 
     const attention: AttentionAuction[] = auctions
     .map(auction => ({ auction, reason: auctionAttention(auction, now) }))
@@ -259,6 +286,9 @@ export function AdminInbox({ guildId }: { guildId: string }) {
         </Chip>
         <Chip variant="secondary" color={attention.length > 0 ? 'warning' : 'default'}>
           {t('summaryAuctions', { count: attention.length })}
+        </Chip>
+        <Chip variant="secondary" color={deliveries.length > 0 ? 'warning' : 'default'}>
+          {t('summaryDeliveries', { count: deliveries.length })}
         </Chip>
         <Chip variant="secondary" color={loot.length > 0 ? 'warning' : 'default'}>
           {t('summaryLoot', { count: loot.length })}
@@ -367,6 +397,34 @@ export function AdminInbox({ guildId }: { guildId: string }) {
       </InboxSection>
 
       <InboxSection
+        title={t('pendingDeliveries')}
+        icon="solar:box-minimalistic-linear"
+        count={deliveries.length}
+        status={deliveryStatus}
+        emptyText={t('noPendingDeliveries')}
+        onRetry={loadDeliveries}
+      >
+        <ul className="flex flex-col gap-2">
+          {deliveries.map(item => (
+            <li key={item.id} className="flex items-center gap-3 rounded-lg bg-surface-secondary px-3 py-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <p className="type-body font-medium text-foreground truncate">{item.item.name}</p>
+                <p className="type-caption text-hint truncate">
+                  {t('deliveryRequested', {
+                    name: item.ownerName || t('unknownMember'),
+                    time: formatAge(item.deliveryRequestedAt ?? item.acquiredAt),
+                  })}
+                </p>
+              </div>
+              <Button size="sm" variant="secondary" onPress={() => setDeliveryTarget(item)}>
+                {t('confirmDelivery')}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </InboxSection>
+
+      <InboxSection
         title={t('undistributedLoot')}
         icon="solar:clipboard-check-linear"
         count={lootGroups.length}
@@ -394,6 +452,22 @@ export function AdminInbox({ guildId }: { guildId: string }) {
           ))}
         </ul>
       </InboxSection>
+
+      <ConfirmDialog
+        heading={t('confirmDeliveryTitle', { item: deliveryTarget?.item.name ?? '' })}
+        body={t('confirmDeliveryBody', {
+          item: deliveryTarget?.item.name ?? '',
+          name: deliveryTarget?.ownerName || t('unknownMember'),
+        })}
+        confirmLabel={t('confirmDelivery')}
+        failedMessage={t('confirmDeliveryFailed')}
+        status="warning"
+        isOpen={deliveryTarget !== null}
+        onOpenChange={open => {
+          if (!open) setDeliveryTarget(null);
+        }}
+        onConfirm={confirmDelivery}
+      />
 
       <Modal state={batchModal}>
         <Modal.Backdrop>

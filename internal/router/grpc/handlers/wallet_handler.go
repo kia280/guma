@@ -247,7 +247,7 @@ func transactionToProto(t *walletsvc.Transaction) *gumav1.Transaction {
 }
 
 func backpackItemToProto(bi *walletsvc.BackpackItem) *gumav1.BackpackItem {
-	return &gumav1.BackpackItem{
+	p := &gumav1.BackpackItem{
 		Id:          bi.ID,
 		OwnerId:     bi.OwnerID,
 		GuildId:     bi.GuildID,
@@ -257,6 +257,63 @@ func backpackItemToProto(bi *walletsvc.BackpackItem) *gumav1.BackpackItem {
 		Note:        bi.Note,
 		AcquiredAt:  timestamppb.New(bi.AcquiredAt),
 		SourceLabel: bi.SourceLabel,
+		OwnerName:   bi.OwnerName,
 		Lock:        itemLockToProto(bi.Lock),
 	}
+	if bi.DeliveryRequestedAt != nil {
+		p.DeliveryRequestedAt = timestamppb.New(*bi.DeliveryRequestedAt)
+	}
+	return p
+}
+
+func (h *WalletHandler) CancelBackpackWithdrawal(ctx context.Context, req *gumav1.CancelBackpackWithdrawalRequest) (*gumav1.CancelBackpackWithdrawalResponse, error) {
+	if req.GuildId == "" || req.ItemId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and item_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	bi, err := h.svc.CancelBackpackWithdrawal(ctx, userID, req.GuildId, req.ItemId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.CancelBackpackWithdrawalResponse{Item: backpackItemToProto(bi)}, nil
+}
+
+func (h *WalletHandler) ListPendingDeliveries(ctx context.Context, req *gumav1.ListPendingDeliveriesRequest) (*gumav1.ListPendingDeliveriesResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	items, err := h.svc.ListPendingDeliveries(ctx, userID, req.GuildId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	protos := make([]*gumav1.BackpackItem, len(items))
+	for i, bi := range items {
+		protos[i] = backpackItemToProto(bi)
+	}
+	return &gumav1.ListPendingDeliveriesResponse{Items: protos}, nil
+}
+
+func (h *WalletHandler) ConfirmBackpackDelivery(ctx context.Context, req *gumav1.ConfirmBackpackDeliveryRequest) (*gumav1.ConfirmBackpackDeliveryResponse, error) {
+	if req.GuildId == "" || req.ItemId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and item_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	bi, err := h.svc.ConfirmBackpackDelivery(ctx, userID, req.GuildId, req.ItemId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.ConfirmBackpackDeliveryResponse{Item: backpackItemToProto(bi)}, nil
 }

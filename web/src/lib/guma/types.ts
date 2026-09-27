@@ -104,6 +104,9 @@ export interface ApiClient {
   transfer(guildId: string, req: TransferRequest): Promise<Transaction>;
   listBackpack(guildId: string): Promise<BackpackItem[]>;
   withdrawBackpackItem(guildId: string, itemId: string): Promise<void>;
+  cancelBackpackWithdrawal(guildId: string, itemId: string): Promise<void>;
+  listPendingDeliveries(guildId: string): Promise<BackpackItem[]>;
+  confirmBackpackDelivery(guildId: string, itemId: string): Promise<void>;
   transferBackpackItem(guildId: string, itemId: string, req: { recipientId: string; note?: string }): Promise<BackpackItem>;
 
   // ── Auction ──

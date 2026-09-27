@@ -42,6 +42,7 @@ interface BackpackItemCardProps {
   onTransfer?: (item: BackpackItem) => void;
   onWithdraw?: (item: BackpackItem) => void;
   onShowHistory?: (item: BackpackItem) => void;
+  onCancelWithdrawal?: (item: BackpackItem) => void;
   isHighlighted?: boolean;
 }
 
@@ -53,12 +54,14 @@ const BackpackItemCard = ({
   onTransfer,
   onWithdraw,
   onShowHistory,
+  onCancelWithdrawal,
   isHighlighted = false,
 }: BackpackItemCardProps) => {
   const t = useTranslations('backpackItemCard');
   const labels = useTranslations('createAuctionModal');
   const cardRef = React.useRef<HTMLDivElement>(null);
   const href = sourceHref(item);
+  const isAwaitingDelivery = Boolean(item.deliveryRequestedAt);
   const sourceText = item.sourceLabel
     ? t(`sourceWithLabel.${item.acquiredFrom}`, { label: item.sourceLabel })
     : t(`acquiredFrom.${item.acquiredFrom}`);
@@ -84,6 +87,11 @@ const BackpackItemCard = ({
               {labels(`rarities.${item.item.rarity}`)}
             </Chip>
             {item.lock && <ItemLockChip lock={item.lock} />}
+            {isAwaitingDelivery && (
+              <Chip size="sm" color="warning" variant="secondary">
+                {t('awaitingDelivery')}
+              </Chip>
+            )}
           </div>
           {href ? (
             <Link
@@ -115,25 +123,34 @@ const BackpackItemCard = ({
                 if (key === 'transfer') onTransfer?.(item);
                 if (key === 'withdraw') onWithdraw?.(item);
                 if (key === 'history') onShowHistory?.(item);
+                if (key === 'cancelWithdrawal') onCancelWithdrawal?.(item);
               }}
             >
-              <Dropdown.Item id="auction" textValue={t('putToAuction')}>
-                <Icon icon="solar:sledgehammer-linear" width={16} />
-                <span>{t('putToAuction')}</span>
-              </Dropdown.Item>
-              {onPutToLottery && (
+              {isAwaitingDelivery && (
+                <Dropdown.Item id="cancelWithdrawal" textValue={t('cancelWithdrawal')}>
+                  <Icon icon="solar:undo-left-linear" width={16} />
+                  <span>{t('cancelWithdrawal')}</span>
+                </Dropdown.Item>
+              )}
+              {!isAwaitingDelivery && (
+                <Dropdown.Item id="auction" textValue={t('putToAuction')}>
+                  <Icon icon="solar:sledgehammer-linear" width={16} />
+                  <span>{t('putToAuction')}</span>
+                </Dropdown.Item>
+              )}
+              {!isAwaitingDelivery && onPutToLottery && (
                 <Dropdown.Item id="lottery" textValue={t('putToLottery')}>
                   <Icon icon="solar:ticket-linear" width={16} />
                   <span>{t('putToLottery')}</span>
                 </Dropdown.Item>
               )}
-              {onDonate && (
+              {!isAwaitingDelivery && onDonate && (
                 <Dropdown.Item id="donate" textValue={t('donate')}>
                   <Icon icon="solar:safe-2-linear" width={16} />
                   <span>{t('donate')}</span>
                 </Dropdown.Item>
               )}
-              {onTransfer && (
+              {!isAwaitingDelivery && onTransfer && (
                 <Dropdown.Item id="transfer" textValue={t('transfer')}>
                   <Icon icon="solar:arrow-right-linear" width={16} />
                   <span>{t('transfer')}</span>
@@ -145,10 +162,12 @@ const BackpackItemCard = ({
                   <span>{t('history')}</span>
                 </Dropdown.Item>
               )}
-              <Dropdown.Item id="withdraw" variant="danger" textValue={t('withdraw')}>
-                <Icon icon="solar:arrow-up-linear" width={16} />
-                <span>{t('withdraw')}</span>
-              </Dropdown.Item>
+              {!isAwaitingDelivery && (
+                <Dropdown.Item id="withdraw" variant="danger" textValue={t('withdraw')}>
+                  <Icon icon="solar:arrow-up-linear" width={16} />
+                  <span>{t('withdraw')}</span>
+                </Dropdown.Item>
+              )}
             </Dropdown.Menu>
           </Dropdown.Popover>
         </Dropdown>

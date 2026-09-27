@@ -202,8 +202,8 @@
     "withdrawMoney": "Withdraw Money",
     "withdrawNote": "Withdrawals may take 1–3 business days to process.",
     "withdrawItem": "Withdraw Item",
-    "withdrawItemConfirm": "Are you sure you want to withdraw <strong>{name}</strong> from your backpack? This action cannot be undone.",
-    "withdrawItemNote": "Withdrawn items will be removed from your backpack and submitted for processing.",
+    "withdrawItemConfirm": "Ask an officer to hand <strong>{name}</strong> over to you in game?",
+    "withdrawItemNote": "The item stays in your backpack, locked, until an officer confirms the handover. You can cancel until then.",
     "sendMoney": "Send Money",
     "recentTransactions": "Recent Transactions",
     "viewAll": "View All",
@@ -230,7 +230,7 @@
     "transferFailed": "Could not complete the transfer. Please try again.",
     "withdrawSuccess": "Withdrawal completed.",
     "withdrawFailed": "Could not complete the withdrawal. Please try again.",
-    "withdrawItemSuccess": "Item submitted for withdrawal.",
+    "withdrawItemSuccess": "Withdrawal requested. An officer will hand the item over in game.",
     "withdrawItemFailed": "Could not withdraw the item. Please try again.",
     "noItems": "No items in your backpack",
     "noItemsHint": "Items you receive from the guild bank or events will show up here.",
@@ -242,7 +242,9 @@
     "availableBalance": "Available",
     "lockedInBids": "{amount} held in {count, plural, one {# leading bid} other {# leading bids}}",
     "lockedBidsLabel": "Auctions holding your bids",
-    "unnamedAuction": "Auction"
+    "unnamedAuction": "Auction",
+    "withdrawalCancelled": "Withdrawal of {name} cancelled.",
+    "withdrawalCancelFailed": "Could not cancel the withdrawal. Please try again."
   },
   "lotteryPage": {
     "all": "All",
@@ -360,7 +362,9 @@
       "auction": "Auction",
       "admin": "Admin"
     },
-    "history": "History"
+    "history": "History",
+    "awaitingDelivery": "Awaiting handover",
+    "cancelWithdrawal": "Cancel withdrawal"
   },
   "calendarPage": {
     "loadingEvents": "Loading events...",
@@ -815,7 +819,8 @@
     "auctionSold": "<b>{actor}</b> won <b>{item}</b> for <b>{amount}</b>, paid to {destination, select, wallet {your wallet} other {the guild bank}}",
     "auctionUnsold": "<b>{item}</b> ended without bids",
     "itemReceived": "<b>{actor}</b> sent you <b>{item}</b>",
-    "lootAssigned": "You received <b>{item}</b> from <b>{checkin}</b>"
+    "lootAssigned": "You received <b>{item}</b> from <b>{checkin}</b>",
+    "itemDelivered": "<b>{actor}</b> handed over <b>{item}</b> in game"
   },
   "profilePage": {
     "title": "Personal Information",
@@ -1417,7 +1422,17 @@
     "notePlaceholder": "Shared with every requester",
     "cancel": "Cancel",
     "batchSuccess": "{decision, select, approved {Approved} other {Rejected}} {count, plural, one {# request} other {# requests}}.",
-    "batchPartial": "{decision, select, approved {Approved} other {Rejected}} {succeeded}; {failed} could not be processed."
+    "batchPartial": "{decision, select, approved {Approved} other {Rejected}} {succeeded}; {failed} could not be processed.",
+    "pendingDeliveries": "Items awaiting handover",
+    "noPendingDeliveries": "No members are waiting for an item handover.",
+    "summaryDeliveries": "{count, plural, =0 {No handovers pending} one {# handover pending} other {# handovers pending}}",
+    "deliveryRequested": "{name} asked {time}",
+    "confirmDelivery": "Mark delivered",
+    "confirmDeliveryTitle": "Confirm handover of {item}?",
+    "confirmDeliveryBody": "Confirm that {name} received {item} in game. The item leaves their backpack and they are notified.",
+    "confirmDeliveryFailed": "Could not confirm the handover. It may have been cancelled.",
+    "deliveryConfirmed": "Marked {item} as delivered to {name}.",
+    "unknownMember": "A member"
   },
   "bidAssist": {
     "quickPicks": "Quick bid amounts",
@@ -1445,7 +1460,10 @@
       "auction_listed": "{actor} put it up for auction",
       "lottery_listed": "{actor} offered it as a prize in {label}",
       "withdrawn": "{actor} withdrew it",
-      "retracted": "Removed when roll call {label} was cancelled"
+      "retracted": "Removed when roll call {label} was cancelled",
+      "withdrawal_requested": "{actor} asked to withdraw it",
+      "withdrawal_cancelled": "{actor} cancelled the withdrawal",
+      "delivered": "{actor} handed it over to {subject} in game"
     },
     "received": {
       "auction": "{actor} won it at auction",

@@ -314,7 +314,25 @@ const baseMockApiClient: ApiClient = {
     return tx;
   },
   listBackpack: async () => mockData.mockBackpackItems,
-  withdrawBackpackItem: async () => undefined,
+  withdrawBackpackItem: async (_guildId, itemId) => {
+    const item = mockData.mockBackpackItems.find(i => i.id === itemId);
+    if (!item || item.deliveryRequestedAt || item.lock) throw failedPrecondition('item is not available to withdraw');
+    item.deliveryRequestedAt = new Date().toISOString();
+  },
+  cancelBackpackWithdrawal: async (_guildId, itemId) => {
+    const item = mockData.mockBackpackItems.find(i => i.id === itemId);
+    if (!item?.deliveryRequestedAt) throw new Error('not pending');
+    item.deliveryRequestedAt = undefined;
+  },
+  listPendingDeliveries: async () =>
+    mockData.mockBackpackItems
+      .filter(i => i.deliveryRequestedAt)
+      .map(i => ({ ...i, ownerName: currentUser.username })),
+  confirmBackpackDelivery: async (_guildId, itemId) => {
+    const item = mockData.mockBackpackItems.find(i => i.id === itemId);
+    if (!item?.deliveryRequestedAt) throw new Error('not pending');
+    removeById(mockData.mockBackpackItems, itemId);
+  },
   transferBackpackItem: async (_guildId, itemId, req) => {
     const item = mockData.mockBackpackItems.find(i => i.id === itemId);
     if (!item) throw new Error('not found');

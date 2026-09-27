@@ -500,6 +500,8 @@ type ProtoBackpackItem = {
   owner_id?: string;
   guild_id?: string;
   note?: string;
+  delivery_requested_at?: string;
+  owner_name?: string;
   lock?: ProtoItemLock;
 };
 
@@ -528,6 +530,8 @@ export const toBackpackItem = (raw: ProtoBackpackItem): BackpackItem => ({
   ownerId: raw.owner_id ?? '',
   guildId: raw.guild_id ?? '',
   note: raw.note,
+  deliveryRequestedAt: raw.delivery_requested_at || undefined,
+  ownerName: raw.owner_name || undefined,
   lock: toItemLock(raw.lock),
 });
 

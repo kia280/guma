@@ -5,6 +5,7 @@ UPDATE backpack_items SET
     locked_at      = NOW()
 WHERE backpack_items.id = sqlc.arg(id) AND backpack_items.owner_id = sqlc.arg(owner_id)
   AND backpack_items.guild_id = sqlc.arg(guild_id) AND backpack_items.locked_by_type IS NULL
+  AND backpack_items.delivery_requested_at IS NULL
 RETURNING backpack_items.item;
 
 -- name: LockBankItem :one

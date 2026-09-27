@@ -187,7 +187,7 @@ func lockError(err error, what string, exists func() (bool, error)) error {
 		return fmt.Errorf("%w: load %s: %v", errs.ErrInternal, what, existsErr)
 	}
 	if found {
-		return fmt.Errorf("%w: %s is already in an auction or lottery", errs.ErrFailedPrecondition, what)
+		return fmt.Errorf("%w: %s is already listed or awaiting delivery", errs.ErrFailedPrecondition, what)
 	}
 	return fmt.Errorf("%w: %s", errs.ErrNotFound, what)
 }

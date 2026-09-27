@@ -50,7 +50,10 @@ export type ItemHistoryKind =
   | 'lottery_listed'
   | 'returned'
   | 'withdrawn'
-  | 'retracted';
+  | 'retracted'
+  | 'withdrawal_requested'
+  | 'withdrawal_cancelled'
+  | 'delivered';
 
 export interface ItemHistoryEvent {
   id: string;

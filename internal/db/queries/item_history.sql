@@ -15,5 +15,6 @@ WHERE e.guild_id = $1 AND e.item_id = $2
 ORDER BY e.seq;
 
 -- name: InsertItemEvent :exec
-INSERT INTO item_events (guild_id, item_id, kind, actor_id, source, reference_id)
-VALUES ($1, $2, sqlc.arg(kind)::text, sqlc.narg(actor_id)::uuid, sqlc.arg(source)::text, sqlc.narg(reference_id)::uuid);
+INSERT INTO item_events (guild_id, item_id, kind, actor_id, subject_id, source, reference_id)
+VALUES ($1, $2, sqlc.arg(kind)::text, sqlc.narg(actor_id)::uuid, sqlc.narg(subject_id)::uuid,
+        sqlc.arg(source)::text, sqlc.narg(reference_id)::uuid);

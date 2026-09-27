@@ -54,16 +54,18 @@ type Transaction struct {
 
 // BackpackItem is the domain model for an item in a user's backpack.
 type BackpackItem struct {
-	ID          string
-	OwnerID     string
-	GuildID     string
-	Item        models.Item
-	Source      string
-	SourceID    string
-	Note        string
-	AcquiredAt  time.Time
-	SourceLabel string
-	Lock        *models.ItemLock
+	ID                  string
+	OwnerID             string
+	GuildID             string
+	Item                models.Item
+	Source              string
+	SourceID            string
+	Note                string
+	AcquiredAt          time.Time
+	SourceLabel         string
+	DeliveryRequestedAt *time.Time
+	OwnerName           string
+	Lock                *models.ItemLock
 }
 
 // ListTransactionsParams holds the inputs for ListTransactions.
@@ -373,6 +375,7 @@ func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (
 	for _, r := range rows {
 		item := toBackpackItem(r.ID, r.OwnerID, r.GuildID, r.Item, r.Source, r.SourceID, r.Note, r.AcquiredAt)
 		item.SourceLabel = r.SourceLabel
+		item.DeliveryRequestedAt = timestampPtr(r.DeliveryRequestedAt)
 		item.Lock = models.NewItemLock(r.LockedByType, r.LockedByID)
 		items = append(items, item)
 	}
@@ -384,44 +387,6 @@ func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (
 		nextOffset = p.Offset + pageSize
 	}
 	return &ListBackpackResult{Items: items, TotalCount: int32(total), NextOffset: nextOffset}, nil
-}
-
-// WithdrawBackpackItem marks an item as withdrawn (deletes it).
-func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerIDStr, guildIDStr, itemIDStr string) (*BackpackItem, error) {
-	ownerID, guildID, err := parseIDs(ownerIDStr, guildIDStr)
-	if err != nil {
-		return nil, err
-	}
-	itemID, err := uuid.Parse(itemIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
-	}
-
-	pgtx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
-	}
-	defer pgtx.Rollback(ctx) //nolint:errcheck
-	qtx := s.q.WithTx(pgtx)
-
-	row, err := qtx.DeleteBackpackItem(ctx, db.DeleteBackpackItemParams{
-		ID: itemID, OwnerID: ownerID, GuildID: guildID,
-	})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
-		}
-		return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
-	}
-	if err := qtx.InsertItemEvent(ctx, db.InsertItemEventParams{
-		GuildID: guildID, ItemID: row.ID, Kind: "withdrawn", ActorID: &ownerID,
-	}); err != nil {
-		return nil, fmt.Errorf("%w: log withdrawal: %v", errs.ErrInternal, err)
-	}
-	if err := pgtx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
-	}
-	return toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt), nil
 }
 
 func (s *Service) TransferBackpackItem(ctx context.Context, fromUserIDStr, guildIDStr, itemIDStr, toUserIDStr, note string) (*BackpackItem, error) {

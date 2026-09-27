@@ -117,7 +117,7 @@ SELECT COUNT(*) FROM bank_contributions WHERE guild_id = $1;
 
 -- name: DeleteBackpackItemReturningItem :one
 DELETE FROM backpack_items
-WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL AND delivery_requested_at IS NULL
 RETURNING item;
 
 -- name: InsertBankItem :one

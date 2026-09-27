@@ -202,8 +202,8 @@
     "withdrawMoney": "提款",
     "withdrawNote": "提款可能需要 1–3 個工作日處理。",
     "withdrawItem": "提取物品",
-    "withdrawItemConfirm": "您確定要從背包中提取 <strong>{name}</strong> 嗎？此操作無法撤銷。",
-    "withdrawItemNote": "提取的物品將從您的背包中移除並提交處理。",
+    "withdrawItemConfirm": "要請幹部在遊戲中將 <strong>{name}</strong> 交給你嗎？",
+    "withdrawItemNote": "在幹部確認交付前，物品會鎖定在你的背包中；確認前都可以取消。",
     "sendMoney": "發送金額",
     "recentTransactions": "最近交易",
     "viewAll": "查看全部",
@@ -230,7 +230,7 @@
     "transferFailed": "無法完成轉帳，請再試一次。",
     "withdrawSuccess": "提款完成。",
     "withdrawFailed": "無法完成提款，請再試一次。",
-    "withdrawItemSuccess": "物品已提交提取。",
+    "withdrawItemSuccess": "已送出提取申請，幹部會在遊戲中交付物品。",
     "withdrawItemFailed": "無法提取物品，請再試一次。",
     "noItems": "背包裡沒有物品",
     "noItemsHint": "從公會倉庫或活動獲得的物品會顯示在這裡。",
@@ -242,7 +242,9 @@
     "availableBalance": "可用餘額",
     "lockedInBids": "{amount} 暫扣於 {count} 筆領先出價",
     "lockedBidsLabel": "暫扣你出價的拍賣",
-    "unnamedAuction": "拍賣"
+    "unnamedAuction": "拍賣",
+    "withdrawalCancelled": "已取消 {name} 的提取。",
+    "withdrawalCancelFailed": "無法取消提取，請再試一次。"
   },
   "lotteryPage": {
     "all": "全部",
@@ -360,7 +362,9 @@
       "auction": "拍賣",
       "admin": "管理員"
     },
-    "history": "歷程"
+    "history": "歷程",
+    "awaitingDelivery": "等待交付",
+    "cancelWithdrawal": "取消提取"
   },
   "calendarPage": {
     "loadingEvents": "載入活動中...",
@@ -815,7 +819,8 @@
     "auctionSold": "<b>{actor}</b> 以 <b>{amount}</b> 得標 <b>{item}</b>，款項已存入{destination, select, wallet {你的錢包} other {公會銀行}}",
     "auctionUnsold": "<b>{item}</b> 已結束，無人出價",
     "itemReceived": "<b>{actor}</b> 送給你 <b>{item}</b>",
-    "lootAssigned": "你從 <b>{checkin}</b> 獲得 <b>{item}</b>"
+    "lootAssigned": "你從 <b>{checkin}</b> 獲得 <b>{item}</b>",
+    "itemDelivered": "<b>{actor}</b> 已在遊戲中交付 <b>{item}</b>"
   },
   "profilePage": {
     "title": "個人資料",
@@ -1417,7 +1422,17 @@
     "notePlaceholder": "所有申請人都會看到",
     "cancel": "取消",
     "batchSuccess": "已{decision, select, approved {核准} other {駁回}} {count} 筆申請。",
-    "batchPartial": "已{decision, select, approved {核准} other {駁回}} {succeeded} 筆；{failed} 筆無法處理。"
+    "batchPartial": "已{decision, select, approved {核准} other {駁回}} {succeeded} 筆；{failed} 筆無法處理。",
+    "pendingDeliveries": "等待交付的物品",
+    "noPendingDeliveries": "目前沒有成員在等待物品交付。",
+    "summaryDeliveries": "{count, plural, =0 {沒有待交付物品} other {# 件待交付}}",
+    "deliveryRequested": "{name}・{time}申請",
+    "confirmDelivery": "標記為已交付",
+    "confirmDeliveryTitle": "確認已交付 {item}？",
+    "confirmDeliveryBody": "請確認 {name} 已在遊戲中收到 {item}。物品將從對方背包移除，並通知對方。",
+    "confirmDeliveryFailed": "無法確認交付，申請可能已被取消。",
+    "deliveryConfirmed": "已將 {item} 標記為交付給 {name}。",
+    "unknownMember": "某位成員"
   },
   "bidAssist": {
     "quickPicks": "快速出價金額",
@@ -1445,7 +1460,10 @@
       "auction_listed": "{actor} 放入競拍",
       "lottery_listed": "{actor} 作為「{label}」的抽獎獎品",
       "withdrawn": "{actor} 已提取",
-      "retracted": "點名「{label}」取消後移除"
+      "retracted": "點名「{label}」取消後移除",
+      "withdrawal_requested": "{actor} 申請提取",
+      "withdrawal_cancelled": "{actor} 取消了提取",
+      "delivered": "{actor} 已在遊戲中交給 {subject}"
     },
     "received": {
       "auction": "{actor} 在競拍中得標",

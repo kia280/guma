@@ -62,6 +62,7 @@ SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
        bi.source, bi.source_id,
        COALESCE(bi.note, '') AS note,
        bi.acquired_at,
+       bi.delivery_requested_at,
        COALESCE(
            CASE bi.source
                WHEN 'transfer' THEN (SELECT COALESCE(NULLIF(u.display_name, ''), u.username) FROM users u WHERE u.id = bi.source_id)
@@ -80,11 +81,36 @@ LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 -- name: CountBackpackItems :one
 SELECT COUNT(*) FROM backpack_items WHERE owner_id = $1 AND guild_id = $2;
 
--- name: DeleteBackpackItem :one
-DELETE FROM backpack_items
-WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL
+-- name: RequestBackpackWithdrawal :one
+UPDATE backpack_items SET delivery_requested_at = NOW()
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND delivery_requested_at IS NULL AND locked_by_type IS NULL
 RETURNING id, owner_id, guild_id, item, source, source_id,
-          COALESCE(note, '') AS note, acquired_at;
+          COALESCE(note, '') AS note, acquired_at, delivery_requested_at;
+
+-- name: CancelBackpackWithdrawal :one
+UPDATE backpack_items SET delivery_requested_at = NULL
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND delivery_requested_at IS NOT NULL
+RETURNING id, owner_id, guild_id, item, source, source_id,
+          COALESCE(note, '') AS note, acquired_at, delivery_requested_at;
+
+-- name: ListPendingDeliveries :many
+SELECT bi.id, bi.owner_id, bi.guild_id, bi.item, bi.source, bi.source_id,
+       COALESCE(bi.note, '') AS note, bi.acquired_at, bi.delivery_requested_at,
+       COALESCE(notification_user_name(bi.owner_id), '')::text AS owner_name
+FROM backpack_items bi
+WHERE bi.guild_id = $1 AND bi.delivery_requested_at IS NOT NULL
+ORDER BY bi.delivery_requested_at, bi.id
+LIMIT 200;
+
+-- name: LockPendingDelivery :one
+SELECT id, owner_id, guild_id, item, source, source_id,
+       COALESCE(note, '') AS note, acquired_at, delivery_requested_at
+FROM backpack_items
+WHERE id = $1 AND guild_id = $2 AND delivery_requested_at IS NOT NULL
+FOR UPDATE;
+
+-- name: DeleteDeliveredItem :exec
+DELETE FROM backpack_items WHERE id = $1 AND guild_id = $2 AND delivery_requested_at IS NOT NULL;
 
 -- name: TransferBackpackItem :one
 UPDATE backpack_items SET
@@ -97,6 +123,7 @@ WHERE backpack_items.id = sqlc.arg(id)
   AND backpack_items.owner_id = sqlc.arg(from_user_id)
   AND backpack_items.guild_id = sqlc.arg(guild_id)
   AND backpack_items.locked_by_type IS NULL
+  AND backpack_items.delivery_requested_at IS NULL
 RETURNING backpack_items.id, backpack_items.owner_id, backpack_items.guild_id, backpack_items.item,
           backpack_items.source, backpack_items.source_id,
           COALESCE(backpack_items.note, '') AS note, backpack_items.acquired_at;

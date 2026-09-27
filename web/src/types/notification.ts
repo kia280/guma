@@ -10,6 +10,7 @@ export type NotificationKind =
   | 'auctionSold'
   | 'auctionUnsold'
   | 'itemReceived'
+  | 'itemDelivered'
   | 'lootAssigned'
   | 'lotteryWon';
 

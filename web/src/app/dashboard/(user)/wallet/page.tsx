@@ -394,6 +394,15 @@ export default function WalletPage() {
     moveModalState.open();
   };
 
+  const cancelItemWithdrawal = (item: BackpackItem) =>
+    apiClient
+      .cancelBackpackWithdrawal(guildId, item.id)
+      .then(() => {
+        notify.success(t('withdrawalCancelled', { name: item.item.name }));
+        refetchBackpack();
+      })
+      .catch(() => notify.error(t('withdrawalCancelFailed')));
+
   const openItemWithdraw = (item: BackpackItem) => {
     setSelectedItem(item);
     itemWithdrawModalState.open();
@@ -726,6 +735,7 @@ export default function WalletPage() {
                 onDonate={openItemMove('donate')}
                 onTransfer={openItemMove('transfer')}
                 onWithdraw={openItemWithdraw}
+                onCancelWithdrawal={cancelItemWithdrawal}
                 onShowHistory={i => {
                   setHistoryItem(i);
                   historyModalState.open();
@@ -982,7 +992,7 @@ export default function WalletPage() {
               <Button slot="close" variant="secondary">
                 {t('cancel')}
               </Button>
-              <Button variant="danger" onPress={handleItemWithdraw} isPending={pendingAction === 'withdrawItem'}>
+              <Button variant="primary" onPress={handleItemWithdraw} isPending={pendingAction === 'withdrawItem'}>
                 {t('withdrawItem')}
               </Button>
             </Modal.Footer>

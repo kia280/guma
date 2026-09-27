@@ -12,5 +12,7 @@ export interface BackpackItem {
   ownerId: string;
   guildId: string;
   note?: string;
+  deliveryRequestedAt?: string;
+  ownerName?: string;
   lock?: ItemLock;
 }

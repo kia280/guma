@@ -136,6 +136,7 @@ UPDATE backpack_items SET
     locked_at      = NOW()
 WHERE backpack_items.id = $3 AND backpack_items.owner_id = $4
   AND backpack_items.guild_id = $5 AND backpack_items.locked_by_type IS NULL
+  AND backpack_items.delivery_requested_at IS NULL
 RETURNING backpack_items.item
 `
 

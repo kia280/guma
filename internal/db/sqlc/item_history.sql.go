@@ -29,8 +29,9 @@ func (q *Queries) GetBackpackItemOwner(ctx context.Context, arg GetBackpackItemO
 }
 
 const insertItemEvent = `-- name: InsertItemEvent :exec
-INSERT INTO item_events (guild_id, item_id, kind, actor_id, source, reference_id)
-VALUES ($1, $2, $3::text, $4::uuid, $5::text, $6::uuid)
+INSERT INTO item_events (guild_id, item_id, kind, actor_id, subject_id, source, reference_id)
+VALUES ($1, $2, $3::text, $4::uuid, $5::uuid,
+        $6::text, $7::uuid)
 `
 
 type InsertItemEventParams struct {
@@ -38,6 +39,7 @@ type InsertItemEventParams struct {
 	ItemID      uuid.UUID
 	Kind        string
 	ActorID     *uuid.UUID
+	SubjectID   *uuid.UUID
 	Source      string
 	ReferenceID *uuid.UUID
 }
@@ -48,6 +50,7 @@ func (q *Queries) InsertItemEvent(ctx context.Context, arg InsertItemEventParams
 		arg.ItemID,
 		arg.Kind,
 		arg.ActorID,
+		arg.SubjectID,
 		arg.Source,
 		arg.ReferenceID,
 	)

@@ -24,6 +24,9 @@ const KIND_ICONS: Record<ItemHistoryKind, string> = {
   returned: 'solar:undo-left-linear',
   withdrawn: 'solar:arrow-up-linear',
   retracted: 'solar:trash-bin-minimalistic-linear',
+  withdrawal_requested: 'solar:arrow-up-linear',
+  withdrawal_cancelled: 'solar:undo-left-linear',
+  delivered: 'solar:box-minimalistic-linear',
 };
 
 const RECEIVED_SOURCES = ['auction', 'lottery', 'transfer', 'checkin', 'bank_item_request', 'bank'] as const;
