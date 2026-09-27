@@ -150,9 +150,9 @@ export default function CalendarPage() {
           onNavigate={navigateCalendar}
           onEventClick={handleEventClick}
           actions={
-            <Button size="sm" variant="primary" className="shrink-0 max-sm:aspect-square max-sm:px-0" aria-label={t('createEvent')} onPress={handleCreateEvent}>
+            <Button size="sm" variant="primary" className="max-sm:h-11 max-sm:w-full" onPress={handleCreateEvent}>
               <Icon icon="solar:add-circle-linear" width={16} />
-              <span className="max-sm:hidden">{t('createEvent')}</span>
+              {t('createEvent')}
             </Button>
           }
         />
