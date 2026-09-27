@@ -774,8 +774,6 @@
     "moreEventsTitle": "{count, plural, one {# more event} other {# more events}}",
     "openDay": "Open {date} in day view",
     "noEventsDay": "No events on this day.",
-    "noEventsPeriod": "{period, select, month {No events this month} week {No events this week} other {No events on this day}}",
-    "noEventsHint": "Create an event to let your guild know what is coming up.",
     "upcoming": "Upcoming",
     "noUpcoming": "Nothing scheduled in the next {days} days."
   },
