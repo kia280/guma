@@ -229,5 +229,6 @@ func backpackItemToProto(bi *walletsvc.BackpackItem) *gumav1.BackpackItem {
 		SourceId:   bi.SourceID,
 		Note:       bi.Note,
 		AcquiredAt: timestamppb.New(bi.AcquiredAt),
+		Lock:       itemLockToProto(bi.Lock),
 	}
 }

@@ -102,6 +102,110 @@ func (x *Item) GetRarity() string {
 	return ""
 }
 
+type ItemSourceRef struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	BackpackItemId string                 `protobuf:"bytes,1,opt,name=backpack_item_id,json=backpackItemId,proto3" json:"backpack_item_id,omitempty"`
+	BankItemId     string                 `protobuf:"bytes,2,opt,name=bank_item_id,json=bankItemId,proto3" json:"bank_item_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ItemSourceRef) Reset() {
+	*x = ItemSourceRef{}
+	mi := &file_proto_guma_v1_item_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ItemSourceRef) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ItemSourceRef) ProtoMessage() {}
+
+func (x *ItemSourceRef) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_item_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ItemSourceRef.ProtoReflect.Descriptor instead.
+func (*ItemSourceRef) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_item_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ItemSourceRef) GetBackpackItemId() string {
+	if x != nil {
+		return x.BackpackItemId
+	}
+	return ""
+}
+
+func (x *ItemSourceRef) GetBankItemId() string {
+	if x != nil {
+		return x.BankItemId
+	}
+	return ""
+}
+
+type ItemLock struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Id            string                 `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ItemLock) Reset() {
+	*x = ItemLock{}
+	mi := &file_proto_guma_v1_item_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ItemLock) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ItemLock) ProtoMessage() {}
+
+func (x *ItemLock) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_item_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ItemLock.ProtoReflect.Descriptor instead.
+func (*ItemLock) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_item_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ItemLock) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *ItemLock) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
 var File_proto_guma_v1_item_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_item_proto_rawDesc = "" +
@@ -112,7 +216,14 @@ const file_proto_guma_v1_item_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
 	"\bcategory\x18\x04 \x01(\tR\bcategory\x12\x16\n" +
-	"\x06rarity\x18\x05 \x01(\tR\x06rarityB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
+	"\x06rarity\x18\x05 \x01(\tR\x06rarity\"[\n" +
+	"\rItemSourceRef\x12(\n" +
+	"\x10backpack_item_id\x18\x01 \x01(\tR\x0ebackpackItemId\x12 \n" +
+	"\fbank_item_id\x18\x02 \x01(\tR\n" +
+	"bankItemId\".\n" +
+	"\bItemLock\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\tR\x02idB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
 var (
 	file_proto_guma_v1_item_proto_rawDescOnce sync.Once
@@ -126,9 +237,11 @@ func file_proto_guma_v1_item_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_item_proto_rawDescData
 }
 
-var file_proto_guma_v1_item_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_proto_guma_v1_item_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_guma_v1_item_proto_goTypes = []any{
-	(*Item)(nil), // 0: guma.v1.Item
+	(*Item)(nil),          // 0: guma.v1.Item
+	(*ItemSourceRef)(nil), // 1: guma.v1.ItemSourceRef
+	(*ItemLock)(nil),      // 2: guma.v1.ItemLock
 }
 var file_proto_guma_v1_item_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -149,7 +262,7 @@ func file_proto_guma_v1_item_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_item_proto_rawDesc), len(file_proto_guma_v1_item_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

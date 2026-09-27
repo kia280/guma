@@ -91,6 +91,7 @@ type BankItem struct {
 	DonatedAt    time.Time
 	CheckinID    string
 	CheckinTitle string
+	Lock         *models.ItemLock
 }
 
 // ItemRequest is the domain model for an item request.
@@ -595,6 +596,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 			ID: r.ID.String(), GuildID: r.GuildID.String(), DonorID: r.DonorID.String(),
 			DonorName: r.DonorName, Quantity: r.Quantity,
 			Note: r.Note, DonatedAt: r.DonatedAt, CheckinTitle: r.CheckinTitle,
+			Lock: models.NewItemLock(r.LockedByType, r.LockedByID),
 		}
 		if r.CheckinID != nil {
 			bi.CheckinID = r.CheckinID.String()
@@ -648,6 +650,9 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 		var pgErr *pgconn.PgError
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
+			if exists, _ := s.q.BankItemExists(ctx, db.BankItemExistsParams{ID: bankItemID, GuildID: guildID}); exists {
+				return nil, fmt.Errorf("%w: bank item is in an auction or lottery", errs.ErrFailedPrecondition)
+			}
 			return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
 		case errors.As(err, &pgErr) && pgErr.Code == "23505":
 			return nil, fmt.Errorf("%w: a pending request for this item already exists", errs.ErrAlreadyExists)

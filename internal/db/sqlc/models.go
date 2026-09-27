@@ -51,19 +51,22 @@ type Auction struct {
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	SourceType      pgtype.Text
-	SourceSnapshot  []byte
 	SettledAt       pgtype.Timestamptz
+	SourceItemID    *uuid.UUID
 }
 
 type BackpackItem struct {
-	ID         uuid.UUID
-	OwnerID    uuid.UUID
-	GuildID    uuid.UUID
-	Item       []byte
-	Source     string
-	SourceID   *uuid.UUID
-	Note       pgtype.Text
-	AcquiredAt time.Time
+	ID           uuid.UUID
+	OwnerID      uuid.UUID
+	GuildID      uuid.UUID
+	Item         []byte
+	Source       string
+	SourceID     *uuid.UUID
+	Note         pgtype.Text
+	AcquiredAt   time.Time
+	LockedByType pgtype.Text
+	LockedByID   *uuid.UUID
+	LockedAt     pgtype.Timestamptz
 }
 
 type BankContribution struct {
@@ -82,15 +85,18 @@ type BankContribution struct {
 }
 
 type BankItem struct {
-	ID        uuid.UUID
-	GuildID   uuid.UUID
-	DonorID   uuid.UUID
-	DonorName string
-	Item      []byte
-	Quantity  int32
-	Note      pgtype.Text
-	DonatedAt time.Time
-	CheckinID *uuid.UUID
+	ID           uuid.UUID
+	GuildID      uuid.UUID
+	DonorID      uuid.UUID
+	DonorName    string
+	Item         []byte
+	Quantity     int32
+	Note         pgtype.Text
+	DonatedAt    time.Time
+	CheckinID    *uuid.UUID
+	LockedByType pgtype.Text
+	LockedByID   *uuid.UUID
+	LockedAt     pgtype.Timestamptz
 }
 
 type Bid struct {

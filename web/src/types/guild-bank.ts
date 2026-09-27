@@ -1,6 +1,6 @@
 // Guild bank types
 
-import type { ItemCategory, ItemRarity } from './item';
+import type { ItemCategory, ItemLock, ItemRarity } from './item';
 
 /**
  * Unified activity entry for the guild bank history view.
@@ -33,6 +33,7 @@ export interface GuildBankItem {
   quantity: number;
   checkinId?: string;
   checkinTitle?: string;
+  lock?: ItemLock;
 }
 
 export interface GuildBank {

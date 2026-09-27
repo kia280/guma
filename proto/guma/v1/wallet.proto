@@ -185,4 +185,5 @@ message BackpackItem {
   string source_id = 6;   // ID of the originating auction/lottery
   string note = 7;
   google.protobuf.Timestamp acquired_at = 8;
+  ItemLock lock = 20;
 }

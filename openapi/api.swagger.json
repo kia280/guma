@@ -4076,6 +4076,9 @@
         "status": {
           "type": "string",
           "title": "\"UPCOMING\" (scheduled) or \"ACTIVE\" (starts immediately)"
+        },
+        "source": {
+          "$ref": "#/definitions/v1ItemSourceRef"
         }
       }
     },
@@ -4801,6 +4804,9 @@
         "acquiredAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "lock": {
+          "$ref": "#/definitions/v1ItemLock"
         }
       }
     },
@@ -4901,6 +4907,9 @@
         },
         "checkinTitle": {
           "type": "string"
+        },
+        "lock": {
+          "$ref": "#/definitions/v1ItemLock"
         }
       }
     },
@@ -5790,6 +5799,17 @@
       },
       "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, check-in loot, lotteries).\n\nItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC\nItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC"
     },
+    "v1ItemLock": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    },
     "v1ItemRequest": {
       "type": "object",
       "properties": {
@@ -5833,6 +5853,17 @@
           "$ref": "#/definitions/v1Item"
         },
         "requesterAvatarUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ItemSourceRef": {
+      "type": "object",
+      "properties": {
+        "backpackItemId": {
+          "type": "string"
+        },
+        "bankItemId": {
           "type": "string"
         }
       }
@@ -6389,6 +6420,9 @@
         "item": {
           "$ref": "#/definitions/v1Item",
           "title": "Item prize; unset if currency prize"
+        },
+        "source": {
+          "$ref": "#/definitions/v1ItemSourceRef"
         }
       }
     },

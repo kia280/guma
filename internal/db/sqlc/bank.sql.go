@@ -149,7 +149,8 @@ func (q *Queries) DeductWalletIfSufficient(ctx context.Context, arg DeductWallet
 }
 
 const deleteBackpackItemReturningItem = `-- name: DeleteBackpackItemReturningItem :one
-DELETE FROM backpack_items WHERE id = $1 AND owner_id = $2 AND guild_id = $3
+DELETE FROM backpack_items
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL
 RETURNING item
 `
 
@@ -167,7 +168,7 @@ func (q *Queries) DeleteBackpackItemReturningItem(ctx context.Context, arg Delet
 }
 
 const deleteBankItemReturningItem = `-- name: DeleteBankItemReturningItem :one
-DELETE FROM bank_items WHERE id = $1 AND guild_id = $2
+DELETE FROM bank_items WHERE id = $1 AND guild_id = $2 AND locked_by_type IS NULL
 RETURNING item
 `
 
@@ -394,7 +395,7 @@ INSERT INTO item_requests (guild_id, bank_item_id, requester_id, requester_name,
 SELECT bi.guild_id, bi.id, $1, $2::text,
        NULLIF($3::text, ''), bi.item
 FROM bank_items bi
-WHERE bi.id = $4 AND bi.guild_id = $5
+WHERE bi.id = $4 AND bi.guild_id = $5 AND bi.locked_by_type IS NULL
 RETURNING item_requests.id, item_requests.guild_id, item_requests.bank_item_id, item_requests.requester_id, item_requests.requester_name,
           (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = item_requests.requester_id)::text AS requester_avatar_url,
           COALESCE(item_requests.reason, '')      AS reason,
@@ -531,7 +532,9 @@ SELECT bi.id, bi.guild_id, bi.donor_id, bi.donor_name, bi.item, bi.quantity,
        COALESCE(bi.note, '') AS note,
        bi.donated_at,
        bi.checkin_id,
-       COALESCE(c.title, '') AS checkin_title
+       COALESCE(c.title, '') AS checkin_title,
+       COALESCE(bi.locked_by_type, '') AS locked_by_type,
+       bi.locked_by_id
 FROM bank_items bi
 LEFT JOIN checkins c ON c.id = bi.checkin_id
 WHERE bi.guild_id = $1
@@ -560,6 +563,8 @@ type ListBankItemsRow struct {
 	DonatedAt    time.Time
 	CheckinID    *uuid.UUID
 	CheckinTitle string
+	LockedByType string
+	LockedByID   *uuid.UUID
 }
 
 func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([]ListBankItemsRow, error) {
@@ -588,6 +593,8 @@ func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([
 			&i.DonatedAt,
 			&i.CheckinID,
 			&i.CheckinTitle,
+			&i.LockedByType,
+			&i.LockedByID,
 		); err != nil {
 			return nil, err
 		}

@@ -1,5 +1,7 @@
 // Lottery types
 
+import type { ItemSourceRef } from './item';
+
 export type LotteryStatus = 'active' | 'upcoming' | 'ended';
 
 export interface LotteryWinner {
@@ -45,7 +47,7 @@ export interface CreateLotteryRequest {
   maxTickets?: number;
   maxTicketsPerUser?: number;
   drawDate: string;
-  prizes?: Array<{ rank: number; description: string; amount?: number }>;
+  prizes?: Array<{ rank: number; description: string; amount?: number; source?: ItemSourceRef }>;
 }
 
 export interface UpdateLotteryRequest {

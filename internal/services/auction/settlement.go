@@ -12,12 +12,10 @@ import (
 
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
+	"github.com/kia280/guma/internal/services/inventory"
 )
 
 const (
-	SourceBackpack = "backpack"
-	SourceBank     = "bank"
-
 	statusActive = "ACTIVE"
 
 	dueAuctionBatchSize = 100
@@ -81,7 +79,7 @@ func (s *Service) settle(ctx context.Context, auctionID uuid.UUID, now time.Time
 		if err := s.deliverToWinner(ctx, qtx, a); err != nil {
 			return false, err
 		}
-	} else if err := restoreSource(ctx, qtx, a.SourceType.String, a.SourceSnapshot); err != nil {
+	} else if err := inventory.Release(ctx, qtx, a.SourceType.String, a.SourceItemID, auctionHolder(a.ID)); err != nil {
 		return false, err
 	}
 
@@ -98,14 +96,21 @@ func (s *Service) settle(ctx context.Context, auctionID uuid.UUID, now time.Time
 func (s *Service) deliverToWinner(ctx context.Context, qtx *db.Queries, a db.LockAuctionForSettlementRow) error {
 	winnerID := *a.CurrentBidderID
 	auctionID := a.ID
+	item, err := inventory.Consume(ctx, qtx, a.SourceType.String, a.SourceItemID, auctionHolder(a.ID))
+	if err != nil {
+		return err
+	}
+	if item == nil {
+		item = a.Item
+	}
 	if _, err := qtx.InsertBackpackItem(ctx, db.InsertBackpackItemParams{
-		OwnerID: winnerID, GuildID: a.GuildID, Item: a.Item,
+		OwnerID: winnerID, GuildID: a.GuildID, Item: item,
 		Source: "auction", SourceID: &auctionID,
 	}); err != nil {
 		return fmt.Errorf("deliver item to winner: %w", err)
 	}
 
-	if a.SourceType.String == SourceBackpack {
+	if a.SourceType.String == inventory.SourceBackpack {
 		return creditSeller(ctx, qtx, a)
 	}
 	return creditGuildBank(ctx, qtx, a)
@@ -147,27 +152,14 @@ func creditGuildBank(ctx context.Context, qtx *db.Queries, a db.LockAuctionForSe
 	return nil
 }
 
-func restoreSource(ctx context.Context, qtx *db.Queries, sourceType string, snapshot []byte) error {
-	if len(snapshot) == 0 {
-		return nil
-	}
-	switch sourceType {
-	case SourceBackpack:
-		if _, err := qtx.RestoreBackpackItemSnapshot(ctx, snapshot); err != nil {
-			return fmt.Errorf("restore backpack item: %w", err)
-		}
-	case SourceBank:
-		if _, err := qtx.RestoreBankItemSnapshot(ctx, snapshot); err != nil {
-			return fmt.Errorf("restore bank item: %w", err)
-		}
-	}
-	return nil
-}
-
 func itemName(raw []byte) string {
 	var item models.Item
 	if err := json.Unmarshal(raw, &item); err != nil {
 		return ""
 	}
 	return item.Name
+}
+
+func auctionHolder(id uuid.UUID) inventory.Holder {
+	return inventory.Holder{Type: inventory.HolderAuction, ID: id}
 }

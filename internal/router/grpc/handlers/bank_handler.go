@@ -345,6 +345,7 @@ func bankItemToProto(bi *banksvc.BankItem) *gumav1.BankItem {
 		DonatedAt:    timestamppb.New(bi.DonatedAt),
 		CheckinId:    bi.CheckinID,
 		CheckinTitle: bi.CheckinTitle,
+		Lock:         itemLockToProto(bi.Lock),
 	}
 }
 

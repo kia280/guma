@@ -25,7 +25,7 @@ import type {
   ItemRequest,
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import { ItemCategory, ItemRarity, type ItemLock, type ItemSourceRef } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
 import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from '@/types/preference';
@@ -64,6 +64,16 @@ const failedPrecondition = (message: string) =>
     isAxiosError: true,
     response: { status: 400, data: { code: 'FailedPrecondition' } },
   });
+
+const lockMockSource = (source: ItemSourceRef | undefined, lock: ItemLock) => {
+  if (!source?.backpackItemId && !source?.bankItemId) return;
+  const target = source.backpackItemId
+    ? mockData.mockBackpackItems.find(entry => entry.id === source.backpackItemId)
+    : mockData.mockGuildItems.find(entry => entry.id === source.bankItemId);
+  if (!target) throw Object.assign(new Error('item not found'), { isAxiosError: true, response: { status: 404, data: { code: 'NotFound' } } });
+  if (target.lock) throw failedPrecondition('item is already in an auction or lottery');
+  target.lock = lock;
+};
 
 const assertUniqueName = (list: Array<{ id: string; name: string }>, id: string, name: string) => {
   if (list.some(t => t.id !== id && t.name === name)) throw conflict();
@@ -317,8 +327,10 @@ const baseMockApiClient: ApiClient = {
   },
   createAuction: async (guildId, req) => {
     const now = new Date();
+    const auctionId = `auction-${now.getTime()}`;
+    lockMockSource(req.source, { type: 'auction', id: auctionId });
     const item: AuctionItem = {
-      id: `auction-${now.getTime()}`,
+      id: auctionId,
       name: req.name,
       description: req.description,
       category: req.category,
@@ -520,8 +532,10 @@ const baseMockApiClient: ApiClient = {
     return l;
   },
   createLottery: async (_guildId, req) => {
+    const lotteryId = `lottery-${Date.now()}`;
+    req.prizes?.forEach(prize => lockMockSource(prize.source, { type: 'lottery', id: lotteryId }));
     const lottery: Lottery = {
-      id: `lottery-${Date.now()}`,
+      id: lotteryId,
       title: req.title,
       prizePool: req.prizes?.reduce((sum, prize) => sum + (prize.amount ?? 0), 0) ?? 0,
       ticketPrice: req.ticketPrice,

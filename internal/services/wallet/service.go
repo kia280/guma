@@ -52,6 +52,7 @@ type BackpackItem struct {
 	SourceID   string
 	Note       string
 	AcquiredAt time.Time
+	Lock       *models.ItemLock
 }
 
 // ListTransactionsParams holds the inputs for ListTransactions.
@@ -347,7 +348,9 @@ func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (
 
 	items := make([]*BackpackItem, 0, len(rows))
 	for _, r := range rows {
-		items = append(items, toBackpackItem(r.ID, r.OwnerID, r.GuildID, r.Item, r.Source, r.SourceID, r.Note, r.AcquiredAt))
+		item := toBackpackItem(r.ID, r.OwnerID, r.GuildID, r.Item, r.Source, r.SourceID, r.Note, r.AcquiredAt)
+		item.Lock = models.NewItemLock(r.LockedByType, r.LockedByID)
+		items = append(items, item)
 	}
 
 	total, _ := s.q.CountBackpackItems(ctx, db.CountBackpackItemsParams{OwnerID: ownerID, GuildID: guildID})

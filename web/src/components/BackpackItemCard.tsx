@@ -4,6 +4,7 @@ import { Card, Chip, Button, Dropdown } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { BackpackItem } from '@/types/backpack';
+import { ItemLockChip } from './ItemLockChip';
 import { ItemThumbnail, getRarityColor } from './ItemThumbnail';
 
 const getAcquiredColor = (acquiredFrom: BackpackItem['acquiredFrom']) => {
@@ -43,13 +44,14 @@ const BackpackItemCard = ({
         <ItemThumbnail category={item.item.category} rarity={item.item.rarity} imageUrl={item.item.imageUrl} />
         <div className="flex-1 min-w-0">
           <p className="type-body font-medium text-foreground truncate">{item.item.name}</p>
-          <div className="flex items-center gap-1 mt-0.5">
+          <div className="flex flex-wrap items-center gap-1 mt-0.5">
             <Chip size="sm" color={getRarityColor(item.item.rarity)} variant="secondary">
               {labels(`rarities.${item.item.rarity}`)}
             </Chip>
             <Chip size="sm" color={getAcquiredColor(item.acquiredFrom)} variant="secondary">
               {t(`acquiredFrom.${item.acquiredFrom}`)}
             </Chip>
+            {item.lock && <ItemLockChip lock={item.lock} />}
           </div>
         </div>
         <Dropdown>
@@ -59,7 +61,7 @@ const BackpackItemCard = ({
           <Dropdown.Popover>
             <Dropdown.Menu
               aria-label={t('actions')}
-              disabledKeys={['transfer']}
+              disabledKeys={item.lock ? ['auction', 'lottery', 'transfer', 'withdraw'] : ['transfer']}
               onAction={key => {
                 if (key === 'auction') onPutToAuction?.(item);
                 if (key === 'lottery') onPutToLottery?.(item);

@@ -26,10 +26,10 @@ FROM lotteries WHERE id = $1 AND guild_id = $2;
 
 -- name: CreateLottery :one
 INSERT INTO lotteries (
-    guild_id, created_by, title, description, ticket_price,
+    id, guild_id, created_by, title, description, ticket_price,
     max_tickets, max_tickets_per_user, status, draw_date, prizes
 ) VALUES (
-    $1, $2, sqlc.arg(title)::text,
+    sqlc.arg(id)::uuid, $1, $2, sqlc.arg(title)::text,
     NULLIF(sqlc.arg(description)::text, ''),
     $3, $4, $5, 'active',
     sqlc.arg(draw_date)::text::timestamptz,

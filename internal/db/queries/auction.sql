@@ -2,7 +2,7 @@
 SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
        current_bidder_id, min_bid_increment, start_time, end_time,
        status, is_blind, created_at, updated_at,
-       source_type, source_snapshot, settled_at
+       source_type, settled_at, source_item_id
 FROM auctions
 WHERE guild_id = $1
   AND (sqlc.arg(status_filter)::text   = '' OR status             = sqlc.arg(status_filter)::text)
@@ -24,18 +24,20 @@ WHERE guild_id = $1
 SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
        current_bidder_id, min_bid_increment, start_time, end_time,
        status, is_blind, created_at, updated_at,
-       source_type, source_snapshot, settled_at
+       source_type, settled_at, source_item_id
 FROM auctions WHERE id = $1 AND guild_id = $2;
 
 -- name: CreateAuction :one
 INSERT INTO auctions (
-    guild_id, seller_id, item, starting_bid, current_bid,
-    min_bid_increment, start_time, end_time, status, is_blind
-) VALUES ($1, $2, sqlc.arg(item)::jsonb, $3, 0, $4, $5, $6, sqlc.arg(status)::text, $7)
+    id, guild_id, seller_id, item, starting_bid, current_bid,
+    min_bid_increment, start_time, end_time, status, is_blind,
+    source_type, source_item_id
+) VALUES (sqlc.arg(id)::uuid, $1, $2, sqlc.arg(item)::jsonb, $3, 0, $4, $5, $6, sqlc.arg(status)::text, $7,
+          NULLIF(sqlc.arg(source_type)::text, ''), sqlc.narg(source_item_id)::uuid)
 RETURNING id, guild_id, seller_id, item, starting_bid, current_bid,
           current_bidder_id, min_bid_increment, start_time, end_time,
           status, is_blind, created_at, updated_at,
-          source_type, source_snapshot, settled_at;
+          source_type, settled_at, source_item_id;
 
 -- name: GetAuctionForUpdate :one
 SELECT current_bid, current_bidder_id, min_bid_increment, status, end_time
@@ -48,8 +50,10 @@ WHERE id = $3;
 -- name: UpdateAuctionStatus :exec
 UPDATE auctions SET status = sqlc.arg(status)::text, updated_at = NOW() WHERE id = sqlc.arg(id);
 
--- name: GetAuctionCancelInfo :one
-SELECT current_bid, current_bidder_id, status FROM auctions WHERE id = $1 AND guild_id = $2;
+-- name: LockAuctionForCancel :one
+SELECT current_bid, current_bidder_id, status, source_type, source_item_id
+FROM auctions WHERE id = $1 AND guild_id = $2
+FOR UPDATE;
 
 -- name: MarkAllBidsNotWinning :exec
 UPDATE bids SET is_winning = false WHERE auction_id = $1;
@@ -83,7 +87,7 @@ LIMIT sqlc.arg(max_rows)::int;
 
 -- name: LockAuctionForSettlement :one
 SELECT id, guild_id, seller_id, item, current_bid, current_bidder_id,
-       status, end_time, source_type, source_snapshot
+       status, end_time, source_type, source_item_id
 FROM auctions WHERE id = $1
 FOR UPDATE;
 
@@ -95,21 +99,6 @@ WHERE id = $1;
 INSERT INTO backpack_items (owner_id, guild_id, item, source, source_id, note)
 VALUES ($1, $2, sqlc.arg(item)::jsonb, sqlc.arg(source)::text, sqlc.arg(source_id), NULLIF(sqlc.arg(note)::text, ''))
 RETURNING id;
-
--- name: RestoreBackpackItemSnapshot :execrows
-INSERT INTO backpack_items (id, owner_id, guild_id, item, source, source_id, note, acquired_at)
-SELECT r.id, r.owner_id, r.guild_id, r.item, r.source, r.source_id, r.note, r.acquired_at
-FROM jsonb_populate_record(NULL::backpack_items, sqlc.arg(snapshot)::jsonb) AS r
-WHERE EXISTS (SELECT 1 FROM users u WHERE u.id = r.owner_id)
-ON CONFLICT (id) DO NOTHING;
-
--- name: RestoreBankItemSnapshot :execrows
-INSERT INTO bank_items (id, guild_id, donor_id, donor_name, item, quantity, note, donated_at, checkin_id)
-SELECT r.id, r.guild_id, r.donor_id, r.donor_name, r.item, r.quantity, r.note, r.donated_at,
-       (SELECT c.id FROM checkins c WHERE c.id = r.checkin_id)
-FROM jsonb_populate_record(NULL::bank_items, sqlc.arg(snapshot)::jsonb) AS r
-WHERE EXISTS (SELECT 1 FROM users u WHERE u.id = r.donor_id)
-ON CONFLICT (id) DO NOTHING;
 
 -- name: InsertBankProceeds :exec
 INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind, reference_type, reference_id)

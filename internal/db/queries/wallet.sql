@@ -61,7 +61,9 @@ ORDER BY created_at ASC;
 SELECT id, owner_id, guild_id, item,
        source, source_id,
        COALESCE(note, '') AS note,
-       acquired_at
+       acquired_at,
+       COALESCE(locked_by_type, '') AS locked_by_type,
+       locked_by_id
 FROM backpack_items
 WHERE owner_id = $1 AND guild_id = $2
 ORDER BY acquired_at DESC
@@ -72,6 +74,6 @@ SELECT COUNT(*) FROM backpack_items WHERE owner_id = $1 AND guild_id = $2;
 
 -- name: DeleteBackpackItem :one
 DELETE FROM backpack_items
-WHERE id = $1 AND owner_id = $2 AND guild_id = $3
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL
 RETURNING id, owner_id, guild_id, item, source, source_id,
           COALESCE(note, '') AS note, acquired_at;

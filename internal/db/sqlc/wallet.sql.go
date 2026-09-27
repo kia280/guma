@@ -49,7 +49,7 @@ func (q *Queries) CountWalletTransactions(ctx context.Context, arg CountWalletTr
 
 const deleteBackpackItem = `-- name: DeleteBackpackItem :one
 DELETE FROM backpack_items
-WHERE id = $1 AND owner_id = $2 AND guild_id = $3
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL
 RETURNING id, owner_id, guild_id, item, source, source_id,
           COALESCE(note, '') AS note, acquired_at
 `
@@ -211,7 +211,9 @@ const listBackpackItems = `-- name: ListBackpackItems :many
 SELECT id, owner_id, guild_id, item,
        source, source_id,
        COALESCE(note, '') AS note,
-       acquired_at
+       acquired_at,
+       COALESCE(locked_by_type, '') AS locked_by_type,
+       locked_by_id
 FROM backpack_items
 WHERE owner_id = $1 AND guild_id = $2
 ORDER BY acquired_at DESC
@@ -226,14 +228,16 @@ type ListBackpackItemsParams struct {
 }
 
 type ListBackpackItemsRow struct {
-	ID         uuid.UUID
-	OwnerID    uuid.UUID
-	GuildID    uuid.UUID
-	Item       []byte
-	Source     string
-	SourceID   *uuid.UUID
-	Note       string
-	AcquiredAt time.Time
+	ID           uuid.UUID
+	OwnerID      uuid.UUID
+	GuildID      uuid.UUID
+	Item         []byte
+	Source       string
+	SourceID     *uuid.UUID
+	Note         string
+	AcquiredAt   time.Time
+	LockedByType string
+	LockedByID   *uuid.UUID
 }
 
 func (q *Queries) ListBackpackItems(ctx context.Context, arg ListBackpackItemsParams) ([]ListBackpackItemsRow, error) {
@@ -259,6 +263,8 @@ func (q *Queries) ListBackpackItems(ctx context.Context, arg ListBackpackItemsPa
 			&i.SourceID,
 			&i.Note,
 			&i.AcquiredAt,
+			&i.LockedByType,
+			&i.LockedByID,
 		); err != nil {
 			return nil, err
 		}

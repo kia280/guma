@@ -584,7 +584,8 @@
       "createLottery": "建立抽獎",
       "drawLottery": "開獎",
       "changeDrawDate": "變更開獎日期",
-      "manageWallet": "管理自己的錢包與背包"
+      "manageWallet": "管理自己的錢包與背包",
+      "auctionBankItems": "拍賣或抽出公會銀行物品"
     },
     "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。"
   },
@@ -709,7 +710,12 @@
       "mythic": "神話"
     },
     "createFailed": "無法建立競拍，請再試一次。",
-    "created": "競拍已建立。"
+    "created": "競拍已建立。",
+    "itemSource": "物品來源",
+    "itemSourceManual": "自行填寫物品",
+    "itemSourceBank": "從公會銀行",
+    "sourceBankHint": "拍賣期間會鎖定在公會銀行中",
+    "sourceBackpackHint": "拍賣期間會鎖定在你的背包中"
   },
   "navigation": {
     "dashboard": "主頁",
@@ -1167,7 +1173,12 @@
     "cancel": "取消",
     "create": "建立抽獎",
     "createFailed": "無法建立抽獎，請再試一次。",
-    "created": "抽獎已建立。"
+    "created": "抽獎已建立。",
+    "prizeSource": "獎品來源",
+    "prizeSourceManual": "獎金或自訂獎品",
+    "prizeSourceBank": "從公會銀行",
+    "prizeFromBankHint": "開獎前會鎖定在公會銀行中，得獎者會在背包收到",
+    "prizeFromBackpackHint": "開獎前會鎖定在你的背包中，得獎者會在背包收到"
   },
   "bankRequestReview": {
     "viewLabel": "申請狀態",
@@ -1285,5 +1296,17 @@
       "high": "高",
       "critical": "緊急"
     }
+  },
+  "bankItemPicker": {
+    "label": "公會銀行物品",
+    "placeholder": "選擇物品",
+    "loading": "正在載入物品…",
+    "empty": "公會銀行目前沒有可選的物品。",
+    "loadFailed": "無法載入公會銀行物品。",
+    "retry": "重試"
+  },
+  "itemLock": {
+    "auction": "競拍中",
+    "lottery": "抽獎獎品"
   }
 }

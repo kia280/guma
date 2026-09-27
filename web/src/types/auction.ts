@@ -1,6 +1,6 @@
 // Auction types
 
-import type { ItemCategory, ItemRarity } from './item';
+import type { ItemCategory, ItemRarity, ItemSourceRef } from './item';
 
 export interface AuctionItem {
   id: string;
@@ -65,6 +65,7 @@ export interface CreateAuctionRequest {
   category: ItemCategory;
   rarity: ItemRarity;
   imageUrl?: string;
+  source?: ItemSourceRef;
   startingBid: number;
   minBidIncrement: number;
   duration: number; // in hours

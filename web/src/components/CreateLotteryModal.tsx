@@ -6,6 +6,7 @@ import {
   Label,
   Modal,
   NumberField,
+  Tabs,
   TextArea,
   TextField,
   type UseOverlayStateReturn,
@@ -18,12 +19,22 @@ import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
+import type { GuildBankItem } from '@/types/guild-bank';
+import type { ItemSourceRef } from '@/types/item';
 import type { Lottery } from '@/types/lottery';
+import { BankItemPicker } from './BankItemPicker';
 import { DateTimePicker } from './DateTimePicker';
+
+export type LotteryPrizeItem = {
+  name: string;
+  source: ItemSourceRef;
+};
+
+type PrizeMode = 'manual' | 'bank';
 
 type CreateLotteryModalProps = {
   state: UseOverlayStateReturn;
-  prizeItemName?: string | null;
+  prizeItem?: LotteryPrizeItem | null;
   onCreated?: (lottery: Lottery) => void;
 };
 
@@ -35,7 +46,7 @@ function defaultDrawDate() {
   return date.toISOString();
 }
 
-export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLotteryModalProps) {
+export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotteryModalProps) {
   const t = useTranslations('createLotteryModal');
   const notify = useToast();
   const formatGold = useFormatGold();
@@ -46,25 +57,38 @@ export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLo
   const [maxTickets, setMaxTickets] = React.useState(100);
   const [prizeName, setPrizeName] = React.useState('');
   const [prizeAmount, setPrizeAmount] = React.useState(0);
+  const [prizeMode, setPrizeMode] = React.useState<PrizeMode>('manual');
+  const [bankItem, setBankItem] = React.useState<GuildBankItem | null>(null);
   const [drawDate, setDrawDate] = React.useState(defaultDrawDate);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState('');
 
   React.useEffect(() => {
     if (!state.isOpen) return;
-    setTitle(prizeItemName ? t('titleFromItem', { item: prizeItemName }) : '');
+    setTitle(prizeItem ? t('titleFromItem', { item: prizeItem.name }) : '');
     setDescription('');
     setTicketPrice(10);
     setMaxTickets(100);
-    setPrizeName(prizeItemName ?? '');
-    setPrizeAmount(prizeItemName ? 0 : 1000);
+    setPrizeName(prizeItem?.name ?? '');
+    setPrizeAmount(prizeItem ? 0 : 1000);
+    setPrizeMode('manual');
+    setBankItem(null);
     setDrawDate(defaultDrawDate());
     setError('');
-  }, [state.isOpen, prizeItemName, t]);
+  }, [state.isOpen, prizeItem, t]);
+
+  const isFromBank = !prizeItem && prizeMode === 'bank';
+  const lockedPrize: LotteryPrizeItem | null = prizeItem
+    ?? (isFromBank && bankItem ? { name: bankItem.name, source: { bankItemId: bankItem.id } } : null);
+  const hasPrize = isFromBank ? !!lockedPrize : prizeName.trim() !== '' || prizeAmount > 0;
 
   const isFuture = new Date(drawDate).getTime() > Date.now();
-  const canSubmit =
-    title.trim() !== '' && ticketPrice > 0 && maxTickets > 0 && isFuture && (prizeName.trim() !== '' || prizeAmount > 0);
+  const canSubmit = title.trim() !== '' && ticketPrice > 0 && maxTickets > 0 && isFuture && hasPrize;
+
+  const selectBankItem = (item: GuildBankItem | null) => {
+    setBankItem(item);
+    if (item && title.trim() === '') setTitle(t('titleFromItem', { item: item.name }));
+  };
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -78,11 +102,13 @@ export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLo
         maxTickets,
         drawDate,
         prizes: [
-          {
-            rank: 1,
-            description: prizeName.trim() || formatGold(prizeAmount),
-            amount: prizeAmount > 0 ? prizeAmount : undefined,
-          },
+          lockedPrize
+            ? { rank: 1, description: lockedPrize.name, source: lockedPrize.source }
+            : {
+                rank: 1,
+                description: prizeName.trim() || formatGold(prizeAmount),
+                amount: prizeAmount > 0 ? prizeAmount : undefined,
+              },
         ],
       });
       onCreated?.(lottery);
@@ -133,24 +159,57 @@ export function CreateLotteryModal({ state, prizeItemName, onCreated }: CreateLo
                   />
                 </TextField>
 
+                {!prizeItem && (
+                  <Tabs variant="secondary" selectedKey={prizeMode} onSelectionChange={key => setPrizeMode(key as PrizeMode)}>
+                    <Tabs.ListContainer>
+                      <Tabs.List aria-label={t('prizeSource')}>
+                        <Tabs.Tab id="manual">
+                          {t('prizeSourceManual')}
+                          <Tabs.Indicator />
+                        </Tabs.Tab>
+                        <Tabs.Tab id="bank">
+                          {t('prizeSourceBank')}
+                          <Tabs.Indicator />
+                        </Tabs.Tab>
+                      </Tabs.List>
+                    </Tabs.ListContainer>
+                  </Tabs>
+                )}
+                {isFromBank && <BankItemPicker value={bankItem} onChange={selectBankItem} />}
+                {lockedPrize && (
+                  <div className="flex items-center gap-3 rounded-xl border border-divider bg-surface-secondary p-3">
+                    <Icon icon="solar:gift-linear" width={20} className="text-subtle shrink-0" aria-hidden />
+                    <div className="min-w-0">
+                      <p className="type-body font-medium text-foreground truncate">{lockedPrize.name}</p>
+                      <p className="type-caption text-hint">
+                        {t(lockedPrize.source.bankItemId ? 'prizeFromBankHint' : 'prizeFromBackpackHint')}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-3">
-                  <TextField>
-                    <Label>{t('prizeName')}</Label>
-                    <Input
-                      variant="secondary"
-                      placeholder={t('prizeNamePlaceholder')}
-                      value={prizeName}
-                      onChange={event => setPrizeName(event.target.value)}
-                    />
-                  </TextField>
-                  <NumberField formatOptions={GOLD_FORMAT_OPTIONS} minValue={0} value={prizeAmount} onChange={value => setPrizeAmount(Number.isFinite(value) ? value : 0)}>
-                    <Label>{t('prizeAmount')}</Label>
-                    <NumberField.Group>
-                      <NumberField.DecrementButton />
-                      <NumberField.Input className="w-full min-w-0" />
-                      <NumberField.IncrementButton />
-                    </NumberField.Group>
-                  </NumberField>
+                  {!lockedPrize && !isFromBank && (
+                    <>
+                      <TextField>
+                        <Label>{t('prizeName')}</Label>
+                        <Input
+                          variant="secondary"
+                          placeholder={t('prizeNamePlaceholder')}
+                          value={prizeName}
+                          onChange={event => setPrizeName(event.target.value)}
+                        />
+                      </TextField>
+                      <NumberField formatOptions={GOLD_FORMAT_OPTIONS} minValue={0} value={prizeAmount} onChange={value => setPrizeAmount(Number.isFinite(value) ? value : 0)}>
+                        <Label>{t('prizeAmount')}</Label>
+                        <NumberField.Group>
+                          <NumberField.DecrementButton />
+                          <NumberField.Input className="w-full min-w-0" />
+                          <NumberField.IncrementButton />
+                        </NumberField.Group>
+                      </NumberField>
+                    </>
+                  )}
                   <NumberField isRequired formatOptions={GOLD_FORMAT_OPTIONS} minValue={GOLD_STEP} value={ticketPrice} onChange={value => setTicketPrice(Number.isFinite(value) ? value : 0)}>
                     <Label>{t('ticketPrice')}</Label>
                     <NumberField.Group>

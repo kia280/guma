@@ -6,6 +6,7 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 import { env } from '@/lib/env';
 import { clearSession } from '@/lib/session';
 import type { LootEntry } from '@/types/checkin';
+import type { ItemSourceRef } from '@/types/item';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
 import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
@@ -66,6 +67,11 @@ const toProtoLoot = (entry: LootEntry) => ({
 });
 
 const apiGuild = (g: Parameters<typeof toGuild>[0]) => toGuild(g, env.api.url);
+
+const toProtoSource = (source: ItemSourceRef | undefined) =>
+  source && (source.backpackItemId || source.bankItemId)
+    ? { backpack_item_id: source.backpackItemId, bank_item_id: source.bankItemId }
+    : undefined;
 
 const fileToBase64 = (file: Blob) =>
   new Promise<string>((resolve, reject) => {
@@ -251,6 +257,7 @@ export const gumaApiClient: ApiClient = {
       min_bid_increment: toMinorUnits(req.minBidIncrement),
       duration_hours: req.duration,
       status: 'ACTIVE',
+      source: toProtoSource(req.source),
     };
     const { data } = await http.post(`/v1/guilds/${guildId}/auctions`, payload);
     return toAuctionItem(data.auction);
@@ -380,7 +387,11 @@ export const gumaApiClient: ApiClient = {
       max_tickets: req.maxTickets ?? 0,
       max_tickets_per_user: req.maxTicketsPerUser ?? 0,
       draw_date: req.drawDate,
-      prizes: req.prizes?.map(prize => ({ ...prize, amount: toMinorUnits(prize.amount ?? 0) })),
+      prizes: req.prizes?.map(({ source, ...prize }) => ({
+        ...prize,
+        amount: toMinorUnits(prize.amount ?? 0),
+        source: toProtoSource(source),
+      })),
     });
     return toLottery(data.lottery);
   },

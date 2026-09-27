@@ -26,7 +26,7 @@ import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton 
 import BackpackItemCard from '@/components/BackpackItemCard';
 import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
-import { CreateLotteryModal } from '@/components/CreateLotteryModal';
+import { CreateLotteryModal, type LotteryPrizeItem } from '@/components/CreateLotteryModal';
 import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -164,7 +164,7 @@ export default function WalletPage() {
   const auctionModalState = useOverlayState();
   const lotteryModalState = useOverlayState();
   const [auctionItem, setAuctionItem] = React.useState<AuctionDraftItem | null>(null);
-  const [lotteryPrize, setLotteryPrize] = React.useState<string | null>(null);
+  const [lotteryPrize, setLotteryPrize] = React.useState<LotteryPrizeItem | null>(null);
 
   const [transferAmount, setTransferAmount] = React.useState('');
   const [transferRecipient, setTransferRecipient] = React.useState('');
@@ -645,13 +645,14 @@ export default function WalletPage() {
                     category: i.item.category,
                     rarity: i.item.rarity,
                     imageUrl: i.item.imageUrl,
+                    source: { backpackItemId: i.id },
                   });
                   auctionModalState.open();
                 }}
                 onPutToLottery={
                   can('createLottery')
                     ? i => {
-                        setLotteryPrize(i.item.name);
+                        setLotteryPrize({ name: i.item.name, source: { backpackItemId: i.id } });
                         lotteryModalState.open();
                       }
                     : undefined
@@ -662,8 +663,8 @@ export default function WalletPage() {
           </div>
           )}
           </AsyncContent>
-          <CreateAuctionModal state={auctionModalState} item={auctionItem} />
-          <CreateLotteryModal state={lotteryModalState} prizeItemName={lotteryPrize} />
+          <CreateAuctionModal state={auctionModalState} item={auctionItem} onCreated={refetchBackpack} />
+          <CreateLotteryModal state={lotteryModalState} prizeItem={lotteryPrize} onCreated={refetchBackpack} />
         </Card.Content>
       </Card>
 

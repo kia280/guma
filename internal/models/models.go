@@ -15,6 +15,18 @@ type Item struct {
 	Rarity      string `json:"rarity,omitempty"`
 }
 
+type ItemLock struct {
+	Type string
+	ID   string
+}
+
+func NewItemLock(lockType string, id *uuid.UUID) *ItemLock {
+	if lockType == "" || id == nil {
+		return nil
+	}
+	return &ItemLock{Type: lockType, ID: id.String()}
+}
+
 // User represents a user in the system
 type User struct {
 	ID        uuid.UUID         `json:"id"`

@@ -85,13 +85,15 @@ func (q *Queries) CountBids(ctx context.Context, auctionID uuid.UUID) (int64, er
 
 const createAuction = `-- name: CreateAuction :one
 INSERT INTO auctions (
-    guild_id, seller_id, item, starting_bid, current_bid,
-    min_bid_increment, start_time, end_time, status, is_blind
-) VALUES ($1, $2, $8::jsonb, $3, 0, $4, $5, $6, $9::text, $7)
+    id, guild_id, seller_id, item, starting_bid, current_bid,
+    min_bid_increment, start_time, end_time, status, is_blind,
+    source_type, source_item_id
+) VALUES ($8::uuid, $1, $2, $9::jsonb, $3, 0, $4, $5, $6, $10::text, $7,
+          NULLIF($11::text, ''), $12::uuid)
 RETURNING id, guild_id, seller_id, item, starting_bid, current_bid,
           current_bidder_id, min_bid_increment, start_time, end_time,
           status, is_blind, created_at, updated_at,
-          source_type, source_snapshot, settled_at
+          source_type, settled_at, source_item_id
 `
 
 type CreateAuctionParams struct {
@@ -102,8 +104,11 @@ type CreateAuctionParams struct {
 	StartTime       time.Time
 	EndTime         time.Time
 	IsBlind         bool
+	ID              uuid.UUID
 	Item            []byte
 	Status          string
+	SourceType      string
+	SourceItemID    *uuid.UUID
 }
 
 func (q *Queries) CreateAuction(ctx context.Context, arg CreateAuctionParams) (Auction, error) {
@@ -115,8 +120,11 @@ func (q *Queries) CreateAuction(ctx context.Context, arg CreateAuctionParams) (A
 		arg.StartTime,
 		arg.EndTime,
 		arg.IsBlind,
+		arg.ID,
 		arg.Item,
 		arg.Status,
+		arg.SourceType,
+		arg.SourceItemID,
 	)
 	var i Auction
 	err := row.Scan(
@@ -135,8 +143,8 @@ func (q *Queries) CreateAuction(ctx context.Context, arg CreateAuctionParams) (A
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SourceType,
-		&i.SourceSnapshot,
 		&i.SettledAt,
+		&i.SourceItemID,
 	)
 	return i, err
 }
@@ -145,7 +153,7 @@ const getAuction = `-- name: GetAuction :one
 SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
        current_bidder_id, min_bid_increment, start_time, end_time,
        status, is_blind, created_at, updated_at,
-       source_type, source_snapshot, settled_at
+       source_type, settled_at, source_item_id
 FROM auctions WHERE id = $1 AND guild_id = $2
 `
 
@@ -173,31 +181,9 @@ func (q *Queries) GetAuction(ctx context.Context, arg GetAuctionParams) (Auction
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.SourceType,
-		&i.SourceSnapshot,
 		&i.SettledAt,
+		&i.SourceItemID,
 	)
-	return i, err
-}
-
-const getAuctionCancelInfo = `-- name: GetAuctionCancelInfo :one
-SELECT current_bid, current_bidder_id, status FROM auctions WHERE id = $1 AND guild_id = $2
-`
-
-type GetAuctionCancelInfoParams struct {
-	ID      uuid.UUID
-	GuildID uuid.UUID
-}
-
-type GetAuctionCancelInfoRow struct {
-	CurrentBid      int64
-	CurrentBidderID *uuid.UUID
-	Status          string
-}
-
-func (q *Queries) GetAuctionCancelInfo(ctx context.Context, arg GetAuctionCancelInfoParams) (GetAuctionCancelInfoRow, error) {
-	row := q.db.QueryRow(ctx, getAuctionCancelInfo, arg.ID, arg.GuildID)
-	var i GetAuctionCancelInfoRow
-	err := row.Scan(&i.CurrentBid, &i.CurrentBidderID, &i.Status)
 	return i, err
 }
 
@@ -320,7 +306,7 @@ const listAuctions = `-- name: ListAuctions :many
 SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
        current_bidder_id, min_bid_increment, start_time, end_time,
        status, is_blind, created_at, updated_at,
-       source_type, source_snapshot, settled_at
+       source_type, settled_at, source_item_id
 FROM auctions
 WHERE guild_id = $1
   AND ($2::text   = '' OR status             = $2::text)
@@ -374,8 +360,8 @@ func (q *Queries) ListAuctions(ctx context.Context, arg ListAuctionsParams) ([]A
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.SourceType,
-			&i.SourceSnapshot,
 			&i.SettledAt,
+			&i.SourceItemID,
 		); err != nil {
 			return nil, err
 		}
@@ -454,9 +440,41 @@ func (q *Queries) ListDueAuctions(ctx context.Context, maxRows int32) ([]uuid.UU
 	return items, nil
 }
 
+const lockAuctionForCancel = `-- name: LockAuctionForCancel :one
+SELECT current_bid, current_bidder_id, status, source_type, source_item_id
+FROM auctions WHERE id = $1 AND guild_id = $2
+FOR UPDATE
+`
+
+type LockAuctionForCancelParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type LockAuctionForCancelRow struct {
+	CurrentBid      int64
+	CurrentBidderID *uuid.UUID
+	Status          string
+	SourceType      pgtype.Text
+	SourceItemID    *uuid.UUID
+}
+
+func (q *Queries) LockAuctionForCancel(ctx context.Context, arg LockAuctionForCancelParams) (LockAuctionForCancelRow, error) {
+	row := q.db.QueryRow(ctx, lockAuctionForCancel, arg.ID, arg.GuildID)
+	var i LockAuctionForCancelRow
+	err := row.Scan(
+		&i.CurrentBid,
+		&i.CurrentBidderID,
+		&i.Status,
+		&i.SourceType,
+		&i.SourceItemID,
+	)
+	return i, err
+}
+
 const lockAuctionForSettlement = `-- name: LockAuctionForSettlement :one
 SELECT id, guild_id, seller_id, item, current_bid, current_bidder_id,
-       status, end_time, source_type, source_snapshot
+       status, end_time, source_type, source_item_id
 FROM auctions WHERE id = $1
 FOR UPDATE
 `
@@ -471,7 +489,7 @@ type LockAuctionForSettlementRow struct {
 	Status          string
 	EndTime         time.Time
 	SourceType      pgtype.Text
-	SourceSnapshot  []byte
+	SourceItemID    *uuid.UUID
 }
 
 func (q *Queries) LockAuctionForSettlement(ctx context.Context, id uuid.UUID) (LockAuctionForSettlementRow, error) {
@@ -487,7 +505,7 @@ func (q *Queries) LockAuctionForSettlement(ctx context.Context, id uuid.UUID) (L
 		&i.Status,
 		&i.EndTime,
 		&i.SourceType,
-		&i.SourceSnapshot,
+		&i.SourceItemID,
 	)
 	return i, err
 }
@@ -509,39 +527,6 @@ WHERE id = $1
 func (q *Queries) MarkAuctionEnded(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, markAuctionEnded, id)
 	return err
-}
-
-const restoreBackpackItemSnapshot = `-- name: RestoreBackpackItemSnapshot :execrows
-INSERT INTO backpack_items (id, owner_id, guild_id, item, source, source_id, note, acquired_at)
-SELECT r.id, r.owner_id, r.guild_id, r.item, r.source, r.source_id, r.note, r.acquired_at
-FROM jsonb_populate_record(NULL::backpack_items, $1::jsonb) AS r
-WHERE EXISTS (SELECT 1 FROM users u WHERE u.id = r.owner_id)
-ON CONFLICT (id) DO NOTHING
-`
-
-func (q *Queries) RestoreBackpackItemSnapshot(ctx context.Context, snapshot []byte) (int64, error) {
-	result, err := q.db.Exec(ctx, restoreBackpackItemSnapshot, snapshot)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
-}
-
-const restoreBankItemSnapshot = `-- name: RestoreBankItemSnapshot :execrows
-INSERT INTO bank_items (id, guild_id, donor_id, donor_name, item, quantity, note, donated_at, checkin_id)
-SELECT r.id, r.guild_id, r.donor_id, r.donor_name, r.item, r.quantity, r.note, r.donated_at,
-       (SELECT c.id FROM checkins c WHERE c.id = r.checkin_id)
-FROM jsonb_populate_record(NULL::bank_items, $1::jsonb) AS r
-WHERE EXISTS (SELECT 1 FROM users u WHERE u.id = r.donor_id)
-ON CONFLICT (id) DO NOTHING
-`
-
-func (q *Queries) RestoreBankItemSnapshot(ctx context.Context, snapshot []byte) (int64, error) {
-	result, err := q.db.Exec(ctx, restoreBankItemSnapshot, snapshot)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
 }
 
 const updateAuctionBid = `-- name: UpdateAuctionBid :exec

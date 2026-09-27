@@ -183,6 +183,7 @@ message LotteryPrize {
   string description = 2;
   int64 amount = 3;        // Currency prize; 0 if item prize
   Item item = 4;           // Item prize; unset if currency prize
+  ItemSourceRef source = 5;
 }
 
 message LotteryTicket {

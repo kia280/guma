@@ -116,7 +116,8 @@ LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 SELECT COUNT(*) FROM bank_contributions WHERE guild_id = $1;
 
 -- name: DeleteBackpackItemReturningItem :one
-DELETE FROM backpack_items WHERE id = $1 AND owner_id = $2 AND guild_id = $3
+DELETE FROM backpack_items
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL
 RETURNING item;
 
 -- name: InsertBankItem :one
@@ -131,7 +132,9 @@ SELECT bi.id, bi.guild_id, bi.donor_id, bi.donor_name, bi.item, bi.quantity,
        COALESCE(bi.note, '') AS note,
        bi.donated_at,
        bi.checkin_id,
-       COALESCE(c.title, '') AS checkin_title
+       COALESCE(c.title, '') AS checkin_title,
+       COALESCE(bi.locked_by_type, '') AS locked_by_type,
+       bi.locked_by_id
 FROM bank_items bi
 LEFT JOIN checkins c ON c.id = bi.checkin_id
 WHERE bi.guild_id = $1
@@ -151,7 +154,7 @@ INSERT INTO item_requests (guild_id, bank_item_id, requester_id, requester_name,
 SELECT bi.guild_id, bi.id, sqlc.arg(requester_id), sqlc.arg(requester_name)::text,
        NULLIF(sqlc.arg(reason)::text, ''), bi.item
 FROM bank_items bi
-WHERE bi.id = sqlc.arg(bank_item_id) AND bi.guild_id = sqlc.arg(guild_id)
+WHERE bi.id = sqlc.arg(bank_item_id) AND bi.guild_id = sqlc.arg(guild_id) AND bi.locked_by_type IS NULL
 RETURNING item_requests.id, item_requests.guild_id, item_requests.bank_item_id, item_requests.requester_id, item_requests.requester_name,
           (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = item_requests.requester_id)::text AS requester_avatar_url,
           COALESCE(item_requests.reason, '')      AS reason,
@@ -193,7 +196,7 @@ SELECT COUNT(*) FROM item_requests WHERE guild_id = $1
   AND (sqlc.arg(status_filter)::text = '' OR status = sqlc.arg(status_filter)::text);
 
 -- name: DeleteBankItemReturningItem :one
-DELETE FROM bank_items WHERE id = $1 AND guild_id = $2
+DELETE FROM bank_items WHERE id = $1 AND guild_id = $2 AND locked_by_type IS NULL
 RETURNING item;
 
 -- name: InsertBackpackItemFromRequest :exec

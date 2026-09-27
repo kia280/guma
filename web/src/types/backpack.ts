@@ -1,4 +1,4 @@
-import type { Item } from './item';
+import type { Item, ItemLock } from './item';
 
 export interface BackpackItem {
   id: string;
@@ -8,4 +8,5 @@ export interface BackpackItem {
   ownerId: string;
   guildId: string;
   note?: string;
+  lock?: ItemLock;
 }

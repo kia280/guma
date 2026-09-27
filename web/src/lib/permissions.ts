@@ -56,6 +56,7 @@ export const PERMISSION_SECTIONS = [
       { key: 'createAuction', roles: ALL },
       { key: 'placeBid', roles: ALL },
       { key: 'cancelAuction', roles: OWNER_ADMIN },
+      { key: 'auctionBankItems', roles: OWNER_ADMIN },
     ],
   },
   {

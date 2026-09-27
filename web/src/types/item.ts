@@ -28,3 +28,13 @@ export interface Item {
   rarity: ItemRarity;
   imageUrl?: string;
 }
+
+export interface ItemSourceRef {
+  backpackItemId?: string;
+  bankItemId?: string;
+}
+
+export interface ItemLock {
+  type: 'auction' | 'lottery';
+  id: string;
+}

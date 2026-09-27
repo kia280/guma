@@ -66,14 +66,14 @@ func (q *Queries) CountUserTicketsForLottery(ctx context.Context, arg CountUserT
 
 const createLottery = `-- name: CreateLottery :one
 INSERT INTO lotteries (
-    guild_id, created_by, title, description, ticket_price,
+    id, guild_id, created_by, title, description, ticket_price,
     max_tickets, max_tickets_per_user, status, draw_date, prizes
 ) VALUES (
-    $1, $2, $6::text,
-    NULLIF($7::text, ''),
+    $6::uuid, $1, $2, $7::text,
+    NULLIF($8::text, ''),
     $3, $4, $5, 'active',
-    $8::text::timestamptz,
-    $9::jsonb
+    $9::text::timestamptz,
+    $10::jsonb
 )
 RETURNING id, guild_id, created_by, title,
           COALESCE(description, '') AS description,
@@ -89,6 +89,7 @@ type CreateLotteryParams struct {
 	TicketPrice       int64
 	MaxTickets        int32
 	MaxTicketsPerUser int32
+	ID                uuid.UUID
 	Title             string
 	Description       string
 	DrawDate          string
@@ -119,6 +120,7 @@ func (q *Queries) CreateLottery(ctx context.Context, arg CreateLotteryParams) (C
 		arg.TicketPrice,
 		arg.MaxTickets,
 		arg.MaxTicketsPerUser,
+		arg.ID,
 		arg.Title,
 		arg.Description,
 		arg.DrawDate,

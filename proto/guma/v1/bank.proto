@@ -276,6 +276,7 @@ message BankItem {
   google.protobuf.Timestamp donated_at = 8;
   string checkin_id = 9;
   string checkin_title = 10;
+  ItemLock lock = 20;
 }
 
 message ItemRequest {

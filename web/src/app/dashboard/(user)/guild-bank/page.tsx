@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
+import { ItemLockChip } from '@/components/ItemLockChip';
 import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
@@ -540,6 +541,7 @@ export default function GuildBankPage() {
                       <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
                         {labels(`rarities.${item.rarity}`)}
                       </Chip>
+                      {item.lock && <ItemLockChip lock={item.lock} />}
                     </div>
                     {item.checkinId && (
                       <Link
@@ -558,6 +560,7 @@ export default function GuildBankPage() {
                       variant="ghost"
                       className="text-hint shrink-0 max-sm:size-11"
                       aria-label={t('requestItem')}
+                      isDisabled={Boolean(item.lock)}
                       onPress={() => openItemRequest(item)}
                     >
                       <Icon icon="solar:hand-shake-linear" width={16} />

@@ -19,7 +19,7 @@ import type {
   GuildContribution,
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import { ItemCategory, ItemRarity, type ItemLock } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
 import type { UserPreferences } from '@/types/preference';
@@ -28,6 +28,11 @@ import type { Transaction, Wallet } from '@/types/wallet';
 import { fromMinorUnits } from './money';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
+
+type ProtoItemLock = { type?: string; id?: string };
+
+const toItemLock = (raw: ProtoItemLock | undefined): ItemLock | undefined =>
+  raw?.id && (raw.type === 'auction' || raw.type === 'lottery') ? { type: raw.type, id: raw.id } : undefined;
 
 const ts = (v: unknown): string => {
   if (!v) return new Date().toISOString();
@@ -473,6 +478,7 @@ type ProtoBackpackItem = {
   owner_id?: string;
   guild_id?: string;
   note?: string;
+  lock?: ProtoItemLock;
 };
 
 export const toBackpackItem = (raw: ProtoBackpackItem): BackpackItem => ({
@@ -490,6 +496,7 @@ export const toBackpackItem = (raw: ProtoBackpackItem): BackpackItem => ({
   ownerId: raw.owner_id ?? '',
   guildId: raw.guild_id ?? '',
   note: raw.note,
+  lock: toItemLock(raw.lock),
 });
 
 // ─── Guild Bank ─────────────────────────────────────────────────────────────
@@ -583,6 +590,7 @@ type ProtoBankItem = {
   donated_at?: string;
   checkin_id?: string;
   checkin_title?: string;
+  lock?: ProtoItemLock;
 };
 
 export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
@@ -596,6 +604,7 @@ export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
   quantity: raw.quantity ?? 1,
   checkinId: raw.checkin_id || undefined,
   checkinTitle: raw.checkin_title || undefined,
+  lock: toItemLock(raw.lock),
 });
 
 type ProtoItemRequest = {
