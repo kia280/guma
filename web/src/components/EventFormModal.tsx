@@ -260,7 +260,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 render={({ field }) => (
                   <TextField isRequired isInvalid={!!errors.title}>
                     <Label>{t('title')}</Label>
-                    <Input {...field} placeholder={t('titlePlaceholder')} />
+                    <Input {...field} variant="secondary" placeholder={t('titlePlaceholder')} />
                     <FieldError>{errors.title?.message}</FieldError>
                   </TextField>
                 )}
@@ -273,18 +273,18 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 render={({ field }) => (
                   <TextField>
                     <Label>{t('description')}</Label>
-                    <TextArea {...field} placeholder={t('descriptionPlaceholder')} rows={3} />
+                    <TextArea {...field} variant="secondary" placeholder={t('descriptionPlaceholder')} rows={3} />
                   </TextField>
                 )}
               />
 
               {/* Type + Priority */}
-              <div className="flex gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Controller
                   name="type"
                   control={control}
                   render={({ field }) => (
-                    <Select className="flex-1" value={field.value} onChange={field.onChange}>
+                    <Select variant="secondary" value={field.value} onChange={field.onChange}>
                       <Label>{t('eventType')}</Label>
                       <Select.Trigger>
                         <Select.Value />
@@ -310,7 +310,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   name="priority"
                   control={control}
                   render={({ field }) => (
-                    <Select className="flex-1" value={field.value} onChange={field.onChange}>
+                    <Select variant="secondary" value={field.value} onChange={field.onChange}>
                       <Label>{t('priority')}</Label>
                       <Select.Trigger>
                         <Select.Value />
@@ -339,19 +339,19 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 control={control}
                 rules={{ deps: ['endDate'] }}
                 render={({ field }) => (
-                  <Switch isSelected={field.value} onChange={field.onChange}>
-                    <Switch.Control>
-                      <Switch.Thumb />
-                    </Switch.Control>
-                    <Switch.Content>
-                      <Label>{t('allDayEvent')}</Label>
+                  <Switch isSelected={field.value} onChange={field.onChange} className="w-full">
+                    <Switch.Content className="min-h-11 w-full justify-between gap-3">
+                      <span className="type-body font-medium text-foreground">{t('allDayEvent')}</span>
+                      <Switch.Control>
+                        <Switch.Thumb />
+                      </Switch.Control>
                     </Switch.Content>
                   </Switch>
                 )}
               />
 
               {/* Start Date/Time */}
-              <div className="flex gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Controller
                   name="startDate"
                   control={control}
@@ -362,7 +362,6 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   }}
                   render={({ field }) => (
                     <DateField
-                      className="flex-1"
                       isRequired
                       validationBehavior="aria"
                       minValue={MIN_EVENT_DATE}
@@ -372,7 +371,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                       onChange={(val: DateValue | null) => field.onChange(val ? val.toString() : '')}
                     >
                       <Label>{t('startDate')}</Label>
-                      <DateField.Group>
+                      <DateField.Group variant="secondary">
                         <DateField.Input>
                           {(segment) => <DateField.Segment segment={segment} />}
                         </DateField.Input>
@@ -390,7 +389,6 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                       const [h, m] = (field.value || '00:00').split(':').map(Number);
                       return (
                         <TimeField
-                          className="flex-1"
                           hourCycle={24}
                           value={new Time(h, m)}
                           onChange={(val: TimeValue | null) => {
@@ -400,7 +398,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                           }}
                         >
                           <Label>{t('startTime')}</Label>
-                          <TimeField.Group>
+                          <TimeField.Group variant="secondary">
                             <TimeField.Input>
                               {(segment) => <TimeField.Segment segment={segment} />}
                             </TimeField.Input>
@@ -413,7 +411,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
               </div>
 
               {/* End Date/Time */}
-              <div className="flex gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Controller
                   name="endDate"
                   control={control}
@@ -425,7 +423,6 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                   }}
                   render={({ field }) => (
                     <DateField
-                      className="flex-1"
                       validationBehavior="aria"
                       minValue={MIN_EVENT_DATE}
                       maxValue={MAX_EVENT_DATE}
@@ -434,7 +431,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                       onChange={(val: DateValue | null) => field.onChange(val ? val.toString() : '')}
                     >
                       <Label>{t('endDateOptional')}</Label>
-                      <DateField.Group>
+                      <DateField.Group variant="secondary">
                         <DateField.Input>
                           {(segment) => <DateField.Segment segment={segment} />}
                         </DateField.Input>
@@ -452,7 +449,6 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                       const [h, m] = (field.value || '00:00').split(':').map(Number);
                       return (
                         <TimeField
-                          className="flex-1"
                           hourCycle={24}
                           value={new Time(h, m)}
                           onChange={(val: TimeValue | null) => {
@@ -462,7 +458,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                           }}
                         >
                           <Label>{t('endTime')}</Label>
-                          <TimeField.Group>
+                          <TimeField.Group variant="secondary">
                             <TimeField.Input>
                               {(segment) => <TimeField.Segment segment={segment} />}
                             </TimeField.Input>
@@ -481,7 +477,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 render={({ field }) => (
                   <TextField>
                     <Label>{t('location')}</Label>
-                    <Input {...field} placeholder={t('locationPlaceholder')} />
+                    <Input {...field} variant="secondary" placeholder={t('locationPlaceholder')} />
                   </TextField>
                 )}
               />
@@ -491,12 +487,12 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 name="isRecurring"
                 control={control}
                 render={({ field }) => (
-                  <Switch isSelected={field.value} onChange={field.onChange}>
-                    <Switch.Control>
-                      <Switch.Thumb />
-                    </Switch.Control>
-                    <Switch.Content>
-                      <Label>{t('recurringEvent')}</Label>
+                  <Switch isSelected={field.value} onChange={field.onChange} className="w-full">
+                    <Switch.Content className="min-h-11 w-full justify-between gap-3">
+                      <span className="type-body font-medium text-foreground">{t('recurringEvent')}</span>
+                      <Switch.Control>
+                        <Switch.Thumb />
+                      </Switch.Control>
                     </Switch.Content>
                   </Switch>
                 )}
@@ -510,7 +506,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                     name="recurringType"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onChange={field.onChange}>
+                      <Select variant="secondary" value={field.value} onChange={field.onChange}>
                         <Label>{t('repeat')}</Label>
                         <Select.Trigger>
                           <Select.Value />
@@ -555,6 +551,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                                 : t('everyNMonths')}
                           </Label>
                           <Input
+                            variant="secondary"
                             type="number"
                             min={1}
                             max={365}
@@ -576,6 +573,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                           <TextField className="flex-1">
                             <Label>{t('hours')}</Label>
                             <Input
+                              variant="secondary"
                               type="number"
                               min={0}
                               max={23}
@@ -597,6 +595,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                           <TextField className="flex-1">
                             <Label>{t('minutes')}</Label>
                             <Input
+                              variant="secondary"
                               type="number"
                               min={0}
                               max={59}
@@ -618,6 +617,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                           <TextField className="flex-1">
                             <Label>{t('seconds')}</Label>
                             <Input
+                              variant="secondary"
                               type="number"
                               min={0}
                               max={59}

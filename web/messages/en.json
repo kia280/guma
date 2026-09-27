@@ -366,7 +366,11 @@
     "deleteSuccess": "Event deleted.",
     "deleteFailed": "Could not delete the event. Please try again.",
     "eventActions": "Event actions",
-    "repeatsEvery": "{type, select, daily {Repeats every {interval, plural, one {day} other {# days}}} weekly {Repeats every {interval, plural, one {week} other {# weeks}}} monthly {Repeats every {interval, plural, one {month} other {# months}}} other {Repeats on a custom schedule}}"
+    "repeatsEvery": "{type, select, daily {Repeats every {interval, plural, one {day} other {# days}}} weekly {Repeats every {interval, plural, one {week} other {# weeks}}} monthly {Repeats every {interval, plural, one {month} other {# months}}} other {Repeats on a custom schedule}}",
+    "when": "When",
+    "where": "Location",
+    "recurrence": "Recurrence",
+    "organizer": "Organizer"
   },
   "eventFormModal": {
     "editEvent": "Edit Event",
@@ -769,9 +773,26 @@
     "previous": "Previous",
     "next": "Next",
     "today": "Today",
-    "day": "Day",
-    "week": "Week",
-    "month": "Month"
+    "views": {
+      "month": "Month",
+      "week": "Week",
+      "day": "Day",
+      "agenda": "List"
+    },
+    "viewLabel": "Calendar view",
+    "createEvent": "Create Event",
+    "allDay": "All day",
+    "continued": "Cont.",
+    "until": "Until {time}",
+    "tomorrow": "Tomorrow",
+    "eventCount": "{count, plural, =0 {No events} one {# event} other {# events}}",
+    "more": "+{count} more",
+    "showMore": "Show {count, plural, one {# more event} other {# more events}} on {date}",
+    "moreEventsTitle": "{count, plural, one {# more event} other {# more events}}",
+    "openDay": "Open {date} in day view",
+    "noEventsDay": "No events on this day.",
+    "upcoming": "Upcoming",
+    "noUpcoming": "Nothing scheduled in the next {days} days."
   },
   "ThemeSwitcher": {
     "DarkTheme": "Dark Theme"

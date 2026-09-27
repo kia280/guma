@@ -624,7 +624,7 @@ export default function WalletPage() {
             <Icon className="text-accent" icon="solar:backpack-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col flex-1 min-w-0">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between type-body">
               <p className="type-subheading text-foreground">{t('yourItems')}</p>
               <Chip size="sm" variant="tertiary">
                 {t('items', { count: backpackItems.length })}
@@ -791,8 +791,8 @@ export default function WalletPage() {
                           {transactionNote(transaction)}
                         </p>
                       )}
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <p className="type-caption text-hint">
+                      <div className="flex items-center gap-2 mt-0.5 type-caption">
+                        <p className="text-hint">
                           {format.dateTime(new Date(transaction.date), { dateStyle: 'medium' })}
                         </p>
                         <Chip

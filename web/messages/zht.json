@@ -366,7 +366,11 @@
     "deleteSuccess": "活動已刪除。",
     "deleteFailed": "無法刪除活動，請再試一次。",
     "eventActions": "活動操作",
-    "repeatsEvery": "{type, select, daily {{interval, plural, =1 {每天重複} other {每 # 天重複}}} weekly {{interval, plural, =1 {每週重複} other {每 # 週重複}}} monthly {{interval, plural, =1 {每月重複} other {每 # 個月重複}}} other {依自訂間隔重複}}"
+    "repeatsEvery": "{type, select, daily {{interval, plural, =1 {每天重複} other {每 # 天重複}}} weekly {{interval, plural, =1 {每週重複} other {每 # 週重複}}} monthly {{interval, plural, =1 {每月重複} other {每 # 個月重複}}} other {依自訂間隔重複}}",
+    "when": "時間",
+    "where": "地點",
+    "recurrence": "重複",
+    "organizer": "建立者"
   },
   "eventFormModal": {
     "editEvent": "編輯活動",
@@ -769,9 +773,26 @@
     "previous": "上一個",
     "next": "下一個",
     "today": "今天",
-    "day": "日檢視",
-    "week": "週檢視",
-    "month": "月檢視"
+    "views": {
+      "month": "月",
+      "week": "週",
+      "day": "日",
+      "agenda": "清單"
+    },
+    "viewLabel": "行事曆檢視",
+    "createEvent": "建立活動",
+    "allDay": "全天",
+    "continued": "續",
+    "until": "至 {time}",
+    "tomorrow": "明天",
+    "eventCount": "{count, plural, =0 {沒有活動} other {# 個活動}}",
+    "more": "還有 {count} 個",
+    "showMore": "顯示 {date} 的另外 {count} 個活動",
+    "moreEventsTitle": "另外 {count} 個活動",
+    "openDay": "以日檢視開啟 {date}",
+    "noEventsDay": "這天沒有活動。",
+    "upcoming": "接下來",
+    "noUpcoming": "接下來 {days} 天沒有排定的活動。"
   },
   "ThemeSwitcher": {
     "DarkTheme": "深色主題"

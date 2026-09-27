@@ -4,6 +4,7 @@ import { Card, Chip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { CardFooterStatus } from '@/components/CardFooterStatus';
 import { CardLinkHint } from '@/components/CardLinkHint';
 import { useCountdown } from '@/hooks/useNow';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
@@ -79,12 +80,12 @@ export function CheckinCard({
               <p className="type-caption text-hint">{formatEventDate(date, format)}</p>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
+          <div className="flex flex-col items-end gap-1 shrink-0 type-caption">
             <Chip size="sm" color={checkinStatusColor[status]} variant="secondary">
               {statusLabel}
             </Chip>
             {timeLeft && (
-              <div className="flex items-center gap-1 type-caption text-hint">
+              <div className="flex items-center gap-1 text-hint">
                 <Icon icon="solar:clock-circle-linear" width={12} />
                 <span>{timeLeft}</span>
               </div>
@@ -142,20 +143,10 @@ export function CheckinCard({
           />
         )}
         {status === CheckinStatus.CANCELLED && (
-          <Chip variant="secondary" className="w-full justify-center py-2">
-            <div className="flex items-center gap-1.5">
-              <Icon icon="solar:forbidden-circle-linear" width={14} />
-              <span>{t('checkinCancelled')}</span>
-            </div>
-          </Chip>
+          <CardFooterStatus icon="solar:forbidden-circle-linear" label={t('checkinCancelled')} />
         )}
         {status === CheckinStatus.OPEN && !canCheckin && (
-          <Chip variant="secondary" className="w-full justify-center py-2">
-            <div className="flex items-center gap-1.5">
-              <Icon icon="solar:lock-keyhole-linear" width={14} />
-              <span>{t('checkinClosed')}</span>
-            </div>
-          </Chip>
+          <CardFooterStatus icon="solar:lock-keyhole-linear" label={t('checkinClosed')} />
         )}
       </Card.Footer>
     </Card>
