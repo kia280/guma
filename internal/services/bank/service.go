@@ -27,7 +27,6 @@ type GuildBank struct {
 	GuildID         string
 	Balance         int64
 	Currency        string
-	Goal            int64
 	TopContributors []*TopContributor
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -214,7 +213,7 @@ func (s *Service) GetBank(ctx context.Context, guildIDStr string) (*GuildBank, e
 
 	b := &GuildBank{
 		ID: row.ID.String(), GuildID: row.GuildID.String(),
-		Balance: row.Balance, Currency: row.Currency, Goal: row.Goal,
+		Balance: row.Balance, Currency: row.Currency,
 		CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt,
 		TopContributors: []*TopContributor{},
 	}
