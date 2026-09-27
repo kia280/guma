@@ -520,9 +520,9 @@ export default function AdminPage() {
                 {statsStatus === 'loading' && <span className="sr-only">{t('loadingStats')}</span>}
                 {statCards.map(stat => (
                   <Card key={stat.key} className="border border-divider shadow-none bg-surface">
-                    <Card.Content className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`${stat.bg} p-2 rounded-lg`}>
+                    <Card.Content>
+                      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                        <div className={`${stat.bg} p-2 rounded-lg shrink-0`}>
                           <Icon icon={stat.icon} width={18} className={stat.color} aria-hidden />
                         </div>
                         <div className="min-w-0">
@@ -530,7 +530,7 @@ export default function AdminPage() {
                           {statsStatus === 'loading' ? (
                             <Skeleton className="mt-1 h-7 w-20 rounded-lg" />
                           ) : (
-                            <p className="type-title tabular-nums text-foreground truncate">{stat.value}</p>
+                            <p className="type-heading sm:type-title tabular-nums text-foreground wrap-anywhere">{stat.value}</p>
                           )}
                         </div>
                       </div>

@@ -341,6 +341,7 @@ function generateCheckins(): CheckinEntry[] {
       description: CHECKIN_BOSSES[i % CHECKIN_BOSSES.length],
       ...(status === CheckinStatus.CLOSED ? { isDisabled: true } : {}),
       expireTime: new Date(status === CheckinStatus.OPEN ? now + (i + 1) * 2 * HOUR : start + 2 * HOUR).toISOString(),
+      attendanceCount: attendanceList.length,
       attendanceList,
       lootList,
     };

@@ -14,6 +14,7 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	usersvc "github.com/kia280/guma/internal/services/user"
+	"github.com/kia280/guma/internal/session"
 )
 
 func TestUserService_GetMe_Unauthenticated(t *testing.T) {
@@ -24,6 +25,28 @@ func TestUserService_GetMe_Unauthenticated(t *testing.T) {
 	st, ok := status.FromError(err)
 	require.True(t, ok)
 	assert.Equal(t, codes.Unauthenticated, st.Code())
+}
+
+func TestUserService_UpdateMe_InvalidArgument(t *testing.T) {
+	service := NewUserService(nil, "", zerolog.New(os.Stdout))
+	ctx := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+
+	tests := []struct {
+		name string
+		req  *gumav1.UpdateMeRequest
+	}{
+		{name: "empty display name", req: &gumav1.UpdateMeRequest{DisplayName: "", Username: "ada"}},
+		{name: "invalid username", req: &gumav1.UpdateMeRequest{DisplayName: "Ada", Username: "a b!!"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := service.UpdateMe(ctx, tt.req)
+			require.Error(t, err)
+			st, ok := status.FromError(err)
+			require.True(t, ok)
+			assert.Equal(t, codes.InvalidArgument, st.Code())
+		})
+	}
 }
 
 func TestUserToProto_IdentityFields(t *testing.T) {
