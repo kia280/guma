@@ -3,14 +3,17 @@
 import { Card, Button, ButtonGroup, Chip, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Focusable } from 'react-aria-components';
 import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import {
-  GuildEvent,
-  EVENT_TYPE_COLORS,
-  PRIORITY_COLORS,
-} from '@/types/guild-events';
+  EventOccurrence,
+  endOfDay,
+  expandEventOccurrences,
+  occurrencesOnDay,
+  startOfDay,
+} from '@/lib/event-occurrences';
+import { GuildEvent, EVENT_TYPE_COLORS } from '@/types/guild-events';
 
 interface GuildCalendarProps {
   events: GuildEvent[];
@@ -25,6 +28,53 @@ interface GuildCalendarProps {
 
 const HOUR_PX = 60; // pixels per hour
 const TOTAL_HEIGHT = 24 * HOUR_PX; // 1440px
+
+const isSameDay = (date1: Date, date2: Date) => {
+  return date1.toDateString() === date2.toDateString();
+};
+
+const getCalendarDays = (currentDate: Date) => {
+  const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  const startOfWeek = new Date(startOfMonth);
+  startOfWeek.setDate(startOfMonth.getDate() - startOfMonth.getDay());
+  const endOfWeek = new Date(endOfMonth);
+  endOfWeek.setDate(endOfMonth.getDate() + (6 - endOfMonth.getDay()));
+
+  const days = [];
+  const currentDay = new Date(startOfWeek);
+
+  while (currentDay <= endOfWeek) {
+    days.push(new Date(currentDay));
+    currentDay.setDate(currentDay.getDate() + 1);
+  }
+
+  return days;
+};
+
+const getWeekDays = (currentDate: Date) => {
+  const startOfWeek = new Date(currentDate);
+  startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(startOfWeek);
+    day.setDate(startOfWeek.getDate() + i);
+    days.push(day);
+  }
+  return days;
+};
+
+const getVisibleDays = (currentDate: Date, view: GuildCalendarProps['view']) => {
+  switch (view) {
+    case 'month':
+      return getCalendarDays(currentDate);
+    case 'week':
+      return getWeekDays(currentDate);
+    default:
+      return [currentDate];
+  }
+};
 
 const TIMELINE_COLORS: Record<string, { border: string; bg: string }> = {
   danger: { border: 'var(--danger)', bg: 'color-mix(in oklab, var(--danger) 12%, transparent)' },
@@ -63,55 +113,26 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     });
   };
 
-  const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString(intlLocale, {
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString(intlLocale, {
       hour: '2-digit',
       minute: '2-digit',
     });
   };
 
-  const isSameDay = (date1: Date, date2: Date) => {
-    return date1.toDateString() === date2.toDateString();
-  };
+  const visibleDays = useMemo(() => getVisibleDays(currentDate, view), [currentDate, view]);
 
-  const getEventsForDate = (date: Date) => {
-    return events.filter(event => {
-      const eventDate = new Date(event.startDate);
-      return isSameDay(eventDate, date);
-    });
-  };
+  const occurrences = useMemo(
+    () =>
+      expandEventOccurrences(
+        events,
+        startOfDay(visibleDays[0]),
+        endOfDay(visibleDays[visibleDays.length - 1]),
+      ),
+    [events, visibleDays],
+  );
 
-  const getCalendarDays = () => {
-    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-    const startOfWeek = new Date(startOfMonth);
-    startOfWeek.setDate(startOfMonth.getDate() - startOfMonth.getDay());
-    const endOfWeek = new Date(endOfMonth);
-    endOfWeek.setDate(endOfMonth.getDate() + (6 - endOfMonth.getDay()));
-
-    const days = [];
-    const currentDay = new Date(startOfWeek);
-
-    while (currentDay <= endOfWeek) {
-      days.push(new Date(currentDay));
-      currentDay.setDate(currentDay.getDate() + 1);
-    }
-
-    return days;
-  };
-
-  const getWeekDays = () => {
-    const startOfWeek = new Date(currentDate);
-    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(startOfWeek);
-      day.setDate(startOfWeek.getDate() + i);
-      days.push(day);
-    }
-    return days;
-  };
+  const getEventsForDate = (date: Date) => occurrencesOnDay(occurrences, date);
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
@@ -123,15 +144,20 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
 
   // --- Timeline helpers ---
 
-  const getEventTop = (startDate: string): number => {
-    const d = new Date(startDate);
-    return d.getHours() * HOUR_PX + d.getMinutes(); // 1px per minute
-  };
+  const minutesIntoDay = (date: Date) => date.getHours() * HOUR_PX + date.getMinutes();
 
-  const getEventHeight = (startDate: string, endDate?: string): number => {
-    if (!endDate) return HOUR_PX;
-    const durationMinutes = (new Date(endDate).getTime() - new Date(startDate).getTime()) / 60_000;
-    return Math.max(durationMinutes, 30);
+  const getDaySegment = (occurrence: EventOccurrence, day: Date) => {
+    const top = isSameDay(occurrence.start, day) ? minutesIntoDay(occurrence.start) : 0;
+    let bottom: number;
+    if (!occurrence.event.endDate) {
+      bottom = top + HOUR_PX;
+    } else if (isSameDay(occurrence.end, day)) {
+      bottom = minutesIntoDay(occurrence.end);
+    } else {
+      bottom = TOTAL_HEIGHT;
+    }
+    const height = Math.min(Math.max(bottom - top, 30), TOTAL_HEIGHT - top);
+    return { top, height };
   };
 
   const getCurrentTimeTop = (): number => {
@@ -156,8 +182,8 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
     </div>
   );
 
-  const renderDayColumn = (dayEvents: GuildEvent[], isToday: boolean) => {
-    const timedEvents = dayEvents.filter(e => !e.isAllDay);
+  const renderDayColumn = (dayEvents: EventOccurrence[], day: Date, isToday: boolean) => {
+    const timedEvents = dayEvents.filter(occurrence => !occurrence.event.isAllDay);
     return (
       <div className="relative" style={{ height: TOTAL_HEIGHT }}>
         {/* Horizontal hour grid lines */}
@@ -183,14 +209,14 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
         )}
 
         {/* Timed events */}
-        {timedEvents.map(event => {
+        {timedEvents.map(occurrence => {
+          const { event } = occurrence;
           const colorKey = EVENT_TYPE_COLORS[event.type];
           const colors = TIMELINE_COLORS[colorKey] ?? TIMELINE_COLORS.default;
-          const top = getEventTop(event.startDate);
-          const height = Math.max(getEventHeight(event.startDate, event.endDate), 24);
+          const { top, height } = getDaySegment(occurrence, day);
           return (
             <button
-              key={event.id}
+              key={occurrence.key}
               type="button"
               style={{
                 top,
@@ -208,7 +234,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               </p>
               {height >= 40 && (
                 <p className="type-caption text-subtle">
-                  {formatTime(event.startDate)}
+                  {formatTime(occurrence.start)}
                 </p>
               )}
             </button>
@@ -221,7 +247,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   // --- View renderers ---
 
   const renderMonthView = () => {
-    const days = getCalendarDays();
+    const days = visibleDays;
     const today = new Date();
 
     return (
@@ -261,8 +287,8 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               </button>
 
               <div className="relative z-10 mt-6 px-1.5 pb-1.5 space-y-0.5 pointer-events-none">
-                {dayEvents.slice(0, 2).map(event => (
-                  <Tooltip key={event.id}>
+                {dayEvents.slice(0, 2).map(({ key, event, start }) => (
+                  <Tooltip key={key}>
                     <Focusable>
                       <button
                         type="button"
@@ -280,7 +306,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                       </button>
                     </Focusable>
                     <Tooltip.Content>
-                      {`${event.title} - ${formatTime(event.startDate)}`}
+                      {`${event.title} - ${formatTime(start)}`}
                     </Tooltip.Content>
                   </Tooltip>
                 ))}
@@ -299,7 +325,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   const renderDayView = () => {
     const dayEvents = getEventsForDate(currentDate);
     const isToday = isSameDay(currentDate, new Date());
-    const allDayEvents = dayEvents.filter(e => e.isAllDay);
+    const allDayEvents = dayEvents.filter(occurrence => occurrence.event.isAllDay);
 
     return (
       <div className="flex flex-col h-full min-h-[480px] border border-divider rounded-xl overflow-hidden bg-surface">
@@ -310,9 +336,9 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           </h3>
           {allDayEvents.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
-              {allDayEvents.map(event => (
+              {allDayEvents.map(({ key, event }) => (
                 <button
-                  key={event.id}
+                  key={key}
                   type="button"
                   className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   onClick={() => onEventClick(event)}
@@ -330,7 +356,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
         <div className="flex flex-1 min-h-0 overflow-y-auto">
           {renderHourLabels()}
           <div className="flex-1 border-l border-divider">
-            {renderDayColumn(dayEvents, isToday)}
+            {renderDayColumn(dayEvents, currentDate, isToday)}
           </div>
         </div>
       </div>
@@ -338,7 +364,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   };
 
   const renderWeekView = () => {
-    const days = getWeekDays();
+    const days = visibleDays;
     const today = new Date();
 
     return (
@@ -348,7 +374,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
           <div className="w-14 shrink-0 border-r border-divider" />
           {days.map((day, index) => {
             const isToday = isSameDay(day, today);
-            const allDayEvs = getEventsForDate(day).filter(e => e.isAllDay);
+            const allDayEvs = getEventsForDate(day).filter(occurrence => occurrence.event.isAllDay);
             return (
               <button
                 key={index}
@@ -367,13 +393,13 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 </div>
                 {allDayEvs.length > 0 && (
                   <div className="flex justify-center gap-0.5 mt-1">
-                    {allDayEvs.slice(0, 3).map(e => (
+                    {allDayEvs.slice(0, 3).map(({ key, event }) => (
                       <div
-                        key={e.id}
+                        key={key}
                         className="w-1.5 h-1.5 rounded-full"
                         style={{
                           backgroundColor:
-                            TIMELINE_COLORS[EVENT_TYPE_COLORS[e.type]]?.border ?? 'var(--muted)',
+                            TIMELINE_COLORS[EVENT_TYPE_COLORS[event.type]]?.border ?? 'var(--muted)',
                         }}
                       />
                     ))}
@@ -395,7 +421,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                 key={index}
                 className={`flex-1 border-l border-divider ${isToday ? 'bg-accent/5' : ''}`}
               >
-                {renderDayColumn(dayEvents, isToday)}
+                {renderDayColumn(dayEvents, day, isToday)}
               </div>
             );
           })}

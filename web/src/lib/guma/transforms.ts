@@ -691,6 +691,39 @@ type ProtoGuildEvent = {
   updated_at?: string;
 };
 
+type ProtoRecurringPattern = {
+  type?: string;
+  interval?: number;
+  days_of_week?: number[];
+  daysOfWeek?: number[];
+  end_date?: string;
+  endDate?: string;
+  occurrences?: number;
+  custom_hours?: number;
+  custom_minutes?: number;
+  customInterval?: { hours?: number; minutes?: number; seconds?: number };
+};
+
+const toRecurringPattern = (raw: unknown): GuildEvent['recurringPattern'] => {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const p = raw as ProtoRecurringPattern;
+  const custom = p.customInterval;
+  const customHours = custom?.hours ?? p.custom_hours ?? 0;
+  const customMinutes = custom?.minutes ?? p.custom_minutes ?? 0;
+  const customSeconds = custom?.seconds ?? 0;
+  const hasCustomInterval = custom !== undefined || p.custom_hours !== undefined || p.custom_minutes !== undefined;
+  return {
+    type: (p.type as NonNullable<GuildEvent['recurringPattern']>['type']) || 'custom',
+    interval: Number(p.interval ?? 0),
+    customInterval: hasCustomInterval
+      ? { hours: Number(customHours), minutes: Number(customMinutes), seconds: Number(customSeconds) }
+      : undefined,
+    daysOfWeek: p.daysOfWeek ?? p.days_of_week,
+    endDate: p.endDate ?? p.end_date ?? undefined,
+    occurrences: p.occurrences,
+  };
+};
+
 export const toGuildEvent = (raw: ProtoGuildEvent): GuildEvent => ({
   id: raw.id,
   title: raw.title ?? '',
@@ -702,7 +735,7 @@ export const toGuildEvent = (raw: ProtoGuildEvent): GuildEvent => ({
   location: raw.location,
   participants: raw.participants,
   isRecurring: Boolean(raw.is_recurring),
-  recurringPattern: raw.recurring_pattern as GuildEvent['recurringPattern'],
+  recurringPattern: toRecurringPattern(raw.recurring_pattern),
   priority: (raw.priority as GuildEvent['priority']) || 'medium',
   createdBy: raw.created_by ?? '',
   createdAt: ts(raw.created_at),
