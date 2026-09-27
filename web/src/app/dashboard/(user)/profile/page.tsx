@@ -12,6 +12,7 @@ import {
   InputGroup,
   Description,
   FieldError,
+  Spinner,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
@@ -253,8 +254,16 @@ export default function ProfilePage() {
                 isDisabled={hasDraftErrors}
                 onPress={saveProfile}
               >
-                <Icon icon="solar:check-circle-linear" width={16} />
-                {t('saveChanges')}
+                {({ isPending }) => (
+                  <>
+                    {isPending ? (
+                      <Spinner color="current" size="sm" />
+                    ) : (
+                      <Icon icon="solar:check-circle-linear" width={16} />
+                    )}
+                    {t('saveChanges')}
+                  </>
+                )}
               </Button>
             </div>
           )}
