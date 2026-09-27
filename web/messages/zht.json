@@ -188,6 +188,7 @@
     "recipient": "收款人",
     "searchRecipient": "以用戶名或電子郵件搜尋",
     "available": "可用：",
+    "insufficientBalance": "餘額不足",
     "cancel": "取消",
     "depositMoney": "存款",
     "currentBalanceLabel": "當前餘額：",
@@ -236,10 +237,14 @@
     "ended": "已結束",
     "noLotteries": "此分類沒有抽獎活動",
     "createLottery": "建立抽獎",
-    "statusTabs": "抽獎狀態"
+    "statusTabs": "抽獎狀態",
+    "drawStarted": "{title}正在開獎",
+    "watchDraw": "觀看開獎"
   },
   "lotteryCard": {
     "drawComplete": "抽獎已結束",
+    "drawingNow": "開獎中",
+    "watchDraw": "觀看開獎",
     "prizePool": "獎金池",
     "ticketPrice": "票價",
     "drawDate": "開獎日期",
@@ -276,6 +281,10 @@
   },
   "auctionItemCard": {
     "timeRemaining": "剩餘時間",
+    "endsAt": "{time} 結束",
+    "startsAt": "{time} 開始",
+    "startsIn": "距離開始",
+    "viewBids": "查看出價",
     "currentBid": "目前出價",
     "leadingBidder": "領先競標者",
     "soldBy": "賣家",
@@ -566,7 +575,6 @@
     "guildGold": "公會金幣",
     "contribute": "貢獻",
     "requestFunds": "申請資金",
-    "monthlyGoal": "月度資金目標",
     "topContributors": "頂級貢獻者",
     "storage": "公會倉庫",
     "storageDesc": "公會成員分享的物品",
@@ -682,7 +690,6 @@
   },
   "navigation": {
     "dashboard": "主頁",
-    "guilds": "公會",
     "events": "活動",
     "admin": "管理",
     "openMenu": "開啟選單",
@@ -698,6 +705,7 @@
     "description": "發生錯誤",
     "goBack": "返回",
     "goHome": "回到首頁",
+    "signIn": "登入",
     "loading": "載入中...",
     "errorIdLabel": "錯誤 ID：",
     "debugInfoLabel": "除錯資訊：",

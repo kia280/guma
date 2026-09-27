@@ -34,7 +34,9 @@ function ErrorPageContent() {
     };
 
   const errorId = searchParams.get('id') ?? '';
-  const returnUrl = safeReturnPath(searchParams.get('return'));
+  const returnParam = searchParams.get('return');
+  const returnUrl = safeReturnPath(returnParam);
+  const hasReturnUrl = safeReturnPath(returnParam, '') !== '';
 
   const knownError = Object.hasOwn(ERROR_MESSAGES, errorId) ? ERROR_MESSAGES[errorId] : undefined;
   const error = knownError ?? {
@@ -42,6 +44,11 @@ function ErrorPageContent() {
     description: t('description'),
     statusCode: undefined,
   };
+
+  const isSessionError = error.statusCode === 401;
+  const signInUrl = hasReturnUrl ? `/login?return=${encodeURIComponent(returnUrl)}` : '/login';
+  const showBack = !isSessionError && hasReturnUrl;
+  const homeVariant = isSessionError || showBack ? 'secondary' : 'primary';
 
   const getErrorIcon = (statusCode?: number) => {
     switch (statusCode) {
@@ -97,13 +104,31 @@ function ErrorPageContent() {
           )}
 
           <div className="flex flex-col gap-2">
-            <Button className="w-full" variant="primary" size="lg" onPress={() => router.push(returnUrl)}>
-              <Icon icon="solar:arrow-left-line-duotone" />
-              {t('goBack')}
-            </Button>
+            {isSessionError && (
+              <Button
+                className="w-full"
+                variant="primary"
+                size="lg"
+                onPress={() => router.push(signInUrl)}
+              >
+                <Icon icon="solar:login-2-line-duotone" />
+                {t('signIn')}
+              </Button>
+            )}
+            {showBack && (
+              <Button
+                className="w-full"
+                variant="primary"
+                size="lg"
+                onPress={() => router.push(returnUrl)}
+              >
+                <Icon icon="solar:arrow-left-line-duotone" />
+                {t('goBack')}
+              </Button>
+            )}
             <Button
               className="w-full"
-              variant="secondary"
+              variant={homeVariant}
               size="lg"
               onPress={() => router.push('/')}
             >
