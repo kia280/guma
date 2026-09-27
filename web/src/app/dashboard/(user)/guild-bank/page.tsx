@@ -515,7 +515,7 @@ export default function GuildBankPage() {
                       isIconOnly
                       size="sm"
                       variant="ghost"
-                      className="text-hint shrink-0"
+                      className="text-hint shrink-0 max-sm:size-11"
                       aria-label={t('requestItem')}
                       onPress={() => openItemRequest(item)}
                     >
