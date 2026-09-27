@@ -53,7 +53,7 @@ const BackpackItemCard = ({
           </div>
         </div>
         <Dropdown>
-          <Button isIconOnly variant="ghost" size="sm" className="text-hint shrink-0" aria-label={t('actions')}>
+          <Button isIconOnly variant="ghost" size="sm" className="text-hint shrink-0 max-sm:size-11" aria-label={t('actions')}>
             <Icon icon="solar:menu-dots-bold" width={16} />
           </Button>
           <Dropdown.Popover>

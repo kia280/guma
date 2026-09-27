@@ -196,7 +196,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     <div className="space-y-5">
       {/* Back button - only show in full page mode */}
       {!onClose && (
-        <Button variant="secondary" size="sm" onPress={() => router.push('/dashboard/auction')}>
+        <Button variant="secondary" size="sm" className="max-sm:h-11" onPress={() => router.push('/dashboard/auction')}>
           <Icon icon="solar:arrow-left-linear" width={16} />
           {t('backToAuctions')}
         </Button>
@@ -330,6 +330,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     <Button
                       variant="primary"
                       fullWidth
+                      className="max-sm:h-11"
                       onPress={bidModalState.open}
                       isDisabled={isLoading || cannotAffordMinimumBid}
                       aria-describedby={cannotAffordMinimumBid ? bidBlockedReasonId : undefined}
@@ -388,6 +389,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     <Button
                       variant="primary"
                       fullWidth
+                      className="max-sm:h-11"
                       onPress={bidModalState.open}
                       isDisabled={isLoading || cannotAffordMinimumBid}
                       aria-describedby={cannotAffordMinimumBid ? bidBlockedReasonId : undefined}

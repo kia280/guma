@@ -222,7 +222,7 @@ export default function AnnouncementEditorPage() {
     });
 
   const backButton = (
-    <Button variant="ghost" size="sm" onPress={leave}>
+    <Button variant="ghost" size="sm" className="max-sm:h-11" onPress={leave}>
       <Icon icon="solar:arrow-left-linear" width={16} />
       {t('backToAnnouncements')}
     </Button>
@@ -329,22 +329,24 @@ export default function AnnouncementEditorPage() {
           </Tabs>
           <p className="type-caption text-hint">{t('markdownHint')}</p>
 
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="type-body text-foreground">{t('pinAnnouncement')}</p>
-              <p className="type-caption text-hint">{t('pinNote')}</p>
-            </div>
-            <Switch
-              isSelected={values.pinned}
-              onChange={pinned => update({ pinned })}
-              size="sm"
-              aria-label={t('pinAnnouncement')}
-            >
+          <Switch
+            isSelected={values.pinned}
+            onChange={pinned => update({ pinned })}
+            size="sm"
+            aria-labelledby="announcement-pin-label"
+            aria-describedby="announcement-pin-description"
+            className="w-full"
+          >
+            <Switch.Content className="w-full min-h-11 justify-between gap-3 font-normal">
+              <span>
+                <span id="announcement-pin-label" className="block type-body text-foreground">{t('pinAnnouncement')}</span>
+                <span id="announcement-pin-description" className="block type-caption text-hint">{t('pinNote')}</span>
+              </span>
               <Switch.Control>
                 <Switch.Thumb />
               </Switch.Control>
-            </Switch>
-          </div>
+            </Switch.Content>
+          </Switch>
         </Card.Content>
       </Card>
 
@@ -353,7 +355,7 @@ export default function AnnouncementEditorPage() {
           <Icon icon={saveStatus.icon} width={14} className={saveState === 'saving' ? 'animate-spin' : undefined} />
           <span>{saveStatus.label}</span>
           {saveState === 'error' && isDraft && (
-            <Button variant="ghost" size="sm" onPress={() => { void save(); }}>
+            <Button variant="ghost" size="sm" className="max-sm:h-11" onPress={() => { void save(); }}>
               {t('retry')}
             </Button>
           )}
@@ -361,24 +363,25 @@ export default function AnnouncementEditorPage() {
 
         {isDraft ? (
           <div className="flex items-center gap-2">
-            <Button variant="danger" size="sm" onPress={() => setPendingConfirm('delete')} isDisabled={isPublishing}>
+            <Button variant="danger" size="sm" className="max-sm:h-11" onPress={() => setPendingConfirm('delete')} isDisabled={isPublishing}>
               <Icon icon="solar:trash-bin-trash-linear" width={16} />
               {t('deleteDraft')}
             </Button>
-            <Button variant="primary" size="sm" onPress={publish} isPending={isPublishing} isDisabled={!canPublish}>
+            <Button variant="primary" size="sm" className="max-sm:h-11" onPress={publish} isPending={isPublishing} isDisabled={!canPublish}>
               <Icon icon="solar:plain-linear" width={16} />
               {t('publish')}
             </Button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onPress={() => setPendingConfirm('unpublish')} isDisabled={saveState === 'saving'}>
+            <Button variant="secondary" size="sm" className="max-sm:h-11" onPress={() => setPendingConfirm('unpublish')} isDisabled={saveState === 'saving'}>
               <Icon icon="solar:undo-left-linear" width={16} />
               {t('unpublish')}
             </Button>
             <Button
               variant="primary"
               size="sm"
+              className="max-sm:h-11"
               onPress={() => { void save(); }}
               isPending={saveState === 'saving'}
               isDisabled={!canPublish || (saveState !== 'dirty' && saveState !== 'error')}
