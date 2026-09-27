@@ -84,7 +84,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const isExpired = hasExpireTimePassed || isRejectedAsExpired;
   const timeRemaining = isExpired ? t('expired') : t('remaining', { time: formatCountdown(remainingMs) });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [submitError, setSubmitError] = useState<'closed' | 'failed' | null>(null);
   const checkinModal = useOverlayState();
   const currentUserId = useUserStore(state => state.user?.id);
   const { can } = useGuildPermissions();
@@ -128,13 +128,13 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   };
 
   const openCheckinModal = () => {
-    setSubmitError('');
+    setSubmitError(null);
     checkinModal.open();
   };
 
   const handleCheckinConfirm = async () => {
     setIsSubmitting(true);
-    setSubmitError('');
+    setSubmitError(null);
     try {
       await apiClient.submitAttendance(guildId, id, notes.trim());
       setNotes('');
@@ -147,9 +147,9 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         notify.info(t('alreadyCheckedIn'));
       } else if (status === 400) {
         setIsRejectedAsExpired(true);
-        setSubmitError(t('checkInExpired'));
+        setSubmitError('closed');
       } else {
-        setSubmitError(t('checkInFailed'));
+        setSubmitError('failed');
       }
     } finally {
       setIsSubmitting(false);
@@ -246,7 +246,11 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                   </TextField>
                   {submitError && (
                     <p role="alert" className="type-caption text-danger">
-                      {submitError}
+                      {submitError === 'failed'
+                        ? t('checkInFailed')
+                        : entry.status === CheckinStatus.CANCELLED
+                          ? t('checkInCancelled')
+                          : t('checkInExpired')}
                     </p>
                   )}
                 </Modal.Body>
@@ -307,7 +311,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                         <p className="type-caption text-hint">{t('wonBy', { name: item.winner })}</p>
                       )}
                     </div>
-                    {item.quantity && (
+                    {(item.quantity ?? 0) > 0 && (
                       <Chip size="sm" variant="secondary">
                         ×{item.quantity}
                       </Chip>

@@ -400,7 +400,7 @@
     "loadingActivity": "Loading activity",
     "activityLoadError": "Couldn't load recent activity.",
     "retry": "Retry",
-    "noActivity": "No guild activity yet. Auctions, check-ins, lotteries, and new members will appear here.",
+    "noActivity": "No guild activity yet. Auctions, roll calls, lotteries, and new members will appear here.",
     "totalMembers": "Total Members",
     "guildBalance": "Guild Balance",
     "activeEvents": "Active Events",
@@ -522,8 +522,8 @@
     "roleSummaries": {
       "owner": "Created the guild. Has every admin permission and is the only role that can delete the guild.",
       "admin": "Manages the guild: edits settings, runs lotteries, and cancels auctions.",
-      "moderator": "Helps run day-to-day activities: creates check-ins and reviews guild bank requests.",
-      "member": "Takes part in guild activities: check-ins, auctions, lotteries, and the guild bank."
+      "moderator": "Helps run day-to-day activities: creates roll calls and reviews guild bank requests.",
+      "member": "Takes part in guild activities: roll calls, auctions, lotteries, and the guild bank."
     },
     "sections": {
       "guild": {
@@ -531,7 +531,7 @@
         "description": "Guild information, settings, and membership"
       },
       "checkin": {
-        "title": "Check-ins",
+        "title": "Roll calls",
         "description": "Attendance tracking for guild activities"
       },
       "bank": {
@@ -557,9 +557,9 @@
       "editGuild": "Edit guild information and settings",
       "deleteGuild": "Delete the guild",
       "leaveGuild": "Leave the guild",
-      "attendCheckin": "View check-ins and record attendance",
-      "createCheckin": "Create check-ins",
-      "cancelCheckin": "Cancel check-ins",
+      "attendCheckin": "View roll calls and mark present",
+      "createCheckin": "Create roll calls",
+      "cancelCheckin": "Cancel roll calls",
       "contribute": "Contribute funds and donate items",
       "requestFromBank": "Request funds or items",
       "reviewRequests": "Approve or reject fund and item requests",
@@ -987,6 +987,7 @@
     "remaining": "{time} remaining",
     "checkedIn": "You're present",
     "checkInExpired": "This roll call has closed.",
+    "checkInCancelled": "This roll call has been cancelled.",
     "checkInFailed": "Couldn't mark you present. Please try again.",
     "checkInSuccess": "You're marked present.",
     "alreadyCheckedIn": "You have already been marked present.",
