@@ -1,9 +1,8 @@
 'use client';
 
-import { Button, Card, Chip } from '@heroui/react';
+import { Card, Chip, buttonVariants } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCountdown } from '@/hooks/useNow';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
@@ -41,8 +40,6 @@ export function CheckinCard({
   href: string;
 }) {
   const t = useTranslations('checkIn');
-  const router = useRouter();
-  const openDetail = () => router.push(href);
   const format = useIntlFormatter();
   const formatCountdown = useCountdownFormatter();
   const { remainingMs, isExpired } = useCountdown(status === CheckinStatus.OPEN ? expireTime : null);
@@ -130,21 +127,32 @@ export function CheckinCard({
 
       <Card.Footer className="pt-0">
         {canCheckin && (
-          <Button variant="primary" className="w-full" isDisabled={isDisabled} onPress={openDetail}>
+          <span
+            aria-hidden="true"
+            aria-disabled={isDisabled || undefined}
+            className={buttonVariants({
+              variant: 'primary',
+              fullWidth: true,
+              className: 'pointer-events-none',
+            })}
+          >
             <Icon icon="solar:check-circle-linear" width={16} />
             {t('openCheckin')}
-          </Button>
+          </span>
         )}
         {status === CheckinStatus.FINISHED && (
-          <Button
-            variant="secondary"
-            className="w-full"
-            isDisabled={isDisabled}
-            onPress={openDetail}
+          <span
+            aria-hidden="true"
+            aria-disabled={isDisabled || undefined}
+            className={buttonVariants({
+              variant: 'secondary',
+              fullWidth: true,
+              className: 'pointer-events-none',
+            })}
           >
             <Icon icon="solar:eye-linear" width={16} />
             {t('viewDetails')}
-          </Button>
+          </span>
         )}
         {status === CheckinStatus.CANCELLED && (
           <Chip variant="secondary" className="w-full justify-center py-2">
