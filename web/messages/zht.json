@@ -400,7 +400,7 @@
     "loadingActivity": "正在載入動態",
     "activityLoadError": "無法載入近期動態。",
     "retry": "重試",
-    "noActivity": "目前還沒有公會動態。競標、簽到、抽獎與新成員加入都會顯示在這裡。",
+    "noActivity": "目前還沒有公會動態。競標、點名、抽獎與新成員加入都會顯示在這裡。",
     "totalMembers": "總成員數",
     "guildBalance": "公會餘額",
     "activeEvents": "進行中活動",
@@ -522,8 +522,8 @@
     "roleSummaries": {
       "owner": "公會建立者，擁有管理員的所有權限，也是唯一可以刪除公會的角色。",
       "admin": "管理公會：編輯設定、舉辦抽獎並取消拍賣。",
-      "moderator": "協助日常運作：建立簽到並審核公會銀行申請。",
-      "member": "參與公會活動：簽到、拍賣、抽獎與公會銀行。"
+      "moderator": "協助日常運作：建立點名並審核公會銀行申請。",
+      "member": "參與公會活動：點名簽到、拍賣、抽獎與公會銀行。"
     },
     "sections": {
       "guild": {
@@ -531,7 +531,7 @@
         "description": "公會資訊、設定與成員身分"
       },
       "checkin": {
-        "title": "簽到",
+        "title": "點名",
         "description": "公會活動的出席紀錄"
       },
       "bank": {
@@ -557,9 +557,9 @@
       "editGuild": "編輯公會資訊與設定",
       "deleteGuild": "刪除公會",
       "leaveGuild": "退出公會",
-      "attendCheckin": "查看簽到並登記出席",
-      "createCheckin": "建立簽到",
-      "cancelCheckin": "取消簽到",
+      "attendCheckin": "查看點名並簽到",
+      "createCheckin": "建立點名",
+      "cancelCheckin": "取消點名",
       "contribute": "捐獻資金與物品",
       "requestFromBank": "申請資金或物品",
       "reviewRequests": "核准或駁回資金與物品申請",
@@ -831,7 +831,7 @@
     "eventsLabel": "活動提醒",
     "eventsDesc": "即將到來的公會活動提醒",
     "checkinLabel": "點名提醒",
-    "checkinDesc": "點名開始時提醒我報到",
+    "checkinDesc": "點名開始時提醒我簽到",
     "notificationsLoadFailed": "無法載入您的通知設定。",
     "notificationsSaveFailed": "無法儲存這項變更，已還原為先前的設定。",
     "notificationsRetry": "重試",
@@ -954,10 +954,10 @@
     "goBack": "返回",
     "dialogLabel": "點名詳情",
     "backToCheckins": "返回點名列表",
-    "checkIn": "報到",
+    "checkIn": "簽到",
     "attendance": "出席情況",
     "members": "{count} 位成員",
-    "noCheckinsYet": "尚無人報到。",
+    "noCheckinsYet": "尚無人簽到。",
     "loot": "戰利品",
     "items": "{count} 個項目",
     "noLootItems": "尚未新增戰利品項目。",
@@ -971,9 +971,9 @@
     "lootItems": "戰利品項目",
     "awarded": "已頒發",
     "notesOptional": "備註（選填）",
-    "notesPlaceholder": "新增關於這次報到的備註...",
+    "notesPlaceholder": "新增關於這次簽到的備註...",
     "cancel": "取消",
-    "confirmCheckIn": "確認報到",
+    "confirmCheckIn": "確認簽到",
     "statusOpen": "進行中",
     "statusCancelled": "已取消",
     "statusFinished": "已完成",
@@ -987,10 +987,11 @@
     "remaining": "剩餘 {time}",
     "checkedIn": "已簽到",
     "checkInExpired": "此點名已截止。",
+    "checkInCancelled": "此點名已取消。",
     "checkInFailed": "簽到失敗，請稍後再試。",
-    "checkInSuccess": "報到完成。",
-    "alreadyCheckedIn": "您已經報到過了。",
-    "checkInTitle": "報到 — {title}"
+    "checkInSuccess": "簽到完成。",
+    "alreadyCheckedIn": "您已經簽到過了。",
+    "checkInTitle": "簽到 — {title}"
   },
   "devTools": {
     "authTab": "開發登入",
