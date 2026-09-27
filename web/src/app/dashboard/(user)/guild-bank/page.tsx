@@ -554,7 +554,7 @@ export default function GuildBankPage() {
           <>
           {/* Desktop Table */}
           <div className="hidden md:block">
-            <Table>
+            <Table variant="secondary">
               <Table.ScrollContainer>
                 <Table.Content aria-label={t('activityTable')} className="min-w-[700px]">
                   <Table.Header>

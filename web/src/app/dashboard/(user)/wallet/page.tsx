@@ -673,7 +673,7 @@ export default function WalletPage() {
               <>
           {/* Desktop Table View */}
           <div className="hidden md:block">
-            <Table>
+            <Table variant="secondary">
               <Table.ScrollContainer>
                 <Table.Content aria-label={t('transactionHistoryTable')} className="min-w-[600px]">
                   <Table.Header>
