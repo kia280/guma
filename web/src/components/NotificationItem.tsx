@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useNow, useTranslations } from 'next-intl';
 import React from 'react';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
 import type { GuildNotification, NotificationKind } from '@/types/notification';
 
@@ -35,12 +36,14 @@ export type NotificationItemProps = {
 export function NotificationItem({ notification, onOpen }: NotificationItemProps) {
   const t = useTranslations('notificationItem');
   const format = useIntlFormatter();
+  const formatGold = useFormatGold();
   const now = useNow({ updateInterval: 60 * 1000 });
   const { id, type, title, message, params, createdAt, isRead, href } = notification;
   const known = isKnownKind(type);
   const meta = known ? KIND_META[type] : FALLBACK_META;
   const note = textParam(params.note);
   const reason = textParam(params.reason);
+  const amount = typeof params.amount === 'number' ? formatGold(params.amount) : params.amount;
 
   const body = (
     <>
@@ -52,6 +55,7 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
           <p className={cn('type-body', isRead ? 'text-subtle' : 'text-foreground')}>
             {t.rich(type, {
               ...params,
+              amount,
               b: chunks => <span className="font-medium text-foreground">{chunks}</span>,
             })}
           </p>
