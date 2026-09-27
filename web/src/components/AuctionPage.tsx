@@ -24,7 +24,7 @@ const AuctionPage = () => {
   const createModalState = useOverlayState();
 
   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [pendingBidIds, setPendingBidIds] = useState<ReadonlySet<string>>(new Set());
   const auctionsState = useLoadState();
   const notify = useToast();
   const [reloadKey, setReloadKey] = useState(0);
@@ -105,7 +105,7 @@ const AuctionPage = () => {
   }, [auctionItems, searchTerm, selectedCategory, selectedRarity, activeTab]);
 
   const handlePlaceBid = async (itemId: string, amount: number) => {
-    setIsLoading(true);
+    setPendingBidIds(current => new Set(current).add(itemId));
     try {
       await apiClient.placeBid(guildId, itemId, amount);
       refetchAuctions();
@@ -116,7 +116,11 @@ const AuctionPage = () => {
       notify.error(t('bidFailed'));
       return false;
     } finally {
-      setIsLoading(false);
+      setPendingBidIds(current => {
+        const next = new Set(current);
+        next.delete(itemId);
+        return next;
+      });
     }
   };
 
@@ -267,7 +271,7 @@ const AuctionPage = () => {
                   key={item.id}
                   item={item}
                   onPlaceBid={handlePlaceBid}
-                  isLoading={isLoading}
+                  isLoading={pendingBidIds.has(item.id)}
                   userBalance={userBalance}
                   
                 />
@@ -301,7 +305,7 @@ const AuctionPage = () => {
                   key={item.id}
                   item={item}
                   onPlaceBid={handlePlaceBid}
-                  isLoading={isLoading}
+                  isLoading={pendingBidIds.has(item.id)}
                   userBalance={userBalance}
                   
                 />
@@ -335,7 +339,7 @@ const AuctionPage = () => {
                   key={item.id}
                   item={item}
                   onPlaceBid={handlePlaceBid}
-                  isLoading={isLoading}
+                  isLoading={pendingBidIds.has(item.id)}
                   userBalance={userBalance}
                   
                 />
@@ -369,7 +373,7 @@ const AuctionPage = () => {
                   key={item.id}
                   item={item}
                   onPlaceBid={handlePlaceBid}
-                  isLoading={isLoading}
+                  isLoading={pendingBidIds.has(item.id)}
                   userBalance={userBalance}
                   
                 />
