@@ -76,6 +76,8 @@ const AuctionItemCard = ({
   const isActive = item.status === AuctionStatus.ACTIVE;
   const isUpcoming = item.status === AuctionStatus.UPCOMING;
   const isClosed = !isActive && !isUpcoming;
+  const isEnded = item.status === AuctionStatus.ENDED;
+  const hasEndedWithoutBids = isEnded && !item.currentBidder;
 
   const scheduleTarget = isUpcoming ? item.startTime : item.endTime;
   const { now, remainingMs, isExpired } = useCountdown(isClosed ? null : scheduleTarget);
@@ -94,11 +96,7 @@ const AuctionItemCard = ({
     : isActive && isExpired
       ? t('ended')
       : formatCountdown(remainingMs);
-  const remainingPercent = isUpcoming
-    ? 100
-    : isClosed
-      ? 0
-      : getRemainingPercent(now, item.startTime, item.endTime);
+  const remainingPercent = isActive ? getRemainingPercent(now, item.startTime, item.endTime) : 0;
 
   const hasBidAmount = Number.isFinite(bidAmount);
   const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
@@ -183,21 +181,31 @@ const AuctionItemCard = ({
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="type-body text-subtle">{t('currentBid')}</span>
-                  <span className="type-heading tabular-nums text-foreground">
-                    {formatGold(item.currentBid)}
+                  <span className="type-body text-subtle">
+                    {isEnded ? t('finalPrice') : t('currentBid')}
                   </span>
+                  {hasEndedWithoutBids ? (
+                    <span className="type-body text-hint">{t('noBids')}</span>
+                  ) : (
+                    <span className="type-heading tabular-nums text-foreground">
+                      {formatGold(item.currentBid)}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex min-h-8 items-center justify-between">
-                  <span className="type-caption text-hint">{t('leadingBidder')}</span>
+                  <span className="type-caption text-hint">
+                    {isEnded ? t('winner') : t('leadingBidder')}
+                  </span>
                   {item.currentBidder ? (
                     <div className="flex items-center gap-2">
                       <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
                       <span className="type-body text-foreground">{item.currentBidder.username}</span>
                     </div>
                   ) : (
-                    <span className="type-body text-hint">{t('noBids')}</span>
+                    <span className="type-body text-hint">
+                      {isEnded ? t('noWinner') : t('noBids')}
+                    </span>
                   )}
                 </div>
               </div>
@@ -277,12 +285,12 @@ const AuctionItemCard = ({
                   >
                     <Label>{t('yourBidAmount')}</Label>
                     <NumberField.Group>
-                      <NumberField.DecrementButton />
+                      <NumberField.DecrementButton aria-label={t('decreaseBid')} />
                       <NumberField.Input
                         className="w-full min-w-0"
                         placeholder={`${t('minimum')} ${formatGold(minimumBid)}`}
                       />
-                      <NumberField.IncrementButton />
+                      <NumberField.IncrementButton aria-label={t('increaseBid')} />
                     </NumberField.Group>
                     <p className="type-caption text-hint mt-1">
                       {bidAmount > userBalance
@@ -337,7 +345,7 @@ const AuctionItemCard = ({
                 <div className="space-y-2 overflow-y-auto max-h-[60vh]">
                   {item.bidHistory.length === 0 ? (
                     <div className="text-center py-8 text-hint type-body">
-                      {t('noBidsYet')}
+                      {isClosed ? t('noBids') : t('noBidsYet')}
                     </div>
                   ) : (
                     [...item.bidHistory]
@@ -370,7 +378,7 @@ const AuctionItemCard = ({
                             </span>
                             {bid.isWinning && (
                               <Chip color="success" size="sm" variant="secondary">
-                                {t('leading')}
+                                {isEnded ? t('won') : t('leading')}
                               </Chip>
                             )}
                           </div>
