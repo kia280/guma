@@ -117,12 +117,12 @@ export function CheckinCard({
 
           <div className="space-y-2">
             <div className="flex justify-between type-body">
-              <span className="text-subtle">{t('attendees')}</span>
-              <span className="font-medium tabular-nums text-foreground">{attendanceCount}</span>
-            </div>
-            <div className="flex justify-between type-body">
               <span className="text-subtle">{t('loot')}</span>
               <span className="font-medium tabular-nums text-foreground">{lootCount}</span>
+            </div>
+            <div className="flex justify-between type-body">
+              <span className="text-subtle">{t('attendees')}</span>
+              <span className="font-medium tabular-nums text-foreground">{attendanceCount}</span>
             </div>
           </div>
         </div>

@@ -439,12 +439,12 @@ export default function AdminPage() {
               {mockUsers.length === 0 ? (
                 <EmptyContent icon="solar:users-group-rounded-linear" title={t('noUsers')} />
               ) : (
-              <Table>
+              <Table variant="secondary">
                 <Table.ScrollContainer>
                   <Table.Content aria-label={t('usersTable')}>
                     <Table.Header>
                       <Table.Column isRowHeader>{t('user')}</Table.Column>
-                      <Table.Column>{t('role')}</Table.Column>
+                      <Table.Column className="max-md:rounded-r-2xl">{t('role')}</Table.Column>
                       <Table.Column className="hidden md:table-cell">{t('status')}</Table.Column>
                       <Table.Column className="hidden md:table-cell">{t('lastActive')}</Table.Column>
                     </Table.Header>

@@ -178,6 +178,9 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
+  const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-divider bg-surface';
+  const sectionGap = onClose ? 'gap-6' : 'gap-4';
+
   return (
     <div className="space-y-5">
       {/* Back button - only show in full page mode */}
@@ -189,7 +192,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
       )}
 
       {/* Item header */}
-      <div className="flex flex-col sm:flex-row items-start gap-4 p-5 rounded-xl border border-divider bg-surface">
+      <div className={`flex flex-col sm:flex-row items-start gap-4 ${onClose ? 'pr-8' : sectionClass}`}>
         <div className="p-4 rounded-xl bg-default shrink-0">
           <Icon icon={CATEGORY_ICONS[item.category]} width={36} className="text-subtle" />
         </div>
@@ -201,6 +204,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
             <Chip size="sm" color={auctionStatusColor[item.status]} variant="tertiary">
               {t(`status.${item.status}`)}
             </Chip>
+            {isActive && (
+              <Chip size="sm" variant="tertiary">
+                <Icon icon="solar:clock-circle-linear" width={12} />
+                {timeRemaining}
+              </Chip>
+            )}
             {item.isBlind && (
               <Chip size="sm" color="accent" variant="tertiary">
                 <Icon icon="solar:eye-closed-linear" width={12} />
@@ -213,11 +222,11 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <div className={`grid grid-cols-1 lg:grid-cols-5 ${sectionGap}`}>
         {/* Left column — bid info + history */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className={`lg:col-span-3 flex flex-col ${sectionGap}`}>
           {/* Auction status */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
+          <div className={`space-y-4 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
               {t('auctionStatus')}
             </h2>
@@ -259,7 +268,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           </div>
 
           {/* Bid section */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-4">
+          <div className={`max-lg:order-first space-y-4 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
               {t('bidding')}
             </h2>
@@ -405,9 +414,9 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
         </div>
 
         {/* Right column — seller + metadata */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className={`lg:col-span-2 flex flex-col ${sectionGap}`}>
           {/* Seller info */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
+          <div className={`space-y-3 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
               {t('seller')}
             </h2>
@@ -421,7 +430,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           </div>
 
           {/* Item metadata */}
-          <div className="p-5 rounded-xl border border-divider bg-surface space-y-3">
+          <div className={`space-y-3 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
               {t('itemDetails')}
             </h2>
@@ -454,7 +463,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           </div>
 
           {/* Your balance */}
-          <div className="p-4 rounded-xl border border-divider bg-surface">
+          <div className={onClose ? undefined : 'p-4 rounded-xl border border-divider bg-surface'}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-subtle">
                 <Icon icon="solar:wallet-linear" width={16} />
