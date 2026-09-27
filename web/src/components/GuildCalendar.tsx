@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, Button, ButtonGroup, Chip, Tooltip } from '@heroui/react';
+import { Card, Button, ButtonGroup, Chip, Separator, Tooltip } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React, { useState, useEffect, useMemo } from 'react';
@@ -536,7 +536,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
               </Button>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
                 variant="secondary"
@@ -568,7 +568,12 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
                   {t('month')}
                 </Button>
               </ButtonGroup>
-              {actions}
+              {actions && (
+                <>
+                  <Separator orientation="vertical" className="h-6 max-sm:hidden" />
+                  <div className="max-sm:w-full">{actions}</div>
+                </>
+              )}
             </div>
           </div>
         </Card.Content>
