@@ -1416,5 +1416,13 @@
     "cancel": "Cancel",
     "batchSuccess": "{decision, select, approved {Approved} other {Rejected}} {count, plural, one {# request} other {# requests}}.",
     "batchPartial": "{decision, select, approved {Approved} other {Rejected}} {succeeded}; {failed} could not be processed."
+  },
+  "bidAssist": {
+    "quickPicks": "Quick bid amounts",
+    "addIncrement": "+{amount}",
+    "addMultiple": "+{step}× ({amount})",
+    "addIncrementLabel": "Raise bid by {amount}",
+    "balanceAfterBid": "Available after this bid",
+    "raiseOwnBid": "You already hold the top bid, so only the extra {amount} is held."
   }
 }

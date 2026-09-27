@@ -1416,5 +1416,13 @@
     "cancel": "取消",
     "batchSuccess": "已{decision, select, approved {核准} other {駁回}} {count} 筆申請。",
     "batchPartial": "已{decision, select, approved {核准} other {駁回}} {succeeded} 筆；{failed} 筆無法處理。"
+  },
+  "bidAssist": {
+    "quickPicks": "快速出價金額",
+    "addIncrement": "+{amount}",
+    "addMultiple": "+{step}×（{amount}）",
+    "addIncrementLabel": "出價再加 {amount}",
+    "balanceAfterBid": "出價後可用餘額",
+    "raiseOwnBid": "你已是最高出價者，只會再凍結差額 {amount}。"
   }
 }

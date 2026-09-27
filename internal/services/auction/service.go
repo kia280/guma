@@ -286,10 +286,15 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: bidder wallet", errs.ErrNotFound)
 	}
-	if bidderBalance < amount {
+	isRaisingOwnBid := info.CurrentBidderID != nil && *info.CurrentBidderID == bidderID
+	charge, description := amount, "Auction bid placed"
+	if isRaisingOwnBid {
+		charge, description = amount-info.CurrentBid, "Auction bid raised"
+	}
+	if bidderBalance < charge {
 		return nil, nil, fmt.Errorf("%w: insufficient funds", errs.ErrFailedPrecondition)
 	}
-	newBidderBalance := bidderBalance - amount
+	newBidderBalance := bidderBalance - charge
 	if err := qtx.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{
 		Balance: newBidderBalance, UserID: bidderID, GuildID: guildID,
 	}); err != nil {
@@ -297,8 +302,8 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 	}
 	if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
 		UserID: bidderID, GuildID: guildID, Type: "AUCTION_BID",
-		Amount: -amount, BalanceAfter: newBidderBalance,
-		Description: "Auction bid placed", ReferenceID: auctionIDStr, ReferenceType: "auction",
+		Amount: -charge, BalanceAfter: newBidderBalance,
+		Description: description, ReferenceID: auctionIDStr, ReferenceType: "auction",
 	}); err != nil {
 		return nil, nil, fmt.Errorf("%w: record bid transaction: %v", errs.ErrInternal, err)
 	}

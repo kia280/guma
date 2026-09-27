@@ -21,8 +21,10 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { auctionStatusColor } from '@/lib/status-colors';
+import { useUserStore } from '@/lib/store';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory } from '@/types/item';
+import { BidAssist, bidCost } from './BidAssist';
 import { UserAvatar } from './UserAvatar';
 
 const PROGRESS_FILL = {
@@ -69,6 +71,7 @@ const AuctionItemCard = ({
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const formatCountdown = useCountdownFormatter();
+  const userId = useUserStore(s => s.user?.id);
   const [bidInput, setBidInput] = useState<number | null>(null);
   const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
   const bidAmount = bidInput ?? minimumBid;
@@ -99,7 +102,8 @@ const AuctionItemCard = ({
   const remainingPercent = isActive ? getRemainingPercent(now, item.startTime, item.endTime) : 0;
 
   const hasBidAmount = Number.isFinite(bidAmount);
-  const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
+  const exceedsBalance = hasBidAmount && bidCost(item, bidAmount, userId).cost > userBalance;
+  const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && !exceedsBalance;
 
   const bidModal = useOverlayState();
   const historyModal = useOverlayState();
@@ -289,13 +293,20 @@ const AuctionItemCard = ({
                       <NumberField.IncrementButton aria-label={t('increaseBid')} />
                     </NumberField.Group>
                     <p className="type-caption text-hint mt-1">
-                      {bidAmount > userBalance
+                      {exceedsBalance
                         ? t('insufficientBalance')
                         : !hasBidAmount || bidAmount < minimumBid
                           ? `${t('minimumBidIs')} ${formatGold(minimumBid)}`
                           : t('validBidAmount')}
                     </p>
                   </NumberField>
+                  <BidAssist
+                    item={item}
+                    amount={bidAmount}
+                    minimumBid={minimumBid}
+                    balance={userBalance}
+                    onChange={setBidInput}
+                  />
                 </div>
               </Modal.Body>
               <Modal.Footer>

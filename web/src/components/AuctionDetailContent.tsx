@@ -30,9 +30,11 @@ import { isNotFoundError } from '@/lib/guma/errors';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { auctionStatusColor } from '@/lib/status-colors';
+import { useUserStore } from '@/lib/store';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory } from '@/types/item';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { BidAssist, bidCost } from './BidAssist';
 import { UserAvatar } from './UserAvatar';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -71,6 +73,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const { balance: userBalance, isLoaded: isBalanceLoaded, refresh: refreshBalance } = useWalletBalance();
+  const userId = useUserStore(s => s.user?.id);
   const bidBlockedReasonId = useId();
   const formatCountdown = useCountdownFormatter();
 
@@ -157,8 +160,10 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const startsIn = t('startsInTime', { time: countdown });
   const remainingPercent = getRemainingPercent(now, item.startTime, item.endTime);
   const hasBidAmount = Number.isFinite(bidAmount);
-  const cannotAffordMinimumBid = isBalanceLoaded && userBalance < minimumBid;
-  const exceedsBalance = isBalanceLoaded && hasBidAmount && bidAmount > userBalance;
+  const minimumBidCost = bidCost(item, minimumBid, userId).cost;
+  const bidCostAmount = bidCost(item, bidAmount, userId).cost;
+  const cannotAffordMinimumBid = isBalanceLoaded && userBalance < minimumBidCost;
+  const exceedsBalance = isBalanceLoaded && hasBidAmount && bidCostAmount > userBalance;
   const isBelowMinimum = !hasBidAmount || bidAmount < minimumBid;
   const canBid = isActive && !isBelowMinimum && !exceedsBalance;
   const displayedBalance = isBalanceLoaded ? formatGold(userBalance) : '—';
@@ -591,6 +596,14 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     <Description>{t('validBidAmount')}</Description>
                   )}
                 </NumberField>
+                <BidAssist
+                  item={item}
+                  amount={bidAmount}
+                  minimumBid={minimumBid}
+                  balance={userBalance}
+                  isBalanceLoaded={isBalanceLoaded}
+                  onChange={amount => setBidInput({ auctionId: id, amount })}
+                />
               </div>
             </Modal.Body>
             <Modal.Footer>
