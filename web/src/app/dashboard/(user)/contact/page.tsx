@@ -93,7 +93,7 @@ export default function ContactPage() {
 
       {/* Contact form */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon
               className="text-subtle"

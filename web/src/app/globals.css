@@ -159,17 +159,6 @@ html[data-font-size='x-large'] {
 }
 
 @layer components {
-  .tabs__list[data-orientation='horizontal'] {
-    max-width: 100%;
-    overflow-x: auto;
-    overflow-y: clip;
-    scrollbar-width: none;
-  }
-
-  .tabs__list[data-orientation='horizontal']::-webkit-scrollbar {
-    display: none;
-  }
-
   .tabs__tab {
     white-space: nowrap;
   }

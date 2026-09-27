@@ -493,15 +493,13 @@ export default function DashboardPage() {
         <Modal.Container size="lg">
           <Modal.Dialog className="bg-surface border border-divider max-w-2xl">
             <Modal.CloseTrigger />
-            <Modal.Header className="text-center items-center border-b border-divider pb-3">
-              <div className="flex items-start gap-3 pr-10">
-                {selectedAnn?.pinned && (
-                  <Icon icon="solar:pin-bold" width={16} className="text-danger shrink-0 mt-0.5" />
-                )}
-                <Modal.Heading>
-                  {selectedAnn?.title}
-                </Modal.Heading>
-              </div>
+            <Modal.Header className="flex-row items-start gap-3 border-b border-divider pb-3 pr-10">
+              {selectedAnn?.pinned && (
+                <Icon icon="solar:pin-bold" width={16} className="text-danger shrink-0 mt-0.5" />
+              )}
+              <Modal.Heading>
+                {selectedAnn?.title}
+              </Modal.Heading>
             </Modal.Header>
 
             <Modal.Body className="flex flex-col gap-3">

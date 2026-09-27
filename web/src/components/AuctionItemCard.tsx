@@ -234,19 +234,15 @@ const AuctionItemCard = ({
           <Modal.Container size="md">
             <Modal.Dialog>
               <Modal.CloseTrigger />
-              <Modal.Header className="text-center items-center">
-                <Modal.Heading>
-                  <div className="flex items-center gap-2">
-                    <Icon
-                      icon={getCategoryIcon(item.category)}
-                      width={18}
-                      className="text-subtle"
-                    />
-                    <span>{t('placeBidTitle', { name: item.name })}</span>
-                  </div>
-                </Modal.Heading>
+              <Modal.Header className="flex-row items-center gap-2 pr-8">
+                <Icon
+                  icon={getCategoryIcon(item.category)}
+                  width={18}
+                  className="text-subtle shrink-0"
+                />
+                <Modal.Heading>{t('placeBidTitle', { name: item.name })}</Modal.Heading>
               </Modal.Header>
-              <Modal.Body className="p-1">
+              <Modal.Body>
                 <div className="space-y-4">
                   <div className="bg-surface-secondary rounded-lg p-4 space-y-2">
                     <div className="flex justify-between type-body">
@@ -330,10 +326,10 @@ const AuctionItemCard = ({
           <Modal.Container size="lg">
             <Modal.Dialog>
               <Modal.CloseTrigger />
-              <Modal.Header className="text-center items-center">
+              <Modal.Header>
                 <Modal.Heading>{t('bidHistory', { name: item.name })}</Modal.Heading>
               </Modal.Header>
-              <Modal.Body className="p-1">
+              <Modal.Body>
                 <div className="space-y-2 overflow-y-auto max-h-[60vh]">
                   {item.bidHistory.length === 0 ? (
                     <div className="text-center py-8 text-hint type-body">

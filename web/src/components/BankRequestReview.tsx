@@ -318,10 +318,10 @@ export function BankRequestReview({ guildId }: { guildId: string }) {
           <Modal.Container size="sm">
             <Modal.Dialog>
               <Modal.CloseTrigger />
-              <Modal.Header className="text-center items-center">
+              <Modal.Header>
                 <Modal.Heading>{isApprove ? t('approveTitle') : t('rejectTitle')}</Modal.Heading>
               </Modal.Header>
-              <Modal.Body className="p-1 flex flex-col gap-3">
+              <Modal.Body className="flex flex-col gap-3">
                 {target && (
                   <div className="flex flex-col gap-1 rounded-lg bg-surface-secondary p-3">
                     <p className="type-body font-medium text-foreground">
