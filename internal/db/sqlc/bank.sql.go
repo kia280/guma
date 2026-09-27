@@ -29,16 +29,23 @@ SELECT COUNT(*) FROM bank_items
 WHERE guild_id = $1
   AND ($2::text = '' OR item->>'category' = $2::text)
   AND ($3::text   = '' OR item->>'rarity'   = $3::text)
+  AND ($4::text  = '' OR checkin_id::text  = $4::text)
 `
 
 type CountBankItemsParams struct {
 	GuildID        uuid.UUID
 	CategoryFilter string
 	RarityFilter   string
+	CheckinFilter  string
 }
 
 func (q *Queries) CountBankItems(ctx context.Context, arg CountBankItemsParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countBankItems, arg.GuildID, arg.CategoryFilter, arg.RarityFilter)
+	row := q.db.QueryRow(ctx, countBankItems,
+		arg.GuildID,
+		arg.CategoryFilter,
+		arg.RarityFilter,
+		arg.CheckinFilter,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -545,8 +552,9 @@ LEFT JOIN checkins c ON c.id = bi.checkin_id
 WHERE bi.guild_id = $1
   AND ($3::text = '' OR bi.item->>'category' = $3::text)
   AND ($4::text   = '' OR bi.item->>'rarity'   = $4::text)
+  AND ($5::text  = '' OR bi.checkin_id::text  = $5::text)
 ORDER BY bi.donated_at DESC
-LIMIT $6::int OFFSET $5::int
+LIMIT $7::int OFFSET $6::int
 `
 
 type ListBankItemsParams struct {
@@ -554,6 +562,7 @@ type ListBankItemsParams struct {
 	ViewerID       uuid.UUID
 	CategoryFilter string
 	RarityFilter   string
+	CheckinFilter  string
 	PageOffset     int32
 	PageSize       int32
 }
@@ -581,6 +590,7 @@ func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([
 		arg.ViewerID,
 		arg.CategoryFilter,
 		arg.RarityFilter,
+		arg.CheckinFilter,
 		arg.PageOffset,
 		arg.PageSize,
 	)

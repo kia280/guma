@@ -145,6 +145,7 @@ LEFT JOIN checkins c ON c.id = bi.checkin_id
 WHERE bi.guild_id = $1
   AND (sqlc.arg(category_filter)::text = '' OR bi.item->>'category' = sqlc.arg(category_filter)::text)
   AND (sqlc.arg(rarity_filter)::text   = '' OR bi.item->>'rarity'   = sqlc.arg(rarity_filter)::text)
+  AND (sqlc.arg(checkin_filter)::text  = '' OR bi.checkin_id::text  = sqlc.arg(checkin_filter)::text)
 ORDER BY bi.donated_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
@@ -152,7 +153,8 @@ LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 SELECT COUNT(*) FROM bank_items
 WHERE guild_id = $1
   AND (sqlc.arg(category_filter)::text = '' OR item->>'category' = sqlc.arg(category_filter)::text)
-  AND (sqlc.arg(rarity_filter)::text   = '' OR item->>'rarity'   = sqlc.arg(rarity_filter)::text);
+  AND (sqlc.arg(rarity_filter)::text   = '' OR item->>'rarity'   = sqlc.arg(rarity_filter)::text)
+  AND (sqlc.arg(checkin_filter)::text  = '' OR checkin_id::text  = sqlc.arg(checkin_filter)::text);
 
 -- name: InsertItemRequest :one
 INSERT INTO item_requests (guild_id, bank_item_id, requester_id, requester_name, reason, item)

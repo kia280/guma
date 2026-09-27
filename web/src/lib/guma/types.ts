@@ -121,6 +121,7 @@ export interface ApiClient {
   cancelCheckin(guildId: string, id: string): Promise<CheckinEntry>;
   submitAttendance(guildId: string, checkinId: string, notes?: string): Promise<AttendanceMember>;
   listAttendees(guildId: string, checkinId: string): Promise<AttendanceMember[]>;
+  assignLoot(guildId: string, checkinId: string, itemId: string, userId: string): Promise<void>;
   listCheckinTemplates(guildId: string): Promise<CheckinTemplate[]>;
   createCheckinTemplate(guildId: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
   updateCheckinTemplate(guildId: string, id: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
@@ -152,7 +153,7 @@ export interface ApiClient {
   listFundRequests(guildId: string, status?: RequestStatus): Promise<FundRequest[]>;
   listContributions(guildId: string): Promise<GuildContribution[]>;
   donateItem(guildId: string, backpackItemId: string, note?: string): Promise<GuildBankItem>;
-  listBankItems(guildId: string): Promise<GuildBankItem[]>;
+  listBankItems(guildId: string, options?: { checkinId?: string }): Promise<GuildBankItem[]>;
   requestItem(guildId: string, bankItemId: string, reason: string): Promise<ItemRequest>;
   reviewItemRequest(
     guildId: string,

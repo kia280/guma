@@ -181,12 +181,13 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 	}
 
 	result, err := h.svc.ListBankItems(ctx, banksvc.ListBankItemsParams{
-		GuildID:  req.GuildId,
-		ViewerID: userID,
-		Category: req.Category,
-		Rarity:   req.Rarity,
-		PageSize: int(req.PageSize),
-		Offset:   banksvc.ParsePageToken(req.PageToken),
+		GuildID:   req.GuildId,
+		ViewerID:  userID,
+		CheckinID: req.CheckinId,
+		Category:  req.Category,
+		Rarity:    req.Rarity,
+		PageSize:  int(req.PageSize),
+		Offset:    banksvc.ParsePageToken(req.PageToken),
 	})
 	if err != nil {
 		return nil, toStatus(err)

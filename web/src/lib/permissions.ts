@@ -38,6 +38,7 @@ export const PERMISSION_SECTIONS = [
       { key: 'attendCheckin', roles: ALL },
       { key: 'createCheckin', roles: STAFF },
       { key: 'cancelCheckin', roles: OWNER_ADMIN },
+      { key: 'distributeLoot', roles: STAFF },
     ],
   },
   {

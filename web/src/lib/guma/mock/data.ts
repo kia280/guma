@@ -617,6 +617,27 @@ export const mockGuildItems: GuildBankItem[] = [
   },
 ];
 
+mockGuildItems.push(
+  ...mockCheckins
+    .filter(checkin => checkin.status === CheckinStatus.OPEN)
+    .flatMap(checkin =>
+      checkin.lootList.map(loot => ({
+        id: loot.id,
+        name: loot.name,
+        description: '',
+        category: ItemCategory.MATERIAL,
+        rarity: ItemRarity.RARE,
+        donatedBy: 'Sunbaby',
+        donatedAt: new Date().toISOString(),
+        quantity: 1,
+        pendingRequestCount: 0,
+        requestedByMe: false,
+        checkinId: checkin.id,
+        checkinTitle: checkin.description,
+      })),
+    ),
+);
+
 // ─── Guild Events (mock API) ─────────────────────────────────────────────────
 
 export const mockGuildEventsApi = {

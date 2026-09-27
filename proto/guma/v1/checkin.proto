@@ -62,6 +62,13 @@ service CheckInService {
       get: "/v1/guilds/{guild_id}/checkins/{checkin_id}/attendees"
     };
   }
+
+  rpc AssignLoot(AssignLootRequest) returns (AssignLootResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/checkins/{checkin_id}/loot/{item_id}/assign"
+      body: "*"
+    };
+  }
 }
 
 // Request/Response messages
@@ -133,6 +140,17 @@ message CancelCheckInRequest {
 
 message CancelCheckInResponse {
   CheckIn checkin = 1;
+}
+
+message AssignLootRequest {
+  string guild_id = 1;
+  string checkin_id = 2;
+  string item_id = 3;
+  string user_id = 4;
+}
+
+message AssignLootResponse {
+  string backpack_item_id = 1;
 }
 
 message SubmitAttendanceRequest {

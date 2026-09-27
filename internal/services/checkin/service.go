@@ -491,6 +491,76 @@ func (s *Service) ListAttendees(ctx context.Context, guildIDStr, checkinIDStr st
 
 // --- helpers ---
 
+func (s *Service) AssignLoot(ctx context.Context, guildIDStr, checkinIDStr, itemIDStr, actorIDStr, recipientIDStr string) (string, error) {
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return "", fmt.Errorf("%w: checkin", errs.ErrNotFound)
+	}
+	checkinID, err := uuid.Parse(checkinIDStr)
+	if err != nil {
+		return "", fmt.Errorf("%w: checkin", errs.ErrNotFound)
+	}
+	itemID, err := uuid.Parse(itemIDStr)
+	if err != nil {
+		return "", fmt.Errorf("%w: loot item", errs.ErrNotFound)
+	}
+	actorID, err := uuid.Parse(actorIDStr)
+	if err != nil {
+		return "", fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	recipientID, err := uuid.Parse(recipientIDStr)
+	if err != nil {
+		return "", fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, actorID, "owner", "admin", "moderator"); err != nil {
+		return "", err
+	}
+	if exists, err := s.q.CheckinExists(ctx, db.CheckinExistsParams{ID: checkinID, GuildID: guildID}); err != nil || !exists {
+		return "", fmt.Errorf("%w: checkin", errs.ErrNotFound)
+	}
+	attended, err := s.q.IsCheckinAttendee(ctx, db.IsCheckinAttendeeParams{CheckinID: checkinID, UserID: recipientID})
+	if err != nil {
+		return "", fmt.Errorf("%w: load attendance: %v", errs.ErrInternal, err)
+	}
+	if !attended {
+		return "", fmt.Errorf("%w: recipient did not attend this roll call", errs.ErrFailedPrecondition)
+	}
+	recipientName, _ := s.q.GetUserDisplayName(ctx, recipientID)
+
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return "", fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	if _, err := qtx.RejectPendingRequestsForLootItem(ctx, db.RejectPendingRequestsForLootItemParams{
+		ReviewerID: &actorID, ReviewNote: fmt.Sprintf(assignedLootNote, recipientName), GuildID: guildID, BankItemID: &itemID,
+	}); err != nil {
+		return "", fmt.Errorf("%w: reject loot requests: %v", errs.ErrInternal, err)
+	}
+	itemJSON, err := qtx.TakeCheckinLootItem(ctx, db.TakeCheckinLootItemParams{ID: itemID, GuildID: guildID, CheckinID: &checkinID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", fmt.Errorf("%w: loot item is no longer in the guild bank", errs.ErrFailedPrecondition)
+		}
+		return "", fmt.Errorf("%w: take loot item: %v", errs.ErrInternal, err)
+	}
+	backpackItemID, err := qtx.InsertBackpackItem(ctx, db.InsertBackpackItemParams{
+		OwnerID: recipientID, GuildID: guildID, Item: itemJSON, Source: "checkin", SourceID: &checkinID,
+	})
+	if err != nil {
+		return "", fmt.Errorf("%w: deliver loot: %v", errs.ErrInternal, err)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return "", fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("checkin_id", checkinIDStr).Str("item_id", itemIDStr).Str("recipient_id", recipientIDStr).Msg("loot assigned")
+	return backpackItemID.String(), nil
+}
+
+const assignedLootNote = "Assigned directly to %s from the roll call."
+
 const retractedLootNote = "The roll call was cancelled, so its loot was removed from the guild bank."
 
 func checkCancellable(isCancelled, isExpired bool) error {

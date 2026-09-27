@@ -168,7 +168,7 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
                       <div className="min-w-0">
                         <p className="type-body font-medium text-foreground truncate">{activeDraft.name}</p>
                         <p className="type-caption text-hint">
-                          {t(`rarities.${activeDraft.rarity}`)} · {t(isFromBank ? 'sourceBankHint' : 'sourceBackpackHint')}
+                          {t(`rarities.${activeDraft.rarity}`)} · {t(activeDraft.source?.bankItemId ? 'sourceBankHint' : 'sourceBackpackHint')}
                         </p>
                       </div>
                     </div>

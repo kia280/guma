@@ -599,7 +599,8 @@
       "drawLottery": "開獎",
       "changeDrawDate": "變更開獎日期",
       "manageWallet": "管理自己的錢包與背包",
-      "auctionBankItems": "拍賣或抽出公會銀行物品"
+      "auctionBankItems": "拍賣或抽出公會銀行物品",
+      "distributeLoot": "分配點名戰利品"
     },
     "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。"
   },
@@ -809,7 +810,8 @@
     "auctionWon": "你以 <b>{amount}</b> 得標 <b>{item}</b>，物品已放入背包",
     "auctionSold": "<b>{actor}</b> 以 <b>{amount}</b> 得標 <b>{item}</b>，款項已存入{destination, select, wallet {你的錢包} other {公會銀行}}",
     "auctionUnsold": "<b>{item}</b> 已結束，無人出價",
-    "itemReceived": "<b>{actor}</b> 送給你 <b>{item}</b>"
+    "itemReceived": "<b>{actor}</b> 送給你 <b>{item}</b>",
+    "lootAssigned": "你從 <b>{checkin}</b> 獲得 <b>{item}</b>"
   },
   "profilePage": {
     "title": "個人資料",
@@ -1015,7 +1017,6 @@
     "loot": "戰利品",
     "items": "{count} 個項目",
     "noLootItems": "尚未新增戰利品項目。",
-    "wonBy": "獲得者：{name}",
     "timing": "時間",
     "eventDate": "活動日期",
     "expires": "到期時間",
@@ -1348,5 +1349,29 @@
     "transferSuccess": "已送出 {item}。",
     "donateFailed": "無法捐出物品，請再試一次。",
     "transferFailed": "無法送出物品，請再試一次。"
+  },
+  "checkinLoot": {
+    "loading": "正在載入戰利品狀態",
+    "loadFailed": "無法載入戰利品的去向。",
+    "retry": "重試",
+    "inBank": "在公會銀行",
+    "inBankWithRequests": "在銀行 · {count} 筆申請",
+    "distributed": "已分配",
+    "wonBy": "獲得者：{name}",
+    "actionsFor": "{item} 的操作",
+    "assign": "分配給出席成員",
+    "auction": "放入競拍",
+    "lottery": "放入抽獎",
+    "noAttendees": "尚無出席成員",
+    "assignTitle": "分配 {item}",
+    "assignDescription": "物品會從公會銀行移出，直接放入該成員的背包。",
+    "assignRejectsRequests": "這個物品的 {count} 筆待審申請會被拒絕。",
+    "recipient": "出席成員",
+    "recipientPlaceholder": "選擇出席成員",
+    "cancel": "取消",
+    "assignConfirm": "分配物品",
+    "assignSuccess": "已將 {item} 分配給 {name}。",
+    "assignConflict": "這個物品已不在公會銀行。",
+    "assignFailed": "無法分配物品，請再試一次。"
   }
 }

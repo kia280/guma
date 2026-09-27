@@ -370,6 +370,9 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/attend`, { notes: notes ?? '' });
     return toAttendee(data.attendee);
   },
+  assignLoot: async (guildId, checkinId, itemId, userId) => {
+    await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/loot/${itemId}/assign`, { user_id: userId });
+  },
   listAttendees: async (guildId, checkinId) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/checkins/${checkinId}/attendees`);
     return (data.attendees ?? []).map(toAttendee);
@@ -469,8 +472,10 @@ export const gumaApiClient: ApiClient = {
     });
     return toGuildBankItem(data.bank_item);
   },
-  listBankItems: async (guildId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/bank/items`);
+  listBankItems: async (guildId, options) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/bank/items`, {
+      params: { page_size: 100, checkin_id: options?.checkinId },
+    });
     return (data.items ?? []).map(toGuildBankItem);
   },
   requestItem: async (guildId, bankItemId, reason) => {

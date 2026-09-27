@@ -1450,6 +1450,12 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -2006,6 +2012,56 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/CheckInServiceCancelCheckInBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkins/{checkinId}/loot/{itemId}/assign": {
+      "post": {
+        "operationId": "CheckInService_AssignLoot",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AssignLootResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInServiceAssignLootBody"
             }
           }
         ],
@@ -4206,6 +4262,14 @@
         }
       }
     },
+    "CheckInServiceAssignLootBody": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        }
+      }
+    },
     "CheckInServiceCancelCheckInBody": {
       "type": "object"
     },
@@ -4773,6 +4837,14 @@
         },
         "limits": {
           "$ref": "#/definitions/v1Limits"
+        }
+      }
+    },
+    "v1AssignLootResponse": {
+      "type": "object",
+      "properties": {
+        "backpackItemId": {
+          "type": "string"
         }
       }
     },

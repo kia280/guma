@@ -155,3 +155,22 @@ WHERE item_requests.guild_id = sqlc.arg(guild_id)
 -- name: RetractCheckinLoot :execrows
 DELETE FROM bank_items
 WHERE checkin_id = sqlc.arg(checkin_id) AND guild_id = sqlc.arg(guild_id) AND locked_by_type IS NULL;
+
+-- name: IsCheckinAttendee :one
+SELECT EXISTS(SELECT 1 FROM checkin_attendees WHERE checkin_id = $1 AND user_id = $2);
+
+-- name: RejectPendingRequestsForLootItem :execrows
+UPDATE item_requests SET
+    status = 'rejected',
+    reviewer_id = sqlc.arg(reviewer_id),
+    review_note = NULLIF(sqlc.arg(review_note)::text, ''),
+    reviewed_at = NOW()
+WHERE item_requests.guild_id = sqlc.arg(guild_id)
+  AND item_requests.bank_item_id = sqlc.arg(bank_item_id)
+  AND item_requests.status = 'pending';
+
+-- name: TakeCheckinLootItem :one
+DELETE FROM bank_items
+WHERE bank_items.id = sqlc.arg(id) AND bank_items.guild_id = sqlc.arg(guild_id) AND bank_items.checkin_id = sqlc.arg(checkin_id)
+  AND bank_items.locked_by_type IS NULL
+RETURNING bank_items.item;

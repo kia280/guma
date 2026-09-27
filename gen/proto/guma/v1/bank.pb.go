@@ -798,6 +798,7 @@ type ListBankItemsRequest struct {
 	Rarity        string                 `protobuf:"bytes,3,opt,name=rarity,proto3" json:"rarity,omitempty"`
 	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	CheckinId     string                 `protobuf:"bytes,6,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -863,6 +864,13 @@ func (x *ListBankItemsRequest) GetPageSize() int32 {
 func (x *ListBankItemsRequest) GetPageToken() string {
 	if x != nil {
 		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListBankItemsRequest) GetCheckinId() string {
+	if x != nil {
+		return x.CheckinId
 	}
 	return ""
 }
@@ -2039,14 +2047,16 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x10backpack_item_id\x18\x02 \x01(\tR\x0ebackpackItemId\x12\x12\n" +
 	"\x04note\x18\x03 \x01(\tR\x04note\"D\n" +
 	"\x12DonateItemResponse\x12.\n" +
-	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\xa1\x01\n" +
+	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\xc0\x01\n" +
 	"\x14ListBankItemsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1a\n" +
 	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x16\n" +
 	"\x06rarity\x18\x03 \x01(\tR\x06rarity\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x05 \x01(\tR\tpageToken\"\x89\x01\n" +
+	"page_token\x18\x05 \x01(\tR\tpageToken\x12\x1d\n" +
+	"\n" +
+	"checkin_id\x18\x06 \x01(\tR\tcheckinId\"\x89\x01\n" +
 	"\x15ListBankItemsResponse\x12'\n" +
 	"\x05items\x18\x01 \x03(\v2\x11.guma.v1.BankItemR\x05items\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +

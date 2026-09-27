@@ -167,12 +167,13 @@ type ListContributionsResult struct {
 
 // ListBankItemsParams holds inputs for ListBankItems.
 type ListBankItemsParams struct {
-	GuildID  string
-	ViewerID string
-	Category string
-	Rarity   string
-	PageSize int
-	Offset   int
+	GuildID   string
+	ViewerID  string
+	CheckinID string
+	Category  string
+	Rarity    string
+	PageSize  int
+	Offset    int
 }
 
 // ListBankItemsResult is returned by ListBankItems.
@@ -592,6 +593,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 	rows, err := s.q.ListBankItems(ctx, db.ListBankItemsParams{
 		GuildID: guildID, CategoryFilter: p.Category, RarityFilter: p.Rarity,
 		PageSize: int32(pageSize), PageOffset: int32(p.Offset), ViewerID: viewerID,
+		CheckinFilter: p.CheckinID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: list bank items: %v", errs.ErrInternal, err)
@@ -617,6 +619,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 
 	total, _ := s.q.CountBankItems(ctx, db.CountBankItemsParams{
 		GuildID: guildID, CategoryFilter: p.Category, RarityFilter: p.Rarity,
+		CheckinFilter: p.CheckinID,
 	})
 
 	nextOffset := 0

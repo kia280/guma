@@ -22,6 +22,7 @@ const KIND_META: Record<NotificationKind, { icon: string; tint: string }> = {
   auctionSold: { icon: 'solar:sledgehammer-linear', tint: 'bg-success/10 text-success' },
   auctionUnsold: { icon: 'solar:sledgehammer-linear', tint: 'bg-default text-subtle' },
   itemReceived: { icon: 'solar:backpack-linear', tint: 'bg-accent/10 text-accent' },
+  lootAssigned: { icon: 'solar:clipboard-check-linear', tint: 'bg-success/10 text-success' },
   lotteryWon: { icon: 'solar:ticket-linear', tint: 'bg-warning/10 text-warning' },
 };
 

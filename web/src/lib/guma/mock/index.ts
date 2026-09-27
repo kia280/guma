@@ -508,6 +508,10 @@ const baseMockApiClient: ApiClient = {
     entry.attendanceCount = entry.attendanceList.length;
     return attendee;
   },
+  assignLoot: async (_guildId, _checkinId, itemId) => {
+    if (mockData.mockGuildItems.find(i => i.id === itemId)?.lock) throw failedPrecondition('loot is in an auction or lottery');
+    removeById(mockData.mockGuildItems, itemId);
+  },
   listAttendees: async (_guildId, checkinId) => {
     const entry = store.checkins.find(c => c.id === checkinId);
     return entry?.attendanceList ?? [];
@@ -685,10 +689,12 @@ const baseMockApiClient: ApiClient = {
     mockData.mockGuildItems.unshift(donated);
     return donated;
   },
-  listBankItems: async () => mockData.mockGuildItems,
+  listBankItems: async (_guildId, options) =>
+    options?.checkinId ? mockData.mockGuildItems.filter(item => item.checkinId === options.checkinId) : mockData.mockGuildItems,
   requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => {
     const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
     if (!bankItem) throw new Error('not found');
+    if (bankItem.lock) throw failedPrecondition('item is in an auction or lottery');
     if (bankItem.requestedByMe) throw conflict();
     bankItem.requestedByMe = true;
     bankItem.pendingRequestCount += 1;

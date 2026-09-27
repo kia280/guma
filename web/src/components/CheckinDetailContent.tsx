@@ -18,6 +18,7 @@ import { checkinStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { CheckinLootDistribution } from './CheckinLootDistribution';
 import { ConfirmDialog } from './ConfirmDialog';
 import { UserAvatar } from './UserAvatar';
 
@@ -292,29 +293,11 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             {entry.lootList.length === 0 ? (
               <p className="type-body text-subtle text-center py-4">{t('noLootItems')}</p>
             ) : (
-              <div className="space-y-2">
-                {entry.lootList.map(item => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-divider bg-surface-secondary"
-                  >
-                    <div className="p-1.5 rounded-lg bg-default shrink-0">
-                      <Icon icon="solar:box-linear" width={16} className="text-subtle" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="type-body font-medium text-foreground">{item.name}</p>
-                      {item.winner && (
-                        <p className="type-caption text-hint">{t('wonBy', { name: item.winner })}</p>
-                      )}
-                    </div>
-                    {(item.quantity ?? 0) > 0 && (
-                      <Chip size="sm" variant="secondary">
-                        ×{item.quantity}
-                      </Chip>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <CheckinLootDistribution
+                checkinId={entry.id}
+                lootList={entry.lootList}
+                attendees={entry.attendanceList}
+              />
             )}
           </div>
 
