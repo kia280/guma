@@ -39,6 +39,7 @@ type PendingConfirm = 'delete' | 'unpublish' | 'discard' | null;
 
 const draftKey = (input: AnnouncementDraftInput) =>
   JSON.stringify([input.title, input.content, input.pinned]);
+const hasTitle = (input: AnnouncementDraftInput) => input.title.trim() !== '';
 
 export default function AnnouncementEditorPage() {
   const t = useTranslations('adminPage');
@@ -90,10 +91,9 @@ export default function AnnouncementEditorPage() {
           return;
         }
         loadState.failed();
-        notify.loadFailed(reload, 'announcement');
       });
     return () => { cancelled = true; };
-  }, [guildId, id, reloadKey, notify, reload, loadState.ready, loadState.failed]);
+  }, [guildId, id, reloadKey, loadState.ready, loadState.failed]);
 
   const save = React.useCallback(async (): Promise<boolean> => {
     clearTimeout(timer.current);
@@ -102,6 +102,10 @@ export default function AnnouncementEditorPage() {
     if (!input) return true;
     const key = draftKey(input);
     if (key === savedKey.current) return true;
+    if (!hasTitle(input)) {
+      setSaveState('dirty');
+      return false;
+    }
 
     setSaveState('saving');
     const request = apiClient.updateAnnouncement(guildId, id, input)
@@ -146,16 +150,20 @@ export default function AnnouncementEditorPage() {
     return () => window.removeEventListener('beforeunload', warn);
   }, []);
 
+  const scheduleSave = () => {
+    clearTimeout(timer.current);
+    if (latest.current && hasTitle(latest.current)) {
+      timer.current = setTimeout(() => { void save(); }, AUTOSAVE_DELAY_MS);
+    }
+  };
+
   const update = (patch: Partial<AnnouncementDraftInput>) => {
-    setValues(prev => {
-      const next = { ...prev, ...patch };
-      latest.current = next;
-      return next;
-    });
+    const next = { ...(latest.current ?? values), ...patch };
+    latest.current = next;
+    setValues(next);
     setPublishFailed(false);
     setSaveState('dirty');
-    clearTimeout(timer.current);
-    if (isDraftRef.current) timer.current = setTimeout(() => { void save(); }, AUTOSAVE_DELAY_MS);
+    if (isDraftRef.current) scheduleSave();
   };
 
   const hasUnsavedChanges = () => latest.current !== null && draftKey(latest.current) !== savedKey.current;
@@ -166,17 +174,18 @@ export default function AnnouncementEditorPage() {
     setAnnouncement(ann);
     if (hasUnsavedChanges()) {
       setSaveState('dirty');
-      timer.current = setTimeout(() => { void save(); }, AUTOSAVE_DELAY_MS);
+      scheduleSave();
     } else {
       setLastSavedAt(ann.updatedAt);
     }
   };
 
-  const leave = () => {
-    if (!isDraftRef.current && hasUnsavedChanges()) {
+  const leave = async () => {
+    if (hasUnsavedChanges() && (!isDraftRef.current || !hasTitle(latest.current!))) {
       setPendingConfirm('discard');
       return;
     }
+    if (!(await flush())) return;
     router.push(ANNOUNCEMENTS_HREF);
   };
 
@@ -210,6 +219,7 @@ export default function AnnouncementEditorPage() {
       await apiClient.deleteAnnouncementDraft(guildId, id);
     } catch (err) {
       latest.current = pendingInput;
+      if (hasUnsavedChanges()) scheduleSave();
       throw err;
     }
     router.push(ANNOUNCEMENTS_HREF);
@@ -266,7 +276,7 @@ export default function AnnouncementEditorPage() {
   const canPublish = values.title.trim() !== '' && values.content.trim() !== '';
   const saveStatus = {
     saved: { icon: 'solar:check-circle-linear', className: 'text-hint', label: lastSavedAt ? t('savedAt', { time: formatSavedAt(lastSavedAt) }) : t('saved') },
-    dirty: { icon: 'solar:pen-linear', className: 'text-hint', label: t('unsavedChanges') },
+    dirty: { icon: 'solar:pen-linear', className: 'text-hint', label: isDraft && !hasTitle(values) ? t('draftTitleRequired') : t('unsavedChanges') },
     saving: { icon: 'solar:refresh-linear', className: 'text-hint', label: t('saving') },
     error: { icon: 'solar:danger-triangle-linear', className: 'text-danger', label: isDraft ? t('saveFailed') : t('saveChangesFailed') },
   }[saveState];
@@ -418,9 +428,9 @@ export default function AnnouncementEditorPage() {
       />
       <ConfirmDialog
         heading={t('discardChangesTitle')}
-        body={t('discardChangesBody')}
+        body={isDraft ? t('discardUntitledDraftBody') : t('discardChangesBody')}
         confirmLabel={t('discardChanges')}
-        failedMessage={t('discardChangesBody')}
+        failedMessage={t('discardFailed')}
         status="warning"
         isOpen={pendingConfirm === 'discard'}
         onOpenChange={open => { if (!open) setPendingConfirm(null); }}
