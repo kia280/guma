@@ -149,7 +149,7 @@ const LotteryCard = ({
                     <p className="type-label text-foreground truncate">
                       {winner.username}
                     </p>
-                    <p className="type-caption text-success">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</p>
+                    <p className="type-caption text-success tabular-nums">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</p>
                   </div>
                 </div>
               ))}
