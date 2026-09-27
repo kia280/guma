@@ -11,8 +11,11 @@ import {
   Form,
   Spinner,
   Alert,
+  FieldError,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import { isAxiosError } from 'axios';
+import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
@@ -35,6 +38,11 @@ function Login() {
   const [isVisible, setIsVisible] = React.useState(false);
   const [loginFlowError, setLoginFlowError] = React.useState(false);
   const [isCreatingFlow, setIsCreatingFlow] = React.useState(false);
+  const [validatedFlow, setValidatedFlow] = React.useState<string | null>(null);
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [showErrors, setShowErrors] = React.useState(false);
+  const hasRecreatedFlow = React.useRef(false);
   const flow = searchParams.get('flow');
   const returnUrl = safeReturnPath(searchParams.get('return'), '/dashboard');
 
@@ -70,16 +78,55 @@ function Login() {
     return () => controller.abort();
   }, [createLoginFlow, flow]);
 
+  React.useEffect(() => {
+    if (!flow) return;
+
+    const controller = new AbortController();
+    kratos
+      .getLoginFlow({ id: flow }, { signal: controller.signal })
+      .then(() => {
+        if (controller.signal.aborted) return;
+        hasRecreatedFlow.current = false;
+        setValidatedFlow(flow);
+      })
+      .catch(error => {
+        if (controller.signal.aborted) return;
+        const status = isAxiosError(error) ? error.response?.status : undefined;
+        if ((status === 403 || status === 404 || status === 410) && !hasRecreatedFlow.current) {
+          hasRecreatedFlow.current = true;
+          router.replace('/login');
+        } else {
+          console.error('Error fetching login flow:', error);
+          setLoginFlowError(true);
+        }
+      });
+    return () => controller.abort();
+  }, [flow, router]);
+
   const toggleVisibility = () => setIsVisible(!isVisible);
+
+  const emailError = !email.trim()
+    ? t('emailRequired')
+    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+      ? null
+      : t('emailInvalid');
+  const passwordError = password ? null : t('passwordRequired');
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setShowErrors(true);
+    if (emailError || passwordError) {
+      const form = event.currentTarget;
+      requestAnimationFrame(() => {
+        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      });
+    }
   };
 
-  if (!flow) {
+  if (!flow || validatedFlow !== flow) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
-        <div className="rounded-xl bg-surface flex w-full max-w-sm flex-col gap-4 px-8 pt-6 pb-10">
+        <div className="rounded-xl bg-surface flex w-full max-w-lg flex-col gap-4 px-8 pt-6 pb-10">
           {loginFlowError ? (
             <div className="flex flex-col gap-4 py-8">
               <Alert status="danger">
@@ -111,39 +158,51 @@ function Login() {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-lg h-[600px] border border-divider shadow-none bg-surface">
+      <Card className="w-full max-w-lg border border-divider shadow-none bg-surface py-6">
         <Card.Header className="flex flex-col items-center gap-2 px-4 pt-2 pb-0">
-          <img src="/assets/logo/sunbaby-96x96.png" alt="Guma" width={60} height={60} />
-          <Card.Title className="type-title pt-2">{t('logIn')}</Card.Title>
+          <Image src="/assets/logo/sunbaby-96x96.png" alt="Guma" width={60} height={60} preload />
+          <h1 className="type-title text-foreground pt-2">{t('title')}</h1>
           <Card.Description className="type-prose text-subtle">
             {t('welcomeBack')}
           </Card.Description>
         </Card.Header>
         <Card.Content className="flex flex-col gap-3 flex-1 justify-center px-4 pb-0">
-          <Form className="flex flex-col gap-3" validationBehavior="native" onSubmit={handleSubmit}>
-            <TextField isRequired className="w-full">
+          <Form className="flex flex-col gap-3" validationBehavior="aria" onSubmit={handleSubmit}>
+            <TextField
+              isRequired
+              className="w-full"
+              isInvalid={showErrors && !!emailError}
+              value={email}
+              onChange={setEmail}
+            >
               <Label className="type-body font-medium text-soft">
                 {t('emailAddress')}
               </Label>
               <InputGroup variant="secondary" className="h-12">
                 <InputGroup.Input
                   name="email"
-                  placeholder={t('enterYourEmail')}
+                  placeholder="name@example.com"
                   type="email"
-                  className="text-base"
+                  className="min-w-0"
                 />
               </InputGroup>
+              {showErrors && emailError && <FieldError>{emailError}</FieldError>}
             </TextField>
-            <TextField isRequired className="w-full">
+            <TextField
+              isRequired
+              className="w-full"
+              isInvalid={showErrors && !!passwordError}
+              value={password}
+              onChange={setPassword}
+            >
               <Label className="type-body font-medium text-soft">{t('password')}</Label>
               <InputGroup variant="secondary" className="h-12">
                 <InputGroup.Input
                   name="password"
-                  placeholder={t('enterYourPassword')}
                   type={isVisible ? 'text' : 'password'}
-                  className="text-base"
+                  className="min-w-0"
                 />
-                <InputGroup.Suffix className="pr-0">
+                <InputGroup.Suffix className="pr-1.5">
                   <Button
                     isIconOnly
                     aria-label={isVisible ? t('hidePassword') : t('showPassword')}
@@ -159,11 +218,12 @@ function Login() {
                   </Button>
                 </InputGroup.Suffix>
               </InputGroup>
+              {showErrors && passwordError && <FieldError>{passwordError}</FieldError>}
             </TextField>
             <div className="flex w-full items-center justify-between px-1 py-2">
               <Checkbox name="remember">
                 <Checkbox.Content>
-                  <Checkbox.Control className="bg-default">
+                  <Checkbox.Control className="border border-muted in-data-[selected=true]:border-transparent">
                     <Checkbox.Indicator />
                   </Checkbox.Control>
                   <Label className="type-body font-medium text-soft">{t('rememberMe')}</Label>
@@ -175,15 +235,15 @@ function Login() {
             </div>
             <Button
               variant="primary"
-              className="w-full font-semibold h-12 text-accent-foreground/90"
+              className="w-full font-semibold h-12"
               type="submit"
             >
               {t('logIn')}
             </Button>
           </Form>
-          <div className="flex items-center gap-4 py-2">
+          <div className="flex items-center gap-3 py-1">
             <Separator className="flex-1" />
-            <p className="type-body text-hint shrink-0">{t('or')}</p>
+            <p className="type-caption text-hint shrink-0">{t('or')}</p>
             <Separator className="flex-1" />
           </div>
           <div className="flex flex-col gap-2">
@@ -199,9 +259,6 @@ function Login() {
                         method: 'oidc',
                         provider: 'discord',
                       },
-                    })
-                    .then(response => {
-                      console.log('Login flow updated:', response);
                     })
                     .catch(error => {
                       if (error.response?.data?.redirect_browser_to) {

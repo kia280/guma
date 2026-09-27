@@ -10,11 +10,12 @@ import {
   ProgressBar,
   Label,
   Description,
+  FieldError,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { getRarityColor } from '@/components/ItemThumbnail';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -69,7 +70,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const labels = useTranslations('createAuctionModal');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
-  const { balance: userBalance, refresh: refreshBalance } = useWalletBalance();
+  const { balance: userBalance, isLoaded: isBalanceLoaded, refresh: refreshBalance } = useWalletBalance();
+  const bidBlockedReasonId = useId();
   const formatCountdown = useCountdownFormatter();
 
   const [item, setItem] = useState<AuctionItem | null>(null);
@@ -144,7 +146,16 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const timeRemaining = isExpired ? t('ended') : t('remaining', { time: formatCountdown(remainingMs) });
   const remainingPercent = getRemainingPercent(now, item.startTime, item.endTime);
   const hasBidAmount = Number.isFinite(bidAmount);
-  const canBid = isActive && hasBidAmount && bidAmount >= minimumBid && bidAmount <= userBalance;
+  const cannotAffordMinimumBid = isBalanceLoaded && userBalance < minimumBid;
+  const exceedsBalance = isBalanceLoaded && hasBidAmount && bidAmount > userBalance;
+  const isBelowMinimum = !hasBidAmount || bidAmount < minimumBid;
+  const canBid = isActive && !isBelowMinimum && !exceedsBalance;
+  const displayedBalance = isBalanceLoaded ? formatGold(userBalance) : '—';
+  const bidBlockedReason = cannotAffordMinimumBid ? (
+    <p id={bidBlockedReasonId} className="type-caption text-danger">
+      {t('insufficientBalanceForMinimumBid', { amount: formatGold(minimumBid) })}
+    </p>
+  ) : null;
 
   const handlePlaceBid = async () => {
     if (!canBid) return;
@@ -289,14 +300,18 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   </span>
                 </div>
                 {isActive && (
-                  <Button
-                    variant="primary"
-                    fullWidth
-                    onPress={bidModalState.open}
-                    isDisabled={isLoading}
-                  >
-                    {t('submitBid')}
-                  </Button>
+                  <div className="space-y-2">
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onPress={bidModalState.open}
+                      isDisabled={isLoading || cannotAffordMinimumBid}
+                      aria-describedby={cannotAffordMinimumBid ? bidBlockedReasonId : undefined}
+                    >
+                      {t('submitBid')}
+                    </Button>
+                    {bidBlockedReason}
+                  </div>
                 )}
               </div>
             ) : (
@@ -335,14 +350,18 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 </div>
 
                 {isActive && (
-                  <Button
-                    variant="primary"
-                    fullWidth
-                    onPress={bidModalState.open}
-                    isDisabled={isLoading}
-                  >
-                    {t('placeBid')}
-                  </Button>
+                  <div className="space-y-2">
+                    <Button
+                      variant="primary"
+                      fullWidth
+                      onPress={bidModalState.open}
+                      isDisabled={isLoading || cannotAffordMinimumBid}
+                      aria-describedby={cannotAffordMinimumBid ? bidBlockedReasonId : undefined}
+                    >
+                      {t('placeBid')}
+                    </Button>
+                    {bidBlockedReason}
+                  </div>
                 )}
 
                 <Separator />
@@ -451,7 +470,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <span className="type-body">{t('yourBalance')}</span>
               </div>
               <span className="font-semibold text-foreground">
-                {formatGold(userBalance)}
+                {displayedBalance}
               </span>
             </div>
           </div>
@@ -500,7 +519,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   <div className="flex justify-between type-body">
                     <span className="text-subtle">{t('yourBalance')}</span>
                     <span className="font-medium text-foreground">
-                      {formatGold(userBalance)}
+                      {displayedBalance}
                     </span>
                   </div>
                   {item.isBlind && (
@@ -515,6 +534,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   minValue={minimumBid}
                   value={bidAmount}
                   onChange={value => setBidInput({ auctionId: id, amount: Number.isFinite(value) ? roundGold(value) : value })}
+                  isInvalid={isBelowMinimum || exceedsBalance}
+                  validationBehavior="aria"
                   variant="secondary"
                 >
                   <Label>{t('yourBidAmount')}</Label>
@@ -526,13 +547,15 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     />
                     <NumberField.IncrementButton />
                   </NumberField.Group>
-                  <Description>
-                    {bidAmount > userBalance
-                      ? t('insufficientBalance')
-                      : !hasBidAmount || bidAmount < minimumBid
-                        ? `${t('minimumBidIs')} ${formatGold(minimumBid)}`
-                        : t('validBidAmount')}
-                  </Description>
+                  {isBelowMinimum || exceedsBalance ? (
+                    <FieldError>
+                      {exceedsBalance
+                        ? t('insufficientBalance')
+                        : t('minimumBidIs', { amount: formatGold(minimumBid) })}
+                    </FieldError>
+                  ) : (
+                    <Description>{t('validBidAmount')}</Description>
+                  )}
                 </NumberField>
               </div>
             </Modal.Body>

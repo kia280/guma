@@ -21,8 +21,6 @@
     "password": "密碼",
     "logIn": "登入",
     "emailAddress": "電子郵件地址",
-    "enterYourEmail": "請輸入您的電子郵件",
-    "enterYourPassword": "請輸入您的密碼",
     "rememberMe": "記住我",
     "forgotPassword": "忘記密碼？",
     "or": "或",
@@ -32,7 +30,11 @@
     "retry": "Try again",
     "welcomeBack": "歡迎回來",
     "showPassword": "顯示密碼",
-    "hidePassword": "隱藏密碼"
+    "hidePassword": "隱藏密碼",
+    "title": "登入 Guma",
+    "emailRequired": "請輸入電子郵件地址。",
+    "emailInvalid": "請輸入有效的電子郵件地址，例如 name@example.com。",
+    "passwordRequired": "請輸入密碼。"
   },
   "sidebar": {
     "dashboard": "主頁",
@@ -383,7 +385,9 @@
     "createEvent": "建立活動",
     "createSuccess": "活動已建立。",
     "updateSuccess": "活動已更新。",
-    "saveFailed": "無法儲存活動，請再試一次。"
+    "saveFailed": "無法儲存活動，請再試一次。",
+    "dateOutOfRange": "請輸入 {min} 年至 {max} 年之間的日期。",
+    "endBeforeStart": "結束時間必須晚於開始時間。"
   },
   "adminPage": {
     "users": "用戶",
@@ -753,14 +757,14 @@
     "unread": "未讀",
     "note": "備註：{note}",
     "reason": "原因：{reason}",
-    "fundRequestApproved": "<b>{actor}</b> 核准了你 <b>${amount, number}</b> 的公會銀行申請",
-    "fundRequestRejected": "<b>{actor}</b> 拒絕了你 <b>${amount, number}</b> 的公會銀行申請",
+    "fundRequestApproved": "<b>{actor}</b> 核准了你 <b>{amount}</b> 的公會銀行申請",
+    "fundRequestRejected": "<b>{actor}</b> 拒絕了你 <b>{amount}</b> 的公會銀行申請",
     "itemRequestApproved": "<b>{actor}</b> 核准了你申請的 <b>{item}</b>",
     "itemRequestRejected": "<b>{actor}</b> 拒絕了你申請的 <b>{item}</b>",
-    "fundRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>${amount, number}</b>",
+    "fundRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{amount}</b>",
     "itemRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{item}</b>",
-    "auctionOutbid": "<b>{actor}</b> 以 ${amount, number} 超過你在 <b>{item}</b> 的出價",
-    "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {${amount, number}}}</b>"
+    "auctionOutbid": "<b>{actor}</b> 以 {amount} 超過你在 <b>{item}</b> 的出價",
+    "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {{amount}}}</b>"
   },
   "profilePage": {
     "title": "個人資料",
@@ -929,7 +933,8 @@
     "yourBidAmount": "您的出價金額",
     "insufficientBalance": "餘額不足",
     "minimum": "最低：",
-    "minimumBidIs": "最低出價為",
+    "insufficientBalanceForMinimumBid": "餘額低於最低出價 {amount}，無法出價。",
+    "minimumBidIs": "最低出價為 {amount}",
     "validBidAmount": "有效的出價金額",
     "cancel": "取消",
     "submit": "提交",
