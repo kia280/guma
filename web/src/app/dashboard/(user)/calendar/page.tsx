@@ -106,15 +106,13 @@ export default function CalendarPage() {
     const end = event.endDate ? new Date(event.endDate) : null;
 
     if (end && start.toDateString() !== end.toDateString()) {
-      return `${start.toLocaleDateString(intlLocale, {
+      const rangeOptions: Intl.DateTimeFormatOptions = {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
-      })} - ${end.toLocaleDateString(intlLocale, {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-      })}`;
+        ...(start.getFullYear() !== end.getFullYear() && { year: 'numeric' }),
+      };
+      return `${start.toLocaleDateString(intlLocale, rangeOptions)} - ${end.toLocaleDateString(intlLocale, rangeOptions)}`;
     }
 
     return start.toLocaleDateString(intlLocale, {

@@ -383,7 +383,9 @@
     "createEvent": "建立活動",
     "createSuccess": "活動已建立。",
     "updateSuccess": "活動已更新。",
-    "saveFailed": "無法儲存活動，請再試一次。"
+    "saveFailed": "無法儲存活動，請再試一次。",
+    "dateOutOfRange": "請輸入 {min} 年至 {max} 年之間的日期。",
+    "endBeforeStart": "結束時間必須晚於開始時間。"
   },
   "adminPage": {
     "users": "用戶",
