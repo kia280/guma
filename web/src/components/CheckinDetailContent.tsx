@@ -216,10 +216,10 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         )}
         {(!hasCheckedIn || checkedInAt) && (
           <Modal state={checkinModal}>
-          <Modal.Backdrop>
+          <Modal.Backdrop isDismissable={!isSubmitting} isKeyboardDismissDisabled={isSubmitting}>
             <Modal.Container size="sm">
               <Modal.Dialog>
-                <Modal.CloseTrigger />
+                <Modal.CloseTrigger isDisabled={isSubmitting} />
                 {checkedInAt ? (
                   <ActionSuccess
                     title={t('checkInSuccess')}
@@ -259,7 +259,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                       )}
                     </Modal.Body>
                     <Modal.Footer>
-                      <Button slot="close" variant="secondary">
+                      <Button slot="close" variant="secondary" isDisabled={isSubmitting}>
                         {t('cancel')}
                       </Button>
                       <Button variant="primary" isPending={isSubmitting} isDisabled={!isOpen_} onPress={handleCheckinConfirm}>
