@@ -219,17 +219,13 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             <Modal.Container size="sm">
               <Modal.Dialog>
                 <Modal.CloseTrigger />
-                <Modal.Header className="text-center items-center">
-                  <Modal.Heading>
-                    <div className="flex items-center gap-2">
-                      <Icon
-                        icon="heroicons:clipboard-document-check"
-                        width={18}
-                        className="text-subtle"
-                      />
-                      {t('checkInTitle', { title: entry.description })}
-                    </div>
-                  </Modal.Heading>
+                <Modal.Header className="flex-row items-center gap-2 pr-8">
+                  <Icon
+                    icon="heroicons:clipboard-document-check"
+                    width={18}
+                    className="text-subtle shrink-0"
+                  />
+                  <Modal.Heading>{t('checkInTitle', { title: entry.description })}</Modal.Heading>
                 </Modal.Header>
                 <Modal.Body className="flex flex-col gap-3">
                   <p className="type-body text-subtle">{formatDateTime(entry.date)}</p>

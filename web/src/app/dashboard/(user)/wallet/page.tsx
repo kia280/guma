@@ -356,7 +356,7 @@ export default function WalletPage() {
     <div className="space-y-5">
       {/* Balance + Backpack Section */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
             <Icon className="text-accent" icon="solar:wallet-money-bold-duotone" width={20} />
           </div>
@@ -382,10 +382,10 @@ export default function WalletPage() {
                 <Modal.Container size="sm">
                   <Modal.Dialog>
                     <Modal.CloseTrigger />
-                    <Modal.Header className="text-center items-center">
+                    <Modal.Header>
                       <Modal.Heading>{t('depositMoney')}</Modal.Heading>
                     </Modal.Header>
-                    <Modal.Body className="p-1 flex flex-col gap-3">
+                    <Modal.Body className="flex flex-col gap-3">
                       <TextField>
                         <Label>{t('amountLabel')}</Label>
                         <Input
@@ -430,10 +430,10 @@ export default function WalletPage() {
                 <Modal.Container size="sm">
                   <Modal.Dialog>
                     <Modal.CloseTrigger />
-                    <Modal.Header className="text-center items-center">
+                    <Modal.Header>
                       <Modal.Heading>{t('transferMoney')}</Modal.Heading>
                     </Modal.Header>
-                    <Modal.Body className="p-1 flex flex-col gap-3">
+                    <Modal.Body className="flex flex-col gap-3">
                       <TextField isInvalid={transferExceedsBalance}>
                         <Label>{t('amountLabel')}</Label>
                         <Input
@@ -515,10 +515,10 @@ export default function WalletPage() {
                 <Modal.Container size="sm">
                   <Modal.Dialog>
                     <Modal.CloseTrigger />
-                    <Modal.Header className="text-center items-center">
+                    <Modal.Header>
                       <Modal.Heading>{t('withdrawMoney')}</Modal.Heading>
                     </Modal.Header>
-                    <Modal.Body className="p-1 flex flex-col gap-3">
+                    <Modal.Body className="flex flex-col gap-3">
                       <TextField isInvalid={withdrawExceedsBalance}>
                         <Label>{t('amountLabel')}</Label>
                         <Input
@@ -584,7 +584,7 @@ export default function WalletPage() {
 
       {/* Backpack Items */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
             <Icon className="text-accent" icon="solar:backpack-bold-duotone" width={20} />
           </div>
@@ -647,7 +647,7 @@ export default function WalletPage() {
 
       {/* Transaction History */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Header className="flex gap-3 pb-2">
+        <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-subtle" icon="solar:history-line-duotone" width={20} />
           </div>
@@ -838,10 +838,10 @@ export default function WalletPage() {
         <Modal.Container size="sm">
           <Modal.Dialog>
             <Modal.CloseTrigger />
-            <Modal.Header className="text-center items-center">
+            <Modal.Header>
               <Modal.Heading>{t('withdrawItem')}</Modal.Heading>
             </Modal.Header>
-            <Modal.Body className="p-1 flex flex-col gap-3">
+            <Modal.Body className="flex flex-col gap-3">
               {selectedItem && (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary">
