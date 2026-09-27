@@ -9,12 +9,13 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useNow } from '@/hooks/useNow';
 import { useToast } from '@/hooks/useToast';
+import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { splitDuration } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { useGuildPermissions } from '@/lib/permissions';
-import { isNotFoundError } from '@/lib/guma/errors';
+import { GrpcCode, apiErrorCode, isNotFoundError } from '@/lib/guma/errors';
 import { type FormatGold, formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
 import { lotteryStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
@@ -95,6 +96,9 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const phaseRef = React.useRef(phase);
   const currentUserId = useUserStore(state => state.user?.id);
   const { can } = useGuildPermissions();
+  const { balance, isLoaded: isBalanceLoaded } = useWalletBalance();
+  const refreshMe = useUserStore(state => state.refreshMe);
+  const purchaseBlockedReasonId = React.useId();
 
   const load = React.useCallback(
     () =>
@@ -244,15 +248,33 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const isSettled = lottery.status === 'ended' && (phase === 'idle' || phase === 'revealed');
   const showWinners = phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended');
 
+  const purchaseTotal = quantity * lottery.ticketPrice;
+  const exceedsBalance = isBalanceLoaded && purchaseTotal > balance;
+
+  const purchaseErrorMessage = async (err: unknown, requested: number) => {
+    const code = apiErrorCode(err);
+    if (!isNotFoundError(err) && code !== GrpcCode.FailedPrecondition) return t('purchaseFailed');
+    const [latest] = await Promise.all([load(), refreshMe()]);
+    if (!latest || latest.status === 'ended') return t('purchaseClosed');
+    if (latest.maxTickets > 0 && latest.ticketsSold + requested > latest.maxTickets) {
+      return t('purchaseSoldOut', { count: Math.max(0, latest.maxTickets - latest.ticketsSold) });
+    }
+    const latestBalance = useUserStore.getState().user?.balance;
+    if (latestBalance != null && requested * latest.ticketPrice > latestBalance) return t('insufficientBalance');
+    return t('purchaseFailed');
+  };
+
   const buy = async () => {
+    if (exceedsBalance) return;
+    const requested = quantity;
     setIsBuying(true);
     try {
-      await apiClient.purchaseTickets(guildId, id, quantity);
+      await apiClient.purchaseTickets(guildId, id, requested);
       await load();
       setQuantity(1);
       notify.success(t('purchaseSuccess'));
-    } catch {
-      notify.error(t('purchaseFailed'));
+    } catch (err) {
+      notify.error(await purchaseErrorMessage(err, requested));
     } finally {
       setIsBuying(false);
     }
@@ -429,10 +451,26 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                       <NumberField.IncrementButton />
                     </NumberField.Group>
                   </NumberField>
-                  <Button className="flex-1 min-w-40" isPending={isBuying} onPress={buy}>
+                  <Button
+                    className="flex-1 min-w-40"
+                    isPending={isBuying}
+                    isDisabled={exceedsBalance}
+                    aria-describedby={exceedsBalance ? purchaseBlockedReasonId : undefined}
+                    onPress={buy}
+                  >
                     <Icon icon="solar:ticket-linear" width={16} />
-                    {t('purchase', { total: formatGold(quantity * lottery.ticketPrice) })}
+                    {t('purchase', { total: formatGold(purchaseTotal) })}
                   </Button>
+                  <div className="w-full space-y-1">
+                    <p className="type-caption text-hint tabular-nums">
+                      {t('yourBalance', { amount: isBalanceLoaded ? formatGold(balance) : '—' })}
+                    </p>
+                    {exceedsBalance && (
+                      <p id={purchaseBlockedReasonId} className="type-caption text-danger">
+                        {t('insufficientBalance')}
+                      </p>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <p className="type-body text-subtle">{t('soldOut')}</p>

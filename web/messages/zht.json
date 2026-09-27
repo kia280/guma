@@ -1128,6 +1128,10 @@
     "rescheduleFailed": "無法調整開獎時間，請再試一次。",
     "noWinners": "沒有人購票，本次無得獎者。",
     "purchaseSuccess": "彩券購買完成。",
+    "purchaseSoldOut": "{count, plural, =0 {彩券在購買完成前已售完。} other {只剩 # 張彩券。}}",
+    "purchaseClosed": "這個抽獎已停止販售彩券。",
+    "insufficientBalance": "餘額不足以支付這次購買。",
+    "yourBalance": "你的餘額：{amount}",
     "purchaseFailed": "無法購買彩券，請再試一次。"
   },
   "createLotteryModal": {
