@@ -102,6 +102,7 @@ export interface ApiClient {
   transfer(guildId: string, req: TransferRequest): Promise<Transaction>;
   listBackpack(guildId: string): Promise<BackpackItem[]>;
   withdrawBackpackItem(guildId: string, itemId: string): Promise<void>;
+  transferBackpackItem(guildId: string, itemId: string, req: { recipientId: string; note?: string }): Promise<BackpackItem>;
 
   // ── Auction ──
   listAuctions(guildId: string, filters?: AuctionFilters): Promise<AuctionItem[]>;

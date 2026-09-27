@@ -338,13 +338,13 @@
     "cancel": "Cancel",
     "save": "Save",
     "actions": "Item actions",
-    "comingSoon": "Coming soon",
     "acquiredFrom": {
       "auction": "Auction",
       "lottery": "Lottery",
       "transfer": "Transfer",
       "admin": "Admin"
-    }
+    },
+    "donate": "Donate to guild bank"
   },
   "calendarPage": {
     "loadingEvents": "Loading events...",
@@ -790,7 +790,8 @@
     "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
     "auctionWon": "You won <b>{item}</b> for <b>{amount}</b>. It's in your backpack now",
     "auctionSold": "<b>{actor}</b> won <b>{item}</b> for <b>{amount}</b>, paid to {destination, select, wallet {your wallet} other {the guild bank}}",
-    "auctionUnsold": "<b>{item}</b> ended without bids"
+    "auctionUnsold": "<b>{item}</b> ended without bids",
+    "itemReceived": "<b>{actor}</b> sent you <b>{item}</b>"
   },
   "profilePage": {
     "title": "Personal Information",
@@ -1309,5 +1310,25 @@
   "itemLock": {
     "auction": "In auction",
     "lottery": "Lottery prize"
+  },
+  "backpackItemMoveModal": {
+    "donateTitle": "Donate to guild bank",
+    "transferTitle": "Send to a member",
+    "donateDescription": "The item moves to the guild bank, where members can request it.",
+    "transferDescription": "The item moves to the member’s backpack right away. They get a notification.",
+    "recipient": "Recipient",
+    "searchRecipient": "Search members",
+    "noMembers": "No members found",
+    "recipientRequired": "Choose who receives the item",
+    "note": "Note",
+    "notePlaceholder": "Optional message",
+    "noteTooLong": "Keep the note under {max} characters",
+    "cancel": "Cancel",
+    "donateConfirm": "Donate",
+    "transferConfirm": "Send item",
+    "donateSuccess": "{item} is now in the guild bank.",
+    "transferSuccess": "{item} was sent.",
+    "donateFailed": "Could not donate the item. Please try again.",
+    "transferFailed": "Could not send the item. Please try again."
   }
 }

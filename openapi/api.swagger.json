@@ -975,6 +975,50 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/backpack/{itemId}/transfer": {
+      "post": {
+        "operationId": "WalletService_TransferBackpackItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TransferBackpackItemResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceTransferBackpackItemBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/backpack/{itemId}/withdraw": {
       "post": {
         "operationId": "WalletService_WithdrawBackpackItem",
@@ -4536,6 +4580,17 @@
         }
       }
     },
+    "WalletServiceTransferBackpackItemBody": {
+      "type": "object",
+      "properties": {
+        "toUserId": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
     "WalletServiceTransferFundsBody": {
       "type": "object",
       "properties": {
@@ -6957,6 +7012,14 @@
         },
         "updatedWallet": {
           "$ref": "#/definitions/v1Wallet"
+        }
+      }
+    },
+    "v1TransferBackpackItemResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1BackpackItem"
         }
       }
     },

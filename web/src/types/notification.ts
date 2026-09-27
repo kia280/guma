@@ -9,6 +9,7 @@ export type NotificationKind =
   | 'auctionWon'
   | 'auctionSold'
   | 'auctionUnsold'
+  | 'itemReceived'
   | 'lotteryWon';
 
 export type NotificationParams = Record<string, string | number>;

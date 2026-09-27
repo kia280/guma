@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -384,6 +385,48 @@ func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerIDStr, guildIDS
 	}
 	return toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt), nil
 }
+
+func (s *Service) TransferBackpackItem(ctx context.Context, fromUserIDStr, guildIDStr, itemIDStr, toUserIDStr, note string) (*BackpackItem, error) {
+	fromUserID, guildID, err := parseIDs(fromUserIDStr, guildIDStr)
+	if err != nil {
+		return nil, err
+	}
+	itemID, err := uuid.Parse(itemIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
+	}
+	toUserID, err := uuid.Parse(toUserIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
+	}
+	if toUserID == fromUserID {
+		return nil, fmt.Errorf("%w: cannot transfer an item to yourself", errs.ErrInvalidArgument)
+	}
+	note = strings.TrimSpace(note)
+	if len([]rune(note)) > maxTransferNoteLength {
+		return nil, fmt.Errorf("%w: note is too long", errs.ErrInvalidArgument)
+	}
+	if _, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: toUserID}); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: recipient is not a guild member", errs.ErrFailedPrecondition)
+		}
+		return nil, fmt.Errorf("%w: load recipient: %v", errs.ErrInternal, err)
+	}
+
+	row, err := s.q.TransferBackpackItem(ctx, db.TransferBackpackItemParams{
+		ToUserID: toUserID, FromUserID: &fromUserID, Note: note, ID: itemID, GuildID: guildID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
+		}
+		return nil, fmt.Errorf("%w: transfer item: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("backpack_item_id", itemIDStr).Str("from", fromUserIDStr).Str("to", toUserIDStr).Msg("backpack item transferred")
+	return toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt), nil
+}
+
+const maxTransferNoteLength = 200
 
 // --- helpers ---
 

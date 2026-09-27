@@ -24,6 +24,7 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import BackpackItemCard from '@/components/BackpackItemCard';
+import { BackpackItemMoveModal, type BackpackMoveMode } from '@/components/BackpackItemMoveModal';
 import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal, type LotteryPrizeItem } from '@/components/CreateLotteryModal';
@@ -44,7 +45,7 @@ import { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
 import type { Transaction, Wallet as WalletType } from '@/types/wallet';
 
-const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction'];
+const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'backpack'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
 const TRANSACTION_KIND_LABELS: Record<string, string> = {
@@ -163,6 +164,9 @@ export default function WalletPage() {
   const itemWithdrawModalState = useOverlayState();
   const auctionModalState = useOverlayState();
   const lotteryModalState = useOverlayState();
+  const moveModalState = useOverlayState();
+  const [moveMode, setMoveMode] = React.useState<BackpackMoveMode>('donate');
+  const [moveItem, setMoveItem] = React.useState<BackpackItem | null>(null);
   const [auctionItem, setAuctionItem] = React.useState<AuctionDraftItem | null>(null);
   const [lotteryPrize, setLotteryPrize] = React.useState<LotteryPrizeItem | null>(null);
 
@@ -359,6 +363,12 @@ export default function WalletPage() {
       setSelectedItem(null);
       itemWithdrawModalState.close();
     });
+  };
+
+  const openItemMove = (mode: BackpackMoveMode) => (item: BackpackItem) => {
+    setMoveMode(mode);
+    setMoveItem(item);
+    moveModalState.open();
   };
 
   const openItemWithdraw = (item: BackpackItem) => {
@@ -657,6 +667,8 @@ export default function WalletPage() {
                       }
                     : undefined
                 }
+                onDonate={openItemMove('donate')}
+                onTransfer={openItemMove('transfer')}
                 onWithdraw={openItemWithdraw}
               />
             ))}
@@ -665,6 +677,13 @@ export default function WalletPage() {
           </AsyncContent>
           <CreateAuctionModal state={auctionModalState} item={auctionItem} onCreated={refetchBackpack} />
           <CreateLotteryModal state={lotteryModalState} prizeItem={lotteryPrize} onCreated={refetchBackpack} />
+          <BackpackItemMoveModal
+            state={moveModalState}
+            mode={moveMode}
+            item={moveItem}
+            members={mockUsers}
+            onMoved={refetchBackpack}
+          />
         </Card.Content>
       </Card>
 

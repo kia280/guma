@@ -67,6 +67,13 @@ service WalletService {
       body: "*"
     };
   }
+
+  rpc TransferBackpackItem(TransferBackpackItemRequest) returns (TransferBackpackItemResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/backpack/{item_id}/transfer"
+      body: "*"
+    };
+  }
 }
 
 // Request/Response messages
@@ -134,6 +141,17 @@ message WithdrawBackpackItemRequest {
 }
 
 message WithdrawBackpackItemResponse {
+  BackpackItem item = 1;
+}
+
+message TransferBackpackItemRequest {
+  string guild_id = 1;
+  string item_id = 2;
+  string to_user_id = 3;
+  string note = 4;
+}
+
+message TransferBackpackItemResponse {
   BackpackItem item = 1;
 }
 

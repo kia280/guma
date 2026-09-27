@@ -338,13 +338,13 @@
     "cancel": "取消",
     "save": "儲存",
     "actions": "物品操作",
-    "comingSoon": "即將推出",
     "acquiredFrom": {
       "auction": "競拍",
       "lottery": "抽獎",
       "transfer": "轉讓",
       "admin": "管理員"
-    }
+    },
+    "donate": "捐給公會銀行"
   },
   "calendarPage": {
     "loadingEvents": "載入活動中...",
@@ -790,7 +790,8 @@
     "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
     "auctionWon": "你以 <b>{amount}</b> 得標 <b>{item}</b>，物品已放入背包",
     "auctionSold": "<b>{actor}</b> 以 <b>{amount}</b> 得標 <b>{item}</b>，款項已存入{destination, select, wallet {你的錢包} other {公會銀行}}",
-    "auctionUnsold": "<b>{item}</b> 已結束，無人出價"
+    "auctionUnsold": "<b>{item}</b> 已結束，無人出價",
+    "itemReceived": "<b>{actor}</b> 送給你 <b>{item}</b>"
   },
   "profilePage": {
     "title": "個人資料",
@@ -1309,5 +1310,25 @@
   "itemLock": {
     "auction": "競拍中",
     "lottery": "抽獎獎品"
+  },
+  "backpackItemMoveModal": {
+    "donateTitle": "捐給公會銀行",
+    "transferTitle": "轉讓給成員",
+    "donateDescription": "物品會移到公會銀行，成員可以提出申請。",
+    "transferDescription": "物品會立刻移到對方的背包，對方會收到通知。",
+    "recipient": "收件人",
+    "searchRecipient": "搜尋成員",
+    "noMembers": "找不到成員",
+    "recipientRequired": "請選擇收件人",
+    "note": "備註",
+    "notePlaceholder": "選填訊息",
+    "noteTooLong": "備註請少於 {max} 個字",
+    "cancel": "取消",
+    "donateConfirm": "捐出",
+    "transferConfirm": "送出物品",
+    "donateSuccess": "{item} 已放入公會銀行。",
+    "transferSuccess": "已送出 {item}。",
+    "donateFailed": "無法捐出物品，請再試一次。",
+    "transferFailed": "無法送出物品，請再試一次。"
   }
 }

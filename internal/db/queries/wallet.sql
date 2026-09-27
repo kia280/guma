@@ -77,3 +77,18 @@ DELETE FROM backpack_items
 WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL
 RETURNING id, owner_id, guild_id, item, source, source_id,
           COALESCE(note, '') AS note, acquired_at;
+
+-- name: TransferBackpackItem :one
+UPDATE backpack_items SET
+    owner_id    = sqlc.arg(to_user_id),
+    source      = 'transfer',
+    source_id   = sqlc.arg(from_user_id),
+    note        = NULLIF(sqlc.arg(note)::text, ''),
+    acquired_at = NOW()
+WHERE backpack_items.id = sqlc.arg(id)
+  AND backpack_items.owner_id = sqlc.arg(from_user_id)
+  AND backpack_items.guild_id = sqlc.arg(guild_id)
+  AND backpack_items.locked_by_type IS NULL
+RETURNING backpack_items.id, backpack_items.owner_id, backpack_items.guild_id, backpack_items.item,
+          backpack_items.source, backpack_items.source_id,
+          COALESCE(backpack_items.note, '') AS note, backpack_items.acquired_at;

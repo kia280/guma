@@ -406,6 +406,63 @@ func (q *Queries) SumWalletTransactionsBefore(ctx context.Context, arg SumWallet
 	return balance, err
 }
 
+const transferBackpackItem = `-- name: TransferBackpackItem :one
+UPDATE backpack_items SET
+    owner_id    = $1,
+    source      = 'transfer',
+    source_id   = $2,
+    note        = NULLIF($3::text, ''),
+    acquired_at = NOW()
+WHERE backpack_items.id = $4
+  AND backpack_items.owner_id = $2
+  AND backpack_items.guild_id = $5
+  AND backpack_items.locked_by_type IS NULL
+RETURNING backpack_items.id, backpack_items.owner_id, backpack_items.guild_id, backpack_items.item,
+          backpack_items.source, backpack_items.source_id,
+          COALESCE(backpack_items.note, '') AS note, backpack_items.acquired_at
+`
+
+type TransferBackpackItemParams struct {
+	ToUserID   uuid.UUID
+	FromUserID *uuid.UUID
+	Note       string
+	ID         uuid.UUID
+	GuildID    uuid.UUID
+}
+
+type TransferBackpackItemRow struct {
+	ID         uuid.UUID
+	OwnerID    uuid.UUID
+	GuildID    uuid.UUID
+	Item       []byte
+	Source     string
+	SourceID   *uuid.UUID
+	Note       string
+	AcquiredAt time.Time
+}
+
+func (q *Queries) TransferBackpackItem(ctx context.Context, arg TransferBackpackItemParams) (TransferBackpackItemRow, error) {
+	row := q.db.QueryRow(ctx, transferBackpackItem,
+		arg.ToUserID,
+		arg.FromUserID,
+		arg.Note,
+		arg.ID,
+		arg.GuildID,
+	)
+	var i TransferBackpackItemRow
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.GuildID,
+		&i.Item,
+		&i.Source,
+		&i.SourceID,
+		&i.Note,
+		&i.AcquiredAt,
+	)
+	return i, err
+}
+
 const updateWalletBalance = `-- name: UpdateWalletBalance :exec
 UPDATE wallets SET balance = $1, updated_at = NOW() WHERE user_id = $2 AND guild_id = $3
 `

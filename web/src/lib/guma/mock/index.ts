@@ -65,6 +65,12 @@ const failedPrecondition = (message: string) =>
     response: { status: 400, data: { code: 'FailedPrecondition' } },
   });
 
+const removeById = <T extends { id: string }>(list: T[], id: string) => {
+  const index = list.findIndex(entry => entry.id === id);
+  if (index === -1) throw Object.assign(new Error('item not found'), { isAxiosError: true, response: { status: 404, data: { code: 'NotFound' } } });
+  list.splice(index, 1);
+};
+
 const lockMockSource = (source: ItemSourceRef | undefined, lock: ItemLock) => {
   if (!source?.backpackItemId && !source?.bankItemId) return;
   const target = source.backpackItemId
@@ -299,6 +305,13 @@ const baseMockApiClient: ApiClient = {
   },
   listBackpack: async () => mockData.mockBackpackItems,
   withdrawBackpackItem: async () => undefined,
+  transferBackpackItem: async (_guildId, itemId, req) => {
+    const item = mockData.mockBackpackItems.find(i => i.id === itemId);
+    if (!item) throw new Error('not found');
+    if (item.lock) throw failedPrecondition('item is in an auction or lottery');
+    removeById(mockData.mockBackpackItems, itemId);
+    return { ...item, ownerId: req.recipientId, acquiredFrom: 'transfer', note: req.note };
+  },
 
   // ── Auction ──
   listAuctions: async (_guildId, filters) => {
@@ -642,7 +655,9 @@ const baseMockApiClient: ApiClient = {
   donateItem: async (_guildId, backpackItemId): Promise<GuildBankItem> => {
     const bp = mockData.mockBackpackItems.find(i => i.id === backpackItemId);
     if (!bp) throw new Error('not found');
-    return {
+    if (bp.lock) throw failedPrecondition('item is in an auction or lottery');
+    removeById(mockData.mockBackpackItems, backpackItemId);
+    const donated: GuildBankItem = {
       id: `gi-${Date.now()}`,
       name: bp.item.name,
       description: bp.item.description,
@@ -652,6 +667,8 @@ const baseMockApiClient: ApiClient = {
       donatedAt: new Date().toISOString(),
       quantity: 1,
     };
+    mockData.mockGuildItems.unshift(donated);
+    return donated;
   },
   listBankItems: async () => mockData.mockGuildItems,
   requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => {

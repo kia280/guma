@@ -227,6 +227,13 @@ export const gumaApiClient: ApiClient = {
   withdrawBackpackItem: async (guildId, itemId) => {
     await http.post(`/v1/guilds/${guildId}/backpack/${itemId}/withdraw`);
   },
+  transferBackpackItem: async (guildId, itemId, req) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/backpack/${itemId}/transfer`, {
+      to_user_id: req.recipientId,
+      note: req.note,
+    });
+    return toBackpackItem(data.item);
+  },
 
   // ── Auction ──
   listAuctions: async (guildId, filters) => {

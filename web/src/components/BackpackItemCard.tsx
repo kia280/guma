@@ -26,6 +26,8 @@ interface BackpackItemCardProps {
   item: BackpackItem;
   onPutToAuction?: (item: BackpackItem) => void;
   onPutToLottery?: (item: BackpackItem) => void;
+  onDonate?: (item: BackpackItem) => void;
+  onTransfer?: (item: BackpackItem) => void;
   onWithdraw?: (item: BackpackItem) => void;
 }
 
@@ -33,6 +35,8 @@ const BackpackItemCard = ({
   item,
   onPutToAuction,
   onPutToLottery,
+  onDonate,
+  onTransfer,
   onWithdraw,
 }: BackpackItemCardProps) => {
   const t = useTranslations('backpackItemCard');
@@ -61,10 +65,12 @@ const BackpackItemCard = ({
           <Dropdown.Popover>
             <Dropdown.Menu
               aria-label={t('actions')}
-              disabledKeys={item.lock ? ['auction', 'lottery', 'transfer', 'withdraw'] : ['transfer']}
+              disabledKeys={item.lock ? ['auction', 'lottery', 'donate', 'transfer', 'withdraw'] : []}
               onAction={key => {
                 if (key === 'auction') onPutToAuction?.(item);
                 if (key === 'lottery') onPutToLottery?.(item);
+                if (key === 'donate') onDonate?.(item);
+                if (key === 'transfer') onTransfer?.(item);
                 if (key === 'withdraw') onWithdraw?.(item);
               }}
             >
@@ -78,11 +84,18 @@ const BackpackItemCard = ({
                   <span>{t('putToLottery')}</span>
                 </Dropdown.Item>
               )}
-              <Dropdown.Item id="transfer" textValue={t('transfer')}>
-                <Icon icon="solar:arrow-right-linear" width={16} />
-                <span>{t('transfer')}</span>
-                <span className="ml-auto type-caption text-hint">{t('comingSoon')}</span>
-              </Dropdown.Item>
+              {onDonate && (
+                <Dropdown.Item id="donate" textValue={t('donate')}>
+                  <Icon icon="solar:safe-2-linear" width={16} />
+                  <span>{t('donate')}</span>
+                </Dropdown.Item>
+              )}
+              {onTransfer && (
+                <Dropdown.Item id="transfer" textValue={t('transfer')}>
+                  <Icon icon="solar:arrow-right-linear" width={16} />
+                  <span>{t('transfer')}</span>
+                </Dropdown.Item>
+              )}
               <Dropdown.Item id="withdraw" variant="danger" textValue={t('withdraw')}>
                 <Icon icon="solar:arrow-up-linear" width={16} />
                 <span>{t('withdraw')}</span>

@@ -27,6 +27,7 @@ const (
 	WalletService_GetBalanceTrend_FullMethodName      = "/guma.v1.WalletService/GetBalanceTrend"
 	WalletService_ListBackpackItems_FullMethodName    = "/guma.v1.WalletService/ListBackpackItems"
 	WalletService_WithdrawBackpackItem_FullMethodName = "/guma.v1.WalletService/WithdrawBackpackItem"
+	WalletService_TransferBackpackItem_FullMethodName = "/guma.v1.WalletService/TransferBackpackItem"
 )
 
 // WalletServiceClient is the client API for WalletService service.
@@ -44,6 +45,7 @@ type WalletServiceClient interface {
 	// Backpack: items owned by the current user within this guild
 	ListBackpackItems(ctx context.Context, in *ListBackpackItemsRequest, opts ...grpc.CallOption) (*ListBackpackItemsResponse, error)
 	WithdrawBackpackItem(ctx context.Context, in *WithdrawBackpackItemRequest, opts ...grpc.CallOption) (*WithdrawBackpackItemResponse, error)
+	TransferBackpackItem(ctx context.Context, in *TransferBackpackItemRequest, opts ...grpc.CallOption) (*TransferBackpackItemResponse, error)
 }
 
 type walletServiceClient struct {
@@ -134,6 +136,16 @@ func (c *walletServiceClient) WithdrawBackpackItem(ctx context.Context, in *With
 	return out, nil
 }
 
+func (c *walletServiceClient) TransferBackpackItem(ctx context.Context, in *TransferBackpackItemRequest, opts ...grpc.CallOption) (*TransferBackpackItemResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TransferBackpackItemResponse)
+	err := c.cc.Invoke(ctx, WalletService_TransferBackpackItem_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WalletServiceServer is the server API for WalletService service.
 // All implementations must embed UnimplementedWalletServiceServer
 // for forward compatibility.
@@ -149,6 +161,7 @@ type WalletServiceServer interface {
 	// Backpack: items owned by the current user within this guild
 	ListBackpackItems(context.Context, *ListBackpackItemsRequest) (*ListBackpackItemsResponse, error)
 	WithdrawBackpackItem(context.Context, *WithdrawBackpackItemRequest) (*WithdrawBackpackItemResponse, error)
+	TransferBackpackItem(context.Context, *TransferBackpackItemRequest) (*TransferBackpackItemResponse, error)
 	mustEmbedUnimplementedWalletServiceServer()
 }
 
@@ -182,6 +195,9 @@ func (UnimplementedWalletServiceServer) ListBackpackItems(context.Context, *List
 }
 func (UnimplementedWalletServiceServer) WithdrawBackpackItem(context.Context, *WithdrawBackpackItemRequest) (*WithdrawBackpackItemResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method WithdrawBackpackItem not implemented")
+}
+func (UnimplementedWalletServiceServer) TransferBackpackItem(context.Context, *TransferBackpackItemRequest) (*TransferBackpackItemResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method TransferBackpackItem not implemented")
 }
 func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}
 func (UnimplementedWalletServiceServer) testEmbeddedByValue()                       {}
@@ -348,6 +364,24 @@ func _WalletService_WithdrawBackpackItem_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletService_TransferBackpackItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TransferBackpackItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).TransferBackpackItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_TransferBackpackItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).TransferBackpackItem(ctx, req.(*TransferBackpackItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WalletService_ServiceDesc is the grpc.ServiceDesc for WalletService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -386,6 +420,10 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "WithdrawBackpackItem",
 			Handler:    _WalletService_WithdrawBackpackItem_Handler,
+		},
+		{
+			MethodName: "TransferBackpackItem",
+			Handler:    _WalletService_TransferBackpackItem_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

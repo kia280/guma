@@ -191,6 +191,22 @@ func (h *WalletHandler) WithdrawBackpackItem(ctx context.Context, req *gumav1.Wi
 	return &gumav1.WithdrawBackpackItemResponse{Item: backpackItemToProto(bi)}, nil
 }
 
+func (h *WalletHandler) TransferBackpackItem(ctx context.Context, req *gumav1.TransferBackpackItemRequest) (*gumav1.TransferBackpackItemResponse, error) {
+	if req.GuildId == "" || req.ItemId == "" || req.ToUserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id, item_id and to_user_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	bi, err := h.svc.TransferBackpackItem(ctx, userID, req.GuildId, req.ItemId, req.ToUserId, req.Note)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.TransferBackpackItemResponse{Item: backpackItemToProto(bi)}, nil
+}
+
 // --- proto conversion helpers ---
 
 func walletToProto(w *walletsvc.Wallet) *gumav1.Wallet {
