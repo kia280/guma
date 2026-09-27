@@ -41,6 +41,13 @@ service CheckInService {
     };
   }
 
+  rpc CancelCheckIn(CancelCheckInRequest) returns (CancelCheckInResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/checkins/{checkin_id}/cancel"
+      body: "*"
+    };
+  }
+
   // Member submits their attendance for a check-in
   rpc SubmitAttendance(SubmitAttendanceRequest) returns (SubmitAttendanceResponse) {
     option (google.api.http) = {
@@ -61,7 +68,7 @@ service CheckInService {
 
 message ListCheckInsRequest {
   string guild_id = 1;
-  string status = 2;     // "active" | "expired" | "" (all)
+  string status = 2;     // "active" | "expired" | "cancelled" | "" (all)
   int32 page_size = 3;
   string page_token = 4;
 }
@@ -119,6 +126,15 @@ message DeleteCheckInResponse {
   bool success = 1;
 }
 
+message CancelCheckInRequest {
+  string guild_id = 1;
+  string checkin_id = 2;
+}
+
+message CancelCheckInResponse {
+  CheckIn checkin = 1;
+}
+
 message SubmitAttendanceRequest {
   string guild_id = 1;
   string checkin_id = 2;
@@ -158,6 +174,7 @@ message CheckIn {
   bool is_expired = 11;
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp updated_at = 13;
+  bool is_cancelled = 14;
 }
 
 message CheckInAttendee {

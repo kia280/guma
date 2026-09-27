@@ -1659,7 +1659,7 @@
           },
           {
             "name": "status",
-            "description": "\"active\" | \"expired\" | \"\" (all)",
+            "description": "\"active\" | \"expired\" | \"cancelled\" | \"\" (all)",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1919,6 +1919,50 @@
             "in": "query",
             "required": false,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkins/{checkinId}/cancel": {
+      "post": {
+        "operationId": "CheckInService_CancelCheckIn",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelCheckInResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInServiceCancelCheckInBody"
+            }
           }
         ],
         "tags": [
@@ -4115,6 +4159,9 @@
         }
       }
     },
+    "CheckInServiceCancelCheckInBody": {
+      "type": "object"
+    },
     "CheckInServiceCreateCheckInBody": {
       "type": "object",
       "properties": {
@@ -4890,6 +4937,14 @@
         }
       }
     },
+    "v1CancelCheckInResponse": {
+      "type": "object",
+      "properties": {
+        "checkin": {
+          "$ref": "#/definitions/v1CheckIn"
+        }
+      }
+    },
     "v1CheckIn": {
       "type": "object",
       "properties": {
@@ -4938,6 +4993,9 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "isCancelled": {
+          "type": "boolean"
         }
       }
     },

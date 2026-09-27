@@ -4,7 +4,7 @@ import type { ItemCategory, ItemRarity } from '@/types/item';
 
 export enum CheckinStatus {
   OPEN = 1,
-  CLOSED = 2,
+  CANCELLED = 2,
   FINISHED = 3,
 }
 
