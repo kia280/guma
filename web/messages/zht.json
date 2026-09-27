@@ -53,7 +53,7 @@
     "lottery": "抽獎",
     "admin": "管理",
     "calendar": "王表",
-    "guildBank": "公會銀行",
+    "guildBank": "公會倉庫",
     "expandSidebar": "展開側邊欄",
     "collapseSidebar": "收起側邊欄",
     "signedInAs": "已登入為",
@@ -219,7 +219,7 @@
       "auctionWin": "拍賣得標",
       "lotteryTicket": "購買彩券",
       "lotteryWin": "彩券獎金",
-      "bankContribution": "公會銀行捐獻",
+      "bankContribution": "公會倉庫捐獻",
       "fundRequestApproved": "資金申請核准"
     },
     "depositSuccess": "存款完成。",
@@ -535,8 +535,8 @@
     "roleSummaries": {
       "owner": "公會建立者，擁有管理員的所有權限，也是唯一可以刪除公會的角色。",
       "admin": "管理公會：編輯設定、舉辦抽獎並取消拍賣。",
-      "moderator": "協助日常運作：建立點名並審核公會銀行申請。",
-      "member": "參與公會活動：點名簽到、拍賣、抽獎與公會銀行。"
+      "moderator": "協助日常運作：建立點名並審核公會倉庫申請。",
+      "member": "參與公會活動：點名簽到、拍賣、抽獎與公會倉庫。"
     },
     "sections": {
       "guild": {
@@ -548,7 +548,7 @@
         "description": "公會活動的出席紀錄"
       },
       "bank": {
-        "title": "公會銀行",
+        "title": "公會倉庫",
         "description": "公會共用的資金與物品"
       },
       "auction": {
@@ -588,13 +588,13 @@
     "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。"
   },
   "guildBankPage": {
-    "treasury": "公會金庫",
+    "treasury": "資金",
     "treasuryDesc": "所有公會成員的共同資金",
-    "guildGold": "公會金幣",
+    "guildGold": "倉庫餘額",
     "contribute": "貢獻",
     "requestFunds": "申請資金",
     "topContributors": "頂級貢獻者",
-    "storage": "公會倉庫",
+    "storage": "物品",
     "storageDesc": "公會成員分享的物品",
     "items": "{count} 件物品",
     "by": "由",
@@ -610,7 +610,7 @@
     "approved": "已批准",
     "rejected": "已拒絕",
     "amountPending": "尚未扣除",
-    "contributeTitle": "貢獻至公會銀行",
+    "contributeTitle": "貢獻至公會倉庫",
     "amountLabel": "金額",
     "noteOptional": "備注（選填）",
     "notePlaceholder": "留下您的貢獻備注…",
@@ -630,7 +630,7 @@
     "typeRequest": "資金申請",
     "typeItemDonate": "物品捐贈",
     "typeItemDistribute": "物品分發",
-    "errorExceedsBalance": "申請金額超過公會金庫目前的餘額。",
+    "errorExceedsBalance": "申請金額超過公會倉庫目前的資金餘額。",
     "errorDuplicateItemRequest": "您已經有一筆此物品的申請正在審核中。",
     "errorItemUnavailable": "此物品已不在公會倉庫中。",
     "errorNotMember": "只有公會成員可以提出申請。",
@@ -645,7 +645,7 @@
     "noItemsHint": "捐贈的物品與點名戰利品會顯示在這裡。",
     "noActivity": "尚無活動紀錄",
     "noActivityHint": "貢獻與申請會顯示在這裡。",
-    "activityTable": "公會銀行活動記錄",
+    "activityTable": "公會倉庫活動記錄",
     "itemSummary": "{rarity} · {category} · 剩餘 {count} 件",
     "amountMustBePositive": "請輸入大於 0 的金額",
     "reasonRequired": "請輸入申請原因"
@@ -771,12 +771,12 @@
     "unread": "未讀",
     "note": "備註：{note}",
     "reason": "原因：{reason}",
-    "fundRequestApproved": "<b>{actor}</b> 核准了你 <b>{amount}</b> 的公會銀行申請",
-    "fundRequestRejected": "<b>{actor}</b> 拒絕了你 <b>{amount}</b> 的公會銀行申請",
+    "fundRequestApproved": "<b>{actor}</b> 核准了你 <b>{amount}</b> 的公會倉庫申請",
+    "fundRequestRejected": "<b>{actor}</b> 拒絕了你 <b>{amount}</b> 的公會倉庫申請",
     "itemRequestApproved": "<b>{actor}</b> 核准了你申請的 <b>{item}</b>",
     "itemRequestRejected": "<b>{actor}</b> 拒絕了你申請的 <b>{item}</b>",
-    "fundRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{amount}</b>",
-    "itemRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{item}</b>",
+    "fundRequestSubmitted": "<b>{actor}</b> 向公會倉庫申請 <b>{amount}</b>",
+    "itemRequestSubmitted": "<b>{actor}</b> 向公會倉庫申請 <b>{item}</b>",
     "auctionOutbid": "<b>{actor}</b> 以 {amount} 超過你在 <b>{item}</b> 的出價",
     "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {{amount}}}</b>"
   },
@@ -1169,7 +1169,7 @@
     "pending": "待審核",
     "reviewed": "已審核",
     "loading": "正在載入申請",
-    "loadFailed": "無法載入金庫申請。",
+    "loadFailed": "無法載入倉庫申請。",
     "retry": "重試",
     "fundRequests": "資金申請",
     "itemRequests": "物品申請",
@@ -1181,7 +1181,7 @@
     "approveTitle": "批准申請",
     "rejectTitle": "拒絕申請",
     "requestedBy": "申請人：{name}",
-    "approveFundHint": "金額將從公會金庫轉入該成員的錢包。",
+    "approveFundHint": "金額將從公會倉庫轉入該成員的錢包。",
     "approveItemHint": "物品將移至該成員的背包，其他人對此物品的待審核申請會自動拒絕。",
     "rejectHint": "該成員會看到此申請已被拒絕。",
     "noteLabel": "審核備註（選填）",
@@ -1189,7 +1189,7 @@
     "reviewNoteLabel": "審核備註",
     "cancel": "取消",
     "errorForbidden": "您沒有權限審核此申請。",
-    "errorConflict": "此申請已無法批准：可能已被審核，或金庫餘額、物品不足。",
+    "errorConflict": "此申請已無法批准：可能已被審核，或公會倉庫的資金、物品不足。",
     "errorNotFound": "此申請已不存在。",
     "errorGeneric": "發生錯誤，請再試一次。",
     "statuses": {
