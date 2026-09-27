@@ -273,21 +273,23 @@ export default function ProfilePage() {
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-3">
-          <div className="flex items-center justify-between py-2">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3 py-2">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
               <Icon icon="solar:letter-linear" width={16} className="text-hint shrink-0" />
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="type-body text-foreground">{t('emailAddress')}</p>
-                <p className="type-caption text-hint">{user?.email || '—'}</p>
+                <p className="type-caption text-hint truncate" title={user?.email || undefined}>
+                  {user?.email || '—'}
+                </p>
               </div>
             </div>
             {user?.emailVerified === true && (
-              <Chip size="sm" variant="secondary" color="success">
+              <Chip size="sm" variant="secondary" color="success" className="shrink-0">
                 {t('verified')}
               </Chip>
             )}
             {user?.emailVerified === false && (
-              <Chip size="sm" variant="secondary" color="warning">
+              <Chip size="sm" variant="secondary" color="warning" className="shrink-0">
                 {t('unverified')}
               </Chip>
             )}
@@ -295,17 +297,19 @@ export default function ProfilePage() {
           <Separator />
           {user?.discord && (
             <>
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-3 py-2">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <Icon icon="ic:baseline-discord" width={16} className="text-hint shrink-0" />
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="type-body text-foreground">{t('discord')}</p>
                     {user.discord.username && (
-                      <p className="type-caption text-hint">{user.discord.username}</p>
+                      <p className="type-caption text-hint truncate" title={user.discord.username}>
+                        {user.discord.username}
+                      </p>
                     )}
                   </div>
                 </div>
-                <Chip size="sm" variant="secondary" color="success">
+                <Chip size="sm" variant="secondary" color="success" className="shrink-0">
                   {t('connected')}
                 </Chip>
               </div>
