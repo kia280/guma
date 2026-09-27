@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Chip, Separator, Modal, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
+import { Button, Chip, Separator, Modal, Spinner, TextArea, TextField, Label, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -263,7 +263,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                         {t('cancel')}
                       </Button>
                       <Button variant="primary" isPending={isSubmitting} isDisabled={!isOpen_} onPress={handleCheckinConfirm}>
-                        {t('confirmCheckIn')}
+                        {({ isPending }) => (
+                          <>
+                            {isPending && <Spinner color="current" size="sm" />}
+                            {t('confirmCheckIn')}
+                          </>
+                        )}
                       </Button>
                     </Modal.Footer>
                   </>
