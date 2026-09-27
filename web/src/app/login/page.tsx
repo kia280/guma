@@ -17,6 +17,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { kratos } from '@/lib/kratos';
+import { safeReturnPath } from '@/lib/safe-return-path';
 import { checkSession } from '@/lib/session';
 
 export default function LoginPage() {
@@ -35,6 +36,7 @@ function Login() {
   const [loginFlowError, setLoginFlowError] = React.useState(false);
   const [isCreatingFlow, setIsCreatingFlow] = React.useState(false);
   const flow = searchParams.get('flow');
+  const returnUrl = safeReturnPath(searchParams.get('return'), '/dashboard');
 
   const createLoginFlow = React.useCallback(
     async (signal?: AbortSignal) => {
@@ -42,7 +44,7 @@ function Login() {
       setIsCreatingFlow(true);
 
       if (await checkSession()) {
-        if (!signal?.aborted) router.replace('/dashboard');
+        if (!signal?.aborted) router.replace(returnUrl);
         return;
       }
 
@@ -57,7 +59,7 @@ function Login() {
         }
       }
     },
-    [router]
+    [returnUrl, router]
   );
 
   React.useEffect(() => {

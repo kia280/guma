@@ -25,10 +25,16 @@ export default function NotFound() {
             <p className="text-subtle">{t('err404Desc')}</p>
           </div>
 
-          <Button className="w-full" variant="primary" size="lg" onPress={() => router.push('/')}>
-            <Icon icon="solar:home-line-duotone" />
-            {t('goHome')}
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button className="w-full" variant="primary" size="lg" onPress={() => router.push('/dashboard')}>
+              <Icon icon="solar:home-line-duotone" />
+              {t('goHome')}
+            </Button>
+            <Button className="w-full" variant="secondary" size="lg" onPress={() => router.back()}>
+              <Icon icon="solar:arrow-left-line-duotone" />
+              {t('goBack')}
+            </Button>
+          </div>
         </Card.Content>
       </Card>
     </div>
