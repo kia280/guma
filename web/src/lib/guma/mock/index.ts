@@ -1,6 +1,7 @@
 // Mock implementation of ApiClient. Returns data from `./data`.
 // Used when `NEXT_PUBLIC_USE_MOCK=true` for local frontend development.
 
+import { getDevMockRole } from '@/lib/dev-mock';
 import { emitLiveEvent } from '@/lib/live-events';
 import type { AdminAnnouncement } from '@/types/admin';
 import { AuctionStatus, type AuctionItem } from '@/types/auction';
@@ -130,7 +131,7 @@ const currentUser: User = {
   updatedAt: new Date().toISOString(),
   emailVerified: true,
   discord: { provider: 'discord', subject: '0', username: 'you' },
-  guildRole: 'member',
+  guildRole: getDevMockRole(),
 };
 
 const mockGuild: Guild = {
@@ -149,6 +150,18 @@ const mockGuild: Guild = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
+
+const defaultOwner = mockData.mockUsers[0];
+
+const mockGuildSnapshot = (): Guild => ({
+  ...mockGuild,
+  ownerId: getDevMockRole() === 'owner' ? currentUser.id : defaultOwner.id,
+});
+
+const mockMembers = () =>
+  getDevMockRole() === 'owner'
+    ? mockData.mockUsers.map(user => (user.id === defaultOwner.id ? { ...user, role: 'admin' } : user))
+    : mockData.mockUsers;
 
 const mockWallet = (guildId: string): Wallet => ({
   id: `wallet-${guildId}`,
@@ -180,23 +193,23 @@ const baseMockApiClient: ApiClient = {
   getFeedEvents: async () => mockData.INCOMING_EVENTS,
 
   // ── User ──
-  getMe: async () => currentUser,
+  getMe: async () => ({ ...currentUser, guildRole: getDevMockRole() }),
   updateMe: async (patch) => {
     Object.assign(
       currentUser,
       Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined)),
       { updatedAt: new Date().toISOString() },
     );
-    return { ...currentUser };
+    return { ...currentUser, guildRole: getDevMockRole() };
   },
   getUser: async (id) => ({ ...currentUser, id }),
   getUserStats: async (): Promise<UserStats> => mockData.PERSONAL_STATS,
   getBalanceTrend: async (_guildId, days = 30) => mockData.mockBalanceTrend(days),
 
   // ── Guild ──
-  listGuilds: async (): Promise<Guild[]> => [{ ...mockGuild }],
-  getGuild: async () => ({ ...mockGuild }),
-  getCurrentGuild: async () => ({ ...mockGuild }),
+  listGuilds: async (): Promise<Guild[]> => [mockGuildSnapshot()],
+  getGuild: async () => mockGuildSnapshot(),
+  getCurrentGuild: async () => mockGuildSnapshot(),
   createGuild: async req => ({
     ...mockGuild,
     id: `guild-${Date.now()}`,
@@ -209,21 +222,21 @@ const baseMockApiClient: ApiClient = {
   }),
   updateGuild: async (_id, patch) => {
     Object.assign(mockGuild, patch, { updatedAt: new Date().toISOString() });
-    return { ...mockGuild };
+    return mockGuildSnapshot();
   },
   uploadGuildLogo: async (_id, image) => {
     Object.assign(mockGuild, { icon: URL.createObjectURL(image), updatedAt: new Date().toISOString() });
-    return { ...mockGuild };
+    return mockGuildSnapshot();
   },
   deleteGuildLogo: async () => {
     Object.assign(mockGuild, { icon: undefined, updatedAt: new Date().toISOString() });
-    return { ...mockGuild };
+    return mockGuildSnapshot();
   },
   joinGuild: async () => undefined,
   leaveGuild: async () => undefined,
 
   // ── Member ──
-  listMembers: async () => mockData.mockUsers,
+  listMembers: async () => mockMembers(),
   inviteMember: async (guildId, req) => ({
     id: `inv-${Date.now()}`,
     guildId,

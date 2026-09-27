@@ -11,10 +11,12 @@ import {
   Spinner,
   Switch,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type Key } from 'react';
 import { UserAvatar } from '@/components/UserAvatar';
 import {
   createDevUser,
@@ -26,7 +28,14 @@ import {
   type DevGuild,
   type DevUser,
 } from '@/lib/dev-auth';
-import { isDevMockEnabled, setDevMockEnabled } from '@/lib/dev-mock';
+import {
+  DEV_MOCK_ROLES,
+  getDevMockRole,
+  isDevMockEnabled,
+  setDevMockEnabled,
+  setDevMockRole,
+  type DevMockRole,
+} from '@/lib/dev-mock';
 import { env } from '@/lib/env';
 
 const AFTER_LOGIN_PATH = '/dashboard';
@@ -58,6 +67,7 @@ export function DevAuthPanel() {
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isMock] = useState(() => env.useMock || isDevMockEnabled());
+  const [mockRole] = useState(getDevMockRole);
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
@@ -132,6 +142,13 @@ export function DevAuthPanel() {
     window.location.reload();
   };
 
+  const changeMockRole = (keys: Set<Key>) => {
+    const [role] = [...keys];
+    if (role === undefined || role === mockRole) return;
+    setDevMockRole(role as DevMockRole);
+    window.location.reload();
+  };
+
   const logout = () =>
     run('logout', async () => {
       await devLogout();
@@ -150,6 +167,30 @@ export function DevAuthPanel() {
             <Description>{env.useMock ? t('mockDataForcedByEnv') : t('mockDataDescription')}</Description>
           </Switch.Content>
         </Switch>
+        {isMock && (
+          <div className="mt-3 flex flex-col gap-2 border-t border-divider pt-3">
+            <div>
+              <p id="dev-mock-role-label" className="type-body">{t('mockRole')}</p>
+              <p className="type-caption text-hint">{t('mockRoleDescription')}</p>
+            </div>
+            <ToggleButtonGroup
+              aria-labelledby="dev-mock-role-label"
+              size="sm"
+              fullWidth
+              selectionMode="single"
+              disallowEmptySelection
+              selectedKeys={[mockRole]}
+              onSelectionChange={changeMockRole}
+            >
+              {DEV_MOCK_ROLES.map((role, index) => (
+                <ToggleButton key={role} id={role}>
+                  {index > 0 && <ToggleButtonGroup.Separator />}
+                  {roleLabel(role)}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </div>
+        )}
       </section>
 
       <section className="flex items-center justify-between gap-3 rounded-xl border border-divider bg-surface p-3">
