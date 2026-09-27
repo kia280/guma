@@ -299,7 +299,7 @@ function formatCheckinDate(time: number): string {
 
 function checkinStatusFor(i: number): CheckinStatus {
   if (i < 3) return CheckinStatus.OPEN;
-  if (i % 5 === 4) return CheckinStatus.CLOSED;
+  if (i % 5 === 4) return CheckinStatus.CANCELLED;
   return CheckinStatus.FINISHED;
 }
 
@@ -339,7 +339,6 @@ function generateCheckins(): CheckinEntry[] {
       status,
       date: formatCheckinDate(start),
       description: CHECKIN_BOSSES[i % CHECKIN_BOSSES.length],
-      ...(status === CheckinStatus.CLOSED ? { isDisabled: true } : {}),
       expireTime: new Date(status === CheckinStatus.OPEN ? now + (i + 1) * 2 * HOUR : start + 2 * HOUR).toISOString(),
       attendanceCount: attendanceList.length,
       attendanceList,

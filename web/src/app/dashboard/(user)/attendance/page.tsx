@@ -25,7 +25,7 @@ const STATUS_TABS = [
   { id: 'all', status: null },
   { id: 'open', status: CheckinStatus.OPEN },
   { id: 'finished', status: CheckinStatus.FINISHED },
-  { id: 'closed', status: CheckinStatus.CLOSED },
+  { id: 'cancelled', status: CheckinStatus.CANCELLED },
 ] as const;
 
 interface CheckinDraft {
@@ -122,7 +122,7 @@ export default function CheckinPage() {
     all: t('all'),
     open: t('statusActive'),
     finished: t('statusCompleted'),
-    closed: t('statusClosed'),
+    cancelled: t('statusCancelled'),
   };
   const countFor = (status: CheckinStatus | null) =>
     status === null ? checkins.length : checkins.filter(c => c.status === status).length;

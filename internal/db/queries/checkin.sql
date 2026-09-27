@@ -6,12 +6,14 @@ SELECT id, guild_id, created_by, title,
        COALESCE(image_url, '') AS image_url,
        loot_list, attendance_count,
        (expire_time < NOW())::bool AS is_expired,
+       (cancelled_at IS NOT NULL)::bool AS is_cancelled,
        created_at, updated_at
 FROM checkins
 WHERE guild_id = $1
   AND CASE
-    WHEN sqlc.arg(status_filter)::text = 'active'  THEN expire_time >= NOW()
-    WHEN sqlc.arg(status_filter)::text = 'expired' THEN expire_time < NOW()
+    WHEN sqlc.arg(status_filter)::text = 'active'    THEN cancelled_at IS NULL AND expire_time >= NOW()
+    WHEN sqlc.arg(status_filter)::text = 'expired'   THEN cancelled_at IS NULL AND expire_time < NOW()
+    WHEN sqlc.arg(status_filter)::text = 'cancelled' THEN cancelled_at IS NOT NULL
     ELSE true
   END
 ORDER BY datetime DESC
@@ -20,8 +22,9 @@ LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 -- name: CountCheckins :one
 SELECT COUNT(*) FROM checkins WHERE guild_id = $1
   AND CASE
-    WHEN sqlc.arg(status_filter)::text = 'active'  THEN expire_time >= NOW()
-    WHEN sqlc.arg(status_filter)::text = 'expired' THEN expire_time < NOW()
+    WHEN sqlc.arg(status_filter)::text = 'active'    THEN cancelled_at IS NULL AND expire_time >= NOW()
+    WHEN sqlc.arg(status_filter)::text = 'expired'   THEN cancelled_at IS NULL AND expire_time < NOW()
+    WHEN sqlc.arg(status_filter)::text = 'cancelled' THEN cancelled_at IS NOT NULL
     ELSE true
   END;
 
@@ -33,6 +36,7 @@ SELECT id, guild_id, created_by, title,
        COALESCE(image_url, '') AS image_url,
        loot_list, attendance_count,
        (expire_time < NOW())::bool AS is_expired,
+       (cancelled_at IS NOT NULL)::bool AS is_cancelled,
        created_at, updated_at
 FROM checkins WHERE id = $1 AND guild_id = $2;
 
@@ -53,6 +57,7 @@ RETURNING id, guild_id, created_by, title,
           COALESCE(image_url, '') AS image_url,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
           created_at, updated_at;
 
 -- name: UpdateCheckin :one
@@ -72,13 +77,28 @@ RETURNING id, guild_id, created_by, title,
           COALESCE(image_url, '') AS image_url,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
           created_at, updated_at;
 
 -- name: DeleteCheckin :execrows
 DELETE FROM checkins WHERE id = $1 AND guild_id = $2;
 
--- name: GetCheckinExpireTime :one
-SELECT expire_time FROM checkins WHERE id = $1 AND guild_id = $2;
+-- name: GetCheckinAttendanceWindow :one
+SELECT expire_time, (cancelled_at IS NOT NULL)::bool AS is_cancelled
+FROM checkins WHERE id = $1 AND guild_id = $2;
+
+-- name: CancelCheckin :one
+UPDATE checkins SET cancelled_at = NOW(), updated_at = NOW()
+WHERE id = $1 AND guild_id = $2 AND cancelled_at IS NULL AND expire_time >= NOW()
+RETURNING id, guild_id, created_by, title,
+          COALESCE(description, '') AS description,
+          TO_CHAR(datetime    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS datetime,
+          TO_CHAR(expire_time AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS expire_time,
+          COALESCE(image_url, '') AS image_url,
+          loot_list, attendance_count,
+          (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          created_at, updated_at;
 
 -- name: GetUserDisplayAndAvatar :one
 SELECT COALESCE(display_name, '') AS display_name,
