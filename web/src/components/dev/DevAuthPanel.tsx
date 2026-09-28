@@ -153,13 +153,13 @@ export function DevAuthPanel() {
     <div className="flex h-full flex-col gap-4 overflow-y-auto bg-background p-4 text-foreground">
       <section className="rounded-xl border border-divider bg-surface p-3">
         <Switch isSelected={isMock} isDisabled={env.useMock} onChange={toggleMock}>
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
           <Switch.Content>
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
             <Label className="type-body">{t('mockData')}</Label>
-            <Description>{env.useMock ? t('mockDataForcedByEnv') : t('mockDataDescription')}</Description>
           </Switch.Content>
+          <Description>{env.useMock ? t('mockDataForcedByEnv') : t('mockDataDescription')}</Description>
         </Switch>
         {isMock && (
           <div className="mt-3 flex flex-col gap-2 border-t border-divider pt-3">
