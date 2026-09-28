@@ -79,7 +79,7 @@ func TestNotificationPreferencesToProto(t *testing.T) {
 		AuctionAlerts:      false,
 		LotteryAlerts:      true,
 		EventReminders:     false,
-		CheckinReminders:   true,
+		RollCallReminders:  true,
 	})
 	assert.True(t, got.EmailNotifications)
 	assert.False(t, got.AuctionAlerts)

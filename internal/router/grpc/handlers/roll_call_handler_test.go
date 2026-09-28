@@ -16,7 +16,7 @@ import (
 )
 
 func TestCancelCheckIn_Validation(t *testing.T) {
-	h := NewCheckInService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const checkinID = "00000000-0000-0000-0000-000000000003"
@@ -28,9 +28,9 @@ func TestCancelCheckIn_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{name: "missing guild", ctx: authed, req: &gumav1.CancelCheckInRequest{CheckinId: checkinID}, wantCode: codes.InvalidArgument},
-		{name: "missing checkin", ctx: authed, req: &gumav1.CancelCheckInRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
+		{name: "missing roll call", ctx: authed, req: &gumav1.CancelCheckInRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
 		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.CancelCheckInRequest{GuildId: guildID, CheckinId: checkinID}, wantCode: codes.Unauthenticated},
-		{name: "malformed checkin id", ctx: authed, req: &gumav1.CancelCheckInRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: &gumav1.CancelCheckInRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -44,7 +44,7 @@ func TestCancelCheckIn_Validation(t *testing.T) {
 }
 
 func TestUpdateCheckIn_Validation(t *testing.T) {
-	h := NewCheckInService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const checkinID = "00000000-0000-0000-0000-000000000003"
@@ -64,7 +64,7 @@ func TestUpdateCheckIn_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{name: "missing guild", ctx: authed, req: func() *gumav1.UpdateCheckInRequest { r := valid(); r.GuildId = ""; return r }, wantCode: codes.InvalidArgument},
-		{name: "missing checkin", ctx: authed, req: func() *gumav1.UpdateCheckInRequest { r := valid(); r.CheckinId = ""; return r }, wantCode: codes.InvalidArgument},
+		{name: "missing roll call", ctx: authed, req: func() *gumav1.UpdateCheckInRequest { r := valid(); r.CheckinId = ""; return r }, wantCode: codes.InvalidArgument},
 		{name: "unauthenticated", ctx: context.Background(), req: valid, wantCode: codes.Unauthenticated},
 		{name: "expire before datetime", ctx: authed, req: func() *gumav1.UpdateCheckInRequest { r := valid(); r.ExpireTime = r.Datetime; return r }, wantCode: codes.InvalidArgument},
 		{name: "loot change", ctx: authed, req: func() *gumav1.UpdateCheckInRequest {
@@ -77,7 +77,7 @@ func TestUpdateCheckIn_Validation(t *testing.T) {
 			r.Loot = []*gumav1.CheckInLootEntry{{Kind: "gold", Amount: 100}}
 			return r
 		}, wantCode: codes.InvalidArgument},
-		{name: "malformed checkin id", ctx: authed, req: func() *gumav1.UpdateCheckInRequest { r := valid(); r.CheckinId = "bad"; return r }, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: func() *gumav1.UpdateCheckInRequest { r := valid(); r.CheckinId = "bad"; return r }, wantCode: codes.NotFound},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -91,7 +91,7 @@ func TestUpdateCheckIn_Validation(t *testing.T) {
 }
 
 func TestDistributeCheckInGold_Validation(t *testing.T) {
-	h := NewCheckInService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const checkinID = "00000000-0000-0000-0000-000000000003"
@@ -119,11 +119,11 @@ func TestDistributeCheckInGold_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{name: "missing guild", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.GuildId = "" }), wantCode: codes.InvalidArgument},
-		{name: "missing checkin", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.CheckinId = "" }), wantCode: codes.InvalidArgument},
+		{name: "missing roll call", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.CheckinId = "" }), wantCode: codes.InvalidArgument},
 		{name: "missing request id", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.RequestId = "" }), wantCode: codes.InvalidArgument},
 		{name: "no payouts", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.Payouts = nil }), wantCode: codes.InvalidArgument},
 		{name: "unauthenticated", ctx: context.Background(), req: valid, wantCode: codes.Unauthenticated},
-		{name: "malformed checkin id", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.CheckinId = "bad" }), wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.CheckinId = "bad" }), wantCode: codes.NotFound},
 		{name: "malformed request id", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.RequestId = "bad" }), wantCode: codes.InvalidArgument},
 		{name: "negative amount", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.Payouts[1].Amount = -1 }), wantCode: codes.InvalidArgument},
 		{name: "all zero", ctx: authed, req: with(func(r *gumav1.DistributeCheckInGoldRequest) { r.Payouts[0].Amount = 0; r.Payouts[1].Amount = 0 }), wantCode: codes.InvalidArgument},
@@ -142,7 +142,7 @@ func TestDistributeCheckInGold_Validation(t *testing.T) {
 }
 
 func TestGetCheckInGold_Validation(t *testing.T) {
-	h := NewCheckInService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const checkinID = "00000000-0000-0000-0000-000000000003"
@@ -154,9 +154,9 @@ func TestGetCheckInGold_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{name: "missing guild", ctx: authed, req: &gumav1.GetCheckInGoldRequest{CheckinId: checkinID}, wantCode: codes.InvalidArgument},
-		{name: "missing checkin", ctx: authed, req: &gumav1.GetCheckInGoldRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
+		{name: "missing roll call", ctx: authed, req: &gumav1.GetCheckInGoldRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
 		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.GetCheckInGoldRequest{GuildId: guildID, CheckinId: checkinID}, wantCode: codes.Unauthenticated},
-		{name: "malformed checkin id", ctx: authed, req: &gumav1.GetCheckInGoldRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: &gumav1.GetCheckInGoldRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -182,7 +182,7 @@ func TestLootFromProto(t *testing.T) {
 }
 
 func TestCompleteCheckIn_Validation(t *testing.T) {
-	h := NewCheckInService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const checkinID = "00000000-0000-0000-0000-000000000003"
@@ -194,9 +194,9 @@ func TestCompleteCheckIn_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{name: "missing guild", ctx: authed, req: &gumav1.CompleteCheckInRequest{CheckinId: checkinID}, wantCode: codes.InvalidArgument},
-		{name: "missing checkin", ctx: authed, req: &gumav1.CompleteCheckInRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
+		{name: "missing roll call", ctx: authed, req: &gumav1.CompleteCheckInRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
 		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.CompleteCheckInRequest{GuildId: guildID, CheckinId: checkinID}, wantCode: codes.Unauthenticated},
-		{name: "malformed checkin id", ctx: authed, req: &gumav1.CompleteCheckInRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: &gumav1.CompleteCheckInRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -210,7 +210,7 @@ func TestCompleteCheckIn_Validation(t *testing.T) {
 }
 
 func TestUpdateCheckInLoot_Validation(t *testing.T) {
-	h := NewCheckInService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const checkinID = "00000000-0000-0000-0000-000000000003"
@@ -222,9 +222,9 @@ func TestUpdateCheckInLoot_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{name: "missing guild", ctx: authed, req: &gumav1.UpdateCheckInLootRequest{CheckinId: checkinID}, wantCode: codes.InvalidArgument},
-		{name: "missing checkin", ctx: authed, req: &gumav1.UpdateCheckInLootRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
+		{name: "missing roll call", ctx: authed, req: &gumav1.UpdateCheckInLootRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
 		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.UpdateCheckInLootRequest{GuildId: guildID, CheckinId: checkinID}, wantCode: codes.Unauthenticated},
-		{name: "malformed checkin id", ctx: authed, req: &gumav1.UpdateCheckInLootRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: &gumav1.UpdateCheckInLootRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -10,24 +10,24 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	checkintemplatesvc "github.com/kia280/guma/internal/services/checkintemplate"
+	rollcalltemplatesvc "github.com/kia280/guma/internal/services/rollcalltemplate"
 	"github.com/kia280/guma/internal/session"
 )
 
-type CheckInTemplateHandler struct {
+type RollCallTemplateHandler struct {
 	gumav1.UnimplementedCheckInTemplateServiceServer
-	svc    *checkintemplatesvc.Service
+	svc    *rollcalltemplatesvc.Service
 	logger zerolog.Logger
 }
 
-func NewCheckInTemplateService(db *database.Pool, logger zerolog.Logger) *CheckInTemplateHandler {
-	return &CheckInTemplateHandler{
-		svc:    checkintemplatesvc.New(db, logger),
-		logger: logger.With().Str("handler", "checkin_template").Logger(),
+func NewRollCallTemplateService(db *database.Pool, logger zerolog.Logger) *RollCallTemplateHandler {
+	return &RollCallTemplateHandler{
+		svc:    rollcalltemplatesvc.New(db, logger),
+		logger: logger.With().Str("handler", "roll_call_template").Logger(),
 	}
 }
 
-func (h *CheckInTemplateHandler) ListCheckInTemplates(ctx context.Context, req *gumav1.ListCheckInTemplatesRequest) (*gumav1.ListCheckInTemplatesResponse, error) {
+func (h *RollCallTemplateHandler) ListCheckInTemplates(ctx context.Context, req *gumav1.ListCheckInTemplatesRequest) (*gumav1.ListCheckInTemplatesResponse, error) {
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
@@ -41,12 +41,12 @@ func (h *CheckInTemplateHandler) ListCheckInTemplates(ctx context.Context, req *
 	}
 	protos := make([]*gumav1.CheckInTemplate, len(templates))
 	for i, t := range templates {
-		protos[i] = checkinTemplateToProto(t)
+		protos[i] = rollCallTemplateToProto(t)
 	}
 	return &gumav1.ListCheckInTemplatesResponse{Templates: protos}, nil
 }
 
-func (h *CheckInTemplateHandler) CreateCheckInTemplate(ctx context.Context, req *gumav1.CreateCheckInTemplateRequest) (*gumav1.CreateCheckInTemplateResponse, error) {
+func (h *RollCallTemplateHandler) CreateCheckInTemplate(ctx context.Context, req *gumav1.CreateCheckInTemplateRequest) (*gumav1.CreateCheckInTemplateResponse, error) {
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
@@ -54,7 +54,7 @@ func (h *CheckInTemplateHandler) CreateCheckInTemplate(ctx context.Context, req 
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
-	t, err := h.svc.Create(ctx, req.GuildId, userID, checkintemplatesvc.Fields{
+	t, err := h.svc.Create(ctx, req.GuildId, userID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
 		ItemTemplateIDs: req.ItemTemplateIds,
@@ -62,10 +62,10 @@ func (h *CheckInTemplateHandler) CreateCheckInTemplate(ctx context.Context, req 
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.CreateCheckInTemplateResponse{Template: checkinTemplateToProto(t)}, nil
+	return &gumav1.CreateCheckInTemplateResponse{Template: rollCallTemplateToProto(t)}, nil
 }
 
-func (h *CheckInTemplateHandler) UpdateCheckInTemplate(ctx context.Context, req *gumav1.UpdateCheckInTemplateRequest) (*gumav1.UpdateCheckInTemplateResponse, error) {
+func (h *RollCallTemplateHandler) UpdateCheckInTemplate(ctx context.Context, req *gumav1.UpdateCheckInTemplateRequest) (*gumav1.UpdateCheckInTemplateResponse, error) {
 	if req.GuildId == "" || req.TemplateId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
 	}
@@ -73,7 +73,7 @@ func (h *CheckInTemplateHandler) UpdateCheckInTemplate(ctx context.Context, req 
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
-	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, checkintemplatesvc.Fields{
+	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
 		ItemTemplateIDs: req.ItemTemplateIds,
@@ -81,10 +81,10 @@ func (h *CheckInTemplateHandler) UpdateCheckInTemplate(ctx context.Context, req 
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.UpdateCheckInTemplateResponse{Template: checkinTemplateToProto(t)}, nil
+	return &gumav1.UpdateCheckInTemplateResponse{Template: rollCallTemplateToProto(t)}, nil
 }
 
-func (h *CheckInTemplateHandler) DeleteCheckInTemplate(ctx context.Context, req *gumav1.DeleteCheckInTemplateRequest) (*gumav1.DeleteCheckInTemplateResponse, error) {
+func (h *RollCallTemplateHandler) DeleteCheckInTemplate(ctx context.Context, req *gumav1.DeleteCheckInTemplateRequest) (*gumav1.DeleteCheckInTemplateResponse, error) {
 	if req.GuildId == "" || req.TemplateId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
 	}
@@ -98,7 +98,7 @@ func (h *CheckInTemplateHandler) DeleteCheckInTemplate(ctx context.Context, req 
 	return &gumav1.DeleteCheckInTemplateResponse{Success: true}, nil
 }
 
-func checkinTemplateToProto(t *checkintemplatesvc.Template) *gumav1.CheckInTemplate {
+func rollCallTemplateToProto(t *rollcalltemplatesvc.Template) *gumav1.CheckInTemplate {
 	items := make([]*gumav1.Item, len(t.Items))
 	for i, item := range t.Items {
 		items[i] = itemToProto(item)

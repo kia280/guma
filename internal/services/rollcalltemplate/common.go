@@ -1,4 +1,4 @@
-package checkintemplate
+package rollcalltemplate
 
 import (
 	"context"

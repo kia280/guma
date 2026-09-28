@@ -1,4 +1,4 @@
-package checkintemplate
+package rollcalltemplate
 
 import (
 	"context"
@@ -27,19 +27,19 @@ var (
 )
 
 type fakeStore struct {
-	role          string
-	roleErr       error
-	knownItems    map[uuid.UUID]bool
-	countArg      db.CountGuildItemTemplatesParams
-	checkinCreate db.CreateRollCallTemplateParams
-	checkinUpdate db.UpdateRollCallTemplateParams
-	itemCreate    db.CreateItemTemplateParams
-	itemUpdate    db.UpdateItemTemplateParams
-	checkinRow    db.GetRollCallTemplateRow
-	checkinRows   []db.ListRollCallTemplatesRow
-	writeErr      error
-	deleted       int64
-	writes        int
+	role                   string
+	roleErr                error
+	knownItems             map[uuid.UUID]bool
+	countArg               db.CountGuildItemTemplatesParams
+	rollCallTemplateCreate db.CreateRollCallTemplateParams
+	rollCallTemplateUpdate db.UpdateRollCallTemplateParams
+	itemCreate             db.CreateItemTemplateParams
+	itemUpdate             db.UpdateItemTemplateParams
+	rollCallRow            db.GetRollCallTemplateRow
+	rollCallRows           []db.ListRollCallTemplatesRow
+	writeErr               error
+	deleted                int64
+	writes                 int
 }
 
 func (f *fakeStore) GetGuildMemberRole(context.Context, db.GetGuildMemberRoleParams) (string, error) {
@@ -47,24 +47,24 @@ func (f *fakeStore) GetGuildMemberRole(context.Context, db.GetGuildMemberRolePar
 }
 
 func (f *fakeStore) ListRollCallTemplates(context.Context, uuid.UUID) ([]db.ListRollCallTemplatesRow, error) {
-	return f.checkinRows, nil
+	return f.rollCallRows, nil
 }
 
 func (f *fakeStore) GetRollCallTemplate(_ context.Context, arg db.GetRollCallTemplateParams) (db.GetRollCallTemplateRow, error) {
-	row := f.checkinRow
+	row := f.rollCallRow
 	row.ID = arg.ID
 	return row, nil
 }
 
 func (f *fakeStore) CreateRollCallTemplate(_ context.Context, arg db.CreateRollCallTemplateParams) (uuid.UUID, error) {
 	f.writes++
-	f.checkinCreate = arg
+	f.rollCallTemplateCreate = arg
 	return testTemplate, f.writeErr
 }
 
 func (f *fakeStore) UpdateRollCallTemplate(_ context.Context, arg db.UpdateRollCallTemplateParams) (uuid.UUID, error) {
 	f.writes++
-	f.checkinUpdate = arg
+	f.rollCallTemplateUpdate = arg
 	return arg.ID, f.writeErr
 }
 
@@ -121,9 +121,9 @@ func validItem() ItemFields {
 	return ItemFields{Name: " Dragon Scale ", Description: " shiny ", Category: "MATERIAL", Rarity: " Epic "}
 }
 
-func TestCreateCheckinTemplateKeepsItemOrderAndDuplicates(t *testing.T) {
+func TestCreateRollCallTemplateKeepsItemOrderAndDuplicates(t *testing.T) {
 	store := newFake("moderator")
-	store.checkinRow = db.GetRollCallTemplateRow{
+	store.rollCallRow = db.GetRollCallTemplateRow{
 		GuildID: testGuild, Name: "Weekly raid", Title: "Raid night",
 		Items: []byte(`[{"id":"` + testSword.String() + `","name":"Sword","category":"weapon","rarity":"rare"}]`),
 	}
@@ -132,16 +132,16 @@ func TestCreateCheckinTemplateKeepsItemOrderAndDuplicates(t *testing.T) {
 	tmpl, err := s.Create(context.Background(), testGuild.String(), testUser.String(), validFields())
 	require.NoError(t, err)
 
-	assert.Equal(t, "Weekly raid", store.checkinCreate.Name)
-	assert.Equal(t, "Raid night", store.checkinCreate.Title)
-	assert.Equal(t, testUser, store.checkinCreate.CreatedBy)
-	assert.Equal(t, []uuid.UUID{testSword, testShield, testSword}, store.checkinCreate.ItemTemplateIds)
+	assert.Equal(t, "Weekly raid", store.rollCallTemplateCreate.Name)
+	assert.Equal(t, "Raid night", store.rollCallTemplateCreate.Title)
+	assert.Equal(t, testUser, store.rollCallTemplateCreate.CreatedBy)
+	assert.Equal(t, []uuid.UUID{testSword, testShield, testSword}, store.rollCallTemplateCreate.ItemTemplateIds)
 	assert.ElementsMatch(t, []uuid.UUID{testSword, testShield}, store.countArg.Ids)
 	assert.Equal(t, testTemplate.String(), tmpl.ID)
 	assert.Equal(t, []models.Item{{ID: testSword.String(), Name: "Sword", Category: "weapon", Rarity: "rare"}}, tmpl.Items)
 }
 
-func TestCreateCheckinTemplateWithoutItemsSkipsItemCheck(t *testing.T) {
+func TestCreateRollCallTemplateWithoutItemsSkipsItemCheck(t *testing.T) {
 	store := newFake("admin")
 	s := newService(store, zerolog.Nop())
 	f := validFields()
@@ -150,11 +150,11 @@ func TestCreateCheckinTemplateWithoutItemsSkipsItemCheck(t *testing.T) {
 	tmpl, err := s.Create(context.Background(), testGuild.String(), testUser.String(), f)
 	require.NoError(t, err)
 	assert.Empty(t, store.countArg.Ids)
-	assert.NotNil(t, store.checkinCreate.ItemTemplateIds)
+	assert.NotNil(t, store.rollCallTemplateCreate.ItemTemplateIds)
 	assert.Equal(t, []models.Item{}, tmpl.Items)
 }
 
-func TestCreateCheckinTemplateRejectsItemsFromOtherGuilds(t *testing.T) {
+func TestCreateRollCallTemplateRejectsItemsFromOtherGuilds(t *testing.T) {
 	store := newFake("admin")
 	s := newService(store, zerolog.Nop())
 	f := validFields()
@@ -165,7 +165,7 @@ func TestCreateCheckinTemplateRejectsItemsFromOtherGuilds(t *testing.T) {
 	assert.Zero(t, store.writes)
 }
 
-func TestCreateCheckinTemplateValidatesInput(t *testing.T) {
+func TestCreateRollCallTemplateValidatesInput(t *testing.T) {
 	tests := []struct {
 		name   string
 		mutate func(*Fields)
@@ -243,15 +243,15 @@ func TestManagementRequiresManagerRole(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			store := newFake(tt.role)
 			store.roleErr = tt.roleErr
-			checkins := newService(store, zerolog.Nop())
+			rollCalls := newService(store, zerolog.Nop())
 			items := newItemService(store, zerolog.Nop())
 			ctx := context.Background()
 			guild, tmpl, user := testGuild.String(), testTemplate.String(), testUser.String()
 
-			_, listErr := checkins.List(ctx, guild, user)
-			_, createErr := checkins.Create(ctx, guild, user, validFields())
-			_, updateErr := checkins.Update(ctx, guild, tmpl, user, validFields())
-			deleteErr := checkins.Delete(ctx, guild, tmpl, user)
+			_, listErr := rollCalls.List(ctx, guild, user)
+			_, createErr := rollCalls.Create(ctx, guild, user, validFields())
+			_, updateErr := rollCalls.Update(ctx, guild, tmpl, user, validFields())
+			deleteErr := rollCalls.Delete(ctx, guild, tmpl, user)
 			_, itemListErr := items.List(ctx, guild, user)
 			_, itemCreateErr := items.Create(ctx, guild, user, validItem())
 			_, itemUpdateErr := items.Update(ctx, guild, tmpl, user, validItem())
@@ -291,7 +291,7 @@ func TestUpdateMissingTemplatesReturnNotFound(t *testing.T) {
 
 	_, err := newService(store, zerolog.Nop()).Update(ctx, testGuild.String(), testTemplate.String(), testUser.String(), validFields())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-	assert.Equal(t, testGuild, store.checkinUpdate.GuildID)
+	assert.Equal(t, testGuild, store.rollCallTemplateUpdate.GuildID)
 
 	_, err = newItemService(store, zerolog.Nop()).Update(ctx, testGuild.String(), testTemplate.String(), testUser.String(), validItem())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
@@ -320,9 +320,9 @@ func TestDeleteMissingTemplatesReturnNotFound(t *testing.T) {
 	assert.ErrorIs(t, err, errs.ErrNotFound)
 }
 
-func TestListCheckinTemplatesDecodesItems(t *testing.T) {
+func TestListRollCallTemplatesDecodesItems(t *testing.T) {
 	store := newFake("moderator")
-	store.checkinRows = []db.ListRollCallTemplatesRow{
+	store.rollCallRows = []db.ListRollCallTemplatesRow{
 		{ID: testTemplate, GuildID: testGuild, Name: "a", Title: "A", Items: []byte(`[{"id":"x","name":"Gem","rarity":"epic"}]`)},
 		{ID: uuid.New(), GuildID: testGuild, Name: "b", Title: "B", Items: []byte(`[]`)},
 	}

@@ -10,19 +10,19 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	checkintemplatesvc "github.com/kia280/guma/internal/services/checkintemplate"
+	rollcalltemplatesvc "github.com/kia280/guma/internal/services/rollcalltemplate"
 	"github.com/kia280/guma/internal/session"
 )
 
 type ItemTemplateHandler struct {
 	gumav1.UnimplementedItemTemplateServiceServer
-	svc    *checkintemplatesvc.ItemService
+	svc    *rollcalltemplatesvc.ItemService
 	logger zerolog.Logger
 }
 
 func NewItemTemplateService(db *database.Pool, logger zerolog.Logger) *ItemTemplateHandler {
 	return &ItemTemplateHandler{
-		svc:    checkintemplatesvc.NewItemService(db, logger),
+		svc:    rollcalltemplatesvc.NewItemService(db, logger),
 		logger: logger.With().Str("handler", "item_template").Logger(),
 	}
 }
@@ -54,7 +54,7 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
-	t, err := h.svc.Create(ctx, req.GuildId, userID, checkintemplatesvc.ItemFields{
+	t, err := h.svc.Create(ctx, req.GuildId, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
 		Category:    req.Category,
@@ -74,7 +74,7 @@ func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
-	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, checkintemplatesvc.ItemFields{
+	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
 		Category:    req.Category,
@@ -100,7 +100,7 @@ func (h *ItemTemplateHandler) DeleteItemTemplate(ctx context.Context, req *gumav
 	return &gumav1.DeleteItemTemplateResponse{Success: true}, nil
 }
 
-func itemTemplateToProto(t *checkintemplatesvc.ItemTemplate) *gumav1.ItemTemplate {
+func itemTemplateToProto(t *rollcalltemplatesvc.ItemTemplate) *gumav1.ItemTemplate {
 	return &gumav1.ItemTemplate{
 		Id:          t.ID,
 		GuildId:     t.GuildID,

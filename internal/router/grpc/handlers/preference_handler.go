@@ -57,7 +57,7 @@ func (h *PreferenceHandler) UpdateMyPreferences(ctx context.Context, req *gumav1
 		AuctionAlerts:      req.Notifications.AuctionAlerts,
 		LotteryAlerts:      req.Notifications.LotteryAlerts,
 		EventReminders:     req.Notifications.EventReminders,
-		CheckinReminders:   req.Notifications.CheckinReminders,
+		RollCallReminders:  req.Notifications.CheckinReminders,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -74,7 +74,7 @@ func notificationPreferencesToProto(n preferencesvc.NotificationPreferences) *gu
 		AuctionAlerts:      n.AuctionAlerts,
 		LotteryAlerts:      n.LotteryAlerts,
 		EventReminders:     n.EventReminders,
-		CheckinReminders:   n.CheckinReminders,
+		CheckinReminders:   n.RollCallReminders,
 	}
 }
 

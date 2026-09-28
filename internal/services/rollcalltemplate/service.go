@@ -1,4 +1,4 @@
-package checkintemplate
+package rollcalltemplate
 
 import (
 	"context"
@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	checkinEntity  = "checkin template"
-	maxTitleLength = 200
-	maxItems       = 100
+	rollCallTemplateEntity = "roll call template"
+	maxTitleLength         = 200
+	maxItems               = 100
 )
 
 type Template struct {
@@ -48,7 +48,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 }
 
 func newService(q store, logger zerolog.Logger) *Service {
-	return &Service{q: q, logger: logger.With().Str("service", "checkintemplate").Logger()}
+	return &Service{q: q, logger: logger.With().Str("service", "rollcalltemplate").Logger()}
 }
 
 func (s *Service) List(ctx context.Context, guildIDStr, userIDStr string) ([]*Template, error) {
@@ -61,7 +61,7 @@ func (s *Service) List(ctx context.Context, guildIDStr, userIDStr string) ([]*Te
 	}
 	rows, err := s.q.ListRollCallTemplates(ctx, guildID)
 	if err != nil {
-		return nil, fmt.Errorf("%w: list checkin templates: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: list roll call templates: %v", errs.ErrInternal, err)
 	}
 	templates := make([]*Template, 0, len(rows))
 	for _, r := range rows {
@@ -89,9 +89,9 @@ func (s *Service) Create(ctx context.Context, guildIDStr, userIDStr string, f Fi
 		GuildID: guildID, CreatedBy: userID, Name: name, Title: title, ItemTemplateIds: itemIDs,
 	})
 	if err != nil {
-		return nil, writeError(checkinEntity, err)
+		return nil, writeError(rollCallTemplateEntity, err)
 	}
-	s.logger.Info().Str("template_id", id.String()).Str("guild_id", guildIDStr).Msg("checkin template created")
+	s.logger.Info().Str("template_id", id.String()).Str("guild_id", guildIDStr).Msg("roll call template created")
 	return s.get(ctx, guildID, id)
 }
 
@@ -106,7 +106,7 @@ func (s *Service) Update(ctx context.Context, guildIDStr, templateIDStr, userIDS
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", errs.ErrNotFound, checkinEntity)
+		return nil, fmt.Errorf("%w: %s", errs.ErrNotFound, rollCallTemplateEntity)
 	}
 	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (s *Service) Update(ctx context.Context, guildIDStr, templateIDStr, userIDS
 		ID: templateID, GuildID: guildID, Name: name, Title: title, ItemTemplateIds: itemIDs,
 	})
 	if err != nil {
-		return nil, writeError(checkinEntity, err)
+		return nil, writeError(rollCallTemplateEntity, err)
 	}
 	return s.get(ctx, guildID, id)
 }
@@ -130,17 +130,17 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDS
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
-		return fmt.Errorf("%w: %s", errs.ErrNotFound, checkinEntity)
+		return fmt.Errorf("%w: %s", errs.ErrNotFound, rollCallTemplateEntity)
 	}
 	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
 		return err
 	}
 	n, err := s.q.DeleteRollCallTemplate(ctx, db.DeleteRollCallTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {
-		return fmt.Errorf("%w: delete checkin template: %v", errs.ErrInternal, err)
+		return fmt.Errorf("%w: delete roll call template: %v", errs.ErrInternal, err)
 	}
 	if n == 0 {
-		return fmt.Errorf("%w: %s", errs.ErrNotFound, checkinEntity)
+		return fmt.Errorf("%w: %s", errs.ErrNotFound, rollCallTemplateEntity)
 	}
 	return nil
 }
@@ -148,7 +148,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDS
 func (s *Service) get(ctx context.Context, guildID, templateID uuid.UUID) (*Template, error) {
 	r, err := s.q.GetRollCallTemplate(ctx, db.GetRollCallTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {
-		return nil, writeError(checkinEntity, err)
+		return nil, writeError(rollCallTemplateEntity, err)
 	}
 	return toTemplate(r), nil
 }

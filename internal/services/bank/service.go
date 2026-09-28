@@ -42,7 +42,7 @@ type TopContributor struct {
 
 const (
 	ContributionKindGold            = "gold"
-	ContributionKindCheckinLoot     = "roll_call_loot"
+	ContributionKindRollCallLoot    = "roll_call_loot"
 	ContributionKindAuctionProceeds = "auction_proceeds"
 )
 
@@ -58,7 +58,7 @@ type BankContribution struct {
 	CreatedAt     time.Time
 	Kind          string
 	Items         []models.Item
-	CheckinID     string
+	RollCallID    string
 	ReferenceType string
 	ReferenceID   string
 }
@@ -89,8 +89,8 @@ type BankItem struct {
 	Quantity            int32
 	Note                string
 	DonatedAt           time.Time
-	CheckinID           string
-	CheckinTitle        string
+	RollCallID          string
+	RollCallTitle       string
 	PendingRequestCount int32
 	RequestedByMe       bool
 	Lock                *models.ItemLock
@@ -167,13 +167,13 @@ type ListContributionsResult struct {
 
 // ListBankItemsParams holds inputs for ListBankItems.
 type ListBankItemsParams struct {
-	GuildID   string
-	ViewerID  string
-	CheckinID string
-	Category  string
-	Rarity    string
-	PageSize  int
-	Offset    int
+	GuildID    string
+	ViewerID   string
+	RollCallID string
+	Category   string
+	Rarity     string
+	PageSize   int
+	Offset     int
 }
 
 // ListBankItemsResult is returned by ListBankItems.
@@ -505,7 +505,7 @@ func (s *Service) ListContributions(ctx context.Context, p ListContributionsPara
 			_ = json.Unmarshal(r.Items, &c.Items)
 		}
 		if r.RollCallID != nil {
-			c.CheckinID = r.RollCallID.String()
+			c.RollCallID = r.RollCallID.String()
 		}
 		contribs = append(contribs, c)
 	}
@@ -593,7 +593,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 	rows, err := s.q.ListBankItems(ctx, db.ListBankItemsParams{
 		GuildID: guildID, CategoryFilter: p.Category, RarityFilter: p.Rarity,
 		PageSize: int32(pageSize), PageOffset: int32(p.Offset), ViewerID: viewerID,
-		RollCallFilter: p.CheckinID,
+		RollCallFilter: p.RollCallID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: list bank items: %v", errs.ErrInternal, err)
@@ -604,12 +604,12 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 		bi := &BankItem{
 			ID: r.ID.String(), GuildID: r.GuildID.String(), DonorID: r.DonorID.String(),
 			DonorName: r.DonorName, Quantity: r.Quantity,
-			Note: r.Note, DonatedAt: r.DonatedAt, CheckinTitle: r.RollCallTitle,
+			Note: r.Note, DonatedAt: r.DonatedAt, RollCallTitle: r.RollCallTitle,
 			PendingRequestCount: r.PendingRequestCount, RequestedByMe: r.RequestedByMe,
 			Lock: models.NewItemLock(r.LockedByType, r.LockedByID),
 		}
 		if r.RollCallID != nil {
-			bi.CheckinID = r.RollCallID.String()
+			bi.RollCallID = r.RollCallID.String()
 		}
 		if len(r.Item) > 0 {
 			_ = json.Unmarshal(r.Item, &bi.Item)
@@ -619,7 +619,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 
 	total, _ := s.q.CountBankItems(ctx, db.CountBankItemsParams{
 		GuildID: guildID, CategoryFilter: p.Category, RarityFilter: p.Rarity,
-		RollCallFilter: p.CheckinID,
+		RollCallFilter: p.RollCallID,
 	})
 
 	nextOffset := 0

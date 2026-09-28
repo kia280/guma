@@ -56,8 +56,8 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 		usersvc.WithDevAuth(cfg.Dev.AuthEnabled),
 		usersvc.WithKratosAdminURL(cfg.Auth.KratosAdminURL),
 	)
-	checkinHandler := handlers.NewCheckInService(db, logger)
-	checkinTemplateHandler := handlers.NewCheckInTemplateService(db, logger)
+	rollCallHandler := handlers.NewRollCallService(db, logger)
+	rollCallTemplateHandler := handlers.NewRollCallTemplateService(db, logger)
 	itemTemplateHandler := handlers.NewItemTemplateService(db, logger)
 	walletHandler := handlers.NewWalletService(db, logger)
 	auctionHandler := handlers.NewAuctionService(db, logger)
@@ -77,8 +77,8 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	gumav1.RegisterGuildServiceServer(grpcServer, guildHandler)
 	gumav1.RegisterMemberServiceServer(grpcServer, memberHandler)
 	gumav1.RegisterUserServiceServer(grpcServer, userHandler)
-	gumav1.RegisterCheckInServiceServer(grpcServer, checkinHandler)
-	gumav1.RegisterCheckInTemplateServiceServer(grpcServer, checkinTemplateHandler)
+	gumav1.RegisterCheckInServiceServer(grpcServer, rollCallHandler)
+	gumav1.RegisterCheckInTemplateServiceServer(grpcServer, rollCallTemplateHandler)
 	gumav1.RegisterItemTemplateServiceServer(grpcServer, itemTemplateHandler)
 	gumav1.RegisterWalletServiceServer(grpcServer, walletHandler)
 	gumav1.RegisterAuctionServiceServer(grpcServer, auctionHandler)

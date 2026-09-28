@@ -1,4 +1,4 @@
-package checkin
+package rollcall
 
 import (
 	"bytes"
@@ -31,14 +31,14 @@ const (
 	goldDistributionConflictMsg = "the roll call gold pot has changed; reload and try again"
 )
 
-// LootEntry is one entry of a check-in's loot: an item or an amount of gold.
+// LootEntry is one entry of a roll call's loot: an item or an amount of gold.
 type LootEntry struct {
 	Kind   string
 	Item   models.Item
 	Amount int64
 }
 
-// GoldPot tracks the gold a check-in deposited into the guild vault and how much of it has been paid out.
+// GoldPot tracks the gold a roll call deposited into the guild vault and how much of it has been paid out.
 type GoldPot struct {
 	Total       int64
 	Distributed int64
@@ -64,11 +64,11 @@ type GoldSummary struct {
 
 // DistributeGoldParams holds the inputs for DistributeGold.
 type DistributeGoldParams struct {
-	GuildID   string
-	CheckInID string
-	ActorID   string
-	RequestID string
-	Payouts   []GoldPayout
+	GuildID    string
+	RollCallID string
+	ActorID    string
+	RequestID  string
+	Payouts    []GoldPayout
 }
 
 // DistributeGoldResult is returned by DistributeGold.
@@ -221,21 +221,21 @@ func checkGoldPotCapacity(pot GoldPot, isCancelled bool, total int64) error {
 	return nil
 }
 
-// GetGold returns the gold pot of a check-in and how much each attendee has received.
-func (s *Service) GetGold(ctx context.Context, guildIDStr, checkinIDStr string) (*GoldSummary, error) {
+// GetGold returns the gold pot of a roll call and how much each attendee has received.
+func (s *Service) GetGold(ctx context.Context, guildIDStr, rollCallIDStr string) (*GoldSummary, error) {
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
-	checkinID, err := uuid.Parse(checkinIDStr)
+	rollCallID, err := uuid.Parse(rollCallIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
-	if exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: checkinID, GuildID: guildID}); err != nil || !exists {
-		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
+	if exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: rollCallID, GuildID: guildID}); err != nil || !exists {
+		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
 	summary := &GoldSummary{Recipients: []GoldPayout{}}
-	pot, err := s.q.GetRollCallGoldPot(ctx, db.GetRollCallGoldPotParams{RollCallID: checkinID, GuildID: guildID})
+	pot, err := s.q.GetRollCallGoldPot(ctx, db.GetRollCallGoldPotParams{RollCallID: rollCallID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return summary, nil
@@ -243,7 +243,7 @@ func (s *Service) GetGold(ctx context.Context, guildIDStr, checkinIDStr string) 
 		return nil, fmt.Errorf("%w: load gold pot: %v", errs.ErrInternal, err)
 	}
 	summary.Pot = &GoldPot{Total: pot.Total, Distributed: pot.Distributed, Retracted: pot.Retracted}
-	rows, err := s.q.ListRollCallGoldRecipients(ctx, db.ListRollCallGoldRecipientsParams{RollCallID: checkinID, GuildID: guildID})
+	rows, err := s.q.ListRollCallGoldRecipients(ctx, db.ListRollCallGoldRecipientsParams{RollCallID: rollCallID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: list gold recipients: %v", errs.ErrInternal, err)
 	}
@@ -253,15 +253,15 @@ func (s *Service) GetGold(ctx context.Context, guildIDStr, checkinIDStr string) 
 	return summary, nil
 }
 
-// DistributeGold pays gold from a check-in's pot into attendees' wallets in one transaction.
+// DistributeGold pays gold from a roll call's pot into attendees' wallets in one transaction.
 func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*DistributeGoldResult, error) {
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
-		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
-	checkinID, err := uuid.Parse(p.CheckInID)
+	rollCallID, err := uuid.Parse(p.RollCallID)
 	if err != nil {
-		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
 	actorID, err := uuid.Parse(p.ActorID)
 	if err != nil {
@@ -278,9 +278,9 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 	if err := s.requireRole(ctx, guildID, actorID, "owner", "admin", "moderator"); err != nil {
 		return nil, err
 	}
-	checkin, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: checkinID, GuildID: guildID})
+	rollCall, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
-		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
 	actorName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: actorID})
 
@@ -291,7 +291,7 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	locked, err := qtx.LockRollCallGoldPot(ctx, db.LockRollCallGoldPotParams{RollCallID: checkinID, GuildID: guildID})
+	locked, err := qtx.LockRollCallGoldPot(ctx, db.LockRollCallGoldPotParams{RollCallID: rollCallID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: this roll call has no gold loot", errs.ErrFailedPrecondition)
@@ -300,7 +300,7 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 	}
 	pot := GoldPot{Total: locked.Total, Distributed: locked.Distributed, Retracted: locked.Retracted}
 
-	previous, err := qtx.GetRollCallGoldDistributionByRequest(ctx, db.GetRollCallGoldDistributionByRequestParams{RollCallID: checkinID, RequestID: requestID})
+	previous, err := qtx.GetRollCallGoldDistributionByRequest(ctx, db.GetRollCallGoldDistributionByRequestParams{RollCallID: rollCallID, RequestID: requestID})
 	if err == nil {
 		payouts, err := qtx.ListRollCallGoldDistributionPayouts(ctx, previous.ID)
 		if err != nil {
@@ -316,14 +316,14 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 		return nil, fmt.Errorf("%w: load previous distribution: %v", errs.ErrInternal, err)
 	}
 
-	if err := checkGoldPotCapacity(pot, checkin.IsCancelled, total); err != nil {
+	if err := checkGoldPotCapacity(pot, rollCall.IsCancelled, total); err != nil {
 		return nil, err
 	}
 	userIDs := make([]uuid.UUID, len(lines))
 	for i, l := range lines {
 		userIDs[i] = l.userID
 	}
-	attendees, err := qtx.CountRollCallAttendeesAmong(ctx, db.CountRollCallAttendeesAmongParams{RollCallID: checkinID, UserIds: userIDs})
+	attendees, err := qtx.CountRollCallAttendeesAmong(ctx, db.CountRollCallAttendeesAmongParams{RollCallID: rollCallID, UserIds: userIDs})
 	if err != nil {
 		return nil, fmt.Errorf("%w: load attendance: %v", errs.ErrInternal, err)
 	}
@@ -337,7 +337,7 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 		}
 		return nil, fmt.Errorf("%w: debit guild vault: %v", errs.ErrInternal, err)
 	}
-	updated, err := qtx.AddRollCallGoldPotDistributed(ctx, db.AddRollCallGoldPotDistributedParams{Amount: total, RollCallID: checkinID, GuildID: guildID})
+	updated, err := qtx.AddRollCallGoldPotDistributed(ctx, db.AddRollCallGoldPotDistributedParams{Amount: total, RollCallID: rollCallID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: %s", errs.ErrFailedPrecondition, goldDistributionConflictMsg)
@@ -345,7 +345,7 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 		return nil, fmt.Errorf("%w: update gold pot: %v", errs.ErrInternal, err)
 	}
 	distribution, err := qtx.InsertRollCallGoldDistribution(ctx, db.InsertRollCallGoldDistributionParams{
-		RollCallID: checkinID, GuildID: guildID, ActorID: &actorID, RequestID: requestID, Total: total,
+		RollCallID: rollCallID, GuildID: guildID, ActorID: &actorID, RequestID: requestID, Total: total,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: record distribution: %v", errs.ErrInternal, err)
@@ -366,8 +366,8 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 		}
 		txID, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
 			UserID: l.userID, GuildID: guildID, Amount: l.amount, BalanceAfter: balance,
-			Type: goldTransactionType, Description: checkin.Title,
-			ReferenceID: checkinID.String(), ReferenceType: goldTransactionRefType,
+			Type: goldTransactionType, Description: rollCall.Title,
+			ReferenceID: rollCallID.String(), ReferenceType: goldTransactionRefType,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("%w: record transaction: %v", errs.ErrInternal, err)
@@ -380,8 +380,8 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 		result.Payouts = append(result.Payouts, GoldPayout{UserID: l.userID.String(), Amount: l.amount})
 	}
 	if err := qtx.InsertRollCallGoldBankActivity(ctx, db.InsertRollCallGoldBankActivityParams{
-		GuildID: guildID, UserID: actorID, Username: actorName, Amount: -total, Note: checkin.Title,
-		Kind: goldPayoutActivityKind, RollCallID: checkinID,
+		GuildID: guildID, UserID: actorID, Username: actorName, Amount: -total, Note: rollCall.Title,
+		Kind: goldPayoutActivityKind, RollCallID: rollCallID,
 		ReferenceType: goldDistributionRefType, ReferenceID: &distribution.ID,
 	}); err != nil {
 		return nil, fmt.Errorf("%w: record vault activity: %v", errs.ErrInternal, err)
@@ -389,12 +389,12 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("checkin_id", p.CheckInID).Str("guild_id", p.GuildID).Str("actor_id", p.ActorID).
-		Int64("total", total).Int("recipients", len(lines)).Msg("checkin gold distributed")
+	s.logger.Info().Str("roll_call_id", p.RollCallID).Str("guild_id", p.GuildID).Str("actor_id", p.ActorID).
+		Int64("total", total).Int("recipients", len(lines)).Msg("roll call gold distributed")
 	return result, nil
 }
 
-func (s *Service) depositGoldLoot(ctx context.Context, qtx *db.Queries, guildID, checkinID uuid.UUID, gold int64) error {
+func (s *Service) depositGoldLoot(ctx context.Context, qtx *db.Queries, guildID, rollCallID uuid.UUID, gold int64) error {
 	if gold <= 0 {
 		return nil
 	}
@@ -404,14 +404,14 @@ func (s *Service) depositGoldLoot(ctx context.Context, qtx *db.Queries, guildID,
 	if err := qtx.CreditGuildBank(ctx, db.CreditGuildBankParams{GuildID: guildID, Amount: gold}); err != nil {
 		return fmt.Errorf("%w: credit guild vault: %v", errs.ErrInternal, err)
 	}
-	if err := qtx.InsertRollCallGoldPot(ctx, db.InsertRollCallGoldPotParams{RollCallID: checkinID, GuildID: guildID, Total: gold}); err != nil {
+	if err := qtx.InsertRollCallGoldPot(ctx, db.InsertRollCallGoldPotParams{RollCallID: rollCallID, GuildID: guildID, Total: gold}); err != nil {
 		return fmt.Errorf("%w: create gold pot: %v", errs.ErrInternal, err)
 	}
 	return nil
 }
 
-func (s *Service) retractGoldLoot(ctx context.Context, qtx *db.Queries, guildID, checkinID, actorID uuid.UUID, title string) (*GoldPot, error) {
-	locked, err := qtx.LockRollCallGoldPot(ctx, db.LockRollCallGoldPotParams{RollCallID: checkinID, GuildID: guildID})
+func (s *Service) retractGoldLoot(ctx context.Context, qtx *db.Queries, guildID, rollCallID, actorID uuid.UUID, title string) (*GoldPot, error) {
+	locked, err := qtx.LockRollCallGoldPot(ctx, db.LockRollCallGoldPotParams{RollCallID: rollCallID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -429,22 +429,22 @@ func (s *Service) retractGoldLoot(ctx context.Context, qtx *db.Queries, guildID,
 		}
 		return nil, fmt.Errorf("%w: debit guild vault: %v", errs.ErrInternal, err)
 	}
-	updated, err := qtx.RetractRollCallGoldPot(ctx, db.RetractRollCallGoldPotParams{RollCallID: checkinID, GuildID: guildID})
+	updated, err := qtx.RetractRollCallGoldPot(ctx, db.RetractRollCallGoldPotParams{RollCallID: rollCallID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: retract gold pot: %v", errs.ErrInternal, err)
 	}
 	actorName, _ := qtx.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: actorID})
 	if err := qtx.InsertRollCallGoldBankActivity(ctx, db.InsertRollCallGoldBankActivityParams{
 		GuildID: guildID, UserID: actorID, Username: actorName, Amount: -remaining, Note: title,
-		Kind: goldRetractedActivityKind, RollCallID: checkinID,
+		Kind: goldRetractedActivityKind, RollCallID: rollCallID,
 	}); err != nil {
 		return nil, fmt.Errorf("%w: record vault activity: %v", errs.ErrInternal, err)
 	}
 	return &GoldPot{Total: updated.Total, Distributed: updated.Distributed, Retracted: updated.Retracted}, nil
 }
 
-func (s *Service) loadGoldPot(ctx context.Context, guildID, checkinID uuid.UUID) (*GoldPot, error) {
-	pot, err := s.q.GetRollCallGoldPot(ctx, db.GetRollCallGoldPotParams{RollCallID: checkinID, GuildID: guildID})
+func (s *Service) loadGoldPot(ctx context.Context, guildID, rollCallID uuid.UUID) (*GoldPot, error) {
+	pot, err := s.q.GetRollCallGoldPot(ctx, db.GetRollCallGoldPotParams{RollCallID: rollCallID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -454,9 +454,9 @@ func (s *Service) loadGoldPot(ctx context.Context, guildID, checkinID uuid.UUID)
 	return &GoldPot{Total: pot.Total, Distributed: pot.Distributed, Retracted: pot.Retracted}, nil
 }
 
-func (s *Service) attachGoldPots(ctx context.Context, guildID uuid.UUID, checkins []*CheckIn) error {
-	ids := make([]uuid.UUID, 0, len(checkins))
-	for _, c := range checkins {
+func (s *Service) attachGoldPots(ctx context.Context, guildID uuid.UUID, rollCalls []*RollCall) error {
+	ids := make([]uuid.UUID, 0, len(rollCalls))
+	for _, c := range rollCalls {
 		if c.hasGoldLoot() {
 			ids = append(ids, uuid.MustParse(c.ID))
 		}
@@ -472,13 +472,13 @@ func (s *Service) attachGoldPots(ctx context.Context, guildID uuid.UUID, checkin
 	for _, r := range rows {
 		pots[r.RollCallID.String()] = &GoldPot{Total: r.Total, Distributed: r.Distributed, Retracted: r.Retracted}
 	}
-	for _, c := range checkins {
+	for _, c := range rollCalls {
 		c.GoldPot = pots[c.ID]
 	}
 	return nil
 }
 
-func (c *CheckIn) hasGoldLoot() bool {
+func (c *RollCall) hasGoldLoot() bool {
 	for _, e := range c.Loot {
 		if e.Kind == LootKindGold {
 			return true

@@ -94,7 +94,7 @@ func (h *UserHandler) GetUserStats(ctx context.Context, _ *gumav1.GetUserStatsRe
 			LotteriesWon:      st.LotteriesWon,
 			TotalEarned:       st.TotalEarned,
 			TotalSpent:        st.TotalSpent,
-			CheckinsCompleted: st.CheckinsCompleted,
+			CheckinsCompleted: st.RollCallsAttended,
 		},
 	}, nil
 }

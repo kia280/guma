@@ -73,11 +73,11 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 	}
 
 	if err := gumav1.RegisterCheckInServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
-		return nil, fmt.Errorf("failed to register checkin gateway: %w", err)
+		return nil, fmt.Errorf("failed to register roll call gateway: %w", err)
 	}
 
 	if err := gumav1.RegisterCheckInTemplateServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
-		return nil, fmt.Errorf("failed to register checkin template gateway: %w", err)
+		return nil, fmt.Errorf("failed to register roll call template gateway: %w", err)
 	}
 
 	if err := gumav1.RegisterItemTemplateServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {

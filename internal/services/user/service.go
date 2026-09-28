@@ -69,7 +69,7 @@ type Stats struct {
 	LotteriesWon      int32
 	TotalEarned       int64
 	TotalSpent        int64
-	CheckinsCompleted int32
+	RollCallsAttended int32
 }
 
 // Service handles user business logic and database access.
@@ -477,9 +477,9 @@ func (s *Service) GetStats(ctx context.Context, userID string) (*Stats, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: query guilds joined: %v", errs.ErrInternal, err)
 	}
-	checkins, err := s.q.CountUserAttendance(ctx, id)
+	attendance, err := s.q.CountUserAttendance(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("%w: query checkins: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: query attendance: %v", errs.ErrInternal, err)
 	}
 	events, err := s.q.CountUserEventsAttended(ctx, id)
 	if err != nil {
@@ -500,7 +500,7 @@ func (s *Service) GetStats(ctx context.Context, userID string) (*Stats, error) {
 
 	return &Stats{
 		GuildsJoined:      int32(guilds),
-		CheckinsCompleted: int32(checkins),
+		RollCallsAttended: int32(attendance),
 		EventsAttended:    int32(events),
 		AuctionsWon:       int32(auctionsWon),
 		LotteriesWon:      int32(lotteriesWon),

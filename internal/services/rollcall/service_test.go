@@ -1,4 +1,4 @@
-package checkin
+package rollcall
 
 import (
 	"context"
@@ -48,26 +48,26 @@ func TestPrepareBankLootEmpty(t *testing.T) {
 	assert.NotNil(t, loot)
 }
 
-func TestNormalizeAttendanceNotes(t *testing.T) {
-	notes, err := normalizeAttendanceNotes("  Late arrival \n")
+func TestNormalizeCheckInNotes(t *testing.T) {
+	notes, err := normalizeCheckInNotes("  Late arrival \n")
 	require.NoError(t, err)
 	assert.Equal(t, "Late arrival", notes)
 
-	notes, err = normalizeAttendanceNotes(strings.Repeat("遲", maxAttendanceNotes))
+	notes, err = normalizeCheckInNotes(strings.Repeat("遲", maxCheckInNotes))
 	require.NoError(t, err)
-	assert.Equal(t, maxAttendanceNotes, utf8.RuneCountInString(notes))
+	assert.Equal(t, maxCheckInNotes, utf8.RuneCountInString(notes))
 
-	_, err = normalizeAttendanceNotes(strings.Repeat("a", maxAttendanceNotes+1))
+	_, err = normalizeCheckInNotes(strings.Repeat("a", maxCheckInNotes+1))
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }
 
-func TestSubmitAttendanceRejectsLongNotesBeforeQuerying(t *testing.T) {
+func TestCheckInRejectsLongNotesBeforeQuerying(t *testing.T) {
 	s := &Service{}
-	_, err := s.SubmitAttendance(context.Background(),
+	_, err := s.CheckIn(context.Background(),
 		"00000000-0000-0000-0000-000000000001",
 		"00000000-0000-0000-0000-000000000002",
 		"00000000-0000-0000-0000-000000000003",
-		strings.Repeat("a", maxAttendanceNotes+1))
+		strings.Repeat("a", maxCheckInNotes+1))
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }
 
@@ -77,11 +77,11 @@ func TestCheckCancellable(t *testing.T) {
 	assert.ErrorIs(t, checkCancellable(false, true), errs.ErrFailedPrecondition)
 }
 
-func TestCheckAttendanceOpen(t *testing.T) {
+func TestCheckCheckInOpen(t *testing.T) {
 	now := time.Date(2026, 9, 26, 12, 0, 0, 0, time.UTC)
-	assert.NoError(t, checkAttendanceOpen(now.Add(time.Hour), false, now))
-	assert.ErrorIs(t, checkAttendanceOpen(now.Add(time.Hour), true, now), errs.ErrFailedPrecondition)
-	assert.ErrorIs(t, checkAttendanceOpen(now.Add(-time.Hour), false, now), errs.ErrFailedPrecondition)
+	assert.NoError(t, checkCheckInOpen(now.Add(time.Hour), false, now))
+	assert.ErrorIs(t, checkCheckInOpen(now.Add(time.Hour), true, now), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkCheckInOpen(now.Add(-time.Hour), false, now), errs.ErrFailedPrecondition)
 }
 
 func TestCancelRejectsMalformedIDsBeforeQuerying(t *testing.T) {
@@ -119,7 +119,7 @@ func TestUpdateValidatesBeforeQuerying(t *testing.T) {
 	datetime := future.Format(time.RFC3339)
 	expireTime := future.Add(time.Hour).Format(time.RFC3339)
 	base := UpdateParams{
-		GuildID: valid, CheckInID: valid, UpdatedBy: valid,
+		GuildID: valid, RollCallID: valid, UpdatedBy: valid,
 		Title: "Raid", Datetime: datetime, ExpireTime: expireTime,
 	}
 
@@ -136,7 +136,7 @@ func TestUpdateValidatesBeforeQuerying(t *testing.T) {
 		}, wantErr: errs.ErrInvalidArgument},
 		{name: "loot change", mutate: func(p *UpdateParams) { p.Loot = []LootEntry{{Kind: LootKindItem, Item: models.Item{Name: "Sword"}}} }, wantErr: errs.ErrInvalidArgument},
 		{name: "malformed guild", mutate: func(p *UpdateParams) { p.GuildID = "bad" }, wantErr: errs.ErrNotFound},
-		{name: "malformed checkin", mutate: func(p *UpdateParams) { p.CheckInID = "bad" }, wantErr: errs.ErrNotFound},
+		{name: "malformed roll call", mutate: func(p *UpdateParams) { p.RollCallID = "bad" }, wantErr: errs.ErrNotFound},
 		{name: "malformed user", mutate: func(p *UpdateParams) { p.UpdatedBy = "bad" }, wantErr: errs.ErrInvalidArgument},
 	}
 	for _, tt := range tests {
@@ -234,11 +234,11 @@ func TestUpdateLootAndCompleteRejectMalformedIDsBeforeQuerying(t *testing.T) {
 	s := &Service{}
 	const valid = "00000000-0000-0000-0000-000000000001"
 
-	_, err := s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: "bad", CheckInID: valid, UpdatedBy: valid})
+	_, err := s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: "bad", RollCallID: valid, UpdatedBy: valid})
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-	_, err = s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: valid, CheckInID: "bad", UpdatedBy: valid})
+	_, err = s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: valid, RollCallID: "bad", UpdatedBy: valid})
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-	_, err = s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: valid, CheckInID: valid, UpdatedBy: "bad"})
+	_, err = s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: valid, RollCallID: valid, UpdatedBy: "bad"})
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 
 	_, err = s.Complete(context.Background(), "bad", valid, valid)

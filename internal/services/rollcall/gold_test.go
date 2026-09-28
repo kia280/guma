@@ -1,4 +1,4 @@
-package checkin
+package rollcall
 
 import (
 	"encoding/json"

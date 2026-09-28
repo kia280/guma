@@ -181,13 +181,13 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 	}
 
 	result, err := h.svc.ListBankItems(ctx, banksvc.ListBankItemsParams{
-		GuildID:   req.GuildId,
-		ViewerID:  userID,
-		CheckinID: req.CheckinId,
-		Category:  req.Category,
-		Rarity:    req.Rarity,
-		PageSize:  int(req.PageSize),
-		Offset:    banksvc.ParsePageToken(req.PageToken),
+		GuildID:    req.GuildId,
+		ViewerID:   userID,
+		RollCallID: req.CheckinId,
+		Category:   req.Category,
+		Rarity:     req.Rarity,
+		PageSize:   int(req.PageSize),
+		Offset:     banksvc.ParsePageToken(req.PageToken),
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -302,7 +302,7 @@ func bankContributionToProto(c *banksvc.BankContribution) *gumav1.BankContributi
 		CreatedAt:     timestamppb.New(c.CreatedAt),
 		Kind:          c.Kind,
 		Items:         protoItems(c.Items),
-		CheckinId:     c.CheckinID,
+		CheckinId:     c.RollCallID,
 		ReferenceType: c.ReferenceType,
 		ReferenceId:   c.ReferenceID,
 	}
@@ -346,8 +346,8 @@ func bankItemToProto(bi *banksvc.BankItem) *gumav1.BankItem {
 		Quantity:            bi.Quantity,
 		Note:                bi.Note,
 		DonatedAt:           timestamppb.New(bi.DonatedAt),
-		CheckinId:           bi.CheckinID,
-		CheckinTitle:        bi.CheckinTitle,
+		CheckinId:           bi.RollCallID,
+		CheckinTitle:        bi.RollCallTitle,
 		PendingRequestCount: bi.PendingRequestCount,
 		RequestedByMe:       bi.RequestedByMe,
 		Lock:                itemLockToProto(bi.Lock),

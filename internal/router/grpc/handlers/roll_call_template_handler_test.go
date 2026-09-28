@@ -15,7 +15,7 @@ import (
 )
 
 func TestCheckInTemplateService_Validation(t *testing.T) {
-	h := NewCheckInTemplateService(nil, zerolog.Nop())
+	h := NewRollCallTemplateService(nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 

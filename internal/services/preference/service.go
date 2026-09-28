@@ -24,7 +24,7 @@ type NotificationPreferences struct {
 	AuctionAlerts      bool
 	LotteryAlerts      bool
 	EventReminders     bool
-	CheckinReminders   bool
+	RollCallReminders  bool
 }
 
 type Preferences struct {
@@ -37,7 +37,7 @@ type NotificationPatch struct {
 	AuctionAlerts      *bool
 	LotteryAlerts      *bool
 	EventReminders     *bool
-	CheckinReminders   *bool
+	RollCallReminders  *bool
 }
 
 func (p NotificationPatch) IsEmpty() bool {
@@ -45,7 +45,7 @@ func (p NotificationPatch) IsEmpty() bool {
 		p.AuctionAlerts == nil &&
 		p.LotteryAlerts == nil &&
 		p.EventReminders == nil &&
-		p.CheckinReminders == nil
+		p.RollCallReminders == nil
 }
 
 var DefaultNotifications = NotificationPreferences{
@@ -53,7 +53,7 @@ var DefaultNotifications = NotificationPreferences{
 	AuctionAlerts:      true,
 	LotteryAlerts:      true,
 	EventReminders:     false,
-	CheckinReminders:   true,
+	RollCallReminders:  true,
 }
 
 type store interface {
@@ -97,7 +97,7 @@ func (s *Service) Get(ctx context.Context, userIDStr string) (*Preferences, erro
 			AuctionAlerts:      row.AuctionAlerts,
 			LotteryAlerts:      row.LotteryAlerts,
 			EventReminders:     row.EventReminders,
-			CheckinReminders:   row.RollCallReminders,
+			RollCallReminders:  row.RollCallReminders,
 		},
 		UpdatedAt: row.UpdatedAt,
 	}, nil
@@ -118,7 +118,7 @@ func (s *Service) UpdateNotifications(ctx context.Context, userIDStr string, pat
 		AuctionAlerts:      optionalBool(patch.AuctionAlerts),
 		LotteryAlerts:      optionalBool(patch.LotteryAlerts),
 		EventReminders:     optionalBool(patch.EventReminders),
-		RollCallReminders:  optionalBool(patch.CheckinReminders),
+		RollCallReminders:  optionalBool(patch.RollCallReminders),
 	})
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -133,7 +133,7 @@ func (s *Service) UpdateNotifications(ctx context.Context, userIDStr string, pat
 			AuctionAlerts:      row.AuctionAlerts,
 			LotteryAlerts:      row.LotteryAlerts,
 			EventReminders:     row.EventReminders,
-			CheckinReminders:   row.RollCallReminders,
+			RollCallReminders:  row.RollCallReminders,
 		},
 		UpdatedAt: row.UpdatedAt,
 	}, nil

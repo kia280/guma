@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Item represents a shared in-game item used across auctions, backpack, bank, check-ins, and lotteries
+// Item represents a shared in-game item used across auctions, backpack, bank, roll calls, and lotteries
 type Item struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
