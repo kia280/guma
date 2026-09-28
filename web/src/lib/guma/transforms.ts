@@ -619,7 +619,7 @@ const BACKPACK_SOURCES: Record<string, BackpackItemSource> = {
   auction: 'auction',
   lottery: 'lottery',
   transfer: 'transfer',
-  checkin: 'checkin',
+  roll_call: 'checkin',
   bank_item_request: 'bank',
 };
 
@@ -708,11 +708,11 @@ type ProtoBankContribution = {
 
 const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = [
   'gold',
-  'checkin_loot',
+  'roll_call_loot',
   'auction_proceeds',
   'lottery_revenue',
-  'checkin_gold_payout',
-  'checkin_gold_retracted',
+  'roll_call_gold_payout',
+  'roll_call_gold_retracted',
   'admin_transfer',
 ];
 
@@ -844,10 +844,10 @@ export const toGuildContributions = (
   itemRequests: ItemRequest[] = [],
 ): GuildContribution[] => {
   const c: GuildContribution[] = contributions.map(b =>
-    b.kind === 'checkin_loot'
+    b.kind === 'roll_call_loot'
       ? {
           id: `c-${b.id}`,
-          type: 'checkin_loot',
+          type: 'roll_call_loot',
           itemName: b.itemNames.join(', ') || undefined,
           amount: b.amount > 0 ? b.amount : undefined,
           member: b.username,
@@ -863,7 +863,7 @@ export const toGuildContributions = (
           type: contributionType(b.kind),
           amount: Math.abs(b.amount),
           checkinId: b.checkinId,
-          href: b.kind === 'checkin_gold_payout' || b.kind === 'checkin_gold_retracted' ? checkinHref(b) : contributionReferenceHref(b),
+          href: b.kind === 'roll_call_gold_payout' || b.kind === 'roll_call_gold_retracted' ? checkinHref(b) : contributionReferenceHref(b),
           member: b.username,
           memberAvatar: b.avatarUrl,
           date: b.createdAt,

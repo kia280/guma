@@ -124,7 +124,7 @@ func Release(ctx context.Context, qtx *db.Queries, sourceType string, itemID *uu
 			return fmt.Errorf("%w: drop cancelled loot: %v", errs.ErrInternal, err)
 		}
 		for _, r := range dropped {
-			if err := logEvent(ctx, qtx, r.GuildID, *itemID, "retracted", "checkin", r.CheckinID); err != nil {
+			if err := logEvent(ctx, qtx, r.GuildID, *itemID, "retracted", "roll_call", r.RollCallID); err != nil {
 				return err
 			}
 		}

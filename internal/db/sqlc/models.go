@@ -81,7 +81,7 @@ type BankContribution struct {
 	CreatedAt     time.Time
 	Kind          string
 	Items         []byte
-	CheckinID     *uuid.UUID
+	RollCallID    *uuid.UUID
 	ReferenceType pgtype.Text
 	ReferenceID   *uuid.UUID
 }
@@ -95,7 +95,7 @@ type BankItem struct {
 	Quantity     int32
 	Note         pgtype.Text
 	DonatedAt    time.Time
-	CheckinID    *uuid.UUID
+	RollCallID   *uuid.UUID
 	LockedByType pgtype.Text
 	LockedByID   *uuid.UUID
 	LockedAt     pgtype.Timestamptz
@@ -108,72 +108,6 @@ type Bid struct {
 	Amount    int64
 	IsWinning bool
 	PlacedAt  time.Time
-}
-
-type Checkin struct {
-	ID              uuid.UUID
-	GuildID         uuid.UUID
-	CreatedBy       uuid.UUID
-	Title           string
-	Description     pgtype.Text
-	Datetime        time.Time
-	ExpireTime      time.Time
-	ImageUrl        pgtype.Text
-	LootList        []byte
-	AttendanceCount int32
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	CancelledAt     pgtype.Timestamptz
-	CompletedAt     pgtype.Timestamptz
-	CompletedBy     *uuid.UUID
-}
-
-type CheckinAttendee struct {
-	ID          uuid.UUID
-	CheckinID   uuid.UUID
-	UserID      uuid.UUID
-	DisplayName pgtype.Text
-	AvatarUrl   pgtype.Text
-	AttendedAt  time.Time
-	Notes       string
-}
-
-type CheckinGoldDistribution struct {
-	ID        uuid.UUID
-	CheckinID uuid.UUID
-	GuildID   uuid.UUID
-	ActorID   *uuid.UUID
-	RequestID uuid.UUID
-	Total     int64
-	CreatedAt time.Time
-}
-
-type CheckinGoldPayout struct {
-	DistributionID uuid.UUID
-	UserID         uuid.UUID
-	Amount         int64
-	TransactionID  *uuid.UUID
-}
-
-type CheckinGoldPot struct {
-	CheckinID   uuid.UUID
-	GuildID     uuid.UUID
-	Total       int64
-	Distributed int64
-	Retracted   int64
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-}
-
-type CheckinTemplate struct {
-	ID              uuid.UUID
-	GuildID         uuid.UUID
-	Name            string
-	Title           string
-	ItemTemplateIds []uuid.UUID
-	CreatedBy       uuid.UUID
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
 }
 
 type FundRequest struct {
@@ -360,6 +294,72 @@ type Notification struct {
 	Params    []byte
 }
 
+type RollCall struct {
+	ID              uuid.UUID
+	GuildID         uuid.UUID
+	CreatedBy       uuid.UUID
+	Title           string
+	Description     pgtype.Text
+	Datetime        time.Time
+	ExpireTime      time.Time
+	ImageUrl        pgtype.Text
+	LootList        []byte
+	AttendanceCount int32
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	CancelledAt     pgtype.Timestamptz
+	CompletedAt     pgtype.Timestamptz
+	CompletedBy     *uuid.UUID
+}
+
+type RollCallAttendee struct {
+	ID          uuid.UUID
+	RollCallID  uuid.UUID
+	UserID      uuid.UUID
+	DisplayName pgtype.Text
+	AvatarUrl   pgtype.Text
+	CheckedInAt time.Time
+	Notes       string
+}
+
+type RollCallGoldDistribution struct {
+	ID         uuid.UUID
+	RollCallID uuid.UUID
+	GuildID    uuid.UUID
+	ActorID    *uuid.UUID
+	RequestID  uuid.UUID
+	Total      int64
+	CreatedAt  time.Time
+}
+
+type RollCallGoldPayout struct {
+	DistributionID uuid.UUID
+	UserID         uuid.UUID
+	Amount         int64
+	TransactionID  *uuid.UUID
+}
+
+type RollCallGoldPot struct {
+	RollCallID  uuid.UUID
+	GuildID     uuid.UUID
+	Total       int64
+	Distributed int64
+	Retracted   int64
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+type RollCallTemplate struct {
+	ID              uuid.UUID
+	GuildID         uuid.UUID
+	Name            string
+	Title           string
+	ItemTemplateIds []uuid.UUID
+	CreatedBy       uuid.UUID
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
 type Transaction struct {
 	ID             uuid.UUID
 	UserID         uuid.UUID
@@ -401,7 +401,7 @@ type UserPreference struct {
 	AuctionAlerts      bool
 	LotteryAlerts      bool
 	EventReminders     bool
-	CheckinReminders   bool
+	RollCallReminders  bool
 }
 
 type Wallet struct {

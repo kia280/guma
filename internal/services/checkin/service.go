@@ -166,7 +166,7 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
 	}
 
-	rows, err := s.q.ListCheckins(ctx, db.ListCheckinsParams{
+	rows, err := s.q.ListRollCalls(ctx, db.ListRollCallsParams{
 		GuildID: guildID, StatusFilter: p.Status,
 		PageSize: int32(pageSize), PageOffset: int32(p.Offset),
 	})
@@ -183,7 +183,7 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 		return nil, err
 	}
 
-	total, _ := s.q.CountCheckins(ctx, db.CountCheckinsParams{GuildID: guildID, StatusFilter: p.Status})
+	total, _ := s.q.CountRollCalls(ctx, db.CountRollCallsParams{GuildID: guildID, StatusFilter: p.Status})
 
 	nextOffset := 0
 	if len(checkins) == pageSize {
@@ -202,7 +202,7 @@ func (s *Service) Get(ctx context.Context, guildIDStr, checkinIDStr string) (*Ch
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
-	r, err := s.q.GetCheckin(ctx, db.GetCheckinParams{ID: checkinID, GuildID: guildID})
+	r, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
@@ -254,7 +254,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 	defer tx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(tx)
 
-	r, err := qtx.CreateCheckin(ctx, db.CreateCheckinParams{
+	r, err := qtx.CreateRollCall(ctx, db.CreateRollCallParams{
 		GuildID: guildID, CreatedBy: createdBy, Title: p.Title,
 		Description: p.Description, Datetime: p.Datetime, ExpireTime: p.ExpireTime,
 		ImageUrl: p.ImageURL, LootList: lootJSON,
@@ -267,9 +267,9 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 		if err != nil {
 			return nil, fmt.Errorf("%w: encode bank item: %v", errs.ErrInternal, err)
 		}
-		if err := qtx.InsertCheckinBankItem(ctx, db.InsertCheckinBankItemParams{
+		if err := qtx.InsertRollCallBankItem(ctx, db.InsertRollCallBankItemParams{
 			ID: uuid.MustParse(item.ID), GuildID: guildID, DonorID: createdBy,
-			DonorName: donorName, Item: itemJSON, CheckinID: r.ID,
+			DonorName: donorName, Item: itemJSON, RollCallID: r.ID,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: insert bank item: %v", errs.ErrInternal, err)
 		}
@@ -278,9 +278,9 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 		return nil, err
 	}
 	if len(loot) > 0 || prepared.gold > 0 {
-		if err := qtx.InsertCheckinLootContribution(ctx, db.InsertCheckinLootContributionParams{
+		if err := qtx.InsertRollCallLootContribution(ctx, db.InsertRollCallLootContributionParams{
 			GuildID: guildID, UserID: createdBy, Username: donorName, Amount: prepared.gold,
-			Note: p.Title, Items: itemsJSON, CheckinID: r.ID,
+			Note: p.Title, Items: itemsJSON, RollCallID: r.ID,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: record bank activity: %v", errs.ErrInternal, err)
 		}
@@ -323,7 +323,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*CheckIn, error) 
 		return nil, err
 	}
 
-	current, err := s.q.GetCheckin(ctx, db.GetCheckinParams{ID: checkinID, GuildID: guildID})
+	current, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
@@ -331,7 +331,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*CheckIn, error) 
 		return nil, err
 	}
 
-	params := db.UpdateCheckinParams{
+	params := db.UpdateRollCallParams{
 		Title: strings.TrimSpace(p.Title), Datetime: p.Datetime, ExpireTime: p.ExpireTime,
 		ID: checkinID, GuildID: guildID,
 	}
@@ -344,7 +344,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*CheckIn, error) 
 		params.ImageUrl = strings.TrimSpace(*p.ImageURL)
 	}
 
-	r, err := s.q.UpdateCheckin(ctx, params)
+	r, err := s.q.UpdateRollCall(ctx, params)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: check-in is no longer open", errs.ErrFailedPrecondition)
@@ -371,7 +371,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, checkinIDStr string) e
 	if err != nil {
 		return fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
-	n, err := s.q.DeleteCheckin(ctx, db.DeleteCheckinParams{ID: checkinID, GuildID: guildID})
+	n, err := s.q.DeleteRollCall(ctx, db.DeleteRollCallParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		return fmt.Errorf("%w: delete checkin: %v", errs.ErrInternal, err)
 	}
@@ -399,7 +399,7 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, checkinIDStr, userIDSt
 		return nil, err
 	}
 
-	current, err := s.q.GetCheckin(ctx, db.GetCheckinParams{ID: checkinID, GuildID: guildID})
+	current, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
@@ -414,24 +414,24 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, checkinIDStr, userIDSt
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	r, err := qtx.CancelCheckin(ctx, db.CancelCheckinParams{ID: checkinID, GuildID: guildID})
+	r, err := qtx.CancelRollCall(ctx, db.CancelRollCallParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: check-in is no longer open", errs.ErrFailedPrecondition)
 		}
 		return nil, fmt.Errorf("%w: cancel checkin: %v", errs.ErrInternal, err)
 	}
-	if _, err := qtx.RejectPendingRequestsForCheckinLoot(ctx, db.RejectPendingRequestsForCheckinLootParams{
-		ReviewerID: &userID, ReviewNote: retractedLootNote, GuildID: guildID, CheckinID: &checkinID,
+	if _, err := qtx.RejectPendingRequestsForRollCallLoot(ctx, db.RejectPendingRequestsForRollCallLootParams{
+		ReviewerID: &userID, ReviewNote: retractedLootNote, GuildID: guildID, RollCallID: &checkinID,
 	}); err != nil {
 		return nil, fmt.Errorf("%w: reject loot requests: %v", errs.ErrInternal, err)
 	}
-	if err := qtx.LogRetractedCheckinLoot(ctx, db.LogRetractedCheckinLootParams{
-		ActorID: userID, CheckinID: &checkinID, GuildID: guildID,
+	if err := qtx.LogRetractedRollCallLoot(ctx, db.LogRetractedRollCallLootParams{
+		ActorID: userID, RollCallID: &checkinID, GuildID: guildID,
 	}); err != nil {
 		return nil, fmt.Errorf("%w: log retracted loot: %v", errs.ErrInternal, err)
 	}
-	retracted, err := qtx.RetractCheckinLoot(ctx, db.RetractCheckinLootParams{CheckinID: &checkinID, GuildID: guildID})
+	retracted, err := qtx.RetractRollCallLoot(ctx, db.RetractRollCallLootParams{RollCallID: &checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: retract loot: %v", errs.ErrInternal, err)
 	}
@@ -473,7 +473,7 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*CheckIn,
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	state, err := qtx.LockCheckinState(ctx, db.LockCheckinStateParams{ID: checkinID, GuildID: guildID})
+	state, err := qtx.LockRollCallState(ctx, db.LockRollCallStateParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
@@ -484,7 +484,7 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*CheckIn,
 		return nil, err
 	}
 	entries := decodeLoot(state.LootList)
-	bankRows, err := qtx.LockCheckinBankItems(ctx, db.LockCheckinBankItemsParams{CheckinID: checkinID, GuildID: guildID})
+	bankRows, err := qtx.LockRollCallBankItems(ctx, db.LockRollCallBankItemsParams{RollCallID: checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: load loot in vault: %v", errs.ErrInternal, err)
 	}
@@ -503,8 +503,8 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*CheckIn,
 		if err != nil {
 			return nil, fmt.Errorf("%w: encode bank item: %v", errs.ErrInternal, err)
 		}
-		n, err := qtx.UpdateCheckinBankItem(ctx, db.UpdateCheckinBankItemParams{
-			Item: itemJSON, ID: uuid.MustParse(item.ID), GuildID: guildID, CheckinID: checkinID,
+		n, err := qtx.UpdateRollCallBankItem(ctx, db.UpdateRollCallBankItemParams{
+			Item: itemJSON, ID: uuid.MustParse(item.ID), GuildID: guildID, RollCallID: checkinID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("%w: update bank item: %v", errs.ErrInternal, err)
@@ -519,12 +519,12 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*CheckIn,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: reject loot requests: %v", errs.ErrInternal, err)
 		}
-		if err := qtx.LogRemovedCheckinLoot(ctx, db.LogRemovedCheckinLootParams{
-			ActorID: userID, Ids: plan.removed, GuildID: guildID, CheckinID: checkinID,
+		if err := qtx.LogRemovedRollCallLoot(ctx, db.LogRemovedRollCallLootParams{
+			ActorID: userID, Ids: plan.removed, GuildID: guildID, RollCallID: checkinID,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: log removed loot: %v", errs.ErrInternal, err)
 		}
-		n, err := qtx.RemoveCheckinLoot(ctx, db.RemoveCheckinLootParams{Ids: plan.removed, GuildID: guildID, CheckinID: checkinID})
+		n, err := qtx.RemoveRollCallLoot(ctx, db.RemoveRollCallLootParams{Ids: plan.removed, GuildID: guildID, RollCallID: checkinID})
 		if err != nil {
 			return nil, fmt.Errorf("%w: remove loot: %v", errs.ErrInternal, err)
 		}
@@ -537,9 +537,9 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*CheckIn,
 		if err != nil {
 			return nil, fmt.Errorf("%w: encode bank item: %v", errs.ErrInternal, err)
 		}
-		if err := qtx.InsertCheckinBankItem(ctx, db.InsertCheckinBankItemParams{
+		if err := qtx.InsertRollCallBankItem(ctx, db.InsertRollCallBankItemParams{
 			ID: uuid.MustParse(item.ID), GuildID: guildID, DonorID: userID,
-			DonorName: donorName, Item: itemJSON, CheckinID: checkinID,
+			DonorName: donorName, Item: itemJSON, RollCallID: checkinID,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: insert bank item: %v", errs.ErrInternal, err)
 		}
@@ -549,9 +549,9 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*CheckIn,
 		if err != nil {
 			return nil, fmt.Errorf("%w: encode loot: %v", errs.ErrInternal, err)
 		}
-		if err := qtx.InsertCheckinLootContribution(ctx, db.InsertCheckinLootContributionParams{
+		if err := qtx.InsertRollCallLootContribution(ctx, db.InsertRollCallLootContributionParams{
 			GuildID: guildID, UserID: userID, Username: donorName,
-			Note: state.Title, Items: addedJSON, CheckinID: checkinID,
+			Note: state.Title, Items: addedJSON, RollCallID: checkinID,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: record bank activity: %v", errs.ErrInternal, err)
 		}
@@ -561,7 +561,7 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*CheckIn,
 	if err != nil {
 		return nil, fmt.Errorf("%w: encode loot: %v", errs.ErrInternal, err)
 	}
-	r, err := qtx.SetCheckinLootList(ctx, db.SetCheckinLootListParams{LootList: lootJSON, ID: checkinID, GuildID: guildID})
+	r, err := qtx.SetRollCallLootList(ctx, db.SetRollCallLootListParams{LootList: lootJSON, ID: checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: update loot list: %v", errs.ErrInternal, err)
 	}
@@ -604,19 +604,19 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, checkinIDStr, userID
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	state, err := qtx.LockCheckinState(ctx, db.LockCheckinStateParams{ID: checkinID, GuildID: guildID})
+	state, err := qtx.LockRollCallState(ctx, db.LockRollCallStateParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 		}
 		return nil, fmt.Errorf("%w: load checkin: %v", errs.ErrInternal, err)
 	}
-	remaining, err := qtx.CountCheckinBankItems(ctx, db.CountCheckinBankItemsParams{CheckinID: checkinID, GuildID: guildID})
+	remaining, err := qtx.CountRollCallBankItems(ctx, db.CountRollCallBankItemsParams{RollCallID: checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: count loot in vault: %v", errs.ErrInternal, err)
 	}
 	var goldPot *GoldPot
-	pot, err := qtx.LockCheckinGoldPot(ctx, db.LockCheckinGoldPotParams{CheckinID: checkinID, GuildID: guildID})
+	pot, err := qtx.LockRollCallGoldPot(ctx, db.LockRollCallGoldPotParams{RollCallID: checkinID, GuildID: guildID})
 	switch {
 	case err == nil:
 		goldPot = &GoldPot{Total: pot.Total, Distributed: pot.Distributed, Retracted: pot.Retracted}
@@ -630,7 +630,7 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, checkinIDStr, userID
 	if err := checkCompletable(state.IsCancelled, state.IsCompleted, state.IsExpired, remaining, goldRemaining); err != nil {
 		return nil, err
 	}
-	r, err := qtx.CompleteCheckin(ctx, db.CompleteCheckinParams{CompletedBy: &userID, ID: checkinID, GuildID: guildID})
+	r, err := qtx.CompleteRollCall(ctx, db.CompleteRollCallParams{CompletedBy: &userID, ID: checkinID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: check-in can no longer be completed", errs.ErrFailedPrecondition)
@@ -665,7 +665,7 @@ func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr
 		return nil, err
 	}
 
-	window, err := s.q.GetCheckinAttendanceWindow(ctx, db.GetCheckinAttendanceWindowParams{ID: checkinID, GuildID: guildID})
+	window, err := s.q.GetRollCallCheckInWindow(ctx, db.GetRollCallCheckInWindowParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
@@ -675,15 +675,15 @@ func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr
 
 	info, _ := s.q.GetUserDisplayAndAvatar(ctx, db.GetUserDisplayAndAvatarParams{GuildID: guildID, UserID: userID})
 
-	attendeeID, err := s.q.InsertCheckinAttendee(ctx, db.InsertCheckinAttendeeParams{
-		CheckinID: checkinID, UserID: userID,
+	attendeeID, err := s.q.InsertRollCallAttendee(ctx, db.InsertRollCallAttendeeParams{
+		RollCallID: checkinID, UserID: userID,
 		DisplayName: info.DisplayName, AvatarUrl: info.AvatarUrl, Notes: notes,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: already attended this check-in", errs.ErrAlreadyExists)
 	}
 
-	_ = s.q.IncrementCheckinAttendance(ctx, checkinID)
+	_ = s.q.IncrementRollCallAttendance(ctx, checkinID)
 
 	return &CheckInAttendee{
 		ID: attendeeID.String(), CheckInID: checkinIDStr, UserID: userIDStr,
@@ -705,13 +705,13 @@ func (s *Service) ListAttendees(ctx context.Context, guildIDStr, checkinIDStr st
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
 
-	exists, err := s.q.CheckinExists(ctx, db.CheckinExistsParams{ID: checkinID, GuildID: guildID})
+	exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: checkinID, GuildID: guildID})
 	if err != nil || !exists {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
 
-	rows, err := s.q.ListCheckinAttendees(ctx, db.ListCheckinAttendeesParams{
-		CheckinID: checkinID, PageSize: int32(pageSize), PageOffset: int32(offset),
+	rows, err := s.q.ListRollCallAttendees(ctx, db.ListRollCallAttendeesParams{
+		RollCallID: checkinID, PageSize: int32(pageSize), PageOffset: int32(offset),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: list attendees: %v", errs.ErrInternal, err)
@@ -720,12 +720,12 @@ func (s *Service) ListAttendees(ctx context.Context, guildIDStr, checkinIDStr st
 	attendees := make([]*CheckInAttendee, 0, len(rows))
 	for _, r := range rows {
 		attendees = append(attendees, &CheckInAttendee{
-			ID: r.ID.String(), CheckInID: r.CheckinID.String(), UserID: r.UserID.String(),
-			DisplayName: r.DisplayName, AvatarURL: r.AvatarUrl, Notes: r.Notes, AttendedAt: r.AttendedAt,
+			ID: r.ID.String(), CheckInID: r.RollCallID.String(), UserID: r.UserID.String(),
+			DisplayName: r.DisplayName, AvatarURL: r.AvatarUrl, Notes: r.Notes, AttendedAt: r.CheckedInAt,
 		})
 	}
 
-	total, _ := s.q.CountCheckinAttendees(ctx, checkinID)
+	total, _ := s.q.CountRollCallAttendees(ctx, checkinID)
 
 	nextOffset := 0
 	if len(attendees) == pageSize {
@@ -760,10 +760,10 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, checkinIDStr, item
 	if err := s.requireRole(ctx, guildID, actorID, "owner", "admin", "moderator"); err != nil {
 		return "", err
 	}
-	if exists, err := s.q.CheckinExists(ctx, db.CheckinExistsParams{ID: checkinID, GuildID: guildID}); err != nil || !exists {
+	if exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: checkinID, GuildID: guildID}); err != nil || !exists {
 		return "", fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
-	attended, err := s.q.IsCheckinAttendee(ctx, db.IsCheckinAttendeeParams{CheckinID: checkinID, UserID: recipientID})
+	attended, err := s.q.IsRollCallAttendee(ctx, db.IsRollCallAttendeeParams{RollCallID: checkinID, UserID: recipientID})
 	if err != nil {
 		return "", fmt.Errorf("%w: load attendance: %v", errs.ErrInternal, err)
 	}
@@ -784,7 +784,7 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, checkinIDStr, item
 	}); err != nil {
 		return "", fmt.Errorf("%w: reject loot requests: %v", errs.ErrInternal, err)
 	}
-	itemJSON, err := qtx.TakeCheckinLootItem(ctx, db.TakeCheckinLootItemParams{ID: itemID, GuildID: guildID, CheckinID: &checkinID})
+	itemJSON, err := qtx.TakeRollCallLootItem(ctx, db.TakeRollCallLootItemParams{ID: itemID, GuildID: guildID, RollCallID: &checkinID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", fmt.Errorf("%w: loot item is no longer in the guild bank", errs.ErrFailedPrecondition)
@@ -792,7 +792,7 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, checkinIDStr, item
 		return "", fmt.Errorf("%w: take loot item: %v", errs.ErrInternal, err)
 	}
 	backpackItemID, err := qtx.InsertBackpackItem(ctx, db.InsertBackpackItemParams{
-		ID: &itemID, OwnerID: recipientID, GuildID: guildID, Item: itemJSON, Source: "checkin", SourceID: &checkinID,
+		ID: &itemID, OwnerID: recipientID, GuildID: guildID, Item: itemJSON, Source: "roll_call", SourceID: &checkinID,
 	})
 	if err != nil {
 		return "", fmt.Errorf("%w: deliver loot: %v", errs.ErrInternal, err)

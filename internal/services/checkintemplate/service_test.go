@@ -31,12 +31,12 @@ type fakeStore struct {
 	roleErr       error
 	knownItems    map[uuid.UUID]bool
 	countArg      db.CountGuildItemTemplatesParams
-	checkinCreate db.CreateCheckinTemplateParams
-	checkinUpdate db.UpdateCheckinTemplateParams
+	checkinCreate db.CreateRollCallTemplateParams
+	checkinUpdate db.UpdateRollCallTemplateParams
 	itemCreate    db.CreateItemTemplateParams
 	itemUpdate    db.UpdateItemTemplateParams
-	checkinRow    db.GetCheckinTemplateRow
-	checkinRows   []db.ListCheckinTemplatesRow
+	checkinRow    db.GetRollCallTemplateRow
+	checkinRows   []db.ListRollCallTemplatesRow
 	writeErr      error
 	deleted       int64
 	writes        int
@@ -46,29 +46,29 @@ func (f *fakeStore) GetGuildMemberRole(context.Context, db.GetGuildMemberRolePar
 	return f.role, f.roleErr
 }
 
-func (f *fakeStore) ListCheckinTemplates(context.Context, uuid.UUID) ([]db.ListCheckinTemplatesRow, error) {
+func (f *fakeStore) ListRollCallTemplates(context.Context, uuid.UUID) ([]db.ListRollCallTemplatesRow, error) {
 	return f.checkinRows, nil
 }
 
-func (f *fakeStore) GetCheckinTemplate(_ context.Context, arg db.GetCheckinTemplateParams) (db.GetCheckinTemplateRow, error) {
+func (f *fakeStore) GetRollCallTemplate(_ context.Context, arg db.GetRollCallTemplateParams) (db.GetRollCallTemplateRow, error) {
 	row := f.checkinRow
 	row.ID = arg.ID
 	return row, nil
 }
 
-func (f *fakeStore) CreateCheckinTemplate(_ context.Context, arg db.CreateCheckinTemplateParams) (uuid.UUID, error) {
+func (f *fakeStore) CreateRollCallTemplate(_ context.Context, arg db.CreateRollCallTemplateParams) (uuid.UUID, error) {
 	f.writes++
 	f.checkinCreate = arg
 	return testTemplate, f.writeErr
 }
 
-func (f *fakeStore) UpdateCheckinTemplate(_ context.Context, arg db.UpdateCheckinTemplateParams) (uuid.UUID, error) {
+func (f *fakeStore) UpdateRollCallTemplate(_ context.Context, arg db.UpdateRollCallTemplateParams) (uuid.UUID, error) {
 	f.writes++
 	f.checkinUpdate = arg
 	return arg.ID, f.writeErr
 }
 
-func (f *fakeStore) DeleteCheckinTemplate(context.Context, db.DeleteCheckinTemplateParams) (int64, error) {
+func (f *fakeStore) DeleteRollCallTemplate(context.Context, db.DeleteRollCallTemplateParams) (int64, error) {
 	f.writes++
 	return f.deleted, nil
 }
@@ -123,7 +123,7 @@ func validItem() ItemFields {
 
 func TestCreateCheckinTemplateKeepsItemOrderAndDuplicates(t *testing.T) {
 	store := newFake("moderator")
-	store.checkinRow = db.GetCheckinTemplateRow{
+	store.checkinRow = db.GetRollCallTemplateRow{
 		GuildID: testGuild, Name: "Weekly raid", Title: "Raid night",
 		Items: []byte(`[{"id":"` + testSword.String() + `","name":"Sword","category":"weapon","rarity":"rare"}]`),
 	}
@@ -322,7 +322,7 @@ func TestDeleteMissingTemplatesReturnNotFound(t *testing.T) {
 
 func TestListCheckinTemplatesDecodesItems(t *testing.T) {
 	store := newFake("moderator")
-	store.checkinRows = []db.ListCheckinTemplatesRow{
+	store.checkinRows = []db.ListRollCallTemplatesRow{
 		{ID: testTemplate, GuildID: testGuild, Name: "a", Title: "A", Items: []byte(`[{"id":"x","name":"Gem","rarity":"epic"}]`)},
 		{ID: uuid.New(), GuildID: testGuild, Name: "b", Title: "B", Items: []byte(`[]`)},
 	}

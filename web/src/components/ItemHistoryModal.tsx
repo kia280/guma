@@ -30,7 +30,11 @@ const KIND_ICONS: Record<ItemHistoryKind, string> = {
   delivered: 'solar:box-minimalistic-linear',
 };
 
-const RECEIVED_SOURCES = ['auction', 'lottery', 'transfer', 'admin', 'checkin', 'bank_item_request', 'bank'] as const;
+const RECEIVED_SOURCES = ['auction', 'lottery', 'transfer', 'admin', 'roll_call', 'bank_item_request', 'bank'] as const;
+
+const SOURCE_MESSAGE_KEYS: Partial<Record<string, string>> = { bank_item_request: 'bank', roll_call: 'rollCall' };
+
+const sourceMessageKey = (source: string) => SOURCE_MESSAGE_KEYS[source] ?? source;
 
 const referenceHref = (event: ItemHistoryEvent): string | undefined => {
   if (!event.referenceId) return undefined;
@@ -39,7 +43,7 @@ const referenceHref = (event: ItemHistoryEvent): string | undefined => {
       return `/dashboard/auction/${event.referenceId}`;
     case 'lottery':
       return `/dashboard/lottery/${event.referenceId}`;
-    case 'checkin':
+    case 'roll_call':
       return `/dashboard/attendance/${event.referenceId}`;
     default:
       return undefined;
@@ -86,7 +90,7 @@ export function ItemHistoryModal({ state, itemId, itemName }: ItemHistoryModalPr
     const label = event.referenceLabel;
     if (event.kind === 'received') {
       const source = RECEIVED_SOURCES.find(s => s === event.source) ?? 'other';
-      return t(`received.${source === 'bank_item_request' ? 'bank' : source}`, {
+      return t(`received.${sourceMessageKey(source)}`, {
         actor,
         subject,
         label: source === 'admin' ? userName(label) : label,
@@ -143,7 +147,7 @@ export function ItemHistoryModal({ state, itemId, itemName }: ItemHistoryModalPr
                               href={href}
                               className="rounded text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                             >
-                              {t(`view.${event.source}`)}
+                              {t(`view.${sourceMessageKey(event.source)}`)}
                             </Link>
                           )}
                         </div>

@@ -616,7 +616,7 @@ const baseMockApiClient: ApiClient = {
     if (itemLoot.length || gold > 0) {
       mockData.mockContributions.unshift({
         id: `c-${entry.id}`,
-        type: 'checkin_loot',
+        type: 'roll_call_loot',
         itemName: itemLoot.map(item => item.name).join(', ') || undefined,
         amount: gold > 0 ? gold : undefined,
         href: `/dashboard/attendance/${entry.id}`,
@@ -662,7 +662,7 @@ const baseMockApiClient: ApiClient = {
       store.bankBalance = addGold(store.bankBalance, -pot.remaining);
       mockData.mockContributions.unshift({
         id: `c-retract-${entry.id}`,
-        type: 'checkin_gold_retracted',
+        type: 'roll_call_gold_retracted',
         amount: pot.remaining,
         member: ownUserName(currentUser),
         date: new Date().toISOString(),
@@ -800,12 +800,12 @@ const baseMockApiClient: ApiClient = {
         store.transactions.unshift({
           id: `tx-${Date.now()}`,
           type: 'deposit',
-          kind: 'CHECKIN_GOLD',
+          kind: 'ROLL_CALL_GOLD',
           amount: p.amount,
           date: new Date().toISOString(),
           status: 'completed',
           description: entry.title,
-          referenceType: 'checkin',
+          referenceType: 'roll_call',
           referenceId: entry.id,
         });
         emitLiveEvent({ kind: 'wallet', guildId, balance: currentUser.balance });
@@ -815,7 +815,7 @@ const baseMockApiClient: ApiClient = {
     store.bankBalance = addGold(store.bankBalance, -total);
     mockData.mockContributions.unshift({
       id: `c-payout-${requestId}`,
-      type: 'checkin_gold_payout',
+      type: 'roll_call_gold_payout',
       amount: total,
       member: ownUserName(currentUser),
       date: new Date().toISOString(),
@@ -1079,7 +1079,7 @@ const baseMockApiClient: ApiClient = {
       events.push({ id: `${itemId}-${events.length}`, kind, source: '', actorName: '', subjectName: '', referenceLabel: '', createdAt, ...extra });
     if (bankItem) {
       if (bankItem.checkinId) {
-        event('looted', bankItem.donatedAt, { source: 'checkin', actorName: bankItem.donatedBy, referenceId: bankItem.checkinId, referenceLabel: bankItem.checkinTitle ?? '' });
+        event('looted', bankItem.donatedAt, { source: 'roll_call', actorName: bankItem.donatedBy, referenceId: bankItem.checkinId, referenceLabel: bankItem.checkinTitle ?? '' });
       } else {
         event('donated', bankItem.donatedAt, { actorName: bankItem.donatedBy });
       }
@@ -1089,7 +1089,7 @@ const baseMockApiClient: ApiClient = {
     }
     if (backpackItem) {
       const earlier = new Date(new Date(backpackItem.acquiredAt).getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
-      event('looted', earlier, { source: 'checkin', actorName: 'Night吃貨', referenceLabel: 'Boss raid' });
+      event('looted', earlier, { source: 'roll_call', actorName: 'Night吃貨', referenceLabel: 'Boss raid' });
       event('received', backpackItem.acquiredAt, {
         source: backpackItem.acquiredFrom,
         actorName: ownUserName(currentUser),

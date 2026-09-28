@@ -27,7 +27,7 @@ const KIND_META: Record<NotificationKind, { icon: string; tint: string }> = {
   itemMovedByAdmin: { icon: 'solar:shield-user-linear', tint: 'bg-warning/10 text-warning' },
   itemDelivered: { icon: 'solar:box-minimalistic-linear', tint: 'bg-success/10 text-success' },
   lootAssigned: { icon: 'solar:clipboard-check-linear', tint: 'bg-success/10 text-success' },
-  checkinGoldReceived: { icon: 'solar:hand-money-linear', tint: 'bg-success/10 text-success' },
+  rollCallGoldReceived: { icon: 'solar:hand-money-linear', tint: 'bg-success/10 text-success' },
   lotteryWon: { icon: 'solar:ticket-linear', tint: 'bg-warning/10 text-warning' },
   lotteryCancelled: { icon: 'solar:forbidden-circle-linear', tint: 'bg-default text-subtle' },
 };

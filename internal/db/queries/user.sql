@@ -89,8 +89,8 @@ LIMIT 1;
 -- name: CountUserGuilds :one
 SELECT COUNT(*) FROM members WHERE user_id = $1;
 
--- name: CountUserCheckins :one
-SELECT COUNT(*) FROM checkin_attendees WHERE user_id = $1;
+-- name: CountUserAttendance :one
+SELECT COUNT(*) FROM roll_call_attendees WHERE user_id = $1;
 
 -- name: CountUserEventsAttended :one
 SELECT COUNT(*) FROM guild_events WHERE sqlc.arg(user_id)::uuid = ANY(participant_ids);

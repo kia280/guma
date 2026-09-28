@@ -42,7 +42,7 @@ type TopContributor struct {
 
 const (
 	ContributionKindGold            = "gold"
-	ContributionKindCheckinLoot     = "checkin_loot"
+	ContributionKindCheckinLoot     = "roll_call_loot"
 	ContributionKindAuctionProceeds = "auction_proceeds"
 )
 
@@ -504,8 +504,8 @@ func (s *Service) ListContributions(ctx context.Context, p ListContributionsPara
 		if len(r.Items) > 0 {
 			_ = json.Unmarshal(r.Items, &c.Items)
 		}
-		if r.CheckinID != nil {
-			c.CheckinID = r.CheckinID.String()
+		if r.RollCallID != nil {
+			c.CheckinID = r.RollCallID.String()
 		}
 		contribs = append(contribs, c)
 	}
@@ -593,7 +593,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 	rows, err := s.q.ListBankItems(ctx, db.ListBankItemsParams{
 		GuildID: guildID, CategoryFilter: p.Category, RarityFilter: p.Rarity,
 		PageSize: int32(pageSize), PageOffset: int32(p.Offset), ViewerID: viewerID,
-		CheckinFilter: p.CheckinID,
+		RollCallFilter: p.CheckinID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: list bank items: %v", errs.ErrInternal, err)
@@ -604,12 +604,12 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 		bi := &BankItem{
 			ID: r.ID.String(), GuildID: r.GuildID.String(), DonorID: r.DonorID.String(),
 			DonorName: r.DonorName, Quantity: r.Quantity,
-			Note: r.Note, DonatedAt: r.DonatedAt, CheckinTitle: r.CheckinTitle,
+			Note: r.Note, DonatedAt: r.DonatedAt, CheckinTitle: r.RollCallTitle,
 			PendingRequestCount: r.PendingRequestCount, RequestedByMe: r.RequestedByMe,
 			Lock: models.NewItemLock(r.LockedByType, r.LockedByID),
 		}
-		if r.CheckinID != nil {
-			bi.CheckinID = r.CheckinID.String()
+		if r.RollCallID != nil {
+			bi.CheckinID = r.RollCallID.String()
 		}
 		if len(r.Item) > 0 {
 			_ = json.Unmarshal(r.Item, &bi.Item)
@@ -619,7 +619,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 
 	total, _ := s.q.CountBankItems(ctx, db.CountBankItemsParams{
 		GuildID: guildID, CategoryFilter: p.Category, RarityFilter: p.Rarity,
-		CheckinFilter: p.CheckinID,
+		RollCallFilter: p.CheckinID,
 	})
 
 	nextOffset := 0

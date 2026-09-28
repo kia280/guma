@@ -52,15 +52,15 @@ const getContributionIcon = (type: GuildContribution['type']) => {
       return 'solar:backpack-linear';
     case 'item_distribute':
       return 'solar:arrow-right-linear';
-    case 'checkin_loot':
+    case 'roll_call_loot':
       return 'solar:clipboard-check-linear';
     case 'auction_proceeds':
       return 'solar:sledgehammer-linear';
     case 'lottery_revenue':
       return 'solar:ticket-linear';
-    case 'checkin_gold_payout':
+    case 'roll_call_gold_payout':
       return 'solar:hand-money-linear';
-    case 'checkin_gold_retracted':
+    case 'roll_call_gold_retracted':
       return 'solar:undo-left-linear';
     case 'admin_transfer':
       return 'solar:shield-user-linear';
@@ -71,7 +71,7 @@ const isInflowContribution = (type: GuildContribution['type']) =>
   type === 'contribute' ||
   type === 'auction_proceeds' ||
   type === 'lottery_revenue' ||
-  type === 'checkin_loot' ||
+  type === 'roll_call_loot' ||
   type === 'admin_transfer';
 
 
@@ -235,15 +235,15 @@ export default function GuildBankPage() {
         return t('typeItemDonate');
       case 'item_distribute':
         return t('typeItemDistribute');
-      case 'checkin_loot':
+      case 'roll_call_loot':
         return t('typeCheckinLoot');
       case 'auction_proceeds':
         return t('typeAuctionProceeds');
       case 'lottery_revenue':
         return t('typeLotteryRevenue');
-      case 'checkin_gold_payout':
+      case 'roll_call_gold_payout':
         return t('typeCheckinGoldPayout');
-      case 'checkin_gold_retracted':
+      case 'roll_call_gold_retracted':
         return t('typeCheckinGoldRetracted');
       case 'admin_transfer':
         return t('typeAdminTransfer');

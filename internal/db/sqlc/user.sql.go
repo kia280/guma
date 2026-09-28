@@ -12,23 +12,23 @@ import (
 	"github.com/google/uuid"
 )
 
+const countUserAttendance = `-- name: CountUserAttendance :one
+SELECT COUNT(*) FROM roll_call_attendees WHERE user_id = $1
+`
+
+func (q *Queries) CountUserAttendance(ctx context.Context, userID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserAttendance, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countUserAuctionsWon = `-- name: CountUserAuctionsWon :one
 SELECT COUNT(*) FROM auctions WHERE current_bidder_id = $1 AND status = 'ENDED'
 `
 
 func (q *Queries) CountUserAuctionsWon(ctx context.Context, currentBidderID *uuid.UUID) (int64, error) {
 	row := q.db.QueryRow(ctx, countUserAuctionsWon, currentBidderID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const countUserCheckins = `-- name: CountUserCheckins :one
-SELECT COUNT(*) FROM checkin_attendees WHERE user_id = $1
-`
-
-func (q *Queries) CountUserCheckins(ctx context.Context, userID uuid.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, countUserCheckins, userID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

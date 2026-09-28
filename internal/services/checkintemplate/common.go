@@ -23,11 +23,11 @@ var managerRoles = []string{"owner", "admin", "moderator"}
 
 type store interface {
 	GetGuildMemberRole(ctx context.Context, arg db.GetGuildMemberRoleParams) (string, error)
-	ListCheckinTemplates(ctx context.Context, guildID uuid.UUID) ([]db.ListCheckinTemplatesRow, error)
-	GetCheckinTemplate(ctx context.Context, arg db.GetCheckinTemplateParams) (db.GetCheckinTemplateRow, error)
-	CreateCheckinTemplate(ctx context.Context, arg db.CreateCheckinTemplateParams) (uuid.UUID, error)
-	UpdateCheckinTemplate(ctx context.Context, arg db.UpdateCheckinTemplateParams) (uuid.UUID, error)
-	DeleteCheckinTemplate(ctx context.Context, arg db.DeleteCheckinTemplateParams) (int64, error)
+	ListRollCallTemplates(ctx context.Context, guildID uuid.UUID) ([]db.ListRollCallTemplatesRow, error)
+	GetRollCallTemplate(ctx context.Context, arg db.GetRollCallTemplateParams) (db.GetRollCallTemplateRow, error)
+	CreateRollCallTemplate(ctx context.Context, arg db.CreateRollCallTemplateParams) (uuid.UUID, error)
+	UpdateRollCallTemplate(ctx context.Context, arg db.UpdateRollCallTemplateParams) (uuid.UUID, error)
+	DeleteRollCallTemplate(ctx context.Context, arg db.DeleteRollCallTemplateParams) (int64, error)
 	ListItemTemplates(ctx context.Context, guildID uuid.UUID) ([]db.ItemTemplate, error)
 	CreateItemTemplate(ctx context.Context, arg db.CreateItemTemplateParams) (db.ItemTemplate, error)
 	UpdateItemTemplate(ctx context.Context, arg db.UpdateItemTemplateParams) (db.ItemTemplate, error)

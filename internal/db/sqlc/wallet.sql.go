@@ -321,7 +321,7 @@ SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
                WHEN 'transfer' THEN member_display_name(bi.guild_id, bi.source_id)
                WHEN 'admin'    THEN member_display_name(bi.guild_id, bi.source_id)
                WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
-               WHEN 'checkin'  THEN (SELECT c.title FROM checkins c WHERE c.id = bi.source_id)
+               WHEN 'roll_call'  THEN (SELECT c.title FROM roll_calls c WHERE c.id = bi.source_id)
            END,
            ''
        )::text AS source_label,
@@ -396,7 +396,7 @@ SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
                WHEN 'transfer' THEN member_display_name(bi.guild_id, bi.source_id)
                WHEN 'admin'    THEN member_display_name(bi.guild_id, bi.source_id)
                WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
-               WHEN 'checkin'  THEN (SELECT c.title FROM checkins c WHERE c.id = bi.source_id)
+               WHEN 'roll_call'  THEN (SELECT c.title FROM roll_calls c WHERE c.id = bi.source_id)
            END,
            ''
        )::text AS source_label,

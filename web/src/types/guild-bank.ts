@@ -15,11 +15,11 @@ export interface GuildContribution {
     | 'request'
     | 'item_donate'
     | 'item_distribute'
-    | 'checkin_loot'
+    | 'roll_call_loot'
     | 'auction_proceeds'
     | 'lottery_revenue'
-    | 'checkin_gold_payout'
-    | 'checkin_gold_retracted'
+    | 'roll_call_gold_payout'
+    | 'roll_call_gold_retracted'
     | 'admin_transfer';
   amount?: number;
   itemName?: string;
@@ -74,11 +74,11 @@ export interface BankContribution {
 
 export type BankContributionKind =
   | 'gold'
-  | 'checkin_loot'
+  | 'roll_call_loot'
   | 'auction_proceeds'
   | 'lottery_revenue'
-  | 'checkin_gold_payout'
-  | 'checkin_gold_retracted'
+  | 'roll_call_gold_payout'
+  | 'roll_call_gold_retracted'
   | 'admin_transfer';
 
 export type RequestStatus = 'pending' | 'approved' | 'rejected';

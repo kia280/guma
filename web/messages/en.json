@@ -865,7 +865,7 @@
     "DarkTheme": "Dark Theme"
   },
   "notificationItem": {
-    "checkinGoldReceived": "You received <b>{amount}</b> from <b>{checkin}</b>",
+    "rollCallGoldReceived": "You received <b>{amount}</b> from <b>{rollCall}</b>",
     "unread": "Unread",
     "note": "Note: {note}",
     "reason": "Reason: {reason}",
@@ -881,7 +881,7 @@
     "auctionSold": "<b>{actor}</b> won <b>{item}</b> for <b>{amount}</b>, paid to {destination, select, wallet {your wallet} other {the guild vault}}",
     "auctionUnsold": "<b>{item}</b> ended without bids",
     "itemReceived": "<b>{actor}</b> sent you <b>{item}</b>",
-    "lootAssigned": "You received <b>{item}</b> from <b>{checkin}</b>",
+    "lootAssigned": "You received <b>{item}</b> from <b>{rollCall}</b>",
     "itemDelivered": "<b>{actor}</b> handed over <b>{item}</b> in game",
     "auctionCancelled": "<b>{item}</b> was cancelled{refunded, select, yes {. Your bid of <b>{amount}</b> was refunded} other {}}",
     "lotteryCancelled": "<b>{lottery}</b> was cancelled. Your {tickets, plural, one {# ticket was} other {# tickets were}} refunded (<b>{amount}</b>)",
@@ -1684,7 +1684,7 @@
       "auction": "{actor} won it at auction",
       "lottery": "{actor} won it in {label}",
       "transfer": "{subject} gave it to {actor}",
-      "checkin": "{actor} received it as roll call loot",
+      "rollCall": "{actor} received it as roll call loot",
       "bank": "{actor} received it from the guild vault",
       "other": "{actor} received it",
       "admin": "{label} moved it from {subject} to {actor}"
@@ -1696,7 +1696,7 @@
     "view": {
       "auction": "View auction",
       "lottery": "View lottery",
-      "checkin": "View roll call"
+      "rollCall": "View roll call"
     },
     "adminDonated": "{label} moved it from {actor}'s backpack to the guild vault"
   },

@@ -62,7 +62,7 @@ SELECT e.seq, e.kind, e.source, e.actor_id, e.subject_id, e.reference_id, e.crea
        COALESCE(member_display_name(e.guild_id, e.actor_id), '')::text AS actor_name,
        COALESCE(member_display_name(e.guild_id, e.subject_id), '')::text AS subject_name,
        COALESCE(CASE e.source
-           WHEN 'checkin' THEN (SELECT c.title FROM checkins c WHERE c.id = e.reference_id)
+           WHEN 'roll_call' THEN (SELECT c.title FROM roll_calls c WHERE c.id = e.reference_id)
            WHEN 'auction' THEN (SELECT a.item->>'name' FROM auctions a WHERE a.id = e.reference_id)
            WHEN 'lottery' THEN (SELECT l.title FROM lotteries l WHERE l.id = e.reference_id)
            WHEN 'admin'   THEN member_display_name(e.guild_id, e.reference_id)

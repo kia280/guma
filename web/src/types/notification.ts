@@ -14,7 +14,7 @@ export type NotificationKind =
   | 'itemMovedByAdmin'
   | 'itemDelivered'
   | 'lootAssigned'
-  | 'checkinGoldReceived'
+  | 'rollCallGoldReceived'
   | 'lotteryWon'
   | 'lotteryCancelled';
 

@@ -94,8 +94,8 @@ DELETE FROM bank_items
 WHERE bank_items.id = $1
   AND bank_items.locked_by_type = $2::text
   AND bank_items.locked_by_id = $3::uuid
-  AND bank_items.checkin_id IN (SELECT c.id FROM checkins c WHERE c.cancelled_at IS NOT NULL)
-RETURNING bank_items.guild_id, bank_items.checkin_id
+  AND bank_items.roll_call_id IN (SELECT c.id FROM roll_calls c WHERE c.cancelled_at IS NOT NULL)
+RETURNING bank_items.guild_id, bank_items.roll_call_id
 `
 
 type DeleteReleasedCancelledLootParams struct {
@@ -105,8 +105,8 @@ type DeleteReleasedCancelledLootParams struct {
 }
 
 type DeleteReleasedCancelledLootRow struct {
-	GuildID   uuid.UUID
-	CheckinID *uuid.UUID
+	GuildID    uuid.UUID
+	RollCallID *uuid.UUID
 }
 
 func (q *Queries) DeleteReleasedCancelledLoot(ctx context.Context, arg DeleteReleasedCancelledLootParams) ([]DeleteReleasedCancelledLootRow, error) {
@@ -118,7 +118,7 @@ func (q *Queries) DeleteReleasedCancelledLoot(ctx context.Context, arg DeleteRel
 	items := []DeleteReleasedCancelledLootRow{}
 	for rows.Next() {
 		var i DeleteReleasedCancelledLootRow
-		if err := rows.Scan(&i.GuildID, &i.CheckinID); err != nil {
+		if err := rows.Scan(&i.GuildID, &i.RollCallID); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

@@ -865,7 +865,7 @@
     "DarkTheme": "深色主題"
   },
   "notificationItem": {
-    "checkinGoldReceived": "你從 <b>{checkin}</b> 獲得 <b>{amount}</b>",
+    "rollCallGoldReceived": "你從 <b>{rollCall}</b> 獲得 <b>{amount}</b>",
     "unread": "未讀",
     "note": "備註：{note}",
     "reason": "原因：{reason}",
@@ -881,7 +881,7 @@
     "auctionSold": "<b>{actor}</b> 以 <b>{amount}</b> 得標 <b>{item}</b>，款項已存入{destination, select, wallet {你的錢包} other {公會倉庫}}",
     "auctionUnsold": "<b>{item}</b> 已結束，無人出價",
     "itemReceived": "<b>{actor}</b> 送給你 <b>{item}</b>",
-    "lootAssigned": "你從 <b>{checkin}</b> 獲得 <b>{item}</b>",
+    "lootAssigned": "你從 <b>{rollCall}</b> 獲得 <b>{item}</b>",
     "itemDelivered": "<b>{actor}</b> 已在遊戲中交付 <b>{item}</b>",
     "auctionCancelled": "<b>{item}</b> 已取消{refunded, select, yes {，你的出價 <b>{amount}</b> 已退回} other {}}",
     "lotteryCancelled": "<b>{lottery}</b> 已取消，你的 {tickets} 張彩券已退款（<b>{amount}</b>）",
@@ -1684,7 +1684,7 @@
       "auction": "{actor} 在競拍中得標",
       "lottery": "{actor} 在「{label}」中抽中",
       "transfer": "{subject} 轉讓給 {actor}",
-      "checkin": "{actor} 獲得點名戰利品",
+      "rollCall": "{actor} 獲得點名戰利品",
       "bank": "{actor} 從公會倉庫取得",
       "other": "{actor} 取得",
       "admin": "{label} 將物品從 {subject} 移轉給 {actor}"
@@ -1696,7 +1696,7 @@
     "view": {
       "auction": "查看競拍",
       "lottery": "查看抽獎",
-      "checkin": "查看點名"
+      "rollCall": "查看點名"
     },
     "adminDonated": "{label} 將物品從 {actor} 的背包移至公會倉庫"
   },

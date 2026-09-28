@@ -45,8 +45,8 @@ DELETE FROM bank_items
 WHERE bank_items.id = sqlc.arg(id)
   AND bank_items.locked_by_type = sqlc.arg(holder_type)::text
   AND bank_items.locked_by_id = sqlc.arg(holder_id)::uuid
-  AND bank_items.checkin_id IN (SELECT c.id FROM checkins c WHERE c.cancelled_at IS NOT NULL)
-RETURNING bank_items.guild_id, bank_items.checkin_id;
+  AND bank_items.roll_call_id IN (SELECT c.id FROM roll_calls c WHERE c.cancelled_at IS NOT NULL)
+RETURNING bank_items.guild_id, bank_items.roll_call_id;
 
 -- name: ConsumeBackpackItem :one
 DELETE FROM backpack_items

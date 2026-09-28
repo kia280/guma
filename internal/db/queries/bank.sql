@@ -104,7 +104,7 @@ SELECT bc.id, bc.guild_id, bc.user_id,
        COALESCE(u.avatar_url, '') AS avatar_url,
        bc.amount,
        COALESCE(bc.note, '')      AS note,
-       bc.created_at, bc.kind, bc.items, bc.checkin_id,
+       bc.created_at, bc.kind, bc.items, bc.roll_call_id,
        COALESCE(bc.reference_type, '') AS reference_type,
        bc.reference_id
 FROM bank_contributions bc
@@ -135,8 +135,8 @@ SELECT bi.id, bi.guild_id, bi.donor_id,
        bi.item, bi.quantity,
        COALESCE(bi.note, '') AS note,
        bi.donated_at,
-       bi.checkin_id,
-       COALESCE(c.title, '') AS checkin_title,
+       bi.roll_call_id,
+       COALESCE(c.title, '') AS roll_call_title,
        (SELECT COUNT(*) FROM item_requests ir WHERE ir.bank_item_id = bi.id AND ir.status = 'pending')::int AS pending_request_count,
        EXISTS (
            SELECT 1 FROM item_requests ir
@@ -145,11 +145,11 @@ SELECT bi.id, bi.guild_id, bi.donor_id,
        COALESCE(bi.locked_by_type, '') AS locked_by_type,
        bi.locked_by_id
 FROM bank_items bi
-LEFT JOIN checkins c ON c.id = bi.checkin_id
+LEFT JOIN roll_calls c ON c.id = bi.roll_call_id
 WHERE bi.guild_id = $1
   AND (sqlc.arg(category_filter)::text = '' OR bi.item->>'category' = sqlc.arg(category_filter)::text)
   AND (sqlc.arg(rarity_filter)::text   = '' OR bi.item->>'rarity'   = sqlc.arg(rarity_filter)::text)
-  AND (sqlc.arg(checkin_filter)::text  = '' OR bi.checkin_id::text  = sqlc.arg(checkin_filter)::text)
+  AND (sqlc.arg(roll_call_filter)::text  = '' OR bi.roll_call_id::text  = sqlc.arg(roll_call_filter)::text)
 ORDER BY bi.donated_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
@@ -158,7 +158,7 @@ SELECT COUNT(*) FROM bank_items
 WHERE guild_id = $1
   AND (sqlc.arg(category_filter)::text = '' OR item->>'category' = sqlc.arg(category_filter)::text)
   AND (sqlc.arg(rarity_filter)::text   = '' OR item->>'rarity'   = sqlc.arg(rarity_filter)::text)
-  AND (sqlc.arg(checkin_filter)::text  = '' OR checkin_id::text  = sqlc.arg(checkin_filter)::text);
+  AND (sqlc.arg(roll_call_filter)::text  = '' OR roll_call_id::text  = sqlc.arg(roll_call_filter)::text);
 
 -- name: InsertItemRequest :one
 INSERT INTO item_requests (guild_id, bank_item_id, requester_id, requester_name, reason, item)

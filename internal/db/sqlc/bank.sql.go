@@ -29,14 +29,14 @@ SELECT COUNT(*) FROM bank_items
 WHERE guild_id = $1
   AND ($2::text = '' OR item->>'category' = $2::text)
   AND ($3::text   = '' OR item->>'rarity'   = $3::text)
-  AND ($4::text  = '' OR checkin_id::text  = $4::text)
+  AND ($4::text  = '' OR roll_call_id::text  = $4::text)
 `
 
 type CountBankItemsParams struct {
 	GuildID        uuid.UUID
 	CategoryFilter string
 	RarityFilter   string
-	CheckinFilter  string
+	RollCallFilter string
 }
 
 func (q *Queries) CountBankItems(ctx context.Context, arg CountBankItemsParams) (int64, error) {
@@ -44,7 +44,7 @@ func (q *Queries) CountBankItems(ctx context.Context, arg CountBankItemsParams) 
 		arg.GuildID,
 		arg.CategoryFilter,
 		arg.RarityFilter,
-		arg.CheckinFilter,
+		arg.RollCallFilter,
 	)
 	var count int64
 	err := row.Scan(&count)
@@ -478,7 +478,7 @@ SELECT bc.id, bc.guild_id, bc.user_id,
        COALESCE(u.avatar_url, '') AS avatar_url,
        bc.amount,
        COALESCE(bc.note, '')      AS note,
-       bc.created_at, bc.kind, bc.items, bc.checkin_id,
+       bc.created_at, bc.kind, bc.items, bc.roll_call_id,
        COALESCE(bc.reference_type, '') AS reference_type,
        bc.reference_id
 FROM bank_contributions bc
@@ -505,7 +505,7 @@ type ListBankContributionsRow struct {
 	CreatedAt     time.Time
 	Kind          string
 	Items         []byte
-	CheckinID     *uuid.UUID
+	RollCallID    *uuid.UUID
 	ReferenceType string
 	ReferenceID   *uuid.UUID
 }
@@ -530,7 +530,7 @@ func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContrib
 			&i.CreatedAt,
 			&i.Kind,
 			&i.Items,
-			&i.CheckinID,
+			&i.RollCallID,
 			&i.ReferenceType,
 			&i.ReferenceID,
 		); err != nil {
@@ -550,8 +550,8 @@ SELECT bi.id, bi.guild_id, bi.donor_id,
        bi.item, bi.quantity,
        COALESCE(bi.note, '') AS note,
        bi.donated_at,
-       bi.checkin_id,
-       COALESCE(c.title, '') AS checkin_title,
+       bi.roll_call_id,
+       COALESCE(c.title, '') AS roll_call_title,
        (SELECT COUNT(*) FROM item_requests ir WHERE ir.bank_item_id = bi.id AND ir.status = 'pending')::int AS pending_request_count,
        EXISTS (
            SELECT 1 FROM item_requests ir
@@ -560,11 +560,11 @@ SELECT bi.id, bi.guild_id, bi.donor_id,
        COALESCE(bi.locked_by_type, '') AS locked_by_type,
        bi.locked_by_id
 FROM bank_items bi
-LEFT JOIN checkins c ON c.id = bi.checkin_id
+LEFT JOIN roll_calls c ON c.id = bi.roll_call_id
 WHERE bi.guild_id = $1
   AND ($3::text = '' OR bi.item->>'category' = $3::text)
   AND ($4::text   = '' OR bi.item->>'rarity'   = $4::text)
-  AND ($5::text  = '' OR bi.checkin_id::text  = $5::text)
+  AND ($5::text  = '' OR bi.roll_call_id::text  = $5::text)
 ORDER BY bi.donated_at DESC
 LIMIT $7::int OFFSET $6::int
 `
@@ -574,7 +574,7 @@ type ListBankItemsParams struct {
 	ViewerID       uuid.UUID
 	CategoryFilter string
 	RarityFilter   string
-	CheckinFilter  string
+	RollCallFilter string
 	PageOffset     int32
 	PageSize       int32
 }
@@ -588,8 +588,8 @@ type ListBankItemsRow struct {
 	Quantity            int32
 	Note                string
 	DonatedAt           time.Time
-	CheckinID           *uuid.UUID
-	CheckinTitle        string
+	RollCallID          *uuid.UUID
+	RollCallTitle       string
 	PendingRequestCount int32
 	RequestedByMe       bool
 	LockedByType        string
@@ -602,7 +602,7 @@ func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([
 		arg.ViewerID,
 		arg.CategoryFilter,
 		arg.RarityFilter,
-		arg.CheckinFilter,
+		arg.RollCallFilter,
 		arg.PageOffset,
 		arg.PageSize,
 	)
@@ -622,8 +622,8 @@ func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([
 			&i.Quantity,
 			&i.Note,
 			&i.DonatedAt,
-			&i.CheckinID,
-			&i.CheckinTitle,
+			&i.RollCallID,
+			&i.RollCallTitle,
 			&i.PendingRequestCount,
 			&i.RequestedByMe,
 			&i.LockedByType,

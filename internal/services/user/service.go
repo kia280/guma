@@ -477,7 +477,7 @@ func (s *Service) GetStats(ctx context.Context, userID string) (*Stats, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: query guilds joined: %v", errs.ErrInternal, err)
 	}
-	checkins, err := s.q.CountUserCheckins(ctx, id)
+	checkins, err := s.q.CountUserAttendance(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("%w: query checkins: %v", errs.ErrInternal, err)
 	}

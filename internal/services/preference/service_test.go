@@ -89,7 +89,7 @@ func TestGetReturnsStoredRow(t *testing.T) {
 		AuctionAlerts:      true,
 		LotteryAlerts:      false,
 		EventReminders:     true,
-		CheckinReminders:   false,
+		RollCallReminders:  false,
 		UpdatedAt:          updated,
 	}}, zerolog.Nop())
 
@@ -111,7 +111,7 @@ func TestUpdateNotificationsSendsOnlyProvidedFields(t *testing.T) {
 		AuctionAlerts:      false,
 		LotteryAlerts:      true,
 		EventReminders:     false,
-		CheckinReminders:   true,
+		RollCallReminders:  true,
 	}}
 	s := newService(store, zerolog.Nop())
 
@@ -124,7 +124,7 @@ func TestUpdateNotificationsSendsOnlyProvidedFields(t *testing.T) {
 	assert.False(t, store.upsertArg.EmailNotifications.Valid)
 	assert.False(t, store.upsertArg.LotteryAlerts.Valid)
 	assert.False(t, store.upsertArg.EventReminders.Valid)
-	assert.False(t, store.upsertArg.CheckinReminders.Valid)
+	assert.False(t, store.upsertArg.RollCallReminders.Valid)
 	assert.False(t, got.Notifications.AuctionAlerts)
 	assert.True(t, got.Notifications.EmailNotifications)
 }

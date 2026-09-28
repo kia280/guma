@@ -97,7 +97,7 @@ func (s *Service) Get(ctx context.Context, userIDStr string) (*Preferences, erro
 			AuctionAlerts:      row.AuctionAlerts,
 			LotteryAlerts:      row.LotteryAlerts,
 			EventReminders:     row.EventReminders,
-			CheckinReminders:   row.CheckinReminders,
+			CheckinReminders:   row.RollCallReminders,
 		},
 		UpdatedAt: row.UpdatedAt,
 	}, nil
@@ -118,7 +118,7 @@ func (s *Service) UpdateNotifications(ctx context.Context, userIDStr string, pat
 		AuctionAlerts:      optionalBool(patch.AuctionAlerts),
 		LotteryAlerts:      optionalBool(patch.LotteryAlerts),
 		EventReminders:     optionalBool(patch.EventReminders),
-		CheckinReminders:   optionalBool(patch.CheckinReminders),
+		RollCallReminders:  optionalBool(patch.CheckinReminders),
 	})
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -133,7 +133,7 @@ func (s *Service) UpdateNotifications(ctx context.Context, userIDStr string, pat
 			AuctionAlerts:      row.AuctionAlerts,
 			LotteryAlerts:      row.LotteryAlerts,
 			EventReminders:     row.EventReminders,
-			CheckinReminders:   row.CheckinReminders,
+			CheckinReminders:   row.RollCallReminders,
 		},
 		UpdatedAt: row.UpdatedAt,
 	}, nil

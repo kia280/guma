@@ -59,13 +59,13 @@ func (s *Service) List(ctx context.Context, guildIDStr, userIDStr string) ([]*Te
 	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
 		return nil, err
 	}
-	rows, err := s.q.ListCheckinTemplates(ctx, guildID)
+	rows, err := s.q.ListRollCallTemplates(ctx, guildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: list checkin templates: %v", errs.ErrInternal, err)
 	}
 	templates := make([]*Template, 0, len(rows))
 	for _, r := range rows {
-		templates = append(templates, toTemplate(db.GetCheckinTemplateRow(r)))
+		templates = append(templates, toTemplate(db.GetRollCallTemplateRow(r)))
 	}
 	return templates, nil
 }
@@ -85,7 +85,7 @@ func (s *Service) Create(ctx context.Context, guildIDStr, userIDStr string, f Fi
 	if err := s.requireGuildItems(ctx, guildID, itemIDs); err != nil {
 		return nil, err
 	}
-	id, err := s.q.CreateCheckinTemplate(ctx, db.CreateCheckinTemplateParams{
+	id, err := s.q.CreateRollCallTemplate(ctx, db.CreateRollCallTemplateParams{
 		GuildID: guildID, CreatedBy: userID, Name: name, Title: title, ItemTemplateIds: itemIDs,
 	})
 	if err != nil {
@@ -114,7 +114,7 @@ func (s *Service) Update(ctx context.Context, guildIDStr, templateIDStr, userIDS
 	if err := s.requireGuildItems(ctx, guildID, itemIDs); err != nil {
 		return nil, err
 	}
-	id, err := s.q.UpdateCheckinTemplate(ctx, db.UpdateCheckinTemplateParams{
+	id, err := s.q.UpdateRollCallTemplate(ctx, db.UpdateRollCallTemplateParams{
 		ID: templateID, GuildID: guildID, Name: name, Title: title, ItemTemplateIds: itemIDs,
 	})
 	if err != nil {
@@ -135,7 +135,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDS
 	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
 		return err
 	}
-	n, err := s.q.DeleteCheckinTemplate(ctx, db.DeleteCheckinTemplateParams{ID: templateID, GuildID: guildID})
+	n, err := s.q.DeleteRollCallTemplate(ctx, db.DeleteRollCallTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {
 		return fmt.Errorf("%w: delete checkin template: %v", errs.ErrInternal, err)
 	}
@@ -146,7 +146,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDS
 }
 
 func (s *Service) get(ctx context.Context, guildID, templateID uuid.UUID) (*Template, error) {
-	r, err := s.q.GetCheckinTemplate(ctx, db.GetCheckinTemplateParams{ID: templateID, GuildID: guildID})
+	r, err := s.q.GetRollCallTemplate(ctx, db.GetRollCallTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {
 		return nil, writeError(checkinEntity, err)
 	}
@@ -198,7 +198,7 @@ func normalizeFields(f Fields) (string, string, []uuid.UUID, error) {
 	return name, title, itemIDs, nil
 }
 
-func toTemplate(r db.GetCheckinTemplateRow) *Template {
+func toTemplate(r db.GetRollCallTemplateRow) *Template {
 	t := &Template{
 		ID: r.ID.String(), GuildID: r.GuildID.String(),
 		Name: r.Name, Title: r.Title, CreatedBy: r.CreatedBy.String(),
