@@ -11,7 +11,6 @@ export type NavLabelKey =
   | 'admin'
   | 'adminInbox'
   | 'adminMembers'
-  | 'adminRequests'
   | 'adminTemplates'
   | 'adminGuild'
   | 'adminAnnouncements'
@@ -38,13 +37,12 @@ export interface NavSection {
   items: Array<NavLink | NavGroup>;
 }
 
-export const ADMIN_TABS = ['inbox', 'users', 'bankRequests', 'templates', 'guild', 'announcements'] as const;
+export const ADMIN_TABS = ['inbox', 'users', 'templates', 'guild', 'announcements'] as const;
 export type AdminTab = (typeof ADMIN_TABS)[number];
 
 const ADMIN_TAB_LABELS: Record<AdminTab, NavLabelKey> = {
   inbox: 'adminInbox',
   users: 'adminMembers',
-  bankRequests: 'adminRequests',
   templates: 'adminTemplates',
   guild: 'adminGuild',
   announcements: 'adminAnnouncements',
@@ -89,7 +87,6 @@ export const NAV_SECTIONS: NavSection[] = [
         children: [
           { key: 'admin-inbox', href: adminTabHref('inbox'), icon: 'solar:inbox-in-linear', label: 'adminInbox' },
           { key: 'admin-users', href: adminTabHref('users'), icon: 'solar:users-group-rounded-linear', label: 'adminMembers' },
-          { key: 'admin-requests', href: adminTabHref('bankRequests'), icon: 'solar:inbox-linear', label: 'adminRequests' },
           { key: 'admin-templates', href: adminTabHref('templates'), icon: 'solar:layers-minimalistic-linear', label: 'adminTemplates' },
           { key: 'admin-guild', href: adminTabHref('guild'), icon: 'solar:widget-linear', label: 'adminGuild' },
           { key: 'admin-announcements', href: adminTabHref('announcements'), icon: 'solar:document-text-linear', label: 'adminAnnouncements' },

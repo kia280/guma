@@ -153,13 +153,13 @@ export function DevAuthPanel() {
     <div className="flex h-full flex-col gap-4 overflow-y-auto bg-background p-4 text-foreground">
       <section className="rounded-xl border border-divider bg-surface p-3">
         <Switch isSelected={isMock} isDisabled={env.useMock} onChange={toggleMock}>
-          <Switch.Control>
-            <Switch.Thumb />
-          </Switch.Control>
           <Switch.Content>
+            <Switch.Control>
+              <Switch.Thumb />
+            </Switch.Control>
             <Label className="type-body">{t('mockData')}</Label>
-            <Description>{env.useMock ? t('mockDataForcedByEnv') : t('mockDataDescription')}</Description>
           </Switch.Content>
+          <Description>{env.useMock ? t('mockDataForcedByEnv') : t('mockDataDescription')}</Description>
         </Switch>
         {isMock && (
           <div className="mt-3 flex flex-col gap-2 border-t border-divider pt-3">
@@ -229,9 +229,9 @@ export function DevAuthPanel() {
             void createAndLogin();
           }}
         >
-          <TextField className="flex-1" value={newName} onChange={setNewName}>
+          <TextField className="min-w-0 flex-1" value={newName} onChange={setNewName}>
             <Label>{t('displayName')}</Label>
-            <Input placeholder={t('displayNamePlaceholder')} />
+            <Input className="min-w-0" placeholder={t('displayNamePlaceholder')} />
           </TextField>
           <Button type="submit" size="sm" isPending={pendingAction === 'create'}>
             {t('createAndLogin')}
@@ -251,7 +251,7 @@ export function DevAuthPanel() {
             }}
           >
             <NumberField
-              className="flex-1"
+              className="min-w-0 flex-1"
               minValue={1}
               maxValue={MAX_SEED_COUNT}
               value={seedCount}
@@ -283,7 +283,7 @@ export function DevAuthPanel() {
         </section>
       )}
 
-      <section className="flex min-h-0 flex-col gap-2 rounded-xl border border-divider bg-surface p-3">
+      <section className="flex shrink-0 flex-col gap-2 rounded-xl border border-divider bg-surface p-3">
         <div className="flex items-center justify-between gap-2 type-body">
           <div className="min-w-0">
             <h3 className="type-subheading text-soft">{t('loginAs')}</h3>
@@ -293,10 +293,10 @@ export function DevAuthPanel() {
           </div>
           <Chip size="sm">{t('userCount', { count: users.length })}</Chip>
         </div>
-        <SearchField value={query} onChange={setQuery} aria-label={t('search')}>
-          <SearchField.Group>
+        <SearchField className="min-w-0" variant="secondary" value={query} onChange={setQuery} aria-label={t('search')}>
+          <SearchField.Group className="min-w-0">
             <SearchField.SearchIcon />
-            <SearchField.Input placeholder={t('search')} />
+            <SearchField.Input className="min-w-0" placeholder={t('search')} />
             <SearchField.ClearButton />
           </SearchField.Group>
         </SearchField>
