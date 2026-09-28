@@ -16,25 +16,14 @@
   },
   "loginPage": {
     "loginWithDiscord": "使用 Discord 登入",
-    "dontHaveAccount": "沒有帳號?",
-    "register": "註冊",
-    "password": "密碼",
-    "logIn": "登入",
-    "emailAddress": "電子郵件地址",
-    "rememberMe": "記住我",
-    "forgotPassword": "忘記密碼？",
-    "or": "或",
     "redirecting": "正在跳轉至登入頁面...",
     "loginUnavailable": "Login is unavailable",
     "loginUnavailableDescription": "The authentication service could not be reached. Check that it is running, then try again.",
     "retry": "Try again",
     "welcomeBack": "歡迎回來",
-    "showPassword": "顯示密碼",
-    "hidePassword": "隱藏密碼",
     "title": "登入 Guma",
-    "emailRequired": "請輸入電子郵件地址。",
-    "emailInvalid": "請輸入有效的電子郵件地址，例如 name@example.com。",
-    "passwordRequired": "請輸入密碼。"
+    "discordLoginFailed": "Discord 登入失敗",
+    "discordLoginFailedDescription": "無法使用 Discord 登入，請再試一次。"
   },
   "sidebar": {
     "dashboard": "主頁",
