@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { useUserName } from '@/hooks/useUserName';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
@@ -53,6 +54,7 @@ type ItemHistoryModalProps = {
 
 export function ItemHistoryModal({ state, itemId, itemName }: ItemHistoryModalProps) {
   const t = useTranslations('itemHistory');
+  const userName = useUserName();
   const format = useIntlFormatter();
   const guildId = useCurrentGuildId();
   const [result, setResult] = React.useState<{ itemId: string; events: ItemHistoryEvent[] | null } | null>(null);
@@ -79,8 +81,8 @@ export function ItemHistoryModal({ state, itemId, itemName }: ItemHistoryModalPr
   const events = isCurrent ? result.events ?? [] : [];
 
   const describe = (event: ItemHistoryEvent) => {
-    const actor = event.actorName || t('someone');
-    const subject = event.subjectName || t('someone');
+    const actor = userName(event.actorName);
+    const subject = userName(event.subjectName);
     const label = event.referenceLabel;
     if (event.kind === 'received') {
       const source = RECEIVED_SOURCES.find(s => s === event.source) ?? 'other';

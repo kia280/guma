@@ -215,16 +215,16 @@ func (s *MemberService) ListMembers(ctx context.Context, req *memberv1.ListMembe
 
 func toMemberProto(m *membersvc.Member) *memberv1.Member {
 	return &memberv1.Member{
-		Id:          m.ID,
-		UserId:      m.UserID,
-		GuildId:     m.GuildID,
-		DisplayName: m.DisplayName,
-		Email:       m.Email,
-		AvatarUrl:   m.AvatarURL,
-		Role:        m.Role,
-		Profile:     m.Profile,
-		JoinedAt:    timestamppb.New(m.JoinedAt),
-		LastActive:  timestamppb.New(m.LastActive),
+		Id:              m.ID,
+		UserId:          m.UserID,
+		GuildId:         m.GuildID,
+		DisplayName:     m.DisplayName,
+		DiscordUsername: m.DiscordUsername,
+		AvatarUrl:       m.AvatarURL,
+		Role:            m.Role,
+		Profile:         m.Profile,
+		JoinedAt:        timestamppb.New(m.JoinedAt),
+		LastActive:      timestamppb.New(m.LastActive),
 	}
 }
 

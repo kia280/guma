@@ -6,6 +6,7 @@ export type LotteryStatus = 'active' | 'upcoming' | 'ended' | 'cancelled';
 
 export interface LotteryWinner {
   id: string;
+  userId?: string;
   username: string;
   avatar?: string;
   prize: string;

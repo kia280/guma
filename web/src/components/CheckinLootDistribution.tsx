@@ -17,6 +17,7 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
@@ -39,6 +40,7 @@ type CheckinLootDistributionProps = {
 export function CheckinLootDistribution({ checkinId, lootList, attendees }: CheckinLootDistributionProps) {
   const t = useTranslations('checkinLoot');
   const labels = useTranslations('createAuctionModal');
+  const userName = useUserName();
   const guildId = useCurrentGuildId();
   const notify = useToast();
   const { can } = useGuildPermissions();
@@ -91,7 +93,7 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees }: Chec
     try {
       await apiClient.assignLoot(guildId, checkinId, assignTarget.id, recipientId);
       const recipient = eligibleAttendees.find(member => member.userId === recipientId);
-      notify.success(t('assignSuccess', { item: assignTarget.name, name: recipient?.username ?? '' }));
+      notify.success(t('assignSuccess', { item: assignTarget.name, name: userName(recipient?.username) }));
       assignModal.close();
       load();
     } catch (err) {
@@ -252,11 +254,11 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees }: Chec
                   <Select.Popover>
                     <ListBox>
                       {eligibleAttendees.map(member => (
-                        <ListBox.Item key={member.userId} id={member.userId} textValue={member.username}>
+                        <ListBox.Item key={member.userId} id={member.userId} textValue={userName(member.username)}>
                           <div className="flex items-center gap-2">
-                            <UserAvatar name={member.username} src={member.avatar} className="size-6" />
+                            <UserAvatar name={userName(member.username)} src={member.avatar} className="size-6" />
                             <div className="flex flex-col">
-                              <Label>{member.username}</Label>
+                              <Label>{userName(member.username)}</Label>
                               {member.notes && <Description>{member.notes}</Description>}
                             </div>
                           </div>

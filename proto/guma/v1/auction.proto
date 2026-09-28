@@ -184,6 +184,10 @@ message AuctionItem {
   google.protobuf.Timestamp updated_at = 14;
   string source_type = 15;
   google.protobuf.Timestamp cancelled_at = 16;
+  string seller_name = 17;
+  string seller_avatar_url = 18;
+  string current_bidder_name = 19;
+  string current_bidder_avatar_url = 20;
 }
 
 message Bid {

@@ -451,6 +451,7 @@
     "endBeforeStart": "End must be after the start."
   },
   "adminPage": {
+    "discordUsername": "Discord username",
     "users": "Users",
     "guild": "Guild",
     "announcements": "Announcements",
@@ -917,6 +918,11 @@
     "usernameInvalid": "Username may only contain letters and digits in any language, dots, underscores, and hyphens, and must start with a letter or digit.",
     "usernameTaken": "This username is already taken.",
     "usernameHint": "{min}–{max} characters: letters or digits in any language, dots, underscores, or hyphens.",
+    "name": "Name",
+    "nameHint": "Shown to members of your current guild. No other member of the guild can use the same name. Up to {max} characters.",
+    "nameRequired": "Enter a name.",
+    "nameTooLong": "Names can be up to {max} characters.",
+    "nameTaken": "Another member of this guild already uses this name.",
     "bioTooLong": "Bio must be at most {max} characters.",
     "saveInvalid": "Please fix the highlighted fields and try again."
   },
@@ -1613,5 +1619,8 @@
     "prizes": "Prizes",
     "noPrizes": "No prizes.",
     "prizesLockedHint": "Prizes can't be changed after the lottery is created."
+  },
+  "userName": {
+    "unknown": "Unknown member"
   }
 }

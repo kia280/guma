@@ -2,7 +2,6 @@
 
 export interface User {
   id: string;
-  username: string;
   displayName: string;
   email: string;
   avatarUrl: string;
@@ -25,7 +24,6 @@ export interface LinkedAccount {
 
 export interface UpdateMeRequest {
   displayName?: string;
-  username?: string;
   bio?: string;
   avatarUrl?: string;
 }
@@ -34,7 +32,7 @@ export interface UpdateMeRequest {
 export interface MockUser {
   id: string;
   username: string;
-  email: string;
+  discordUsername?: string;
   role?: string;
   status?: string;
   lastActive?: string;

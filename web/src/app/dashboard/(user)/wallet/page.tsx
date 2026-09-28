@@ -32,6 +32,7 @@ import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
@@ -173,6 +174,7 @@ const getPageNumbers = (page: number, totalPages: number): PageNumber[] => {
 export default function WalletPage() {
   const t = useTranslations('walletPage');
   const labels = useTranslations('createAuctionModal');
+  const userName = useUserName();
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
@@ -358,7 +360,7 @@ export default function WalletPage() {
       return;
     }
     const amount = transferAmountValue;
-    const recipient = mockUsers.find(user => user.id === transferRecipient)?.username ?? transferRecipient;
+    const recipient = userName(mockUsers.find(user => user.id === transferRecipient)?.username);
     return runAction(
       'transfer',
       () => apiClient.transfer(guildId, { recipientId: transferRecipient, amount }),

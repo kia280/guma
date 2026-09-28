@@ -277,18 +277,23 @@ func (q *Queries) GetLotteryForDraw(ctx context.Context, arg GetLotteryForDrawPa
 }
 
 const getUserUsernameAndAvatar = `-- name: GetUserUsernameAndAvatar :one
-SELECT COALESCE(username, '')   AS username,
-       COALESCE(avatar_url, '') AS avatar_url
-FROM users WHERE id = $1
+SELECT COALESCE(member_display_name($1::uuid, id), '')::text AS username,
+       COALESCE(avatar_url, '')                                               AS avatar_url
+FROM users WHERE id = $2
 `
+
+type GetUserUsernameAndAvatarParams struct {
+	GuildID uuid.UUID
+	UserID  uuid.UUID
+}
 
 type GetUserUsernameAndAvatarRow struct {
 	Username  string
 	AvatarUrl string
 }
 
-func (q *Queries) GetUserUsernameAndAvatar(ctx context.Context, id uuid.UUID) (GetUserUsernameAndAvatarRow, error) {
-	row := q.db.QueryRow(ctx, getUserUsernameAndAvatar, id)
+func (q *Queries) GetUserUsernameAndAvatar(ctx context.Context, arg GetUserUsernameAndAvatarParams) (GetUserUsernameAndAvatarRow, error) {
+	row := q.db.QueryRow(ctx, getUserUsernameAndAvatar, arg.GuildID, arg.UserID)
 	var i GetUserUsernameAndAvatarRow
 	err := row.Scan(&i.Username, &i.AvatarUrl)
 	return i, err
@@ -537,12 +542,13 @@ func (q *Queries) ListLotteryTicketHolders(ctx context.Context, lotteryID uuid.U
 
 const listLotteryWinners = `-- name: ListLotteryWinners :many
 SELECT lw.id, lw.lottery_id, lw.user_id,
-       COALESCE(u.username, '')   AS username,
+       COALESCE(member_display_name(l.guild_id, lw.user_id), '')::text AS username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        lw.rank, lw.prize_amount,
        COALESCE(lw.prize_description, '') AS prize_description,
        lw.ticket_number
 FROM lottery_winners lw
+JOIN lotteries l ON l.id = lw.lottery_id
 LEFT JOIN users u ON u.id = lw.user_id
 WHERE lw.lottery_id = $1
 ORDER BY lw.rank ASC

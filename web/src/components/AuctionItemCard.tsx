@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { getRarityColor } from '@/components/ItemThumbnail';
 import { useCountdown } from '@/hooks/useNow';
+import { useUserName } from '@/hooks/useUserName';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
@@ -68,6 +69,7 @@ const AuctionItemCard = ({
 }: AuctionItemCardProps) => {
   const t = useTranslations('auctionItemCard');
   const labels = useTranslations('createAuctionModal');
+  const userName = useUserName();
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const formatCountdown = useCountdownFormatter();
@@ -210,8 +212,8 @@ const AuctionItemCard = ({
                     </span>
                     {item.currentBidder ? (
                       <div className="flex items-center gap-2">
-                        <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
-                        <span className="type-body text-foreground">{item.currentBidder.username}</span>
+                        <UserAvatar name={userName(item.currentBidder.username)} src={item.currentBidder.avatar} />
+                        <span className="type-body text-foreground">{userName(item.currentBidder.username)}</span>
                       </div>
                     ) : (
                       <span className="type-body text-hint">
@@ -227,8 +229,8 @@ const AuctionItemCard = ({
               <div className="flex items-center justify-between">
                 <span className="type-caption text-hint">{t('soldBy')}</span>
                 <div className="flex items-center gap-2">
-                  <UserAvatar name={item.seller.username} src={item.seller.avatar} />
-                  <span className="type-body text-foreground">{item.seller.username}</span>
+                  <UserAvatar name={userName(item.seller.username)} src={item.seller.avatar} />
+                  <span className="type-body text-foreground">{userName(item.seller.username)}</span>
                 </div>
               </div>
 
@@ -377,10 +379,10 @@ const AuctionItemCard = ({
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <UserAvatar name={bid.bidder.username} src={bid.bidder.avatar} />
+                            <UserAvatar name={userName(bid.bidder.username)} src={bid.bidder.avatar} />
                             <div>
                               <div className="type-body font-medium text-foreground">
-                                {bid.bidder.username}
+                                {userName(bid.bidder.username)}
                               </div>
                               <div className="type-caption text-hint">
                                 {format.dateTime(new Date(bid.timestamp), { dateStyle: 'medium', timeStyle: 'short' })}

@@ -215,21 +215,25 @@ func (h *AuctionHandler) CancelAuction(ctx context.Context, req *gumav1.CancelAu
 
 func auctionToProto(a *auctionsvc.AuctionItem) *gumav1.AuctionItem {
 	proto := &gumav1.AuctionItem{
-		Id:              a.ID,
-		GuildId:         a.GuildID,
-		SellerId:        a.SellerID,
-		Item:            itemToProto(a.Item),
-		StartingBid:     a.StartingBid,
-		CurrentBid:      a.CurrentBid,
-		CurrentBidderId: a.CurrentBidderID,
-		MinBidIncrement: a.MinBidIncrement,
-		StartTime:       timestamppb.New(a.StartTime),
-		EndTime:         timestamppb.New(a.EndTime),
-		Status:          a.Status,
-		IsBlind:         a.IsBlind,
-		SourceType:      a.SourceType,
-		CreatedAt:       timestamppb.New(a.CreatedAt),
-		UpdatedAt:       timestamppb.New(a.UpdatedAt),
+		Id:                     a.ID,
+		GuildId:                a.GuildID,
+		SellerId:               a.SellerID,
+		Item:                   itemToProto(a.Item),
+		StartingBid:            a.StartingBid,
+		CurrentBid:             a.CurrentBid,
+		CurrentBidderId:        a.CurrentBidderID,
+		MinBidIncrement:        a.MinBidIncrement,
+		StartTime:              timestamppb.New(a.StartTime),
+		EndTime:                timestamppb.New(a.EndTime),
+		Status:                 a.Status,
+		IsBlind:                a.IsBlind,
+		SourceType:             a.SourceType,
+		CreatedAt:              timestamppb.New(a.CreatedAt),
+		UpdatedAt:              timestamppb.New(a.UpdatedAt),
+		SellerName:             a.SellerName,
+		SellerAvatarUrl:        a.SellerAvatarURL,
+		CurrentBidderName:      a.CurrentBidderName,
+		CurrentBidderAvatarUrl: a.CurrentBidderAvatarURL,
 	}
 	if a.CancelledAt != nil {
 		proto.CancelledAt = timestamppb.New(*a.CancelledAt)
@@ -239,12 +243,14 @@ func auctionToProto(a *auctionsvc.AuctionItem) *gumav1.AuctionItem {
 
 func bidToProto(b *auctionsvc.Bid) *gumav1.Bid {
 	return &gumav1.Bid{
-		Id:        b.ID,
-		AuctionId: b.AuctionID,
-		BidderId:  b.BidderID,
-		Amount:    b.Amount,
-		IsWinning: b.IsWinning,
-		PlacedAt:  timestamppb.New(b.PlacedAt),
+		Id:              b.ID,
+		AuctionId:       b.AuctionID,
+		BidderId:        b.BidderID,
+		BidderUsername:  b.BidderName,
+		BidderAvatarUrl: b.BidderAvatarURL,
+		Amount:          b.Amount,
+		IsWinning:       b.IsWinning,
+		PlacedAt:        timestamppb.New(b.PlacedAt),
 	}
 }
 

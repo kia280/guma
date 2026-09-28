@@ -5,7 +5,7 @@ RETURNING id;
 
 -- name: GetAnnouncement :one
 SELECT a.id, a.guild_id, a.author_id,
-       COALESCE(NULLIF(u.display_name, ''), u.username, '')::text AS author_name,
+       COALESCE(member_display_name(a.guild_id, a.author_id), '')::text AS author_name,
        a.title, a.content, a.pinned, a.status, a.published_at, a.created_at, a.updated_at
 FROM announcements a
 JOIN users u ON u.id = a.author_id
@@ -13,7 +13,7 @@ WHERE a.id = $1 AND a.guild_id = $2;
 
 -- name: ListGuildAnnouncements :many
 SELECT a.id, a.guild_id, a.author_id,
-       COALESCE(NULLIF(u.display_name, ''), u.username, '')::text AS author_name,
+       COALESCE(member_display_name(a.guild_id, a.author_id), '')::text AS author_name,
        a.title, a.content, a.pinned, a.status, a.published_at, a.created_at, a.updated_at
 FROM announcements a
 JOIN users u ON u.id = a.author_id

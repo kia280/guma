@@ -8,13 +8,13 @@ FROM guild_bank WHERE guild_id = $1;
 
 -- name: ListTopBankContributors :many
 SELECT bc.user_id,
-       bc.username,
+       COALESCE(NULLIF(member_display_name(bc.guild_id, bc.user_id), ''), MAX(bc.username))::text AS username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        SUM(bc.amount)::bigint     AS total
 FROM bank_contributions bc
 LEFT JOIN users u ON u.id = bc.user_id
 WHERE bc.guild_id = $1 AND bc.kind = 'gold'
-GROUP BY bc.user_id, bc.username, u.avatar_url
+GROUP BY bc.guild_id, bc.user_id, u.avatar_url
 ORDER BY total DESC
 LIMIT 5;
 
@@ -42,8 +42,7 @@ VALUES ($1, $2, sqlc.arg(username)::text, $3, NULLIF(sqlc.arg(note)::text, ''))
 RETURNING id, created_at;
 
 -- name: GetUserDisplayName :one
-SELECT COALESCE(display_name, username, '')::text AS display_name
-FROM users WHERE id = $1;
+SELECT COALESCE(member_display_name(sqlc.arg(guild_id)::uuid, sqlc.arg(user_id)::uuid), '')::text AS display_name;
 
 -- name: InsertFundRequest :one
 INSERT INTO fund_requests (guild_id, requester_id, requester_name, amount, reason)
@@ -79,7 +78,8 @@ RETURNING fund_requests.id, fund_requests.guild_id, fund_requests.requester_id, 
           fund_requests.created_at, fund_requests.reviewed_at;
 
 -- name: ListFundRequests :many
-SELECT fr.id, fr.guild_id, fr.requester_id, fr.requester_name,
+SELECT fr.id, fr.guild_id, fr.requester_id,
+       COALESCE(NULLIF(member_display_name(fr.guild_id, fr.requester_id), ''), fr.requester_name)::text AS requester_name,
        COALESCE(u.avatar_url, '')   AS requester_avatar_url,
        fr.amount,
        COALESCE(fr.reason, '')      AS reason,
@@ -99,7 +99,8 @@ SELECT COUNT(*) FROM fund_requests WHERE guild_id = $1
   AND (sqlc.arg(status_filter)::text = '' OR status = sqlc.arg(status_filter)::text);
 
 -- name: ListBankContributions :many
-SELECT bc.id, bc.guild_id, bc.user_id, bc.username,
+SELECT bc.id, bc.guild_id, bc.user_id,
+       COALESCE(NULLIF(member_display_name(bc.guild_id, bc.user_id), ''), bc.username)::text AS username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        bc.amount,
        COALESCE(bc.note, '')      AS note,
@@ -129,7 +130,9 @@ RETURNING id, guild_id, donor_id, donor_name, item, quantity,
           donated_at;
 
 -- name: ListBankItems :many
-SELECT bi.id, bi.guild_id, bi.donor_id, bi.donor_name, bi.item, bi.quantity,
+SELECT bi.id, bi.guild_id, bi.donor_id,
+       COALESCE(NULLIF(member_display_name(bi.guild_id, bi.donor_id), ''), bi.donor_name)::text AS donor_name,
+       bi.item, bi.quantity,
        COALESCE(bi.note, '') AS note,
        bi.donated_at,
        bi.checkin_id,
@@ -185,7 +188,8 @@ WHERE bank_item_id = sqlc.arg(bank_item_id) AND guild_id = sqlc.arg(guild_id)
   AND id <> sqlc.arg(id) AND status = 'pending';
 
 -- name: ListItemRequests :many
-SELECT ir.id, ir.guild_id, ir.bank_item_id, ir.requester_id, ir.requester_name,
+SELECT ir.id, ir.guild_id, ir.bank_item_id, ir.requester_id,
+       COALESCE(NULLIF(member_display_name(ir.guild_id, ir.requester_id), ''), ir.requester_name)::text AS requester_name,
        COALESCE(u.avatar_url, '')   AS requester_avatar_url,
        COALESCE(ir.reason, '')      AS reason,
        ir.status,

@@ -148,7 +148,6 @@ const toLinkedAccount = (a: ProtoLinkedAccount): LinkedAccount => ({
 
 export const toUser = (u: ProtoUser): User => ({
   id: u.id ?? '',
-  username: u.username ?? '',
   displayName: u.display_name ?? '',
   email: u.email ?? '',
   avatarUrl: u.avatar_url ?? '',
@@ -182,6 +181,10 @@ type ProtoAuctionItem = {
   starting_bid?: number | string;
   current_bid?: number | string;
   current_bidder_id?: string;
+  current_bidder_name?: string;
+  current_bidder_avatar_url?: string;
+  seller_name?: string;
+  seller_avatar_url?: string;
   min_bid_increment?: number | string;
   start_time?: string;
   end_time?: string;
@@ -212,7 +215,11 @@ export const toAuctionItem = (raw: ProtoAuctionItem): AuctionItem => ({
   startingBid: fromMinorUnits(raw.starting_bid),
   currentBid: fromMinorUnits(raw.current_bid),
   currentBidder: raw.current_bidder_id
-    ? { id: raw.current_bidder_id, username: raw.current_bidder_id }
+    ? {
+        id: raw.current_bidder_id,
+        username: raw.current_bidder_name ?? '',
+        avatar: raw.current_bidder_avatar_url || undefined,
+      }
     : undefined,
   minBidIncrement: fromMinorUnits(raw.min_bid_increment),
   startTime: ts(raw.start_time),
@@ -222,7 +229,11 @@ export const toAuctionItem = (raw: ProtoAuctionItem): AuctionItem => ({
   sourceType: toSourceType(raw.source_type),
   guildId: raw.guild_id ?? '',
   sellerId: raw.seller_id ?? '',
-  seller: { id: raw.seller_id ?? '', username: raw.seller_id ?? '' },
+  seller: {
+    id: raw.seller_id ?? '',
+    username: raw.seller_name ?? '',
+    avatar: raw.seller_avatar_url || undefined,
+  },
   bidHistory: [],
   createdAt: ts(raw.created_at),
   updatedAt: ts(raw.updated_at),
@@ -240,22 +251,19 @@ type ProtoBid = {
   bidder_avatar_url?: string;
 };
 
-export const toBid = (raw: ProtoBid): Bid => {
-  const username = raw.bidder_username || raw.bidder_id || 'Unknown';
-  return {
-    id: raw.id,
-    auctionItemId: raw.auction_id ?? '',
-    bidderId: raw.bidder_id ?? '',
-    bidder: {
-      id: raw.bidder_id ?? '',
-      username,
-      avatar: raw.bidder_avatar_url || undefined,
-    },
-    amount: fromMinorUnits(raw.amount),
-    timestamp: ts(raw.placed_at),
-    isWinning: Boolean(raw.is_winning),
-  };
-};
+export const toBid = (raw: ProtoBid): Bid => ({
+  id: raw.id,
+  auctionItemId: raw.auction_id ?? '',
+  bidderId: raw.bidder_id ?? '',
+  bidder: {
+    id: raw.bidder_id ?? '',
+    username: raw.bidder_username ?? '',
+    avatar: raw.bidder_avatar_url || undefined,
+  },
+  amount: fromMinorUnits(raw.amount),
+  timestamp: ts(raw.placed_at),
+  isWinning: Boolean(raw.is_winning),
+});
 
 // ─── Check-in ───────────────────────────────────────────────────────────────
 
@@ -323,7 +331,7 @@ type ProtoMember = {
   id: string;
   user_id?: string;
   display_name?: string;
-  email?: string;
+  discord_username?: string;
   avatar_url?: string;
   role?: string;
   last_active?: string;
@@ -335,8 +343,8 @@ export const toMember = (raw: ProtoMember): MockUser => {
   const lastActive = ts(raw.last_active);
   return {
     id: raw.user_id || raw.id,
-    username: raw.display_name || raw.email || raw.user_id || 'Unknown',
-    email: raw.email ?? '',
+    username: raw.display_name ?? '',
+    discordUsername: raw.discord_username || undefined,
     role: raw.role,
     status: Date.now() - new Date(lastActive).getTime() < ONLINE_WINDOW_MS ? 'online' : 'offline',
     lastActive,
@@ -356,7 +364,7 @@ type ProtoAttendee = {
 export const toAttendee = (raw: ProtoAttendee): AttendanceMember => ({
   id: raw.id,
   userId: raw.user_id,
-  username: raw.display_name || raw.user_id || 'Unknown',
+  username: raw.display_name ?? '',
   avatar: raw.avatar_url || undefined,
   checkedInAt: ts(raw.attended_at),
   ...(raw.notes ? { notes: raw.notes } : {}),
@@ -382,6 +390,7 @@ type ProtoLottery = {
 
 type ProtoLotteryWinner = {
   id?: string;
+  user_id?: string;
   username?: string;
   avatar_url?: string;
   rank?: number;
@@ -417,6 +426,7 @@ export const toLottery = (raw: ProtoLottery): Lottery => {
 
 export const toLotteryWinner = (raw: ProtoLotteryWinner): LotteryWinner => ({
   id: raw.id ?? '',
+  userId: raw.user_id || undefined,
   username: raw.username ?? '',
   avatar: raw.avatar_url || undefined,
   prize: raw.prize_description ?? '',

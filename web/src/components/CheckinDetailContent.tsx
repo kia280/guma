@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useCountdown } from '@/hooks/useNow';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
@@ -32,6 +33,7 @@ import { UserAvatar } from './UserAvatar';
 export default function CheckinDetailContent({ id, onClose }: { id: string; onClose?: () => void }) {
   const router = useRouter();
   const t = useTranslations('checkinDetailPage');
+  const userName = useUserName();
   const format = useIntlFormatter();
 
   const formatDateTime = (value: string) => {
@@ -378,10 +380,10 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     <span className="type-caption text-hint w-5 text-right shrink-0">
                       {idx + 1}
                     </span>
-                    <UserAvatar name={member.username} src={member.avatar} className="shrink-0" />
+                    <UserAvatar name={userName(member.username)} src={member.avatar} className="shrink-0" />
                     <div className="flex-1 min-w-0 sm:flex sm:items-center sm:gap-3">
                       <div className="min-w-0 sm:flex-1">
-                        <p className="type-body font-medium text-foreground truncate">{member.username}</p>
+                        <p className="type-body font-medium text-foreground truncate">{userName(member.username)}</p>
                         {member.notes && (
                           <p className="type-caption text-hint truncate">{member.notes}</p>
                         )}

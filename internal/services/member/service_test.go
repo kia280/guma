@@ -68,3 +68,11 @@ func TestDecodeProfile(t *testing.T) {
 		t.Fatalf("expected empty profile for invalid JSON")
 	}
 }
+
+func TestCanSeeDiscord(t *testing.T) {
+	for role, want := range map[string]bool{"owner": true, "admin": true, "moderator": true, "member": false, "": false} {
+		if got := canSeeDiscord(role); got != want {
+			t.Errorf("canSeeDiscord(%q) = %v, want %v", role, got, want)
+		}
+	}
+}

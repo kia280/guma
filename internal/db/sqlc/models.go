@@ -312,7 +312,7 @@ type Member struct {
 	ID          uuid.UUID
 	UserID      uuid.UUID
 	GuildID     uuid.UUID
-	DisplayName pgtype.Text
+	DisplayName string
 	Role        string
 	Profile     []byte
 	JoinedAt    time.Time
@@ -345,15 +345,16 @@ type Transaction struct {
 }
 
 type User struct {
-	ID          uuid.UUID
-	Email       string
-	Username    string
-	DisplayName pgtype.Text
-	Bio         pgtype.Text
-	AvatarUrl   pgtype.Text
-	Metadata    []byte
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID              uuid.UUID
+	Email           string
+	Username        pgtype.Text
+	DisplayName     pgtype.Text
+	Bio             pgtype.Text
+	AvatarUrl       pgtype.Text
+	Metadata        []byte
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	DiscordUsername pgtype.Text
 }
 
 type UserPreference struct {

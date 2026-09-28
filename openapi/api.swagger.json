@@ -5268,6 +5268,18 @@
         "cancelledAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "sellerName": {
+          "type": "string"
+        },
+        "sellerAvatarUrl": {
+          "type": "string"
+        },
+        "currentBidderName": {
+          "type": "string"
+        },
+        "currentBidderAvatarUrl": {
+          "type": "string"
         }
       }
     },
@@ -7174,6 +7186,9 @@
           "type": "string"
         },
         "avatarUrl": {
+          "type": "string"
+        },
+        "discordUsername": {
           "type": "string"
         }
       },

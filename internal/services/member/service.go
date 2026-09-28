@@ -25,16 +25,16 @@ const (
 var validRoles = map[string]bool{"owner": true, "admin": true, "moderator": true, "member": true}
 
 type Member struct {
-	ID          string
-	UserID      string
-	GuildID     string
-	DisplayName string
-	Email       string
-	AvatarURL   string
-	Role        string
-	Profile     map[string]string
-	JoinedAt    time.Time
-	LastActive  time.Time
+	ID              string
+	UserID          string
+	GuildID         string
+	DisplayName     string
+	DiscordUsername string
+	AvatarURL       string
+	Role            string
+	Profile         map[string]string
+	JoinedAt        time.Time
+	LastActive      time.Time
 }
 
 type ListParams struct {
@@ -82,7 +82,8 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	}
 	pageSize := clampPageSize(p.PageSize)
 
-	if _, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: callerID}); err != nil {
+	callerRole, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: callerID})
+	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
 		}
@@ -103,20 +104,24 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 		return nil, fmt.Errorf("%w: count members: %v", errs.ErrInternal, err)
 	}
 
+	showDiscord := canSeeDiscord(callerRole)
 	members := make([]*Member, 0, len(rows))
 	for _, r := range rows {
-		members = append(members, &Member{
+		m := &Member{
 			ID:          r.ID.String(),
 			UserID:      r.UserID.String(),
 			GuildID:     r.GuildID.String(),
 			DisplayName: r.DisplayName,
-			Email:       r.Email,
 			AvatarURL:   r.AvatarUrl,
 			Role:        r.Role,
 			Profile:     decodeProfile(r.Profile),
 			JoinedAt:    r.JoinedAt,
 			LastActive:  r.LastActive,
-		})
+		}
+		if showDiscord {
+			m.DiscordUsername = r.DiscordUsername
+		}
+		members = append(members, m)
 	}
 
 	return &ListResult{
@@ -124,6 +129,10 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 		NextPageToken: nextPageToken(offset, int32(len(rows)), pageSize, total),
 		TotalCount:    int32(total),
 	}, nil
+}
+
+func canSeeDiscord(role string) bool {
+	return role == "owner" || role == "admin" || role == "moderator"
 }
 
 func clampPageSize(size int32) int32 {

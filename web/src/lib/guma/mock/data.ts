@@ -86,7 +86,7 @@ function generateMembers(): MockUser[] {
     return {
       id: `u${n}`,
       username: names[i] ?? `Member${n}`,
-      email: `member${n}@example.com`,
+      discordUsername: `member_${n}`,
       role: roleFor(n),
       status: roll < 0.02 ? 'banned' : roll < 0.27 ? 'online' : 'offline',
       lastActive: pick(LAST_ACTIVE),
@@ -519,9 +519,9 @@ const BASE_LOTTERIES: Lottery[] = [
     maxTickets: 125,
     status: 'ended',
     winners: [
-      { id: 'w1', username: member(7).username, prize: '', prizeAmount: 12500 },
-      { id: 'w2', username: member(12).username, prize: '', prizeAmount: 7500 },
-      { id: 'w3', username: member(23).username, prize: '', prizeAmount: 5000 },
+      { id: 'w1', userId: member(7).id, username: member(7).username, prize: '', prizeAmount: 12500 },
+      { id: 'w2', userId: member(12).id, username: member(12).username, prize: '', prizeAmount: 7500 },
+      { id: 'w3', userId: member(23).id, username: member(23).username, prize: '', prizeAmount: 5000 },
     ],
   },
   {

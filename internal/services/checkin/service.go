@@ -229,7 +229,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 	if err != nil {
 		return nil, fmt.Errorf("%w: encode loot: %v", errs.ErrInternal, err)
 	}
-	donorName, _ := s.q.GetUserDisplayName(ctx, createdBy)
+	donorName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: createdBy})
 
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -462,7 +462,7 @@ func (s *Service) SubmitAttendance(ctx context.Context, guildIDStr, checkinIDStr
 		return nil, err
 	}
 
-	info, _ := s.q.GetUserDisplayAndAvatar(ctx, userID)
+	info, _ := s.q.GetUserDisplayAndAvatar(ctx, db.GetUserDisplayAndAvatarParams{GuildID: guildID, UserID: userID})
 
 	attendeeID, err := s.q.InsertCheckinAttendee(ctx, db.InsertCheckinAttendeeParams{
 		CheckinID: checkinID, UserID: userID,
@@ -559,7 +559,7 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, checkinIDStr, item
 	if !attended {
 		return "", fmt.Errorf("%w: recipient did not attend this roll call", errs.ErrFailedPrecondition)
 	}
-	recipientName, _ := s.q.GetUserDisplayName(ctx, recipientID)
+	recipientName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: recipientID})
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {

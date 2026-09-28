@@ -3,7 +3,6 @@
 import {
   Autocomplete,
   Button,
-  Description,
   EmptyState,
   FieldError,
   Label,
@@ -26,6 +25,7 @@ import { useUserStore } from '@/lib/store';
 import type { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
 import { ItemThumbnail } from './ItemThumbnail';
+import { MemberOptionLabel } from './MemberOptionLabel';
 
 export type BackpackMoveMode = 'donate' | 'transfer';
 
@@ -137,10 +137,7 @@ export function BackpackItemMoveModal({ state, mode, item, members, onMoved }: B
                       <ListBox renderEmptyState={() => <EmptyState>{t('noMembers')}</EmptyState>}>
                         {recipients.map(member => (
                           <ListBox.Item key={member.id} id={member.id} textValue={member.username}>
-                            <div className="flex flex-col">
-                              <Label>{member.username}</Label>
-                              {member.email && <Description>{member.email}</Description>}
-                            </div>
+                            <MemberOptionLabel member={member} />
                             <ListBox.ItemIndicator />
                           </ListBox.Item>
                         ))}
