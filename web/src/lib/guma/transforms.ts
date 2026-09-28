@@ -5,18 +5,6 @@ import type { AdminAnnouncement, AdminGuildStats } from '@/types/admin';
 import { AuctionStatus } from '@/types/auction';
 import type { AuctionItem, Bid } from '@/types/auction';
 import type { BackpackItem, BackpackItemSource } from '@/types/backpack';
-import type {
-  CheckinEntry,
-  CheckinGoldDistribution,
-  CheckinGoldPayout,
-  CheckinGoldPot,
-  CheckinGoldSummary,
-  CheckinTemplate,
-  AttendanceMember,
-  ItemTemplate,
-  LootItem,
-} from '@/types/checkin';
-import { CheckinStatus } from '@/types/checkin';
 import type { Announcement } from '@/types/dashboard';
 import type { Guild } from '@/types/guild';
 import type {
@@ -33,6 +21,18 @@ import { ItemCategory, ItemRarity, type ItemHistoryEvent, type ItemHistoryKind, 
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
 import type { UserPreferences } from '@/types/preference';
+import { RollCallStatus } from '@/types/roll-call';
+import type {
+  RollCall,
+  RollCallGoldDistribution,
+  RollCallGoldPayout,
+  RollCallGoldPot,
+  RollCallGoldSummary,
+  RollCallTemplate,
+  Attendee,
+  ItemTemplate,
+  LootItem,
+} from '@/types/roll-call';
 import type { LinkedAccount, MockUser, User } from '@/types/user';
 import type { AssetDestination, MemberAssets, MemberAssetSummary, Transaction, Wallet } from '@/types/wallet';
 import { fromMinorUnits } from './money';
@@ -275,9 +275,9 @@ export const toBid = (raw: ProtoBid): Bid => ({
   isWinning: Boolean(raw.is_winning),
 });
 
-// ─── Check-in ───────────────────────────────────────────────────────────────
+// ─── Roll call ──────────────────────────────────────────────────────────────
 
-type ProtoCheckIn = {
+type ProtoRollCall = {
   id: string;
   guild_id?: string;
   title?: string;
@@ -286,8 +286,8 @@ type ProtoCheckIn = {
   expire_time?: string;
   image_url?: string;
   loot_list?: ProtoItem[];
-  loot?: ProtoCheckInLootEntry[];
-  gold_pot?: ProtoCheckInGoldPot;
+  loot?: ProtoRollCallLootEntry[];
+  gold_pot?: ProtoRollCallGoldPot;
   attendance_count?: number;
   is_expired?: boolean;
   is_cancelled?: boolean;
@@ -295,63 +295,63 @@ type ProtoCheckIn = {
   completed_at?: unknown;
 };
 
-type ProtoCheckInLootEntry = {
+type ProtoRollCallLootEntry = {
   kind?: string;
   item?: ProtoItem;
   amount?: number | string;
 };
 
-type ProtoCheckInGoldPot = {
+type ProtoRollCallGoldPot = {
   total?: number | string;
   distributed?: number | string;
   retracted?: number | string;
   remaining?: number | string;
 };
 
-type ProtoCheckInGoldPayout = {
+type ProtoRollCallGoldPayout = {
   user_id?: string;
   amount?: number | string;
 };
 
-const toCheckinGoldPot = (raw: ProtoCheckInGoldPot): CheckinGoldPot => ({
+const toRollCallGoldPot = (raw: ProtoRollCallGoldPot): RollCallGoldPot => ({
   total: fromMinorUnits(raw.total),
   distributed: fromMinorUnits(raw.distributed),
   retracted: fromMinorUnits(raw.retracted),
   remaining: fromMinorUnits(raw.remaining),
 });
 
-const toCheckinGoldPayout = (raw: ProtoCheckInGoldPayout): CheckinGoldPayout => ({
+const toRollCallGoldPayout = (raw: ProtoRollCallGoldPayout): RollCallGoldPayout => ({
   userId: raw.user_id ?? '',
   amount: fromMinorUnits(raw.amount),
 });
 
-export const toCheckinGoldSummary = (raw: {
-  pot?: ProtoCheckInGoldPot;
-  recipients?: ProtoCheckInGoldPayout[];
-}): CheckinGoldSummary => ({
-  pot: raw.pot ? toCheckinGoldPot(raw.pot) : undefined,
-  recipients: (raw.recipients ?? []).map(toCheckinGoldPayout),
+export const toRollCallGoldSummary = (raw: {
+  pot?: ProtoRollCallGoldPot;
+  recipients?: ProtoRollCallGoldPayout[];
+}): RollCallGoldSummary => ({
+  pot: raw.pot ? toRollCallGoldPot(raw.pot) : undefined,
+  recipients: (raw.recipients ?? []).map(toRollCallGoldPayout),
 });
 
-export const toCheckinGoldDistribution = (raw: {
-  pot?: ProtoCheckInGoldPot;
-  payouts?: ProtoCheckInGoldPayout[];
+export const toRollCallGoldDistribution = (raw: {
+  pot?: ProtoRollCallGoldPot;
+  payouts?: ProtoRollCallGoldPayout[];
   replayed?: boolean;
-}): CheckinGoldDistribution => ({
-  pot: toCheckinGoldPot(raw.pot ?? {}),
-  payouts: (raw.payouts ?? []).map(toCheckinGoldPayout),
+}): RollCallGoldDistribution => ({
+  pot: toRollCallGoldPot(raw.pot ?? {}),
+  payouts: (raw.payouts ?? []).map(toRollCallGoldPayout),
   replayed: Boolean(raw.replayed),
 });
 
-const toCheckinGoldLoot = (raw: ProtoCheckIn): CheckinGoldPot | undefined => {
-  if (raw.gold_pot) return toCheckinGoldPot(raw.gold_pot);
+const toRollCallGoldLoot = (raw: ProtoRollCall): RollCallGoldPot | undefined => {
+  if (raw.gold_pot) return toRollCallGoldPot(raw.gold_pot);
   const gold = raw.loot?.find(entry => entry.kind === 'gold');
   if (!gold) return undefined;
   const total = fromMinorUnits(gold.amount);
   return { total, distributed: 0, retracted: 0, remaining: total };
 };
 
-export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = []): CheckinEntry => {
+export const toRollCall = (raw: ProtoRollCall, attendees: Attendee[] = []): RollCall => {
   const items = raw.loot ? raw.loot.filter(entry => entry.kind !== 'gold').map(entry => entry.item ?? {}) : raw.loot_list ?? [];
   const loot: LootItem[] = items.map((i, idx) => ({
     id: i.id ?? `l-${idx}`,
@@ -360,13 +360,13 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     category: toCategory(i.category),
     rarity: toRarity(i.rarity),
   }));
-  const status: CheckinStatus = raw.is_cancelled
-    ? CheckinStatus.CANCELLED
+  const status: RollCallStatus = raw.is_cancelled
+    ? RollCallStatus.CANCELLED
     : raw.is_completed
-      ? CheckinStatus.COMPLETED
+      ? RollCallStatus.COMPLETED
       : raw.is_expired
-      ? CheckinStatus.FINISHED
-      : CheckinStatus.OPEN;
+      ? RollCallStatus.FINISHED
+      : RollCallStatus.OPEN;
   return {
     id: raw.id,
     status,
@@ -377,13 +377,13 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     attendanceCount: raw.attendance_count ?? attendees.length,
     attendanceList: attendees,
     lootList: loot,
-    goldLoot: toCheckinGoldLoot(raw),
+    goldLoot: toRollCallGoldLoot(raw),
     imageUrl: raw.image_url || undefined,
     completedAt: raw.is_completed && raw.completed_at ? ts(raw.completed_at) : undefined,
   };
 };
 
-type ProtoCheckInTemplate = {
+type ProtoRollCallTemplate = {
   id: string;
   name?: string;
   title?: string;
@@ -398,7 +398,7 @@ export const toItemTemplate = (raw: ProtoItem): ItemTemplate => ({
   rarity: toRarity(raw.rarity),
 });
 
-export const toCheckinTemplate = (raw: ProtoCheckInTemplate): CheckinTemplate => ({
+export const toRollCallTemplate = (raw: ProtoRollCallTemplate): RollCallTemplate => ({
   id: raw.id,
   name: raw.name ?? '',
   title: raw.title ?? '',
@@ -439,7 +439,7 @@ type ProtoAttendee = {
   notes?: string;
 };
 
-export const toAttendee = (raw: ProtoAttendee): AttendanceMember => ({
+export const toAttendee = (raw: ProtoAttendee): Attendee => ({
   id: raw.id,
   userId: raw.user_id,
   username: raw.display_name ?? '',
@@ -619,7 +619,7 @@ const BACKPACK_SOURCES: Record<string, BackpackItemSource> = {
   auction: 'auction',
   lottery: 'lottery',
   transfer: 'transfer',
-  roll_call: 'checkin',
+  roll_call: 'rollCall',
   bank_item_request: 'bank',
 };
 
@@ -723,8 +723,8 @@ const contributionReferenceHref = (b: BankContribution): string | undefined => {
   return undefined;
 };
 
-const checkinHref = (b: BankContribution): string | undefined =>
-  b.checkinId ? `/dashboard/attendance/${b.checkinId}` : undefined;
+const rollCallHref = (b: BankContribution): string | undefined =>
+  b.rollCallId ? `/dashboard/roll-calls/${b.rollCallId}` : undefined;
 
 const contributionType = (kind: BankContributionKind): GuildContribution['type'] =>
   kind === 'gold' ? 'contribute' : kind;
@@ -743,7 +743,7 @@ export const toBankContribution = (raw: ProtoBankContribution): BankContribution
   createdAt: ts(raw.created_at),
   kind: toContributionKind(raw.kind),
   itemNames: (raw.items ?? []).map(i => i.name ?? '').filter(Boolean),
-  checkinId: raw.roll_call_id || undefined,
+  rollCallId: raw.roll_call_id || undefined,
   referenceType: raw.reference_type || undefined,
   referenceId: raw.reference_id || undefined,
 });
@@ -798,8 +798,8 @@ export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
   donatedBy: raw.donor_name ?? '',
   donatedAt: ts(raw.donated_at),
   quantity: raw.quantity ?? 1,
-  checkinId: raw.roll_call_id || undefined,
-  checkinTitle: raw.roll_call_title || undefined,
+  rollCallId: raw.roll_call_id || undefined,
+  rollCallTitle: raw.roll_call_title || undefined,
   pendingRequestCount: raw.pending_request_count ?? 0,
   requestedByMe: raw.requested_by_me ?? false,
   lock: toItemLock(raw.lock),
@@ -855,15 +855,15 @@ export const toGuildContributions = (
           date: b.createdAt,
           status: 'completed',
           note: b.note,
-          checkinId: b.checkinId,
-          href: checkinHref(b),
+          rollCallId: b.rollCallId,
+          href: rollCallHref(b),
         }
       : {
           id: `c-${b.id}`,
           type: contributionType(b.kind),
           amount: Math.abs(b.amount),
-          checkinId: b.checkinId,
-          href: b.kind === 'roll_call_gold_payout' || b.kind === 'roll_call_gold_retracted' ? checkinHref(b) : contributionReferenceHref(b),
+          rollCallId: b.rollCallId,
+          href: b.kind === 'roll_call_gold_payout' || b.kind === 'roll_call_gold_retracted' ? rollCallHref(b) : contributionReferenceHref(b),
           member: b.username,
           memberAvatar: b.avatarUrl,
           date: b.createdAt,
@@ -1072,7 +1072,7 @@ export const toUserPreferences = (raw: ProtoUserPreferences): UserPreferences =>
     auctionAlerts: raw.notifications?.auction_alerts ?? false,
     lotteryAlerts: raw.notifications?.lottery_alerts ?? false,
     eventReminders: raw.notifications?.event_reminders ?? false,
-    checkinReminders: raw.notifications?.roll_call_reminders ?? false,
+    rollCallReminders: raw.notifications?.roll_call_reminders ?? false,
   },
   updatedAt: raw.updated_at ? ts(raw.updated_at) : undefined,
 });

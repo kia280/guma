@@ -25,8 +25,8 @@ import {
   useTemplateList,
 } from '@/components/TemplateManagerParts';
 import { apiClient } from '@/lib/guma';
-import type { ItemTemplate, ItemTemplateInput } from '@/types/checkin';
 import { ItemCategory, ItemRarity } from '@/types/item';
+import type { ItemTemplate, ItemTemplateInput } from '@/types/roll-call';
 
 const NAME_MAX_LENGTH = 100;
 const DESCRIPTION_MAX_LENGTH = 500;

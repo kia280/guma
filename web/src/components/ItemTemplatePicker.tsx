@@ -5,7 +5,7 @@ import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { getCategoryIcon } from '@/components/ItemThumbnail';
-import type { ItemTemplate } from '@/types/checkin';
+import type { ItemTemplate } from '@/types/roll-call';
 
 interface ItemTemplatePickerProps {
   templates: ItemTemplate[];

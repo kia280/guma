@@ -14,7 +14,7 @@ import {
   useTemplateList,
 } from '@/components/TemplateManagerParts';
 import { apiClient } from '@/lib/guma';
-import type { CheckinTemplate, ItemTemplate } from '@/types/checkin';
+import type { RollCallTemplate, ItemTemplate } from '@/types/roll-call';
 
 const NAME_MAX_LENGTH = 100;
 const TITLE_MAX_LENGTH = 200;
@@ -27,24 +27,24 @@ interface TemplateDraft {
 
 const emptyDraft: TemplateDraft = { name: '', title: '', items: [] };
 
-export function CheckinTemplateManager({ guildId }: { guildId: string }) {
-  const t = useTranslations('checkinTemplates');
+export function RollCallTemplateManager({ guildId }: { guildId: string }) {
+  const t = useTranslations('rollCallTemplates');
   const shared = useTranslations('templates');
   const labels = useTranslations('createAuctionModal');
   const formModal = useOverlayState();
 
-  const loadTemplates = React.useCallback(() => apiClient.listCheckinTemplates(guildId), [guildId]);
+  const loadTemplates = React.useCallback(() => apiClient.listRollCallTemplates(guildId), [guildId]);
   const { items: templates, isLoading, loadFailed, reload, upsert, remove } = useTemplateList(loadTemplates);
   const loadItems = React.useCallback(() => apiClient.listItemTemplates(guildId), [guildId]);
   const itemLibrary = useTemplateList(loadItems);
 
-  const [editing, setEditing] = React.useState<CheckinTemplate | null>(null);
+  const [editing, setEditing] = React.useState<RollCallTemplate | null>(null);
   const [draft, setDraft] = React.useState<TemplateDraft>(emptyDraft);
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = React.useState<CheckinTemplate | null>(null);
+  const [deleteTarget, setDeleteTarget] = React.useState<RollCallTemplate | null>(null);
 
-  const openForm = (template: CheckinTemplate | null) => {
+  const openForm = (template: RollCallTemplate | null) => {
     setEditing(template);
     setDraft(template ? { name: template.name, title: template.title, items: template.items } : emptyDraft);
     setSaveError(null);
@@ -66,8 +66,8 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
     try {
       upsert(
         editing
-          ? await apiClient.updateCheckinTemplate(guildId, editing.id, input)
-          : await apiClient.createCheckinTemplate(guildId, input),
+          ? await apiClient.updateRollCallTemplate(guildId, editing.id, input)
+          : await apiClient.createRollCallTemplate(guildId, input),
       );
       formModal.close();
     } catch (err) {
@@ -184,9 +184,9 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
                     />
                   </TextField>
                   <TextField isRequired maxLength={TITLE_MAX_LENGTH}>
-                    <Label>{t('checkinTitle')}</Label>
+                    <Label>{t('rollCallTitle')}</Label>
                     <Input
-                      placeholder={t('checkinTitlePlaceholder')}
+                      placeholder={t('rollCallTitlePlaceholder')}
                       value={draft.title}
                       onChange={e => setDraft(d => ({ ...d, title: e.target.value }))}
                       variant="secondary"
@@ -253,7 +253,7 @@ export function CheckinTemplateManager({ guildId }: { guildId: string }) {
       <DeleteTemplateDialog
         target={deleteTarget}
         description={t('deleteConfirm', { name: deleteTarget?.name ?? '' })}
-        onDelete={id => apiClient.deleteCheckinTemplate(guildId, id)}
+        onDelete={id => apiClient.deleteRollCallTemplate(guildId, id)}
         onDeleted={remove}
         onClose={() => setDeleteTarget(null)}
       />

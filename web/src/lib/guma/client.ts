@@ -5,11 +5,11 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import { env } from '@/lib/env';
 import { clearSession } from '@/lib/session';
-import type { LootEntry } from '@/types/checkin';
 import type { ItemSourceRef } from '@/types/item';
+import type { LootEntry } from '@/types/roll-call';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinGoldDistribution, toCheckinGoldSummary, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toMemberAssets, toMemberAssetSummary, toNotification, toNotificationPage, toProtoDestination, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toRollCall, toRollCallGoldDistribution, toRollCallGoldSummary, toRollCallTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toMemberAssets, toMemberAssetSummary, toNotification, toNotificationPage, toProtoDestination, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -107,10 +107,10 @@ export const gumaApiClient: ApiClient = {
     ]);
     return {
       guildStats: data.guild_stats ?? {
-        members: 0, activeEvents: 0, balance: 0, checkinsThisWeek: 0, activeAuctions: 0, openLotteries: 0,
+        members: 0, activeEvents: 0, balance: 0, attendanceThisWeek: 0, activeAuctions: 0, openLotteries: 0,
       },
       personalStats: data.personal_stats ?? {
-        balance: 0, checkinsThisMonth: 0, activeAuctions: 0, activityPoints: 0,
+        balance: 0, attendanceThisMonth: 0, activeAuctions: 0, activityPoints: 0,
       },
       incomingEvents: data.incoming_events ?? [],
       announcements,
@@ -345,12 +345,12 @@ export const gumaApiClient: ApiClient = {
     await http.delete(`/v1/guilds/${guildId}/auctions/${id}`);
   },
 
-  // ── CheckIn ──
-  listCheckins: async (guildId) => {
+  // ── Roll calls ──
+  listRollCalls: async (guildId) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/roll-calls`);
-    return (data.roll_calls ?? []).map((c: Parameters<typeof toCheckin>[0]) => toCheckin(c));
+    return (data.roll_calls ?? []).map((c: Parameters<typeof toRollCall>[0]) => toRollCall(c));
   },
-  getCheckin: async (guildId, id) => {
+  getRollCall: async (guildId, id) => {
     const [{ data: detailData }, { data: attendeeData }] = await Promise.all([
       http.get(`/v1/guilds/${guildId}/roll-calls/${id}`),
       http
@@ -358,9 +358,9 @@ export const gumaApiClient: ApiClient = {
         .catch(() => ({ data: { attendees: [] } })),
     ]);
     const attendees = (attendeeData.attendees ?? []).map(toAttendee);
-    return toCheckin(detailData.roll_call, attendees);
+    return toRollCall(detailData.roll_call, attendees);
   },
-  createCheckin: async (guildId, req) => {
+  createRollCall: async (guildId, req) => {
     const payload = {
       title: req.title,
       description: req.description,
@@ -370,9 +370,9 @@ export const gumaApiClient: ApiClient = {
       loot: (req.lootList ?? []).map(toProtoLoot),
     };
     const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls`, payload);
-    return toCheckin(data.roll_call);
+    return toRollCall(data.roll_call);
   },
-  updateCheckin: async (guildId, id, patch) => {
+  updateRollCall: async (guildId, id, patch) => {
     const payload = {
       title: patch.title,
       description: patch.description,
@@ -381,46 +381,46 @@ export const gumaApiClient: ApiClient = {
       image_url: patch.imageUrl,
     };
     const { data } = await http.patch(`/v1/guilds/${guildId}/roll-calls/${id}`, payload);
-    return toCheckin(data.roll_call);
+    return toRollCall(data.roll_call);
   },
-  deleteCheckin: async (guildId, id) => {
+  deleteRollCall: async (guildId, id) => {
     await http.delete(`/v1/guilds/${guildId}/roll-calls/${id}`);
   },
-  cancelCheckin: async (guildId, id) => {
+  cancelRollCall: async (guildId, id) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/cancel`, {});
-    return toCheckin(data.roll_call);
+    return toRollCall(data.roll_call);
   },
-  completeCheckin: async (guildId, id) => {
+  completeRollCall: async (guildId, id) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/complete`, {});
-    return toCheckin(data.roll_call);
+    return toRollCall(data.roll_call);
   },
-  updateCheckinLoot: async (guildId, id, lootList) => {
+  updateRollCallLoot: async (guildId, id, lootList) => {
     const { data } = await http.put(`/v1/guilds/${guildId}/roll-calls/${id}/loot`, {
       loot_list: lootList.map(toProtoItem),
     });
-    return toCheckin(data.roll_call);
+    return toRollCall(data.roll_call);
   },
-  listCheckinTemplates: async (guildId) => {
+  listRollCallTemplates: async (guildId) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/roll-call-templates`);
-    return (data.templates ?? []).map(toCheckinTemplate);
+    return (data.templates ?? []).map(toRollCallTemplate);
   },
-  createCheckinTemplate: async (guildId, input) => {
+  createRollCallTemplate: async (guildId, input) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/roll-call-templates`, {
       name: input.name,
       title: input.title,
       item_template_ids: input.itemTemplateIds,
     });
-    return toCheckinTemplate(data.template);
+    return toRollCallTemplate(data.template);
   },
-  updateCheckinTemplate: async (guildId, id, input) => {
+  updateRollCallTemplate: async (guildId, id, input) => {
     const { data } = await http.patch(`/v1/guilds/${guildId}/roll-call-templates/${id}`, {
       name: input.name,
       title: input.title,
       item_template_ids: input.itemTemplateIds,
     });
-    return toCheckinTemplate(data.template);
+    return toRollCallTemplate(data.template);
   },
-  deleteCheckinTemplate: async (guildId, id) => {
+  deleteRollCallTemplate: async (guildId, id) => {
     await http.delete(`/v1/guilds/${guildId}/roll-call-templates/${id}`);
   },
   listItemTemplates: async (guildId) => {
@@ -438,26 +438,26 @@ export const gumaApiClient: ApiClient = {
   deleteItemTemplate: async (guildId, id) => {
     await http.delete(`/v1/guilds/${guildId}/item-templates/${id}`);
   },
-  submitAttendance: async (guildId, checkinId, notes) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${checkinId}/check-in`, { notes: notes ?? '' });
+  checkIn: async (guildId, rollCallId, notes) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${rollCallId}/check-in`, { notes: notes ?? '' });
     return toAttendee(data.attendee);
   },
-  assignLoot: async (guildId, checkinId, itemId, userId) => {
-    await http.post(`/v1/guilds/${guildId}/roll-calls/${checkinId}/loot/${itemId}/assign`, { user_id: userId });
+  assignLoot: async (guildId, rollCallId, itemId, userId) => {
+    await http.post(`/v1/guilds/${guildId}/roll-calls/${rollCallId}/loot/${itemId}/assign`, { user_id: userId });
   },
-  getCheckinGold: async (guildId, checkinId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/roll-calls/${checkinId}/gold`);
-    return toCheckinGoldSummary(data);
+  getRollCallGold: async (guildId, rollCallId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/roll-calls/${rollCallId}/gold`);
+    return toRollCallGoldSummary(data);
   },
-  distributeCheckinGold: async (guildId, checkinId, requestId, payouts) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${checkinId}/gold/distribute`, {
+  distributeRollCallGold: async (guildId, rollCallId, requestId, payouts) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${rollCallId}/gold/distribute`, {
       request_id: requestId,
       payouts: payouts.map(p => ({ user_id: p.userId, amount: toMinorUnits(p.amount) })),
     });
-    return toCheckinGoldDistribution(data);
+    return toRollCallGoldDistribution(data);
   },
-  listAttendees: async (guildId, checkinId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/roll-calls/${checkinId}/attendees`);
+  listAttendees: async (guildId, rollCallId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/roll-calls/${rollCallId}/attendees`);
     return (data.attendees ?? []).map(toAttendee);
   },
 
@@ -568,7 +568,7 @@ export const gumaApiClient: ApiClient = {
   },
   listBankItems: async (guildId, options) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/bank/items`, {
-      params: { page_size: 100, roll_call_id: options?.checkinId },
+      params: { page_size: 100, roll_call_id: options?.rollCallId },
     });
     return (data.items ?? []).map(toGuildBankItem);
   },
@@ -654,7 +654,7 @@ export const gumaApiClient: ApiClient = {
         auction_alerts: patch.auctionAlerts,
         lottery_alerts: patch.lotteryAlerts,
         event_reminders: patch.eventReminders,
-        roll_call_reminders: patch.checkinReminders,
+        roll_call_reminders: patch.rollCallReminders,
       },
     });
     return toUserPreferences(data);

@@ -10,10 +10,10 @@ import { useCountdown } from '@/hooks/useNow';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
-import { checkinStatusColor } from '@/lib/status-colors';
-import { CheckinStatus } from './data';
+import { rollCallStatusColor } from '@/lib/status-colors';
+import { RollCallStatus } from './data';
 
-export { CheckinStatus };
+export { RollCallStatus };
 
 const formatEventDate = (value: string, format: ReturnType<typeof useIntlFormatter>) => {
   const date = new Date(value);
@@ -21,7 +21,7 @@ const formatEventDate = (value: string, format: ReturnType<typeof useIntlFormatt
   return format.dateTime(date, { dateStyle: 'medium', timeStyle: 'short' });
 };
 
-export function CheckinCard({
+export function RollCallCard({
   status,
   date,
   title,
@@ -33,7 +33,7 @@ export function CheckinCard({
   isDisabled,
   href,
 }: {
-  status: CheckinStatus;
+  status: RollCallStatus;
   date: string;
   title: string;
   expireTime?: string;
@@ -44,19 +44,19 @@ export function CheckinCard({
   isDisabled?: boolean;
   href: string;
 }) {
-  const t = useTranslations('checkIn');
+  const t = useTranslations('rollCall');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const formatCountdown = useCountdownFormatter();
-  const { remainingMs, isExpired } = useCountdown(status === CheckinStatus.OPEN ? expireTime : null);
+  const { remainingMs, isExpired } = useCountdown(status === RollCallStatus.OPEN ? expireTime : null);
   const statusLabel = {
-    [CheckinStatus.OPEN]: t('statusActive'),
-    [CheckinStatus.CANCELLED]: t('statusCancelled'),
-    [CheckinStatus.FINISHED]: t('statusEnded'),
-    [CheckinStatus.COMPLETED]: t('statusCompleted'),
+    [RollCallStatus.OPEN]: t('statusActive'),
+    [RollCallStatus.CANCELLED]: t('statusCancelled'),
+    [RollCallStatus.FINISHED]: t('statusEnded'),
+    [RollCallStatus.COMPLETED]: t('statusCompleted'),
   }[status];
-  const canCheckin = status === CheckinStatus.OPEN && !isExpired;
-  const timeLeft = canCheckin && expireTime ? formatCountdown(remainingMs) : null;
+  const canCheckIn = status === RollCallStatus.OPEN && !isExpired;
+  const timeLeft = canCheckIn && expireTime ? formatCountdown(remainingMs) : null;
 
   return (
     <Card
@@ -86,7 +86,7 @@ export function CheckinCard({
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0 type-caption">
-            <Chip size="sm" color={checkinStatusColor[status]} variant="secondary">
+            <Chip size="sm" color={rollCallStatusColor[status]} variant="secondary">
               {statusLabel}
             </Chip>
             {timeLeft && (
@@ -139,25 +139,25 @@ export function CheckinCard({
       </Card.Content>
 
       <Card.Footer className="pt-0">
-        {canCheckin && (
+        {canCheckIn && (
           <CardLinkHint
             icon="solar:check-circle-linear"
-            label={t('openCheckin')}
+            label={t('openRollCall')}
             tone={isDisabled ? 'disabled' : 'accent'}
           />
         )}
-        {(status === CheckinStatus.FINISHED || status === CheckinStatus.COMPLETED) && (
+        {(status === RollCallStatus.FINISHED || status === RollCallStatus.COMPLETED) && (
           <CardLinkHint
             icon="solar:eye-linear"
             label={t('viewDetails')}
             tone={isDisabled ? 'disabled' : 'subtle'}
           />
         )}
-        {status === CheckinStatus.CANCELLED && (
-          <CardFooterStatus icon="solar:forbidden-circle-linear" label={t('checkinCancelled')} />
+        {status === RollCallStatus.CANCELLED && (
+          <CardFooterStatus icon="solar:forbidden-circle-linear" label={t('rollCallCancelled')} />
         )}
-        {status === CheckinStatus.OPEN && !canCheckin && (
-          <CardFooterStatus icon="solar:lock-keyhole-linear" label={t('checkinClosed')} />
+        {status === RollCallStatus.OPEN && !canCheckIn && (
+          <CardFooterStatus icon="solar:lock-keyhole-linear" label={t('rollCallClosed')} />
         )}
       </Card.Footer>
     </Card>

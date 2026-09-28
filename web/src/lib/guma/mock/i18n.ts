@@ -16,8 +16,8 @@ const ZHT_TEXT: Record<string, string> = {
   'Guild Hall Renovation': '公會大廳整修',
   'We are planning to renovate the guild hall next month.': '我們計劃在下個月整修公會大廳。',
 
-  'Weekly Guild Check-in': '每週公會點名',
-  'Open — awaiting your check-in': '進行中 — 等待你簽到',
+  'Weekly Guild Roll Call': '每週公會點名',
+  'Open — waiting for you to check in': '進行中 — 等待你簽到',
   'Open now': '進行中',
   'Auction ending soon': '競拍即將結束',
   'Active auction': '進行中的競拍',
@@ -93,7 +93,7 @@ const ZHT_TEXT: Record<string, string> = {
   'Distributed by admin': '由管理員分配',
 
   'placed a bid on Dragon Slayer Sword': '對屠龍劍出價',
-  'checked in to weekly guild check-in': '完成每週公會點名簽到',
+  'checked in to the weekly guild roll call': '完成每週公會點名簽到',
   'purchased 2 lottery tickets': '購買了 2 張彩券',
   'joined the guild': '加入了公會',
   'created auction for Mystic Shield': '建立了神秘守護之盾的競拍',

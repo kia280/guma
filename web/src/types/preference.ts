@@ -3,7 +3,7 @@ export interface NotificationPreferences {
   auctionAlerts: boolean;
   lotteryAlerts: boolean;
   eventReminders: boolean;
-  checkinReminders: boolean;
+  rollCallReminders: boolean;
 }
 
 export type NotificationPreferenceKey = keyof NotificationPreferences;
@@ -20,5 +20,5 @@ export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   auctionAlerts: true,
   lotteryAlerts: true,
   eventReminders: false,
-  checkinReminders: true,
+  rollCallReminders: true,
 };

@@ -17,25 +17,25 @@ import { isNotFoundError } from '@/lib/guma/errors';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { emitLiveEvent } from '@/lib/live-events';
 import { useGuildPermissions } from '@/lib/permissions';
-import { checkinStatusColor } from '@/lib/status-colors';
+import { rollCallStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
-import { CheckinStatus, type CheckinEntry, type CheckinGoldPot } from '@/types/checkin';
+import { RollCallStatus, type RollCall, type RollCallGoldPot } from '@/types/roll-call';
 import { ActionSuccess } from './ActionSuccess';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
-import { CheckinEditModal } from './CheckinEditModal';
-import { CheckinGoldLoot } from './CheckinGoldLoot';
-import { CheckinLootDistribution } from './CheckinLootDistribution';
-import { CheckinLootEditModal } from './CheckinLootEditModal';
 import { ConfirmDialog } from './ConfirmDialog';
+import { RollCallEditModal } from './RollCallEditModal';
+import { RollCallGoldLoot } from './RollCallGoldLoot';
+import { RollCallLootDistribution } from './RollCallLootDistribution';
+import { RollCallLootEditModal } from './RollCallLootEditModal';
 import { UserAvatar } from './UserAvatar';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function CheckinDetailContent({ id, onClose }: { id: string; onClose?: () => void }) {
+export default function RollCallDetailContent({ id, onClose }: { id: string; onClose?: () => void }) {
   const router = useRouter();
-  const t = useTranslations('checkinDetailPage');
+  const t = useTranslations('rollCallDetailPage');
   const formatGold = useFormatGold();
   const userName = useUserName();
   const format = useIntlFormatter();
@@ -47,16 +47,16 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   };
 
   const statusLabels = {
-    [CheckinStatus.OPEN]: t('statusOpen'),
-    [CheckinStatus.CANCELLED]: t('statusCancelled'),
-    [CheckinStatus.FINISHED]: t('statusFinished'),
-    [CheckinStatus.COMPLETED]: t('statusCompleted'),
+    [RollCallStatus.OPEN]: t('statusOpen'),
+    [RollCallStatus.CANCELLED]: t('statusCancelled'),
+    [RollCallStatus.FINISHED]: t('statusFinished'),
+    [RollCallStatus.COMPLETED]: t('statusCompleted'),
   };
 
   const formatCountdown = useCountdownFormatter();
   const guildId = useCurrentGuildId();
 
-  const [entry, setEntry] = useState<CheckinEntry | null>(null);
+  const [entry, setEntry] = useState<RollCall | null>(null);
   const [isMissing, setIsMissing] = useState(false);
   const loadState = useLoadState();
   const notify = useToast();
@@ -68,7 +68,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const refetchEntry = () => {
     if (!id) return;
     apiClient
-      .getCheckin(guildId, id)
+      .getRollCall(guildId, id)
       .then(data => {
         setEntry(data);
         setIsMissing(false);
@@ -81,7 +81,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           return;
         }
         loadState.failed();
-        notify.loadFailed(reload, 'checkin-detail');
+        notify.loadFailed(reload, 'rollCall-detail');
       });
   };
   useEffect(() => {
@@ -97,7 +97,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<'closed' | 'failed' | null>(null);
   const [checkedInAt, setCheckedInAt] = useState<string | null>(null);
-  const checkinModal = useOverlayState();
+  const checkInModal = useOverlayState();
   const currentUserId = useUserStore(state => state.user?.id);
   const { can } = useGuildPermissions();
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
@@ -128,17 +128,17 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     );
   }
 
-  const isOpen_ = entry.status === CheckinStatus.OPEN && !isExpired;
-  const displayStatus = entry.status === CheckinStatus.OPEN && isExpired ? CheckinStatus.FINISHED : entry.status;
+  const isOpen_ = entry.status === RollCallStatus.OPEN && !isExpired;
+  const displayStatus = entry.status === RollCallStatus.OPEN && isExpired ? RollCallStatus.FINISHED : entry.status;
   const statusLabel = statusLabels[displayStatus];
-  const statusColor = checkinStatusColor[displayStatus];
+  const statusColor = rollCallStatusColor[displayStatus];
   const hasCheckedIn = !!currentUserId && entry.attendanceList.some(member => member.userId === currentUserId);
 
-  const canCancel = isOpen_ && can('cancelCheckin');
-  const canEdit = isOpen_ && can('editCheckin');
+  const canCancel = isOpen_ && can('cancelRollCall');
+  const canEdit = isOpen_ && can('editRollCall');
   const canEditLoot =
-    entry.status !== CheckinStatus.CANCELLED && entry.status !== CheckinStatus.COMPLETED && can('editCheckinLoot');
-  const canComplete = displayStatus === CheckinStatus.FINISHED && can('completeCheckin');
+    entry.status !== RollCallStatus.CANCELLED && entry.status !== RollCallStatus.COMPLETED && can('editRollCallLoot');
+  const canComplete = displayStatus === RollCallStatus.FINISHED && can('completeRollCall');
   const remainingLoot = entry.lootList.length === 0 ? 0 : lootInVault;
   const remainingGold = entry.goldLoot?.remaining ?? 0;
   const isCompleteBlocked = remainingLoot !== 0 || remainingGold > 0;
@@ -148,12 +148,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   ];
 
   const announceChange = () => {
-    emitLiveEvent({ kind: 'resource', guildId, resource: 'checkin', resourceId: id });
+    emitLiveEvent({ kind: 'resource', guildId, resource: 'rollCall', resourceId: id });
   };
 
   const handleCancelConfirm = async () => {
     try {
-      await apiClient.cancelCheckin(guildId, id);
+      await apiClient.cancelRollCall(guildId, id);
     } finally {
       refetchEntry();
       announceChange();
@@ -162,14 +162,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
 
   const handleCompleteConfirm = async () => {
     try {
-      await apiClient.completeCheckin(guildId, id);
+      await apiClient.completeRollCall(guildId, id);
     } finally {
       refetchEntry();
       announceChange();
     }
   };
 
-  const handleLootSaved = (updated: CheckinEntry) => {
+  const handleLootSaved = (updated: RollCall) => {
     setEntry(current => (current ? { ...updated, attendanceList: current.attendanceList } : updated));
     setLootInVault(null);
     setLootVersion(version => version + 1);
@@ -177,13 +177,13 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     announceChange();
   };
 
-  const handleEditSaved = (updated: CheckinEntry) => {
+  const handleEditSaved = (updated: RollCall) => {
     setEntry(current => (current ? { ...updated, attendanceList: current.attendanceList } : updated));
     refetchEntry();
     announceChange();
   };
 
-  const handleGoldPotChange = (goldLoot: CheckinGoldPot) => {
+  const handleGoldPotChange = (goldLoot: RollCallGoldPot) => {
     setEntry(current => (current ? { ...current, goldLoot } : current));
   };
 
@@ -192,23 +192,23 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     announceChange();
   };
 
-  const openCheckinModal = () => {
+  const openCheckInModal = () => {
     setSubmitError(null);
     setCheckedInAt(null);
-    checkinModal.open();
+    checkInModal.open();
   };
 
-  const handleCheckinConfirm = async () => {
+  const handleCheckInConfirm = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const attendee = await apiClient.submitAttendance(guildId, id, notes.trim());
+      const attendee = await apiClient.checkIn(guildId, id, notes.trim());
       setNotes('');
       setCheckedInAt(attendee.checkedInAt || new Date().toISOString());
     } catch (err) {
       const status = (err as { response?: { status?: number } }).response?.status;
       if (status === 409) {
-        checkinModal.close();
+        checkInModal.close();
         notify.info(t('alreadyCheckedIn'));
       } else if (status === 400) {
         setIsRejectedAsExpired(true);
@@ -230,9 +230,9 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     <div className="space-y-5">
       {/* Back button - only show if not in modal mode */}
       {!onClose && (
-        <Button variant="secondary" size="sm" className="max-sm:h-11" onPress={() => router.push('/dashboard/attendance')}>
+        <Button variant="secondary" size="sm" className="max-sm:h-11" onPress={() => router.push('/dashboard/roll-calls')}>
           <Icon icon="solar:arrow-left-linear" width={16} />
-          {t('backToCheckins')}
+          {t('backToRollCalls')}
         </Button>
       )}
 
@@ -275,14 +275,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             {t('checkedIn')}
           </Button>
         ) : isOpen_ ? (
-          <Button variant="primary" className="shrink-0 max-sm:h-11" onPress={openCheckinModal}>
+          <Button variant="primary" className="shrink-0 max-sm:h-11" onPress={openCheckInModal}>
             {t('checkIn')}
           </Button>
         ) : null}
         {canEdit && (
           <Button variant="secondary" className="shrink-0 max-sm:h-11" onPress={editModal.open}>
             <Icon icon="solar:pen-linear" width={16} />
-            {t('editCheckin')}
+            {t('editRollCall')}
           </Button>
         )}
         {canComplete && (
@@ -294,17 +294,17 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             onPress={() => setIsCompleteConfirmOpen(true)}
           >
             <Icon icon="solar:check-read-linear" width={16} />
-            {t('completeCheckin')}
+            {t('completeRollCall')}
           </Button>
         )}
         {canCancel && (
           <Button variant="danger-soft" className="shrink-0 max-sm:h-11" onPress={() => setIsCancelConfirmOpen(true)}>
             <Icon icon="solar:forbidden-circle-linear" width={16} />
-            {t('cancelCheckin')}
+            {t('cancelRollCall')}
           </Button>
         )}
         {(!hasCheckedIn || checkedInAt) && (
-          <Modal state={checkinModal}>
+          <Modal state={checkInModal}>
           <Modal.Backdrop isDismissable={!isSubmitting} isKeyboardDismissDisabled={isSubmitting}>
             <Modal.Container size="sm">
               <Modal.Dialog>
@@ -341,7 +341,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                         <p role="alert" className="type-caption text-danger">
                           {submitError === 'failed'
                             ? t('checkInFailed')
-                            : entry.status === CheckinStatus.CANCELLED
+                            : entry.status === RollCallStatus.CANCELLED
                               ? t('checkInCancelled')
                               : t('checkInExpired')}
                         </p>
@@ -351,7 +351,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                       <Button slot="close" variant="secondary" isDisabled={isSubmitting}>
                         {t('cancel')}
                       </Button>
-                      <Button variant="primary" isPending={isSubmitting} isDisabled={!isOpen_} onPress={handleCheckinConfirm}>
+                      <Button variant="primary" isPending={isSubmitting} isDisabled={!isOpen_} onPress={handleCheckInConfirm}>
                         {({ isPending }) => (
                           <>
                             {isPending && <Spinner color="current" size="sm" />}
@@ -370,7 +370,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
       </div>
 
       {canEdit && (
-        <CheckinEditModal
+        <RollCallEditModal
           entry={entry}
           state={editModal}
           onSaved={handleEditSaved}
@@ -379,7 +379,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
       )}
 
       {canEditLoot && (
-        <CheckinLootEditModal
+        <RollCallLootEditModal
           entry={entry}
           state={lootEditModal}
           onSaved={handleLootSaved}
@@ -444,17 +444,17 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             ) : (
               <div className="space-y-2">
                 {entry.goldLoot && (
-                  <CheckinGoldLoot
-                    checkinId={entry.id}
+                  <RollCallGoldLoot
+                    rollCallId={entry.id}
                     pot={entry.goldLoot}
                     attendees={entry.attendanceList}
                     onPotChange={handleGoldPotChange}
                   />
                 )}
                 {entry.lootList.length > 0 && (
-                  <CheckinLootDistribution
+                  <RollCallLootDistribution
                     key={lootVersion}
-                    checkinId={entry.id}
+                    rollCallId={entry.id}
                     lootList={entry.lootList}
                     attendees={entry.attendanceList}
                     onVaultCountChange={setLootInVault}
@@ -476,7 +476,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             </div>
 
             {entry.attendanceList.length === 0 ? (
-              <p className="type-body text-subtle text-center py-4">{t('noCheckinsYet')}</p>
+              <p className="type-body text-subtle text-center py-4">{t('noAttendeesYet')}</p>
             ) : (
               <div className="space-y-2">
                 {entry.attendanceList.map((member, idx) => (

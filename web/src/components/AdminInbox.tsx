@@ -93,7 +93,7 @@ const loadAuctions = async (guildId: string): Promise<AuctionItem[]> => {
 const loadDeliveries = (guildId: string): Promise<BackpackItem[]> => apiClient.listPendingDeliveries(guildId);
 
 const loadLoot = async (guildId: string): Promise<LootGroup[]> =>
-  groupLoot((await apiClient.listBankItems(guildId)).filter(item => item.checkinId && !item.lock));
+  groupLoot((await apiClient.listBankItems(guildId)).filter(item => item.rollCallId && !item.lock));
 
 const SOURCE_KINDS: Record<SourceKey, readonly InboxKind[]> = {
   requests: ['fund', 'item'],
@@ -334,7 +334,7 @@ function InboxRow({ entry, now, showSelection, isSelected, isHighlighted, onSele
     }
     case 'loot': {
       const { group } = entry;
-      subject = group.title || t('untitledCheckin');
+      subject = group.title || t('untitledRollCall');
       leading = <IconTile icon={INBOX_KIND_META.loot.icon} />;
       detail = (
         <p className="type-body text-subtle truncate">
@@ -343,8 +343,8 @@ function InboxRow({ entry, now, showSelection, isSelected, isHighlighted, onSele
       );
       meta = t('lootWaiting', { time: relative(group.oldest) });
       trailing = (
-        <Link href={`/dashboard/attendance/${group.checkinId}`} className={rowLinkClass}>
-          {t('openCheckin')}
+        <Link href={`/dashboard/roll-calls/${group.rollCallId}`} className={rowLinkClass}>
+          {t('openRollCall')}
         </Link>
       );
       break;

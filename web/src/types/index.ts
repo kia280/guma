@@ -9,7 +9,7 @@ export * from './wallet';
 export * from './item';
 export * from './auction';
 export * from './backpack';
-export * from './checkin';
+export * from './roll-call';
 export * from './lottery';
 export * from './guild-bank';
 export * from './guild-events';

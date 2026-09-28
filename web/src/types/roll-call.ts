@@ -1,15 +1,15 @@
-// Check-in event types
+// Roll call types
 
 import type { ItemCategory, ItemRarity } from '@/types/item';
 
-export enum CheckinStatus {
+export enum RollCallStatus {
   OPEN = 1,
   CANCELLED = 2,
   FINISHED = 3,
   COMPLETED = 4,
 }
 
-export interface AttendanceMember {
+export interface Attendee {
   id: string;
   userId?: string;
   username: string;
@@ -30,46 +30,46 @@ export interface LootItem {
 
 export type LootKind = 'item' | 'gold';
 
-export interface CheckinGoldPot {
+export interface RollCallGoldPot {
   total: number;
   distributed: number;
   retracted: number;
   remaining: number;
 }
 
-export interface CheckinGoldPayout {
+export interface RollCallGoldPayout {
   userId: string;
   amount: number;
 }
 
-export interface CheckinGoldSummary {
-  pot?: CheckinGoldPot;
-  recipients: CheckinGoldPayout[];
+export interface RollCallGoldSummary {
+  pot?: RollCallGoldPot;
+  recipients: RollCallGoldPayout[];
 }
 
-export interface CheckinGoldDistribution {
-  pot: CheckinGoldPot;
-  payouts: CheckinGoldPayout[];
+export interface RollCallGoldDistribution {
+  pot: RollCallGoldPot;
+  payouts: RollCallGoldPayout[];
   replayed: boolean;
 }
 
-export interface CheckinEntry {
+export interface RollCall {
   id: string;
-  status: CheckinStatus;
+  status: RollCallStatus;
   date: string;
   title: string;
   description?: string;
   expireTime?: string;
   attendanceCount: number;
-  attendanceList: AttendanceMember[];
+  attendanceList: Attendee[];
   lootList: LootItem[];
-  goldLoot?: CheckinGoldPot;
+  goldLoot?: RollCallGoldPot;
   isDisabled?: boolean;
   imageUrl?: string;
   completedAt?: string;
 }
 
-export interface CreateCheckinRequest {
+export interface CreateRollCallRequest {
   title: string;
   description?: string;
   datetime?: string;
@@ -78,7 +78,7 @@ export interface CreateCheckinRequest {
   lootList?: LootEntry[];
 }
 
-export interface UpdateCheckinRequest {
+export interface UpdateRollCallRequest {
   title: string;
   description: string;
   datetime: string;
@@ -107,14 +107,14 @@ export interface ItemTemplate {
 
 export type ItemTemplateInput = Omit<ItemTemplate, 'id'>;
 
-export interface CheckinTemplate {
+export interface RollCallTemplate {
   id: string;
   name: string;
   title: string;
   items: ItemTemplate[];
 }
 
-export interface CheckinTemplateInput {
+export interface RollCallTemplateInput {
   name: string;
   title: string;
   itemTemplateIds: string[];

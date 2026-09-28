@@ -10,20 +10,6 @@ import type {
 } from '@/types/admin';
 import type { AuctionItem, Bid, CreateAuctionRequest, UpdateAuctionRequest } from '@/types/auction';
 import type { BackpackItem } from '@/types/backpack';
-import type {
-  CheckinEntry,
-  CheckinGoldDistribution,
-  CheckinGoldPayout,
-  CheckinGoldSummary,
-  AttendanceMember,
-  CheckinTemplate,
-  CheckinTemplateInput,
-  ItemTemplate,
-  ItemTemplateInput,
-  CreateCheckinRequest,
-  LootEntry,
-  UpdateCheckinRequest,
-} from '@/types/checkin';
 import type { QueryOptions } from '@/types/common';
 import type {
   DashboardData,
@@ -61,6 +47,20 @@ import type {
   NotificationPage,
 } from '@/types/notification';
 import type { NotificationPreferencesPatch, UserPreferences } from '@/types/preference';
+import type {
+  RollCall,
+  RollCallGoldDistribution,
+  RollCallGoldPayout,
+  RollCallGoldSummary,
+  Attendee,
+  RollCallTemplate,
+  RollCallTemplateInput,
+  ItemTemplate,
+  ItemTemplateInput,
+  CreateRollCallRequest,
+  LootEntry,
+  UpdateRollCallRequest,
+} from '@/types/roll-call';
 import type { User, UserStats, BalancePoint, MockUser, UpdateMeRequest } from '@/types/user';
 import type {
   AdminTransferFundsRequest,
@@ -135,29 +135,29 @@ export interface ApiClient {
   cancelAuction(guildId: string, id: string, reason?: string): Promise<AuctionItem>;
   deleteAuction(guildId: string, id: string): Promise<void>;
 
-  // ── CheckIn ──
-  listCheckins(guildId: string): Promise<CheckinEntry[]>;
-  getCheckin(guildId: string, id: string): Promise<CheckinEntry>;
-  createCheckin(guildId: string, req: CreateCheckinRequest): Promise<CheckinEntry>;
-  updateCheckin(guildId: string, id: string, patch: UpdateCheckinRequest): Promise<CheckinEntry>;
-  deleteCheckin(guildId: string, id: string): Promise<void>;
-  cancelCheckin(guildId: string, id: string): Promise<CheckinEntry>;
-  completeCheckin(guildId: string, id: string): Promise<CheckinEntry>;
-  updateCheckinLoot(guildId: string, id: string, lootList: LootEntry[]): Promise<CheckinEntry>;
-  submitAttendance(guildId: string, checkinId: string, notes?: string): Promise<AttendanceMember>;
-  listAttendees(guildId: string, checkinId: string): Promise<AttendanceMember[]>;
-  assignLoot(guildId: string, checkinId: string, itemId: string, userId: string): Promise<void>;
-  getCheckinGold(guildId: string, checkinId: string): Promise<CheckinGoldSummary>;
-  distributeCheckinGold(
+  // ── Roll calls ──
+  listRollCalls(guildId: string): Promise<RollCall[]>;
+  getRollCall(guildId: string, id: string): Promise<RollCall>;
+  createRollCall(guildId: string, req: CreateRollCallRequest): Promise<RollCall>;
+  updateRollCall(guildId: string, id: string, patch: UpdateRollCallRequest): Promise<RollCall>;
+  deleteRollCall(guildId: string, id: string): Promise<void>;
+  cancelRollCall(guildId: string, id: string): Promise<RollCall>;
+  completeRollCall(guildId: string, id: string): Promise<RollCall>;
+  updateRollCallLoot(guildId: string, id: string, lootList: LootEntry[]): Promise<RollCall>;
+  checkIn(guildId: string, rollCallId: string, notes?: string): Promise<Attendee>;
+  listAttendees(guildId: string, rollCallId: string): Promise<Attendee[]>;
+  assignLoot(guildId: string, rollCallId: string, itemId: string, userId: string): Promise<void>;
+  getRollCallGold(guildId: string, rollCallId: string): Promise<RollCallGoldSummary>;
+  distributeRollCallGold(
     guildId: string,
-    checkinId: string,
+    rollCallId: string,
     requestId: string,
-    payouts: CheckinGoldPayout[],
-  ): Promise<CheckinGoldDistribution>;
-  listCheckinTemplates(guildId: string): Promise<CheckinTemplate[]>;
-  createCheckinTemplate(guildId: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
-  updateCheckinTemplate(guildId: string, id: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
-  deleteCheckinTemplate(guildId: string, id: string): Promise<void>;
+    payouts: RollCallGoldPayout[],
+  ): Promise<RollCallGoldDistribution>;
+  listRollCallTemplates(guildId: string): Promise<RollCallTemplate[]>;
+  createRollCallTemplate(guildId: string, input: RollCallTemplateInput): Promise<RollCallTemplate>;
+  updateRollCallTemplate(guildId: string, id: string, input: RollCallTemplateInput): Promise<RollCallTemplate>;
+  deleteRollCallTemplate(guildId: string, id: string): Promise<void>;
   listItemTemplates(guildId: string): Promise<ItemTemplate[]>;
   createItemTemplate(guildId: string, input: ItemTemplateInput): Promise<ItemTemplate>;
   updateItemTemplate(guildId: string, id: string, input: ItemTemplateInput): Promise<ItemTemplate>;
@@ -187,7 +187,7 @@ export interface ApiClient {
   listFundRequests(guildId: string, status?: RequestStatus): Promise<FundRequest[]>;
   listContributions(guildId: string): Promise<GuildContribution[]>;
   donateItem(guildId: string, backpackItemId: string, note?: string): Promise<GuildBankItem>;
-  listBankItems(guildId: string, options?: { checkinId?: string }): Promise<GuildBankItem[]>;
+  listBankItems(guildId: string, options?: { rollCallId?: string }): Promise<GuildBankItem[]>;
   requestItem(guildId: string, bankItemId: string, reason: string): Promise<ItemRequest>;
   reviewItemRequest(
     guildId: string,

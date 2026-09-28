@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useNow } from '@/hooks/useNow';
 
-export interface CheckinFormValues {
+export interface RollCallFormValues {
   title: string;
   description: string;
   datetime: string;
@@ -14,18 +14,18 @@ export interface CheckinFormValues {
   imageUrl: string;
 }
 
-export interface CheckinFormErrors {
+export interface RollCallFormErrors {
   title: string | null;
   datetime: string | null;
   expireTime: string | null;
   isExpireOrderInvalid: boolean;
 }
 
-export function useCheckinFormErrors(
-  values: CheckinFormValues,
+export function useRollCallFormErrors(
+  values: RollCallFormValues,
   { requireFutureExpire = false }: { requireFutureExpire?: boolean } = {},
-): CheckinFormErrors {
-  const t = useTranslations('checkIn');
+): RollCallFormErrors {
+  const t = useTranslations('rollCall');
   const now = useNow(30_000);
   const expireBeforeStart =
     Boolean(values.datetime && values.expireTime) && new Date(values.expireTime) <= new Date(values.datetime);
@@ -45,7 +45,7 @@ export function useCheckinFormErrors(
   };
 }
 
-export const hasCheckinFormErrors = (errors: CheckinFormErrors) =>
+export const hasRollCallFormErrors = (errors: RollCallFormErrors) =>
   Boolean(errors.title || errors.datetime || errors.expireTime);
 
 function DateTimeField({
@@ -117,7 +117,7 @@ function DateTimeField({
   );
 }
 
-export function CheckinFormFields({
+export function RollCallFormFields({
   values,
   errors,
   showErrors,
@@ -127,16 +127,16 @@ export function CheckinFormFields({
   loot,
   footer,
 }: {
-  values: CheckinFormValues;
-  errors: CheckinFormErrors;
+  values: RollCallFormValues;
+  errors: RollCallFormErrors;
   showErrors: boolean;
-  onChange: (updates: Partial<CheckinFormValues>) => void;
+  onChange: (updates: Partial<RollCallFormValues>) => void;
   onDatetimeChange?: (datetime: string) => void;
   header?: React.ReactNode;
   loot?: React.ReactNode;
   footer?: React.ReactNode;
 }) {
-  const t = useTranslations('checkIn');
+  const t = useTranslations('rollCall');
   const showTitleError = Boolean(errors.title) && showErrors;
   const showDatetimeError = Boolean(errors.datetime) && showErrors;
   const showExpireTimeError = Boolean(errors.expireTime) && (showErrors || errors.isExpireOrderInvalid);

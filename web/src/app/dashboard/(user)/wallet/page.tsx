@@ -62,7 +62,7 @@ const TRANSACTION_KIND_LABELS: Record<string, string> = {
   LOTTERY_WIN: 'lotteryWin',
   BANK_CONTRIBUTION: 'bankContribution',
   FUND_REQUEST_APPROVED: 'fundRequestApproved',
-  ROLL_CALL_GOLD: 'checkinGold',
+  ROLL_CALL_GOLD: 'rollCallGold',
 };
 
 const USER_NOTE_KINDS = new Set([
@@ -113,7 +113,7 @@ const transactionHref = (transaction: Transaction): string | undefined => {
     case 'fund_request':
       return `/dashboard/guild-bank?request=${transaction.referenceId}`;
     case 'roll_call':
-      return `/dashboard/attendance/${transaction.referenceId}`;
+      return `/dashboard/roll-calls/${transaction.referenceId}`;
     default:
       return undefined;
   }

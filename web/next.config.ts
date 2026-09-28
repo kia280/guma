@@ -8,7 +8,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/dashboard/checkin/:path*',
-        destination: '/dashboard/attendance/:path*',
+        destination: '/dashboard/roll-calls/:path*',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/attendance/:path*',
+        destination: '/dashboard/roll-calls/:path*',
         permanent: true,
       },
     ];

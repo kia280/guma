@@ -2,7 +2,7 @@ import type { GuildAction } from '@/lib/permissions';
 
 export type NavLabelKey =
   | 'dashboard'
-  | 'checkin'
+  | 'rollCall'
   | 'calendar'
   | 'auction'
   | 'lottery'
@@ -59,7 +59,7 @@ export const NAV_SECTIONS: NavSection[] = [
     key: 'activities',
     label: 'activities',
     items: [
-      { key: 'attendance', href: '/dashboard/attendance', icon: 'solar:clipboard-check-linear', label: 'checkin', shortcut: 'a' },
+      { key: 'roll-calls', href: '/dashboard/roll-calls', icon: 'solar:clipboard-check-linear', label: 'rollCall', shortcut: 'r' },
       { key: 'calendar', href: '/dashboard/calendar', icon: 'solar:calendar-linear', label: 'calendar', shortcut: 'c' },
       { key: 'auction', href: '/dashboard/auction', icon: 'solar:sledgehammer-linear', label: 'auction', shortcut: 'u' },
       { key: 'lottery', href: '/dashboard/lottery', icon: 'solar:ticket-linear', label: 'lottery', shortcut: 'l' },
@@ -129,7 +129,7 @@ export interface Crumb {
 }
 
 const SECTION_PAGES: Record<string, NavLabelKey> = {
-  attendance: 'checkin',
+  'roll-calls': 'rollCall',
   calendar: 'calendar',
   auction: 'auction',
   lottery: 'lottery',

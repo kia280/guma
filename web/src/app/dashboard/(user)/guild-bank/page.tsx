@@ -236,15 +236,15 @@ export default function GuildBankPage() {
       case 'item_distribute':
         return t('typeItemDistribute');
       case 'roll_call_loot':
-        return t('typeCheckinLoot');
+        return t('typeRollCallLoot');
       case 'auction_proceeds':
         return t('typeAuctionProceeds');
       case 'lottery_revenue':
         return t('typeLotteryRevenue');
       case 'roll_call_gold_payout':
-        return t('typeCheckinGoldPayout');
+        return t('typeRollCallGoldPayout');
       case 'roll_call_gold_retracted':
-        return t('typeCheckinGoldRetracted');
+        return t('typeRollCallGoldRetracted');
       case 'admin_transfer':
         return t('typeAdminTransfer');
     }
@@ -594,13 +594,13 @@ export default function GuildBankPage() {
                         {t('otherPendingRequests', { count: item.pendingRequestCount - 1 })}
                       </p>
                     )}
-                    {item.checkinId && (
+                    {item.rollCallId && (
                       <Link
-                        href={`/dashboard/attendance/${item.checkinId}`}
+                        href={`/dashboard/roll-calls/${item.rollCallId}`}
                         className="mt-1 flex min-w-0 items-center gap-1 rounded type-caption text-hint hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                       >
                         <Icon icon="solar:clipboard-check-linear" width={14} className="shrink-0" />
-                        <span className="truncate">{t('fromCheckin', { title: item.checkinTitle || t('untitledCheckin') })}</span>
+                        <span className="truncate">{t('fromRollCall', { title: item.rollCallTitle || t('untitledRollCall') })}</span>
                       </Link>
                     )}
                   </div>

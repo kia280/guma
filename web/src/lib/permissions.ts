@@ -32,16 +32,16 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
-    key: 'checkin',
+    key: 'rollCall',
     icon: 'solar:clipboard-check-bold-duotone',
     actions: [
-      { key: 'attendCheckin', roles: ALL },
-      { key: 'createCheckin', roles: STAFF },
-      { key: 'editCheckin', roles: STAFF },
-      { key: 'cancelCheckin', roles: OWNER_ADMIN },
+      { key: 'checkIn', roles: ALL },
+      { key: 'createRollCall', roles: STAFF },
+      { key: 'editRollCall', roles: STAFF },
+      { key: 'cancelRollCall', roles: OWNER_ADMIN },
       { key: 'distributeLoot', roles: STAFF },
-      { key: 'editCheckinLoot', roles: STAFF },
-      { key: 'completeCheckin', roles: STAFF },
+      { key: 'editRollCallLoot', roles: STAFF },
+      { key: 'completeRollCall', roles: STAFF },
     ],
   },
   {

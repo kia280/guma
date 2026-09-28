@@ -6,18 +6,6 @@ import { emitLiveEvent } from '@/lib/live-events';
 import { ownUserName } from '@/lib/user-name';
 import type { AdminAnnouncement } from '@/types/admin';
 import { AuctionStatus, type AuctionItem } from '@/types/auction';
-import type {
-  AttendanceMember,
-  CheckinEntry,
-  CheckinGoldDistribution,
-  CheckinGoldPot,
-  CheckinTemplate,
-  CheckinTemplateInput,
-  ItemTemplate,
-  ItemTemplateInput,
-  LootItem,
-} from '@/types/checkin';
-import { CheckinStatus } from '@/types/checkin';
 import type { Announcement } from '@/types/dashboard';
 import type { Guild } from '@/types/guild';
 import type {
@@ -32,6 +20,18 @@ import { ItemCategory, ItemRarity, type ItemHistoryEvent, type ItemLock, type It
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
 import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from '@/types/preference';
+import { RollCallStatus } from '@/types/roll-call';
+import type {
+  Attendee,
+  RollCall,
+  RollCallGoldDistribution,
+  RollCallGoldPot,
+  RollCallTemplate,
+  RollCallTemplateInput,
+  ItemTemplate,
+  ItemTemplateInput,
+  LootItem,
+} from '@/types/roll-call';
 import type { User, UserStats } from '@/types/user';
 import type { MemberAssets, Transaction, Wallet } from '@/types/wallet';
 import { fromMinorUnits, roundGold, toMinorUnits } from '../money';
@@ -42,9 +42,9 @@ import { localizeMock } from './i18n';
 
 /** In-memory store so mutations feel interactive during mock-mode development. */
 const store = {
-  checkins: [...mockData.mockCheckins] as CheckinEntry[],
+  rollCalls: [...mockData.mockRollCalls] as RollCall[],
   itemTemplates: mockData.mockItemTemplates.map(t => ({ ...t })) as ItemTemplate[],
-  checkinTemplates: mockData.mockCheckinTemplates.map(t => ({ ...t, itemTemplateIds: [...t.itemTemplateIds] })),
+  rollCallTemplates: mockData.mockRollCallTemplates.map(t => ({ ...t, itemTemplateIds: [...t.itemTemplateIds] })),
   auctions: [...mockData.mockAuctionItems] as AuctionItem[],
   transactions: [...mockData.mockTransactions] as Transaction[],
   lotteries: mockData.mockLotteries.map(l => ({ ...l, participants: l.participants?.map(p => ({ ...p })) })) as Lottery[],
@@ -56,18 +56,18 @@ const store = {
   fundRequests: [] as FundRequest[],
   itemRequests: [] as ItemRequest[],
   bankBalance: 8750,
-  checkinGold: {} as Record<string, MockCheckinGold>,
+  rollCallGold: {} as Record<string, MockRollCallGold>,
 };
 
-type MockCheckinGold = {
+type MockRollCallGold = {
   recipients: Record<string, number>;
-  requests: Record<string, CheckinGoldDistribution>;
+  requests: Record<string, RollCallGoldDistribution>;
 };
 
-const checkinGoldState = (checkinId: string): MockCheckinGold =>
-  (store.checkinGold[checkinId] ??= { recipients: {}, requests: {} });
+const rollCallGoldState = (rollCallId: string): MockRollCallGold =>
+  (store.rollCallGold[rollCallId] ??= { recipients: {}, requests: {} });
 
-const goldPot = (total: number, distributed: number, retracted: number): CheckinGoldPot => ({
+const goldPot = (total: number, distributed: number, retracted: number): RollCallGoldPot => ({
   total,
   distributed,
   retracted,
@@ -85,7 +85,7 @@ const invalidArgument = (message: string) =>
 const emitBankChanged = (guildId: string, resourceId: string) =>
   emitLiveEvent({ kind: 'resource', guildId, resource: 'bank', resourceId });
 
-type StoredCheckinTemplate = Omit<CheckinTemplate, 'items'> & { itemTemplateIds: string[] };
+type StoredRollCallTemplate = Omit<RollCallTemplate, 'items'> & { itemTemplateIds: string[] };
 
 const conflict = () =>
   Object.assign(new Error('a template with this name already exists'), {
@@ -128,14 +128,14 @@ const assertUniqueName = (list: Array<{ id: string; name: string }>, id: string,
   if (list.some(t => t.id !== id && t.name === name)) throw conflict();
 };
 
-const resolveCheckinTemplate = (t: StoredCheckinTemplate): CheckinTemplate => ({
+const resolveRollCallTemplate = (t: StoredRollCallTemplate): RollCallTemplate => ({
   id: t.id,
   name: t.name,
   title: t.title,
   items: t.itemTemplateIds.flatMap(itemId => store.itemTemplates.filter(item => item.id === itemId)),
 });
 
-const toStoredCheckinTemplate = (id: string, input: CheckinTemplateInput): StoredCheckinTemplate => ({
+const toStoredRollCallTemplate = (id: string, input: RollCallTemplateInput): StoredRollCallTemplate => ({
   id,
   name: input.name.trim(),
   title: input.title.trim(),
@@ -568,19 +568,19 @@ const baseMockApiClient: ApiClient = {
     store.auctions = store.auctions.filter(a => a.id !== id);
   },
 
-  // ── CheckIn ──
-  listCheckins: async () => [...store.checkins],
-  getCheckin: async (_guildId, id) => {
-    const c = store.checkins.find(x => x.id === id);
-    if (!c) throw new Error(`checkin ${id} not found`);
+  // ── Roll calls ──
+  listRollCalls: async () => [...store.rollCalls],
+  getRollCall: async (_guildId, id) => {
+    const c = store.rollCalls.find(x => x.id === id);
+    if (!c) throw new Error(`rollCall ${id} not found`);
     return c;
   },
-  createCheckin: async (_guildId, req) => {
+  createRollCall: async (_guildId, req) => {
     const itemLoot = (req.lootList ?? []).filter(entry => entry.kind !== 'gold');
     const gold = (req.lootList ?? []).find(entry => entry.kind === 'gold')?.amount ?? 0;
-    const entry: CheckinEntry = {
+    const entry: RollCall = {
       id: `ci-${Date.now()}`,
-      status: CheckinStatus.OPEN,
+      status: RollCallStatus.OPEN,
       date: req.datetime ?? new Date().toISOString(),
       title: req.title,
       description: req.description || undefined,
@@ -595,7 +595,7 @@ const baseMockApiClient: ApiClient = {
       goldLoot: gold > 0 ? goldPot(gold, 0, 0) : undefined,
       imageUrl: req.imageUrl,
     };
-    store.checkins = [entry, ...store.checkins];
+    store.rollCalls = [entry, ...store.rollCalls];
     store.bankBalance = addGold(store.bankBalance, gold);
     mockData.mockGuildItems.unshift(
       ...itemLoot.map((item, idx) => ({
@@ -609,8 +609,8 @@ const baseMockApiClient: ApiClient = {
         quantity: 1,
         pendingRequestCount: 0,
         requestedByMe: false,
-        checkinId: entry.id,
-        checkinTitle: req.title,
+        rollCallId: entry.id,
+        rollCallTitle: req.title,
       })),
     );
     if (itemLoot.length || gold > 0) {
@@ -619,22 +619,22 @@ const baseMockApiClient: ApiClient = {
         type: 'roll_call_loot',
         itemName: itemLoot.map(item => item.name).join(', ') || undefined,
         amount: gold > 0 ? gold : undefined,
-        href: `/dashboard/attendance/${entry.id}`,
+        href: `/dashboard/roll-calls/${entry.id}`,
         member: ownUserName(currentUser),
         date: new Date().toISOString(),
         status: 'completed',
         note: req.title,
-        checkinId: entry.id,
+        rollCallId: entry.id,
       });
     }
     return entry;
   },
-  updateCheckin: async (_guildId, id, patch) => {
-    const idx = store.checkins.findIndex(c => c.id === id);
+  updateRollCall: async (_guildId, id, patch) => {
+    const idx = store.rollCalls.findIndex(c => c.id === id);
     if (idx === -1) throw new Error('not found');
-    const current = store.checkins[idx];
-    if (current.status !== CheckinStatus.OPEN) throw new Error('checkin is not open');
-    store.checkins[idx] = {
+    const current = store.rollCalls[idx];
+    if (current.status !== RollCallStatus.OPEN) throw new Error('rollCall is not open');
+    store.rollCalls[idx] = {
       ...current,
       title: patch.title,
       description: patch.description || undefined,
@@ -642,20 +642,20 @@ const baseMockApiClient: ApiClient = {
       expireTime: patch.expireTime,
       imageUrl: patch.imageUrl || undefined,
     };
-    return store.checkins[idx];
+    return store.rollCalls[idx];
   },
-  deleteCheckin: async (_guildId, id) => {
-    store.checkins = store.checkins.filter(c => c.id !== id);
+  deleteRollCall: async (_guildId, id) => {
+    store.rollCalls = store.rollCalls.filter(c => c.id !== id);
   },
-  cancelCheckin: async (_guildId, id) => {
-    const entry = store.checkins.find(c => c.id === id);
+  cancelRollCall: async (_guildId, id) => {
+    const entry = store.rollCalls.find(c => c.id === id);
     if (!entry) throw new Error('not found');
-    if (entry.status !== CheckinStatus.OPEN || (entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now())) {
-      throw Object.assign(new Error('check-in is no longer open'), { response: { status: 400 } });
+    if (entry.status !== RollCallStatus.OPEN || (entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now())) {
+      throw Object.assign(new Error('roll call is no longer open'), { response: { status: 400 } });
     }
-    entry.status = CheckinStatus.CANCELLED;
+    entry.status = RollCallStatus.CANCELLED;
     mockData.mockGuildItems
-      .filter(item => item.checkinId === id)
+      .filter(item => item.rollCallId === id)
       .forEach(item => removeById(mockData.mockGuildItems, item.id));
     const pot = entry.goldLoot;
     if (pot && pot.remaining > 0) {
@@ -668,34 +668,34 @@ const baseMockApiClient: ApiClient = {
         date: new Date().toISOString(),
         status: 'completed',
         note: entry.title,
-        checkinId: entry.id,
-        href: `/dashboard/attendance/${entry.id}`,
+        rollCallId: entry.id,
+        href: `/dashboard/roll-calls/${entry.id}`,
       });
       entry.goldLoot = goldPot(pot.total, pot.distributed, addGold(pot.retracted, pot.remaining));
     }
     return entry;
   },
-  completeCheckin: async (_guildId, id) => {
-    const entry = store.checkins.find(c => c.id === id);
+  completeRollCall: async (_guildId, id) => {
+    const entry = store.rollCalls.find(c => c.id === id);
     if (!entry) throw notFound();
     const isExpired = !!entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now();
-    if (entry.status === CheckinStatus.CANCELLED || entry.status === CheckinStatus.COMPLETED || !isExpired) {
-      throw failedPrecondition('check-in cannot be completed');
+    if (entry.status === RollCallStatus.CANCELLED || entry.status === RollCallStatus.COMPLETED || !isExpired) {
+      throw failedPrecondition('roll call cannot be completed');
     }
-    if (mockData.mockGuildItems.some(item => item.checkinId === id) || (entry.goldLoot?.remaining ?? 0) > 0) {
+    if (mockData.mockGuildItems.some(item => item.rollCallId === id) || (entry.goldLoot?.remaining ?? 0) > 0) {
       throw failedPrecondition('loot has not been distributed yet');
     }
-    entry.status = CheckinStatus.COMPLETED;
+    entry.status = RollCallStatus.COMPLETED;
     entry.completedAt = new Date().toISOString();
     return entry;
   },
-  updateCheckinLoot: async (_guildId, id, lootList) => {
-    const entry = store.checkins.find(c => c.id === id);
+  updateRollCallLoot: async (_guildId, id, lootList) => {
+    const entry = store.rollCalls.find(c => c.id === id);
     if (!entry) throw notFound();
-    if (entry.status === CheckinStatus.CANCELLED || entry.status === CheckinStatus.COMPLETED) {
+    if (entry.status === RollCallStatus.CANCELLED || entry.status === RollCallStatus.COMPLETED) {
       throw failedPrecondition('loot can no longer change');
     }
-    const vault = new Map(mockData.mockGuildItems.filter(item => item.checkinId === id).map(item => [item.id, item]));
+    const vault = new Map(mockData.mockGuildItems.filter(item => item.rollCallId === id).map(item => [item.id, item]));
     const kept = new Set(lootList.flatMap(item => (item.id ? [item.id] : [])));
     for (const item of entry.lootList) {
       const next = lootList.find(l => l.id === item.id);
@@ -722,8 +722,8 @@ const baseMockApiClient: ApiClient = {
           quantity: 1,
           pendingRequestCount: 0,
           requestedByMe: false,
-          checkinId: entry.id,
-          checkinTitle: entry.title,
+          rollCallId: entry.id,
+          rollCallTitle: entry.title,
         });
       }
       return {
@@ -736,19 +736,19 @@ const baseMockApiClient: ApiClient = {
     });
     return entry;
   },
-  submitAttendance: async (_guildId, checkinId, notes): Promise<AttendanceMember> => {
-    const entry = store.checkins.find(c => c.id === checkinId);
+  checkIn: async (_guildId, rollCallId, notes): Promise<Attendee> => {
+    const entry = store.rollCalls.find(c => c.id === rollCallId);
     if (!entry) throw new Error('not found');
-    if (entry.status === CheckinStatus.CANCELLED) {
-      throw Object.assign(new Error('check-in has been cancelled'), { response: { status: 400 } });
+    if (entry.status === RollCallStatus.CANCELLED) {
+      throw Object.assign(new Error('roll call has been cancelled'), { response: { status: 400 } });
     }
     if (entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now()) {
-      throw Object.assign(new Error('check-in window has expired'), { response: { status: 400 } });
+      throw Object.assign(new Error('roll call has expired'), { response: { status: 400 } });
     }
     if (entry.attendanceList.some(a => a.userId === currentUser.id)) {
-      throw Object.assign(new Error('already attended this check-in'), { response: { status: 409 } });
+      throw Object.assign(new Error('already checked in to this roll call'), { response: { status: 409 } });
     }
-    const attendee: AttendanceMember = {
+    const attendee: Attendee = {
       id: `a-${Date.now()}`,
       userId: currentUser.id,
       username: ownUserName(currentUser),
@@ -759,36 +759,36 @@ const baseMockApiClient: ApiClient = {
     entry.attendanceCount = entry.attendanceList.length;
     return attendee;
   },
-  assignLoot: async (_guildId, _checkinId, itemId) => {
+  assignLoot: async (_guildId, _rollCallId, itemId) => {
     if (mockData.mockGuildItems.find(i => i.id === itemId)?.lock) throw failedPrecondition('loot is in an auction or lottery');
     removeById(mockData.mockGuildItems, itemId);
   },
-  listAttendees: async (_guildId, checkinId) => {
-    const entry = store.checkins.find(c => c.id === checkinId);
+  listAttendees: async (_guildId, rollCallId) => {
+    const entry = store.rollCalls.find(c => c.id === rollCallId);
     return entry?.attendanceList ?? [];
   },
-  getCheckinGold: async (_guildId, checkinId) => {
-    const entry = store.checkins.find(c => c.id === checkinId);
+  getRollCallGold: async (_guildId, rollCallId) => {
+    const entry = store.rollCalls.find(c => c.id === rollCallId);
     if (!entry) throw notFound();
-    const state = checkinGoldState(checkinId);
+    const state = rollCallGoldState(rollCallId);
     return {
       pot: entry.goldLoot,
       recipients: Object.entries(state.recipients).map(([userId, amount]) => ({ userId, amount })),
     };
   },
-  distributeCheckinGold: async (guildId, checkinId, requestId, payouts) => {
-    const entry = store.checkins.find(c => c.id === checkinId);
+  distributeRollCallGold: async (guildId, rollCallId, requestId, payouts) => {
+    const entry = store.rollCalls.find(c => c.id === rollCallId);
     if (!entry) throw notFound();
-    const state = checkinGoldState(checkinId);
+    const state = rollCallGoldState(rollCallId);
     const previous = state.requests[requestId];
     if (previous) return { ...previous, replayed: true };
     const lines = payouts.filter(p => p.amount !== 0);
     if (payouts.some(p => p.amount < 0) || lines.length === 0) throw invalidArgument('invalid payouts');
     if (new Set(payouts.map(p => p.userId)).size !== payouts.length) throw invalidArgument('duplicate recipient');
     const pot = entry.goldLoot;
-    if (!pot || entry.status === CheckinStatus.CANCELLED) throw failedPrecondition('no gold to distribute');
+    if (!pot || entry.status === RollCallStatus.CANCELLED) throw failedPrecondition('no gold to distribute');
     if (lines.some(p => !entry.attendanceList.some(a => a.userId === p.userId))) {
-      throw failedPrecondition('recipient did not attend');
+      throw failedPrecondition('recipient did not check in');
     }
     const total = fromMinorUnits(lines.reduce((sum, p) => sum + toMinorUnits(p.amount), 0));
     if (toMinorUnits(total) > toMinorUnits(pot.remaining)) throw failedPrecondition('pot is insufficient');
@@ -821,30 +821,30 @@ const baseMockApiClient: ApiClient = {
       date: new Date().toISOString(),
       status: 'completed',
       note: entry.title,
-      checkinId: entry.id,
-      href: `/dashboard/attendance/${entry.id}`,
+      rollCallId: entry.id,
+      href: `/dashboard/roll-calls/${entry.id}`,
     });
-    const result: CheckinGoldDistribution = { pot: entry.goldLoot, payouts: lines, replayed: false };
+    const result: RollCallGoldDistribution = { pot: entry.goldLoot, payouts: lines, replayed: false };
     state.requests[requestId] = result;
-    emitBankChanged(guildId, checkinId);
+    emitBankChanged(guildId, rollCallId);
     return result;
   },
-  listCheckinTemplates: async () => store.checkinTemplates.map(resolveCheckinTemplate).sort(byName),
-  createCheckinTemplate: async (_guildId, input) => {
-    const template = toStoredCheckinTemplate(`tpl-${Date.now()}`, input);
-    assertUniqueName(store.checkinTemplates, template.id, template.name);
-    store.checkinTemplates = [...store.checkinTemplates, template];
-    return resolveCheckinTemplate(template);
+  listRollCallTemplates: async () => store.rollCallTemplates.map(resolveRollCallTemplate).sort(byName),
+  createRollCallTemplate: async (_guildId, input) => {
+    const template = toStoredRollCallTemplate(`tpl-${Date.now()}`, input);
+    assertUniqueName(store.rollCallTemplates, template.id, template.name);
+    store.rollCallTemplates = [...store.rollCallTemplates, template];
+    return resolveRollCallTemplate(template);
   },
-  updateCheckinTemplate: async (_guildId, id, input) => {
-    if (!store.checkinTemplates.some(t => t.id === id)) throw new Error('not found');
-    const template = toStoredCheckinTemplate(id, input);
-    assertUniqueName(store.checkinTemplates, id, template.name);
-    store.checkinTemplates = store.checkinTemplates.map(t => (t.id === id ? template : t));
-    return resolveCheckinTemplate(template);
+  updateRollCallTemplate: async (_guildId, id, input) => {
+    if (!store.rollCallTemplates.some(t => t.id === id)) throw new Error('not found');
+    const template = toStoredRollCallTemplate(id, input);
+    assertUniqueName(store.rollCallTemplates, id, template.name);
+    store.rollCallTemplates = store.rollCallTemplates.map(t => (t.id === id ? template : t));
+    return resolveRollCallTemplate(template);
   },
-  deleteCheckinTemplate: async (_guildId, id) => {
-    store.checkinTemplates = store.checkinTemplates.filter(t => t.id !== id);
+  deleteRollCallTemplate: async (_guildId, id) => {
+    store.rollCallTemplates = store.rollCallTemplates.filter(t => t.id !== id);
   },
   listItemTemplates: async () => [...store.itemTemplates].sort(byName),
   createItemTemplate: async (_guildId, input) => {
@@ -1033,7 +1033,7 @@ const baseMockApiClient: ApiClient = {
     return donated;
   },
   listBankItems: async (_guildId, options) =>
-    options?.checkinId ? mockData.mockGuildItems.filter(item => item.checkinId === options.checkinId) : mockData.mockGuildItems,
+    options?.rollCallId ? mockData.mockGuildItems.filter(item => item.rollCallId === options.rollCallId) : mockData.mockGuildItems,
   requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => {
     const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
     if (!bankItem) throw new Error('not found');
@@ -1078,8 +1078,8 @@ const baseMockApiClient: ApiClient = {
     const event = (kind: ItemHistoryEvent['kind'], createdAt: string, extra: Partial<ItemHistoryEvent> = {}) =>
       events.push({ id: `${itemId}-${events.length}`, kind, source: '', actorName: '', subjectName: '', referenceLabel: '', createdAt, ...extra });
     if (bankItem) {
-      if (bankItem.checkinId) {
-        event('looted', bankItem.donatedAt, { source: 'roll_call', actorName: bankItem.donatedBy, referenceId: bankItem.checkinId, referenceLabel: bankItem.checkinTitle ?? '' });
+      if (bankItem.rollCallId) {
+        event('looted', bankItem.donatedAt, { source: 'roll_call', actorName: bankItem.donatedBy, referenceId: bankItem.rollCallId, referenceLabel: bankItem.rollCallTitle ?? '' });
       } else {
         event('donated', bankItem.donatedAt, { actorName: bankItem.donatedBy });
       }

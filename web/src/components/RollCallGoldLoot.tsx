@@ -25,7 +25,7 @@ import {
 import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { useGuildPermissions } from '@/lib/permissions';
-import type { AttendanceMember, CheckinGoldPot } from '@/types/checkin';
+import type { Attendee, RollCallGoldPot } from '@/types/roll-call';
 import { GOLD_LOOT_ICON } from './LootListEditor';
 import { UserAvatar } from './UserAvatar';
 
@@ -33,15 +33,15 @@ type LoadStatus = 'loading' | 'ready' | 'error';
 type Step = 'edit' | 'review';
 type AppliedSplit = { count: number; leftover: number };
 
-type CheckinGoldLootProps = {
-  checkinId: string;
-  pot: CheckinGoldPot;
-  attendees: AttendanceMember[];
-  onPotChange: (pot: CheckinGoldPot) => void;
+type RollCallGoldLootProps = {
+  rollCallId: string;
+  pot: RollCallGoldPot;
+  attendees: Attendee[];
+  onPotChange: (pot: RollCallGoldPot) => void;
 };
 
-export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: CheckinGoldLootProps) {
-  const t = useTranslations('checkinGold');
+export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: RollCallGoldLootProps) {
+  const t = useTranslations('rollCallGold');
   const guildId = useCurrentGuildId();
   const notify = useToast();
   const format = useIntlFormatter();
@@ -67,14 +67,14 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
 
   const load = React.useCallback(() => {
     apiClient
-      .getCheckinGold(guildId, checkinId)
+      .getRollCallGold(guildId, rollCallId)
       .then(summary => {
         setReceived(Object.fromEntries(summary.recipients.map(r => [r.userId, r.amount])));
         if (summary.pot) onPotChangeRef.current(summary.pot);
         setStatus('ready');
       })
       .catch(() => setStatus('error'));
-  }, [guildId, checkinId]);
+  }, [guildId, rollCallId]);
 
   React.useEffect(() => {
     load();
@@ -82,7 +82,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
 
   useLiveResource(['bank'], load, { guildId });
 
-  const eligible = attendees.filter((member): member is AttendanceMember & { userId: string } => !!member.userId);
+  const eligible = attendees.filter((member): member is Attendee & { userId: string } => !!member.userId);
   const nameOf = (userId: string) => userName(eligible.find(member => member.userId === userId)?.username);
   const isRetracted = pot.retracted > 0;
   const canDistribute = can('distributeLoot') && !isRetracted && pot.remaining > 0 && eligible.length > 0;
@@ -160,7 +160,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const result = await apiClient.distributeCheckinGold(guildId, checkinId, requestId.current, payouts);
+      const result = await apiClient.distributeRollCallGold(guildId, rollCallId, requestId.current, payouts);
       onPotChange(result.pot);
       notify.success(t('success', { amount: formatGold(allocation.allocated), count: payouts.length }));
       modal.close();

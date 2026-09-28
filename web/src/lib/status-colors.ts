@@ -1,7 +1,7 @@
 import { AuctionStatus } from '@/types/auction';
-import { CheckinStatus } from '@/types/checkin';
 import type { GuildContribution, RequestStatus } from '@/types/guild-bank';
 import type { LotteryStatus } from '@/types/lottery';
+import { RollCallStatus } from '@/types/roll-call';
 import type { Transaction } from '@/types/wallet';
 
 export type StatusColor = 'default' | 'accent' | 'success' | 'warning' | 'danger';
@@ -47,9 +47,9 @@ export const auctionStatusColor: Record<AuctionStatus, StatusColor> = {
   [AuctionStatus.CANCELLED]: 'default',
 };
 
-export const checkinStatusColor: Record<CheckinStatus, StatusColor> = {
-  [CheckinStatus.OPEN]: 'success',
-  [CheckinStatus.CANCELLED]: 'default',
-  [CheckinStatus.FINISHED]: 'warning',
-  [CheckinStatus.COMPLETED]: 'accent',
+export const rollCallStatusColor: Record<RollCallStatus, StatusColor> = {
+  [RollCallStatus.OPEN]: 'success',
+  [RollCallStatus.CANCELLED]: 'default',
+  [RollCallStatus.FINISHED]: 'warning',
+  [RollCallStatus.COMPLETED]: 'accent',
 };

@@ -12,9 +12,9 @@ import { useCurrentGuildId } from '@/lib/current-guild';
 import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
-import type { CheckinEntry, ItemTemplate, LootEntry, LootItem } from '@/types/checkin';
 import type { GuildBankItem } from '@/types/guild-bank';
 import { ItemCategory } from '@/types/item';
+import type { RollCall, ItemTemplate, LootEntry, LootItem } from '@/types/roll-call';
 import { ItemLockChip } from './ItemLockChip';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
@@ -43,20 +43,20 @@ const toLootEntry = (item: ItemTemplate): LootEntry => ({
   rarity: item.rarity,
 });
 
-export function CheckinLootEditModal({
+export function RollCallLootEditModal({
   entry,
   state,
   onSaved,
   onConflict,
 }: {
-  entry: CheckinEntry;
+  entry: RollCall;
   state: UseOverlayStateReturn;
-  onSaved: (updated: CheckinEntry) => void;
+  onSaved: (updated: RollCall) => void;
   onConflict: () => void;
 }) {
-  const t = useTranslations('checkinLootEdit');
-  const loot = useTranslations('checkinLoot');
-  const checkIn = useTranslations('checkIn');
+  const t = useTranslations('rollCallLootEdit');
+  const loot = useTranslations('rollCallLoot');
+  const rollCall = useTranslations('rollCall');
   const guildId = useCurrentGuildId();
   const notify = useToast();
 
@@ -74,7 +74,7 @@ export function CheckinLootEditModal({
   const loadBank = React.useCallback(() => {
     setBankStatus('loading');
     apiClient
-      .listBankItems(guildId, { checkinId: entry.id })
+      .listBankItems(guildId, { rollCallId: entry.id })
       .then(items => {
         setBankItems(items);
         setBankStatus('ready');
@@ -148,7 +148,7 @@ export function CheckinLootEditModal({
     setIsSaving(true);
     setSaveError(null);
     try {
-      const updated = await apiClient.updateCheckinLoot(guildId, entry.id, lootList);
+      const updated = await apiClient.updateRollCallLoot(guildId, entry.id, lootList);
       onSaved(updated);
       notify.success(t('saveSuccess'));
       state.close();
@@ -259,7 +259,7 @@ export function CheckinLootEditModal({
                                   size="sm"
                                   isIconOnly
                                   variant="tertiary"
-                                  aria-label={checkIn('removeLootItem', { name: item.name })}
+                                  aria-label={rollCall('removeLootItem', { name: item.name })}
                                   className="mt-0.5 shrink-0 text-hint hover:text-danger max-sm:size-11"
                                   onPress={() => removeRow(item.id)}
                                 >
@@ -297,14 +297,14 @@ export function CheckinLootEditModal({
                         isDisabled={templatesStatus !== 'ready'}
                         placeholder={
                           templatesStatus === 'loading'
-                            ? checkIn('templatesLoading')
+                            ? rollCall('templatesLoading')
                             : templatesStatus === 'error'
-                              ? checkIn('templatesLoadFailed')
+                              ? rollCall('templatesLoadFailed')
                               : itemTemplates.length === 0
-                                ? checkIn('noItemTemplates')
-                                : checkIn('itemTemplatePlaceholder')
+                                ? rollCall('noItemTemplates')
+                                : rollCall('itemTemplatePlaceholder')
                         }
-                        description={checkIn('itemTemplateHint')}
+                        description={rollCall('itemTemplateHint')}
                       />
                     )}
                   </LootListEditor>
@@ -321,7 +321,7 @@ export function CheckinLootEditModal({
             </Modal.Body>
             <Modal.Footer>
               <Button slot="close" variant="secondary" isDisabled={isSaving}>
-                {checkIn('cancel')}
+                {rollCall('cancel')}
               </Button>
               <Button
                 variant="primary"
@@ -329,7 +329,7 @@ export function CheckinLootEditModal({
                 isPending={isSaving}
                 isDisabled={bankStatus !== 'ready'}
               >
-                {checkIn('save')}
+                {rollCall('save')}
               </Button>
             </Modal.Footer>
           </Modal.Dialog>

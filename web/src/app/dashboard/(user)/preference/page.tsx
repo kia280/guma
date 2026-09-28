@@ -28,15 +28,15 @@ type NotificationStatus = 'loading' | 'ready' | 'error';
 
 const NOTIFICATION_ITEMS: ReadonlyArray<{
   key: NotificationPreferenceKey;
-  label: 'emailLabel' | 'auctionLabel' | 'lotteryLabel' | 'eventsLabel' | 'checkinLabel';
-  description: 'emailDesc' | 'auctionDesc' | 'lotteryDesc' | 'eventsDesc' | 'checkinDesc';
+  label: 'emailLabel' | 'auctionLabel' | 'lotteryLabel' | 'eventsLabel' | 'rollCallLabel';
+  description: 'emailDesc' | 'auctionDesc' | 'lotteryDesc' | 'eventsDesc' | 'rollCallDesc';
   icon: string;
 }> = [
   { key: 'emailNotifications', label: 'emailLabel', description: 'emailDesc', icon: 'solar:letter-linear' },
   { key: 'auctionAlerts', label: 'auctionLabel', description: 'auctionDesc', icon: 'solar:dollar-linear' },
   { key: 'lotteryAlerts', label: 'lotteryLabel', description: 'lotteryDesc', icon: 'solar:ticket-linear' },
   { key: 'eventReminders', label: 'eventsLabel', description: 'eventsDesc', icon: 'solar:calendar-linear' },
-  { key: 'checkinReminders', label: 'checkinLabel', description: 'checkinDesc', icon: 'solar:clipboard-list-linear' },
+  { key: 'rollCallReminders', label: 'rollCallLabel', description: 'rollCallDesc', icon: 'solar:clipboard-list-linear' },
 ];
 
 export default function PreferencePage() {

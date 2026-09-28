@@ -10,7 +10,6 @@
 import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { BackpackItem } from '@/types/backpack';
-import { CheckinStatus, CheckinEntry, ItemTemplate } from '@/types/checkin';
 import type {
   FeedEvent,
   EventKind,
@@ -23,6 +22,7 @@ import { GuildEvent, CreateEventData, UpdateEventData } from '@/types/guild-even
 import { ItemCategory, ItemRarity } from '@/types/item';
 import type { Lottery, LotteryParticipant } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
+import { RollCallStatus, RollCall, ItemTemplate } from '@/types/roll-call';
 import type { MockUser, BalancePoint } from '@/types/user';
 import type { Transaction } from '@/types/wallet';
 
@@ -106,14 +106,14 @@ export const GUILD_STATS: GuildStats = {
   members: mockUsers.length,
   activeEvents: 5,
   balance: 128_450,
-  checkinsThisWeek: 31,
+  attendanceThisWeek: 31,
   activeAuctions: 3,
   openLotteries: 2,
 };
 
 export const PERSONAL_STATS: PersonalStats = {
   balance: 5_000,
-  checkinsThisMonth: 7,
+  attendanceThisMonth: 7,
   activeAuctions: 3,
   activityPoints: 340,
 };
@@ -133,7 +133,7 @@ export const mockBalanceTrend = (days: number): BalancePoint[] => {
 
 export const INCOMING_EVENTS: FeedEvent[] = [
   { id: '1', kind: 'auction', title: 'Dragon Slayer Sword', subtitle: 'Auction ending soon', timeLabel: '6h remaining', urgency: 'high' },
-  { id: '2', kind: 'checkin', title: 'Weekly Guild Check-in', subtitle: 'Open — awaiting your check-in', timeLabel: 'Open now', urgency: 'high' },
+  { id: '2', kind: 'rollCall', title: 'Weekly Guild Roll Call', subtitle: 'Open — waiting for you to check in', timeLabel: 'Open now', urgency: 'high' },
   { id: '3', kind: 'lottery', title: 'Spring Giveaway Draw', subtitle: '2,500.00 prize pool', timeLabel: 'Draws in 2d 4h', urgency: 'medium' },
   { id: '4', kind: 'auction', title: 'Mystic Shield of Protection', subtitle: 'Active auction', timeLabel: '12h remaining', urgency: 'medium' },
   { id: '5', kind: 'calendar', title: 'Guild Strategy Meeting', subtitle: 'Recurring weekly event', timeLabel: 'Tomorrow 20:00', urgency: 'low' },
@@ -163,11 +163,11 @@ export const ANNOUNCEMENTS: Announcement[] = [
 
 export const mockActivity: AdminActivity[] = [
   { id: 'a1', actor: member(7).username, action: 'placed a bid on Dragon Slayer Sword', actionType: 'auction', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
-  { id: 'a2', actor: member(12).username, action: 'checked in to weekly guild check-in', actionType: 'checkin', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
+  { id: 'a2', actor: member(12).username, action: 'checked in to the weekly guild roll call', actionType: 'rollCall', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
   { id: 'a3', actor: member(23).username, action: 'purchased 2 lottery tickets', actionType: 'lottery', timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString() },
   { id: 'a4', actor: member(40).username, action: 'joined the guild', actionType: 'join', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
   { id: 'a5', actor: member(1).username, action: 'created auction for Mystic Shield', actionType: 'auction', timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() },
-  { id: 'a6', actor: member(45).username, action: 'checked in to raid preparation', actionType: 'checkin', timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
+  { id: 'a6', actor: member(45).username, action: 'checked in to raid preparation', actionType: 'rollCall', timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
 ];
 
 export const mockAdminAnnouncements: AdminAnnouncement[] = [
@@ -281,35 +281,35 @@ export const mockBackpackItems: BackpackItem[] = [
   },
 ];
 
-// ─── Checkin ─────────────────────────────────────────────────────────────────
+// ─── RollCall ─────────────────────────────────────────────────────────────────
 
-const CHECKIN_COUNT = 16;
+const ROLL_CALL_COUNT = 16;
 
-const CHECKIN_BOSSES = ['Spider Queen', 'Flame Dragon', 'Skeleton King', 'Abyssal Witch', 'Stone Colossus', 'Frost Giant'];
+const ROLL_CALL_BOSSES = ['Spider Queen', 'Flame Dragon', 'Skeleton King', 'Abyssal Witch', 'Stone Colossus', 'Frost Giant'];
 
-const CHECKIN_LOOT = ['Dragon Scale', 'Fire Crystal', 'Web Fragment', 'Venom Fang', 'Spider Silk', 'Ancient Rune', 'Frost Core', 'Shadow Essence'];
+const ROLL_CALL_LOOT = ['Dragon Scale', 'Fire Crystal', 'Web Fragment', 'Venom Fang', 'Spider Silk', 'Ancient Rune', 'Frost Core', 'Shadow Essence'];
 
 const HOUR = 60 * 60 * 1000;
 
-function formatCheckinDate(time: number): string {
+function formatRollCallDate(time: number): string {
   const d = new Date(time);
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function checkinStatusFor(i: number): CheckinStatus {
-  if (i < 3) return CheckinStatus.OPEN;
-  if (i % 5 === 4) return CheckinStatus.CANCELLED;
-  if (i % 5 === 2) return CheckinStatus.COMPLETED;
-  return CheckinStatus.FINISHED;
+function rollCallStatusFor(i: number): RollCallStatus {
+  if (i < 3) return RollCallStatus.OPEN;
+  if (i % 5 === 4) return RollCallStatus.CANCELLED;
+  if (i % 5 === 2) return RollCallStatus.COMPLETED;
+  return RollCallStatus.FINISHED;
 }
 
-function generateCheckins(): CheckinEntry[] {
+function generateRollCalls(): RollCall[] {
   const random = seededRandom(20240724);
   const now = Date.now();
 
-  return Array.from({ length: CHECKIN_COUNT }, (_, i) => {
-    const status = checkinStatusFor(i);
+  return Array.from({ length: ROLL_CALL_COUNT }, (_, i) => {
+    const status = rollCallStatusFor(i);
     const start = now - (i * 8 + 1) * HOUR;
     const attendeeCount = 20 + Math.floor(random() * 60);
     const attendees = [...mockUsers].sort(() => random() - 0.5).slice(0, attendeeCount);
@@ -322,42 +322,42 @@ function generateCheckins(): CheckinEntry[] {
         ...(random() < 0.05 ? { notes: 'Late arrival' } : {}),
       }))
       .sort((x, y) => x.checkedInAt.localeCompare(y.checkedInAt));
-    const lootList = [...CHECKIN_LOOT]
+    const lootList = [...ROLL_CALL_LOOT]
       .sort(() => random() - 0.5)
       .slice(0, Math.floor(random() * 5))
       .map((name, j) => ({
         id: `c${i + 1}-l${j + 1}`,
         name,
         quantity: 1 + Math.floor(random() * 10),
-        ...(status === CheckinStatus.FINISHED || status === CheckinStatus.COMPLETED
+        ...(status === RollCallStatus.FINISHED || status === RollCallStatus.COMPLETED
           ? { winner: attendees[Math.floor(random() * attendees.length)].username }
           : {}),
       }));
 
     return {
       id: String(i + 1),
-      imageUrl: `/mock/checkin/checkin-${(i % 4) + 1}.webp`,
+      imageUrl: `/mock/roll-calls/roll-call-${(i % 4) + 1}.webp`,
       status,
-      date: formatCheckinDate(start),
-      title: CHECKIN_BOSSES[i % CHECKIN_BOSSES.length],
-      expireTime: new Date(status === CheckinStatus.OPEN ? now + (i + 1) * 2 * HOUR : start + 2 * HOUR).toISOString(),
+      date: formatRollCallDate(start),
+      title: ROLL_CALL_BOSSES[i % ROLL_CALL_BOSSES.length],
+      expireTime: new Date(status === RollCallStatus.OPEN ? now + (i + 1) * 2 * HOUR : start + 2 * HOUR).toISOString(),
       attendanceCount: attendanceList.length,
       attendanceList,
       lootList,
-      ...(i % 3 === 0 && status !== CheckinStatus.CANCELLED
+      ...(i % 3 === 0 && status !== RollCallStatus.CANCELLED
         ? {
             goldLoot:
-              status === CheckinStatus.COMPLETED
+              status === RollCallStatus.COMPLETED
                 ? { total: 1000 + i * 50, distributed: 1000 + i * 50, retracted: 0, remaining: 0 }
                 : { total: 1000 + i * 50, distributed: 0, retracted: 0, remaining: 1000 + i * 50 },
           }
         : {}),
-      ...(status === CheckinStatus.COMPLETED ? { completedAt: new Date(start + 3 * HOUR).toISOString() } : {}),
+      ...(status === RollCallStatus.COMPLETED ? { completedAt: new Date(start + 3 * HOUR).toISOString() } : {}),
     };
   });
 }
 
-export const mockCheckins: CheckinEntry[] = generateCheckins();
+export const mockRollCalls: RollCall[] = generateRollCalls();
 
 export const mockItemTemplates: ItemTemplate[] = [
   { id: 'item-dragon-scale', name: 'Dragon Scale', description: 'Dropped by the fire dragon', category: ItemCategory.MATERIAL, rarity: ItemRarity.EPIC },
@@ -365,7 +365,7 @@ export const mockItemTemplates: ItemTemplate[] = [
   { id: 'item-siege-token', name: 'Siege Token', description: '', category: ItemCategory.CONSUMABLE, rarity: ItemRarity.RARE },
 ];
 
-export const mockCheckinTemplates = [
+export const mockRollCallTemplates = [
   { id: 'tpl-raid', name: 'Weekly raid', title: 'Weekly guild raid', itemTemplateIds: ['item-dragon-scale', 'item-ancient-relic'] },
   { id: 'tpl-siege', name: 'Castle siege', title: 'Castle siege roll call', itemTemplateIds: ['item-siege-token'] },
 ];
@@ -628,10 +628,10 @@ export const mockGuildItems: GuildBankItem[] = [
 ];
 
 mockGuildItems.push(
-  ...mockCheckins
-    .filter(checkin => checkin.status === CheckinStatus.OPEN)
-    .flatMap(checkin =>
-      checkin.lootList.map(loot => ({
+  ...mockRollCalls
+    .filter(rollCall => rollCall.status === RollCallStatus.OPEN)
+    .flatMap(rollCall =>
+      rollCall.lootList.map(loot => ({
         id: loot.id,
         name: loot.name,
         description: '',
@@ -642,8 +642,8 @@ mockGuildItems.push(
         quantity: 1,
         pendingRequestCount: 0,
         requestedByMe: false,
-        checkinId: checkin.id,
-        checkinTitle: checkin.title,
+        rollCallId: rollCall.id,
+        rollCallTitle: rollCall.title,
       })),
     ),
 );

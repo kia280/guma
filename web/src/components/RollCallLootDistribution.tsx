@@ -11,8 +11,8 @@ import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { useGuildPermissions } from '@/lib/permissions';
-import type { AttendanceMember, LootItem } from '@/types/checkin';
 import type { GuildBankItem } from '@/types/guild-bank';
+import type { Attendee, LootItem } from '@/types/roll-call';
 import { CreateAuctionModal, type AuctionDraftItem } from './CreateAuctionModal';
 import { CreateLotteryModal, type LotteryPrizeItem } from './CreateLotteryModal';
 import { ItemLockChip } from './ItemLockChip';
@@ -20,15 +20,15 @@ import { MemberComboBox, type MemberOption } from './MemberComboBox';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
 
-type CheckinLootDistributionProps = {
-  checkinId: string;
+type RollCallLootDistributionProps = {
+  rollCallId: string;
   lootList: LootItem[];
-  attendees: AttendanceMember[];
+  attendees: Attendee[];
   onVaultCountChange?: (count: number) => void;
 };
 
-export function CheckinLootDistribution({ checkinId, lootList, attendees, onVaultCountChange }: CheckinLootDistributionProps) {
-  const t = useTranslations('checkinLoot');
+export function RollCallLootDistribution({ rollCallId, lootList, attendees, onVaultCountChange }: RollCallLootDistributionProps) {
+  const t = useTranslations('rollCallLoot');
   const labels = useTranslations('createAuctionModal');
   const userName = useUserName();
   const guildId = useCurrentGuildId();
@@ -50,14 +50,14 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees, onVaul
 
   const load = React.useCallback(() => {
     apiClient
-      .listBankItems(guildId, { checkinId })
+      .listBankItems(guildId, { rollCallId })
       .then(items => {
         setBankItems(items);
         setStatus('ready');
         onVaultCountChange?.(items.length);
       })
       .catch(() => setStatus('error'));
-  }, [guildId, checkinId, onVaultCountChange]);
+  }, [guildId, rollCallId, onVaultCountChange]);
 
   React.useEffect(() => {
     load();
@@ -96,7 +96,7 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees, onVaul
     setIsAssigning(true);
     setAssignError(null);
     try {
-      await apiClient.assignLoot(guildId, checkinId, assignTarget.id, recipientId);
+      await apiClient.assignLoot(guildId, rollCallId, assignTarget.id, recipientId);
       const recipient = recipientOptions.find(member => member.id === recipientId);
       notify.success(t('assignSuccess', { item: assignTarget.name, name: recipient?.name ?? '' }));
       assignModal.close();

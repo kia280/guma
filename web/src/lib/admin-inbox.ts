@@ -16,7 +16,7 @@ export type InboxSort = (typeof INBOX_SORTS)[number];
 
 export type AuctionAttention = 'overdue' | 'notStarted' | 'endingWithoutBids';
 
-export type LootGroup = { checkinId: string; title: string; items: GuildBankItem[]; oldest: string };
+export type LootGroup = { rollCallId: string; title: string; items: GuildBankItem[]; oldest: string };
 
 export type InboxEntry =
   | { kind: 'fund'; request: FundRequest }
@@ -68,7 +68,7 @@ export const INBOX_KIND_META: { [K in InboxKind]: InboxKindMeta<K> } = {
   },
   loot: {
     icon: 'solar:clipboard-check-linear',
-    id: entry => entry.group.checkinId,
+    id: entry => entry.group.rollCallId,
     since: entry => entry.group.oldest,
     state: () => 'open',
     searchText: entry => [entry.group.title, ...entry.group.items.map(item => item.name)],
@@ -123,16 +123,16 @@ export const auctionAttention = (auction: AuctionItem, now: number): AuctionAtte
 export const groupLoot = (items: GuildBankItem[]): LootGroup[] => {
   const groups = new Map<string, LootGroup>();
   items.forEach(item => {
-    if (!item.checkinId) return;
-    const group = groups.get(item.checkinId) ?? {
-      checkinId: item.checkinId,
-      title: item.checkinTitle ?? '',
+    if (!item.rollCallId) return;
+    const group = groups.get(item.rollCallId) ?? {
+      rollCallId: item.rollCallId,
+      title: item.rollCallTitle ?? '',
       items: [],
       oldest: item.donatedAt,
     };
     group.items.push(item);
     if (item.donatedAt < group.oldest) group.oldest = item.donatedAt;
-    groups.set(item.checkinId, group);
+    groups.set(item.rollCallId, group);
   });
   return [...groups.values()];
 };

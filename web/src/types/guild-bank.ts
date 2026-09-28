@@ -28,7 +28,7 @@ export interface GuildContribution {
   date: string;
   status: 'completed' | 'pending' | 'approved' | 'rejected';
   note?: string;
-  checkinId?: string;
+  rollCallId?: string;
   href?: string;
 }
 
@@ -41,8 +41,8 @@ export interface GuildBankItem {
   donatedBy: string;
   donatedAt: string;
   quantity: number;
-  checkinId?: string;
-  checkinTitle?: string;
+  rollCallId?: string;
+  rollCallTitle?: string;
   pendingRequestCount: number;
   requestedByMe: boolean;
   lock?: ItemLock;
@@ -67,7 +67,7 @@ export interface BankContribution {
   createdAt: string;
   kind: BankContributionKind;
   itemNames: string[];
-  checkinId?: string;
+  rollCallId?: string;
   referenceType?: string;
   referenceId?: string;
 }

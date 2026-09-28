@@ -82,7 +82,7 @@ const getActivityIcon = (type: string) => {
   switch (type) {
     case 'auction':
       return 'solar:sledgehammer-linear';
-    case 'checkin':
+    case 'rollCall':
       return 'solar:clipboard-check-linear';
     case 'lottery':
       return 'solar:ticket-linear';
@@ -97,7 +97,7 @@ const getActivityColor = (type: string) => {
   switch (type) {
     case 'auction':
       return 'text-warning';
-    case 'checkin':
+    case 'rollCall':
       return 'text-success';
     case 'lottery':
       return 'text-accent';

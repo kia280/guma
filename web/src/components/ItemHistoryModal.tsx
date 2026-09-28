@@ -44,7 +44,7 @@ const referenceHref = (event: ItemHistoryEvent): string | undefined => {
     case 'lottery':
       return `/dashboard/lottery/${event.referenceId}`;
     case 'roll_call':
-      return `/dashboard/attendance/${event.referenceId}`;
+      return `/dashboard/roll-calls/${event.referenceId}`;
     default:
       return undefined;
   }

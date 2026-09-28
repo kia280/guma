@@ -40,7 +40,7 @@ const KIND_META: Record<
   }
 > = {
   auction: { icon: 'solar:sledgehammer-linear', labelKey: 'kindAuction', color: 'warning', href: '/dashboard/auction' },
-  checkin: { icon: 'solar:check-circle-linear', labelKey: 'kindCheckin', color: 'success', href: '/dashboard/attendance' },
+  rollCall: { icon: 'solar:check-circle-linear', labelKey: 'kindRollCall', color: 'success', href: '/dashboard/roll-calls' },
   lottery: { icon: 'solar:ticket-linear', labelKey: 'kindLottery', color: 'accent', href: '/dashboard/lottery' },
   calendar: { icon: 'solar:calendar-linear', labelKey: 'kindCalendar', color: 'accent', href: '/dashboard/calendar' },
 };
@@ -148,8 +148,8 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                 icon="solar:check-circle-linear"
                 iconClass="text-success"
                 iconBg="bg-success/10"
-                label={t('checkIns')}
-                value={PERSONAL_STATS.checkinsThisMonth}
+                label={t('attendance')}
+                value={PERSONAL_STATS.attendanceThisMonth}
               />
               <StatCard
                 icon="solar:sledgehammer-linear"
@@ -215,8 +215,8 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                 icon="solar:check-square-linear"
                 iconClass="text-success"
                 iconBg="bg-success/10"
-                label={t('checkInsPerWeek')}
-                value={GUILD_STATS.checkinsThisWeek}
+                label={t('attendancePerWeek')}
+                value={GUILD_STATS.attendanceThisWeek}
               />
               <StatCard
                 icon="solar:sledgehammer-linear"
@@ -286,7 +286,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const LIVE_DASHBOARD_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'checkin', 'announcement'];
+const LIVE_DASHBOARD_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'rollCall', 'announcement'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
 export default function DashboardPage() {
@@ -358,10 +358,10 @@ export default function DashboardPage() {
   );
 
   const guildStats = dashboard?.guildStats ?? {
-    members: 0, activeEvents: 0, balance: 0, checkinsThisWeek: 0, activeAuctions: 0, openLotteries: 0,
+    members: 0, activeEvents: 0, balance: 0, attendanceThisWeek: 0, activeAuctions: 0, openLotteries: 0,
   };
   const fetchedPersonalStats = dashboard?.personalStats ?? {
-    balance: 0, checkinsThisMonth: 0, activeAuctions: 0, activityPoints: 0,
+    balance: 0, attendanceThisMonth: 0, activeAuctions: 0, activityPoints: 0,
   };
   const personalStats = liveBalance === undefined
     ? fetchedPersonalStats

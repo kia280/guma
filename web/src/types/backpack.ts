@@ -1,6 +1,6 @@
 import type { Item, ItemLock } from './item';
 
-export type BackpackItemSource = 'auction' | 'lottery' | 'transfer' | 'bank' | 'checkin' | 'admin';
+export type BackpackItemSource = 'auction' | 'lottery' | 'transfer' | 'bank' | 'rollCall' | 'admin';
 
 export interface BackpackItem {
   id: string;

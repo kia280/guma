@@ -58,7 +58,7 @@ export interface LoginResponse {
 
 export interface UserStats {
   balance: number;
-  checkinsThisMonth: number;
+  attendanceThisMonth: number;
   activeAuctions: number;
   activityPoints: number;
 }

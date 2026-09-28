@@ -7,7 +7,7 @@ import React from 'react';
 import { getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
 import { GOLD_FORMAT_OPTIONS, GOLD_STEP, roundGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
-import type { LootEntry } from '@/types/checkin';
+import type { LootEntry } from '@/types/roll-call';
 
 export const GOLD_LOOT_ICON = 'solar:wad-of-money-linear';
 
@@ -21,7 +21,7 @@ interface LootListEditorProps {
 }
 
 export function LootListEditor({ items, inputValue, onChange, label, allowGold = true, children }: LootListEditorProps) {
-  const t = useTranslations('checkIn');
+  const t = useTranslations('rollCall');
   const labels = useTranslations('createAuctionModal');
   const formatGold = useFormatGold();
   const labelId = React.useId();

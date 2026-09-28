@@ -5,9 +5,9 @@ import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, CardGridSkeleton } from '@/components/AsyncContent';
-import { CheckinFormFields, hasCheckinFormErrors, useCheckinFormErrors, type CheckinFormValues } from '@/components/CheckinFormFields';
 import { ItemTemplatePicker } from '@/components/ItemTemplatePicker';
 import { LootListEditor } from '@/components/LootListEditor';
+import { RollCallFormFields, hasRollCallFormErrors, useRollCallFormErrors, type RollCallFormValues } from '@/components/RollCallFormFields';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
@@ -16,21 +16,21 @@ import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { useGuildPermissions } from '@/lib/permissions';
-import { checkinStatusColor } from '@/lib/status-colors';
-import { CheckinStatus, type CheckinEntry, type CheckinTemplate, type ItemTemplate, type LootEntry } from '@/types/checkin';
-import { CheckinCard } from './CheckinCard';
+import { rollCallStatusColor } from '@/lib/status-colors';
+import { RollCallStatus, type RollCall, type RollCallTemplate, type ItemTemplate, type LootEntry } from '@/types/roll-call';
+import { RollCallCard } from './RollCallCard';
 
-const DRAFT_KEY = 'checkin_draft';
+const DRAFT_KEY = 'roll_call_draft';
 
 const STATUS_TABS = [
   { id: 'all', status: null },
-  { id: 'open', status: CheckinStatus.OPEN },
-  { id: 'finished', status: CheckinStatus.FINISHED },
-  { id: 'completed', status: CheckinStatus.COMPLETED },
-  { id: 'cancelled', status: CheckinStatus.CANCELLED },
+  { id: 'open', status: RollCallStatus.OPEN },
+  { id: 'finished', status: RollCallStatus.FINISHED },
+  { id: 'completed', status: RollCallStatus.COMPLETED },
+  { id: 'cancelled', status: RollCallStatus.CANCELLED },
 ] as const;
 
-interface CheckinDraft extends CheckinFormValues {
+interface RollCallDraft extends RollCallFormValues {
   lootInput: string;
   lootList: LootEntry[];
 }
@@ -53,7 +53,7 @@ const currentMinute = () => {
 const defaultExpireTime = (datetime: string) =>
   new Date(new Date(datetime).getTime() + DEFAULT_WINDOW_MS).toISOString();
 
-const emptyDraft: CheckinDraft = {
+const emptyDraft: RollCallDraft = {
   title: '',
   description: '',
   datetime: '',
@@ -63,11 +63,11 @@ const emptyDraft: CheckinDraft = {
   lootList: [],
 };
 
-const readStoredDraft = (): CheckinDraft | null => {
+const readStoredDraft = (): RollCallDraft | null => {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<CheckinDraft> | null;
+    const parsed = JSON.parse(raw) as Partial<RollCallDraft> | null;
     if (!parsed || typeof parsed !== 'object') return null;
     return {
       title: typeof parsed.title === 'string' ? parsed.title : '',
@@ -83,38 +83,38 @@ const readStoredDraft = (): CheckinDraft | null => {
   }
 };
 
-export default function CheckinPage() {
-  const t = useTranslations('checkIn');
+export default function RollCallsPage() {
+  const t = useTranslations('rollCall');
   const nav = useTranslations('dashboardLayout');
   const guildId = useCurrentGuildId();
   const { can } = useGuildPermissions();
 
-  const [checkins, setCheckins] = React.useState<CheckinEntry[]>([]);
-  const checkinsState = useLoadState();
+  const [rollCalls, setRollCalls] = React.useState<RollCall[]>([]);
+  const rollCallsState = useLoadState();
   const notify = useToast();
   const createModalState = useOverlayState();
   const [isCreating, setIsCreating] = React.useState(false);
   const [reloadKey, setReloadKey] = React.useState(0);
   const reload = React.useCallback(() => {
-    checkinsState.reset();
+    rollCallsState.reset();
     setReloadKey(key => key + 1);
-  }, [checkinsState.reset]);
-  const refetchCheckins = React.useCallback(() => {
+  }, [rollCallsState.reset]);
+  const refetchRollCalls = React.useCallback(() => {
     apiClient
-      .listCheckins(guildId)
+      .listRollCalls(guildId)
       .then(data => {
-        setCheckins(data);
-        checkinsState.ready();
+        setRollCalls(data);
+        rollCallsState.ready();
       })
       .catch(() => {
-        checkinsState.failed();
-        notify.loadFailed(reload, 'checkins');
+        rollCallsState.failed();
+        notify.loadFailed(reload, 'rollCalls');
       });
-  }, [guildId, notify, reload, checkinsState.ready, checkinsState.failed]);
+  }, [guildId, notify, reload, rollCallsState.ready, rollCallsState.failed]);
   React.useEffect(() => {
-    refetchCheckins();
-  }, [refetchCheckins, reloadKey]);
-  useLiveResource(['checkin'], refetchCheckins, { guildId });
+    refetchRollCalls();
+  }, [refetchRollCalls, reloadKey]);
+  useLiveResource(['rollCall'], refetchRollCalls, { guildId });
 
   const [activeTab, setActiveTab] = React.useState<string>('all');
   const tabLabels: Record<string, string> = {
@@ -124,19 +124,19 @@ export default function CheckinPage() {
     completed: t('statusCompleted'),
     cancelled: t('statusCancelled'),
   };
-  const countFor = (status: CheckinStatus | null) =>
-    status === null ? checkins.length : checkins.filter(c => c.status === status).length;
+  const countFor = (status: RollCallStatus | null) =>
+    status === null ? rollCalls.length : rollCalls.filter(c => c.status === status).length;
   const activeStatus = STATUS_TABS.find(tab => tab.id === activeTab)?.status ?? null;
-  const filtered = activeStatus === null ? checkins : checkins.filter(c => c.status === activeStatus);
+  const filtered = activeStatus === null ? rollCalls : rollCalls.filter(c => c.status === activeStatus);
 
-  const [draft, setDraft] = React.useState<CheckinDraft>(emptyDraft);
+  const [draft, setDraft] = React.useState<RollCallDraft>(emptyDraft);
   const [showCreateErrors, setShowCreateErrors] = React.useState(false);
 
-  const draftErrors = useCheckinFormErrors(draft);
+  const draftErrors = useRollCallFormErrors(draft);
 
   const draftTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const persistDraft = (newDraft: CheckinDraft) => {
+  const persistDraft = (newDraft: RollCallDraft) => {
     setDraft(newDraft);
     if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
     draftTimerRef.current = setTimeout(() => {
@@ -146,7 +146,7 @@ export default function CheckinPage() {
     }, 500);
   };
 
-  const updateDraft = (updates: Partial<CheckinDraft>) => {
+  const updateDraft = (updates: Partial<RollCallDraft>) => {
     persistDraft({ ...draft, ...updates });
   };
 
@@ -158,7 +158,7 @@ export default function CheckinPage() {
     } catch {}
   };
 
-  const [templates, setTemplates] = React.useState<CheckinTemplate[]>([]);
+  const [templates, setTemplates] = React.useState<RollCallTemplate[]>([]);
   const [itemTemplates, setItemTemplates] = React.useState<ItemTemplate[]>([]);
   const [templatesState, setTemplatesState] = React.useState<'loading' | 'ready' | 'failed' | 'hidden'>('loading');
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<Key | null>(null);
@@ -166,11 +166,11 @@ export default function CheckinPage() {
   const loadTemplates = React.useCallback(async () => {
     setTemplatesState('loading');
     try {
-      const [checkinList, itemList] = await Promise.all([
-        apiClient.listCheckinTemplates(guildId),
+      const [rollCallList, itemList] = await Promise.all([
+        apiClient.listRollCallTemplates(guildId),
         apiClient.listItemTemplates(guildId),
       ]);
-      setTemplates(checkinList);
+      setTemplates(rollCallList);
       setItemTemplates(itemList);
       setTemplatesState('ready');
     } catch (err) {
@@ -214,14 +214,14 @@ export default function CheckinPage() {
   };
 
   const handleNewSubmit = async (trigger: Element) => {
-    if (hasCheckinFormErrors(draftErrors)) {
+    if (hasRollCallFormErrors(draftErrors)) {
       setShowCreateErrors(true);
       focusFirstInvalidField(trigger);
       return;
     }
     setIsCreating(true);
     try {
-      await apiClient.createCheckin(guildId, {
+      await apiClient.createRollCall(guildId, {
         title: draft.title,
         description: draft.description || undefined,
         datetime: draft.datetime,
@@ -229,7 +229,7 @@ export default function CheckinPage() {
         imageUrl: draft.imageUrl || undefined,
         lootList: draft.lootList,
       });
-      refetchCheckins();
+      refetchRollCalls();
       setDraft(emptyDraft);
       setSelectedTemplateId(null);
       clearStoredDraft();
@@ -250,8 +250,8 @@ export default function CheckinPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="sr-only">{nav('checkin')}</h1>
-      {can('createCheckin') && (
+      <h1 className="sr-only">{nav('rollCall')}</h1>
+      {can('createRollCall') && (
         <Modal state={createModalState}>
           <Modal.Backdrop>
             <Modal.Container size="md">
@@ -259,10 +259,10 @@ export default function CheckinPage() {
                 <Modal.CloseTrigger />
                 <Modal.Header className="flex-row items-center gap-2 pr-8">
                   <Icon icon="solar:add-circle-linear" width={18} className="shrink-0" />
-                  <Modal.Heading>{t('addCheckIn')}</Modal.Heading>
+                  <Modal.Heading>{t('addRollCall')}</Modal.Heading>
                 </Modal.Header>
                 <Modal.Body>
-                  <CheckinFormFields
+                  <RollCallFormFields
                     values={draft}
                     errors={draftErrors}
                     showErrors={showCreateErrors}
@@ -368,14 +368,14 @@ export default function CheckinPage() {
       <Tabs selectedKey={activeTab} onSelectionChange={key => setActiveTab(key as string)}>
         <div className="flex items-center gap-3">
           <Tabs.ListContainer className="min-w-0 flex-1">
-            <Tabs.List aria-label={t('checkIn')}>
+            <Tabs.List aria-label={t('rollCalls')}>
               {STATUS_TABS.map(tab => (
                 <Tabs.Tab key={tab.id} id={tab.id}>
                   <div className="flex items-center gap-2">
                     <span>{tabLabels[tab.id]}</span>
                     <Chip
                       size="sm"
-                      color={tab.status === null ? 'default' : checkinStatusColor[tab.status]}
+                      color={tab.status === null ? 'default' : rollCallStatusColor[tab.status]}
                       variant="secondary"
                     >
                       {countFor(tab.status)}
@@ -386,18 +386,18 @@ export default function CheckinPage() {
               ))}
             </Tabs.List>
           </Tabs.ListContainer>
-          {can('createCheckin') && (
-            <Button className="shrink-0 max-sm:size-11 max-sm:px-0" aria-label={t('addCheckIn')} onPress={openCreateModal}>
+          {can('createRollCall') && (
+            <Button className="shrink-0 max-sm:size-11 max-sm:px-0" aria-label={t('addRollCall')} onPress={openCreateModal}>
               <Icon icon="solar:add-circle-linear" width={16} className="max-sm:hidden" />
               <Icon icon="solar:add-linear" width={20} className="sm:hidden" />
-              <span className="max-sm:hidden">{t('addCheckIn')}</span>
+              <span className="max-sm:hidden">{t('addRollCall')}</span>
             </Button>
           )}
         </div>
         {STATUS_TABS.map(tab => (
           <Tabs.Panel key={tab.id} id={tab.id} className="pt-4">
             <AsyncContent
-              state={checkinsState.state}
+              state={rollCallsState.state}
               onRetry={reload}
               skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
             >
@@ -409,14 +409,14 @@ export default function CheckinPage() {
                     width={40}
                     className="mx-auto mb-3 text-disabled"
                   />
-                  <h3 className="type-subheading mb-1 text-foreground">{t('noCheckins')}</h3>
-                  <p className="type-body text-subtle">{t('noCheckinsHint')}</p>
+                  <h3 className="type-subheading mb-1 text-foreground">{t('noRollCalls')}</h3>
+                  <p className="type-body text-subtle">{t('noRollCallsHint')}</p>
                 </Card.Content>
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filtered.map(item => (
-                  <CheckinCard
+                  <RollCallCard
                     key={item.id}
                     status={item.status}
                     date={item.date}
@@ -427,7 +427,7 @@ export default function CheckinPage() {
                     goldLoot={item.goldLoot?.total}
                     imageUrl={item.imageUrl}
                     isDisabled={item.isDisabled}
-                    href={`/dashboard/attendance/${item.id}`}
+                    href={`/dashboard/roll-calls/${item.id}`}
                   />
                 ))}
               </div>

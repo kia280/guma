@@ -4,19 +4,19 @@ import { Button, Chip, Modal, type UseOverlayStateReturn } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
-import { CheckinFormFields, hasCheckinFormErrors, useCheckinFormErrors, type CheckinFormValues } from '@/components/CheckinFormFields';
+import { RollCallFormFields, hasRollCallFormErrors, useRollCallFormErrors, type RollCallFormValues } from '@/components/RollCallFormFields';
 import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
-import type { CheckinEntry } from '@/types/checkin';
+import type { RollCall } from '@/types/roll-call';
 import { GOLD_LOOT_ICON } from './LootListEditor';
 
 type SaveError = 'closed' | 'forbidden' | 'invalid' | 'failed';
 
-const toFormValues = (entry: CheckinEntry): CheckinFormValues => ({
+const toFormValues = (entry: RollCall): RollCallFormValues => ({
   title: entry.title,
   description: entry.description ?? '',
   datetime: entry.date,
@@ -37,26 +37,26 @@ const toSaveError = (err: unknown): SaveError => {
   }
 };
 
-export function CheckinEditModal({
+export function RollCallEditModal({
   entry,
   state,
   onSaved,
   onClosed,
 }: {
-  entry: CheckinEntry;
+  entry: RollCall;
   state: UseOverlayStateReturn;
-  onSaved: (updated: CheckinEntry) => void;
+  onSaved: (updated: RollCall) => void;
   onClosed: () => void;
 }) {
-  const t = useTranslations('checkIn');
+  const t = useTranslations('rollCall');
   const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
   const notify = useToast();
-  const [values, setValues] = React.useState<CheckinFormValues>(() => toFormValues(entry));
+  const [values, setValues] = React.useState<RollCallFormValues>(() => toFormValues(entry));
   const [showErrors, setShowErrors] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<SaveError | null>(null);
-  const errors = useCheckinFormErrors(values, { requireFutureExpire: true });
+  const errors = useRollCallFormErrors(values, { requireFutureExpire: true });
 
   const wasOpenRef = React.useRef(false);
   React.useEffect(() => {
@@ -68,13 +68,13 @@ export function CheckinEditModal({
     wasOpenRef.current = state.isOpen;
   }, [state.isOpen, entry]);
 
-  const updateValues = (updates: Partial<CheckinFormValues>) => {
+  const updateValues = (updates: Partial<RollCallFormValues>) => {
     setValues(current => ({ ...current, ...updates }));
     setSaveError(null);
   };
 
   const handleSave = async (trigger: Element) => {
-    if (hasCheckinFormErrors(errors)) {
+    if (hasRollCallFormErrors(errors)) {
       setShowErrors(true);
       focusFirstInvalidField(trigger);
       return;
@@ -82,7 +82,7 @@ export function CheckinEditModal({
     setIsSaving(true);
     setSaveError(null);
     try {
-      const updated = await apiClient.updateCheckin(guildId, entry.id, {
+      const updated = await apiClient.updateRollCall(guildId, entry.id, {
         title: values.title.trim(),
         description: values.description.trim(),
         datetime: values.datetime,
@@ -116,10 +116,10 @@ export function CheckinEditModal({
             <Modal.CloseTrigger />
             <Modal.Header className="flex-row items-center gap-2 pr-8">
               <Icon icon="solar:pen-linear" width={18} className="shrink-0" />
-              <Modal.Heading>{t('editCheckIn')}</Modal.Heading>
+              <Modal.Heading>{t('editRollCall')}</Modal.Heading>
             </Modal.Header>
             <Modal.Body>
-              <CheckinFormFields
+              <RollCallFormFields
                 values={values}
                 errors={errors}
                 showErrors={showErrors}

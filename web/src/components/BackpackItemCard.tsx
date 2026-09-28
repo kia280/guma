@@ -14,7 +14,7 @@ const SOURCE_ICONS: Record<BackpackItem['acquiredFrom'], string> = {
   lottery: 'solar:ticket-linear',
   transfer: 'solar:users-group-rounded-linear',
   bank: 'solar:safe-2-linear',
-  checkin: 'solar:clipboard-check-linear',
+  rollCall: 'solar:clipboard-check-linear',
   admin: 'solar:shield-user-linear',
 };
 
@@ -25,8 +25,8 @@ const sourceHref = (item: BackpackItem): string | undefined => {
       return `/dashboard/auction/${item.sourceId}`;
     case 'lottery':
       return `/dashboard/lottery/${item.sourceId}`;
-    case 'checkin':
-      return `/dashboard/attendance/${item.sourceId}`;
+    case 'rollCall':
+      return `/dashboard/roll-calls/${item.sourceId}`;
     case 'bank':
       return `/dashboard/guild-bank?request=${item.sourceId}`;
     default:

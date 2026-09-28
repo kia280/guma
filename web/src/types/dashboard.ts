@@ -1,6 +1,6 @@
 import type { UserStats } from './user';
 
-export type EventKind = 'checkin' | 'auction' | 'lottery' | 'calendar';
+export type EventKind = 'rollCall' | 'auction' | 'lottery' | 'calendar';
 
 export interface FeedEvent {
   id: string;
@@ -23,7 +23,7 @@ export interface GuildStats {
   members: number;
   activeEvents: number;
   balance: number;
-  checkinsThisWeek: number;
+  attendanceThisWeek: number;
   activeAuctions: number;
   openLotteries: number;
 }
