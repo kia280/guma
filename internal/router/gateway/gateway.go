@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -114,16 +115,11 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 	var handler http.Handler = mux
 
 	// Apply middleware
-	handler = middleware.KratosSessionMiddleware(cfg.Auth.KratosPublicURL, logger)(handler)
+	var devStore devUserStore
 	if cfg.Dev.AuthEnabled {
-		logger.Warn().Msg("DEV AUTH ENABLED: requests can impersonate any user; never enable this outside local development")
-		handler = middleware.DevSessionMiddleware()(handler)
-
-		devMux := http.NewServeMux()
-		devMux.Handle(devRoutePrefix, newDevAuthHandler(devauth.New(db), logger))
-		devMux.Handle("/", handler)
-		handler = devMux
+		devStore = devauth.New(db)
 	}
+	handler = withAuth(handler, cfg.Auth.KratosPublicURL, devStore, logger)
 	handler = eventStreamMiddleware(handler)
 	handler = middleware.SecurityHeadersMiddleware()(handler)
 	handler = middleware.CORSMiddleware(
@@ -264,12 +260,40 @@ func customErrorHandler(logger zerolog.Logger) runtime.ErrorHandlerFunc {
 }
 
 // customHeaderMatcher matches incoming HTTP headers to gRPC metadata
+func withAuth(handler http.Handler, kratosPublicURL string, devStore devUserStore, logger zerolog.Logger) http.Handler {
+	handler = middleware.KratosSessionMiddleware(kratosPublicURL, logger)(handler)
+	if devStore == nil {
+		return handler
+	}
+
+	logger.Warn().Msg("DEV AUTH ENABLED: requests can impersonate any user; never enable this outside local development")
+	handler = middleware.DevSessionMiddleware()(handler)
+
+	devMux := http.NewServeMux()
+	devMux.Handle(devRoutePrefix, newDevAuthHandler(devStore, logger))
+	devMux.Handle("/", handler)
+	return devMux
+}
+
 func customHeaderMatcher(key string) (string, bool) {
 	switch key {
 	case "Authorization", "X-Request-Id", "X-Forwarded-For":
 		return key, true
+	}
+
+	forwarded, ok := runtime.DefaultHeaderMatcher(key)
+	if !ok || isSessionMetadataKey(forwarded) {
+		return "", false
+	}
+	return forwarded, true
+}
+
+func isSessionMetadataKey(key string) bool {
+	switch strings.ToLower(key) {
+	case session.UserIDMetadataKey, session.CookieMetadataKey:
+		return true
 	default:
-		return runtime.DefaultHeaderMatcher(key)
+		return false
 	}
 }
 
