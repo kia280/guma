@@ -69,6 +69,19 @@ service CheckInService {
       body: "*"
     };
   }
+
+  rpc GetCheckInGold(GetCheckInGoldRequest) returns (GetCheckInGoldResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/checkins/{checkin_id}/gold"
+    };
+  }
+
+  rpc DistributeCheckInGold(DistributeCheckInGoldRequest) returns (DistributeCheckInGoldResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/checkins/{checkin_id}/gold/distribute"
+      body: "*"
+    };
+  }
 }
 
 // Request/Response messages
@@ -103,6 +116,7 @@ message CreateCheckInRequest {
   string expire_time = 5;   // ISO 8601 datetime when the window closes
   string image_url = 6;
   repeated Item loot_list = 7; // Items distributed to attendees
+  repeated CheckInLootEntry loot = 8; // Supersedes loot_list when set; supports gold entries
 }
 
 message CreateCheckInResponse {
@@ -118,6 +132,7 @@ message UpdateCheckInRequest {
   string expire_time = 6;
   optional string image_url = 7;
   repeated Item loot_list = 8;
+  repeated CheckInLootEntry loot = 9;
 }
 
 message UpdateCheckInResponse {
@@ -151,6 +166,30 @@ message AssignLootRequest {
 
 message AssignLootResponse {
   string backpack_item_id = 1;
+}
+
+message GetCheckInGoldRequest {
+  string guild_id = 1;
+  string checkin_id = 2;
+}
+
+message GetCheckInGoldResponse {
+  CheckInGoldPot pot = 1;
+  repeated CheckInGoldPayout recipients = 2; // Total gold received per attendee
+}
+
+message DistributeCheckInGoldRequest {
+  string guild_id = 1;
+  string checkin_id = 2;
+  string request_id = 3; // Client-generated UUID; repeating it returns the original result
+  repeated CheckInGoldPayout payouts = 4;
+}
+
+message DistributeCheckInGoldResponse {
+  string distribution_id = 1;
+  CheckInGoldPot pot = 2;
+  repeated CheckInGoldPayout payouts = 3;
+  bool replayed = 4;
 }
 
 message SubmitAttendanceRequest {
@@ -193,6 +232,27 @@ message CheckIn {
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp updated_at = 13;
   bool is_cancelled = 14;
+  repeated CheckInLootEntry loot = 15; // All loot entries, including gold
+  CheckInGoldPot gold_pot = 16;        // Unset when the roll call has no gold loot
+}
+
+// LootKind values: item, gold
+message CheckInLootEntry {
+  string kind = 1;
+  Item item = 2;    // Set when kind is item
+  int64 amount = 3; // Gold in minor units when kind is gold
+}
+
+message CheckInGoldPot {
+  int64 total = 1;
+  int64 distributed = 2;
+  int64 retracted = 3;
+  int64 remaining = 4;
+}
+
+message CheckInGoldPayout {
+  string user_id = 1;
+  int64 amount = 2;
 }
 
 message CheckInAttendee {

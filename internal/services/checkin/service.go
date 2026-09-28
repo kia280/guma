@@ -37,6 +37,8 @@ type CheckIn struct {
 	ExpireTime      string // ISO 8601
 	ImageURL        string
 	LootList        []models.Item
+	Loot            []LootEntry
+	GoldPot         *GoldPot
 	AttendanceCount int32
 	IsExpired       bool
 	IsCancelled     bool
@@ -79,7 +81,7 @@ type CreateParams struct {
 	Datetime    string
 	ExpireTime  string
 	ImageURL    string
-	LootList    []models.Item
+	Loot        []LootEntry
 }
 
 // UpdateParams holds the inputs for Update.
@@ -92,7 +94,7 @@ type UpdateParams struct {
 	Datetime    string
 	ExpireTime  string
 	ImageURL    *string
-	LootList    []models.Item
+	Loot        []LootEntry
 }
 
 // ListAttendeesResult is returned by ListAttendees.
@@ -171,6 +173,10 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 		}))
 	}
 
+	if err := s.attachGoldPots(ctx, guildID, checkins); err != nil {
+		return nil, err
+	}
+
 	total, _ := s.q.CountCheckins(ctx, db.CountCheckinsParams{GuildID: guildID, StatusFilter: p.Status})
 
 	nextOffset := 0
@@ -194,14 +200,20 @@ func (s *Service) Get(ctx context.Context, guildIDStr, checkinIDStr string) (*Ch
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
-	return toCheckIn(checkinRow{
+	c := toCheckIn(checkinRow{
 		ID: r.ID, GuildID: r.GuildID, CreatedBy: r.CreatedBy,
 		Title: r.Title, Description: r.Description,
 		Datetime: r.Datetime, ExpireTime: r.ExpireTime,
 		ImageUrl: r.ImageUrl, LootList: r.LootList,
 		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired, IsCancelled: r.IsCancelled,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
-	}), nil
+	})
+	if c.hasGoldLoot() {
+		if c.GoldPot, err = s.loadGoldPot(ctx, guildID, checkinID); err != nil {
+			return nil, err
+		}
+	}
+	return c, nil
 }
 
 // Create inserts a new check-in. Requires admin or moderator role.
@@ -221,11 +233,16 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 		return nil, err
 	}
 
-	loot, err := prepareBankLoot(p.LootList)
+	prepared, err := prepareLoot(p.Loot)
 	if err != nil {
 		return nil, err
 	}
-	lootJSON, err := marshalLoot(loot)
+	loot := prepared.items
+	lootJSON, err := json.Marshal(prepared.stored)
+	if err != nil {
+		return nil, fmt.Errorf("%w: encode loot: %v", errs.ErrInternal, err)
+	}
+	itemsJSON, err := marshalLoot(loot)
 	if err != nil {
 		return nil, fmt.Errorf("%w: encode loot: %v", errs.ErrInternal, err)
 	}
@@ -258,10 +275,13 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 			return nil, fmt.Errorf("%w: insert bank item: %v", errs.ErrInternal, err)
 		}
 	}
-	if len(loot) > 0 {
+	if err := s.depositGoldLoot(ctx, qtx, guildID, r.ID, prepared.gold); err != nil {
+		return nil, err
+	}
+	if len(loot) > 0 || prepared.gold > 0 {
 		if err := qtx.InsertCheckinLootContribution(ctx, db.InsertCheckinLootContributionParams{
-			GuildID: guildID, UserID: createdBy, Username: donorName,
-			Note: p.Title, Items: lootJSON, CheckinID: r.ID,
+			GuildID: guildID, UserID: createdBy, Username: donorName, Amount: prepared.gold,
+			Note: p.Title, Items: itemsJSON, CheckinID: r.ID,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: record bank activity: %v", errs.ErrInternal, err)
 		}
@@ -277,7 +297,10 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*CheckIn, error) 
 		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired, IsCancelled: r.IsCancelled,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 	})
-	s.logger.Info().Str("checkin_id", c.ID).Str("guild_id", p.GuildID).Int("bank_items", len(loot)).Msg("checkin created")
+	if prepared.gold > 0 {
+		c.GoldPot = &GoldPot{Total: prepared.gold}
+	}
+	s.logger.Info().Str("checkin_id", c.ID).Str("guild_id", p.GuildID).Int("bank_items", len(loot)).Int64("gold", prepared.gold).Msg("checkin created")
 	return c, nil
 }
 
@@ -289,7 +312,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*CheckIn, error) 
 	if err := checkExpireTimeInFuture(p.ExpireTime, time.Now().UTC()); err != nil {
 		return nil, err
 	}
-	if len(p.LootList) > 0 {
+	if len(p.Loot) > 0 {
 		return nil, fmt.Errorf("%w: loot list cannot be changed after publishing", errs.ErrInvalidArgument)
 	}
 	guildID, err := uuid.Parse(p.GuildID)
@@ -337,14 +360,20 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*CheckIn, error) 
 		return nil, fmt.Errorf("%w: update checkin: %v", errs.ErrInternal, err)
 	}
 	s.logger.Info().Str("checkin_id", p.CheckInID).Str("guild_id", p.GuildID).Str("user_id", p.UpdatedBy).Msg("checkin updated")
-	return toCheckIn(checkinRow{
+	c := toCheckIn(checkinRow{
 		ID: r.ID, GuildID: r.GuildID, CreatedBy: r.CreatedBy,
 		Title: r.Title, Description: r.Description,
 		Datetime: r.Datetime, ExpireTime: r.ExpireTime,
 		ImageUrl: r.ImageUrl, LootList: r.LootList,
 		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired, IsCancelled: r.IsCancelled,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
-	}), nil
+	})
+	if c.hasGoldLoot() {
+		if c.GoldPot, err = s.loadGoldPot(ctx, guildID, checkinID); err != nil {
+			return nil, err
+		}
+	}
+	return c, nil
 }
 
 // Delete removes a check-in.
@@ -421,18 +450,24 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, checkinIDStr, userIDSt
 	if err != nil {
 		return nil, fmt.Errorf("%w: retract loot: %v", errs.ErrInternal, err)
 	}
+	goldPot, err := s.retractGoldLoot(ctx, qtx, guildID, checkinID, userID, r.Title)
+	if err != nil {
+		return nil, err
+	}
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	s.logger.Info().Str("checkin_id", checkinIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).Int64("retracted_loot", retracted).Msg("checkin cancelled")
-	return toCheckIn(checkinRow{
+	c := toCheckIn(checkinRow{
 		ID: r.ID, GuildID: r.GuildID, CreatedBy: r.CreatedBy,
 		Title: r.Title, Description: r.Description,
 		Datetime: r.Datetime, ExpireTime: r.ExpireTime,
 		ImageUrl: r.ImageUrl, LootList: r.LootList,
 		AttendanceCount: r.AttendanceCount, IsExpired: r.IsExpired, IsCancelled: r.IsCancelled,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
-	}), nil
+	})
+	c.GoldPot = goldPot
+	return c, nil
 }
 
 // SubmitAttendance records a user's attendance for a check-in.
@@ -653,14 +688,9 @@ func toCheckIn(r checkinRow) *CheckIn {
 		Datetime: r.Datetime, ExpireTime: r.ExpireTime,
 		ImageURL: r.ImageUrl, AttendanceCount: r.AttendanceCount,
 		IsExpired: r.IsExpired, IsCancelled: r.IsCancelled, CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
-		LootList: []models.Item{},
 	}
-	if len(r.LootList) > 0 {
-		_ = json.Unmarshal(r.LootList, &c.LootList)
-	}
-	if c.LootList == nil {
-		c.LootList = []models.Item{}
-	}
+	c.Loot = decodeLoot(r.LootList)
+	c.LootList = lootItems(c.Loot)
 	return c
 }
 
