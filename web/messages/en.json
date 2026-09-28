@@ -238,7 +238,10 @@
       "bankContribution": "Guild vault contribution",
       "fundRequestApproved": "Fund request approved",
       "auctionSale": "Auction sale",
-      "lotteryRefund": "Lottery ticket refund"
+      "lotteryRefund": "Lottery ticket refund",
+      "adminTransferOut": "Moved to {member} by admin {admin}",
+      "adminTransferToBank": "Moved to the guild vault by admin {admin}",
+      "adminTransferIn": "Moved from {member} by admin {admin}"
     },
     "depositSuccess": "Deposit completed",
     "depositSuccessDetail": "{amount} was added to your wallet.",
@@ -385,7 +388,7 @@
       "checkin": "Roll call: {label}",
       "bank": "Guild vault request",
       "auction": "Auction",
-      "admin": "Admin"
+      "admin": "Moved by an admin from {label}"
     },
     "history": "History",
     "awaitingDelivery": "Awaiting handover",
@@ -570,7 +573,11 @@
     "noUsers": "No members yet",
     "sections": "Admin sections",
     "usersTable": "Users",
-    "inbox": "Inbox"
+    "inbox": "Inbox",
+    "gold": "GOLD",
+    "backpackItems": "ITEMS",
+    "assetsUnavailable": "Not available",
+    "assetsLoadError": "Couldn't load members' gold and items."
   },
   "adminGuard": {
     "title": "Administration is for guild staff",
@@ -643,7 +650,8 @@
       "deleteAuction": "Delete cancelled auctions",
       "editLottery": "Edit lotteries",
       "cancelLottery": "Cancel lotteries and refund tickets",
-      "deleteLottery": "Delete cancelled lotteries"
+      "deleteLottery": "Delete cancelled lotteries",
+      "manageMemberAssets": "View and move members' gold and backpack items"
     },
     "ownerLeaveNote": "The owner must transfer ownership before leaving the guild."
   },
@@ -715,7 +723,8 @@
     "pendingRequestCount": "{count, plural, one {# pending request} other {# pending requests}}",
     "otherPendingRequests": "{count, plural, one {# other member also asked for it} other {# other members also asked for it}}",
     "alreadyRequested": "You already requested this item",
-    "viewHistory": "View history of {item}"
+    "viewHistory": "View history of {item}",
+    "typeAdminTransfer": "Moved in by an admin"
   },
   "notificationsCard": {
     "notifications": "Notifications",
@@ -875,7 +884,8 @@
     "lootAssigned": "You received <b>{item}</b> from <b>{checkin}</b>",
     "itemDelivered": "<b>{actor}</b> handed over <b>{item}</b> in game",
     "auctionCancelled": "<b>{item}</b> was cancelled{refunded, select, yes {. Your bid of <b>{amount}</b> was refunded} other {}}",
-    "lotteryCancelled": "<b>{lottery}</b> was cancelled. Your {tickets, plural, one {# ticket was} other {# tickets were}} refunded (<b>{amount}</b>)"
+    "lotteryCancelled": "<b>{lottery}</b> was cancelled. Your {tickets, plural, one {# ticket was} other {# tickets were}} refunded (<b>{amount}</b>)",
+    "itemMovedByAdmin": "<b>{actor}</b> moved <b>{item}</b> from <b>{from}</b> to your backpack"
   },
   "profilePage": {
     "title": "Personal Information",
@@ -1571,7 +1581,8 @@
       "transfer": "{subject} gave it to {actor}",
       "checkin": "{actor} received it as roll call loot",
       "bank": "{actor} received it from the guild vault",
-      "other": "{actor} received it"
+      "other": "{actor} received it",
+      "admin": "{label} moved it from {subject} to {actor}"
     },
     "returned": {
       "bank": "Unlocked and back in the guild vault",
@@ -1581,7 +1592,8 @@
       "auction": "View auction",
       "lottery": "View lottery",
       "checkin": "View roll call"
-    }
+    },
+    "adminDonated": "{label} moved it from {actor}'s backpack to the guild vault"
   },
   "auctionEditModal": {
     "title": "Edit auction",
@@ -1623,5 +1635,50 @@
   },
   "userName": {
     "unknown": "Unknown member"
+  },
+  "memberAssets": {
+    "title": "{name}'s assets",
+    "loading": "Loading assets",
+    "loadFailed": "Couldn't load this member's gold and items.",
+    "retry": "Retry",
+    "close": "Close",
+    "balance": "Gold balance",
+    "itemCount": "Backpack items",
+    "destination": "Move to",
+    "toMember": "Another member",
+    "toGuildBank": "Guild vault",
+    "guildBank": "the guild vault",
+    "recipient": "Recipient",
+    "searchRecipient": "Search members",
+    "noMembers": "No matching members",
+    "recipientRequired": "Choose a recipient",
+    "note": "Note",
+    "notePlaceholder": "Optional; shown in the records",
+    "noteTooLong": "Keep the note under {max} characters",
+    "goldSection": "Gold",
+    "amount": "Amount",
+    "available": "Available: {amount}",
+    "amountMustBePositive": "Enter an amount greater than 0",
+    "amountExceedsBalance": "The amount is more than this member has",
+    "transferGold": "Move gold",
+    "itemsSection": "Backpack items ({count})",
+    "itemList": "Backpack items",
+    "noItems": "This backpack is empty.",
+    "selectAll": "Select all movable items",
+    "selectItem": "Select {item}",
+    "selectItems": "Select at least one item",
+    "transferItems": "Move {count, plural, =0 {items} one {# item} other {# items}}",
+    "awaitingDelivery": "Awaiting handover",
+    "history": "History of {item}",
+    "confirmFundsTitle": "Move gold?",
+    "confirmItemsTitle": "Move items?",
+    "confirmFundsBody": "Move {amount} from {member} to {destination}? Both wallets record this with your name.",
+    "confirmItemsBody": "Move {count, plural, one {# item} other {# items}} from {member} to {destination}? The item history records this with your name.",
+    "confirm": "Move",
+    "fundsTransferred": "Moved {amount} to {destination}.",
+    "itemsTransferred": "Moved {count, plural, one {# item} other {# items}} to {destination}.",
+    "fundsUnavailable": "The member no longer has enough gold. The balance has been refreshed.",
+    "itemsUnavailable": "Some items can no longer be moved. The backpack has been refreshed.",
+    "transferFailed": "Could not complete the move. Please try again."
   }
 }

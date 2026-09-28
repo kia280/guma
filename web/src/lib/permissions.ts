@@ -78,7 +78,10 @@ export const PERMISSION_SECTIONS = [
   {
     key: 'wallet',
     icon: 'solar:wallet-money-bold-duotone',
-    actions: [{ key: 'manageWallet', roles: ALL }],
+    actions: [
+      { key: 'manageWallet', roles: ALL },
+      { key: 'manageMemberAssets', roles: OWNER_ADMIN },
+    ],
   },
 ] as const;
 

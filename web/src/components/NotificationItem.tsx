@@ -24,6 +24,7 @@ const KIND_META: Record<NotificationKind, { icon: string; tint: string }> = {
   auctionUnsold: { icon: 'solar:sledgehammer-linear', tint: 'bg-default text-subtle' },
   auctionCancelled: { icon: 'solar:forbidden-circle-linear', tint: 'bg-default text-subtle' },
   itemReceived: { icon: 'solar:backpack-linear', tint: 'bg-accent/10 text-accent' },
+  itemMovedByAdmin: { icon: 'solar:shield-user-linear', tint: 'bg-warning/10 text-warning' },
   itemDelivered: { icon: 'solar:box-minimalistic-linear', tint: 'bg-success/10 text-success' },
   lootAssigned: { icon: 'solar:clipboard-check-linear', tint: 'bg-success/10 text-success' },
   lotteryWon: { icon: 'solar:ticket-linear', tint: 'bg-warning/10 text-warning' },
@@ -66,6 +67,7 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
             {t.rich(type, {
               ...params,
               actor: userName(textParam(params.actor)),
+              from: userName(textParam(params.from)),
               amount,
               b: chunks => <span className="font-medium text-foreground">{chunks}</span>,
             })}

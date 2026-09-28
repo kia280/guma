@@ -24,7 +24,7 @@ import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
 import type { UserPreferences } from '@/types/preference';
 import type { LinkedAccount, MockUser, User } from '@/types/user';
-import type { Transaction, Wallet } from '@/types/wallet';
+import type { AssetDestination, MemberAssets, MemberAssetSummary, Transaction, Wallet } from '@/types/wallet';
 import { fromMinorUnits } from './money';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -461,6 +461,8 @@ type ProtoTransaction = {
   created_at?: string;
   reference_id?: string;
   reference_type?: string;
+  actor_name?: string;
+  counterparty_name?: string;
 };
 
 type ProtoLockedBid = {
@@ -515,6 +517,8 @@ export const toTransaction = (raw: ProtoTransaction): Transaction => {
     description: raw.description,
     referenceType: raw.reference_type || undefined,
     referenceId: raw.reference_id || undefined,
+    actorName: raw.actor_name || undefined,
+    counterpartyName: raw.counterparty_name || undefined,
   };
 };
 
@@ -563,6 +567,33 @@ export const toBackpackItem = (raw: ProtoBackpackItem): BackpackItem => ({
   lock: toItemLock(raw.lock),
 });
 
+type ProtoMemberAssetSummary = {
+  user_id?: string;
+  balance?: number | string;
+  item_count?: number;
+};
+
+export const toMemberAssetSummary = (raw: ProtoMemberAssetSummary): MemberAssetSummary => ({
+  userId: raw.user_id ?? '',
+  balance: fromMinorUnits(raw.balance),
+  itemCount: raw.item_count ?? 0,
+});
+
+type ProtoMemberAssets = {
+  user_id?: string;
+  balance?: number | string;
+  items?: ProtoBackpackItem[];
+};
+
+export const toMemberAssets = (raw: ProtoMemberAssets): MemberAssets => ({
+  userId: raw.user_id ?? '',
+  balance: fromMinorUnits(raw.balance),
+  items: (raw.items ?? []).map(toBackpackItem),
+});
+
+export const toProtoDestination = (destination: AssetDestination) =>
+  destination.kind === 'bank' ? { to_guild_bank: true } : { to_user_id: destination.userId };
+
 // ─── Guild Bank ─────────────────────────────────────────────────────────────
 
 type ProtoGuildBank = {
@@ -597,7 +628,13 @@ type ProtoBankContribution = {
   reference_id?: string;
 };
 
-const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = ['gold', 'checkin_loot', 'auction_proceeds', 'lottery_revenue'];
+const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = [
+  'gold',
+  'checkin_loot',
+  'auction_proceeds',
+  'lottery_revenue',
+  'admin_transfer',
+];
 
 const contributionReferenceHref = (b: BankContribution): string | undefined => {
   if (!b.referenceId) return undefined;
@@ -607,7 +644,7 @@ const contributionReferenceHref = (b: BankContribution): string | undefined => {
 };
 
 const contributionType = (kind: BankContributionKind): GuildContribution['type'] =>
-  kind === 'auction_proceeds' || kind === 'lottery_revenue' ? kind : 'contribute';
+  kind === 'auction_proceeds' || kind === 'lottery_revenue' || kind === 'admin_transfer' ? kind : 'contribute';
 
 const toContributionKind = (kind: string | undefined): BankContributionKind =>
   BANK_CONTRIBUTION_KINDS.find(k => k === kind) ?? 'gold';

@@ -1,3 +1,5 @@
+import type { BackpackItem } from './backpack';
+
 // Wallet and transaction types
 
 export interface Wallet {
@@ -30,6 +32,34 @@ export interface Transaction {
   description?: string;
   referenceType?: string;
   referenceId?: string;
+  actorName?: string;
+  counterpartyName?: string;
+}
+
+export interface MemberAssetSummary {
+  userId: string;
+  balance: number;
+  itemCount: number;
+}
+
+export interface MemberAssets {
+  userId: string;
+  balance: number;
+  items: BackpackItem[];
+}
+
+export type AssetDestination = { kind: 'member'; userId: string } | { kind: 'bank' };
+
+export interface AdminTransferFundsRequest {
+  destination: AssetDestination;
+  amount: number;
+  note?: string;
+}
+
+export interface AdminTransferItemsRequest {
+  destination: AssetDestination;
+  itemIds: string[];
+  note?: string;
 }
 
 export interface DepositRequest {

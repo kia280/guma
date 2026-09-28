@@ -9,7 +9,7 @@ import type { LootEntry } from '@/types/checkin';
 import type { ItemSourceRef } from '@/types/item';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toMemberAssets, toMemberAssetSummary, toNotification, toNotificationPage, toProtoDestination, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -242,6 +242,30 @@ export const gumaApiClient: ApiClient = {
       note: req.note,
     });
     return toBackpackItem(data.item);
+  },
+  listMemberAssets: async guildId => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/admin/member-assets`);
+    return (data.members ?? []).map(toMemberAssetSummary);
+  },
+  getMemberAssets: async (guildId, userId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/admin/member-assets/${userId}`);
+    return toMemberAssets(data);
+  },
+  adminTransferFunds: async (guildId, userId, req) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/admin/member-assets/${userId}/funds/transfer`, {
+      ...toProtoDestination(req.destination),
+      amount: toMinorUnits(req.amount),
+      note: req.note,
+    });
+    return fromMinorUnits(data.balance);
+  },
+  adminTransferItems: async (guildId, userId, req) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/admin/member-assets/${userId}/items/transfer`, {
+      ...toProtoDestination(req.destination),
+      item_ids: req.itemIds,
+      note: req.note,
+    });
+    return data.item_ids ?? [];
   },
 
   // ── Auction ──

@@ -71,6 +71,8 @@ const USER_NOTE_KINDS = new Set([
   'TRANSFER_OUT',
   'BANK_CONTRIBUTION',
   'FUND_REQUEST_APPROVED',
+  'ADMIN_TRANSFER_OUT',
+  'ADMIN_TRANSFER_IN',
 ]);
 
 const DEFAULT_TRANSFER_NOTE = 'Transfer';
@@ -83,6 +85,12 @@ const transactionLabelKey = (transaction: Transaction): string | undefined => {
   }
   if (transaction.kind === 'LOTTERY_TICKET' && transaction.amount > 0) {
     return 'lotteryRefund';
+  }
+  if (transaction.kind === 'ADMIN_TRANSFER_OUT') {
+    return transaction.referenceType === 'bank' ? 'adminTransferToBank' : 'adminTransferOut';
+  }
+  if (transaction.kind === 'ADMIN_TRANSFER_IN') {
+    return 'adminTransferIn';
   }
   return transaction.kind ? TRANSACTION_KIND_LABELS[transaction.kind] : undefined;
 };
@@ -133,7 +141,10 @@ const getTransactionIcon = (transaction: Transaction) => {
     case 'WITHDRAWAL':
       return 'solar:arrow-up-linear';
     case 'TRANSFER_OUT':
-      return 'solar:arrow-right-linear';
+    case 'ADMIN_TRANSFER_OUT':
+      return transaction.referenceType === 'bank' ? 'solar:safe-2-linear' : 'solar:arrow-right-linear';
+    case 'ADMIN_TRANSFER_IN':
+      return 'solar:arrow-down-linear';
     case 'AUCTION_BID':
     case 'AUCTION_WIN':
     case 'AUCTION_SALE':
@@ -437,7 +448,12 @@ export default function WalletPage() {
 
   const transactionTitle = (transaction: Transaction) => {
     const key = transactionLabelKey(transaction);
-    const title = key ? t(`transactionKinds.${key}`) : transaction.description;
+    const title = key
+      ? t(`transactionKinds.${key}`, {
+          admin: userName(transaction.actorName ?? ''),
+          member: userName(transaction.counterpartyName ?? ''),
+        })
+      : transaction.description;
     const href = transactionHref(transaction);
     return href ? (
       <Link href={href} className={TRANSACTION_LINK_CLASS}>

@@ -31,7 +31,8 @@ import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
 import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from '@/types/preference';
 import type { User, UserStats } from '@/types/user';
-import type { Transaction, Wallet } from '@/types/wallet';
+import type { MemberAssets, Transaction, Wallet } from '@/types/wallet';
+import { roundGold } from '../money';
 import type { ApiClient } from '../types';
 import * as mockData from './data';
 import { localizeMock } from './i18n';
@@ -189,6 +190,21 @@ const mockMembers = () =>
   getDevMockRole() === 'owner'
     ? mockData.mockUsers.map(user => (user.id === defaultOwner.id ? { ...user, role: 'admin' } : user))
     : mockData.mockUsers;
+
+const memberAssets = new Map<string, MemberAssets>();
+
+const mockMemberAssets = (userId: string): MemberAssets => {
+  let assets = memberAssets.get(userId);
+  if (!assets) {
+    const index = Math.max(0, mockData.mockUsers.findIndex(user => user.id === userId));
+    const items = mockData.mockBackpackItems
+      .filter((_, i) => (i + index) % 3 === 0)
+      .map(item => ({ ...item, id: `${item.id}-${userId}`, ownerId: userId }));
+    assets = { userId, balance: ((index * 7919) % 5000) + 120.5, items };
+    memberAssets.set(userId, assets);
+  }
+  return assets;
+};
 
 const mockLockedBids = (): Pick<Wallet, 'lockedInBids' | 'lockedBids'> => {
   const lockedBids = store.auctions
@@ -348,6 +364,55 @@ const baseMockApiClient: ApiClient = {
     if (item.lock) throw failedPrecondition('item is in an auction or lottery');
     removeById(mockData.mockBackpackItems, itemId);
     return { ...item, ownerId: req.recipientId, acquiredFrom: 'transfer', note: req.note };
+  },
+  listMemberAssets: async () =>
+    mockMembers().map(member => {
+      const assets = mockMemberAssets(member.id);
+      return { userId: member.id, balance: assets.balance, itemCount: assets.items.length };
+    }),
+  getMemberAssets: async (_guildId, userId) => {
+    const assets = mockMemberAssets(userId);
+    return { ...assets, items: [...assets.items] };
+  },
+  adminTransferFunds: async (_guildId, userId, req) => {
+    const source = mockMemberAssets(userId);
+    if (req.amount <= 0 || req.amount > source.balance) throw failedPrecondition('insufficient funds');
+    source.balance = roundGold(source.balance - req.amount);
+    if (req.destination.kind === 'member') {
+      const target = mockMemberAssets(req.destination.userId);
+      target.balance = roundGold(target.balance + req.amount);
+    }
+    return source.balance;
+  },
+  adminTransferItems: async (_guildId, userId, req) => {
+    const source = mockMemberAssets(userId);
+    const moving = source.items.filter(item => req.itemIds.includes(item.id));
+    if (moving.length !== req.itemIds.length || moving.some(item => item.lock || item.deliveryRequestedAt)) {
+      throw failedPrecondition('item is not available to move');
+    }
+    source.items = source.items.filter(item => !req.itemIds.includes(item.id));
+    if (req.destination.kind === 'member') {
+      const target = mockMemberAssets(req.destination.userId);
+      target.items.unshift(
+        ...moving.map(item => ({ ...item, ownerId: target.userId, acquiredFrom: 'admin' as const, note: req.note })),
+      );
+    } else {
+      mockData.mockGuildItems.unshift(
+        ...moving.map(item => ({
+          id: item.id,
+          name: item.item.name,
+          description: item.item.description,
+          category: item.item.category,
+          rarity: item.item.rarity,
+          donatedBy: userId,
+          donatedAt: new Date().toISOString(),
+          quantity: 1,
+          pendingRequestCount: 0,
+          requestedByMe: false,
+        })),
+      );
+    }
+    return moving.map(item => item.id);
   },
 
   // ── Auction ──
