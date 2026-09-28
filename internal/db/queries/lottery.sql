@@ -4,7 +4,7 @@ SELECT id, guild_id, created_by, title,
        ticket_price, tickets_sold,
        max_tickets, max_tickets_per_user, status,
        TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
-       prizes, created_at, updated_at
+       prizes, created_at, updated_at, cancelled_at
 FROM lotteries
 WHERE guild_id = $1
   AND (sqlc.arg(status_filter)::text = '' OR status = sqlc.arg(status_filter)::text)
@@ -21,7 +21,7 @@ SELECT id, guild_id, created_by, title,
        ticket_price, tickets_sold,
        max_tickets, max_tickets_per_user, status,
        TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
-       prizes, created_at, updated_at
+       prizes, created_at, updated_at, cancelled_at
 FROM lotteries WHERE id = $1 AND guild_id = $2;
 
 -- name: CreateLottery :one
@@ -40,11 +40,12 @@ RETURNING id, guild_id, created_by, title,
           ticket_price, tickets_sold,
           max_tickets, max_tickets_per_user, status,
           TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
-          prizes, created_at, updated_at;
+          prizes, created_at, updated_at, cancelled_at;
 
--- name: GetLotteryForPurchase :one
-SELECT ticket_price, status, max_tickets, max_tickets_per_user, tickets_sold
-FROM lotteries WHERE id = $1 AND guild_id = $2;
+-- name: LockLotteryForPurchase :one
+SELECT ticket_price, status, max_tickets, max_tickets_per_user, tickets_sold, draw_date
+FROM lotteries WHERE id = $1 AND guild_id = $2
+FOR UPDATE;
 
 -- name: CountUserTicketsForLottery :one
 SELECT COUNT(*) FROM lottery_tickets WHERE lottery_id = $1 AND user_id = $2;
@@ -110,20 +111,47 @@ JOIN lotteries l ON l.id = lt.lottery_id
 WHERE lt.user_id = $1
   AND (sqlc.arg(guild_filter)::text = '' OR l.guild_id::text = sqlc.arg(guild_filter)::text);
 
--- name: UpdateLotteryDrawDate :one
+-- name: LockLottery :one
+SELECT id, created_by, title, ticket_price, tickets_sold, max_tickets,
+       max_tickets_per_user, status, draw_date, prizes
+FROM lotteries WHERE id = $1 AND guild_id = $2
+FOR UPDATE;
+
+-- name: UpdateLottery :one
 UPDATE lotteries SET
-    draw_date  = sqlc.arg(draw_date)::text::timestamptz,
-    updated_at = NOW()
-WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id) AND status <> 'ended'
+    title                = sqlc.arg(title)::text,
+    description          = CASE WHEN sqlc.arg(set_description)::bool
+                                THEN NULLIF(sqlc.arg(description)::text, '')
+                                ELSE description END,
+    ticket_price         = sqlc.arg(ticket_price),
+    max_tickets          = sqlc.arg(max_tickets),
+    max_tickets_per_user = sqlc.arg(max_tickets_per_user),
+    draw_date            = sqlc.arg(draw_date),
+    updated_at           = NOW()
+WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id)
+  AND status IN ('active', 'upcoming')
 RETURNING id, guild_id, created_by, title,
           COALESCE(description, '') AS description,
           ticket_price, tickets_sold,
           max_tickets, max_tickets_per_user, status,
           TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
-          prizes, created_at, updated_at;
+          prizes, created_at, updated_at, cancelled_at;
+
+-- name: ListLotteryTicketHolders :many
+SELECT user_id, COUNT(*)::int AS tickets
+FROM lottery_tickets WHERE lottery_id = $1
+GROUP BY user_id
+ORDER BY user_id;
+
+-- name: MarkLotteryCancelled :exec
+UPDATE lotteries SET status = 'cancelled', cancelled_at = NOW(), updated_at = NOW()
+WHERE id = $1;
+
+-- name: DeleteCancelledLottery :execrows
+DELETE FROM lotteries WHERE id = $1 AND guild_id = $2 AND status = 'cancelled';
 
 -- name: ListDueLotteries :many
 SELECT id, guild_id FROM lotteries
-WHERE status <> 'ended' AND draw_date <= NOW()
+WHERE status IN ('active', 'upcoming') AND draw_date <= NOW()
 ORDER BY draw_date ASC
 LIMIT sqlc.arg(max_rows)::int;

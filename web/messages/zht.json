@@ -237,7 +237,8 @@
       "lotteryWin": "彩券獎金",
       "bankContribution": "公會倉庫捐獻",
       "fundRequestApproved": "資金申請核准",
-      "auctionSale": "拍賣售出"
+      "auctionSale": "拍賣售出",
+      "lotteryRefund": "彩券退款"
     },
     "depositSuccess": "存款完成",
     "depositSuccessDetail": "已將 {amount} 存入錢包。",
@@ -274,7 +275,8 @@
     "createLottery": "建立抽獎",
     "statusTabs": "抽獎狀態",
     "drawStarted": "{title}正在開獎",
-    "watchDraw": "觀看開獎"
+    "watchDraw": "觀看開獎",
+    "cancelled": "已取消"
   },
   "lotteryCard": {
     "drawComplete": "抽獎已結束",
@@ -296,8 +298,10 @@
     "status": {
       "active": "進行中",
       "upcoming": "即將開始",
-      "ended": "已結束"
-    }
+      "ended": "已結束",
+      "cancelled": "已取消"
+    },
+    "cancelledFooter": "抽獎已取消"
   },
   "auctionPage": {
     "searchItems": "搜尋物品...",
@@ -312,7 +316,8 @@
     "createAuction": "建立競拍",
     "bidSuccess": "出價成功。",
     "bidFailed": "無法出價，請再試一次。",
-    "statusTabs": "競拍狀態"
+    "statusTabs": "競拍狀態",
+    "cancelled": "已取消"
   },
   "auctionItemCard": {
     "timeRemaining": "剩餘時間",
@@ -351,7 +356,8 @@
       "active": "進行中",
       "ended": "已結束",
       "cancelled": "已取消"
-    }
+    },
+    "cancelledNote": "已取消 · 出價已退回"
   },
   "backpackItemCard": {
     "editNote": "編輯備注",
@@ -631,7 +637,12 @@
       "changeDrawDate": "變更開獎日期",
       "manageWallet": "管理自己的錢包與背包",
       "auctionBankItems": "拍賣或抽出公會倉庫物品",
-      "distributeLoot": "分配點名戰利品"
+      "distributeLoot": "分配點名戰利品",
+      "editAuction": "編輯任何進行中的競拍（賣家可編輯自己的）",
+      "deleteAuction": "刪除已取消的競拍",
+      "editLottery": "編輯抽獎",
+      "cancelLottery": "取消抽獎並退還彩券",
+      "deleteLottery": "刪除已取消的抽獎"
     },
     "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。"
   },
@@ -861,7 +872,9 @@
     "auctionUnsold": "<b>{item}</b> 已結束，無人出價",
     "itemReceived": "<b>{actor}</b> 送給你 <b>{item}</b>",
     "lootAssigned": "你從 <b>{checkin}</b> 獲得 <b>{item}</b>",
-    "itemDelivered": "<b>{actor}</b> 已在遊戲中交付 <b>{item}</b>"
+    "itemDelivered": "<b>{actor}</b> 已在遊戲中交付 <b>{item}</b>",
+    "auctionCancelled": "<b>{item}</b> 已取消{refunded, select, yes {，你的出價 <b>{amount}</b> 已退回} other {}}",
+    "lotteryCancelled": "<b>{lottery}</b> 已取消，你的 {tickets} 張彩券已退款（<b>{amount}</b>）"
   },
   "profilePage": {
     "title": "個人資料",
@@ -1053,7 +1066,24 @@
       "active": "進行中",
       "ended": "已結束",
       "cancelled": "已取消"
-    }
+    },
+    "editAuction": "編輯",
+    "cancelAuction": "取消競拍",
+    "deleteAuction": "刪除",
+    "cancelConfirmTitle": "要取消這場競拍嗎？",
+    "cancelConfirmBody": "競拍會立即停止。{hasBid, select, yes {最高出價 {amount} 會退回出價者的錢包。} other {目前還沒有任何出價。}}{source, select, backpack {物品會退回賣家的背包。} bank {物品會歸還公會倉庫。} other {}}此操作無法復原。",
+    "cancelConfirm": "取消競拍",
+    "cancelFailed": "無法取消競拍，請再試一次。",
+    "cancelSuccess": "競拍已取消",
+    "cancelSuccessDetail": "保留中的出價已全數退回。",
+    "deleteConfirmTitle": "要刪除這場競拍嗎？",
+    "deleteConfirmBody": "競拍與出價紀錄會被永久刪除，退款等錢包交易紀錄仍會保留。此操作無法復原。",
+    "deleteConfirm": "刪除競拍",
+    "deleteFailed": "無法刪除競拍，請再試一次。",
+    "deleted": "競拍已刪除。",
+    "cancelledBanner": "這場競拍已於 {date} 取消。",
+    "cancelledBannerNoDate": "這場競拍已取消。",
+    "cancelledBannerDetail": "出價已退回、物品已歸還，無法再出價。"
   },
   "checkinDetailPage": {
     "notFound": "找不到這筆點名。",
@@ -1212,7 +1242,8 @@
     "status": {
       "active": "進行中",
       "upcoming": "即將開始",
-      "ended": "已結束"
+      "ended": "已結束",
+      "cancelled": "已取消"
     },
     "wheelDetail": "{count} 張 · {chance}%",
     "reschedule": "調整開獎時間",
@@ -1228,7 +1259,25 @@
     "purchaseClosed": "這個抽獎已停止販售彩券。",
     "insufficientBalance": "餘額不足以支付這次購買。",
     "yourBalance": "你的餘額：{amount}",
-    "purchaseFailed": "無法購買彩券，請再試一次。"
+    "purchaseFailed": "無法購買彩券，請再試一次。",
+    "editLottery": "編輯",
+    "cancelLottery": "取消抽獎",
+    "deleteLottery": "刪除",
+    "cancelConfirmTitle": "要取消這個抽獎嗎？",
+    "cancelConfirmBody": "彩券會停止販售，也不會開獎。{sold, plural, =0 {目前還沒有售出任何彩券。} other {已售出的 # 張彩券會全額退回購買者的錢包。}}來自公會倉庫或背包的獎品會歸還。此操作無法復原。",
+    "cancelConfirm": "取消抽獎",
+    "cancelFailed": "無法取消抽獎，請再試一次。",
+    "cancelSuccess": "抽獎已取消",
+    "cancelSuccessDetail": "所有彩券都已退款。",
+    "deleteConfirmTitle": "要刪除這個抽獎嗎？",
+    "deleteConfirmBody": "抽獎與彩券紀錄會被永久刪除，退款等錢包交易紀錄仍會保留。此操作無法復原。",
+    "deleteConfirm": "刪除抽獎",
+    "deleteFailed": "無法刪除抽獎，請再試一次。",
+    "deleted": "抽獎已刪除。",
+    "cancelledBanner": "這個抽獎已於 {date} 取消。",
+    "cancelledBannerNoDate": "這個抽獎已取消。",
+    "cancelledBannerDetail": "所有彩券皆已退款，不會開獎。",
+    "cancelledCaption": "已取消"
   },
   "createLotteryModal": {
     "title": "建立抽獎",
@@ -1526,5 +1575,43 @@
       "lottery": "查看抽獎",
       "checkin": "查看點名"
     }
+  },
+  "auctionEditModal": {
+    "title": "編輯競拍",
+    "save": "儲存變更",
+    "cancel": "取消",
+    "success": "競拍已更新。",
+    "failed": "無法儲存競拍，請再試一次。",
+    "closed": "這場競拍已結束、已取消，或剛有人出價。請確認最新內容後再試一次。",
+    "forbidden": "你沒有權限編輯這場競拍。",
+    "invalid": "部分資料未通過驗證，請檢查欄位後再試一次。",
+    "itemLockedHint": "這個物品來自{source, select, bank {公會倉庫} other {背包}}，無法修改物品資料。",
+    "pricingLockedHint": "有人出價後，物品、起始出價與最低加價就無法修改，結束時間也只能延後。",
+    "startTime": "開始時間",
+    "endTime": "結束時間",
+    "nameRequired": "請輸入物品名稱",
+    "amountRequired": "請輸入大於 0 的金額",
+    "startInPast": "開始時間必須在未來",
+    "endRequired": "請選擇結束時間",
+    "endInPast": "結束時間必須在未來",
+    "endBeforeStart": "結束時間必須晚於開始時間",
+    "endShortened": "已有出價時，結束時間只能延後"
+  },
+  "lotteryEditModal": {
+    "title": "編輯抽獎",
+    "save": "儲存變更",
+    "cancel": "取消",
+    "success": "抽獎已更新。",
+    "failed": "無法儲存抽獎，請再試一次。",
+    "closed": "這個抽獎已開獎、已取消，或剛開始售出彩券。請確認最新內容後再試一次。",
+    "forbidden": "只有公會擁有者和管理員可以編輯抽獎。",
+    "invalid": "部分資料未通過驗證，請檢查欄位後再試一次。",
+    "titleRequired": "請輸入標題",
+    "ticketPriceRequired": "請輸入大於 0 的票價",
+    "maxTicketsRequired": "張數上限至少為 1",
+    "ticketsLockedHint": "已售出彩券，票價與張數上限無法修改。",
+    "prizes": "獎品",
+    "noPrizes": "沒有獎品。",
+    "prizesLockedHint": "建立抽獎後就無法修改獎品。"
   }
 }

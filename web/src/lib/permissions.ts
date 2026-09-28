@@ -57,7 +57,9 @@ export const PERMISSION_SECTIONS = [
     actions: [
       { key: 'createAuction', roles: ALL },
       { key: 'placeBid', roles: ALL },
+      { key: 'editAuction', roles: OWNER_ADMIN },
       { key: 'cancelAuction', roles: OWNER_ADMIN },
+      { key: 'deleteAuction', roles: OWNER_ADMIN },
       { key: 'auctionBankItems', roles: OWNER_ADMIN },
     ],
   },
@@ -68,7 +70,9 @@ export const PERMISSION_SECTIONS = [
       { key: 'buyTickets', roles: ALL },
       { key: 'createLottery', roles: OWNER_ADMIN },
       { key: 'drawLottery', roles: OWNER_ADMIN },
-      { key: 'changeDrawDate', roles: OWNER_ADMIN },
+      { key: 'editLottery', roles: OWNER_ADMIN },
+      { key: 'cancelLottery', roles: OWNER_ADMIN },
+      { key: 'deleteLottery', roles: OWNER_ADMIN },
     ],
   },
   {

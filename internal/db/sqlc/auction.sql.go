@@ -93,7 +93,7 @@ INSERT INTO auctions (
 RETURNING id, guild_id, seller_id, item, starting_bid, current_bid,
           current_bidder_id, min_bid_increment, start_time, end_time,
           status, is_blind, created_at, updated_at,
-          source_type, settled_at, source_item_id
+          source_type, settled_at, source_item_id, cancelled_at
 `
 
 type CreateAuctionParams struct {
@@ -145,15 +145,33 @@ func (q *Queries) CreateAuction(ctx context.Context, arg CreateAuctionParams) (A
 		&i.SourceType,
 		&i.SettledAt,
 		&i.SourceItemID,
+		&i.CancelledAt,
 	)
 	return i, err
+}
+
+const deleteCancelledAuction = `-- name: DeleteCancelledAuction :execrows
+DELETE FROM auctions WHERE id = $1 AND guild_id = $2 AND status = 'CANCELLED'
+`
+
+type DeleteCancelledAuctionParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+func (q *Queries) DeleteCancelledAuction(ctx context.Context, arg DeleteCancelledAuctionParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteCancelledAuction, arg.ID, arg.GuildID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const getAuction = `-- name: GetAuction :one
 SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
        current_bidder_id, min_bid_increment, start_time, end_time,
        status, is_blind, created_at, updated_at,
-       source_type, settled_at, source_item_id
+       source_type, settled_at, source_item_id, cancelled_at
 FROM auctions WHERE id = $1 AND guild_id = $2
 `
 
@@ -183,12 +201,13 @@ func (q *Queries) GetAuction(ctx context.Context, arg GetAuctionParams) (Auction
 		&i.SourceType,
 		&i.SettledAt,
 		&i.SourceItemID,
+		&i.CancelledAt,
 	)
 	return i, err
 }
 
 const getAuctionForUpdate = `-- name: GetAuctionForUpdate :one
-SELECT current_bid, current_bidder_id, min_bid_increment, status, end_time
+SELECT starting_bid, current_bid, current_bidder_id, min_bid_increment, status, end_time
 FROM auctions WHERE id = $1 AND guild_id = $2 FOR UPDATE
 `
 
@@ -198,6 +217,7 @@ type GetAuctionForUpdateParams struct {
 }
 
 type GetAuctionForUpdateRow struct {
+	StartingBid     int64
 	CurrentBid      int64
 	CurrentBidderID *uuid.UUID
 	MinBidIncrement int64
@@ -209,6 +229,7 @@ func (q *Queries) GetAuctionForUpdate(ctx context.Context, arg GetAuctionForUpda
 	row := q.db.QueryRow(ctx, getAuctionForUpdate, arg.ID, arg.GuildID)
 	var i GetAuctionForUpdateRow
 	err := row.Scan(
+		&i.StartingBid,
 		&i.CurrentBid,
 		&i.CurrentBidderID,
 		&i.MinBidIncrement,
@@ -309,7 +330,7 @@ const listAuctions = `-- name: ListAuctions :many
 SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
        current_bidder_id, min_bid_increment, start_time, end_time,
        status, is_blind, created_at, updated_at,
-       source_type, settled_at, source_item_id
+       source_type, settled_at, source_item_id, cancelled_at
 FROM auctions
 WHERE guild_id = $1
   AND ($2::text   = '' OR status             = $2::text)
@@ -365,6 +386,7 @@ func (q *Queries) ListAuctions(ctx context.Context, arg ListAuctionsParams) ([]A
 			&i.SourceType,
 			&i.SettledAt,
 			&i.SourceItemID,
+			&i.CancelledAt,
 		); err != nil {
 			return nil, err
 		}
@@ -443,34 +465,42 @@ func (q *Queries) ListDueAuctions(ctx context.Context, maxRows int32) ([]uuid.UU
 	return items, nil
 }
 
-const lockAuctionForCancel = `-- name: LockAuctionForCancel :one
-SELECT current_bid, current_bidder_id, status, source_type, source_item_id
+const lockAuction = `-- name: LockAuction :one
+SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
+       current_bidder_id, min_bid_increment, start_time, end_time,
+       status, is_blind, created_at, updated_at,
+       source_type, settled_at, source_item_id, cancelled_at
 FROM auctions WHERE id = $1 AND guild_id = $2
 FOR UPDATE
 `
 
-type LockAuctionForCancelParams struct {
+type LockAuctionParams struct {
 	ID      uuid.UUID
 	GuildID uuid.UUID
 }
 
-type LockAuctionForCancelRow struct {
-	CurrentBid      int64
-	CurrentBidderID *uuid.UUID
-	Status          string
-	SourceType      pgtype.Text
-	SourceItemID    *uuid.UUID
-}
-
-func (q *Queries) LockAuctionForCancel(ctx context.Context, arg LockAuctionForCancelParams) (LockAuctionForCancelRow, error) {
-	row := q.db.QueryRow(ctx, lockAuctionForCancel, arg.ID, arg.GuildID)
-	var i LockAuctionForCancelRow
+func (q *Queries) LockAuction(ctx context.Context, arg LockAuctionParams) (Auction, error) {
+	row := q.db.QueryRow(ctx, lockAuction, arg.ID, arg.GuildID)
+	var i Auction
 	err := row.Scan(
+		&i.ID,
+		&i.GuildID,
+		&i.SellerID,
+		&i.Item,
+		&i.StartingBid,
 		&i.CurrentBid,
 		&i.CurrentBidderID,
+		&i.MinBidIncrement,
+		&i.StartTime,
+		&i.EndTime,
 		&i.Status,
+		&i.IsBlind,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.SourceType,
+		&i.SettledAt,
 		&i.SourceItemID,
+		&i.CancelledAt,
 	)
 	return i, err
 }
@@ -522,6 +552,16 @@ func (q *Queries) MarkAllBidsNotWinning(ctx context.Context, auctionID uuid.UUID
 	return err
 }
 
+const markAuctionCancelled = `-- name: MarkAuctionCancelled :exec
+UPDATE auctions SET status = 'CANCELLED', cancelled_at = NOW(), updated_at = NOW()
+WHERE id = $1
+`
+
+func (q *Queries) MarkAuctionCancelled(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, markAuctionCancelled, id)
+	return err
+}
+
 const markAuctionEnded = `-- name: MarkAuctionEnded :exec
 UPDATE auctions SET status = 'ENDED', settled_at = NOW(), updated_at = NOW()
 WHERE id = $1
@@ -548,16 +588,65 @@ func (q *Queries) UpdateAuctionBid(ctx context.Context, arg UpdateAuctionBidPara
 	return err
 }
 
-const updateAuctionStatus = `-- name: UpdateAuctionStatus :exec
-UPDATE auctions SET status = $1::text, updated_at = NOW() WHERE id = $2
+const updateAuctionDetails = `-- name: UpdateAuctionDetails :one
+UPDATE auctions SET
+    item              = $1::jsonb,
+    starting_bid      = $2,
+    min_bid_increment = $3,
+    is_blind          = $4,
+    start_time        = $5,
+    end_time          = $6,
+    updated_at        = NOW()
+WHERE id = $7 AND guild_id = $8
+  AND status IN ('UPCOMING', 'ACTIVE')
+RETURNING id, guild_id, seller_id, item, starting_bid, current_bid,
+          current_bidder_id, min_bid_increment, start_time, end_time,
+          status, is_blind, created_at, updated_at,
+          source_type, settled_at, source_item_id, cancelled_at
 `
 
-type UpdateAuctionStatusParams struct {
-	Status string
-	ID     uuid.UUID
+type UpdateAuctionDetailsParams struct {
+	Item            []byte
+	StartingBid     int64
+	MinBidIncrement int64
+	IsBlind         bool
+	StartTime       time.Time
+	EndTime         time.Time
+	ID              uuid.UUID
+	GuildID         uuid.UUID
 }
 
-func (q *Queries) UpdateAuctionStatus(ctx context.Context, arg UpdateAuctionStatusParams) error {
-	_, err := q.db.Exec(ctx, updateAuctionStatus, arg.Status, arg.ID)
-	return err
+func (q *Queries) UpdateAuctionDetails(ctx context.Context, arg UpdateAuctionDetailsParams) (Auction, error) {
+	row := q.db.QueryRow(ctx, updateAuctionDetails,
+		arg.Item,
+		arg.StartingBid,
+		arg.MinBidIncrement,
+		arg.IsBlind,
+		arg.StartTime,
+		arg.EndTime,
+		arg.ID,
+		arg.GuildID,
+	)
+	var i Auction
+	err := row.Scan(
+		&i.ID,
+		&i.GuildID,
+		&i.SellerID,
+		&i.Item,
+		&i.StartingBid,
+		&i.CurrentBid,
+		&i.CurrentBidderID,
+		&i.MinBidIncrement,
+		&i.StartTime,
+		&i.EndTime,
+		&i.Status,
+		&i.IsBlind,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.SourceType,
+		&i.SettledAt,
+		&i.SourceItemID,
+		&i.CancelledAt,
+	)
+	return i, err
 }

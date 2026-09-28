@@ -37,6 +37,7 @@ export const lotteryStatusColor: Record<LotteryStatus, StatusColor> = {
   active: 'success',
   upcoming: 'warning',
   ended: 'default',
+  cancelled: 'default',
 };
 
 export const auctionStatusColor: Record<AuctionStatus, StatusColor> = {

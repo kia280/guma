@@ -2,7 +2,7 @@
 
 import type { ItemSourceRef } from './item';
 
-export type LotteryStatus = 'active' | 'upcoming' | 'ended';
+export type LotteryStatus = 'active' | 'upcoming' | 'ended' | 'cancelled';
 
 export interface LotteryWinner {
   id: string;
@@ -19,15 +19,25 @@ export interface LotteryParticipant {
   tickets: number;
 }
 
+export interface LotteryPrize {
+  rank: number;
+  description: string;
+  amount?: number;
+  itemName?: string;
+}
+
 export interface Lottery {
   id: string;
   title: string;
+  description?: string;
   prizePool: number;
+  prizes?: LotteryPrize[];
   ticketPrice: number;
   drawDate: string;
   ticketsSold: number;
   maxTickets: number;
   status: LotteryStatus;
+  cancelledAt?: string;
   winners?: LotteryWinner[];
   participants?: LotteryParticipant[];
 }
@@ -51,5 +61,9 @@ export interface CreateLotteryRequest {
 }
 
 export interface UpdateLotteryRequest {
-  drawDate: string;
+  title?: string;
+  description?: string;
+  drawDate?: string;
+  ticketPrice?: number;
+  maxTickets?: number;
 }

@@ -24,6 +24,8 @@ const (
 	AuctionService_CreateAuction_FullMethodName = "/guma.v1.AuctionService/CreateAuction"
 	AuctionService_PlaceBid_FullMethodName      = "/guma.v1.AuctionService/PlaceBid"
 	AuctionService_GetBidHistory_FullMethodName = "/guma.v1.AuctionService/GetBidHistory"
+	AuctionService_UpdateAuction_FullMethodName = "/guma.v1.AuctionService/UpdateAuction"
+	AuctionService_DeleteAuction_FullMethodName = "/guma.v1.AuctionService/DeleteAuction"
 	AuctionService_CancelAuction_FullMethodName = "/guma.v1.AuctionService/CancelAuction"
 )
 
@@ -37,6 +39,8 @@ type AuctionServiceClient interface {
 	PlaceBid(ctx context.Context, in *PlaceBidRequest, opts ...grpc.CallOption) (*PlaceBidResponse, error)
 	// Returns the full ordered bid history for an auction
 	GetBidHistory(ctx context.Context, in *GetBidHistoryRequest, opts ...grpc.CallOption) (*GetBidHistoryResponse, error)
+	UpdateAuction(ctx context.Context, in *UpdateAuctionRequest, opts ...grpc.CallOption) (*UpdateAuctionResponse, error)
+	DeleteAuction(ctx context.Context, in *DeleteAuctionRequest, opts ...grpc.CallOption) (*DeleteAuctionResponse, error)
 	CancelAuction(ctx context.Context, in *CancelAuctionRequest, opts ...grpc.CallOption) (*CancelAuctionResponse, error)
 }
 
@@ -98,6 +102,26 @@ func (c *auctionServiceClient) GetBidHistory(ctx context.Context, in *GetBidHist
 	return out, nil
 }
 
+func (c *auctionServiceClient) UpdateAuction(ctx context.Context, in *UpdateAuctionRequest, opts ...grpc.CallOption) (*UpdateAuctionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateAuctionResponse)
+	err := c.cc.Invoke(ctx, AuctionService_UpdateAuction_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *auctionServiceClient) DeleteAuction(ctx context.Context, in *DeleteAuctionRequest, opts ...grpc.CallOption) (*DeleteAuctionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteAuctionResponse)
+	err := c.cc.Invoke(ctx, AuctionService_DeleteAuction_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *auctionServiceClient) CancelAuction(ctx context.Context, in *CancelAuctionRequest, opts ...grpc.CallOption) (*CancelAuctionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CancelAuctionResponse)
@@ -118,6 +142,8 @@ type AuctionServiceServer interface {
 	PlaceBid(context.Context, *PlaceBidRequest) (*PlaceBidResponse, error)
 	// Returns the full ordered bid history for an auction
 	GetBidHistory(context.Context, *GetBidHistoryRequest) (*GetBidHistoryResponse, error)
+	UpdateAuction(context.Context, *UpdateAuctionRequest) (*UpdateAuctionResponse, error)
+	DeleteAuction(context.Context, *DeleteAuctionRequest) (*DeleteAuctionResponse, error)
 	CancelAuction(context.Context, *CancelAuctionRequest) (*CancelAuctionResponse, error)
 	mustEmbedUnimplementedAuctionServiceServer()
 }
@@ -143,6 +169,12 @@ func (UnimplementedAuctionServiceServer) PlaceBid(context.Context, *PlaceBidRequ
 }
 func (UnimplementedAuctionServiceServer) GetBidHistory(context.Context, *GetBidHistoryRequest) (*GetBidHistoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetBidHistory not implemented")
+}
+func (UnimplementedAuctionServiceServer) UpdateAuction(context.Context, *UpdateAuctionRequest) (*UpdateAuctionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateAuction not implemented")
+}
+func (UnimplementedAuctionServiceServer) DeleteAuction(context.Context, *DeleteAuctionRequest) (*DeleteAuctionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteAuction not implemented")
 }
 func (UnimplementedAuctionServiceServer) CancelAuction(context.Context, *CancelAuctionRequest) (*CancelAuctionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CancelAuction not implemented")
@@ -258,6 +290,42 @@ func _AuctionService_GetBidHistory_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuctionService_UpdateAuction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAuctionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServiceServer).UpdateAuction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuctionService_UpdateAuction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServiceServer).UpdateAuction(ctx, req.(*UpdateAuctionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuctionService_DeleteAuction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteAuctionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServiceServer).DeleteAuction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuctionService_DeleteAuction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServiceServer).DeleteAuction(ctx, req.(*DeleteAuctionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuctionService_CancelAuction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CancelAuctionRequest)
 	if err := dec(in); err != nil {
@@ -302,6 +370,14 @@ var AuctionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetBidHistory",
 			Handler:    _AuctionService_GetBidHistory_Handler,
+		},
+		{
+			MethodName: "UpdateAuction",
+			Handler:    _AuctionService_UpdateAuction_Handler,
+		},
+		{
+			MethodName: "DeleteAuction",
+			Handler:    _AuctionService_DeleteAuction_Handler,
 		},
 		{
 			MethodName: "CancelAuction",

@@ -26,7 +26,7 @@ const (
 type ListLotteriesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"` // "active" | "upcoming" | "ended" | "" (all)
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"` // "active" | "upcoming" | "ended" | "cancelled" | "" (all)
 	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,4,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -704,12 +704,17 @@ func (x *DrawLotteryResponse) GetWinners() []*LotteryWinner {
 }
 
 type UpdateLotteryRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	LotteryId     string                 `protobuf:"bytes,2,opt,name=lottery_id,json=lotteryId,proto3" json:"lottery_id,omitempty"`
-	DrawDate      string                 `protobuf:"bytes,3,opt,name=draw_date,json=drawDate,proto3" json:"draw_date,omitempty"` // ISO 8601 datetime; must be in the future
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	GuildId           string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	LotteryId         string                 `protobuf:"bytes,2,opt,name=lottery_id,json=lotteryId,proto3" json:"lottery_id,omitempty"`
+	DrawDate          string                 `protobuf:"bytes,3,opt,name=draw_date,json=drawDate,proto3" json:"draw_date,omitempty"` // ISO 8601 datetime; must be in the future
+	Title             *string                `protobuf:"bytes,4,opt,name=title,proto3,oneof" json:"title,omitempty"`
+	Description       *string                `protobuf:"bytes,5,opt,name=description,proto3,oneof" json:"description,omitempty"`
+	TicketPrice       *int64                 `protobuf:"varint,6,opt,name=ticket_price,json=ticketPrice,proto3,oneof" json:"ticket_price,omitempty"`
+	MaxTickets        *int32                 `protobuf:"varint,7,opt,name=max_tickets,json=maxTickets,proto3,oneof" json:"max_tickets,omitempty"`
+	MaxTicketsPerUser *int32                 `protobuf:"varint,8,opt,name=max_tickets_per_user,json=maxTicketsPerUser,proto3,oneof" json:"max_tickets_per_user,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *UpdateLotteryRequest) Reset() {
@@ -763,6 +768,41 @@ func (x *UpdateLotteryRequest) GetDrawDate() string {
 	return ""
 }
 
+func (x *UpdateLotteryRequest) GetTitle() string {
+	if x != nil && x.Title != nil {
+		return *x.Title
+	}
+	return ""
+}
+
+func (x *UpdateLotteryRequest) GetDescription() string {
+	if x != nil && x.Description != nil {
+		return *x.Description
+	}
+	return ""
+}
+
+func (x *UpdateLotteryRequest) GetTicketPrice() int64 {
+	if x != nil && x.TicketPrice != nil {
+		return *x.TicketPrice
+	}
+	return 0
+}
+
+func (x *UpdateLotteryRequest) GetMaxTickets() int32 {
+	if x != nil && x.MaxTickets != nil {
+		return *x.MaxTickets
+	}
+	return 0
+}
+
+func (x *UpdateLotteryRequest) GetMaxTicketsPerUser() int32 {
+	if x != nil && x.MaxTicketsPerUser != nil {
+		return *x.MaxTicketsPerUser
+	}
+	return 0
+}
+
 type UpdateLotteryResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Lottery       *Lottery               `protobuf:"bytes,1,opt,name=lottery,proto3" json:"lottery,omitempty"`
@@ -807,6 +847,198 @@ func (x *UpdateLotteryResponse) GetLottery() *Lottery {
 	return nil
 }
 
+type CancelLotteryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	LotteryId     string                 `protobuf:"bytes,2,opt,name=lottery_id,json=lotteryId,proto3" json:"lottery_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelLotteryRequest) Reset() {
+	*x = CancelLotteryRequest{}
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelLotteryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelLotteryRequest) ProtoMessage() {}
+
+func (x *CancelLotteryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelLotteryRequest.ProtoReflect.Descriptor instead.
+func (*CancelLotteryRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CancelLotteryRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *CancelLotteryRequest) GetLotteryId() string {
+	if x != nil {
+		return x.LotteryId
+	}
+	return ""
+}
+
+type CancelLotteryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Lottery       *Lottery               `protobuf:"bytes,1,opt,name=lottery,proto3" json:"lottery,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelLotteryResponse) Reset() {
+	*x = CancelLotteryResponse{}
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelLotteryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelLotteryResponse) ProtoMessage() {}
+
+func (x *CancelLotteryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelLotteryResponse.ProtoReflect.Descriptor instead.
+func (*CancelLotteryResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CancelLotteryResponse) GetLottery() *Lottery {
+	if x != nil {
+		return x.Lottery
+	}
+	return nil
+}
+
+type DeleteLotteryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	LotteryId     string                 `protobuf:"bytes,2,opt,name=lottery_id,json=lotteryId,proto3" json:"lottery_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteLotteryRequest) Reset() {
+	*x = DeleteLotteryRequest{}
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteLotteryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteLotteryRequest) ProtoMessage() {}
+
+func (x *DeleteLotteryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteLotteryRequest.ProtoReflect.Descriptor instead.
+func (*DeleteLotteryRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *DeleteLotteryRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *DeleteLotteryRequest) GetLotteryId() string {
+	if x != nil {
+		return x.LotteryId
+	}
+	return ""
+}
+
+type DeleteLotteryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteLotteryResponse) Reset() {
+	*x = DeleteLotteryResponse{}
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteLotteryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteLotteryResponse) ProtoMessage() {}
+
+func (x *DeleteLotteryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteLotteryResponse.ProtoReflect.Descriptor instead.
+func (*DeleteLotteryResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *DeleteLotteryResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 type ListMyTicketsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"` // Optional: filter by guild
@@ -818,7 +1050,7 @@ type ListMyTicketsRequest struct {
 
 func (x *ListMyTicketsRequest) Reset() {
 	*x = ListMyTicketsRequest{}
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[14]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -830,7 +1062,7 @@ func (x *ListMyTicketsRequest) String() string {
 func (*ListMyTicketsRequest) ProtoMessage() {}
 
 func (x *ListMyTicketsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[14]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -843,7 +1075,7 @@ func (x *ListMyTicketsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMyTicketsRequest.ProtoReflect.Descriptor instead.
 func (*ListMyTicketsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{14}
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ListMyTicketsRequest) GetGuildId() string {
@@ -878,7 +1110,7 @@ type ListMyTicketsResponse struct {
 
 func (x *ListMyTicketsResponse) Reset() {
 	*x = ListMyTicketsResponse{}
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -890,7 +1122,7 @@ func (x *ListMyTicketsResponse) String() string {
 func (*ListMyTicketsResponse) ProtoMessage() {}
 
 func (x *ListMyTicketsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -903,7 +1135,7 @@ func (x *ListMyTicketsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMyTicketsResponse.ProtoReflect.Descriptor instead.
 func (*ListMyTicketsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{15}
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListMyTicketsResponse) GetTickets() []*LotteryTicket {
@@ -944,13 +1176,14 @@ type Lottery struct {
 	Winners           []*LotteryWinner       `protobuf:"bytes,13,rep,name=winners,proto3" json:"winners,omitempty"`
 	CreatedAt         *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt         *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	CancelledAt       *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=cancelled_at,json=cancelledAt,proto3" json:"cancelled_at,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
 
 func (x *Lottery) Reset() {
 	*x = Lottery{}
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -962,7 +1195,7 @@ func (x *Lottery) String() string {
 func (*Lottery) ProtoMessage() {}
 
 func (x *Lottery) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -975,7 +1208,7 @@ func (x *Lottery) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Lottery.ProtoReflect.Descriptor instead.
 func (*Lottery) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{16}
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Lottery) GetId() string {
@@ -1083,6 +1316,13 @@ func (x *Lottery) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Lottery) GetCancelledAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CancelledAt
+	}
+	return nil
+}
+
 type LotteryPrize struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Rank          int32                  `protobuf:"varint,1,opt,name=rank,proto3" json:"rank,omitempty"` // 1st, 2nd, 3rd place
@@ -1096,7 +1336,7 @@ type LotteryPrize struct {
 
 func (x *LotteryPrize) Reset() {
 	*x = LotteryPrize{}
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1108,7 +1348,7 @@ func (x *LotteryPrize) String() string {
 func (*LotteryPrize) ProtoMessage() {}
 
 func (x *LotteryPrize) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1121,7 +1361,7 @@ func (x *LotteryPrize) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LotteryPrize.ProtoReflect.Descriptor instead.
 func (*LotteryPrize) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{17}
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *LotteryPrize) GetRank() int32 {
@@ -1172,7 +1412,7 @@ type LotteryTicket struct {
 
 func (x *LotteryTicket) Reset() {
 	*x = LotteryTicket{}
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1184,7 +1424,7 @@ func (x *LotteryTicket) String() string {
 func (*LotteryTicket) ProtoMessage() {}
 
 func (x *LotteryTicket) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1197,7 +1437,7 @@ func (x *LotteryTicket) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LotteryTicket.ProtoReflect.Descriptor instead.
 func (*LotteryTicket) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{18}
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *LotteryTicket) GetId() string {
@@ -1252,7 +1492,7 @@ type LotteryWinner struct {
 
 func (x *LotteryWinner) Reset() {
 	*x = LotteryWinner{}
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1264,7 +1504,7 @@ func (x *LotteryWinner) String() string {
 func (*LotteryWinner) ProtoMessage() {}
 
 func (x *LotteryWinner) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_lottery_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_lottery_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1277,7 +1517,7 @@ func (x *LotteryWinner) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LotteryWinner.ProtoReflect.Descriptor instead.
 func (*LotteryWinner) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{19}
+	return file_proto_guma_v1_lottery_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *LotteryWinner) GetId() string {
@@ -1398,14 +1638,37 @@ const file_proto_guma_v1_lottery_proto_rawDesc = "" +
 	"lottery_id\x18\x02 \x01(\tR\tlotteryId\"s\n" +
 	"\x13DrawLotteryResponse\x12*\n" +
 	"\alottery\x18\x01 \x01(\v2\x10.guma.v1.LotteryR\alottery\x120\n" +
-	"\awinners\x18\x02 \x03(\v2\x16.guma.v1.LotteryWinnerR\awinners\"m\n" +
+	"\awinners\x18\x02 \x03(\v2\x16.guma.v1.LotteryWinnerR\awinners\"\x87\x03\n" +
 	"\x14UpdateLotteryRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
 	"\n" +
 	"lottery_id\x18\x02 \x01(\tR\tlotteryId\x12\x1b\n" +
-	"\tdraw_date\x18\x03 \x01(\tR\bdrawDate\"C\n" +
+	"\tdraw_date\x18\x03 \x01(\tR\bdrawDate\x12\x19\n" +
+	"\x05title\x18\x04 \x01(\tH\x00R\x05title\x88\x01\x01\x12%\n" +
+	"\vdescription\x18\x05 \x01(\tH\x01R\vdescription\x88\x01\x01\x12&\n" +
+	"\fticket_price\x18\x06 \x01(\x03H\x02R\vticketPrice\x88\x01\x01\x12$\n" +
+	"\vmax_tickets\x18\a \x01(\x05H\x03R\n" +
+	"maxTickets\x88\x01\x01\x124\n" +
+	"\x14max_tickets_per_user\x18\b \x01(\x05H\x04R\x11maxTicketsPerUser\x88\x01\x01B\b\n" +
+	"\x06_titleB\x0e\n" +
+	"\f_descriptionB\x0f\n" +
+	"\r_ticket_priceB\x0e\n" +
+	"\f_max_ticketsB\x17\n" +
+	"\x15_max_tickets_per_user\"C\n" +
 	"\x15UpdateLotteryResponse\x12*\n" +
-	"\alottery\x18\x01 \x01(\v2\x10.guma.v1.LotteryR\alottery\"m\n" +
+	"\alottery\x18\x01 \x01(\v2\x10.guma.v1.LotteryR\alottery\"P\n" +
+	"\x14CancelLotteryRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
+	"\n" +
+	"lottery_id\x18\x02 \x01(\tR\tlotteryId\"C\n" +
+	"\x15CancelLotteryResponse\x12*\n" +
+	"\alottery\x18\x01 \x01(\v2\x10.guma.v1.LotteryR\alottery\"P\n" +
+	"\x14DeleteLotteryRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
+	"\n" +
+	"lottery_id\x18\x02 \x01(\tR\tlotteryId\"1\n" +
+	"\x15DeleteLotteryResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"m\n" +
 	"\x14ListMyTicketsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
@@ -1415,7 +1678,7 @@ const file_proto_guma_v1_lottery_proto_rawDesc = "" +
 	"\atickets\x18\x01 \x03(\v2\x16.guma.v1.LotteryTicketR\atickets\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\xaf\x04\n" +
+	"totalCount\"\xee\x04\n" +
 	"\aLottery\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1d\n" +
@@ -1436,7 +1699,8 @@ const file_proto_guma_v1_lottery_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xaf\x01\n" +
+	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12=\n" +
+	"\fcancelled_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\vcancelledAt\"\xaf\x01\n" +
 	"\fLotteryPrize\x12\x12\n" +
 	"\x04rank\x18\x01 \x01(\x05R\x04rank\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x16\n" +
@@ -1461,7 +1725,8 @@ const file_proto_guma_v1_lottery_proto_rawDesc = "" +
 	"\x04rank\x18\x06 \x01(\x05R\x04rank\x12!\n" +
 	"\fprize_amount\x18\a \x01(\x03R\vprizeAmount\x12+\n" +
 	"\x11prize_description\x18\b \x01(\tR\x10prizeDescription\x12#\n" +
-	"\rticket_number\x18\t \x01(\tR\fticketNumber2\xb8\b\n" +
+	"\rticket_number\x18\t \x01(\tR\fticketNumber2\xd0\n" +
+	"\n" +
 	"\x0eLotteryService\x12w\n" +
 	"\rListLotteries\x12\x1d.guma.v1.ListLotteriesRequest\x1a\x1e.guma.v1.ListLotteriesResponse\"'\x82\xd3\xe4\x93\x02!\x12\x1f/v1/guilds/{guild_id}/lotteries\x12{\n" +
 	"\n" +
@@ -1469,7 +1734,9 @@ const file_proto_guma_v1_lottery_proto_rawDesc = "" +
 	"\rCreateLottery\x12\x1d.guma.v1.CreateLotteryRequest\x1a\x1e.guma.v1.CreateLotteryResponse\"*\x82\xd3\xe4\x93\x02$:\x01*\"\x1f/v1/guilds/{guild_id}/lotteries\x12\x95\x01\n" +
 	"\x0fPurchaseTickets\x12\x1f.guma.v1.PurchaseTicketsRequest\x1a .guma.v1.PurchaseTicketsResponse\"?\x82\xd3\xe4\x93\x029:\x01*\"4/v1/guilds/{guild_id}/lotteries/{lottery_id}/tickets\x12\x98\x01\n" +
 	"\x11GetLotteryWinners\x12!.guma.v1.GetLotteryWinnersRequest\x1a\".guma.v1.GetLotteryWinnersResponse\"<\x82\xd3\xe4\x93\x026\x124/v1/guilds/{guild_id}/lotteries/{lottery_id}/winners\x12\x87\x01\n" +
-	"\rUpdateLottery\x12\x1d.guma.v1.UpdateLotteryRequest\x1a\x1e.guma.v1.UpdateLotteryResponse\"7\x82\xd3\xe4\x93\x021:\x01*2,/v1/guilds/{guild_id}/lotteries/{lottery_id}\x12\x86\x01\n" +
+	"\rUpdateLottery\x12\x1d.guma.v1.UpdateLotteryRequest\x1a\x1e.guma.v1.UpdateLotteryResponse\"7\x82\xd3\xe4\x93\x021:\x01*2,/v1/guilds/{guild_id}/lotteries/{lottery_id}\x12\x8e\x01\n" +
+	"\rCancelLottery\x12\x1d.guma.v1.CancelLotteryRequest\x1a\x1e.guma.v1.CancelLotteryResponse\">\x82\xd3\xe4\x93\x028:\x01*\"3/v1/guilds/{guild_id}/lotteries/{lottery_id}/cancel\x12\x84\x01\n" +
+	"\rDeleteLottery\x12\x1d.guma.v1.DeleteLotteryRequest\x1a\x1e.guma.v1.DeleteLotteryResponse\"4\x82\xd3\xe4\x93\x02.*,/v1/guilds/{guild_id}/lotteries/{lottery_id}\x12\x86\x01\n" +
 	"\vDrawLottery\x12\x1b.guma.v1.DrawLotteryRequest\x1a\x1c.guma.v1.DrawLotteryResponse\"<\x82\xd3\xe4\x93\x026:\x01*\"1/v1/guilds/{guild_id}/lotteries/{lottery_id}/draw\x12n\n" +
 	"\rListMyTickets\x12\x1d.guma.v1.ListMyTicketsRequest\x1a\x1e.guma.v1.ListMyTicketsResponse\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/me/lottery-ticketsB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
@@ -1485,7 +1752,7 @@ func file_proto_guma_v1_lottery_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_lottery_proto_rawDescData
 }
 
-var file_proto_guma_v1_lottery_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_proto_guma_v1_lottery_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_proto_guma_v1_lottery_proto_goTypes = []any{
 	(*ListLotteriesRequest)(nil),      // 0: guma.v1.ListLotteriesRequest
 	(*ListLotteriesResponse)(nil),     // 1: guma.v1.ListLotteriesResponse
@@ -1501,55 +1768,65 @@ var file_proto_guma_v1_lottery_proto_goTypes = []any{
 	(*DrawLotteryResponse)(nil),       // 11: guma.v1.DrawLotteryResponse
 	(*UpdateLotteryRequest)(nil),      // 12: guma.v1.UpdateLotteryRequest
 	(*UpdateLotteryResponse)(nil),     // 13: guma.v1.UpdateLotteryResponse
-	(*ListMyTicketsRequest)(nil),      // 14: guma.v1.ListMyTicketsRequest
-	(*ListMyTicketsResponse)(nil),     // 15: guma.v1.ListMyTicketsResponse
-	(*Lottery)(nil),                   // 16: guma.v1.Lottery
-	(*LotteryPrize)(nil),              // 17: guma.v1.LotteryPrize
-	(*LotteryTicket)(nil),             // 18: guma.v1.LotteryTicket
-	(*LotteryWinner)(nil),             // 19: guma.v1.LotteryWinner
-	(*timestamppb.Timestamp)(nil),     // 20: google.protobuf.Timestamp
-	(*Item)(nil),                      // 21: guma.v1.Item
-	(*ItemSourceRef)(nil),             // 22: guma.v1.ItemSourceRef
+	(*CancelLotteryRequest)(nil),      // 14: guma.v1.CancelLotteryRequest
+	(*CancelLotteryResponse)(nil),     // 15: guma.v1.CancelLotteryResponse
+	(*DeleteLotteryRequest)(nil),      // 16: guma.v1.DeleteLotteryRequest
+	(*DeleteLotteryResponse)(nil),     // 17: guma.v1.DeleteLotteryResponse
+	(*ListMyTicketsRequest)(nil),      // 18: guma.v1.ListMyTicketsRequest
+	(*ListMyTicketsResponse)(nil),     // 19: guma.v1.ListMyTicketsResponse
+	(*Lottery)(nil),                   // 20: guma.v1.Lottery
+	(*LotteryPrize)(nil),              // 21: guma.v1.LotteryPrize
+	(*LotteryTicket)(nil),             // 22: guma.v1.LotteryTicket
+	(*LotteryWinner)(nil),             // 23: guma.v1.LotteryWinner
+	(*timestamppb.Timestamp)(nil),     // 24: google.protobuf.Timestamp
+	(*Item)(nil),                      // 25: guma.v1.Item
+	(*ItemSourceRef)(nil),             // 26: guma.v1.ItemSourceRef
 }
 var file_proto_guma_v1_lottery_proto_depIdxs = []int32{
-	16, // 0: guma.v1.ListLotteriesResponse.lotteries:type_name -> guma.v1.Lottery
-	16, // 1: guma.v1.GetLotteryResponse.lottery:type_name -> guma.v1.Lottery
-	17, // 2: guma.v1.CreateLotteryRequest.prizes:type_name -> guma.v1.LotteryPrize
-	16, // 3: guma.v1.CreateLotteryResponse.lottery:type_name -> guma.v1.Lottery
-	18, // 4: guma.v1.PurchaseTicketsResponse.tickets:type_name -> guma.v1.LotteryTicket
-	19, // 5: guma.v1.GetLotteryWinnersResponse.winners:type_name -> guma.v1.LotteryWinner
-	16, // 6: guma.v1.DrawLotteryResponse.lottery:type_name -> guma.v1.Lottery
-	19, // 7: guma.v1.DrawLotteryResponse.winners:type_name -> guma.v1.LotteryWinner
-	16, // 8: guma.v1.UpdateLotteryResponse.lottery:type_name -> guma.v1.Lottery
-	18, // 9: guma.v1.ListMyTicketsResponse.tickets:type_name -> guma.v1.LotteryTicket
-	17, // 10: guma.v1.Lottery.prizes:type_name -> guma.v1.LotteryPrize
-	19, // 11: guma.v1.Lottery.winners:type_name -> guma.v1.LotteryWinner
-	20, // 12: guma.v1.Lottery.created_at:type_name -> google.protobuf.Timestamp
-	20, // 13: guma.v1.Lottery.updated_at:type_name -> google.protobuf.Timestamp
-	21, // 14: guma.v1.LotteryPrize.item:type_name -> guma.v1.Item
-	22, // 15: guma.v1.LotteryPrize.source:type_name -> guma.v1.ItemSourceRef
-	20, // 16: guma.v1.LotteryTicket.purchased_at:type_name -> google.protobuf.Timestamp
-	0,  // 17: guma.v1.LotteryService.ListLotteries:input_type -> guma.v1.ListLotteriesRequest
-	2,  // 18: guma.v1.LotteryService.GetLottery:input_type -> guma.v1.GetLotteryRequest
-	4,  // 19: guma.v1.LotteryService.CreateLottery:input_type -> guma.v1.CreateLotteryRequest
-	6,  // 20: guma.v1.LotteryService.PurchaseTickets:input_type -> guma.v1.PurchaseTicketsRequest
-	8,  // 21: guma.v1.LotteryService.GetLotteryWinners:input_type -> guma.v1.GetLotteryWinnersRequest
-	12, // 22: guma.v1.LotteryService.UpdateLottery:input_type -> guma.v1.UpdateLotteryRequest
-	10, // 23: guma.v1.LotteryService.DrawLottery:input_type -> guma.v1.DrawLotteryRequest
-	14, // 24: guma.v1.LotteryService.ListMyTickets:input_type -> guma.v1.ListMyTicketsRequest
-	1,  // 25: guma.v1.LotteryService.ListLotteries:output_type -> guma.v1.ListLotteriesResponse
-	3,  // 26: guma.v1.LotteryService.GetLottery:output_type -> guma.v1.GetLotteryResponse
-	5,  // 27: guma.v1.LotteryService.CreateLottery:output_type -> guma.v1.CreateLotteryResponse
-	7,  // 28: guma.v1.LotteryService.PurchaseTickets:output_type -> guma.v1.PurchaseTicketsResponse
-	9,  // 29: guma.v1.LotteryService.GetLotteryWinners:output_type -> guma.v1.GetLotteryWinnersResponse
-	13, // 30: guma.v1.LotteryService.UpdateLottery:output_type -> guma.v1.UpdateLotteryResponse
-	11, // 31: guma.v1.LotteryService.DrawLottery:output_type -> guma.v1.DrawLotteryResponse
-	15, // 32: guma.v1.LotteryService.ListMyTickets:output_type -> guma.v1.ListMyTicketsResponse
-	25, // [25:33] is the sub-list for method output_type
-	17, // [17:25] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	20, // 0: guma.v1.ListLotteriesResponse.lotteries:type_name -> guma.v1.Lottery
+	20, // 1: guma.v1.GetLotteryResponse.lottery:type_name -> guma.v1.Lottery
+	21, // 2: guma.v1.CreateLotteryRequest.prizes:type_name -> guma.v1.LotteryPrize
+	20, // 3: guma.v1.CreateLotteryResponse.lottery:type_name -> guma.v1.Lottery
+	22, // 4: guma.v1.PurchaseTicketsResponse.tickets:type_name -> guma.v1.LotteryTicket
+	23, // 5: guma.v1.GetLotteryWinnersResponse.winners:type_name -> guma.v1.LotteryWinner
+	20, // 6: guma.v1.DrawLotteryResponse.lottery:type_name -> guma.v1.Lottery
+	23, // 7: guma.v1.DrawLotteryResponse.winners:type_name -> guma.v1.LotteryWinner
+	20, // 8: guma.v1.UpdateLotteryResponse.lottery:type_name -> guma.v1.Lottery
+	20, // 9: guma.v1.CancelLotteryResponse.lottery:type_name -> guma.v1.Lottery
+	22, // 10: guma.v1.ListMyTicketsResponse.tickets:type_name -> guma.v1.LotteryTicket
+	21, // 11: guma.v1.Lottery.prizes:type_name -> guma.v1.LotteryPrize
+	23, // 12: guma.v1.Lottery.winners:type_name -> guma.v1.LotteryWinner
+	24, // 13: guma.v1.Lottery.created_at:type_name -> google.protobuf.Timestamp
+	24, // 14: guma.v1.Lottery.updated_at:type_name -> google.protobuf.Timestamp
+	24, // 15: guma.v1.Lottery.cancelled_at:type_name -> google.protobuf.Timestamp
+	25, // 16: guma.v1.LotteryPrize.item:type_name -> guma.v1.Item
+	26, // 17: guma.v1.LotteryPrize.source:type_name -> guma.v1.ItemSourceRef
+	24, // 18: guma.v1.LotteryTicket.purchased_at:type_name -> google.protobuf.Timestamp
+	0,  // 19: guma.v1.LotteryService.ListLotteries:input_type -> guma.v1.ListLotteriesRequest
+	2,  // 20: guma.v1.LotteryService.GetLottery:input_type -> guma.v1.GetLotteryRequest
+	4,  // 21: guma.v1.LotteryService.CreateLottery:input_type -> guma.v1.CreateLotteryRequest
+	6,  // 22: guma.v1.LotteryService.PurchaseTickets:input_type -> guma.v1.PurchaseTicketsRequest
+	8,  // 23: guma.v1.LotteryService.GetLotteryWinners:input_type -> guma.v1.GetLotteryWinnersRequest
+	12, // 24: guma.v1.LotteryService.UpdateLottery:input_type -> guma.v1.UpdateLotteryRequest
+	14, // 25: guma.v1.LotteryService.CancelLottery:input_type -> guma.v1.CancelLotteryRequest
+	16, // 26: guma.v1.LotteryService.DeleteLottery:input_type -> guma.v1.DeleteLotteryRequest
+	10, // 27: guma.v1.LotteryService.DrawLottery:input_type -> guma.v1.DrawLotteryRequest
+	18, // 28: guma.v1.LotteryService.ListMyTickets:input_type -> guma.v1.ListMyTicketsRequest
+	1,  // 29: guma.v1.LotteryService.ListLotteries:output_type -> guma.v1.ListLotteriesResponse
+	3,  // 30: guma.v1.LotteryService.GetLottery:output_type -> guma.v1.GetLotteryResponse
+	5,  // 31: guma.v1.LotteryService.CreateLottery:output_type -> guma.v1.CreateLotteryResponse
+	7,  // 32: guma.v1.LotteryService.PurchaseTickets:output_type -> guma.v1.PurchaseTicketsResponse
+	9,  // 33: guma.v1.LotteryService.GetLotteryWinners:output_type -> guma.v1.GetLotteryWinnersResponse
+	13, // 34: guma.v1.LotteryService.UpdateLottery:output_type -> guma.v1.UpdateLotteryResponse
+	15, // 35: guma.v1.LotteryService.CancelLottery:output_type -> guma.v1.CancelLotteryResponse
+	17, // 36: guma.v1.LotteryService.DeleteLottery:output_type -> guma.v1.DeleteLotteryResponse
+	11, // 37: guma.v1.LotteryService.DrawLottery:output_type -> guma.v1.DrawLotteryResponse
+	19, // 38: guma.v1.LotteryService.ListMyTickets:output_type -> guma.v1.ListMyTicketsResponse
+	29, // [29:39] is the sub-list for method output_type
+	19, // [19:29] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_lottery_proto_init() }
@@ -1558,13 +1835,14 @@ func file_proto_guma_v1_lottery_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_lottery_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_lottery_proto_rawDesc), len(file_proto_guma_v1_lottery_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -13,8 +13,19 @@ import { useToast } from '@/hooks/useToast';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
+import { auctionStatusColor } from '@/lib/status-colors';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory, ItemRarity } from '@/types/item';
+
+type AuctionTab = 'all' | AuctionStatus;
+
+const AUCTION_TABS: readonly AuctionTab[] = [
+  'all',
+  AuctionStatus.ACTIVE,
+  AuctionStatus.UPCOMING,
+  AuctionStatus.ENDED,
+  AuctionStatus.CANCELLED,
+];
 
 const AuctionPage = () => {
   const t = useTranslations('auctionPage');
@@ -125,14 +136,13 @@ const AuctionPage = () => {
     }
   };
 
-  const getStatusCounts = () => ({
+  const statusCounts: Record<AuctionTab, number> = {
     all: auctionItems.length,
-    active: auctionItems.filter(item => item.status === AuctionStatus.ACTIVE).length,
-    upcoming: auctionItems.filter(item => item.status === AuctionStatus.UPCOMING).length,
-    ended: auctionItems.filter(item => item.status === AuctionStatus.ENDED).length,
-  });
-
-  const statusCounts = getStatusCounts();
+    [AuctionStatus.ACTIVE]: auctionItems.filter(item => item.status === AuctionStatus.ACTIVE).length,
+    [AuctionStatus.UPCOMING]: auctionItems.filter(item => item.status === AuctionStatus.UPCOMING).length,
+    [AuctionStatus.ENDED]: auctionItems.filter(item => item.status === AuctionStatus.ENDED).length,
+    [AuctionStatus.CANCELLED]: auctionItems.filter(item => item.status === AuctionStatus.CANCELLED).length,
+  };
 
   return (
     <div className="space-y-5">
@@ -205,42 +215,17 @@ const AuctionPage = () => {
         <div className="flex items-center gap-3">
           <Tabs.ListContainer className="min-w-0 flex-1">
             <Tabs.List aria-label={t('statusTabs')}>
-              <Tabs.Tab id="all">
-                <div className="flex items-center gap-2">
-                  <span>{t('all')}</span>
-                  <Chip size="sm" variant="secondary">
-                    {statusCounts.all}
-                  </Chip>
-                </div>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id={AuctionStatus.ACTIVE}>
-                <div className="flex items-center gap-2">
-                  <span>{t('active')}</span>
-                  <Chip size="sm" color="success" variant="secondary">
-                    {statusCounts.active}
-                  </Chip>
-                </div>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id={AuctionStatus.UPCOMING}>
-                <div className="flex items-center gap-2">
-                  <span>{t('upcoming')}</span>
-                  <Chip size="sm" color="warning" variant="secondary">
-                    {statusCounts.upcoming}
-                  </Chip>
-                </div>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id={AuctionStatus.ENDED}>
-                <div className="flex items-center gap-2">
-                  <span>{t('ended')}</span>
-                  <Chip size="sm" variant="secondary">
-                    {statusCounts.ended}
-                  </Chip>
-                </div>
-                <Tabs.Indicator />
-              </Tabs.Tab>
+              {AUCTION_TABS.map(tab => (
+                <Tabs.Tab key={tab} id={tab}>
+                  <div className="flex items-center gap-2">
+                    <span>{t(tab)}</span>
+                    <Chip size="sm" color={tab === 'all' ? undefined : auctionStatusColor[tab]} variant="secondary">
+                      {statusCounts[tab]}
+                    </Chip>
+                  </div>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
             </Tabs.List>
           </Tabs.ListContainer>
           <Button className="shrink-0 max-sm:size-11 max-sm:px-0" aria-label={t('createAuction')} onPress={createModalState.open}>
@@ -249,142 +234,37 @@ const AuctionPage = () => {
             <span className="max-sm:hidden">{t('createAuction')}</span>
           </Button>
         </div>
-        <Tabs.Panel id="all" className="pt-4">
-          <AsyncContent
-            state={auctionsState.state}
-            onRetry={reload}
-            skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
-          >
-          {filteredItems.length === 0 ? (
-            <Card className="border border-divider shadow-none">
-              <Card.Content className="text-center py-12">
-                <Icon
-                  icon="solar:clock-circle-linear"
-                  width={40}
-                  className="mx-auto mb-3 text-disabled"
-                />
-                <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
-                <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
-              </Card.Content>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredItems.map(item => (
-                <AuctionItemCard
-                  key={item.id}
-                  item={item}
-                  onPlaceBid={handlePlaceBid}
-                  isLoading={pendingBidIds.has(item.id)}
-                  userBalance={userBalance}
-                  
-                />
-              ))}
-            </div>
-          )}
-          </AsyncContent>
-        </Tabs.Panel>
-        <Tabs.Panel id={AuctionStatus.ACTIVE} className="pt-4">
-          <AsyncContent
-            state={auctionsState.state}
-            onRetry={reload}
-            skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
-          >
-          {filteredItems.length === 0 ? (
-            <Card className="border border-divider shadow-none">
-              <Card.Content className="text-center py-12">
-                <Icon
-                  icon="solar:clock-circle-linear"
-                  width={40}
-                  className="mx-auto mb-3 text-disabled"
-                />
-                <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
-                <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
-              </Card.Content>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredItems.map(item => (
-                <AuctionItemCard
-                  key={item.id}
-                  item={item}
-                  onPlaceBid={handlePlaceBid}
-                  isLoading={pendingBidIds.has(item.id)}
-                  userBalance={userBalance}
-                  
-                />
-              ))}
-            </div>
-          )}
-          </AsyncContent>
-        </Tabs.Panel>
-        <Tabs.Panel id={AuctionStatus.UPCOMING} className="pt-4">
-          <AsyncContent
-            state={auctionsState.state}
-            onRetry={reload}
-            skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
-          >
-          {filteredItems.length === 0 ? (
-            <Card className="border border-divider shadow-none">
-              <Card.Content className="text-center py-12">
-                <Icon
-                  icon="solar:clock-circle-linear"
-                  width={40}
-                  className="mx-auto mb-3 text-disabled"
-                />
-                <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
-                <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
-              </Card.Content>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredItems.map(item => (
-                <AuctionItemCard
-                  key={item.id}
-                  item={item}
-                  onPlaceBid={handlePlaceBid}
-                  isLoading={pendingBidIds.has(item.id)}
-                  userBalance={userBalance}
-                  
-                />
-              ))}
-            </div>
-          )}
-          </AsyncContent>
-        </Tabs.Panel>
-        <Tabs.Panel id={AuctionStatus.ENDED} className="pt-4">
-          <AsyncContent
-            state={auctionsState.state}
-            onRetry={reload}
-            skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
-          >
-          {filteredItems.length === 0 ? (
-            <Card className="border border-divider shadow-none">
-              <Card.Content className="text-center py-12">
-                <Icon
-                  icon="solar:clock-circle-linear"
-                  width={40}
-                  className="mx-auto mb-3 text-disabled"
-                />
-                <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
-                <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
-              </Card.Content>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredItems.map(item => (
-                <AuctionItemCard
-                  key={item.id}
-                  item={item}
-                  onPlaceBid={handlePlaceBid}
-                  isLoading={pendingBidIds.has(item.id)}
-                  userBalance={userBalance}
-                  
-                />
-              ))}
-            </div>
-          )}
-          </AsyncContent>
-        </Tabs.Panel>
+        {AUCTION_TABS.map(tab => (
+          <Tabs.Panel key={tab} id={tab} className="pt-4">
+            <AsyncContent
+              state={auctionsState.state}
+              onRetry={reload}
+              skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
+            >
+              {filteredItems.length === 0 ? (
+                <Card className="border border-divider shadow-none">
+                  <Card.Content className="text-center py-12">
+                    <Icon icon="solar:clock-circle-linear" width={40} className="mx-auto mb-3 text-disabled" />
+                    <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
+                    <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
+                  </Card.Content>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredItems.map(item => (
+                    <AuctionItemCard
+                      key={item.id}
+                      item={item}
+                      onPlaceBid={handlePlaceBid}
+                      isLoading={pendingBidIds.has(item.id)}
+                      userBalance={userBalance}
+                    />
+                  ))}
+                </div>
+              )}
+            </AsyncContent>
+          </Tabs.Panel>
+        ))}
       </Tabs>
 
     </div>

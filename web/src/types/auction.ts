@@ -29,8 +29,10 @@ export interface AuctionItem {
   };
   bidHistory: Bid[];
   isBlind?: boolean;
+  sourceType?: 'backpack' | 'bank';
   createdAt: string;
   updatedAt: string;
+  cancelledAt?: string;
 }
 
 export enum AuctionStatus {
@@ -57,6 +59,19 @@ export interface Bid {
 export interface PlaceBidRequest {
   auctionItemId: string;
   amount: number;
+}
+
+export interface UpdateAuctionRequest {
+  item?: {
+    name: string;
+    description: string;
+    category: ItemCategory;
+    rarity: ItemRarity;
+  };
+  startingBid?: number;
+  minBidIncrement?: number;
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface CreateAuctionRequest {

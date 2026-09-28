@@ -9,6 +9,9 @@ import type { AuctionItem } from '@/types/auction';
 
 const QUICK_STEPS = [1, 5] as const;
 
+export const minimumBidFor = (item: AuctionItem) =>
+  roundGold(item.currentBidder ? item.currentBid + item.minBidIncrement : Math.max(item.startingBid, item.minBidIncrement));
+
 export const bidCost = (item: AuctionItem, amount: number, userId: string | undefined) => {
   const isRaisingOwnBid = !!userId && item.currentBidder?.id === userId;
   const cost = Number.isFinite(amount) ? roundGold(isRaisingOwnBid ? amount - item.currentBid : amount) : 0;

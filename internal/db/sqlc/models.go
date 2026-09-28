@@ -53,6 +53,7 @@ type Auction struct {
 	SourceType      pgtype.Text
 	SettledAt       pgtype.Timestamptz
 	SourceItemID    *uuid.UUID
+	CancelledAt     pgtype.Timestamptz
 }
 
 type BackpackItem struct {
@@ -286,6 +287,7 @@ type Lottery struct {
 	Prizes            []byte
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+	CancelledAt       pgtype.Timestamptz
 }
 
 type LotteryTicket struct {

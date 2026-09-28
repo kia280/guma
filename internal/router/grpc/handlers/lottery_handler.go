@@ -10,8 +10,8 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	"github.com/kia280/guma/internal/session"
 	lotterysvc "github.com/kia280/guma/internal/services/lottery"
+	"github.com/kia280/guma/internal/session"
 )
 
 // LotteryHandler is a thin gRPC adapter over the lottery service.
@@ -134,19 +134,57 @@ func (h *LotteryHandler) UpdateLottery(ctx context.Context, req *gumav1.UpdateLo
 	if req.GuildId == "" || req.LotteryId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and lottery_id are required")
 	}
-	if req.DrawDate == "" {
-		return nil, status.Error(codes.InvalidArgument, "draw_date is required")
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	l, err := h.svc.Update(ctx, lotterysvc.UpdateParams{
+		GuildID:           req.GuildId,
+		LotteryID:         req.LotteryId,
+		UpdatedBy:         userID,
+		Title:             req.Title,
+		Description:       req.Description,
+		DrawDate:          req.DrawDate,
+		TicketPrice:       req.TicketPrice,
+		MaxTickets:        req.MaxTickets,
+		MaxTicketsPerUser: req.MaxTicketsPerUser,
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.UpdateLotteryResponse{Lottery: lotteryToProto(l)}, nil
+}
+
+func (h *LotteryHandler) CancelLottery(ctx context.Context, req *gumav1.CancelLotteryRequest) (*gumav1.CancelLotteryResponse, error) {
+	if req.GuildId == "" || req.LotteryId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and lottery_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	l, err := h.svc.UpdateDrawDate(ctx, req.GuildId, req.LotteryId, userID, req.DrawDate)
+	l, err := h.svc.Cancel(ctx, req.GuildId, req.LotteryId, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.UpdateLotteryResponse{Lottery: lotteryToProto(l)}, nil
+	return &gumav1.CancelLotteryResponse{Lottery: lotteryToProto(l)}, nil
+}
+
+func (h *LotteryHandler) DeleteLottery(ctx context.Context, req *gumav1.DeleteLotteryRequest) (*gumav1.DeleteLotteryResponse, error) {
+	if req.GuildId == "" || req.LotteryId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and lottery_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	if err := h.svc.Delete(ctx, req.GuildId, req.LotteryId, userID); err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.DeleteLotteryResponse{Success: true}, nil
 }
 
 func (h *LotteryHandler) DrawLottery(ctx context.Context, req *gumav1.DrawLotteryRequest) (*gumav1.DrawLotteryResponse, error) {
@@ -203,7 +241,7 @@ func lotteryToProto(l *lotterysvc.Lottery) *gumav1.Lottery {
 	for i, w := range l.Winners {
 		winners[i] = lotteryWinnerToProto(w)
 	}
-	return &gumav1.Lottery{
+	proto := &gumav1.Lottery{
 		Id:                l.ID,
 		GuildId:           l.GuildID,
 		CreatedBy:         l.CreatedBy,
@@ -220,6 +258,10 @@ func lotteryToProto(l *lotterysvc.Lottery) *gumav1.Lottery {
 		CreatedAt:         timestamppb.New(l.CreatedAt),
 		UpdatedAt:         timestamppb.New(l.UpdatedAt),
 	}
+	if l.CancelledAt != nil {
+		proto.CancelledAt = timestamppb.New(*l.CancelledAt)
+	}
+	return proto
 }
 
 func lotteryPrizeToProto(p lotterysvc.LotteryPrize) *gumav1.LotteryPrize {

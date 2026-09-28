@@ -793,6 +793,82 @@
         "tags": [
           "AuctionService"
         ]
+      },
+      "delete": {
+        "operationId": "AuctionService_DeleteAuction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteAuctionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "auctionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AuctionService"
+        ]
+      },
+      "patch": {
+        "operationId": "AuctionService_UpdateAuction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateAuctionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "auctionId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuctionServiceUpdateAuctionBody"
+            }
+          }
+        ],
+        "tags": [
+          "AuctionService"
+        ]
       }
     },
     "/v1/guilds/{guildId}/auctions/{auctionId}/bids": {
@@ -2975,7 +3051,7 @@
           },
           {
             "name": "status",
-            "description": "\"active\" | \"upcoming\" | \"ended\" | \"\" (all)",
+            "description": "\"active\" | \"upcoming\" | \"ended\" | \"cancelled\" | \"\" (all)",
             "in": "query",
             "required": false,
             "type": "string"
@@ -3070,6 +3146,40 @@
           "LotteryService"
         ]
       },
+      "delete": {
+        "operationId": "LotteryService_DeleteLottery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteLotteryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lotteryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "LotteryService"
+        ]
+      },
       "patch": {
         "summary": "Update a lottery that has not been drawn yet (admin action)",
         "operationId": "LotteryService_UpdateLottery",
@@ -3106,6 +3216,50 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/LotteryServiceUpdateLotteryBody"
+            }
+          }
+        ],
+        "tags": [
+          "LotteryService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/lotteries/{lotteryId}/cancel": {
+      "post": {
+        "operationId": "LotteryService_CancelLottery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelLotteryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lotteryId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LotteryServiceCancelLotteryBody"
             }
           }
         ],
@@ -4345,6 +4499,33 @@
         }
       }
     },
+    "AuctionServiceUpdateAuctionBody": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1Item"
+        },
+        "startingBid": {
+          "type": "string",
+          "format": "int64"
+        },
+        "minBidIncrement": {
+          "type": "string",
+          "format": "int64"
+        },
+        "isBlind": {
+          "type": "boolean"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "BankServiceContributeFundsBody": {
       "type": "object",
       "properties": {
@@ -4677,6 +4858,9 @@
         }
       }
     },
+    "LotteryServiceCancelLotteryBody": {
+      "type": "object"
+    },
     "LotteryServiceCreateLotteryBody": {
       "type": "object",
       "properties": {
@@ -4731,6 +4915,24 @@
         "drawDate": {
           "type": "string",
           "title": "ISO 8601 datetime; must be in the future"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ticketPrice": {
+          "type": "string",
+          "format": "int64"
+        },
+        "maxTickets": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxTicketsPerUser": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -5059,6 +5261,13 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "sourceType": {
+          "type": "string"
+        },
+        "cancelledAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -5269,6 +5478,14 @@
       "properties": {
         "checkin": {
           "$ref": "#/definitions/v1CheckIn"
+        }
+      }
+    },
+    "v1CancelLotteryResponse": {
+      "type": "object",
+      "properties": {
+        "lottery": {
+          "$ref": "#/definitions/v1Lottery"
         }
       }
     },
@@ -5514,6 +5731,14 @@
     "v1DeleteAnnouncementDraftResponse": {
       "type": "object"
     },
+    "v1DeleteAuctionResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1DeleteCheckInResponse": {
       "type": "object",
       "properties": {
@@ -5555,6 +5780,14 @@
       }
     },
     "v1DeleteItemTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteLotteryResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -6797,6 +7030,10 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "cancelledAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -7380,6 +7617,14 @@
       "properties": {
         "announcement": {
           "$ref": "#/definitions/v1Announcement"
+        }
+      }
+    },
+    "v1UpdateAuctionResponse": {
+      "type": "object",
+      "properties": {
+        "auction": {
+          "$ref": "#/definitions/v1AuctionItem"
         }
       }
     },
