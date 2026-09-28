@@ -3,6 +3,7 @@ import {Noto_Sans_TC} from "next/font/google";
 import Script from "next/script";
 import {NextIntlClientProvider} from 'next-intl';
 import {getLocale} from 'next-intl/server';
+import {BrowserTimeZoneProvider} from "@/i18n/BrowserTimeZoneProvider";
 import {HTML_LANG, isLocale, DEFAULT_LOCALE} from "@/i18n/locales";
 import {fontSizeInitScript} from "@/lib/font-size";
 import {Providers} from "./providers";
@@ -44,7 +45,9 @@ export default async function RootLayout({
       </head>
       <body className={font.className}>
         <NextIntlClientProvider>
-          <Providers>{children}</Providers>
+          <BrowserTimeZoneProvider>
+            <Providers>{children}</Providers>
+          </BrowserTimeZoneProvider>
         </NextIntlClientProvider>
       </body>
     </html>

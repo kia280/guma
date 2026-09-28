@@ -580,7 +580,7 @@ export const toTransaction = (raw: ProtoTransaction): Transaction => {
     kind: raw.type?.toUpperCase(),
     amount: fromMinorUnits(raw.amount),
     recipient: raw.recipient,
-    date: ts(raw.created_at).slice(0, 10),
+    date: ts(raw.created_at),
     status: (raw.status?.toLowerCase() as Transaction['status']) || 'completed',
     description: raw.description,
     referenceType: raw.reference_type || undefined,
@@ -812,7 +812,7 @@ export const toGuildContributions = (
           amount: b.amount > 0 ? b.amount : undefined,
           member: b.username,
           memberAvatar: b.avatarUrl,
-          date: b.createdAt.slice(0, 10),
+          date: b.createdAt,
           status: 'completed',
           note: b.note,
           checkinId: b.checkinId,
@@ -826,7 +826,7 @@ export const toGuildContributions = (
           href: b.kind === 'checkin_gold_payout' || b.kind === 'checkin_gold_retracted' ? checkinHref(b) : contributionReferenceHref(b),
           member: b.username,
           memberAvatar: b.avatarUrl,
-          date: b.createdAt.slice(0, 10),
+          date: b.createdAt,
           status: 'completed',
           note: b.note,
         },
@@ -837,7 +837,7 @@ export const toGuildContributions = (
     amount: f.amount,
     member: f.requesterName,
     memberAvatar: f.requesterAvatarUrl,
-    date: f.createdAt.slice(0, 10),
+    date: f.createdAt,
     status: f.status === 'pending' ? 'pending' : f.status,
     note: f.reason,
   }));
@@ -847,11 +847,11 @@ export const toGuildContributions = (
     itemName: req.itemName,
     member: req.requesterName,
     memberAvatar: req.requesterAvatarUrl,
-    date: req.createdAt.slice(0, 10),
+    date: req.createdAt,
     status: req.status,
     note: req.reason,
   }));
-  return [...c, ...r, ...i].sort((a, b) => (a.date < b.date ? 1 : -1));
+  return [...c, ...r, ...i].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 };
 
 // ─── Guild Event (calendar) ─────────────────────────────────────────────────
@@ -1003,18 +1003,12 @@ export const toAdminAnnouncement = (raw: ProtoAnnouncement): AdminAnnouncement =
   publishedAt: raw.published_at ? ts(raw.published_at) : undefined,
 });
 
-const formatAnnouncementDate = (iso: string): string => {
-  const date = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
-};
-
 export const toAnnouncement = (raw: ProtoAnnouncement): Announcement => ({
   id: raw.id,
   title: raw.title ?? '',
   content: raw.content ?? '',
   pinned: raw.pinned ?? false,
-  date: formatAnnouncementDate(ts(raw.published_at ?? raw.created_at)),
+  date: ts(raw.published_at ?? raw.created_at),
 });
 
 // ─── Preferences ─────────────────────────────────────────────────────────────
