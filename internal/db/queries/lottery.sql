@@ -72,9 +72,9 @@ FROM lotteries WHERE id = $1 AND guild_id = $2 FOR UPDATE;
 SELECT id, user_id, ticket_number FROM lottery_tickets WHERE lottery_id = $1;
 
 -- name: GetUserUsernameAndAvatar :one
-SELECT COALESCE(notification_user_name(id), '')::text AS username,
-       COALESCE(avatar_url, '')                        AS avatar_url
-FROM users WHERE id = $1;
+SELECT COALESCE(member_display_name(sqlc.arg(guild_id)::uuid, id), '')::text AS username,
+       COALESCE(avatar_url, '')                                               AS avatar_url
+FROM users WHERE id = sqlc.arg(user_id);
 
 -- name: InsertLotteryWinner :one
 INSERT INTO lottery_winners (lottery_id, user_id, rank, prize_amount, prize_description, ticket_number)
@@ -86,12 +86,13 @@ UPDATE lotteries SET status = 'ended', updated_at = NOW() WHERE id = $1;
 
 -- name: ListLotteryWinners :many
 SELECT lw.id, lw.lottery_id, lw.user_id,
-       COALESCE(notification_user_name(lw.user_id), '')::text AS username,
+       COALESCE(member_display_name(l.guild_id, lw.user_id), '')::text AS username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        lw.rank, lw.prize_amount,
        COALESCE(lw.prize_description, '') AS prize_description,
        lw.ticket_number
 FROM lottery_winners lw
+JOIN lotteries l ON l.id = lw.lottery_id
 LEFT JOIN users u ON u.id = lw.user_id
 WHERE lw.lottery_id = $1
 ORDER BY lw.rank ASC;

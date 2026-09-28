@@ -41,7 +41,7 @@ INSERT INTO guild_events (
     $12::jsonb
 )
 RETURNING guild_events.id, guild_events.guild_id, guild_events.created_by,
-          COALESCE((SELECT COALESCE(u.display_name, u.username) FROM users u WHERE u.id = guild_events.created_by), '')::text AS created_by_name,
+          COALESCE(member_display_name(guild_events.guild_id, guild_events.created_by), '')::text AS created_by_name,
           guild_events.title,
           COALESCE(guild_events.description, '') AS description,
           guild_events.type,
@@ -147,7 +147,7 @@ func (q *Queries) DeleteEvent(ctx context.Context, arg DeleteEventParams) (int64
 
 const getEvent = `-- name: GetEvent :one
 SELECT e.id, e.guild_id, e.created_by,
-       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       COALESCE(member_display_name(e.guild_id, e.created_by), '')::text AS created_by_name,
        e.title,
        COALESCE(e.description, '') AS description,
        e.type,
@@ -216,7 +216,7 @@ func (q *Queries) GetEvent(ctx context.Context, arg GetEventParams) (GetEventRow
 
 const listEvents = `-- name: ListEvents :many
 SELECT e.id, e.guild_id, e.created_by,
-       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       COALESCE(member_display_name(e.guild_id, e.created_by), '')::text AS created_by_name,
        e.title,
        COALESCE(e.description, '') AS description,
        e.type,
@@ -301,7 +301,7 @@ func (q *Queries) ListEvents(ctx context.Context, arg ListEventsParams) ([]ListE
 
 const listEventsByRange = `-- name: ListEventsByRange :many
 SELECT e.id, e.guild_id, e.created_by,
-       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       COALESCE(member_display_name(e.guild_id, e.created_by), '')::text AS created_by_name,
        e.title,
        COALESCE(e.description, '') AS description,
        e.type,
@@ -387,7 +387,7 @@ func (q *Queries) ListEventsByRange(ctx context.Context, arg ListEventsByRangePa
 
 const listUpcomingEvents = `-- name: ListUpcomingEvents :many
 SELECT e.id, e.guild_id, e.created_by,
-       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       COALESCE(member_display_name(e.guild_id, e.created_by), '')::text AS created_by_name,
        e.title,
        COALESCE(e.description, '') AS description,
        e.type,
@@ -484,7 +484,7 @@ UPDATE guild_events SET
     updated_at        = NOW()
 WHERE guild_events.id = $11 AND guild_events.guild_id = $12
 RETURNING guild_events.id, guild_events.guild_id, guild_events.created_by,
-          COALESCE((SELECT COALESCE(u.display_name, u.username) FROM users u WHERE u.id = guild_events.created_by), '')::text AS created_by_name,
+          COALESCE(member_display_name(guild_events.guild_id, guild_events.created_by), '')::text AS created_by_name,
           guild_events.title,
           COALESCE(guild_events.description, '') AS description,
           guild_events.type,

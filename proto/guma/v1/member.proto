@@ -190,6 +190,7 @@ message Member {
   google.protobuf.Timestamp last_active = 8;
   string email = 9;
   string avatar_url = 10;
+  string discord_username = 11;
 }
 
 message Invitation {

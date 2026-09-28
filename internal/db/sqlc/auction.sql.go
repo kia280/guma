@@ -169,9 +169,9 @@ func (q *Queries) DeleteCancelledAuction(ctx context.Context, arg DeleteCancelle
 
 const getAuction = `-- name: GetAuction :one
 SELECT auctions.id, auctions.guild_id, auctions.seller_id, auctions.item, auctions.starting_bid, auctions.current_bid, auctions.current_bidder_id, auctions.min_bid_increment, auctions.start_time, auctions.end_time, auctions.status, auctions.is_blind, auctions.created_at, auctions.updated_at, auctions.source_type, auctions.settled_at, auctions.source_item_id, auctions.cancelled_at,
-       COALESCE(notification_user_name(auctions.seller_id), '')::text          AS seller_name,
+       COALESCE(member_display_name(auctions.guild_id, auctions.seller_id), '')::text          AS seller_name,
        COALESCE(seller.avatar_url, '')::text                                   AS seller_avatar_url,
-       COALESCE(notification_user_name(auctions.current_bidder_id), '')::text AS current_bidder_name,
+       COALESCE(member_display_name(auctions.guild_id, auctions.current_bidder_id), '')::text AS current_bidder_name,
        COALESCE(bidder.avatar_url, '')::text                                   AS current_bidder_avatar_url
 FROM auctions
 LEFT JOIN users seller ON seller.id = auctions.seller_id
@@ -344,9 +344,9 @@ func (q *Queries) InsertBid(ctx context.Context, arg InsertBidParams) (InsertBid
 
 const listAuctions = `-- name: ListAuctions :many
 SELECT auctions.id, auctions.guild_id, auctions.seller_id, auctions.item, auctions.starting_bid, auctions.current_bid, auctions.current_bidder_id, auctions.min_bid_increment, auctions.start_time, auctions.end_time, auctions.status, auctions.is_blind, auctions.created_at, auctions.updated_at, auctions.source_type, auctions.settled_at, auctions.source_item_id, auctions.cancelled_at,
-       COALESCE(notification_user_name(auctions.seller_id), '')::text          AS seller_name,
+       COALESCE(member_display_name(auctions.guild_id, auctions.seller_id), '')::text          AS seller_name,
        COALESCE(seller.avatar_url, '')::text                                   AS seller_avatar_url,
-       COALESCE(notification_user_name(auctions.current_bidder_id), '')::text AS current_bidder_name,
+       COALESCE(member_display_name(auctions.guild_id, auctions.current_bidder_id), '')::text AS current_bidder_name,
        COALESCE(bidder.avatar_url, '')::text                                   AS current_bidder_avatar_url
 FROM auctions
 LEFT JOIN users seller ON seller.id = auctions.seller_id
@@ -431,9 +431,10 @@ func (q *Queries) ListAuctions(ctx context.Context, arg ListAuctionsParams) ([]L
 
 const listBids = `-- name: ListBids :many
 SELECT b.id, b.auction_id, b.bidder_id, b.amount, b.is_winning, b.placed_at,
-       COALESCE(notification_user_name(b.bidder_id), '')::text AS bidder_name,
-       COALESCE(u.avatar_url, '')::text                       AS bidder_avatar_url
+       COALESCE(member_display_name(a.guild_id, b.bidder_id), '')::text AS bidder_name,
+       COALESCE(u.avatar_url, '')::text                                AS bidder_avatar_url
 FROM bids b
+JOIN auctions a ON a.id = b.auction_id
 LEFT JOIN users u ON u.id = b.bidder_id
 WHERE b.auction_id = $1
 ORDER BY b.placed_at DESC

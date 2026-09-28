@@ -1,8 +1,8 @@
 -- name: ListAuctions :many
 SELECT sqlc.embed(auctions),
-       COALESCE(notification_user_name(auctions.seller_id), '')::text          AS seller_name,
+       COALESCE(member_display_name(auctions.guild_id, auctions.seller_id), '')::text          AS seller_name,
        COALESCE(seller.avatar_url, '')::text                                   AS seller_avatar_url,
-       COALESCE(notification_user_name(auctions.current_bidder_id), '')::text AS current_bidder_name,
+       COALESCE(member_display_name(auctions.guild_id, auctions.current_bidder_id), '')::text AS current_bidder_name,
        COALESCE(bidder.avatar_url, '')::text                                   AS current_bidder_avatar_url
 FROM auctions
 LEFT JOIN users seller ON seller.id = auctions.seller_id
@@ -25,9 +25,9 @@ WHERE guild_id = $1
 
 -- name: GetAuction :one
 SELECT sqlc.embed(auctions),
-       COALESCE(notification_user_name(auctions.seller_id), '')::text          AS seller_name,
+       COALESCE(member_display_name(auctions.guild_id, auctions.seller_id), '')::text          AS seller_name,
        COALESCE(seller.avatar_url, '')::text                                   AS seller_avatar_url,
-       COALESCE(notification_user_name(auctions.current_bidder_id), '')::text AS current_bidder_name,
+       COALESCE(member_display_name(auctions.guild_id, auctions.current_bidder_id), '')::text AS current_bidder_name,
        COALESCE(bidder.avatar_url, '')::text                                   AS current_bidder_avatar_url
 FROM auctions
 LEFT JOIN users seller ON seller.id = auctions.seller_id
@@ -98,9 +98,10 @@ SELECT EXISTS(SELECT 1 FROM auctions WHERE id = $1 AND guild_id = $2);
 
 -- name: ListBids :many
 SELECT b.id, b.auction_id, b.bidder_id, b.amount, b.is_winning, b.placed_at,
-       COALESCE(notification_user_name(b.bidder_id), '')::text AS bidder_name,
-       COALESCE(u.avatar_url, '')::text                       AS bidder_avatar_url
+       COALESCE(member_display_name(a.guild_id, b.bidder_id), '')::text AS bidder_name,
+       COALESCE(u.avatar_url, '')::text                                AS bidder_avatar_url
 FROM bids b
+JOIN auctions a ON a.id = b.auction_id
 LEFT JOIN users u ON u.id = b.bidder_id
 WHERE b.auction_id = $1
 ORDER BY b.placed_at DESC

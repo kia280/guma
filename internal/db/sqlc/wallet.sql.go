@@ -276,7 +276,7 @@ SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
        bi.delivery_requested_at,
        COALESCE(
            CASE bi.source
-               WHEN 'transfer' THEN (SELECT COALESCE(NULLIF(u.display_name, ''), u.username) FROM users u WHERE u.id = bi.source_id)
+               WHEN 'transfer' THEN member_display_name(bi.guild_id, bi.source_id)
                WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
                WHEN 'checkin'  THEN (SELECT c.title FROM checkins c WHERE c.id = bi.source_id)
            END,
@@ -353,7 +353,7 @@ func (q *Queries) ListBackpackItems(ctx context.Context, arg ListBackpackItemsPa
 const listPendingDeliveries = `-- name: ListPendingDeliveries :many
 SELECT bi.id, bi.owner_id, bi.guild_id, bi.item, bi.source, bi.source_id,
        COALESCE(bi.note, '') AS note, bi.acquired_at, bi.delivery_requested_at,
-       COALESCE(notification_user_name(bi.owner_id), '')::text AS owner_name
+       COALESCE(member_display_name(bi.guild_id, bi.owner_id), '')::text AS owner_name
 FROM backpack_items bi
 WHERE bi.guild_id = $1 AND bi.delivery_requested_at IS NOT NULL
 ORDER BY bi.delivery_requested_at, bi.id

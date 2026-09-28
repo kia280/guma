@@ -7187,6 +7187,9 @@
         },
         "avatarUrl": {
           "type": "string"
+        },
+        "discordUsername": {
+          "type": "string"
         }
       },
       "title": "Data structures"

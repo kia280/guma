@@ -221,12 +221,16 @@ func (q *Queries) GetGuildBank(ctx context.Context, guildID uuid.UUID) (GuildBan
 }
 
 const getUserDisplayName = `-- name: GetUserDisplayName :one
-SELECT COALESCE(display_name, username, '')::text AS display_name
-FROM users WHERE id = $1
+SELECT COALESCE(member_display_name($1::uuid, $2::uuid), '')::text AS display_name
 `
 
-func (q *Queries) GetUserDisplayName(ctx context.Context, id uuid.UUID) (string, error) {
-	row := q.db.QueryRow(ctx, getUserDisplayName, id)
+type GetUserDisplayNameParams struct {
+	GuildID uuid.UUID
+	UserID  uuid.UUID
+}
+
+func (q *Queries) GetUserDisplayName(ctx context.Context, arg GetUserDisplayNameParams) (string, error) {
+	row := q.db.QueryRow(ctx, getUserDisplayName, arg.GuildID, arg.UserID)
 	var display_name string
 	err := row.Scan(&display_name)
 	return display_name, err
@@ -469,7 +473,8 @@ func (q *Queries) InsertItemRequest(ctx context.Context, arg InsertItemRequestPa
 }
 
 const listBankContributions = `-- name: ListBankContributions :many
-SELECT bc.id, bc.guild_id, bc.user_id, bc.username,
+SELECT bc.id, bc.guild_id, bc.user_id,
+       COALESCE(NULLIF(member_display_name(bc.guild_id, bc.user_id), ''), bc.username)::text AS username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        bc.amount,
        COALESCE(bc.note, '')      AS note,
@@ -540,7 +545,9 @@ func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContrib
 }
 
 const listBankItems = `-- name: ListBankItems :many
-SELECT bi.id, bi.guild_id, bi.donor_id, bi.donor_name, bi.item, bi.quantity,
+SELECT bi.id, bi.guild_id, bi.donor_id,
+       COALESCE(NULLIF(member_display_name(bi.guild_id, bi.donor_id), ''), bi.donor_name)::text AS donor_name,
+       bi.item, bi.quantity,
        COALESCE(bi.note, '') AS note,
        bi.donated_at,
        bi.checkin_id,
@@ -633,7 +640,8 @@ func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([
 }
 
 const listFundRequests = `-- name: ListFundRequests :many
-SELECT fr.id, fr.guild_id, fr.requester_id, fr.requester_name,
+SELECT fr.id, fr.guild_id, fr.requester_id,
+       COALESCE(NULLIF(member_display_name(fr.guild_id, fr.requester_id), ''), fr.requester_name)::text AS requester_name,
        COALESCE(u.avatar_url, '')   AS requester_avatar_url,
        fr.amount,
        COALESCE(fr.reason, '')      AS reason,
@@ -710,7 +718,8 @@ func (q *Queries) ListFundRequests(ctx context.Context, arg ListFundRequestsPara
 }
 
 const listItemRequests = `-- name: ListItemRequests :many
-SELECT ir.id, ir.guild_id, ir.bank_item_id, ir.requester_id, ir.requester_name,
+SELECT ir.id, ir.guild_id, ir.bank_item_id, ir.requester_id,
+       COALESCE(NULLIF(member_display_name(ir.guild_id, ir.requester_id), ''), ir.requester_name)::text AS requester_name,
        COALESCE(u.avatar_url, '')   AS requester_avatar_url,
        COALESCE(ir.reason, '')      AS reason,
        ir.status,
@@ -789,13 +798,13 @@ func (q *Queries) ListItemRequests(ctx context.Context, arg ListItemRequestsPara
 
 const listTopBankContributors = `-- name: ListTopBankContributors :many
 SELECT bc.user_id,
-       bc.username,
+       COALESCE(NULLIF(member_display_name(bc.guild_id, bc.user_id), ''), MAX(bc.username))::text AS username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        SUM(bc.amount)::bigint     AS total
 FROM bank_contributions bc
 LEFT JOIN users u ON u.id = bc.user_id
 WHERE bc.guild_id = $1 AND bc.kind = 'gold'
-GROUP BY bc.user_id, bc.username, u.avatar_url
+GROUP BY bc.guild_id, bc.user_id, u.avatar_url
 ORDER BY total DESC
 LIMIT 5
 `

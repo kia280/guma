@@ -132,8 +132,9 @@ SELECT role FROM members WHERE guild_id = $1 AND user_id = $2;
 SELECT id, name FROM guilds ORDER BY created_at ASC LIMIT 1;
 
 -- name: ListGuildMemberUsers :many
-SELECT u.id, u.email, u.username,
-       COALESCE(u.display_name, '') AS display_name,
+SELECT u.id, u.email,
+       COALESCE(u.username, '')::text AS username,
+       m.display_name,
        COALESCE(u.avatar_url, '')   AS avatar_url,
        u.created_at,
        m.role
@@ -151,9 +152,9 @@ LIMIT sqlc.arg(max_rows)::int;
 
 -- name: ListGuildMembers :many
 SELECT m.id, m.user_id, m.guild_id,
-       COALESCE(NULLIF(m.display_name, ''), NULLIF(u.display_name, ''), u.username)::text AS display_name,
+       m.display_name,
        m.role, m.profile, m.joined_at, m.last_active,
-       u.email,
+       COALESCE(u.discord_username, '')::text AS discord_username,
        COALESCE(u.avatar_url, '') AS avatar_url
 FROM members m
 JOIN users u ON u.id = m.user_id

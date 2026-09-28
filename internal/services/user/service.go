@@ -2,10 +2,11 @@ package user
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -26,7 +27,6 @@ import (
 type User struct {
 	ID             string
 	Email          string
-	Username       string
 	DisplayName    string
 	Bio            string
 	AvatarURL      string
@@ -51,20 +51,15 @@ type LinkedAccount struct {
 // UpdateParams holds the fields for UpdateMe.
 type UpdateParams struct {
 	DisplayName string
-	Username    string
 	Bio         string
 	AvatarURL   string
 }
 
 const (
-	MaxDisplayNameLength = 50
-	MinUsernameLength    = 3
-	MaxUsernameLength    = 32
+	MaxDisplayNameLength = 32
 	MaxBioLength         = 500
 	uniqueViolation      = "23505"
 )
-
-var usernamePattern = regexp.MustCompile(`^[\p{L}\p{N}][\p{L}\p{M}\p{N}._-]*$`)
 
 // Stats holds aggregate stats for a user.
 type Stats struct {
@@ -179,8 +174,7 @@ func (s *Service) assembleUser(ctx context.Context, id uuid.UUID, row db.GetUser
 	u := &User{
 		ID:               id.String(),
 		Email:            row.Email,
-		Username:         row.Username,
-		DisplayName:      row.DisplayName,
+		DisplayName:      current.displayNameOr(row.DisplayName),
 		Bio:              row.Bio,
 		AvatarURL:        row.AvatarUrl,
 		GuildIDs:         guildIDs,
@@ -219,11 +213,11 @@ func (s *Service) loadProfile(ctx context.Context, id uuid.UUID, kratosCookie st
 	}
 
 	row, err := s.q.UpsertUserFromKratos(ctx, db.UpsertUserFromKratosParams{
-		ID:          id,
-		Email:       ident.email,
-		Username:    defaultUsername(id, ident.username),
-		DisplayName: ident.username,
-		AvatarUrl:   ident.avatarURL,
+		ID:              id,
+		Email:           ident.email,
+		DisplayName:     defaultDisplayName(ident),
+		AvatarUrl:       ident.avatarURL,
+		DiscordUsername: ident.discordUsername,
 	})
 	if err != nil {
 		return db.GetUserByIDRow{}, nil, fmt.Errorf("%w: upsert user: %v", errs.ErrInternal, err)
@@ -231,11 +225,23 @@ func (s *Service) loadProfile(ctx context.Context, id uuid.UUID, kratosCookie st
 	return db.GetUserByIDRow(row), &ident, nil
 }
 
-func defaultUsername(id uuid.UUID, name string) string {
-	if name != "" {
-		return name
+func defaultDisplayName(ident kratosIdentity) string {
+	for _, name := range []string{ident.username, ident.discordUsername} {
+		if name = norm.NFC.String(strings.TrimSpace(name)); name != "" {
+			return truncateRunes(name, MaxDisplayNameLength)
+		}
 	}
-	return "user-" + strings.ReplaceAll(id.String(), "-", "")[:8]
+	suffix := make([]byte, 4)
+	_, _ = rand.Read(suffix)
+	return "member-" + hex.EncodeToString(suffix)
+}
+
+func truncateRunes(s string, max int) string {
+	runes := []rune(s)
+	if len(runes) <= max {
+		return s
+	}
+	return string(runes[:max])
 }
 
 // kratosIdentity is the subset of Kratos whoami output the user service cares about.
@@ -358,22 +364,9 @@ func (s *Service) UpdateMe(ctx context.Context, userID, kratosCookie string, p U
 		return nil, err
 	}
 
-	row, err := s.q.UpdateUser(ctx, db.UpdateUserParams{
-		DisplayName: p.DisplayName,
-		Username:    p.Username,
-		Bio:         p.Bio,
-		AvatarUrl:   p.AvatarURL,
-		ID:          id,
-	})
+	row, err := s.updateProfile(ctx, id, p)
 	if err != nil {
-		var pgErr *pgconn.PgError
-		switch {
-		case errors.Is(err, pgx.ErrNoRows):
-			return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
-		case errors.As(err, &pgErr) && pgErr.Code == uniqueViolation:
-			return nil, fmt.Errorf("%w: username", errs.ErrAlreadyExists)
-		}
-		return nil, fmt.Errorf("%w: update user: %v", errs.ErrInternal, err)
+		return nil, err
 	}
 
 	var ident *kratosIdentity
@@ -389,9 +382,52 @@ func (s *Service) UpdateMe(ctx context.Context, userID, kratosCookie string, p U
 	return s.assembleUser(ctx, id, db.GetUserByIDRow(row), ident)
 }
 
+func (s *Service) updateProfile(ctx context.Context, id uuid.UUID, p UpdateParams) (db.UpdateUserRow, error) {
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return db.UpdateUserRow{}, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	row, err := qtx.UpdateUser(ctx, db.UpdateUserParams{
+		DisplayName: p.DisplayName,
+		Bio:         p.Bio,
+		AvatarUrl:   p.AvatarURL,
+		ID:          id,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return db.UpdateUserRow{}, fmt.Errorf("%w: user", errs.ErrNotFound)
+		}
+		return db.UpdateUserRow{}, fmt.Errorf("%w: update user: %v", errs.ErrInternal, err)
+	}
+
+	current, err := qtx.GetUserCurrentGuildBalance(ctx, id)
+	switch {
+	case errors.Is(err, pgx.ErrNoRows):
+	case err != nil:
+		return db.UpdateUserRow{}, fmt.Errorf("%w: current guild: %v", errs.ErrInternal, err)
+	default:
+		if _, err := qtx.UpdateMemberDisplayName(ctx, db.UpdateMemberDisplayNameParams{
+			DisplayName: p.DisplayName, UserID: id, GuildID: current.GuildID,
+		}); err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) && pgErr.Code == uniqueViolation {
+				return db.UpdateUserRow{}, fmt.Errorf("%w: display_name is already used in this guild", errs.ErrAlreadyExists)
+			}
+			return db.UpdateUserRow{}, fmt.Errorf("%w: update guild name: %v", errs.ErrInternal, err)
+		}
+	}
+
+	if err := pgtx.Commit(ctx); err != nil {
+		return db.UpdateUserRow{}, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	return row, nil
+}
+
 func validateUpdateParams(p UpdateParams) (UpdateParams, error) {
 	p.DisplayName = norm.NFC.String(strings.TrimSpace(p.DisplayName))
-	p.Username = norm.NFC.String(strings.TrimSpace(p.Username))
 	p.Bio = norm.NFC.String(strings.TrimSpace(p.Bio))
 	p.AvatarURL = strings.TrimSpace(p.AvatarURL)
 
@@ -400,12 +436,6 @@ func validateUpdateParams(p UpdateParams) (UpdateParams, error) {
 		return p, fmt.Errorf("%w: display_name is required", errs.ErrInvalidArgument)
 	case utf8.RuneCountInString(p.DisplayName) > MaxDisplayNameLength:
 		return p, fmt.Errorf("%w: display_name must be at most %d characters", errs.ErrInvalidArgument, MaxDisplayNameLength)
-	case p.Username == "":
-		return p, fmt.Errorf("%w: username is required", errs.ErrInvalidArgument)
-	case utf8.RuneCountInString(p.Username) < MinUsernameLength || utf8.RuneCountInString(p.Username) > MaxUsernameLength:
-		return p, fmt.Errorf("%w: username must be between %d and %d characters", errs.ErrInvalidArgument, MinUsernameLength, MaxUsernameLength)
-	case !usernamePattern.MatchString(p.Username):
-		return p, fmt.Errorf("%w: username may only contain letters, digits, dots, underscores, and hyphens and must start with a letter or digit", errs.ErrInvalidArgument)
 	case utf8.RuneCountInString(p.Bio) > MaxBioLength:
 		return p, fmt.Errorf("%w: bio must be at most %d characters", errs.ErrInvalidArgument, MaxBioLength)
 	}
@@ -429,7 +459,6 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
 
 	return &User{
 		ID:          row.ID.String(),
-		Username:    row.Username,
 		DisplayName: row.DisplayName,
 		AvatarURL:   row.AvatarUrl,
 		CreatedAt:   row.CreatedAt,
@@ -518,9 +547,17 @@ func (s *Service) autoJoinSingletonGuild(ctx context.Context, userID uuid.UUID) 
 }
 
 type currentGuild struct {
-	id      string
-	role    string
-	balance int64
+	id          string
+	role        string
+	balance     int64
+	displayName string
+}
+
+func (c currentGuild) displayNameOr(fallback string) string {
+	if c.displayName != "" {
+		return c.displayName
+	}
+	return fallback
 }
 
 func (s *Service) currentGuild(ctx context.Context, userID uuid.UUID) (currentGuild, error) {
@@ -531,7 +568,7 @@ func (s *Service) currentGuild(ctx context.Context, userID uuid.UUID) (currentGu
 		}
 		return currentGuild{}, err
 	}
-	return currentGuild{id: row.GuildID.String(), role: row.Role, balance: row.Balance}, nil
+	return currentGuild{id: row.GuildID.String(), role: row.Role, balance: row.Balance, displayName: row.DisplayName}, nil
 }
 
 func (s *Service) guildIDs(ctx context.Context, userID uuid.UUID) ([]string, error) {

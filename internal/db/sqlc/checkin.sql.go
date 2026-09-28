@@ -296,18 +296,23 @@ func (q *Queries) GetCheckinAttendanceWindow(ctx context.Context, arg GetCheckin
 }
 
 const getUserDisplayAndAvatar = `-- name: GetUserDisplayAndAvatar :one
-SELECT COALESCE(notification_user_name(id), '')::text AS display_name,
-       COALESCE(avatar_url, '')   AS avatar_url
-FROM users WHERE id = $1
+SELECT COALESCE(member_display_name($1::uuid, id), '')::text AS display_name,
+       COALESCE(avatar_url, '')                                                   AS avatar_url
+FROM users WHERE id = $2
 `
+
+type GetUserDisplayAndAvatarParams struct {
+	GuildID uuid.UUID
+	UserID  uuid.UUID
+}
 
 type GetUserDisplayAndAvatarRow struct {
 	DisplayName string
 	AvatarUrl   string
 }
 
-func (q *Queries) GetUserDisplayAndAvatar(ctx context.Context, id uuid.UUID) (GetUserDisplayAndAvatarRow, error) {
-	row := q.db.QueryRow(ctx, getUserDisplayAndAvatar, id)
+func (q *Queries) GetUserDisplayAndAvatar(ctx context.Context, arg GetUserDisplayAndAvatarParams) (GetUserDisplayAndAvatarRow, error) {
+	row := q.db.QueryRow(ctx, getUserDisplayAndAvatar, arg.GuildID, arg.UserID)
 	var i GetUserDisplayAndAvatarRow
 	err := row.Scan(&i.DisplayName, &i.AvatarUrl)
 	return i, err
@@ -421,11 +426,12 @@ func (q *Queries) IsCheckinAttendee(ctx context.Context, arg IsCheckinAttendeePa
 
 const listCheckinAttendees = `-- name: ListCheckinAttendees :many
 SELECT ca.id, ca.checkin_id, ca.user_id,
-       COALESCE(NULLIF(notification_user_name(ca.user_id), ''), ca.display_name, '')::text AS display_name,
+       COALESCE(NULLIF(member_display_name(c.guild_id, ca.user_id), ''), ca.display_name, '')::text AS display_name,
        COALESCE(NULLIF(u.avatar_url, ''), ca.avatar_url, '')::text                        AS avatar_url,
        ca.notes,
        ca.attended_at
 FROM checkin_attendees ca
+JOIN checkins c ON c.id = ca.checkin_id
 LEFT JOIN users u ON u.id = ca.user_id
 WHERE ca.checkin_id = $1
 ORDER BY ca.attended_at ASC

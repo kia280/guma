@@ -1090,19 +1090,20 @@ func (x *RevokeInviteResponse) GetSuccess() bool {
 
 // Data structures
 type Member struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	GuildId       string                 `protobuf:"bytes,3,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,4,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"` // "owner", "admin", "moderator", "member"
-	Profile       map[string]string      `protobuf:"bytes,6,rep,name=profile,proto3" json:"profile,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	JoinedAt      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
-	LastActive    *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=last_active,json=lastActive,proto3" json:"last_active,omitempty"`
-	Email         string                 `protobuf:"bytes,9,opt,name=email,proto3" json:"email,omitempty"`
-	AvatarUrl     string                 `protobuf:"bytes,10,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId          string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	GuildId         string                 `protobuf:"bytes,3,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	DisplayName     string                 `protobuf:"bytes,4,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	Role            string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"` // "owner", "admin", "moderator", "member"
+	Profile         map[string]string      `protobuf:"bytes,6,rep,name=profile,proto3" json:"profile,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	JoinedAt        *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
+	LastActive      *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=last_active,json=lastActive,proto3" json:"last_active,omitempty"`
+	Email           string                 `protobuf:"bytes,9,opt,name=email,proto3" json:"email,omitempty"`
+	AvatarUrl       string                 `protobuf:"bytes,10,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	DiscordUsername string                 `protobuf:"bytes,11,opt,name=discord_username,json=discordUsername,proto3" json:"discord_username,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Member) Reset() {
@@ -1201,6 +1202,13 @@ func (x *Member) GetEmail() string {
 func (x *Member) GetAvatarUrl() string {
 	if x != nil {
 		return x.AvatarUrl
+	}
+	return ""
+}
+
+func (x *Member) GetDiscordUsername() string {
+	if x != nil {
+		return x.DiscordUsername
 	}
 	return ""
 }
@@ -1401,7 +1409,7 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
 	"\tinvite_id\x18\x02 \x01(\tR\binviteId\"0\n" +
 	"\x14RevokeInviteResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa2\x03\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xcd\x03\n" +
 	"\x06Member\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
@@ -1415,7 +1423,8 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\x05email\x18\t \x01(\tR\x05email\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\n" +
-	" \x01(\tR\tavatarUrl\x1a:\n" +
+	" \x01(\tR\tavatarUrl\x12)\n" +
+	"\x10discord_username\x18\v \x01(\tR\x0fdiscordUsername\x1a:\n" +
 	"\fProfileEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xc6\x02\n" +
