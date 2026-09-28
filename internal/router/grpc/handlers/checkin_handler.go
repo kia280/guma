@@ -97,12 +97,17 @@ func (h *CheckInHandler) UpdateCheckIn(ctx context.Context, req *gumav1.UpdateCh
 	if req.GuildId == "" || req.CheckinId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
 	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
 
 	lootList := itemsFromProto(req.LootList)
 
 	c, err := h.svc.Update(ctx, checkinsvc.UpdateParams{
 		GuildID:     req.GuildId,
 		CheckInID:   req.CheckinId,
+		UpdatedBy:   userID,
 		Title:       req.Title,
 		Description: req.Description,
 		Datetime:    req.Datetime,

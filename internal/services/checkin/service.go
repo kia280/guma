@@ -86,11 +86,12 @@ type CreateParams struct {
 type UpdateParams struct {
 	GuildID     string
 	CheckInID   string
+	UpdatedBy   string
 	Title       string
-	Description string
+	Description *string
 	Datetime    string
 	ExpireTime  string
-	ImageURL    string
+	ImageURL    *string
 	LootList    []models.Item
 }
 
@@ -285,6 +286,12 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*CheckIn, error) 
 	if err := validateCheckInFields(p.Title, p.Datetime, p.ExpireTime); err != nil {
 		return nil, err
 	}
+	if err := checkExpireTimeInFuture(p.ExpireTime, time.Now().UTC()); err != nil {
+		return nil, err
+	}
+	if len(p.LootList) > 0 {
+		return nil, fmt.Errorf("%w: loot list cannot be changed after publishing", errs.ErrInvalidArgument)
+	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
@@ -293,21 +300,43 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*CheckIn, error) 
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
-
-	lootJSON, err := marshalLoot(p.LootList)
+	userID, err := uuid.Parse(p.UpdatedBy)
 	if err != nil {
-		return nil, fmt.Errorf("%w: encode loot: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, userID, "owner", "admin", "moderator"); err != nil {
+		return nil, err
 	}
 
-	r, err := s.q.UpdateCheckin(ctx, db.UpdateCheckinParams{
-		Title: p.Title, Description: p.Description,
-		Datetime: p.Datetime, ExpireTime: p.ExpireTime,
-		ImageUrl: p.ImageURL, LootList: lootJSON,
-		ID: checkinID, GuildID: guildID,
-	})
+	current, err := s.q.GetCheckin(ctx, db.GetCheckinParams{ID: checkinID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
+	if err := checkEditable(current.IsCancelled, current.IsExpired); err != nil {
+		return nil, err
+	}
+
+	params := db.UpdateCheckinParams{
+		Title: strings.TrimSpace(p.Title), Datetime: p.Datetime, ExpireTime: p.ExpireTime,
+		ID: checkinID, GuildID: guildID,
+	}
+	if p.Description != nil {
+		params.SetDescription = true
+		params.Description = strings.TrimSpace(*p.Description)
+	}
+	if p.ImageURL != nil {
+		params.SetImageUrl = true
+		params.ImageUrl = strings.TrimSpace(*p.ImageURL)
+	}
+
+	r, err := s.q.UpdateCheckin(ctx, params)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: check-in is no longer open", errs.ErrFailedPrecondition)
+		}
+		return nil, fmt.Errorf("%w: update checkin: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("checkin_id", p.CheckInID).Str("guild_id", p.GuildID).Str("user_id", p.UpdatedBy).Msg("checkin updated")
 	return toCheckIn(checkinRow{
 		ID: r.ID, GuildID: r.GuildID, CreatedBy: r.CreatedBy,
 		Title: r.Title, Description: r.Description,
@@ -574,6 +603,27 @@ func checkCancellable(isCancelled, isExpired bool) error {
 	}
 	if isExpired {
 		return fmt.Errorf("%w: check-in has already finished", errs.ErrFailedPrecondition)
+	}
+	return nil
+}
+
+func checkEditable(isCancelled, isExpired bool) error {
+	if isCancelled {
+		return fmt.Errorf("%w: cancelled check-ins cannot be edited", errs.ErrFailedPrecondition)
+	}
+	if isExpired {
+		return fmt.Errorf("%w: finished check-ins cannot be edited", errs.ErrFailedPrecondition)
+	}
+	return nil
+}
+
+func checkExpireTimeInFuture(expireTime string, now time.Time) error {
+	expiresAt, err := time.Parse(time.RFC3339, expireTime)
+	if err != nil {
+		return fmt.Errorf("%w: expire_time must be an RFC3339 timestamp", errs.ErrInvalidArgument)
+	}
+	if !expiresAt.After(now) {
+		return fmt.Errorf("%w: expire_time must be in the future", errs.ErrInvalidArgument)
 	}
 	return nil
 }

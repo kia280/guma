@@ -329,7 +329,6 @@ export const gumaApiClient: ApiClient = {
       datetime: patch.datetime,
       expire_time: patch.expireTime,
       image_url: patch.imageUrl,
-      loot_list: patch.lootList?.map(toProtoLoot),
     };
     const { data } = await http.patch(`/v1/guilds/${guildId}/checkins/${id}`, payload);
     return toCheckin(data.checkin);

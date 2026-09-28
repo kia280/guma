@@ -426,7 +426,7 @@ const baseMockApiClient: ApiClient = {
   },
 
   // ── CheckIn ──
-  listCheckins: async () => store.checkins,
+  listCheckins: async () => [...store.checkins],
   getCheckin: async (_guildId, id) => {
     const c = store.checkins.find(x => x.id === id);
     if (!c) throw new Error(`checkin ${id} not found`);
@@ -437,7 +437,8 @@ const baseMockApiClient: ApiClient = {
       id: `ci-${Date.now()}`,
       status: CheckinStatus.OPEN,
       date: req.datetime ?? new Date().toISOString(),
-      description: req.title,
+      title: req.title,
+      description: req.description || undefined,
       expireTime: req.expireTime,
       attendanceCount: 0,
       attendanceList: [],
@@ -482,11 +483,15 @@ const baseMockApiClient: ApiClient = {
   updateCheckin: async (_guildId, id, patch) => {
     const idx = store.checkins.findIndex(c => c.id === id);
     if (idx === -1) throw new Error('not found');
+    const current = store.checkins[idx];
+    if (current.status !== CheckinStatus.OPEN) throw new Error('checkin is not open');
     store.checkins[idx] = {
-      ...store.checkins[idx],
-      description: patch.title ?? store.checkins[idx].description,
-      expireTime: patch.expireTime ?? store.checkins[idx].expireTime,
-      imageUrl: patch.imageUrl ?? store.checkins[idx].imageUrl,
+      ...current,
+      title: patch.title,
+      description: patch.description || undefined,
+      date: patch.datetime,
+      expireTime: patch.expireTime,
+      imageUrl: patch.imageUrl || undefined,
     };
     return store.checkins[idx];
   },

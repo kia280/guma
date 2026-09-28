@@ -62,14 +62,14 @@ RETURNING id, guild_id, created_by, title,
 
 -- name: UpdateCheckin :one
 UPDATE checkins SET
-    title       = CASE WHEN sqlc.arg(title)::text       != '' THEN sqlc.arg(title)::text       ELSE title END,
-    description = CASE WHEN sqlc.arg(description)::text != '' THEN sqlc.arg(description)::text ELSE description END,
-    datetime    = CASE WHEN sqlc.arg(datetime)::text    != '' THEN sqlc.arg(datetime)::text::timestamptz    ELSE datetime END,
-    expire_time = CASE WHEN sqlc.arg(expire_time)::text != '' THEN sqlc.arg(expire_time)::text::timestamptz ELSE expire_time END,
-    image_url   = CASE WHEN sqlc.arg(image_url)::text   != '' THEN sqlc.arg(image_url)::text   ELSE image_url END,
-    loot_list   = sqlc.arg(loot_list)::jsonb,
+    title       = sqlc.arg(title)::text,
+    description = CASE WHEN sqlc.arg(set_description)::bool THEN NULLIF(sqlc.arg(description)::text, '') ELSE description END,
+    datetime    = sqlc.arg(datetime)::text::timestamptz,
+    expire_time = sqlc.arg(expire_time)::text::timestamptz,
+    image_url   = CASE WHEN sqlc.arg(set_image_url)::bool THEN NULLIF(sqlc.arg(image_url)::text, '') ELSE image_url END,
     updated_at  = NOW()
 WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id)
+  AND cancelled_at IS NULL AND expire_time >= NOW()
 RETURNING id, guild_id, created_by, title,
           COALESCE(description, '') AS description,
           TO_CHAR(datetime    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS datetime,

@@ -13,12 +13,14 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { isNotFoundError } from '@/lib/guma/errors';
+import { emitLiveEvent } from '@/lib/live-events';
 import { useGuildPermissions } from '@/lib/permissions';
 import { checkinStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
 import { ActionSuccess } from './ActionSuccess';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { CheckinEditModal } from './CheckinEditModal';
 import { CheckinLootDistribution } from './CheckinLootDistribution';
 import { ConfirmDialog } from './ConfirmDialog';
 import { UserAvatar } from './UserAvatar';
@@ -92,6 +94,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const currentUserId = useUserStore(state => state.user?.id);
   const { can } = useGuildPermissions();
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+  const editModal = useOverlayState();
 
   if (isMissing) {
     return (
@@ -120,13 +123,30 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const hasCheckedIn = !!currentUserId && entry.attendanceList.some(member => member.userId === currentUserId);
 
   const canCancel = isOpen_ && can('cancelCheckin');
+  const canEdit = isOpen_ && can('editCheckin');
+
+  const announceChange = () => {
+    emitLiveEvent({ kind: 'resource', guildId, resource: 'checkin', resourceId: id });
+  };
 
   const handleCancelConfirm = async () => {
     try {
       await apiClient.cancelCheckin(guildId, id);
     } finally {
       refetchEntry();
+      announceChange();
     }
+  };
+
+  const handleEditSaved = (updated: CheckinEntry) => {
+    setEntry(current => (current ? { ...updated, attendanceList: current.attendanceList } : updated));
+    refetchEntry();
+    announceChange();
+  };
+
+  const handleEditRejected = () => {
+    refetchEntry();
+    announceChange();
   };
 
   const openCheckinModal = () => {
@@ -175,7 +195,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
 
       {entry.imageUrl && (
         <div className="overflow-hidden rounded-xl border border-divider bg-surface-secondary">
-          <img alt={entry.description} src={entry.imageUrl} className="max-h-[480px] w-full object-cover" />
+          <img alt={entry.title} src={entry.imageUrl} className="max-h-[480px] w-full object-cover" />
         </div>
       )}
 
@@ -196,8 +216,11 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
               </Chip>
             )}
           </div>
-          <h1 className="type-title text-foreground">{entry.description}</h1>
+          <h1 className="type-title text-foreground">{entry.title}</h1>
           <p className="text-subtle mt-1">{formatDateTime(entry.date)}</p>
+          {entry.description && (
+            <p className="type-body text-foreground mt-3 whitespace-pre-line break-words">{entry.description}</p>
+          )}
         </div>
         {hasCheckedIn ? (
           <Chip size="sm" color="success" variant="secondary" className="shrink-0">
@@ -209,6 +232,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             {t('checkIn')}
           </Button>
         ) : null}
+        {canEdit && (
+          <Button variant="secondary" className="shrink-0 max-sm:h-11" onPress={editModal.open}>
+            <Icon icon="solar:pen-linear" width={16} />
+            {t('editCheckin')}
+          </Button>
+        )}
         {canCancel && (
           <Button variant="danger-soft" className="shrink-0 max-sm:h-11" onPress={() => setIsCancelConfirmOpen(true)}>
             <Icon icon="solar:forbidden-circle-linear" width={16} />
@@ -234,7 +263,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                         width={18}
                         className="text-subtle shrink-0"
                       />
-                      <Modal.Heading>{t('checkInTitle', { title: entry.description })}</Modal.Heading>
+                      <Modal.Heading>{t('checkInTitle', { title: entry.title })}</Modal.Heading>
                     </Modal.Header>
                     <Modal.Body className="flex flex-col gap-3">
                       <p className="type-body text-subtle">{formatDateTime(entry.date)}</p>
@@ -280,6 +309,15 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           </Modal>
         )}
       </div>
+
+      {canEdit && (
+        <CheckinEditModal
+          entry={entry}
+          state={editModal}
+          onSaved={handleEditSaved}
+          onClosed={handleEditRejected}
+        />
+      )}
 
       <ConfirmDialog
         heading={t('cancelConfirmTitle')}

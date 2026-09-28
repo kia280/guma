@@ -388,10 +388,10 @@ type UpdateCheckInRequest struct {
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
 	CheckinId     string                 `protobuf:"bytes,2,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Description   *string                `protobuf:"bytes,4,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	Datetime      string                 `protobuf:"bytes,5,opt,name=datetime,proto3" json:"datetime,omitempty"`
 	ExpireTime    string                 `protobuf:"bytes,6,opt,name=expire_time,json=expireTime,proto3" json:"expire_time,omitempty"`
-	ImageUrl      string                 `protobuf:"bytes,7,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
+	ImageUrl      *string                `protobuf:"bytes,7,opt,name=image_url,json=imageUrl,proto3,oneof" json:"image_url,omitempty"`
 	LootList      []*Item                `protobuf:"bytes,8,rep,name=loot_list,json=lootList,proto3" json:"loot_list,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -449,8 +449,8 @@ func (x *UpdateCheckInRequest) GetTitle() string {
 }
 
 func (x *UpdateCheckInRequest) GetDescription() string {
-	if x != nil {
-		return x.Description
+	if x != nil && x.Description != nil {
+		return *x.Description
 	}
 	return ""
 }
@@ -470,8 +470,8 @@ func (x *UpdateCheckInRequest) GetExpireTime() string {
 }
 
 func (x *UpdateCheckInRequest) GetImageUrl() string {
-	if x != nil {
-		return x.ImageUrl
+	if x != nil && x.ImageUrl != nil {
+		return *x.ImageUrl
 	}
 	return ""
 }
@@ -1335,18 +1335,21 @@ const file_proto_guma_v1_checkin_proto_rawDesc = "" +
 	"\timage_url\x18\x06 \x01(\tR\bimageUrl\x12*\n" +
 	"\tloot_list\x18\a \x03(\v2\r.guma.v1.ItemR\blootList\"C\n" +
 	"\x15CreateCheckInResponse\x12*\n" +
-	"\acheckin\x18\x01 \x01(\v2\x10.guma.v1.CheckInR\acheckin\"\x8e\x02\n" +
+	"\acheckin\x18\x01 \x01(\v2\x10.guma.v1.CheckInR\acheckin\"\xb6\x02\n" +
 	"\x14UpdateCheckInRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
 	"\n" +
 	"checkin_id\x18\x02 \x01(\tR\tcheckinId\x12\x14\n" +
-	"\x05title\x18\x03 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x1a\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12%\n" +
+	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1a\n" +
 	"\bdatetime\x18\x05 \x01(\tR\bdatetime\x12\x1f\n" +
 	"\vexpire_time\x18\x06 \x01(\tR\n" +
-	"expireTime\x12\x1b\n" +
-	"\timage_url\x18\a \x01(\tR\bimageUrl\x12*\n" +
-	"\tloot_list\x18\b \x03(\v2\r.guma.v1.ItemR\blootList\"C\n" +
+	"expireTime\x12 \n" +
+	"\timage_url\x18\a \x01(\tH\x01R\bimageUrl\x88\x01\x01\x12*\n" +
+	"\tloot_list\x18\b \x03(\v2\r.guma.v1.ItemR\blootListB\x0e\n" +
+	"\f_descriptionB\f\n" +
+	"\n" +
+	"_image_url\"C\n" +
 	"\x15UpdateCheckInResponse\x12*\n" +
 	"\acheckin\x18\x01 \x01(\v2\x10.guma.v1.CheckInR\acheckin\"P\n" +
 	"\x14DeleteCheckInRequest\x12\x19\n" +
@@ -1515,6 +1518,7 @@ func file_proto_guma_v1_checkin_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_checkin_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

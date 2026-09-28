@@ -683,14 +683,14 @@ func (q *Queries) TakeCheckinLootItem(ctx context.Context, arg TakeCheckinLootIt
 
 const updateCheckin = `-- name: UpdateCheckin :one
 UPDATE checkins SET
-    title       = CASE WHEN $1::text       != '' THEN $1::text       ELSE title END,
-    description = CASE WHEN $2::text != '' THEN $2::text ELSE description END,
-    datetime    = CASE WHEN $3::text    != '' THEN $3::text::timestamptz    ELSE datetime END,
-    expire_time = CASE WHEN $4::text != '' THEN $4::text::timestamptz ELSE expire_time END,
-    image_url   = CASE WHEN $5::text   != '' THEN $5::text   ELSE image_url END,
-    loot_list   = $6::jsonb,
+    title       = $1::text,
+    description = CASE WHEN $2::bool THEN NULLIF($3::text, '') ELSE description END,
+    datetime    = $4::text::timestamptz,
+    expire_time = $5::text::timestamptz,
+    image_url   = CASE WHEN $6::bool THEN NULLIF($7::text, '') ELSE image_url END,
     updated_at  = NOW()
-WHERE id = $7 AND guild_id = $8
+WHERE id = $8 AND guild_id = $9
+  AND cancelled_at IS NULL AND expire_time >= NOW()
 RETURNING id, guild_id, created_by, title,
           COALESCE(description, '') AS description,
           TO_CHAR(datetime    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS datetime,
@@ -703,14 +703,15 @@ RETURNING id, guild_id, created_by, title,
 `
 
 type UpdateCheckinParams struct {
-	Title       string
-	Description string
-	Datetime    string
-	ExpireTime  string
-	ImageUrl    string
-	LootList    []byte
-	ID          uuid.UUID
-	GuildID     uuid.UUID
+	Title          string
+	SetDescription bool
+	Description    string
+	Datetime       string
+	ExpireTime     string
+	SetImageUrl    bool
+	ImageUrl       string
+	ID             uuid.UUID
+	GuildID        uuid.UUID
 }
 
 type UpdateCheckinRow struct {
@@ -733,11 +734,12 @@ type UpdateCheckinRow struct {
 func (q *Queries) UpdateCheckin(ctx context.Context, arg UpdateCheckinParams) (UpdateCheckinRow, error) {
 	row := q.db.QueryRow(ctx, updateCheckin,
 		arg.Title,
+		arg.SetDescription,
 		arg.Description,
 		arg.Datetime,
 		arg.ExpireTime,
+		arg.SetImageUrl,
 		arg.ImageUrl,
-		arg.LootList,
 		arg.ID,
 		arg.GuildID,
 	)
