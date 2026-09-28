@@ -2,6 +2,28 @@ import { env } from '@/lib/env';
 
 export const DEV_SESSION_COOKIE = 'guma_dev_user';
 
+const IDENTITY_CHANNEL = 'guma-dev-identity';
+
+let identityChannel: BroadcastChannel | null | undefined;
+
+function getIdentityChannel(): BroadcastChannel | null {
+  if (identityChannel === undefined) {
+    identityChannel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(IDENTITY_CHANNEL);
+  }
+  return identityChannel;
+}
+
+function announceIdentityChange(): void {
+  getIdentityChannel()?.postMessage('changed');
+}
+
+export function onDevIdentityChange(listener: () => void): () => void {
+  const channel = getIdentityChannel();
+  if (!channel) return () => undefined;
+  channel.addEventListener('message', listener);
+  return () => channel.removeEventListener('message', listener);
+}
+
 export interface DevUser {
   id: string;
   email: string;
@@ -83,6 +105,7 @@ export async function createDevUser(displayName: string, login: boolean): Promis
     method: 'POST',
     body: JSON.stringify({ display_name: displayName, login }),
   });
+  if (login) announceIdentityChange();
   return toDevUser(user);
 }
 
@@ -91,9 +114,11 @@ export async function devLoginAs(userId: string): Promise<DevUser> {
     method: 'POST',
     body: JSON.stringify({ user_id: userId }),
   });
+  announceIdentityChange();
   return toDevUser(user);
 }
 
 export async function devLogout(): Promise<void> {
   await devRequest<void>('/logout', { method: 'POST' });
+  announceIdentityChange();
 }

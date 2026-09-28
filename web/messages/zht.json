@@ -1178,6 +1178,8 @@
     "empty": "找不到使用者",
     "active": "目前",
     "login": "登入",
+    "actingAs": "以 {name} 身分操作中",
+    "backToMyAccount": "停止以 {name} 身分操作,回到我的帳號",
     "mockData": "使用模擬資料",
     "mockDataDescription": "所有 API 呼叫改用記憶體中的模擬資料,不登入也能開啟 dashboard 頁面。切換後頁面會重新載入。",
     "mockDataForcedByEnv": "已由 NEXT_PUBLIC_USE_MOCK 強制開啟。",
