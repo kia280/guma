@@ -1463,7 +1463,7 @@
     "loadFailed": "無法載入戰利品的去向。",
     "retry": "重試",
     "inBank": "在公會倉庫",
-    "inBankWithRequests": "在銀行 · {count} 筆申請",
+    "inBankWithRequests": "在公會倉庫 · {count} 筆申請",
     "distributed": "已分配",
     "wonBy": "獲得者：{name}",
     "actionsFor": "{item} 的操作",

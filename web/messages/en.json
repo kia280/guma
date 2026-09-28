@@ -1463,7 +1463,7 @@
     "loadFailed": "Could not load where the loot is.",
     "retry": "Retry",
     "inBank": "In guild vault",
-    "inBankWithRequests": "{count, plural, one {In bank · # request} other {In bank · # requests}}",
+    "inBankWithRequests": "{count, plural, one {In guild vault · # request} other {In guild vault · # requests}}",
     "distributed": "Handed out",
     "wonBy": "Won by {name}",
     "actionsFor": "Actions for {item}",
