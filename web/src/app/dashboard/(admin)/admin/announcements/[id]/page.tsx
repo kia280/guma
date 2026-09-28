@@ -15,7 +15,7 @@ import {
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useParams, useRouter } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent } from '@/components/AsyncContent';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -23,7 +23,7 @@ import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { PageHeader } from '@/components/PageHeader';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
-import { HTML_LANG, isLocale } from '@/i18n/locales';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { isNotFoundError } from '@/lib/guma/errors';
@@ -42,7 +42,7 @@ const draftKey = (input: AnnouncementDraftInput) =>
 
 export default function AnnouncementEditorPage() {
   const t = useTranslations('adminPage');
-  const locale = useLocale();
+  const format = useIntlFormatter();
   const router = useRouter();
   const guildId = useCurrentGuildId();
   const { id } = useParams<{ id: string }>();
@@ -219,7 +219,7 @@ export default function AnnouncementEditorPage() {
   };
 
   const formatSavedAt = (value: string) =>
-    new Date(value).toLocaleTimeString(isLocale(locale) ? HTML_LANG[locale] : locale, {
+    format.dateTime(new Date(value), {
       hour: '2-digit',
       minute: '2-digit',
     });

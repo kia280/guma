@@ -18,6 +18,8 @@ export interface GuildContribution {
     | 'checkin_loot'
     | 'auction_proceeds'
     | 'lottery_revenue'
+    | 'checkin_gold_payout'
+    | 'checkin_gold_retracted'
     | 'admin_transfer';
   amount?: number;
   itemName?: string;
@@ -70,7 +72,14 @@ export interface BankContribution {
   referenceId?: string;
 }
 
-export type BankContributionKind = 'gold' | 'checkin_loot' | 'auction_proceeds' | 'lottery_revenue' | 'admin_transfer';
+export type BankContributionKind =
+  | 'gold'
+  | 'checkin_loot'
+  | 'auction_proceeds'
+  | 'lottery_revenue'
+  | 'checkin_gold_payout'
+  | 'checkin_gold_retracted'
+  | 'admin_transfer';
 
 export type RequestStatus = 'pending' | 'approved' | 'rejected';
 

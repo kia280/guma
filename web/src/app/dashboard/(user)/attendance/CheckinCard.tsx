@@ -9,6 +9,7 @@ import { CardLinkHint } from '@/components/CardLinkHint';
 import { useCountdown } from '@/hooks/useNow';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { checkinStatusColor } from '@/lib/status-colors';
 import { CheckinStatus } from './data';
 
@@ -27,6 +28,7 @@ export function CheckinCard({
   expireTime,
   attendanceCount,
   lootCount,
+  goldLoot,
   imageUrl,
   isDisabled,
   href,
@@ -37,12 +39,14 @@ export function CheckinCard({
   expireTime?: string;
   attendanceCount: number;
   lootCount: number;
+  goldLoot?: number;
   imageUrl?: string;
   isDisabled?: boolean;
   href: string;
 }) {
   const t = useTranslations('checkIn');
   const format = useIntlFormatter();
+  const formatGold = useFormatGold();
   const formatCountdown = useCountdownFormatter();
   const { remainingMs, isExpired } = useCountdown(status === CheckinStatus.OPEN ? expireTime : null);
   const statusLabel = {
@@ -119,6 +123,12 @@ export function CheckinCard({
               <span className="text-subtle">{t('loot')}</span>
               <span className="font-medium tabular-nums text-foreground">{lootCount}</span>
             </div>
+            {goldLoot !== undefined && (
+              <div className="flex justify-between type-body">
+                <span className="text-subtle">{t('goldLoot')}</span>
+                <span className="font-medium tabular-nums text-foreground">{formatGold(goldLoot)}</span>
+              </div>
+            )}
             <div className="flex justify-between type-body">
               <span className="text-subtle">{t('attendees')}</span>
               <span className="font-medium tabular-nums text-foreground">{attendanceCount}</span>

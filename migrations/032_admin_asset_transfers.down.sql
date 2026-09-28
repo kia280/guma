@@ -64,7 +64,8 @@ UPDATE bank_contributions SET kind = 'gold' WHERE kind = 'admin_transfer';
 ALTER TABLE bank_contributions DROP CONSTRAINT IF EXISTS bank_contributions_kind_check;
 ALTER TABLE bank_contributions
     ADD CONSTRAINT bank_contributions_kind_check
-        CHECK (kind IN ('gold', 'checkin_loot', 'auction_proceeds', 'lottery_revenue'));
+        CHECK (kind IN ('gold', 'checkin_loot', 'auction_proceeds', 'lottery_revenue',
+                        'checkin_gold_payout', 'checkin_gold_retracted'));
 
 ALTER TABLE transactions
     DROP COLUMN IF EXISTS counterparty_id,

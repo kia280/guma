@@ -19,7 +19,7 @@ interface BalanceTrendChartProps {
 
 const parseIsoDate = (date: string) => {
   const [year, month, day] = date.split('-').map(Number);
-  return new Date(year, month - 1, day);
+  return new Date(Date.UTC(year, month - 1, day));
 };
 
 export function BalanceTrendChart({ points, status, onRetry, height = 200 }: BalanceTrendChartProps) {
@@ -30,7 +30,7 @@ export function BalanceTrendChart({ points, status, onRetry, height = 200 }: Bal
   const gradientId = `balance-fill-${React.useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
 
   const formatDay = React.useCallback(
-    (date: string) => format.dateTime(parseIsoDate(date), { month: 'short', day: 'numeric' }),
+    (date: string) => format.dateTime(parseIsoDate(date), { month: 'short', day: 'numeric', timeZone: 'UTC' }),
     [format],
   );
 

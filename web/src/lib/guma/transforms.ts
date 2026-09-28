@@ -5,7 +5,17 @@ import type { AdminAnnouncement, AdminGuildStats } from '@/types/admin';
 import { AuctionStatus } from '@/types/auction';
 import type { AuctionItem, Bid } from '@/types/auction';
 import type { BackpackItem, BackpackItemSource } from '@/types/backpack';
-import type { CheckinEntry, CheckinTemplate, AttendanceMember, ItemTemplate, LootItem } from '@/types/checkin';
+import type {
+  CheckinEntry,
+  CheckinGoldDistribution,
+  CheckinGoldPayout,
+  CheckinGoldPot,
+  CheckinGoldSummary,
+  CheckinTemplate,
+  AttendanceMember,
+  ItemTemplate,
+  LootItem,
+} from '@/types/checkin';
 import { CheckinStatus } from '@/types/checkin';
 import type { Announcement } from '@/types/dashboard';
 import type { Guild } from '@/types/guild';
@@ -276,13 +286,72 @@ type ProtoCheckIn = {
   expire_time?: string;
   image_url?: string;
   loot_list?: ProtoItem[];
+  loot?: ProtoCheckInLootEntry[];
+  gold_pot?: ProtoCheckInGoldPot;
   attendance_count?: number;
   is_expired?: boolean;
   is_cancelled?: boolean;
 };
 
+type ProtoCheckInLootEntry = {
+  kind?: string;
+  item?: ProtoItem;
+  amount?: number | string;
+};
+
+type ProtoCheckInGoldPot = {
+  total?: number | string;
+  distributed?: number | string;
+  retracted?: number | string;
+  remaining?: number | string;
+};
+
+type ProtoCheckInGoldPayout = {
+  user_id?: string;
+  amount?: number | string;
+};
+
+const toCheckinGoldPot = (raw: ProtoCheckInGoldPot): CheckinGoldPot => ({
+  total: fromMinorUnits(raw.total),
+  distributed: fromMinorUnits(raw.distributed),
+  retracted: fromMinorUnits(raw.retracted),
+  remaining: fromMinorUnits(raw.remaining),
+});
+
+const toCheckinGoldPayout = (raw: ProtoCheckInGoldPayout): CheckinGoldPayout => ({
+  userId: raw.user_id ?? '',
+  amount: fromMinorUnits(raw.amount),
+});
+
+export const toCheckinGoldSummary = (raw: {
+  pot?: ProtoCheckInGoldPot;
+  recipients?: ProtoCheckInGoldPayout[];
+}): CheckinGoldSummary => ({
+  pot: raw.pot ? toCheckinGoldPot(raw.pot) : undefined,
+  recipients: (raw.recipients ?? []).map(toCheckinGoldPayout),
+});
+
+export const toCheckinGoldDistribution = (raw: {
+  pot?: ProtoCheckInGoldPot;
+  payouts?: ProtoCheckInGoldPayout[];
+  replayed?: boolean;
+}): CheckinGoldDistribution => ({
+  pot: toCheckinGoldPot(raw.pot ?? {}),
+  payouts: (raw.payouts ?? []).map(toCheckinGoldPayout),
+  replayed: Boolean(raw.replayed),
+});
+
+const toCheckinGoldLoot = (raw: ProtoCheckIn): CheckinGoldPot | undefined => {
+  if (raw.gold_pot) return toCheckinGoldPot(raw.gold_pot);
+  const gold = raw.loot?.find(entry => entry.kind === 'gold');
+  if (!gold) return undefined;
+  const total = fromMinorUnits(gold.amount);
+  return { total, distributed: 0, retracted: 0, remaining: total };
+};
+
 export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = []): CheckinEntry => {
-  const loot: LootItem[] = (raw.loot_list ?? []).map((i, idx) => ({
+  const items = raw.loot ? raw.loot.filter(entry => entry.kind !== 'gold').map(entry => entry.item ?? {}) : raw.loot_list ?? [];
+  const loot: LootItem[] = items.map((i, idx) => ({
     id: i.id ?? `l-${idx}`,
     name: i.name ?? '',
   }));
@@ -301,6 +370,7 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     attendanceCount: raw.attendance_count ?? attendees.length,
     attendanceList: attendees,
     lootList: loot,
+    goldLoot: toCheckinGoldLoot(raw),
     imageUrl: raw.image_url || undefined,
   };
 };
@@ -512,7 +582,7 @@ export const toTransaction = (raw: ProtoTransaction): Transaction => {
     kind: raw.type?.toUpperCase(),
     amount: fromMinorUnits(raw.amount),
     recipient: raw.recipient,
-    date: ts(raw.created_at).slice(0, 10),
+    date: ts(raw.created_at),
     status: (raw.status?.toLowerCase() as Transaction['status']) || 'completed',
     description: raw.description,
     referenceType: raw.reference_type || undefined,
@@ -633,6 +703,8 @@ const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = [
   'checkin_loot',
   'auction_proceeds',
   'lottery_revenue',
+  'checkin_gold_payout',
+  'checkin_gold_retracted',
   'admin_transfer',
 ];
 
@@ -643,8 +715,11 @@ const contributionReferenceHref = (b: BankContribution): string | undefined => {
   return undefined;
 };
 
+const checkinHref = (b: BankContribution): string | undefined =>
+  b.checkinId ? `/dashboard/attendance/${b.checkinId}` : undefined;
+
 const contributionType = (kind: BankContributionKind): GuildContribution['type'] =>
-  kind === 'auction_proceeds' || kind === 'lottery_revenue' || kind === 'admin_transfer' ? kind : 'contribute';
+  kind === 'gold' ? 'contribute' : kind;
 
 const toContributionKind = (kind: string | undefined): BankContributionKind =>
   BANK_CONTRIBUTION_KINDS.find(k => k === kind) ?? 'gold';
@@ -765,23 +840,25 @@ export const toGuildContributions = (
       ? {
           id: `c-${b.id}`,
           type: 'checkin_loot',
-          itemName: b.itemNames.join(', '),
+          itemName: b.itemNames.join(', ') || undefined,
+          amount: b.amount > 0 ? b.amount : undefined,
           member: b.username,
           memberAvatar: b.avatarUrl,
-          date: b.createdAt.slice(0, 10),
+          date: b.createdAt,
           status: 'completed',
           note: b.note,
           checkinId: b.checkinId,
-          href: b.checkinId ? `/dashboard/attendance/${b.checkinId}` : undefined,
+          href: checkinHref(b),
         }
       : {
           id: `c-${b.id}`,
           type: contributionType(b.kind),
-          amount: b.amount,
-          href: contributionReferenceHref(b),
+          amount: Math.abs(b.amount),
+          checkinId: b.checkinId,
+          href: b.kind === 'checkin_gold_payout' || b.kind === 'checkin_gold_retracted' ? checkinHref(b) : contributionReferenceHref(b),
           member: b.username,
           memberAvatar: b.avatarUrl,
-          date: b.createdAt.slice(0, 10),
+          date: b.createdAt,
           status: 'completed',
           note: b.note,
         },
@@ -792,7 +869,7 @@ export const toGuildContributions = (
     amount: f.amount,
     member: f.requesterName,
     memberAvatar: f.requesterAvatarUrl,
-    date: f.createdAt.slice(0, 10),
+    date: f.createdAt,
     status: f.status === 'pending' ? 'pending' : f.status,
     note: f.reason,
   }));
@@ -802,11 +879,11 @@ export const toGuildContributions = (
     itemName: req.itemName,
     member: req.requesterName,
     memberAvatar: req.requesterAvatarUrl,
-    date: req.createdAt.slice(0, 10),
+    date: req.createdAt,
     status: req.status,
     note: req.reason,
   }));
-  return [...c, ...r, ...i].sort((a, b) => (a.date < b.date ? 1 : -1));
+  return [...c, ...r, ...i].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 };
 
 // ─── Guild Event (calendar) ─────────────────────────────────────────────────
@@ -958,18 +1035,12 @@ export const toAdminAnnouncement = (raw: ProtoAnnouncement): AdminAnnouncement =
   publishedAt: raw.published_at ? ts(raw.published_at) : undefined,
 });
 
-const formatAnnouncementDate = (iso: string): string => {
-  const date = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
-};
-
 export const toAnnouncement = (raw: ProtoAnnouncement): Announcement => ({
   id: raw.id,
   title: raw.title ?? '',
   content: raw.content ?? '',
   pinned: raw.pinned ?? false,
-  date: formatAnnouncementDate(ts(raw.published_at ?? raw.created_at)),
+  date: ts(raw.published_at ?? raw.created_at),
 });
 
 // ─── Preferences ─────────────────────────────────────────────────────────────

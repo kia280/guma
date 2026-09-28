@@ -10,7 +10,6 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	"github.com/kia280/guma/internal/models"
 	checkinsvc "github.com/kia280/guma/internal/services/checkin"
 	"github.com/kia280/guma/internal/session"
 )
@@ -75,8 +74,6 @@ func (h *CheckInHandler) CreateCheckIn(ctx context.Context, req *gumav1.CreateCh
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	lootList := itemsFromProto(req.LootList)
-
 	c, err := h.svc.Create(ctx, checkinsvc.CreateParams{
 		GuildID:     req.GuildId,
 		CreatedBy:   userID,
@@ -85,7 +82,7 @@ func (h *CheckInHandler) CreateCheckIn(ctx context.Context, req *gumav1.CreateCh
 		Datetime:    req.Datetime,
 		ExpireTime:  req.ExpireTime,
 		ImageURL:    req.ImageUrl,
-		LootList:    lootList,
+		Loot:        lootFromProto(req.Loot, req.LootList),
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -102,8 +99,6 @@ func (h *CheckInHandler) UpdateCheckIn(ctx context.Context, req *gumav1.UpdateCh
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	lootList := itemsFromProto(req.LootList)
-
 	c, err := h.svc.Update(ctx, checkinsvc.UpdateParams{
 		GuildID:     req.GuildId,
 		CheckInID:   req.CheckinId,
@@ -113,7 +108,7 @@ func (h *CheckInHandler) UpdateCheckIn(ctx context.Context, req *gumav1.UpdateCh
 		Datetime:    req.Datetime,
 		ExpireTime:  req.ExpireTime,
 		ImageURL:    req.ImageUrl,
-		LootList:    lootList,
+		Loot:        lootFromProto(req.Loot, req.LootList),
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -161,6 +156,58 @@ func (h *CheckInHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLootR
 		return nil, toStatus(err)
 	}
 	return &gumav1.AssignLootResponse{BackpackItemId: backpackItemID}, nil
+}
+
+func (h *CheckInHandler) GetCheckInGold(ctx context.Context, req *gumav1.GetCheckInGoldRequest) (*gumav1.GetCheckInGoldResponse, error) {
+	if req.GuildId == "" || req.CheckinId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and checkin_id are required")
+	}
+	if session.UserIDFromContext(ctx) == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	summary, err := h.svc.GetGold(ctx, req.GuildId, req.CheckinId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.GetCheckInGoldResponse{
+		Pot:        goldPotToProto(summary.Pot),
+		Recipients: goldPayoutsToProto(summary.Recipients),
+	}, nil
+}
+
+func (h *CheckInHandler) DistributeCheckInGold(ctx context.Context, req *gumav1.DistributeCheckInGoldRequest) (*gumav1.DistributeCheckInGoldResponse, error) {
+	if req.GuildId == "" || req.CheckinId == "" || req.RequestId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id, checkin_id and request_id are required")
+	}
+	if len(req.Payouts) == 0 {
+		return nil, status.Error(codes.InvalidArgument, "payouts are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	payouts := make([]checkinsvc.GoldPayout, len(req.Payouts))
+	for i, p := range req.Payouts {
+		payouts[i] = checkinsvc.GoldPayout{UserID: p.UserId, Amount: p.Amount}
+	}
+	result, err := h.svc.DistributeGold(ctx, checkinsvc.DistributeGoldParams{
+		GuildID:   req.GuildId,
+		CheckInID: req.CheckinId,
+		ActorID:   userID,
+		RequestID: req.RequestId,
+		Payouts:   payouts,
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.DistributeCheckInGoldResponse{
+		DistributionId: result.DistributionID,
+		Pot:            goldPotToProto(&result.Pot),
+		Payouts:        goldPayoutsToProto(result.Payouts),
+		Replayed:       result.Replayed,
+	}, nil
 }
 
 func (h *CheckInHandler) SubmitAttendance(ctx context.Context, req *gumav1.SubmitAttendanceRequest) (*gumav1.SubmitAttendanceResponse, error) {
@@ -221,7 +268,55 @@ func checkinToProto(c *checkinsvc.CheckIn) *gumav1.CheckIn {
 		IsCancelled:     c.IsCancelled,
 		CreatedAt:       timestamppb.New(c.CreatedAt),
 		UpdatedAt:       timestamppb.New(c.UpdatedAt),
+		Loot:            lootToProto(c.Loot),
+		GoldPot:         goldPotToProto(c.GoldPot),
 	}
+}
+
+func lootToProto(entries []checkinsvc.LootEntry) []*gumav1.CheckInLootEntry {
+	protos := make([]*gumav1.CheckInLootEntry, len(entries))
+	for i, e := range entries {
+		protos[i] = &gumav1.CheckInLootEntry{Kind: e.Kind, Item: itemToProto(e.Item), Amount: e.Amount}
+	}
+	return protos
+}
+
+func lootFromProto(entries []*gumav1.CheckInLootEntry, legacy []*gumav1.Item) []checkinsvc.LootEntry {
+	if len(entries) == 0 {
+		loot := make([]checkinsvc.LootEntry, len(legacy))
+		for i, item := range legacy {
+			loot[i] = checkinsvc.LootEntry{Kind: checkinsvc.LootKindItem, Item: itemFromProto(item)}
+		}
+		return loot
+	}
+	loot := make([]checkinsvc.LootEntry, len(entries))
+	for i, e := range entries {
+		loot[i] = checkinsvc.LootEntry{Kind: e.Kind, Amount: e.Amount}
+		if e.Item != nil {
+			loot[i].Item = itemFromProto(e.Item)
+		}
+	}
+	return loot
+}
+
+func goldPotToProto(pot *checkinsvc.GoldPot) *gumav1.CheckInGoldPot {
+	if pot == nil {
+		return nil
+	}
+	return &gumav1.CheckInGoldPot{
+		Total:       pot.Total,
+		Distributed: pot.Distributed,
+		Retracted:   pot.Retracted,
+		Remaining:   pot.Remaining(),
+	}
+}
+
+func goldPayoutsToProto(payouts []checkinsvc.GoldPayout) []*gumav1.CheckInGoldPayout {
+	protos := make([]*gumav1.CheckInGoldPayout, len(payouts))
+	for i, p := range payouts {
+		protos[i] = &gumav1.CheckInGoldPayout{UserId: p.UserID, Amount: p.Amount}
+	}
+	return protos
 }
 
 func checkinAttendeeToProto(a *checkinsvc.CheckInAttendee) *gumav1.CheckInAttendee {
@@ -234,12 +329,4 @@ func checkinAttendeeToProto(a *checkinsvc.CheckInAttendee) *gumav1.CheckInAttend
 		AttendedAt:  timestamppb.New(a.AttendedAt),
 		Notes:       a.Notes,
 	}
-}
-
-func itemsFromProto(protos []*gumav1.Item) []models.Item {
-	items := make([]models.Item, len(protos))
-	for i, p := range protos {
-		items[i] = itemFromProto(p)
-	}
-	return items
 }

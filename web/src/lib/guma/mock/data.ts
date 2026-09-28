@@ -144,7 +144,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
   {
     id: '1',
     title: 'Report any problems to 抽貝比',
-    date: '2024/07/24',
+    date: '2024-07-24T04:00:00Z',
     pinned: true,
     content:
       'If you run into system problems, bugs, or any other questions, please message 抽貝比 directly. Include a description of the problem and a screenshot so it can be handled quickly. Thank you for your cooperation!',
@@ -152,7 +152,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
   {
     id: '2',
     title: 'Guild raid night every Friday at 21:00',
-    date: '2024/07/20',
+    date: '2024-07-20T04:00:00Z',
     pinned: false,
     content:
       'All guild members are welcome to join our weekly raid night every Friday starting at 21:00 server time. Please ensure your gear is up to date and bring consumables. Loot will be distributed via the in-guild auction system. See you there!',
@@ -208,18 +208,18 @@ export const mockAdminAnnouncements: AdminAnnouncement[] = [
 // ─── Wallet ──────────────────────────────────────────────────────────────────
 
 export const mockTransactions: Transaction[] = [
-  { id: '1', type: 'deposit', amount: 500.0, date: '2024-01-20', status: 'completed', description: 'Account deposit' },
-  { id: '2', type: 'transfer', amount: -100.0, recipient: member(7).username, date: '2024-01-19', status: 'completed', description: `Transfer to ${member(7).username}` },
-  { id: '3', type: 'withdraw', amount: -500.0, date: '2024-01-18', status: 'pending', description: 'Withdrawal request' },
-  { id: '4', type: 'transfer', amount: -75.5, recipient: member(12).username, date: '2024-01-17', status: 'completed', description: `Transfer to ${member(12).username}` },
-  { id: '5', type: 'deposit', amount: 1000.0, date: '2024-01-16', status: 'completed', description: 'Guild reward payout' },
-  { id: '6', type: 'transfer', amount: -200.0, recipient: member(23).username, date: '2024-01-15', status: 'completed', description: `Transfer to ${member(23).username}` },
-  { id: '7', type: 'withdraw', amount: -250.0, date: '2024-01-14', status: 'completed', description: 'Withdrawal to bank account' },
-  { id: '8', type: 'deposit', amount: 300.0, date: '2024-01-13', status: 'completed', description: 'Auction sale proceeds' },
-  { id: '9', type: 'transfer', amount: -50.0, recipient: member(31).username, date: '2024-01-12', status: 'failed', description: `Transfer to ${member(31).username}` },
-  { id: '10', type: 'deposit', amount: 150.0, date: '2024-01-11', status: 'completed', description: 'Lottery winnings' },
-  { id: '11', type: 'transfer', amount: -80.0, recipient: member(40).username, date: '2024-01-10', status: 'completed', description: `Transfer to ${member(40).username}` },
-  { id: '12', type: 'withdraw', amount: -100.0, date: '2024-01-09', status: 'completed', description: 'Withdrawal to bank account' },
+  { id: '1', type: 'deposit', amount: 500.0, date: '2024-01-20T12:00:00Z', status: 'completed', description: 'Account deposit' },
+  { id: '2', type: 'transfer', amount: -100.0, recipient: member(7).username, date: '2024-01-19T12:00:00Z', status: 'completed', description: `Transfer to ${member(7).username}` },
+  { id: '3', type: 'withdraw', amount: -500.0, date: '2024-01-18T12:00:00Z', status: 'pending', description: 'Withdrawal request' },
+  { id: '4', type: 'transfer', amount: -75.5, recipient: member(12).username, date: '2024-01-17T12:00:00Z', status: 'completed', description: `Transfer to ${member(12).username}` },
+  { id: '5', type: 'deposit', amount: 1000.0, date: '2024-01-16T12:00:00Z', status: 'completed', description: 'Guild reward payout' },
+  { id: '6', type: 'transfer', amount: -200.0, recipient: member(23).username, date: '2024-01-15T12:00:00Z', status: 'completed', description: `Transfer to ${member(23).username}` },
+  { id: '7', type: 'withdraw', amount: -250.0, date: '2024-01-14T12:00:00Z', status: 'completed', description: 'Withdrawal to bank account' },
+  { id: '8', type: 'deposit', amount: 300.0, date: '2024-01-13T12:00:00Z', status: 'completed', description: 'Auction sale proceeds' },
+  { id: '9', type: 'transfer', amount: -50.0, recipient: member(31).username, date: '2024-01-12T12:00:00Z', status: 'failed', description: `Transfer to ${member(31).username}` },
+  { id: '10', type: 'deposit', amount: 150.0, date: '2024-01-11T12:00:00Z', status: 'completed', description: 'Lottery winnings' },
+  { id: '11', type: 'transfer', amount: -80.0, recipient: member(40).username, date: '2024-01-10T12:00:00Z', status: 'completed', description: `Transfer to ${member(40).username}` },
+  { id: '12', type: 'withdraw', amount: -100.0, date: '2024-01-09T12:00:00Z', status: 'completed', description: 'Withdrawal to bank account' },
 ];
 
 export const mockBackpackItems: BackpackItem[] = [
@@ -343,6 +343,9 @@ function generateCheckins(): CheckinEntry[] {
       attendanceCount: attendanceList.length,
       attendanceList,
       lootList,
+      ...(i % 3 === 0 && status !== CheckinStatus.CANCELLED
+        ? { goldLoot: { total: 1000 + i * 50, distributed: 0, retracted: 0, remaining: 1000 + i * 50 } }
+        : {}),
     };
   });
 }
@@ -558,12 +561,12 @@ export const mockLotteries: Lottery[] = BASE_LOTTERIES.map((lottery, i) => ({
 // ─── Guild Bank ──────────────────────────────────────────────────────────────
 
 export const mockContributions: GuildContribution[] = [
-  { id: '1', type: 'contribute', amount: 500, member: member(7).username, date: '2024-01-15', status: 'completed', note: 'Weekly contribution' },
-  { id: '2', type: 'request', amount: 200, member: member(12).username, date: '2024-01-14', status: 'approved', note: 'Potion supplies for raid' },
-  { id: '3', type: 'item_donate', itemName: 'Dragon Scale', member: member(23).username, date: '2024-01-13', status: 'completed' },
-  { id: '4', type: 'contribute', amount: 1000, member: member(1).username, date: '2024-01-12', status: 'completed', note: 'Initial guild fund' },
-  { id: '5', type: 'request', amount: 350, member: member(31).username, date: '2024-01-16', status: 'pending', note: 'Enchanting materials' },
-  { id: '6', type: 'item_distribute', itemName: 'Ancient Sword', member: member(40).username, date: '2024-01-11', status: 'completed', note: 'Distributed by admin' },
+  { id: '1', type: 'contribute', amount: 500, member: member(7).username, date: '2024-01-15T12:00:00Z', status: 'completed', note: 'Weekly contribution' },
+  { id: '2', type: 'request', amount: 200, member: member(12).username, date: '2024-01-14T12:00:00Z', status: 'approved', note: 'Potion supplies for raid' },
+  { id: '3', type: 'item_donate', itemName: 'Dragon Scale', member: member(23).username, date: '2024-01-13T12:00:00Z', status: 'completed' },
+  { id: '4', type: 'contribute', amount: 1000, member: member(1).username, date: '2024-01-12T12:00:00Z', status: 'completed', note: 'Initial guild fund' },
+  { id: '5', type: 'request', amount: 350, member: member(31).username, date: '2024-01-16T12:00:00Z', status: 'pending', note: 'Enchanting materials' },
+  { id: '6', type: 'item_distribute', itemName: 'Ancient Sword', member: member(40).username, date: '2024-01-11T12:00:00Z', status: 'completed', note: 'Distributed by admin' },
 ];
 
 export const mockGuildItems: GuildBankItem[] = [

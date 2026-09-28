@@ -572,6 +572,122 @@ func local_request_CheckInService_AssignLoot_0(ctx context.Context, marshaler ru
 	return msg, metadata, err
 }
 
+func request_CheckInService_GetCheckInGold_0(ctx context.Context, marshaler runtime.Marshaler, client CheckInServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetCheckInGoldRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["guild_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "guild_id")
+	}
+	protoReq.GuildId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "guild_id", err)
+	}
+	val, ok = pathParams["checkin_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "checkin_id")
+	}
+	protoReq.CheckinId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "checkin_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.GetCheckInGold(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CheckInService_GetCheckInGold_0(ctx context.Context, marshaler runtime.Marshaler, server CheckInServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq GetCheckInGoldRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["guild_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "guild_id")
+	}
+	protoReq.GuildId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "guild_id", err)
+	}
+	val, ok = pathParams["checkin_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "checkin_id")
+	}
+	protoReq.CheckinId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "checkin_id", err)
+	}
+	msg, err := server.GetCheckInGold(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_CheckInService_DistributeCheckInGold_0(ctx context.Context, marshaler runtime.Marshaler, client CheckInServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DistributeCheckInGoldRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["guild_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "guild_id")
+	}
+	protoReq.GuildId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "guild_id", err)
+	}
+	val, ok = pathParams["checkin_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "checkin_id")
+	}
+	protoReq.CheckinId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "checkin_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.DistributeCheckInGold(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_CheckInService_DistributeCheckInGold_0(ctx context.Context, marshaler runtime.Marshaler, server CheckInServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DistributeCheckInGoldRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["guild_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "guild_id")
+	}
+	protoReq.GuildId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "guild_id", err)
+	}
+	val, ok = pathParams["checkin_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "checkin_id")
+	}
+	protoReq.CheckinId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "checkin_id", err)
+	}
+	msg, err := server.DistributeCheckInGold(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 // RegisterCheckInServiceHandlerServer registers the http handlers for service CheckInService to "mux".
 // UnaryRPC     :call CheckInServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -757,6 +873,46 @@ func RegisterCheckInServiceHandlerServer(ctx context.Context, mux *runtime.Serve
 			return
 		}
 		forward_CheckInService_AssignLoot_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_CheckInService_GetCheckInGold_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/guma.v1.CheckInService/GetCheckInGold", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/checkins/{checkin_id}/gold"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CheckInService_GetCheckInGold_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CheckInService_GetCheckInGold_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_CheckInService_DistributeCheckInGold_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/guma.v1.CheckInService/DistributeCheckInGold", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/checkins/{checkin_id}/gold/distribute"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CheckInService_DistributeCheckInGold_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CheckInService_DistributeCheckInGold_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
 	return nil
@@ -951,29 +1107,67 @@ func RegisterCheckInServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 		}
 		forward_CheckInService_AssignLoot_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodGet, pattern_CheckInService_GetCheckInGold_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/guma.v1.CheckInService/GetCheckInGold", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/checkins/{checkin_id}/gold"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CheckInService_GetCheckInGold_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CheckInService_GetCheckInGold_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_CheckInService_DistributeCheckInGold_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/guma.v1.CheckInService/DistributeCheckInGold", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/checkins/{checkin_id}/gold/distribute"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CheckInService_DistributeCheckInGold_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_CheckInService_DistributeCheckInGold_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	return nil
 }
 
 var (
-	pattern_CheckInService_ListCheckIns_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "guilds", "guild_id", "checkins"}, ""))
-	pattern_CheckInService_GetCheckIn_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id"}, ""))
-	pattern_CheckInService_CreateCheckIn_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "guilds", "guild_id", "checkins"}, ""))
-	pattern_CheckInService_UpdateCheckIn_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id"}, ""))
-	pattern_CheckInService_DeleteCheckIn_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id"}, ""))
-	pattern_CheckInService_CancelCheckIn_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "cancel"}, ""))
-	pattern_CheckInService_SubmitAttendance_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "attend"}, ""))
-	pattern_CheckInService_ListAttendees_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "attendees"}, ""))
-	pattern_CheckInService_AssignLoot_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "loot", "item_id", "assign"}, ""))
+	pattern_CheckInService_ListCheckIns_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "guilds", "guild_id", "checkins"}, ""))
+	pattern_CheckInService_GetCheckIn_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id"}, ""))
+	pattern_CheckInService_CreateCheckIn_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "guilds", "guild_id", "checkins"}, ""))
+	pattern_CheckInService_UpdateCheckIn_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id"}, ""))
+	pattern_CheckInService_DeleteCheckIn_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id"}, ""))
+	pattern_CheckInService_CancelCheckIn_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "cancel"}, ""))
+	pattern_CheckInService_SubmitAttendance_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "attend"}, ""))
+	pattern_CheckInService_ListAttendees_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "attendees"}, ""))
+	pattern_CheckInService_AssignLoot_0            = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 1, 0, 4, 1, 5, 6, 2, 7}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "loot", "item_id", "assign"}, ""))
+	pattern_CheckInService_GetCheckInGold_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "gold"}, ""))
+	pattern_CheckInService_DistributeCheckInGold_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5, 2, 6}, []string{"v1", "guilds", "guild_id", "checkins", "checkin_id", "gold", "distribute"}, ""))
 )
 
 var (
-	forward_CheckInService_ListCheckIns_0     = runtime.ForwardResponseMessage
-	forward_CheckInService_GetCheckIn_0       = runtime.ForwardResponseMessage
-	forward_CheckInService_CreateCheckIn_0    = runtime.ForwardResponseMessage
-	forward_CheckInService_UpdateCheckIn_0    = runtime.ForwardResponseMessage
-	forward_CheckInService_DeleteCheckIn_0    = runtime.ForwardResponseMessage
-	forward_CheckInService_CancelCheckIn_0    = runtime.ForwardResponseMessage
-	forward_CheckInService_SubmitAttendance_0 = runtime.ForwardResponseMessage
-	forward_CheckInService_ListAttendees_0    = runtime.ForwardResponseMessage
-	forward_CheckInService_AssignLoot_0       = runtime.ForwardResponseMessage
+	forward_CheckInService_ListCheckIns_0          = runtime.ForwardResponseMessage
+	forward_CheckInService_GetCheckIn_0            = runtime.ForwardResponseMessage
+	forward_CheckInService_CreateCheckIn_0         = runtime.ForwardResponseMessage
+	forward_CheckInService_UpdateCheckIn_0         = runtime.ForwardResponseMessage
+	forward_CheckInService_DeleteCheckIn_0         = runtime.ForwardResponseMessage
+	forward_CheckInService_CancelCheckIn_0         = runtime.ForwardResponseMessage
+	forward_CheckInService_SubmitAttendance_0      = runtime.ForwardResponseMessage
+	forward_CheckInService_ListAttendees_0         = runtime.ForwardResponseMessage
+	forward_CheckInService_AssignLoot_0            = runtime.ForwardResponseMessage
+	forward_CheckInService_GetCheckInGold_0        = runtime.ForwardResponseMessage
+	forward_CheckInService_DistributeCheckInGold_0 = runtime.ForwardResponseMessage
 )

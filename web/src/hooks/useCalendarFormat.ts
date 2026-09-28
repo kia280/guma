@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTimeZone, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { useIntlLocale } from '@/i18n/useIntlFormatter';
 import { endsOnDay, startsOnDay } from '@/lib/calendar';
@@ -9,9 +9,10 @@ import type { EventOccurrence } from '@/lib/event-occurrences';
 export function useCalendarFormat() {
   const locale = useIntlLocale();
   const t = useTranslations('guildCalendar');
+  const timeZone = useTimeZone();
 
   return useMemo(() => {
-    const make = (options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(locale, options);
+    const make = (options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(locale, { ...options, timeZone });
     const timeFormat = make({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
     const monthFormat = make({ year: 'numeric', month: 'long' });
     const fullDateFormat = make({ year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
@@ -54,7 +55,7 @@ export function useCalendarFormat() {
         return `${startFormat.format(start)} – ${yearMonthDayFormat.format(end)}`;
       },
     };
-  }, [locale, t]);
+  }, [locale, t, timeZone]);
 }
 
 export type CalendarFormat = ReturnType<typeof useCalendarFormat>;
