@@ -116,7 +116,7 @@ export default function AdminPage() {
   const { can } = useGuildPermissions();
   const canEditGuild = can('editGuild');
 
-  const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
+  const [members, setMembers] = React.useState<MockUser[]>([]);
   const [recentActivity, setRecentActivity] = React.useState<AdminActivity[]>([]);
   const [activityStatus, setActivityStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
   const [activityReloadKey, setActivityReloadKey] = React.useState(0);
@@ -216,7 +216,7 @@ export default function AdminPage() {
       .listMembers(guildId)
       .then(d => {
         if (cancelled) return;
-        setMockUsers(d);
+        setMembers(d);
         usersState.ready();
       })
       .catch(() => {
@@ -391,7 +391,7 @@ export default function AdminPage() {
               <div className="flex items-center gap-2">
                 <span>{t('users')}</span>
                 <Chip size="sm" variant="secondary">
-                  {mockUsers.length}
+                  {members.length}
                 </Chip>
               </div>
               <Tabs.Indicator />
@@ -436,7 +436,7 @@ export default function AdminPage() {
                 onRetry={reload}
                 skeleton={<div className="p-4"><ListSkeleton rows={5} /></div>}
               >
-              {mockUsers.length === 0 ? (
+              {members.length === 0 ? (
                 <EmptyContent icon="solar:users-group-rounded-linear" title={t('noUsers')} />
               ) : (
               <Table variant="secondary">
@@ -449,7 +449,7 @@ export default function AdminPage() {
                       <Table.Column className="hidden md:table-cell">{t('lastActive')}</Table.Column>
                     </Table.Header>
                     <Table.Body>
-                      {mockUsers.map(user => (
+                      {members.map(user => (
                         <Table.Row key={user.id}>
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
