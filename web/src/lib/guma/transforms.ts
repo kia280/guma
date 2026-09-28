@@ -291,6 +291,8 @@ type ProtoCheckIn = {
   attendance_count?: number;
   is_expired?: boolean;
   is_cancelled?: boolean;
+  is_completed?: boolean;
+  completed_at?: unknown;
 };
 
 type ProtoCheckInLootEntry = {
@@ -354,10 +356,15 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
   const loot: LootItem[] = items.map((i, idx) => ({
     id: i.id ?? `l-${idx}`,
     name: i.name ?? '',
+    description: i.description || undefined,
+    category: toCategory(i.category),
+    rarity: toRarity(i.rarity),
   }));
   const status: CheckinStatus = raw.is_cancelled
     ? CheckinStatus.CANCELLED
-    : raw.is_expired
+    : raw.is_completed
+      ? CheckinStatus.COMPLETED
+      : raw.is_expired
       ? CheckinStatus.FINISHED
       : CheckinStatus.OPEN;
   return {
@@ -372,6 +379,7 @@ export const toCheckin = (raw: ProtoCheckIn, attendees: AttendanceMember[] = [])
     lootList: loot,
     goldLoot: toCheckinGoldLoot(raw),
     imageUrl: raw.image_url || undefined,
+    completedAt: raw.is_completed && raw.completed_at ? ts(raw.completed_at) : undefined,
   };
 };
 

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const addCheckinGoldPotDistributed = `-- name: AddCheckinGoldPotDistributed :one
@@ -60,6 +61,8 @@ RETURNING id, guild_id, created_by, title,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
           (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
           created_at, updated_at
 `
 
@@ -81,6 +84,8 @@ type CancelCheckinRow struct {
 	AttendanceCount int32
 	IsExpired       bool
 	IsCancelled     bool
+	IsCompleted     bool
+	CompletedAt     pgtype.Timestamptz
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -101,6 +106,8 @@ func (q *Queries) CancelCheckin(ctx context.Context, arg CancelCheckinParams) (C
 		&i.AttendanceCount,
 		&i.IsExpired,
 		&i.IsCancelled,
+		&i.IsCompleted,
+		&i.CompletedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -121,6 +128,72 @@ func (q *Queries) CheckinExists(ctx context.Context, arg CheckinExistsParams) (b
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
+}
+
+const completeCheckin = `-- name: CompleteCheckin :one
+UPDATE checkins SET completed_at = NOW(), completed_by = $1, updated_at = NOW()
+WHERE id = $2 AND guild_id = $3
+  AND cancelled_at IS NULL AND completed_at IS NULL AND expire_time < NOW()
+RETURNING id, guild_id, created_by, title,
+          COALESCE(description, '') AS description,
+          TO_CHAR(datetime    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS datetime,
+          TO_CHAR(expire_time AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS expire_time,
+          COALESCE(image_url, '') AS image_url,
+          loot_list, attendance_count,
+          (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
+          created_at, updated_at
+`
+
+type CompleteCheckinParams struct {
+	CompletedBy *uuid.UUID
+	ID          uuid.UUID
+	GuildID     uuid.UUID
+}
+
+type CompleteCheckinRow struct {
+	ID              uuid.UUID
+	GuildID         uuid.UUID
+	CreatedBy       uuid.UUID
+	Title           string
+	Description     string
+	Datetime        string
+	ExpireTime      string
+	ImageUrl        string
+	LootList        []byte
+	AttendanceCount int32
+	IsExpired       bool
+	IsCancelled     bool
+	IsCompleted     bool
+	CompletedAt     pgtype.Timestamptz
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+func (q *Queries) CompleteCheckin(ctx context.Context, arg CompleteCheckinParams) (CompleteCheckinRow, error) {
+	row := q.db.QueryRow(ctx, completeCheckin, arg.CompletedBy, arg.ID, arg.GuildID)
+	var i CompleteCheckinRow
+	err := row.Scan(
+		&i.ID,
+		&i.GuildID,
+		&i.CreatedBy,
+		&i.Title,
+		&i.Description,
+		&i.Datetime,
+		&i.ExpireTime,
+		&i.ImageUrl,
+		&i.LootList,
+		&i.AttendanceCount,
+		&i.IsExpired,
+		&i.IsCancelled,
+		&i.IsCompleted,
+		&i.CompletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const countCheckinAttendees = `-- name: CountCheckinAttendees :one
@@ -151,12 +224,30 @@ func (q *Queries) CountCheckinAttendeesAmong(ctx context.Context, arg CountCheck
 	return count, err
 }
 
+const countCheckinBankItems = `-- name: CountCheckinBankItems :one
+SELECT COUNT(*) FROM bank_items
+WHERE bank_items.checkin_id = $1::uuid AND bank_items.guild_id = $2
+`
+
+type CountCheckinBankItemsParams struct {
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+}
+
+func (q *Queries) CountCheckinBankItems(ctx context.Context, arg CountCheckinBankItemsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countCheckinBankItems, arg.CheckinID, arg.GuildID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countCheckins = `-- name: CountCheckins :one
 SELECT COUNT(*) FROM checkins WHERE guild_id = $1
   AND CASE
     WHEN $2::text = 'active'    THEN cancelled_at IS NULL AND expire_time >= NOW()
-    WHEN $2::text = 'expired'   THEN cancelled_at IS NULL AND expire_time < NOW()
+    WHEN $2::text = 'expired'   THEN cancelled_at IS NULL AND completed_at IS NULL AND expire_time < NOW()
     WHEN $2::text = 'cancelled' THEN cancelled_at IS NOT NULL
+    WHEN $2::text = 'completed' THEN completed_at IS NOT NULL
     ELSE true
   END
 `
@@ -191,6 +282,8 @@ RETURNING id, guild_id, created_by, title,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
           (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
           created_at, updated_at
 `
 
@@ -218,6 +311,8 @@ type CreateCheckinRow struct {
 	AttendanceCount int32
 	IsExpired       bool
 	IsCancelled     bool
+	IsCompleted     bool
+	CompletedAt     pgtype.Timestamptz
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -247,6 +342,8 @@ func (q *Queries) CreateCheckin(ctx context.Context, arg CreateCheckinParams) (C
 		&i.AttendanceCount,
 		&i.IsExpired,
 		&i.IsCancelled,
+		&i.IsCompleted,
+		&i.CompletedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -279,6 +376,8 @@ SELECT id, guild_id, created_by, title,
        loot_list, attendance_count,
        (expire_time < NOW())::bool AS is_expired,
        (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+       (completed_at IS NOT NULL)::bool AS is_completed,
+       completed_at,
        created_at, updated_at
 FROM checkins WHERE id = $1 AND guild_id = $2
 `
@@ -301,6 +400,8 @@ type GetCheckinRow struct {
 	AttendanceCount int32
 	IsExpired       bool
 	IsCancelled     bool
+	IsCompleted     bool
+	CompletedAt     pgtype.Timestamptz
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -321,6 +422,8 @@ func (q *Queries) GetCheckin(ctx context.Context, arg GetCheckinParams) (GetChec
 		&i.AttendanceCount,
 		&i.IsExpired,
 		&i.IsCancelled,
+		&i.IsCompleted,
+		&i.CompletedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -821,13 +924,16 @@ SELECT id, guild_id, created_by, title,
        loot_list, attendance_count,
        (expire_time < NOW())::bool AS is_expired,
        (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+       (completed_at IS NOT NULL)::bool AS is_completed,
+       completed_at,
        created_at, updated_at
 FROM checkins
 WHERE guild_id = $1
   AND CASE
     WHEN $2::text = 'active'    THEN cancelled_at IS NULL AND expire_time >= NOW()
-    WHEN $2::text = 'expired'   THEN cancelled_at IS NULL AND expire_time < NOW()
+    WHEN $2::text = 'expired'   THEN cancelled_at IS NULL AND completed_at IS NULL AND expire_time < NOW()
     WHEN $2::text = 'cancelled' THEN cancelled_at IS NOT NULL
+    WHEN $2::text = 'completed' THEN completed_at IS NOT NULL
     ELSE true
   END
 ORDER BY datetime DESC
@@ -854,6 +960,8 @@ type ListCheckinsRow struct {
 	AttendanceCount int32
 	IsExpired       bool
 	IsCancelled     bool
+	IsCompleted     bool
+	CompletedAt     pgtype.Timestamptz
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -885,9 +993,49 @@ func (q *Queries) ListCheckins(ctx context.Context, arg ListCheckinsParams) ([]L
 			&i.AttendanceCount,
 			&i.IsExpired,
 			&i.IsCancelled,
+			&i.IsCompleted,
+			&i.CompletedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const lockCheckinBankItems = `-- name: LockCheckinBankItems :many
+SELECT bank_items.id, bank_items.item, (bank_items.locked_by_type IS NOT NULL)::bool AS is_locked
+FROM bank_items
+WHERE bank_items.checkin_id = $1::uuid AND bank_items.guild_id = $2
+FOR UPDATE
+`
+
+type LockCheckinBankItemsParams struct {
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+}
+
+type LockCheckinBankItemsRow struct {
+	ID       uuid.UUID
+	Item     []byte
+	IsLocked bool
+}
+
+func (q *Queries) LockCheckinBankItems(ctx context.Context, arg LockCheckinBankItemsParams) ([]LockCheckinBankItemsRow, error) {
+	rows, err := q.db.Query(ctx, lockCheckinBankItems, arg.CheckinID, arg.GuildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LockCheckinBankItemsRow{}
+	for rows.Next() {
+		var i LockCheckinBankItemsRow
+		if err := rows.Scan(&i.ID, &i.Item, &i.IsLocked); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -929,6 +1077,66 @@ func (q *Queries) LockCheckinGoldPot(ctx context.Context, arg LockCheckinGoldPot
 		&i.Retracted,
 	)
 	return i, err
+}
+
+const lockCheckinState = `-- name: LockCheckinState :one
+SELECT title, (expire_time < NOW())::bool AS is_expired,
+       (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+       (completed_at IS NOT NULL)::bool AS is_completed,
+       loot_list
+FROM checkins WHERE id = $1 AND guild_id = $2
+FOR UPDATE
+`
+
+type LockCheckinStateParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type LockCheckinStateRow struct {
+	Title       string
+	IsExpired   bool
+	IsCancelled bool
+	IsCompleted bool
+	LootList    []byte
+}
+
+func (q *Queries) LockCheckinState(ctx context.Context, arg LockCheckinStateParams) (LockCheckinStateRow, error) {
+	row := q.db.QueryRow(ctx, lockCheckinState, arg.ID, arg.GuildID)
+	var i LockCheckinStateRow
+	err := row.Scan(
+		&i.Title,
+		&i.IsExpired,
+		&i.IsCancelled,
+		&i.IsCompleted,
+		&i.LootList,
+	)
+	return i, err
+}
+
+const logRemovedCheckinLoot = `-- name: LogRemovedCheckinLoot :exec
+INSERT INTO item_events (guild_id, item_id, kind, actor_id, source, reference_id)
+SELECT bi.guild_id, bi.id, 'retracted', $1::uuid, 'checkin', bi.checkin_id
+FROM bank_items bi
+WHERE bi.id = ANY($2::uuid[]) AND bi.guild_id = $3
+  AND bi.checkin_id = $4::uuid AND bi.locked_by_type IS NULL
+`
+
+type LogRemovedCheckinLootParams struct {
+	ActorID   uuid.UUID
+	Ids       []uuid.UUID
+	GuildID   uuid.UUID
+	CheckinID uuid.UUID
+}
+
+func (q *Queries) LogRemovedCheckinLoot(ctx context.Context, arg LogRemovedCheckinLootParams) error {
+	_, err := q.db.Exec(ctx, logRemovedCheckinLoot,
+		arg.ActorID,
+		arg.Ids,
+		arg.GuildID,
+		arg.CheckinID,
+	)
+	return err
 }
 
 const logRetractedCheckinLoot = `-- name: LogRetractedCheckinLoot :exec
@@ -1014,6 +1222,57 @@ func (q *Queries) RejectPendingRequestsForLootItem(ctx context.Context, arg Reje
 	return result.RowsAffected(), nil
 }
 
+const rejectPendingRequestsForLootItems = `-- name: RejectPendingRequestsForLootItems :execrows
+UPDATE item_requests SET
+    status = 'rejected',
+    reviewer_id = $1,
+    review_note = NULLIF($2::text, ''),
+    reviewed_at = NOW()
+WHERE item_requests.guild_id = $3
+  AND item_requests.status = 'pending'
+  AND item_requests.bank_item_id = ANY($4::uuid[])
+`
+
+type RejectPendingRequestsForLootItemsParams struct {
+	ReviewerID  *uuid.UUID
+	ReviewNote  string
+	GuildID     uuid.UUID
+	BankItemIds []uuid.UUID
+}
+
+func (q *Queries) RejectPendingRequestsForLootItems(ctx context.Context, arg RejectPendingRequestsForLootItemsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, rejectPendingRequestsForLootItems,
+		arg.ReviewerID,
+		arg.ReviewNote,
+		arg.GuildID,
+		arg.BankItemIds,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const removeCheckinLoot = `-- name: RemoveCheckinLoot :execrows
+DELETE FROM bank_items
+WHERE bank_items.id = ANY($1::uuid[]) AND bank_items.guild_id = $2
+  AND bank_items.checkin_id = $3::uuid AND bank_items.locked_by_type IS NULL
+`
+
+type RemoveCheckinLootParams struct {
+	Ids       []uuid.UUID
+	GuildID   uuid.UUID
+	CheckinID uuid.UUID
+}
+
+func (q *Queries) RemoveCheckinLoot(ctx context.Context, arg RemoveCheckinLootParams) (int64, error) {
+	result, err := q.db.Exec(ctx, removeCheckinLoot, arg.Ids, arg.GuildID, arg.CheckinID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const retractCheckinGoldPot = `-- name: RetractCheckinGoldPot :one
 UPDATE checkin_gold_pots SET
     retracted  = total - distributed,
@@ -1066,6 +1325,71 @@ func (q *Queries) RetractCheckinLoot(ctx context.Context, arg RetractCheckinLoot
 	return result.RowsAffected(), nil
 }
 
+const setCheckinLootList = `-- name: SetCheckinLootList :one
+UPDATE checkins SET loot_list = $1::jsonb, updated_at = NOW()
+WHERE id = $2 AND guild_id = $3
+RETURNING id, guild_id, created_by, title,
+          COALESCE(description, '') AS description,
+          TO_CHAR(datetime    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS datetime,
+          TO_CHAR(expire_time AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS expire_time,
+          COALESCE(image_url, '') AS image_url,
+          loot_list, attendance_count,
+          (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
+          created_at, updated_at
+`
+
+type SetCheckinLootListParams struct {
+	LootList []byte
+	ID       uuid.UUID
+	GuildID  uuid.UUID
+}
+
+type SetCheckinLootListRow struct {
+	ID              uuid.UUID
+	GuildID         uuid.UUID
+	CreatedBy       uuid.UUID
+	Title           string
+	Description     string
+	Datetime        string
+	ExpireTime      string
+	ImageUrl        string
+	LootList        []byte
+	AttendanceCount int32
+	IsExpired       bool
+	IsCancelled     bool
+	IsCompleted     bool
+	CompletedAt     pgtype.Timestamptz
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
+func (q *Queries) SetCheckinLootList(ctx context.Context, arg SetCheckinLootListParams) (SetCheckinLootListRow, error) {
+	row := q.db.QueryRow(ctx, setCheckinLootList, arg.LootList, arg.ID, arg.GuildID)
+	var i SetCheckinLootListRow
+	err := row.Scan(
+		&i.ID,
+		&i.GuildID,
+		&i.CreatedBy,
+		&i.Title,
+		&i.Description,
+		&i.Datetime,
+		&i.ExpireTime,
+		&i.ImageUrl,
+		&i.LootList,
+		&i.AttendanceCount,
+		&i.IsExpired,
+		&i.IsCancelled,
+		&i.IsCompleted,
+		&i.CompletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const takeCheckinLootItem = `-- name: TakeCheckinLootItem :one
 DELETE FROM bank_items
 WHERE bank_items.id = $1 AND bank_items.guild_id = $2 AND bank_items.checkin_id = $3
@@ -1104,6 +1428,8 @@ RETURNING id, guild_id, created_by, title,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
           (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
           created_at, updated_at
 `
 
@@ -1132,6 +1458,8 @@ type UpdateCheckinRow struct {
 	AttendanceCount int32
 	IsExpired       bool
 	IsCancelled     bool
+	IsCompleted     bool
+	CompletedAt     pgtype.Timestamptz
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -1162,8 +1490,36 @@ func (q *Queries) UpdateCheckin(ctx context.Context, arg UpdateCheckinParams) (U
 		&i.AttendanceCount,
 		&i.IsExpired,
 		&i.IsCancelled,
+		&i.IsCompleted,
+		&i.CompletedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const updateCheckinBankItem = `-- name: UpdateCheckinBankItem :execrows
+UPDATE bank_items SET item = $1::jsonb
+WHERE bank_items.id = $2 AND bank_items.guild_id = $3
+  AND bank_items.checkin_id = $4::uuid AND bank_items.locked_by_type IS NULL
+`
+
+type UpdateCheckinBankItemParams struct {
+	Item      []byte
+	ID        uuid.UUID
+	GuildID   uuid.UUID
+	CheckinID uuid.UUID
+}
+
+func (q *Queries) UpdateCheckinBankItem(ctx context.Context, arg UpdateCheckinBankItemParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateCheckinBankItem,
+		arg.Item,
+		arg.ID,
+		arg.GuildID,
+		arg.CheckinID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

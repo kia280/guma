@@ -26,7 +26,7 @@ const (
 type ListCheckInsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"` // "active" | "expired" | "cancelled" | "" (all)
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"` // "active" | "expired" | "cancelled" | "completed" | "" (all)
 	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,4,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -735,6 +735,206 @@ func (x *CancelCheckInResponse) GetCheckin() *CheckIn {
 	return nil
 }
 
+type CompleteCheckInRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	CheckinId     string                 `protobuf:"bytes,2,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteCheckInRequest) Reset() {
+	*x = CompleteCheckInRequest{}
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteCheckInRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteCheckInRequest) ProtoMessage() {}
+
+func (x *CompleteCheckInRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteCheckInRequest.ProtoReflect.Descriptor instead.
+func (*CompleteCheckInRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CompleteCheckInRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *CompleteCheckInRequest) GetCheckinId() string {
+	if x != nil {
+		return x.CheckinId
+	}
+	return ""
+}
+
+type CompleteCheckInResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Checkin       *CheckIn               `protobuf:"bytes,1,opt,name=checkin,proto3" json:"checkin,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CompleteCheckInResponse) Reset() {
+	*x = CompleteCheckInResponse{}
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CompleteCheckInResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CompleteCheckInResponse) ProtoMessage() {}
+
+func (x *CompleteCheckInResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CompleteCheckInResponse.ProtoReflect.Descriptor instead.
+func (*CompleteCheckInResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *CompleteCheckInResponse) GetCheckin() *CheckIn {
+	if x != nil {
+		return x.Checkin
+	}
+	return nil
+}
+
+type UpdateCheckInLootRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	CheckinId     string                 `protobuf:"bytes,2,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
+	LootList      []*Item                `protobuf:"bytes,3,rep,name=loot_list,json=lootList,proto3" json:"loot_list,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateCheckInLootRequest) Reset() {
+	*x = UpdateCheckInLootRequest{}
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateCheckInLootRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateCheckInLootRequest) ProtoMessage() {}
+
+func (x *UpdateCheckInLootRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateCheckInLootRequest.ProtoReflect.Descriptor instead.
+func (*UpdateCheckInLootRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *UpdateCheckInLootRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *UpdateCheckInLootRequest) GetCheckinId() string {
+	if x != nil {
+		return x.CheckinId
+	}
+	return ""
+}
+
+func (x *UpdateCheckInLootRequest) GetLootList() []*Item {
+	if x != nil {
+		return x.LootList
+	}
+	return nil
+}
+
+type UpdateCheckInLootResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Checkin       *CheckIn               `protobuf:"bytes,1,opt,name=checkin,proto3" json:"checkin,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateCheckInLootResponse) Reset() {
+	*x = UpdateCheckInLootResponse{}
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateCheckInLootResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateCheckInLootResponse) ProtoMessage() {}
+
+func (x *UpdateCheckInLootResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateCheckInLootResponse.ProtoReflect.Descriptor instead.
+func (*UpdateCheckInLootResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *UpdateCheckInLootResponse) GetCheckin() *CheckIn {
+	if x != nil {
+		return x.Checkin
+	}
+	return nil
+}
+
 type AssignLootRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
@@ -747,7 +947,7 @@ type AssignLootRequest struct {
 
 func (x *AssignLootRequest) Reset() {
 	*x = AssignLootRequest{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -759,7 +959,7 @@ func (x *AssignLootRequest) String() string {
 func (*AssignLootRequest) ProtoMessage() {}
 
 func (x *AssignLootRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -772,7 +972,7 @@ func (x *AssignLootRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssignLootRequest.ProtoReflect.Descriptor instead.
 func (*AssignLootRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{12}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *AssignLootRequest) GetGuildId() string {
@@ -812,7 +1012,7 @@ type AssignLootResponse struct {
 
 func (x *AssignLootResponse) Reset() {
 	*x = AssignLootResponse{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[13]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -824,7 +1024,7 @@ func (x *AssignLootResponse) String() string {
 func (*AssignLootResponse) ProtoMessage() {}
 
 func (x *AssignLootResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[13]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -837,7 +1037,7 @@ func (x *AssignLootResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssignLootResponse.ProtoReflect.Descriptor instead.
 func (*AssignLootResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{13}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *AssignLootResponse) GetBackpackItemId() string {
@@ -857,7 +1057,7 @@ type GetCheckInGoldRequest struct {
 
 func (x *GetCheckInGoldRequest) Reset() {
 	*x = GetCheckInGoldRequest{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[14]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -869,7 +1069,7 @@ func (x *GetCheckInGoldRequest) String() string {
 func (*GetCheckInGoldRequest) ProtoMessage() {}
 
 func (x *GetCheckInGoldRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[14]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -882,7 +1082,7 @@ func (x *GetCheckInGoldRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCheckInGoldRequest.ProtoReflect.Descriptor instead.
 func (*GetCheckInGoldRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{14}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GetCheckInGoldRequest) GetGuildId() string {
@@ -909,7 +1109,7 @@ type GetCheckInGoldResponse struct {
 
 func (x *GetCheckInGoldResponse) Reset() {
 	*x = GetCheckInGoldResponse{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -921,7 +1121,7 @@ func (x *GetCheckInGoldResponse) String() string {
 func (*GetCheckInGoldResponse) ProtoMessage() {}
 
 func (x *GetCheckInGoldResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -934,7 +1134,7 @@ func (x *GetCheckInGoldResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCheckInGoldResponse.ProtoReflect.Descriptor instead.
 func (*GetCheckInGoldResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{15}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GetCheckInGoldResponse) GetPot() *CheckInGoldPot {
@@ -963,7 +1163,7 @@ type DistributeCheckInGoldRequest struct {
 
 func (x *DistributeCheckInGoldRequest) Reset() {
 	*x = DistributeCheckInGoldRequest{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -975,7 +1175,7 @@ func (x *DistributeCheckInGoldRequest) String() string {
 func (*DistributeCheckInGoldRequest) ProtoMessage() {}
 
 func (x *DistributeCheckInGoldRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -988,7 +1188,7 @@ func (x *DistributeCheckInGoldRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DistributeCheckInGoldRequest.ProtoReflect.Descriptor instead.
 func (*DistributeCheckInGoldRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{16}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *DistributeCheckInGoldRequest) GetGuildId() string {
@@ -1031,7 +1231,7 @@ type DistributeCheckInGoldResponse struct {
 
 func (x *DistributeCheckInGoldResponse) Reset() {
 	*x = DistributeCheckInGoldResponse{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1043,7 +1243,7 @@ func (x *DistributeCheckInGoldResponse) String() string {
 func (*DistributeCheckInGoldResponse) ProtoMessage() {}
 
 func (x *DistributeCheckInGoldResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1056,7 +1256,7 @@ func (x *DistributeCheckInGoldResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DistributeCheckInGoldResponse.ProtoReflect.Descriptor instead.
 func (*DistributeCheckInGoldResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{17}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *DistributeCheckInGoldResponse) GetDistributionId() string {
@@ -1098,7 +1298,7 @@ type SubmitAttendanceRequest struct {
 
 func (x *SubmitAttendanceRequest) Reset() {
 	*x = SubmitAttendanceRequest{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1110,7 +1310,7 @@ func (x *SubmitAttendanceRequest) String() string {
 func (*SubmitAttendanceRequest) ProtoMessage() {}
 
 func (x *SubmitAttendanceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1123,7 +1323,7 @@ func (x *SubmitAttendanceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubmitAttendanceRequest.ProtoReflect.Descriptor instead.
 func (*SubmitAttendanceRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{18}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *SubmitAttendanceRequest) GetGuildId() string {
@@ -1156,7 +1356,7 @@ type SubmitAttendanceResponse struct {
 
 func (x *SubmitAttendanceResponse) Reset() {
 	*x = SubmitAttendanceResponse{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1168,7 +1368,7 @@ func (x *SubmitAttendanceResponse) String() string {
 func (*SubmitAttendanceResponse) ProtoMessage() {}
 
 func (x *SubmitAttendanceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1181,7 +1381,7 @@ func (x *SubmitAttendanceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubmitAttendanceResponse.ProtoReflect.Descriptor instead.
 func (*SubmitAttendanceResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{19}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *SubmitAttendanceResponse) GetAttendee() *CheckInAttendee {
@@ -1203,7 +1403,7 @@ type ListAttendeesRequest struct {
 
 func (x *ListAttendeesRequest) Reset() {
 	*x = ListAttendeesRequest{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[20]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1215,7 +1415,7 @@ func (x *ListAttendeesRequest) String() string {
 func (*ListAttendeesRequest) ProtoMessage() {}
 
 func (x *ListAttendeesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[20]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1228,7 +1428,7 @@ func (x *ListAttendeesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAttendeesRequest.ProtoReflect.Descriptor instead.
 func (*ListAttendeesRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{20}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ListAttendeesRequest) GetGuildId() string {
@@ -1270,7 +1470,7 @@ type ListAttendeesResponse struct {
 
 func (x *ListAttendeesResponse) Reset() {
 	*x = ListAttendeesResponse{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[21]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1282,7 +1482,7 @@ func (x *ListAttendeesResponse) String() string {
 func (*ListAttendeesResponse) ProtoMessage() {}
 
 func (x *ListAttendeesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[21]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1295,7 +1495,7 @@ func (x *ListAttendeesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAttendeesResponse.ProtoReflect.Descriptor instead.
 func (*ListAttendeesResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{21}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ListAttendeesResponse) GetAttendees() []*CheckInAttendee {
@@ -1337,13 +1537,15 @@ type CheckIn struct {
 	IsCancelled     bool                   `protobuf:"varint,14,opt,name=is_cancelled,json=isCancelled,proto3" json:"is_cancelled,omitempty"`
 	Loot            []*CheckInLootEntry    `protobuf:"bytes,15,rep,name=loot,proto3" json:"loot,omitempty"`                      // All loot entries, including gold
 	GoldPot         *CheckInGoldPot        `protobuf:"bytes,16,opt,name=gold_pot,json=goldPot,proto3" json:"gold_pot,omitempty"` // Unset when the roll call has no gold loot
+	IsCompleted     bool                   `protobuf:"varint,17,opt,name=is_completed,json=isCompleted,proto3" json:"is_completed,omitempty"`
+	CompletedAt     *timestamppb.Timestamp `protobuf:"bytes,18,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
 
 func (x *CheckIn) Reset() {
 	*x = CheckIn{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[22]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1355,7 +1557,7 @@ func (x *CheckIn) String() string {
 func (*CheckIn) ProtoMessage() {}
 
 func (x *CheckIn) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[22]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1368,7 +1570,7 @@ func (x *CheckIn) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckIn.ProtoReflect.Descriptor instead.
 func (*CheckIn) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{22}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *CheckIn) GetId() string {
@@ -1483,6 +1685,20 @@ func (x *CheckIn) GetGoldPot() *CheckInGoldPot {
 	return nil
 }
 
+func (x *CheckIn) GetIsCompleted() bool {
+	if x != nil {
+		return x.IsCompleted
+	}
+	return false
+}
+
+func (x *CheckIn) GetCompletedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CompletedAt
+	}
+	return nil
+}
+
 // LootKind values: item, gold
 type CheckInLootEntry struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1495,7 +1711,7 @@ type CheckInLootEntry struct {
 
 func (x *CheckInLootEntry) Reset() {
 	*x = CheckInLootEntry{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[23]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1507,7 +1723,7 @@ func (x *CheckInLootEntry) String() string {
 func (*CheckInLootEntry) ProtoMessage() {}
 
 func (x *CheckInLootEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[23]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1520,7 +1736,7 @@ func (x *CheckInLootEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckInLootEntry.ProtoReflect.Descriptor instead.
 func (*CheckInLootEntry) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{23}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *CheckInLootEntry) GetKind() string {
@@ -1556,7 +1772,7 @@ type CheckInGoldPot struct {
 
 func (x *CheckInGoldPot) Reset() {
 	*x = CheckInGoldPot{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[24]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1568,7 +1784,7 @@ func (x *CheckInGoldPot) String() string {
 func (*CheckInGoldPot) ProtoMessage() {}
 
 func (x *CheckInGoldPot) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[24]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1581,7 +1797,7 @@ func (x *CheckInGoldPot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckInGoldPot.ProtoReflect.Descriptor instead.
 func (*CheckInGoldPot) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{24}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *CheckInGoldPot) GetTotal() int64 {
@@ -1622,7 +1838,7 @@ type CheckInGoldPayout struct {
 
 func (x *CheckInGoldPayout) Reset() {
 	*x = CheckInGoldPayout{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[25]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1634,7 +1850,7 @@ func (x *CheckInGoldPayout) String() string {
 func (*CheckInGoldPayout) ProtoMessage() {}
 
 func (x *CheckInGoldPayout) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[25]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1647,7 +1863,7 @@ func (x *CheckInGoldPayout) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckInGoldPayout.ProtoReflect.Descriptor instead.
 func (*CheckInGoldPayout) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{25}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *CheckInGoldPayout) GetUserId() string {
@@ -1679,7 +1895,7 @@ type CheckInAttendee struct {
 
 func (x *CheckInAttendee) Reset() {
 	*x = CheckInAttendee{}
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[26]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1691,7 +1907,7 @@ func (x *CheckInAttendee) String() string {
 func (*CheckInAttendee) ProtoMessage() {}
 
 func (x *CheckInAttendee) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_checkin_proto_msgTypes[26]
+	mi := &file_proto_guma_v1_checkin_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1704,7 +1920,7 @@ func (x *CheckInAttendee) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckInAttendee.ProtoReflect.Descriptor instead.
 func (*CheckInAttendee) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{26}
+	return file_proto_guma_v1_checkin_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *CheckInAttendee) GetId() string {
@@ -1818,6 +2034,19 @@ const file_proto_guma_v1_checkin_proto_rawDesc = "" +
 	"\n" +
 	"checkin_id\x18\x02 \x01(\tR\tcheckinId\"C\n" +
 	"\x15CancelCheckInResponse\x12*\n" +
+	"\acheckin\x18\x01 \x01(\v2\x10.guma.v1.CheckInR\acheckin\"R\n" +
+	"\x16CompleteCheckInRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
+	"\n" +
+	"checkin_id\x18\x02 \x01(\tR\tcheckinId\"E\n" +
+	"\x17CompleteCheckInResponse\x12*\n" +
+	"\acheckin\x18\x01 \x01(\v2\x10.guma.v1.CheckInR\acheckin\"\x80\x01\n" +
+	"\x18UpdateCheckInLootRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
+	"\n" +
+	"checkin_id\x18\x02 \x01(\tR\tcheckinId\x12*\n" +
+	"\tloot_list\x18\x03 \x03(\v2\r.guma.v1.ItemR\blootList\"G\n" +
+	"\x19UpdateCheckInLootResponse\x12*\n" +
 	"\acheckin\x18\x01 \x01(\v2\x10.guma.v1.CheckInR\acheckin\"\x7f\n" +
 	"\x11AssignLootRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
@@ -1866,7 +2095,7 @@ const file_proto_guma_v1_checkin_proto_rawDesc = "" +
 	"\tattendees\x18\x01 \x03(\v2\x18.guma.v1.CheckInAttendeeR\tattendees\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\xd7\x04\n" +
+	"totalCount\"\xb9\x05\n" +
 	"\aCheckIn\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1d\n" +
@@ -1889,7 +2118,9 @@ const file_proto_guma_v1_checkin_proto_rawDesc = "" +
 	"updated_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12!\n" +
 	"\fis_cancelled\x18\x0e \x01(\bR\visCancelled\x12-\n" +
 	"\x04loot\x18\x0f \x03(\v2\x19.guma.v1.CheckInLootEntryR\x04loot\x122\n" +
-	"\bgold_pot\x18\x10 \x01(\v2\x17.guma.v1.CheckInGoldPotR\agoldPot\"a\n" +
+	"\bgold_pot\x18\x10 \x01(\v2\x17.guma.v1.CheckInGoldPotR\agoldPot\x12!\n" +
+	"\fis_completed\x18\x11 \x01(\bR\visCompleted\x12=\n" +
+	"\fcompleted_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"a\n" +
 	"\x10CheckInLootEntry\x12\x12\n" +
 	"\x04kind\x18\x01 \x01(\tR\x04kind\x12!\n" +
 	"\x04item\x18\x02 \x01(\v2\r.guma.v1.ItemR\x04item\x12\x16\n" +
@@ -1912,7 +2143,7 @@ const file_proto_guma_v1_checkin_proto_rawDesc = "" +
 	"avatar_url\x18\x05 \x01(\tR\tavatarUrl\x12;\n" +
 	"\vattended_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"attendedAt\x12\x14\n" +
-	"\x05notes\x18\a \x01(\tR\x05notes2\x99\f\n" +
+	"\x05notes\x18\a \x01(\tR\x05notes2\xcb\x0e\n" +
 	"\x0eCheckInService\x12s\n" +
 	"\fListCheckIns\x12\x1c.guma.v1.ListCheckInsRequest\x1a\x1d.guma.v1.ListCheckInsResponse\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/guilds/{guild_id}/checkins\x12z\n" +
 	"\n" +
@@ -1920,7 +2151,9 @@ const file_proto_guma_v1_checkin_proto_rawDesc = "" +
 	"\rCreateCheckIn\x12\x1d.guma.v1.CreateCheckInRequest\x1a\x1e.guma.v1.CreateCheckInResponse\")\x82\xd3\xe4\x93\x02#:\x01*\"\x1e/v1/guilds/{guild_id}/checkins\x12\x86\x01\n" +
 	"\rUpdateCheckIn\x12\x1d.guma.v1.UpdateCheckInRequest\x1a\x1e.guma.v1.UpdateCheckInResponse\"6\x82\xd3\xe4\x93\x020:\x01*2+/v1/guilds/{guild_id}/checkins/{checkin_id}\x12\x83\x01\n" +
 	"\rDeleteCheckIn\x12\x1d.guma.v1.DeleteCheckInRequest\x1a\x1e.guma.v1.DeleteCheckInResponse\"3\x82\xd3\xe4\x93\x02-*+/v1/guilds/{guild_id}/checkins/{checkin_id}\x12\x8d\x01\n" +
-	"\rCancelCheckIn\x12\x1d.guma.v1.CancelCheckInRequest\x1a\x1e.guma.v1.CancelCheckInResponse\"=\x82\xd3\xe4\x93\x027:\x01*\"2/v1/guilds/{guild_id}/checkins/{checkin_id}/cancel\x12\x96\x01\n" +
+	"\rCancelCheckIn\x12\x1d.guma.v1.CancelCheckInRequest\x1a\x1e.guma.v1.CancelCheckInResponse\"=\x82\xd3\xe4\x93\x027:\x01*\"2/v1/guilds/{guild_id}/checkins/{checkin_id}/cancel\x12\x95\x01\n" +
+	"\x0fCompleteCheckIn\x12\x1f.guma.v1.CompleteCheckInRequest\x1a .guma.v1.CompleteCheckInResponse\"?\x82\xd3\xe4\x93\x029:\x01*\"4/v1/guilds/{guild_id}/checkins/{checkin_id}/complete\x12\x97\x01\n" +
+	"\x11UpdateCheckInLoot\x12!.guma.v1.UpdateCheckInLootRequest\x1a\".guma.v1.UpdateCheckInLootResponse\";\x82\xd3\xe4\x93\x025:\x01*\x1a0/v1/guilds/{guild_id}/checkins/{checkin_id}/loot\x12\x96\x01\n" +
 	"\x10SubmitAttendance\x12 .guma.v1.SubmitAttendanceRequest\x1a!.guma.v1.SubmitAttendanceResponse\"=\x82\xd3\xe4\x93\x027:\x01*\"2/v1/guilds/{guild_id}/checkins/{checkin_id}/attend\x12\x8d\x01\n" +
 	"\rListAttendees\x12\x1d.guma.v1.ListAttendeesRequest\x1a\x1e.guma.v1.ListAttendeesResponse\"=\x82\xd3\xe4\x93\x027\x125/v1/guilds/{guild_id}/checkins/{checkin_id}/attendees\x12\x93\x01\n" +
 	"\n" +
@@ -1940,7 +2173,7 @@ func file_proto_guma_v1_checkin_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_checkin_proto_rawDescData
 }
 
-var file_proto_guma_v1_checkin_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_proto_guma_v1_checkin_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_proto_guma_v1_checkin_proto_goTypes = []any{
 	(*ListCheckInsRequest)(nil),           // 0: guma.v1.ListCheckInsRequest
 	(*ListCheckInsResponse)(nil),          // 1: guma.v1.ListCheckInsResponse
@@ -1954,75 +2187,87 @@ var file_proto_guma_v1_checkin_proto_goTypes = []any{
 	(*DeleteCheckInResponse)(nil),         // 9: guma.v1.DeleteCheckInResponse
 	(*CancelCheckInRequest)(nil),          // 10: guma.v1.CancelCheckInRequest
 	(*CancelCheckInResponse)(nil),         // 11: guma.v1.CancelCheckInResponse
-	(*AssignLootRequest)(nil),             // 12: guma.v1.AssignLootRequest
-	(*AssignLootResponse)(nil),            // 13: guma.v1.AssignLootResponse
-	(*GetCheckInGoldRequest)(nil),         // 14: guma.v1.GetCheckInGoldRequest
-	(*GetCheckInGoldResponse)(nil),        // 15: guma.v1.GetCheckInGoldResponse
-	(*DistributeCheckInGoldRequest)(nil),  // 16: guma.v1.DistributeCheckInGoldRequest
-	(*DistributeCheckInGoldResponse)(nil), // 17: guma.v1.DistributeCheckInGoldResponse
-	(*SubmitAttendanceRequest)(nil),       // 18: guma.v1.SubmitAttendanceRequest
-	(*SubmitAttendanceResponse)(nil),      // 19: guma.v1.SubmitAttendanceResponse
-	(*ListAttendeesRequest)(nil),          // 20: guma.v1.ListAttendeesRequest
-	(*ListAttendeesResponse)(nil),         // 21: guma.v1.ListAttendeesResponse
-	(*CheckIn)(nil),                       // 22: guma.v1.CheckIn
-	(*CheckInLootEntry)(nil),              // 23: guma.v1.CheckInLootEntry
-	(*CheckInGoldPot)(nil),                // 24: guma.v1.CheckInGoldPot
-	(*CheckInGoldPayout)(nil),             // 25: guma.v1.CheckInGoldPayout
-	(*CheckInAttendee)(nil),               // 26: guma.v1.CheckInAttendee
-	(*Item)(nil),                          // 27: guma.v1.Item
-	(*timestamppb.Timestamp)(nil),         // 28: google.protobuf.Timestamp
+	(*CompleteCheckInRequest)(nil),        // 12: guma.v1.CompleteCheckInRequest
+	(*CompleteCheckInResponse)(nil),       // 13: guma.v1.CompleteCheckInResponse
+	(*UpdateCheckInLootRequest)(nil),      // 14: guma.v1.UpdateCheckInLootRequest
+	(*UpdateCheckInLootResponse)(nil),     // 15: guma.v1.UpdateCheckInLootResponse
+	(*AssignLootRequest)(nil),             // 16: guma.v1.AssignLootRequest
+	(*AssignLootResponse)(nil),            // 17: guma.v1.AssignLootResponse
+	(*GetCheckInGoldRequest)(nil),         // 18: guma.v1.GetCheckInGoldRequest
+	(*GetCheckInGoldResponse)(nil),        // 19: guma.v1.GetCheckInGoldResponse
+	(*DistributeCheckInGoldRequest)(nil),  // 20: guma.v1.DistributeCheckInGoldRequest
+	(*DistributeCheckInGoldResponse)(nil), // 21: guma.v1.DistributeCheckInGoldResponse
+	(*SubmitAttendanceRequest)(nil),       // 22: guma.v1.SubmitAttendanceRequest
+	(*SubmitAttendanceResponse)(nil),      // 23: guma.v1.SubmitAttendanceResponse
+	(*ListAttendeesRequest)(nil),          // 24: guma.v1.ListAttendeesRequest
+	(*ListAttendeesResponse)(nil),         // 25: guma.v1.ListAttendeesResponse
+	(*CheckIn)(nil),                       // 26: guma.v1.CheckIn
+	(*CheckInLootEntry)(nil),              // 27: guma.v1.CheckInLootEntry
+	(*CheckInGoldPot)(nil),                // 28: guma.v1.CheckInGoldPot
+	(*CheckInGoldPayout)(nil),             // 29: guma.v1.CheckInGoldPayout
+	(*CheckInAttendee)(nil),               // 30: guma.v1.CheckInAttendee
+	(*Item)(nil),                          // 31: guma.v1.Item
+	(*timestamppb.Timestamp)(nil),         // 32: google.protobuf.Timestamp
 }
 var file_proto_guma_v1_checkin_proto_depIdxs = []int32{
-	22, // 0: guma.v1.ListCheckInsResponse.checkins:type_name -> guma.v1.CheckIn
-	22, // 1: guma.v1.GetCheckInResponse.checkin:type_name -> guma.v1.CheckIn
-	27, // 2: guma.v1.CreateCheckInRequest.loot_list:type_name -> guma.v1.Item
-	23, // 3: guma.v1.CreateCheckInRequest.loot:type_name -> guma.v1.CheckInLootEntry
-	22, // 4: guma.v1.CreateCheckInResponse.checkin:type_name -> guma.v1.CheckIn
-	27, // 5: guma.v1.UpdateCheckInRequest.loot_list:type_name -> guma.v1.Item
-	23, // 6: guma.v1.UpdateCheckInRequest.loot:type_name -> guma.v1.CheckInLootEntry
-	22, // 7: guma.v1.UpdateCheckInResponse.checkin:type_name -> guma.v1.CheckIn
-	22, // 8: guma.v1.CancelCheckInResponse.checkin:type_name -> guma.v1.CheckIn
-	24, // 9: guma.v1.GetCheckInGoldResponse.pot:type_name -> guma.v1.CheckInGoldPot
-	25, // 10: guma.v1.GetCheckInGoldResponse.recipients:type_name -> guma.v1.CheckInGoldPayout
-	25, // 11: guma.v1.DistributeCheckInGoldRequest.payouts:type_name -> guma.v1.CheckInGoldPayout
-	24, // 12: guma.v1.DistributeCheckInGoldResponse.pot:type_name -> guma.v1.CheckInGoldPot
-	25, // 13: guma.v1.DistributeCheckInGoldResponse.payouts:type_name -> guma.v1.CheckInGoldPayout
-	26, // 14: guma.v1.SubmitAttendanceResponse.attendee:type_name -> guma.v1.CheckInAttendee
-	26, // 15: guma.v1.ListAttendeesResponse.attendees:type_name -> guma.v1.CheckInAttendee
-	27, // 16: guma.v1.CheckIn.loot_list:type_name -> guma.v1.Item
-	28, // 17: guma.v1.CheckIn.created_at:type_name -> google.protobuf.Timestamp
-	28, // 18: guma.v1.CheckIn.updated_at:type_name -> google.protobuf.Timestamp
-	23, // 19: guma.v1.CheckIn.loot:type_name -> guma.v1.CheckInLootEntry
-	24, // 20: guma.v1.CheckIn.gold_pot:type_name -> guma.v1.CheckInGoldPot
-	27, // 21: guma.v1.CheckInLootEntry.item:type_name -> guma.v1.Item
-	28, // 22: guma.v1.CheckInAttendee.attended_at:type_name -> google.protobuf.Timestamp
-	0,  // 23: guma.v1.CheckInService.ListCheckIns:input_type -> guma.v1.ListCheckInsRequest
-	2,  // 24: guma.v1.CheckInService.GetCheckIn:input_type -> guma.v1.GetCheckInRequest
-	4,  // 25: guma.v1.CheckInService.CreateCheckIn:input_type -> guma.v1.CreateCheckInRequest
-	6,  // 26: guma.v1.CheckInService.UpdateCheckIn:input_type -> guma.v1.UpdateCheckInRequest
-	8,  // 27: guma.v1.CheckInService.DeleteCheckIn:input_type -> guma.v1.DeleteCheckInRequest
-	10, // 28: guma.v1.CheckInService.CancelCheckIn:input_type -> guma.v1.CancelCheckInRequest
-	18, // 29: guma.v1.CheckInService.SubmitAttendance:input_type -> guma.v1.SubmitAttendanceRequest
-	20, // 30: guma.v1.CheckInService.ListAttendees:input_type -> guma.v1.ListAttendeesRequest
-	12, // 31: guma.v1.CheckInService.AssignLoot:input_type -> guma.v1.AssignLootRequest
-	14, // 32: guma.v1.CheckInService.GetCheckInGold:input_type -> guma.v1.GetCheckInGoldRequest
-	16, // 33: guma.v1.CheckInService.DistributeCheckInGold:input_type -> guma.v1.DistributeCheckInGoldRequest
-	1,  // 34: guma.v1.CheckInService.ListCheckIns:output_type -> guma.v1.ListCheckInsResponse
-	3,  // 35: guma.v1.CheckInService.GetCheckIn:output_type -> guma.v1.GetCheckInResponse
-	5,  // 36: guma.v1.CheckInService.CreateCheckIn:output_type -> guma.v1.CreateCheckInResponse
-	7,  // 37: guma.v1.CheckInService.UpdateCheckIn:output_type -> guma.v1.UpdateCheckInResponse
-	9,  // 38: guma.v1.CheckInService.DeleteCheckIn:output_type -> guma.v1.DeleteCheckInResponse
-	11, // 39: guma.v1.CheckInService.CancelCheckIn:output_type -> guma.v1.CancelCheckInResponse
-	19, // 40: guma.v1.CheckInService.SubmitAttendance:output_type -> guma.v1.SubmitAttendanceResponse
-	21, // 41: guma.v1.CheckInService.ListAttendees:output_type -> guma.v1.ListAttendeesResponse
-	13, // 42: guma.v1.CheckInService.AssignLoot:output_type -> guma.v1.AssignLootResponse
-	15, // 43: guma.v1.CheckInService.GetCheckInGold:output_type -> guma.v1.GetCheckInGoldResponse
-	17, // 44: guma.v1.CheckInService.DistributeCheckInGold:output_type -> guma.v1.DistributeCheckInGoldResponse
-	34, // [34:45] is the sub-list for method output_type
-	23, // [23:34] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	26, // 0: guma.v1.ListCheckInsResponse.checkins:type_name -> guma.v1.CheckIn
+	26, // 1: guma.v1.GetCheckInResponse.checkin:type_name -> guma.v1.CheckIn
+	31, // 2: guma.v1.CreateCheckInRequest.loot_list:type_name -> guma.v1.Item
+	27, // 3: guma.v1.CreateCheckInRequest.loot:type_name -> guma.v1.CheckInLootEntry
+	26, // 4: guma.v1.CreateCheckInResponse.checkin:type_name -> guma.v1.CheckIn
+	31, // 5: guma.v1.UpdateCheckInRequest.loot_list:type_name -> guma.v1.Item
+	27, // 6: guma.v1.UpdateCheckInRequest.loot:type_name -> guma.v1.CheckInLootEntry
+	26, // 7: guma.v1.UpdateCheckInResponse.checkin:type_name -> guma.v1.CheckIn
+	26, // 8: guma.v1.CancelCheckInResponse.checkin:type_name -> guma.v1.CheckIn
+	26, // 9: guma.v1.CompleteCheckInResponse.checkin:type_name -> guma.v1.CheckIn
+	31, // 10: guma.v1.UpdateCheckInLootRequest.loot_list:type_name -> guma.v1.Item
+	26, // 11: guma.v1.UpdateCheckInLootResponse.checkin:type_name -> guma.v1.CheckIn
+	28, // 12: guma.v1.GetCheckInGoldResponse.pot:type_name -> guma.v1.CheckInGoldPot
+	29, // 13: guma.v1.GetCheckInGoldResponse.recipients:type_name -> guma.v1.CheckInGoldPayout
+	29, // 14: guma.v1.DistributeCheckInGoldRequest.payouts:type_name -> guma.v1.CheckInGoldPayout
+	28, // 15: guma.v1.DistributeCheckInGoldResponse.pot:type_name -> guma.v1.CheckInGoldPot
+	29, // 16: guma.v1.DistributeCheckInGoldResponse.payouts:type_name -> guma.v1.CheckInGoldPayout
+	30, // 17: guma.v1.SubmitAttendanceResponse.attendee:type_name -> guma.v1.CheckInAttendee
+	30, // 18: guma.v1.ListAttendeesResponse.attendees:type_name -> guma.v1.CheckInAttendee
+	31, // 19: guma.v1.CheckIn.loot_list:type_name -> guma.v1.Item
+	32, // 20: guma.v1.CheckIn.created_at:type_name -> google.protobuf.Timestamp
+	32, // 21: guma.v1.CheckIn.updated_at:type_name -> google.protobuf.Timestamp
+	27, // 22: guma.v1.CheckIn.loot:type_name -> guma.v1.CheckInLootEntry
+	28, // 23: guma.v1.CheckIn.gold_pot:type_name -> guma.v1.CheckInGoldPot
+	32, // 24: guma.v1.CheckIn.completed_at:type_name -> google.protobuf.Timestamp
+	31, // 25: guma.v1.CheckInLootEntry.item:type_name -> guma.v1.Item
+	32, // 26: guma.v1.CheckInAttendee.attended_at:type_name -> google.protobuf.Timestamp
+	0,  // 27: guma.v1.CheckInService.ListCheckIns:input_type -> guma.v1.ListCheckInsRequest
+	2,  // 28: guma.v1.CheckInService.GetCheckIn:input_type -> guma.v1.GetCheckInRequest
+	4,  // 29: guma.v1.CheckInService.CreateCheckIn:input_type -> guma.v1.CreateCheckInRequest
+	6,  // 30: guma.v1.CheckInService.UpdateCheckIn:input_type -> guma.v1.UpdateCheckInRequest
+	8,  // 31: guma.v1.CheckInService.DeleteCheckIn:input_type -> guma.v1.DeleteCheckInRequest
+	10, // 32: guma.v1.CheckInService.CancelCheckIn:input_type -> guma.v1.CancelCheckInRequest
+	12, // 33: guma.v1.CheckInService.CompleteCheckIn:input_type -> guma.v1.CompleteCheckInRequest
+	14, // 34: guma.v1.CheckInService.UpdateCheckInLoot:input_type -> guma.v1.UpdateCheckInLootRequest
+	22, // 35: guma.v1.CheckInService.SubmitAttendance:input_type -> guma.v1.SubmitAttendanceRequest
+	24, // 36: guma.v1.CheckInService.ListAttendees:input_type -> guma.v1.ListAttendeesRequest
+	16, // 37: guma.v1.CheckInService.AssignLoot:input_type -> guma.v1.AssignLootRequest
+	18, // 38: guma.v1.CheckInService.GetCheckInGold:input_type -> guma.v1.GetCheckInGoldRequest
+	20, // 39: guma.v1.CheckInService.DistributeCheckInGold:input_type -> guma.v1.DistributeCheckInGoldRequest
+	1,  // 40: guma.v1.CheckInService.ListCheckIns:output_type -> guma.v1.ListCheckInsResponse
+	3,  // 41: guma.v1.CheckInService.GetCheckIn:output_type -> guma.v1.GetCheckInResponse
+	5,  // 42: guma.v1.CheckInService.CreateCheckIn:output_type -> guma.v1.CreateCheckInResponse
+	7,  // 43: guma.v1.CheckInService.UpdateCheckIn:output_type -> guma.v1.UpdateCheckInResponse
+	9,  // 44: guma.v1.CheckInService.DeleteCheckIn:output_type -> guma.v1.DeleteCheckInResponse
+	11, // 45: guma.v1.CheckInService.CancelCheckIn:output_type -> guma.v1.CancelCheckInResponse
+	13, // 46: guma.v1.CheckInService.CompleteCheckIn:output_type -> guma.v1.CompleteCheckInResponse
+	15, // 47: guma.v1.CheckInService.UpdateCheckInLoot:output_type -> guma.v1.UpdateCheckInLootResponse
+	23, // 48: guma.v1.CheckInService.SubmitAttendance:output_type -> guma.v1.SubmitAttendanceResponse
+	25, // 49: guma.v1.CheckInService.ListAttendees:output_type -> guma.v1.ListAttendeesResponse
+	17, // 50: guma.v1.CheckInService.AssignLoot:output_type -> guma.v1.AssignLootResponse
+	19, // 51: guma.v1.CheckInService.GetCheckInGold:output_type -> guma.v1.GetCheckInGoldResponse
+	21, // 52: guma.v1.CheckInService.DistributeCheckInGold:output_type -> guma.v1.DistributeCheckInGoldResponse
+	40, // [40:53] is the sub-list for method output_type
+	27, // [27:40] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_checkin_proto_init() }
@@ -2038,7 +2283,7 @@ func file_proto_guma_v1_checkin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_checkin_proto_rawDesc), len(file_proto_guma_v1_checkin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   27,
+			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

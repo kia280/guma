@@ -21,6 +21,7 @@ import type {
   ItemTemplate,
   ItemTemplateInput,
   CreateCheckinRequest,
+  LootEntry,
   UpdateCheckinRequest,
 } from '@/types/checkin';
 import type { QueryOptions } from '@/types/common';
@@ -141,6 +142,8 @@ export interface ApiClient {
   updateCheckin(guildId: string, id: string, patch: UpdateCheckinRequest): Promise<CheckinEntry>;
   deleteCheckin(guildId: string, id: string): Promise<void>;
   cancelCheckin(guildId: string, id: string): Promise<CheckinEntry>;
+  completeCheckin(guildId: string, id: string): Promise<CheckinEntry>;
+  updateCheckinLoot(guildId: string, id: string, lootList: LootEntry[]): Promise<CheckinEntry>;
   submitAttendance(guildId: string, checkinId: string, notes?: string): Promise<AttendanceMember>;
   listAttendees(guildId: string, checkinId: string): Promise<AttendanceMember[]>;
   assignLoot(guildId: string, checkinId: string, itemId: string, userId: string): Promise<void>;

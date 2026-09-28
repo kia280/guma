@@ -52,7 +52,8 @@ export function CheckinCard({
   const statusLabel = {
     [CheckinStatus.OPEN]: t('statusActive'),
     [CheckinStatus.CANCELLED]: t('statusCancelled'),
-    [CheckinStatus.FINISHED]: t('statusCompleted'),
+    [CheckinStatus.FINISHED]: t('statusEnded'),
+    [CheckinStatus.COMPLETED]: t('statusCompleted'),
   }[status];
   const canCheckin = status === CheckinStatus.OPEN && !isExpired;
   const timeLeft = canCheckin && expireTime ? formatCountdown(remainingMs) : null;
@@ -145,7 +146,7 @@ export function CheckinCard({
             tone={isDisabled ? 'disabled' : 'accent'}
           />
         )}
-        {status === CheckinStatus.FINISHED && (
+        {(status === CheckinStatus.FINISHED || status === CheckinStatus.COMPLETED) && (
           <CardLinkHint
             icon="solar:eye-linear"
             label={t('viewDetails')}

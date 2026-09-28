@@ -72,6 +72,14 @@ const toProtoLoot = (entry: LootEntry) =>
         },
       };
 
+const toProtoItem = (entry: LootEntry) => ({
+  id: entry.id,
+  name: entry.name,
+  description: entry.description,
+  category: entry.category,
+  rarity: entry.rarity,
+});
+
 const apiGuild = (g: Parameters<typeof toGuild>[0]) => toGuild(g, env.api.url);
 
 const toProtoSource = (source: ItemSourceRef | undefined) =>
@@ -380,6 +388,16 @@ export const gumaApiClient: ApiClient = {
   },
   cancelCheckin: async (guildId, id) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${id}/cancel`, {});
+    return toCheckin(data.checkin);
+  },
+  completeCheckin: async (guildId, id) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${id}/complete`, {});
+    return toCheckin(data.checkin);
+  },
+  updateCheckinLoot: async (guildId, id, lootList) => {
+    const { data } = await http.put(`/v1/guilds/${guildId}/checkins/${id}/loot`, {
+      loot_list: lootList.map(toProtoItem),
+    });
     return toCheckin(data.checkin);
   },
   listCheckinTemplates: async (guildId) => {

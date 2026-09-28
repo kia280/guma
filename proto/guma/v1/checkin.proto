@@ -48,6 +48,20 @@ service CheckInService {
     };
   }
 
+  rpc CompleteCheckIn(CompleteCheckInRequest) returns (CompleteCheckInResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/checkins/{checkin_id}/complete"
+      body: "*"
+    };
+  }
+
+  rpc UpdateCheckInLoot(UpdateCheckInLootRequest) returns (UpdateCheckInLootResponse) {
+    option (google.api.http) = {
+      put: "/v1/guilds/{guild_id}/checkins/{checkin_id}/loot"
+      body: "*"
+    };
+  }
+
   // Member submits their attendance for a check-in
   rpc SubmitAttendance(SubmitAttendanceRequest) returns (SubmitAttendanceResponse) {
     option (google.api.http) = {
@@ -88,7 +102,7 @@ service CheckInService {
 
 message ListCheckInsRequest {
   string guild_id = 1;
-  string status = 2;     // "active" | "expired" | "cancelled" | "" (all)
+  string status = 2;     // "active" | "expired" | "cancelled" | "completed" | "" (all)
   int32 page_size = 3;
   string page_token = 4;
 }
@@ -154,6 +168,25 @@ message CancelCheckInRequest {
 }
 
 message CancelCheckInResponse {
+  CheckIn checkin = 1;
+}
+
+message CompleteCheckInRequest {
+  string guild_id = 1;
+  string checkin_id = 2;
+}
+
+message CompleteCheckInResponse {
+  CheckIn checkin = 1;
+}
+
+message UpdateCheckInLootRequest {
+  string guild_id = 1;
+  string checkin_id = 2;
+  repeated Item loot_list = 3;
+}
+
+message UpdateCheckInLootResponse {
   CheckIn checkin = 1;
 }
 
@@ -234,6 +267,8 @@ message CheckIn {
   bool is_cancelled = 14;
   repeated CheckInLootEntry loot = 15; // All loot entries, including gold
   CheckInGoldPot gold_pot = 16;        // Unset when the roll call has no gold loot
+  bool is_completed = 17;
+  google.protobuf.Timestamp completed_at = 18;
 }
 
 // LootKind values: item, gold

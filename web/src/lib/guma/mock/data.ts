@@ -300,6 +300,7 @@ function formatCheckinDate(time: number): string {
 function checkinStatusFor(i: number): CheckinStatus {
   if (i < 3) return CheckinStatus.OPEN;
   if (i % 5 === 4) return CheckinStatus.CANCELLED;
+  if (i % 5 === 2) return CheckinStatus.COMPLETED;
   return CheckinStatus.FINISHED;
 }
 
@@ -328,7 +329,7 @@ function generateCheckins(): CheckinEntry[] {
         id: `c${i + 1}-l${j + 1}`,
         name,
         quantity: 1 + Math.floor(random() * 10),
-        ...(status === CheckinStatus.FINISHED
+        ...(status === CheckinStatus.FINISHED || status === CheckinStatus.COMPLETED
           ? { winner: attendees[Math.floor(random() * attendees.length)].username }
           : {}),
       }));
@@ -344,8 +345,14 @@ function generateCheckins(): CheckinEntry[] {
       attendanceList,
       lootList,
       ...(i % 3 === 0 && status !== CheckinStatus.CANCELLED
-        ? { goldLoot: { total: 1000 + i * 50, distributed: 0, retracted: 0, remaining: 1000 + i * 50 } }
+        ? {
+            goldLoot:
+              status === CheckinStatus.COMPLETED
+                ? { total: 1000 + i * 50, distributed: 1000 + i * 50, retracted: 0, remaining: 0 }
+                : { total: 1000 + i * 50, distributed: 0, retracted: 0, remaining: 1000 + i * 50 },
+          }
         : {}),
+      ...(status === CheckinStatus.COMPLETED ? { completedAt: new Date(start + 3 * HOUR).toISOString() } : {}),
     };
   });
 }

@@ -26,6 +26,7 @@ const STATUS_TABS = [
   { id: 'all', status: null },
   { id: 'open', status: CheckinStatus.OPEN },
   { id: 'finished', status: CheckinStatus.FINISHED },
+  { id: 'completed', status: CheckinStatus.COMPLETED },
   { id: 'cancelled', status: CheckinStatus.CANCELLED },
 ] as const;
 
@@ -119,7 +120,8 @@ export default function CheckinPage() {
   const tabLabels: Record<string, string> = {
     all: t('all'),
     open: t('statusActive'),
-    finished: t('statusCompleted'),
+    finished: t('statusEnded'),
+    completed: t('statusCompleted'),
     cancelled: t('statusCancelled'),
   };
   const countFor = (status: CheckinStatus | null) =>

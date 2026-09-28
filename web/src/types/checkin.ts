@@ -6,6 +6,7 @@ export enum CheckinStatus {
   OPEN = 1,
   CANCELLED = 2,
   FINISHED = 3,
+  COMPLETED = 4,
 }
 
 export interface AttendanceMember {
@@ -20,6 +21,9 @@ export interface AttendanceMember {
 export interface LootItem {
   id: string;
   name: string;
+  description?: string;
+  category?: ItemCategory;
+  rarity?: ItemRarity;
   quantity?: number;
   winner?: string;
 }
@@ -62,6 +66,7 @@ export interface CheckinEntry {
   goldLoot?: CheckinGoldPot;
   isDisabled?: boolean;
   imageUrl?: string;
+  completedAt?: string;
 }
 
 export interface CreateCheckinRequest {
@@ -82,6 +87,7 @@ export interface UpdateCheckinRequest {
 }
 
 export interface LootEntry {
+  id?: string;
   kind?: LootKind;
   amount?: number;
   name: string;

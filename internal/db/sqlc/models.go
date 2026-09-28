@@ -124,6 +124,8 @@ type Checkin struct {
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	CancelledAt     pgtype.Timestamptz
+	CompletedAt     pgtype.Timestamptz
+	CompletedBy     *uuid.UUID
 }
 
 type CheckinAttendee struct {

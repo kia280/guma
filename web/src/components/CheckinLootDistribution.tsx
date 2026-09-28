@@ -24,9 +24,10 @@ type CheckinLootDistributionProps = {
   checkinId: string;
   lootList: LootItem[];
   attendees: AttendanceMember[];
+  onVaultCountChange?: (count: number) => void;
 };
 
-export function CheckinLootDistribution({ checkinId, lootList, attendees }: CheckinLootDistributionProps) {
+export function CheckinLootDistribution({ checkinId, lootList, attendees, onVaultCountChange }: CheckinLootDistributionProps) {
   const t = useTranslations('checkinLoot');
   const labels = useTranslations('createAuctionModal');
   const userName = useUserName();
@@ -53,9 +54,10 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees }: Chec
       .then(items => {
         setBankItems(items);
         setStatus('ready');
+        onVaultCountChange?.(items.length);
       })
       .catch(() => setStatus('error'));
-  }, [guildId, checkinId]);
+  }, [guildId, checkinId, onVaultCountChange]);
 
   React.useEffect(() => {
     load();

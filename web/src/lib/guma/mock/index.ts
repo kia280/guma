@@ -675,6 +675,67 @@ const baseMockApiClient: ApiClient = {
     }
     return entry;
   },
+  completeCheckin: async (_guildId, id) => {
+    const entry = store.checkins.find(c => c.id === id);
+    if (!entry) throw notFound();
+    const isExpired = !!entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now();
+    if (entry.status === CheckinStatus.CANCELLED || entry.status === CheckinStatus.COMPLETED || !isExpired) {
+      throw failedPrecondition('check-in cannot be completed');
+    }
+    if (mockData.mockGuildItems.some(item => item.checkinId === id) || (entry.goldLoot?.remaining ?? 0) > 0) {
+      throw failedPrecondition('loot has not been distributed yet');
+    }
+    entry.status = CheckinStatus.COMPLETED;
+    entry.completedAt = new Date().toISOString();
+    return entry;
+  },
+  updateCheckinLoot: async (_guildId, id, lootList) => {
+    const entry = store.checkins.find(c => c.id === id);
+    if (!entry) throw notFound();
+    if (entry.status === CheckinStatus.CANCELLED || entry.status === CheckinStatus.COMPLETED) {
+      throw failedPrecondition('loot can no longer change');
+    }
+    const vault = new Map(mockData.mockGuildItems.filter(item => item.checkinId === id).map(item => [item.id, item]));
+    const kept = new Set(lootList.flatMap(item => (item.id ? [item.id] : [])));
+    for (const item of entry.lootList) {
+      const next = lootList.find(l => l.id === item.id);
+      const isChanged = !next || next.name.trim() !== item.name;
+      const bankItem = vault.get(item.id);
+      if (isChanged && (!bankItem || bankItem.lock)) throw failedPrecondition(`${item.name} has left the guild vault`);
+    }
+    entry.lootList
+      .filter(item => !kept.has(item.id))
+      .forEach(item => removeById(mockData.mockGuildItems, item.id));
+    entry.lootList = lootList.map((item, idx) => {
+      const lootId = item.id ?? `l-${Date.now()}-${idx}`;
+      const bankItem = vault.get(lootId);
+      if (bankItem) bankItem.name = item.name.trim();
+      if (!item.id) {
+        mockData.mockGuildItems.unshift({
+          id: lootId,
+          name: item.name.trim(),
+          description: item.description ?? '',
+          category: item.category ?? ItemCategory.MISC,
+          rarity: item.rarity ?? ItemRarity.COMMON,
+          donatedBy: ownUserName(currentUser),
+          donatedAt: new Date().toISOString(),
+          quantity: 1,
+          pendingRequestCount: 0,
+          requestedByMe: false,
+          checkinId: entry.id,
+          checkinTitle: entry.title,
+        });
+      }
+      return {
+        id: lootId,
+        name: item.name.trim(),
+        description: item.description,
+        category: item.category ?? ItemCategory.MISC,
+        rarity: item.rarity ?? ItemRarity.COMMON,
+      };
+    });
+    return entry;
+  },
   submitAttendance: async (_guildId, checkinId, notes): Promise<AttendanceMember> => {
     const entry = store.checkins.find(c => c.id === checkinId);
     if (!entry) throw new Error('not found');
