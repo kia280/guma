@@ -454,9 +454,18 @@ export default function AdminPage() {
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
                               <UserAvatar name={userName(user.username)} src={user.avatar} className="shrink-0" />
-                              <p className="type-body font-medium text-foreground truncate min-w-0">
-                                {userName(user.username)}
-                              </p>
+                              <div className="min-w-0">
+                                <p className="type-body font-medium text-foreground truncate">
+                                  {userName(user.username)}
+                                </p>
+                                {user.discordUsername && (
+                                  <p className="type-caption text-hint truncate flex items-center gap-1">
+                                    <Icon icon="ic:baseline-discord" width={14} className="shrink-0" aria-hidden />
+                                    <span className="sr-only">{t('discordUsername')}</span>
+                                    <span className="truncate">{user.discordUsername}</span>
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </Table.Cell>
                           <Table.Cell>

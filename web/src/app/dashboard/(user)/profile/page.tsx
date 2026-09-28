@@ -9,7 +9,6 @@ import {
   Separator,
   TextField,
   Label,
-  InputGroup,
   Description,
   FieldError,
   Spinner,
@@ -27,17 +26,13 @@ import { isGuildRole, roleChipColor } from '@/lib/permissions';
 import { useUserStore } from '@/lib/store';
 import { ownUserName } from '@/lib/user-name';
 
-const DISPLAY_NAME_MAX_LENGTH = 50;
-const USERNAME_MIN_LENGTH = 3;
-const USERNAME_MAX_LENGTH = 32;
+const NAME_MAX_LENGTH = 32;
 const BIO_MAX_LENGTH = 500;
-const USERNAME_PATTERN = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}._-]*$/u;
 
 const normalizeField = (value: string) => value.trim().normalize('NFC');
 
 type DraftErrors = {
   displayName?: string;
-  username?: string;
   bio?: string;
 };
 
@@ -51,41 +46,31 @@ export default function ProfilePage() {
   const notify = useToast();
   const [saveError, setSaveError] = React.useState('');
   const [displayName, setDisplayName] = React.useState('');
-  const [username, setUsername] = React.useState('');
   const [bio, setBio] = React.useState('');
-  const [usernameTaken, setUsernameTaken] = React.useState('');
+  const [nameTaken, setNameTaken] = React.useState('');
 
   const resetDraft = React.useCallback(() => {
-    setDisplayName(user?.displayName ?? '');
-    setUsername(user?.username ?? '');
+    setDisplayName(ownUserName(user));
     setBio(user?.bio ?? '');
-    setUsernameTaken('');
+    setNameTaken('');
     setSaveError('');
   }, [user]);
 
   const draftErrors = React.useMemo<DraftErrors>(() => {
     const errors: DraftErrors = {};
     const trimmedDisplayName = normalizeField(displayName);
-    const trimmedUsername = normalizeField(username);
     if (!trimmedDisplayName) {
-      errors.displayName = t('displayNameRequired');
-    } else if ([...trimmedDisplayName].length > DISPLAY_NAME_MAX_LENGTH) {
-      errors.displayName = t('displayNameTooLong', { max: DISPLAY_NAME_MAX_LENGTH });
-    }
-    if (!trimmedUsername) {
-      errors.username = t('usernameRequired');
-    } else if ([...trimmedUsername].length < USERNAME_MIN_LENGTH || [...trimmedUsername].length > USERNAME_MAX_LENGTH) {
-      errors.username = t('usernameLength', { min: USERNAME_MIN_LENGTH, max: USERNAME_MAX_LENGTH });
-    } else if (!USERNAME_PATTERN.test(trimmedUsername)) {
-      errors.username = t('usernameInvalid');
-    } else if (usernameTaken && trimmedUsername === usernameTaken) {
-      errors.username = t('usernameTaken');
+      errors.displayName = t('nameRequired');
+    } else if ([...trimmedDisplayName].length > NAME_MAX_LENGTH) {
+      errors.displayName = t('nameTooLong', { max: NAME_MAX_LENGTH });
+    } else if (nameTaken && trimmedDisplayName.toLocaleLowerCase() === nameTaken.toLocaleLowerCase()) {
+      errors.displayName = t('nameTaken');
     }
     if ([...normalizeField(bio)].length > BIO_MAX_LENGTH) {
       errors.bio = t('bioTooLong', { max: BIO_MAX_LENGTH });
     }
     return errors;
-  }, [displayName, username, bio, usernameTaken, t]);
+  }, [displayName, bio, nameTaken, t]);
 
   const hasDraftErrors = Object.keys(draftErrors).length > 0;
 
@@ -105,11 +90,10 @@ export default function ProfilePage() {
     }
     setIsSaving(true);
     setSaveError('');
-    const trimmedUsername = normalizeField(username);
+    const trimmedDisplayName = normalizeField(displayName);
     try {
       const updated = await apiClient.updateMe({
-        displayName: normalizeField(displayName),
-        username: trimmedUsername,
+        displayName: trimmedDisplayName,
         bio: normalizeField(bio),
       });
       setUser(updated);
@@ -118,7 +102,7 @@ export default function ProfilePage() {
     } catch (err) {
       switch (apiErrorCode(err)) {
         case GrpcCode.AlreadyExists:
-          setUsernameTaken(trimmedUsername);
+          setNameTaken(trimmedDisplayName);
           setSaveError(t('saveInvalid'));
           break;
         case GrpcCode.InvalidArgument:
@@ -195,37 +179,21 @@ export default function ProfilePage() {
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <TextField
-              isReadOnly={!isEditing}
-              isRequired={isEditing}
-              isInvalid={isEditing && !!draftErrors.displayName}
-            >
-              <Label>{t('displayName')}</Label>
-              <Input value={displayName} onChange={e => setDisplayName(e.target.value)} />
-              {isEditing && draftErrors.displayName && <FieldError>{draftErrors.displayName}</FieldError>}
-            </TextField>
-            <TextField
-              isReadOnly={!isEditing}
-              isRequired={isEditing}
-              isInvalid={isEditing && !!draftErrors.username}
-            >
-              <Label>{t('username')}</Label>
-              <InputGroup>
-                <InputGroup.Prefix>
-                  <span className="text-hint type-body">@</span>
-                </InputGroup.Prefix>
-                <InputGroup.Input value={username} onChange={e => setUsername(e.target.value)} />
-              </InputGroup>
-              {isEditing && (
-                draftErrors.username ? (
-                  <FieldError>{draftErrors.username}</FieldError>
-                ) : (
-                  <Description>{t('usernameHint', { min: USERNAME_MIN_LENGTH, max: USERNAME_MAX_LENGTH })}</Description>
-                )
-              )}
-            </TextField>
-          </div>
+          <TextField
+            isReadOnly={!isEditing}
+            isRequired={isEditing}
+            isInvalid={isEditing && !!draftErrors.displayName}
+          >
+            <Label>{t('name')}</Label>
+            <Input value={displayName} onChange={e => setDisplayName(e.target.value)} />
+            {isEditing && (
+              draftErrors.displayName ? (
+                <FieldError>{draftErrors.displayName}</FieldError>
+              ) : (
+                <Description>{t('nameHint', { max: NAME_MAX_LENGTH })}</Description>
+              )
+            )}
+          </TextField>
           <TextField isReadOnly={!isEditing} isInvalid={isEditing && !!draftErrors.bio}>
             <Label>{t('bio')}</Label>
             <TextArea value={bio} onChange={e => setBio(e.target.value)} rows={2} />

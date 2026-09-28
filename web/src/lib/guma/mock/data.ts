@@ -86,7 +86,7 @@ function generateMembers(): MockUser[] {
     return {
       id: `u${n}`,
       username: names[i] ?? `Member${n}`,
-      email: `member${n}@example.com`,
+      discordUsername: `member_${n}`,
       role: roleFor(n),
       status: roll < 0.02 ? 'banned' : roll < 0.27 ? 'online' : 'offline',
       lastActive: pick(LAST_ACTIVE),

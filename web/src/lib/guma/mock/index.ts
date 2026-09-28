@@ -147,7 +147,6 @@ const publishedMockAnnouncements = (): Announcement[] => [
 
 const currentUser: User = {
   id: 'current-user',
-  username: 'You',
   displayName: 'You',
   email: 'you@example.com',
   avatarUrl: '',

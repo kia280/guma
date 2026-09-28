@@ -148,7 +148,6 @@ const toLinkedAccount = (a: ProtoLinkedAccount): LinkedAccount => ({
 
 export const toUser = (u: ProtoUser): User => ({
   id: u.id ?? '',
-  username: u.username ?? '',
   displayName: u.display_name ?? '',
   email: u.email ?? '',
   avatarUrl: u.avatar_url ?? '',
@@ -332,7 +331,7 @@ type ProtoMember = {
   id: string;
   user_id?: string;
   display_name?: string;
-  email?: string;
+  discord_username?: string;
   avatar_url?: string;
   role?: string;
   last_active?: string;
@@ -345,7 +344,7 @@ export const toMember = (raw: ProtoMember): MockUser => {
   return {
     id: raw.user_id || raw.id,
     username: raw.display_name ?? '',
-    email: raw.email ?? '',
+    discordUsername: raw.discord_username || undefined,
     role: raw.role,
     status: Date.now() - new Date(lastActive).getTime() < ONLINE_WINDOW_MS ? 'online' : 'offline',
     lastActive,
