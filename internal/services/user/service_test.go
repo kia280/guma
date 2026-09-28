@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -28,7 +29,6 @@ func TestIdentityFromKratos(t *testing.T) {
 			},
 			want: kratosIdentity{
 				email:           "ada@example.com",
-				username:        "ada@example.com",
 				avatarURL:       "https://cdn.example.com/a.png",
 				emailVerified:   true,
 				discordUsername: "ada",
@@ -52,7 +52,7 @@ func TestIdentityFromKratos(t *testing.T) {
 					{Via: "email", Value: "old@example.com", Verified: true},
 				},
 			},
-			want: kratosIdentity{email: "ada@example.com", username: "ada@example.com"},
+			want: kratosIdentity{email: "ada@example.com"},
 		},
 		{
 			name: "missing traits",
@@ -66,6 +66,13 @@ func TestIdentityFromKratos(t *testing.T) {
 			assert.Equal(t, tt.want, identityFromKratos(&tt.kid))
 		})
 	}
+}
+
+func TestDefaultUsername(t *testing.T) {
+	id := uuid.MustParse("9b3e93a1-0c2d-4e5f-8a7b-6c5d4e3f2a1b")
+
+	assert.Equal(t, "Ada L", defaultUsername(id, "Ada L"))
+	assert.Equal(t, "user-9b3e93a1", defaultUsername(id, ""))
 }
 
 func TestLinkedAccountFromCredentials(t *testing.T) {

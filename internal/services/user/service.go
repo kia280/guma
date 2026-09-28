@@ -221,7 +221,7 @@ func (s *Service) loadProfile(ctx context.Context, id uuid.UUID, kratosCookie st
 	row, err := s.q.UpsertUserFromKratos(ctx, db.UpsertUserFromKratosParams{
 		ID:          id,
 		Email:       ident.email,
-		Username:    ident.username,
+		Username:    defaultUsername(id, ident.username),
 		DisplayName: ident.username,
 		AvatarUrl:   ident.avatarURL,
 	})
@@ -229,6 +229,13 @@ func (s *Service) loadProfile(ctx context.Context, id uuid.UUID, kratosCookie st
 		return db.GetUserByIDRow{}, nil, fmt.Errorf("%w: upsert user: %v", errs.ErrInternal, err)
 	}
 	return db.GetUserByIDRow(row), &ident, nil
+}
+
+func defaultUsername(id uuid.UUID, name string) string {
+	if name != "" {
+		return name
+	}
+	return "user-" + strings.ReplaceAll(id.String(), "-", "")[:8]
 }
 
 // kratosIdentity is the subset of Kratos whoami output the user service cares about.
@@ -328,9 +335,6 @@ func identityFromKratos(kid *kratos.Identity) kratosIdentity {
 				out.discordUsername = strings.TrimSpace(name)
 			}
 		}
-	}
-	if out.username == "" {
-		out.username = out.email
 	}
 	for _, addr := range kid.VerifiableAddresses {
 		if addr.Via == "email" && addr.Value == out.email && addr.Verified {
