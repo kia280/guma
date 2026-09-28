@@ -187,7 +187,7 @@ export default function CheckinPage() {
     updateDraft({
       title: template.title,
       lootInput: '',
-      lootList: template.items.map(toLootEntry),
+      lootList: [...template.items.map(toLootEntry), ...draft.lootList.filter(entry => entry.kind === 'gold')],
     });
   };
 
@@ -337,6 +337,9 @@ export default function CheckinPage() {
                         {draft.lootList.length > 0 && (
                           <p className="type-caption text-hint -mt-2">{t('lootToBankHint')}</p>
                         )}
+                        {draft.lootList.some(entry => entry.kind === 'gold') && (
+                          <p className="type-caption text-hint -mt-2">{t('goldToVaultHint')}</p>
+                        )}
                       </>
                     }
                     footer={<p className="type-caption text-hint px-1">{t('draftSaved')}</p>}
@@ -419,6 +422,7 @@ export default function CheckinPage() {
                     expireTime={item.expireTime}
                     attendanceCount={item.attendanceCount}
                     lootCount={item.lootList.length}
+                    goldLoot={item.goldLoot?.total}
                     imageUrl={item.imageUrl}
                     isDisabled={item.isDisabled}
                     href={`/dashboard/attendance/${item.id}`}

@@ -2140,6 +2140,86 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/checkins/{checkinId}/gold": {
+      "get": {
+        "operationId": "CheckInService_GetCheckInGold",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetCheckInGoldResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkins/{checkinId}/gold/distribute": {
+      "post": {
+        "operationId": "CheckInService_DistributeCheckInGold",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DistributeCheckInGoldResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInServiceDistributeCheckInGoldBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/checkins/{checkinId}/loot/{itemId}/assign": {
       "post": {
         "operationId": "CheckInService_AssignLoot",
@@ -4635,6 +4715,30 @@
             "$ref": "#/definitions/v1Item"
           },
           "title": "Items distributed to attendees"
+        },
+        "loot": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CheckInLootEntry"
+          },
+          "title": "Supersedes loot_list when set; supports gold entries"
+        }
+      }
+    },
+    "CheckInServiceDistributeCheckInGoldBody": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "title": "Client-generated UUID; repeating it returns the original result"
+        },
+        "payouts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CheckInGoldPayout"
+          }
         }
       }
     },
@@ -4669,6 +4773,13 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1Item"
+          }
+        },
+        "loot": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CheckInLootEntry"
           }
         }
       }
@@ -5552,6 +5663,18 @@
         },
         "isCancelled": {
           "type": "boolean"
+        },
+        "loot": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CheckInLootEntry"
+          },
+          "title": "All loot entries, including gold"
+        },
+        "goldPot": {
+          "$ref": "#/definitions/v1CheckInGoldPot",
+          "title": "Unset when the roll call has no gold loot"
         }
       }
     },
@@ -5581,6 +5704,57 @@
           "type": "string"
         }
       }
+    },
+    "v1CheckInGoldPayout": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1CheckInGoldPot": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "string",
+          "format": "int64"
+        },
+        "distributed": {
+          "type": "string",
+          "format": "int64"
+        },
+        "retracted": {
+          "type": "string",
+          "format": "int64"
+        },
+        "remaining": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1CheckInLootEntry": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "item": {
+          "$ref": "#/definitions/v1Item",
+          "title": "Set when kind is item"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "title": "Gold in minor units when kind is gold"
+        }
+      },
+      "title": "LootKind values: item, gold"
     },
     "v1CheckInTemplate": {
       "type": "object",
@@ -5807,6 +5981,27 @@
         }
       }
     },
+    "v1DistributeCheckInGoldResponse": {
+      "type": "object",
+      "properties": {
+        "distributionId": {
+          "type": "string"
+        },
+        "pot": {
+          "$ref": "#/definitions/v1CheckInGoldPot"
+        },
+        "payouts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CheckInGoldPayout"
+          }
+        },
+        "replayed": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1DonateItemResponse": {
       "type": "object",
       "properties": {
@@ -5943,6 +6138,22 @@
         "totalCount": {
           "type": "integer",
           "format": "int32"
+        }
+      }
+    },
+    "v1GetCheckInGoldResponse": {
+      "type": "object",
+      "properties": {
+        "pot": {
+          "$ref": "#/definitions/v1CheckInGoldPot"
+        },
+        "recipients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1CheckInGoldPayout"
+          },
+          "title": "Total gold received per attendee"
         }
       }
     },

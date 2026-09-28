@@ -19,15 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CheckInService_ListCheckIns_FullMethodName     = "/guma.v1.CheckInService/ListCheckIns"
-	CheckInService_GetCheckIn_FullMethodName       = "/guma.v1.CheckInService/GetCheckIn"
-	CheckInService_CreateCheckIn_FullMethodName    = "/guma.v1.CheckInService/CreateCheckIn"
-	CheckInService_UpdateCheckIn_FullMethodName    = "/guma.v1.CheckInService/UpdateCheckIn"
-	CheckInService_DeleteCheckIn_FullMethodName    = "/guma.v1.CheckInService/DeleteCheckIn"
-	CheckInService_CancelCheckIn_FullMethodName    = "/guma.v1.CheckInService/CancelCheckIn"
-	CheckInService_SubmitAttendance_FullMethodName = "/guma.v1.CheckInService/SubmitAttendance"
-	CheckInService_ListAttendees_FullMethodName    = "/guma.v1.CheckInService/ListAttendees"
-	CheckInService_AssignLoot_FullMethodName       = "/guma.v1.CheckInService/AssignLoot"
+	CheckInService_ListCheckIns_FullMethodName          = "/guma.v1.CheckInService/ListCheckIns"
+	CheckInService_GetCheckIn_FullMethodName            = "/guma.v1.CheckInService/GetCheckIn"
+	CheckInService_CreateCheckIn_FullMethodName         = "/guma.v1.CheckInService/CreateCheckIn"
+	CheckInService_UpdateCheckIn_FullMethodName         = "/guma.v1.CheckInService/UpdateCheckIn"
+	CheckInService_DeleteCheckIn_FullMethodName         = "/guma.v1.CheckInService/DeleteCheckIn"
+	CheckInService_CancelCheckIn_FullMethodName         = "/guma.v1.CheckInService/CancelCheckIn"
+	CheckInService_SubmitAttendance_FullMethodName      = "/guma.v1.CheckInService/SubmitAttendance"
+	CheckInService_ListAttendees_FullMethodName         = "/guma.v1.CheckInService/ListAttendees"
+	CheckInService_AssignLoot_FullMethodName            = "/guma.v1.CheckInService/AssignLoot"
+	CheckInService_GetCheckInGold_FullMethodName        = "/guma.v1.CheckInService/GetCheckInGold"
+	CheckInService_DistributeCheckInGold_FullMethodName = "/guma.v1.CheckInService/DistributeCheckInGold"
 )
 
 // CheckInServiceClient is the client API for CheckInService service.
@@ -45,6 +47,8 @@ type CheckInServiceClient interface {
 	// List who attended a check-in
 	ListAttendees(ctx context.Context, in *ListAttendeesRequest, opts ...grpc.CallOption) (*ListAttendeesResponse, error)
 	AssignLoot(ctx context.Context, in *AssignLootRequest, opts ...grpc.CallOption) (*AssignLootResponse, error)
+	GetCheckInGold(ctx context.Context, in *GetCheckInGoldRequest, opts ...grpc.CallOption) (*GetCheckInGoldResponse, error)
+	DistributeCheckInGold(ctx context.Context, in *DistributeCheckInGoldRequest, opts ...grpc.CallOption) (*DistributeCheckInGoldResponse, error)
 }
 
 type checkInServiceClient struct {
@@ -145,6 +149,26 @@ func (c *checkInServiceClient) AssignLoot(ctx context.Context, in *AssignLootReq
 	return out, nil
 }
 
+func (c *checkInServiceClient) GetCheckInGold(ctx context.Context, in *GetCheckInGoldRequest, opts ...grpc.CallOption) (*GetCheckInGoldResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCheckInGoldResponse)
+	err := c.cc.Invoke(ctx, CheckInService_GetCheckInGold_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *checkInServiceClient) DistributeCheckInGold(ctx context.Context, in *DistributeCheckInGoldRequest, opts ...grpc.CallOption) (*DistributeCheckInGoldResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DistributeCheckInGoldResponse)
+	err := c.cc.Invoke(ctx, CheckInService_DistributeCheckInGold_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CheckInServiceServer is the server API for CheckInService service.
 // All implementations must embed UnimplementedCheckInServiceServer
 // for forward compatibility.
@@ -160,6 +184,8 @@ type CheckInServiceServer interface {
 	// List who attended a check-in
 	ListAttendees(context.Context, *ListAttendeesRequest) (*ListAttendeesResponse, error)
 	AssignLoot(context.Context, *AssignLootRequest) (*AssignLootResponse, error)
+	GetCheckInGold(context.Context, *GetCheckInGoldRequest) (*GetCheckInGoldResponse, error)
+	DistributeCheckInGold(context.Context, *DistributeCheckInGoldRequest) (*DistributeCheckInGoldResponse, error)
 	mustEmbedUnimplementedCheckInServiceServer()
 }
 
@@ -196,6 +222,12 @@ func (UnimplementedCheckInServiceServer) ListAttendees(context.Context, *ListAtt
 }
 func (UnimplementedCheckInServiceServer) AssignLoot(context.Context, *AssignLootRequest) (*AssignLootResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method AssignLoot not implemented")
+}
+func (UnimplementedCheckInServiceServer) GetCheckInGold(context.Context, *GetCheckInGoldRequest) (*GetCheckInGoldResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetCheckInGold not implemented")
+}
+func (UnimplementedCheckInServiceServer) DistributeCheckInGold(context.Context, *DistributeCheckInGoldRequest) (*DistributeCheckInGoldResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DistributeCheckInGold not implemented")
 }
 func (UnimplementedCheckInServiceServer) mustEmbedUnimplementedCheckInServiceServer() {}
 func (UnimplementedCheckInServiceServer) testEmbeddedByValue()                        {}
@@ -380,6 +412,42 @@ func _CheckInService_AssignLoot_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CheckInService_GetCheckInGold_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCheckInGoldRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckInServiceServer).GetCheckInGold(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckInService_GetCheckInGold_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckInServiceServer).GetCheckInGold(ctx, req.(*GetCheckInGoldRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CheckInService_DistributeCheckInGold_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DistributeCheckInGoldRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckInServiceServer).DistributeCheckInGold(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckInService_DistributeCheckInGold_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckInServiceServer).DistributeCheckInGold(ctx, req.(*DistributeCheckInGoldRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CheckInService_ServiceDesc is the grpc.ServiceDesc for CheckInService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -422,6 +490,14 @@ var CheckInService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AssignLoot",
 			Handler:    _CheckInService_AssignLoot_Handler,
+		},
+		{
+			MethodName: "GetCheckInGold",
+			Handler:    _CheckInService_GetCheckInGold_Handler,
+		},
+		{
+			MethodName: "DistributeCheckInGold",
+			Handler:    _CheckInService_DistributeCheckInGold_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -58,11 +58,15 @@ const getContributionIcon = (type: GuildContribution['type']) => {
       return 'solar:sledgehammer-linear';
     case 'lottery_revenue':
       return 'solar:ticket-linear';
+    case 'checkin_gold_payout':
+      return 'solar:hand-money-linear';
+    case 'checkin_gold_retracted':
+      return 'solar:undo-left-linear';
   }
 };
 
 const isInflowContribution = (type: GuildContribution['type']) =>
-  type === 'contribute' || type === 'auction_proceeds' || type === 'lottery_revenue';
+  type === 'contribute' || type === 'auction_proceeds' || type === 'lottery_revenue' || type === 'checkin_loot';
 
 
 const isSettledContribution = (status: GuildContribution['status']) =>
@@ -231,6 +235,10 @@ export default function GuildBankPage() {
         return t('typeAuctionProceeds');
       case 'lottery_revenue':
         return t('typeLotteryRevenue');
+      case 'checkin_gold_payout':
+        return t('typeCheckinGoldPayout');
+      case 'checkin_gold_retracted':
+        return t('typeCheckinGoldRetracted');
     }
   };
 
@@ -704,11 +712,14 @@ export default function GuildBankPage() {
                           </div>
                         </Table.Cell>
                         <Table.Cell>
-                          {entry.amount !== undefined ? (
-                            <ContributionAmount entry={{ ...entry, amount: entry.amount }} align="start" />
-                          ) : (
-                            <span className="type-body text-subtle line-clamp-2 max-w-[220px]">{entry.itemName}</span>
-                          )}
+                          <div className="flex flex-col items-start">
+                            {entry.amount !== undefined && (
+                              <ContributionAmount entry={{ ...entry, amount: entry.amount }} align="start" />
+                            )}
+                            {entry.itemName && (
+                              <span className="type-body text-subtle line-clamp-2 max-w-[220px]">{entry.itemName}</span>
+                            )}
+                          </div>
                         </Table.Cell>
                         <Table.Cell>
                           <p className="type-body text-subtle">
@@ -775,9 +786,10 @@ export default function GuildBankPage() {
                     </div>
                   </div>
                   <div className="text-right shrink-0 ml-3">
-                    {entry.amount !== undefined ? (
+                    {entry.amount !== undefined && (
                       <ContributionAmount entry={{ ...entry, amount: entry.amount }} align="end" />
-                    ) : (
+                    )}
+                    {entry.itemName && (
                       <span className="type-caption text-subtle line-clamp-2 max-w-[140px] block">{entry.itemName}</span>
                     )}
                   </div>

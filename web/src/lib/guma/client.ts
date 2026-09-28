@@ -9,7 +9,7 @@ import type { LootEntry } from '@/types/checkin';
 import type { ItemSourceRef } from '@/types/item';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinGoldDistribution, toCheckinGoldSummary, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -59,12 +59,18 @@ http.interceptors.response.use(
   },
 );
 
-const toProtoLoot = (entry: LootEntry) => ({
-  name: entry.name,
-  description: entry.description,
-  category: entry.category,
-  rarity: entry.rarity,
-});
+const toProtoLoot = (entry: LootEntry) =>
+  entry.kind === 'gold'
+    ? { kind: 'gold', amount: toMinorUnits(entry.amount ?? 0) }
+    : {
+        kind: 'item',
+        item: {
+          name: entry.name,
+          description: entry.description,
+          category: entry.category,
+          rarity: entry.rarity,
+        },
+      };
 
 const apiGuild = (g: Parameters<typeof toGuild>[0]) => toGuild(g, env.api.url);
 
@@ -329,7 +335,7 @@ export const gumaApiClient: ApiClient = {
       datetime: req.datetime,
       expire_time: req.expireTime,
       image_url: req.imageUrl,
-      loot_list: (req.lootList ?? []).map(toProtoLoot),
+      loot: (req.lootList ?? []).map(toProtoLoot),
     };
     const { data } = await http.post(`/v1/guilds/${guildId}/checkins`, payload);
     return toCheckin(data.checkin);
@@ -396,6 +402,17 @@ export const gumaApiClient: ApiClient = {
   },
   assignLoot: async (guildId, checkinId, itemId, userId) => {
     await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/loot/${itemId}/assign`, { user_id: userId });
+  },
+  getCheckinGold: async (guildId, checkinId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/checkins/${checkinId}/gold`);
+    return toCheckinGoldSummary(data);
+  },
+  distributeCheckinGold: async (guildId, checkinId, requestId, payouts) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/gold/distribute`, {
+      request_id: requestId,
+      payouts: payouts.map(p => ({ user_id: p.userId, amount: toMinorUnits(p.amount) })),
+    });
+    return toCheckinGoldDistribution(data);
   },
   listAttendees: async (guildId, checkinId) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/checkins/${checkinId}/attendees`);

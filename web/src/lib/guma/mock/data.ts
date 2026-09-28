@@ -343,6 +343,9 @@ function generateCheckins(): CheckinEntry[] {
       attendanceCount: attendanceList.length,
       attendanceList,
       lootList,
+      ...(i % 3 === 0 && status !== CheckinStatus.CANCELLED
+        ? { goldLoot: { total: 1000 + i * 50, distributed: 0, retracted: 0, remaining: 1000 + i * 50 } }
+        : {}),
     };
   });
 }

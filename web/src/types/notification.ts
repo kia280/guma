@@ -13,6 +13,7 @@ export type NotificationKind =
   | 'itemReceived'
   | 'itemDelivered'
   | 'lootAssigned'
+  | 'checkinGoldReceived'
   | 'lotteryWon'
   | 'lotteryCancelled';
 

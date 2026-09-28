@@ -134,7 +134,7 @@ func TestUpdateValidatesBeforeQuerying(t *testing.T) {
 			p.Datetime = "2020-01-01T00:00:00Z"
 			p.ExpireTime = "2020-01-02T00:00:00Z"
 		}, wantErr: errs.ErrInvalidArgument},
-		{name: "loot change", mutate: func(p *UpdateParams) { p.LootList = []models.Item{{Name: "Sword"}} }, wantErr: errs.ErrInvalidArgument},
+		{name: "loot change", mutate: func(p *UpdateParams) { p.Loot = []LootEntry{{Kind: LootKindItem, Item: models.Item{Name: "Sword"}}} }, wantErr: errs.ErrInvalidArgument},
 		{name: "malformed guild", mutate: func(p *UpdateParams) { p.GuildID = "bad" }, wantErr: errs.ErrNotFound},
 		{name: "malformed checkin", mutate: func(p *UpdateParams) { p.CheckInID = "bad" }, wantErr: errs.ErrNotFound},
 		{name: "malformed user", mutate: func(p *UpdateParams) { p.UpdatedBy = "bad" }, wantErr: errs.ErrInvalidArgument},

@@ -12,6 +12,43 @@ import (
 	"github.com/google/uuid"
 )
 
+const addCheckinGoldPotDistributed = `-- name: AddCheckinGoldPotDistributed :one
+UPDATE checkin_gold_pots SET
+    distributed = distributed + $1::bigint,
+    updated_at  = NOW()
+WHERE checkin_id = $2 AND guild_id = $3
+  AND retracted = 0
+  AND distributed + $1::bigint <= total
+RETURNING checkin_id, guild_id, total, distributed, retracted
+`
+
+type AddCheckinGoldPotDistributedParams struct {
+	Amount    int64
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+}
+
+type AddCheckinGoldPotDistributedRow struct {
+	CheckinID   uuid.UUID
+	GuildID     uuid.UUID
+	Total       int64
+	Distributed int64
+	Retracted   int64
+}
+
+func (q *Queries) AddCheckinGoldPotDistributed(ctx context.Context, arg AddCheckinGoldPotDistributedParams) (AddCheckinGoldPotDistributedRow, error) {
+	row := q.db.QueryRow(ctx, addCheckinGoldPotDistributed, arg.Amount, arg.CheckinID, arg.GuildID)
+	var i AddCheckinGoldPotDistributedRow
+	err := row.Scan(
+		&i.CheckinID,
+		&i.GuildID,
+		&i.Total,
+		&i.Distributed,
+		&i.Retracted,
+	)
+	return i, err
+}
+
 const cancelCheckin = `-- name: CancelCheckin :one
 UPDATE checkins SET cancelled_at = NOW(), updated_at = NOW()
 WHERE id = $1 AND guild_id = $2 AND cancelled_at IS NULL AND expire_time >= NOW()
@@ -92,6 +129,23 @@ SELECT COUNT(*) FROM checkin_attendees WHERE checkin_id = $1
 
 func (q *Queries) CountCheckinAttendees(ctx context.Context, checkinID uuid.UUID) (int64, error) {
 	row := q.db.QueryRow(ctx, countCheckinAttendees, checkinID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countCheckinAttendeesAmong = `-- name: CountCheckinAttendeesAmong :one
+SELECT COUNT(*) FROM checkin_attendees
+WHERE checkin_id = $1 AND user_id = ANY($2::uuid[])
+`
+
+type CountCheckinAttendeesAmongParams struct {
+	CheckinID uuid.UUID
+	UserIds   []uuid.UUID
+}
+
+func (q *Queries) CountCheckinAttendeesAmong(ctx context.Context, arg CountCheckinAttendeesAmongParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countCheckinAttendeesAmong, arg.CheckinID, arg.UserIds)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -295,6 +349,62 @@ func (q *Queries) GetCheckinAttendanceWindow(ctx context.Context, arg GetCheckin
 	return i, err
 }
 
+const getCheckinGoldDistributionByRequest = `-- name: GetCheckinGoldDistributionByRequest :one
+SELECT id, total, created_at
+FROM checkin_gold_distributions
+WHERE checkin_id = $1 AND request_id = $2
+`
+
+type GetCheckinGoldDistributionByRequestParams struct {
+	CheckinID uuid.UUID
+	RequestID uuid.UUID
+}
+
+type GetCheckinGoldDistributionByRequestRow struct {
+	ID        uuid.UUID
+	Total     int64
+	CreatedAt time.Time
+}
+
+func (q *Queries) GetCheckinGoldDistributionByRequest(ctx context.Context, arg GetCheckinGoldDistributionByRequestParams) (GetCheckinGoldDistributionByRequestRow, error) {
+	row := q.db.QueryRow(ctx, getCheckinGoldDistributionByRequest, arg.CheckinID, arg.RequestID)
+	var i GetCheckinGoldDistributionByRequestRow
+	err := row.Scan(&i.ID, &i.Total, &i.CreatedAt)
+	return i, err
+}
+
+const getCheckinGoldPot = `-- name: GetCheckinGoldPot :one
+SELECT checkin_id, guild_id, total, distributed, retracted
+FROM checkin_gold_pots
+WHERE checkin_id = $1 AND guild_id = $2
+`
+
+type GetCheckinGoldPotParams struct {
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+}
+
+type GetCheckinGoldPotRow struct {
+	CheckinID   uuid.UUID
+	GuildID     uuid.UUID
+	Total       int64
+	Distributed int64
+	Retracted   int64
+}
+
+func (q *Queries) GetCheckinGoldPot(ctx context.Context, arg GetCheckinGoldPotParams) (GetCheckinGoldPotRow, error) {
+	row := q.db.QueryRow(ctx, getCheckinGoldPot, arg.CheckinID, arg.GuildID)
+	var i GetCheckinGoldPotRow
+	err := row.Scan(
+		&i.CheckinID,
+		&i.GuildID,
+		&i.Total,
+		&i.Distributed,
+		&i.Retracted,
+	)
+	return i, err
+}
+
 const getUserDisplayAndAvatar = `-- name: GetUserDisplayAndAvatar :one
 SELECT COALESCE(member_display_name($1::uuid, id), '')::text AS display_name,
        COALESCE(avatar_url, '')                                                   AS avatar_url
@@ -381,16 +491,121 @@ func (q *Queries) InsertCheckinBankItem(ctx context.Context, arg InsertCheckinBa
 	return err
 }
 
+const insertCheckinGoldBankActivity = `-- name: InsertCheckinGoldBankActivity :exec
+INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind, checkin_id, reference_type, reference_id)
+VALUES ($1, $2, $3::text, $4::bigint,
+        NULLIF($5::text, ''), $6::text, $7::uuid,
+        NULLIF($8::text, ''), $9::uuid)
+`
+
+type InsertCheckinGoldBankActivityParams struct {
+	GuildID       uuid.UUID
+	UserID        uuid.UUID
+	Username      string
+	Amount        int64
+	Note          string
+	Kind          string
+	CheckinID     uuid.UUID
+	ReferenceType string
+	ReferenceID   *uuid.UUID
+}
+
+func (q *Queries) InsertCheckinGoldBankActivity(ctx context.Context, arg InsertCheckinGoldBankActivityParams) error {
+	_, err := q.db.Exec(ctx, insertCheckinGoldBankActivity,
+		arg.GuildID,
+		arg.UserID,
+		arg.Username,
+		arg.Amount,
+		arg.Note,
+		arg.Kind,
+		arg.CheckinID,
+		arg.ReferenceType,
+		arg.ReferenceID,
+	)
+	return err
+}
+
+const insertCheckinGoldDistribution = `-- name: InsertCheckinGoldDistribution :one
+INSERT INTO checkin_gold_distributions (checkin_id, guild_id, actor_id, request_id, total)
+VALUES ($1, $2, $3, $4, $5::bigint)
+RETURNING id, created_at
+`
+
+type InsertCheckinGoldDistributionParams struct {
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+	ActorID   *uuid.UUID
+	RequestID uuid.UUID
+	Total     int64
+}
+
+type InsertCheckinGoldDistributionRow struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+}
+
+func (q *Queries) InsertCheckinGoldDistribution(ctx context.Context, arg InsertCheckinGoldDistributionParams) (InsertCheckinGoldDistributionRow, error) {
+	row := q.db.QueryRow(ctx, insertCheckinGoldDistribution,
+		arg.CheckinID,
+		arg.GuildID,
+		arg.ActorID,
+		arg.RequestID,
+		arg.Total,
+	)
+	var i InsertCheckinGoldDistributionRow
+	err := row.Scan(&i.ID, &i.CreatedAt)
+	return i, err
+}
+
+const insertCheckinGoldPayout = `-- name: InsertCheckinGoldPayout :exec
+INSERT INTO checkin_gold_payouts (distribution_id, user_id, amount, transaction_id)
+VALUES ($1, $2, $3::bigint, $4)
+`
+
+type InsertCheckinGoldPayoutParams struct {
+	DistributionID uuid.UUID
+	UserID         uuid.UUID
+	Amount         int64
+	TransactionID  *uuid.UUID
+}
+
+func (q *Queries) InsertCheckinGoldPayout(ctx context.Context, arg InsertCheckinGoldPayoutParams) error {
+	_, err := q.db.Exec(ctx, insertCheckinGoldPayout,
+		arg.DistributionID,
+		arg.UserID,
+		arg.Amount,
+		arg.TransactionID,
+	)
+	return err
+}
+
+const insertCheckinGoldPot = `-- name: InsertCheckinGoldPot :exec
+INSERT INTO checkin_gold_pots (checkin_id, guild_id, total)
+VALUES ($1, $2, $3::bigint)
+`
+
+type InsertCheckinGoldPotParams struct {
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+	Total     int64
+}
+
+func (q *Queries) InsertCheckinGoldPot(ctx context.Context, arg InsertCheckinGoldPotParams) error {
+	_, err := q.db.Exec(ctx, insertCheckinGoldPot, arg.CheckinID, arg.GuildID, arg.Total)
+	return err
+}
+
 const insertCheckinLootContribution = `-- name: InsertCheckinLootContribution :exec
 INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind, items, checkin_id)
-VALUES ($1, $2, $3::text, 0, NULLIF($4::text, ''), 'checkin_loot',
-        $5::jsonb, $6::uuid)
+VALUES ($1, $2, $3::text, $4::bigint, NULLIF($5::text, ''), 'checkin_loot',
+        $6::jsonb, $7::uuid)
 `
 
 type InsertCheckinLootContributionParams struct {
 	GuildID   uuid.UUID
 	UserID    uuid.UUID
 	Username  string
+	Amount    int64
 	Note      string
 	Items     []byte
 	CheckinID uuid.UUID
@@ -401,6 +616,7 @@ func (q *Queries) InsertCheckinLootContribution(ctx context.Context, arg InsertC
 		arg.GuildID,
 		arg.UserID,
 		arg.Username,
+		arg.Amount,
 		arg.Note,
 		arg.Items,
 		arg.CheckinID,
@@ -472,6 +688,120 @@ func (q *Queries) ListCheckinAttendees(ctx context.Context, arg ListCheckinAtten
 			&i.Notes,
 			&i.AttendedAt,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCheckinGoldDistributionPayouts = `-- name: ListCheckinGoldDistributionPayouts :many
+SELECT user_id, amount
+FROM checkin_gold_payouts
+WHERE distribution_id = $1
+ORDER BY user_id
+`
+
+type ListCheckinGoldDistributionPayoutsRow struct {
+	UserID uuid.UUID
+	Amount int64
+}
+
+func (q *Queries) ListCheckinGoldDistributionPayouts(ctx context.Context, distributionID uuid.UUID) ([]ListCheckinGoldDistributionPayoutsRow, error) {
+	rows, err := q.db.Query(ctx, listCheckinGoldDistributionPayouts, distributionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListCheckinGoldDistributionPayoutsRow{}
+	for rows.Next() {
+		var i ListCheckinGoldDistributionPayoutsRow
+		if err := rows.Scan(&i.UserID, &i.Amount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCheckinGoldPots = `-- name: ListCheckinGoldPots :many
+SELECT checkin_id, total, distributed, retracted
+FROM checkin_gold_pots
+WHERE guild_id = $1 AND checkin_id = ANY($2::uuid[])
+`
+
+type ListCheckinGoldPotsParams struct {
+	GuildID    uuid.UUID
+	CheckinIds []uuid.UUID
+}
+
+type ListCheckinGoldPotsRow struct {
+	CheckinID   uuid.UUID
+	Total       int64
+	Distributed int64
+	Retracted   int64
+}
+
+func (q *Queries) ListCheckinGoldPots(ctx context.Context, arg ListCheckinGoldPotsParams) ([]ListCheckinGoldPotsRow, error) {
+	rows, err := q.db.Query(ctx, listCheckinGoldPots, arg.GuildID, arg.CheckinIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListCheckinGoldPotsRow{}
+	for rows.Next() {
+		var i ListCheckinGoldPotsRow
+		if err := rows.Scan(
+			&i.CheckinID,
+			&i.Total,
+			&i.Distributed,
+			&i.Retracted,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCheckinGoldRecipients = `-- name: ListCheckinGoldRecipients :many
+SELECT p.user_id, SUM(p.amount)::bigint AS amount
+FROM checkin_gold_payouts p
+JOIN checkin_gold_distributions d ON d.id = p.distribution_id
+WHERE d.checkin_id = $1 AND d.guild_id = $2
+GROUP BY p.user_id
+ORDER BY p.user_id
+`
+
+type ListCheckinGoldRecipientsParams struct {
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+}
+
+type ListCheckinGoldRecipientsRow struct {
+	UserID uuid.UUID
+	Amount int64
+}
+
+func (q *Queries) ListCheckinGoldRecipients(ctx context.Context, arg ListCheckinGoldRecipientsParams) ([]ListCheckinGoldRecipientsRow, error) {
+	rows, err := q.db.Query(ctx, listCheckinGoldRecipients, arg.CheckinID, arg.GuildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListCheckinGoldRecipientsRow{}
+	for rows.Next() {
+		var i ListCheckinGoldRecipientsRow
+		if err := rows.Scan(&i.UserID, &i.Amount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -568,6 +898,39 @@ func (q *Queries) ListCheckins(ctx context.Context, arg ListCheckinsParams) ([]L
 	return items, nil
 }
 
+const lockCheckinGoldPot = `-- name: LockCheckinGoldPot :one
+SELECT checkin_id, guild_id, total, distributed, retracted
+FROM checkin_gold_pots
+WHERE checkin_id = $1 AND guild_id = $2
+FOR UPDATE
+`
+
+type LockCheckinGoldPotParams struct {
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+}
+
+type LockCheckinGoldPotRow struct {
+	CheckinID   uuid.UUID
+	GuildID     uuid.UUID
+	Total       int64
+	Distributed int64
+	Retracted   int64
+}
+
+func (q *Queries) LockCheckinGoldPot(ctx context.Context, arg LockCheckinGoldPotParams) (LockCheckinGoldPotRow, error) {
+	row := q.db.QueryRow(ctx, lockCheckinGoldPot, arg.CheckinID, arg.GuildID)
+	var i LockCheckinGoldPotRow
+	err := row.Scan(
+		&i.CheckinID,
+		&i.GuildID,
+		&i.Total,
+		&i.Distributed,
+		&i.Retracted,
+	)
+	return i, err
+}
+
 const logRetractedCheckinLoot = `-- name: LogRetractedCheckinLoot :exec
 INSERT INTO item_events (guild_id, item_id, kind, actor_id, source, reference_id)
 SELECT bi.guild_id, bi.id, 'retracted', $1::uuid, 'checkin', bi.checkin_id
@@ -649,6 +1012,40 @@ func (q *Queries) RejectPendingRequestsForLootItem(ctx context.Context, arg Reje
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const retractCheckinGoldPot = `-- name: RetractCheckinGoldPot :one
+UPDATE checkin_gold_pots SET
+    retracted  = total - distributed,
+    updated_at = NOW()
+WHERE checkin_id = $1 AND guild_id = $2 AND retracted = 0 AND distributed < total
+RETURNING checkin_id, guild_id, total, distributed, retracted
+`
+
+type RetractCheckinGoldPotParams struct {
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+}
+
+type RetractCheckinGoldPotRow struct {
+	CheckinID   uuid.UUID
+	GuildID     uuid.UUID
+	Total       int64
+	Distributed int64
+	Retracted   int64
+}
+
+func (q *Queries) RetractCheckinGoldPot(ctx context.Context, arg RetractCheckinGoldPotParams) (RetractCheckinGoldPotRow, error) {
+	row := q.db.QueryRow(ctx, retractCheckinGoldPot, arg.CheckinID, arg.GuildID)
+	var i RetractCheckinGoldPotRow
+	err := row.Scan(
+		&i.CheckinID,
+		&i.GuildID,
+		&i.Total,
+		&i.Distributed,
+		&i.Retracted,
+	)
+	return i, err
 }
 
 const retractCheckinLoot = `-- name: RetractCheckinLoot :execrows

@@ -136,6 +136,33 @@ type CheckinAttendee struct {
 	Notes       string
 }
 
+type CheckinGoldDistribution struct {
+	ID        uuid.UUID
+	CheckinID uuid.UUID
+	GuildID   uuid.UUID
+	ActorID   *uuid.UUID
+	RequestID uuid.UUID
+	Total     int64
+	CreatedAt time.Time
+}
+
+type CheckinGoldPayout struct {
+	DistributionID uuid.UUID
+	UserID         uuid.UUID
+	Amount         int64
+	TransactionID  *uuid.UUID
+}
+
+type CheckinGoldPot struct {
+	CheckinID   uuid.UUID
+	GuildID     uuid.UUID
+	Total       int64
+	Distributed int64
+	Retracted   int64
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
 type CheckinTemplate struct {
 	ID              uuid.UUID
 	GuildID         uuid.UUID

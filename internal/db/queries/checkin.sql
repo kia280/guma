@@ -139,7 +139,7 @@ VALUES ($1, $2, $3, sqlc.arg(donor_name)::text, sqlc.arg(item)::jsonb, sqlc.arg(
 
 -- name: InsertCheckinLootContribution :exec
 INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind, items, checkin_id)
-VALUES ($1, $2, sqlc.arg(username)::text, 0, NULLIF(sqlc.arg(note)::text, ''), 'checkin_loot',
+VALUES ($1, $2, sqlc.arg(username)::text, sqlc.arg(amount)::bigint, NULLIF(sqlc.arg(note)::text, ''), 'checkin_loot',
         sqlc.arg(items)::jsonb, sqlc.arg(checkin_id)::uuid);
 
 -- name: RejectPendingRequestsForCheckinLoot :execrows
@@ -183,3 +183,77 @@ DELETE FROM bank_items
 WHERE bank_items.id = sqlc.arg(id) AND bank_items.guild_id = sqlc.arg(guild_id) AND bank_items.checkin_id = sqlc.arg(checkin_id)
   AND bank_items.locked_by_type IS NULL
 RETURNING bank_items.item;
+
+-- name: InsertCheckinGoldPot :exec
+INSERT INTO checkin_gold_pots (checkin_id, guild_id, total)
+VALUES (sqlc.arg(checkin_id), sqlc.arg(guild_id), sqlc.arg(total)::bigint);
+
+-- name: GetCheckinGoldPot :one
+SELECT checkin_id, guild_id, total, distributed, retracted
+FROM checkin_gold_pots
+WHERE checkin_id = $1 AND guild_id = $2;
+
+-- name: ListCheckinGoldPots :many
+SELECT checkin_id, total, distributed, retracted
+FROM checkin_gold_pots
+WHERE guild_id = sqlc.arg(guild_id) AND checkin_id = ANY(sqlc.arg(checkin_ids)::uuid[]);
+
+-- name: LockCheckinGoldPot :one
+SELECT checkin_id, guild_id, total, distributed, retracted
+FROM checkin_gold_pots
+WHERE checkin_id = $1 AND guild_id = $2
+FOR UPDATE;
+
+-- name: AddCheckinGoldPotDistributed :one
+UPDATE checkin_gold_pots SET
+    distributed = distributed + sqlc.arg(amount)::bigint,
+    updated_at  = NOW()
+WHERE checkin_id = sqlc.arg(checkin_id) AND guild_id = sqlc.arg(guild_id)
+  AND retracted = 0
+  AND distributed + sqlc.arg(amount)::bigint <= total
+RETURNING checkin_id, guild_id, total, distributed, retracted;
+
+-- name: RetractCheckinGoldPot :one
+UPDATE checkin_gold_pots SET
+    retracted  = total - distributed,
+    updated_at = NOW()
+WHERE checkin_id = $1 AND guild_id = $2 AND retracted = 0 AND distributed < total
+RETURNING checkin_id, guild_id, total, distributed, retracted;
+
+-- name: GetCheckinGoldDistributionByRequest :one
+SELECT id, total, created_at
+FROM checkin_gold_distributions
+WHERE checkin_id = $1 AND request_id = $2;
+
+-- name: InsertCheckinGoldDistribution :one
+INSERT INTO checkin_gold_distributions (checkin_id, guild_id, actor_id, request_id, total)
+VALUES (sqlc.arg(checkin_id), sqlc.arg(guild_id), sqlc.arg(actor_id), sqlc.arg(request_id), sqlc.arg(total)::bigint)
+RETURNING id, created_at;
+
+-- name: InsertCheckinGoldPayout :exec
+INSERT INTO checkin_gold_payouts (distribution_id, user_id, amount, transaction_id)
+VALUES (sqlc.arg(distribution_id), sqlc.arg(user_id), sqlc.arg(amount)::bigint, sqlc.arg(transaction_id));
+
+-- name: ListCheckinGoldDistributionPayouts :many
+SELECT user_id, amount
+FROM checkin_gold_payouts
+WHERE distribution_id = $1
+ORDER BY user_id;
+
+-- name: ListCheckinGoldRecipients :many
+SELECT p.user_id, SUM(p.amount)::bigint AS amount
+FROM checkin_gold_payouts p
+JOIN checkin_gold_distributions d ON d.id = p.distribution_id
+WHERE d.checkin_id = $1 AND d.guild_id = $2
+GROUP BY p.user_id
+ORDER BY p.user_id;
+
+-- name: CountCheckinAttendeesAmong :one
+SELECT COUNT(*) FROM checkin_attendees
+WHERE checkin_id = sqlc.arg(checkin_id) AND user_id = ANY(sqlc.arg(user_ids)::uuid[]);
+
+-- name: InsertCheckinGoldBankActivity :exec
+INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind, checkin_id, reference_type, reference_id)
+VALUES (sqlc.arg(guild_id), sqlc.arg(user_id), sqlc.arg(username)::text, sqlc.arg(amount)::bigint,
+        NULLIF(sqlc.arg(note)::text, ''), sqlc.arg(kind)::text, sqlc.arg(checkin_id)::uuid,
+        NULLIF(sqlc.arg(reference_type)::text, ''), sqlc.narg(reference_id)::uuid);
