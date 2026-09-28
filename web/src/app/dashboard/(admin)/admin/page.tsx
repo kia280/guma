@@ -20,7 +20,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import React from 'react';
 import { AdminInbox } from '@/components/AdminInbox';
 import { AsyncContent, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
-import { BankRequestReview } from '@/components/BankRequestReview';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { GuildAvatar } from '@/components/GuildAvatar';
@@ -32,6 +31,7 @@ import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
 import { useUserName } from '@/hooks/useUserName';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
+import { legacyInboxHref } from '@/lib/admin-inbox';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
 import { apiClient } from '@/lib/guma';
@@ -103,7 +103,10 @@ export default function AdminPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedTab = adminTabFromParam(searchParams.get('tab'));
-  const focusRequestId = searchParams.get('request');
+  const legacyHref = legacyInboxHref(searchParams);
+  React.useEffect(() => {
+    if (legacyHref) router.replace(legacyHref, { scroll: false });
+  }, [legacyHref, router]);
   const intlLocale = isLocale(locale) ? HTML_LANG[locale] : locale;
   const formatLastActive = (value?: string) => {
     if (!value) return '';
@@ -396,12 +399,6 @@ export default function AdminPage() {
               </div>
               <Tabs.Indicator />
             </Tabs.Tab>
-            <Tabs.Tab id="bankRequests">
-              <div className="flex items-center gap-2">
-                <span>{t('bankRequests')}</span>
-              </div>
-              <Tabs.Indicator />
-            </Tabs.Tab>
             <Tabs.Tab id="templates">
               <div className="flex items-center gap-2">
                 <span>{t('templates')}</span>
@@ -424,7 +421,7 @@ export default function AdminPage() {
         </Tabs.ListContainer>
 
         <Tabs.Panel id="inbox" className="pt-4">
-          <AdminInbox guildId={guildId} />
+          {!legacyHref && <AdminInbox guildId={guildId} />}
         </Tabs.Panel>
 
         {/* Users Panel */}
@@ -858,10 +855,6 @@ export default function AdminPage() {
             onOpenChange={open => { if (!open) setToUnpublish(null); }}
             onConfirm={() => (toUnpublish ? unpublish(toUnpublish) : undefined)}
           />
-        </Tabs.Panel>
-
-        <Tabs.Panel id="bankRequests" className="pt-4">
-          <BankRequestReview guildId={guildId} focusRequestId={focusRequestId} />
         </Tabs.Panel>
 
         <Tabs.Panel id="templates" className="pt-4">
