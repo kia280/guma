@@ -15,10 +15,12 @@ interface LootListEditorProps {
   items: LootEntry[];
   inputValue: string;
   onChange: (items: LootEntry[], inputValue: string) => void;
+  label?: string;
+  allowGold?: boolean;
   children?: React.ReactNode;
 }
 
-export function LootListEditor({ items, inputValue, onChange, children }: LootListEditorProps) {
+export function LootListEditor({ items, inputValue, onChange, label, allowGold = true, children }: LootListEditorProps) {
   const t = useTranslations('checkIn');
   const labels = useTranslations('createAuctionModal');
   const formatGold = useFormatGold();
@@ -41,7 +43,7 @@ export function LootListEditor({ items, inputValue, onChange, children }: LootLi
 
   return (
     <div role="group" aria-labelledby={labelId} className="flex flex-col gap-2">
-      <p id={labelId} className="type-body font-medium text-foreground">{t('lootList')}</p>
+      <p id={labelId} className="type-body font-medium text-foreground">{label ?? t('lootList')}</p>
       {children}
       <div className="flex gap-2">
         <Input
@@ -69,7 +71,7 @@ export function LootListEditor({ items, inputValue, onChange, children }: LootLi
           <Icon icon="solar:add-circle-linear" width={16} />
         </Button>
       </div>
-      {!hasGold && (
+      {allowGold && !hasGold && (
         <div className="flex items-end gap-2">
           <NumberField
             aria-label={t('goldLootAmount')}

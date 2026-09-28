@@ -4,7 +4,7 @@ import { Button, Chip, Separator, Modal, Spinner, TextArea, TextField, Label, us
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useCountdown } from '@/hooks/useNow';
 import { useToast } from '@/hooks/useToast';
@@ -25,6 +25,7 @@ import { AsyncContent, DetailSkeleton } from './AsyncContent';
 import { CheckinEditModal } from './CheckinEditModal';
 import { CheckinGoldLoot } from './CheckinGoldLoot';
 import { CheckinLootDistribution } from './CheckinLootDistribution';
+import { CheckinLootEditModal } from './CheckinLootEditModal';
 import { ConfirmDialog } from './ConfirmDialog';
 import { UserAvatar } from './UserAvatar';
 
@@ -49,6 +50,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     [CheckinStatus.OPEN]: t('statusOpen'),
     [CheckinStatus.CANCELLED]: t('statusCancelled'),
     [CheckinStatus.FINISHED]: t('statusFinished'),
+    [CheckinStatus.COMPLETED]: t('statusCompleted'),
   };
 
   const formatCountdown = useCountdownFormatter();
@@ -99,7 +101,12 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const currentUserId = useUserStore(state => state.user?.id);
   const { can } = useGuildPermissions();
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+  const [isCompleteConfirmOpen, setIsCompleteConfirmOpen] = useState(false);
   const editModal = useOverlayState();
+  const lootEditModal = useOverlayState();
+  const [lootInVault, setLootInVault] = useState<number | null>(null);
+  const [lootVersion, setLootVersion] = useState(0);
+  const completeBlockedId = useId();
 
   if (isMissing) {
     return (
@@ -129,6 +136,16 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
 
   const canCancel = isOpen_ && can('cancelCheckin');
   const canEdit = isOpen_ && can('editCheckin');
+  const canEditLoot =
+    entry.status !== CheckinStatus.CANCELLED && entry.status !== CheckinStatus.COMPLETED && can('editCheckinLoot');
+  const canComplete = displayStatus === CheckinStatus.FINISHED && can('completeCheckin');
+  const remainingLoot = entry.lootList.length === 0 ? 0 : lootInVault;
+  const remainingGold = entry.goldLoot?.remaining ?? 0;
+  const isCompleteBlocked = remainingLoot !== 0 || remainingGold > 0;
+  const completeBlockers = [
+    ...(remainingLoot ? [t('completeBlocked', { count: remainingLoot })] : []),
+    ...(remainingGold > 0 ? [t('completeBlockedGold', { amount: formatGold(remainingGold) })] : []),
+  ];
 
   const announceChange = () => {
     emitLiveEvent({ kind: 'resource', guildId, resource: 'checkin', resourceId: id });
@@ -141,6 +158,23 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
       refetchEntry();
       announceChange();
     }
+  };
+
+  const handleCompleteConfirm = async () => {
+    try {
+      await apiClient.completeCheckin(guildId, id);
+    } finally {
+      refetchEntry();
+      announceChange();
+    }
+  };
+
+  const handleLootSaved = (updated: CheckinEntry) => {
+    setEntry(current => (current ? { ...updated, attendanceList: current.attendanceList } : updated));
+    setLootInVault(null);
+    setLootVersion(version => version + 1);
+    refetchEntry();
+    announceChange();
   };
 
   const handleEditSaved = (updated: CheckinEntry) => {
@@ -251,6 +285,18 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
             {t('editCheckin')}
           </Button>
         )}
+        {canComplete && (
+          <Button
+            variant="primary"
+            className="shrink-0 max-sm:h-11"
+            isDisabled={isCompleteBlocked}
+            aria-describedby={completeBlockers.length > 0 ? completeBlockedId : undefined}
+            onPress={() => setIsCompleteConfirmOpen(true)}
+          >
+            <Icon icon="solar:check-read-linear" width={16} />
+            {t('completeCheckin')}
+          </Button>
+        )}
         {canCancel && (
           <Button variant="danger-soft" className="shrink-0 max-sm:h-11" onPress={() => setIsCancelConfirmOpen(true)}>
             <Icon icon="solar:forbidden-circle-linear" width={16} />
@@ -332,6 +378,27 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
         />
       )}
 
+      {canEditLoot && (
+        <CheckinLootEditModal
+          entry={entry}
+          state={lootEditModal}
+          onSaved={handleLootSaved}
+          onConflict={refetchEntry}
+        />
+      )}
+
+      <ConfirmDialog
+        heading={t('completeConfirmTitle')}
+        body={t('completeConfirmBody')}
+        confirmLabel={t('completeConfirm')}
+        failedMessage={t('completeFailed')}
+        status="warning"
+        isOpen={isCompleteConfirmOpen}
+        onOpenChange={setIsCompleteConfirmOpen}
+        onConfirm={handleCompleteConfirm}
+        success={{ title: t('completeSuccess'), detail: t('completeSuccessDetail') }}
+      />
+
       <ConfirmDialog
         heading={t('cancelConfirmTitle')}
         body={t('cancelConfirmBody')}
@@ -349,13 +416,28 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           {/* Loot List */}
           <div className={`space-y-4 ${sectionClass}`}>
             <div className="flex items-center justify-between type-body">
-              <h2 className="type-subheading text-foreground">
-                {t('loot')}
-              </h2>
-              <Chip size="sm" variant="secondary">
-                {t('items', { count: entry.lootList.length })}
-              </Chip>
+              <div className="flex items-center gap-2">
+                <h2 className="type-subheading text-foreground">
+                  {t('loot')}
+                </h2>
+                <Chip size="sm" variant="secondary">
+                  {t('items', { count: entry.lootList.length })}
+                </Chip>
+              </div>
+              {canEditLoot && (
+                <Button size="sm" variant="secondary" className="max-sm:h-11" onPress={lootEditModal.open}>
+                  <Icon icon="solar:pen-linear" width={16} />
+                  {t('editLoot')}
+                </Button>
+              )}
             </div>
+
+            {canComplete && completeBlockers.length > 0 && (
+              <div id={completeBlockedId} className="type-caption text-warning flex items-start gap-1.5">
+                <Icon icon="solar:info-circle-linear" width={14} className="mt-0.5 shrink-0" />
+                <span>{completeBlockers.join(' ')}</span>
+              </div>
+            )}
 
             {entry.lootList.length === 0 && !entry.goldLoot ? (
               <p className="type-body text-subtle text-center py-4">{t('noLootItems')}</p>
@@ -371,9 +453,11 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                 )}
                 {entry.lootList.length > 0 && (
                   <CheckinLootDistribution
+                    key={lootVersion}
                     checkinId={entry.id}
                     lootList={entry.lootList}
                     attendees={entry.attendanceList}
+                    onVaultCountChange={setLootInVault}
                   />
                 )}
               </div>
@@ -441,6 +525,15 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     <span className="text-subtle shrink-0">{t('expires')}</span>
                     <span className="text-foreground text-right">{formatDateTime(entry.expireTime)}</span>
                   </div>
+                  {entry.completedAt && (
+                    <>
+                      <Separator />
+                      <div className="flex justify-between gap-2">
+                        <span className="text-subtle shrink-0">{t('completedAt')}</span>
+                        <span className="text-foreground text-right">{formatDateTime(entry.completedAt)}</span>
+                      </div>
+                    </>
+                  )}
                   {isOpen_ && (
                     <div className="flex items-center gap-1.5 text-warning type-caption">
                       <Icon icon="solar:clock-circle-linear" width={12} />
@@ -482,7 +575,9 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
               <div className="flex justify-between">
                 <span className="text-subtle">{t('awarded')}</span>
                 <span className="text-foreground">
-                  {entry.lootList.filter(l => l.winner).length}
+                  {remainingLoot === null
+                    ? entry.lootList.filter(l => l.winner).length
+                    : entry.lootList.length - remainingLoot}
                 </span>
               </div>
               <div className="flex justify-between">

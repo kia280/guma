@@ -150,7 +150,7 @@ export function CheckinEditModal({
                     )}
                     <p className="type-caption text-hint flex items-start gap-1.5">
                       <Icon icon="solar:lock-keyhole-linear" width={12} className="mt-0.5 shrink-0" />
-                      <span>{t('lootLockedHint')}</span>
+                      <span>{t('lootEditHint')}</span>
                     </p>
                   </div>
                 }

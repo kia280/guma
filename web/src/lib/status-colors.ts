@@ -50,5 +50,6 @@ export const auctionStatusColor: Record<AuctionStatus, StatusColor> = {
 export const checkinStatusColor: Record<CheckinStatus, StatusColor> = {
   [CheckinStatus.OPEN]: 'success',
   [CheckinStatus.CANCELLED]: 'default',
-  [CheckinStatus.FINISHED]: 'accent',
+  [CheckinStatus.FINISHED]: 'warning',
+  [CheckinStatus.COMPLETED]: 'accent',
 };
