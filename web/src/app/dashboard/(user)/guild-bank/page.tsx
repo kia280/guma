@@ -62,11 +62,17 @@ const getContributionIcon = (type: GuildContribution['type']) => {
       return 'solar:hand-money-linear';
     case 'checkin_gold_retracted':
       return 'solar:undo-left-linear';
+    case 'admin_transfer':
+      return 'solar:shield-user-linear';
   }
 };
 
 const isInflowContribution = (type: GuildContribution['type']) =>
-  type === 'contribute' || type === 'auction_proceeds' || type === 'lottery_revenue' || type === 'checkin_loot';
+  type === 'contribute' ||
+  type === 'auction_proceeds' ||
+  type === 'lottery_revenue' ||
+  type === 'checkin_loot' ||
+  type === 'admin_transfer';
 
 
 const isSettledContribution = (status: GuildContribution['status']) =>
@@ -239,6 +245,8 @@ export default function GuildBankPage() {
         return t('typeCheckinGoldPayout');
       case 'checkin_gold_retracted':
         return t('typeCheckinGoldRetracted');
+      case 'admin_transfer':
+        return t('typeAdminTransfer');
     }
   };
 

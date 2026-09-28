@@ -233,7 +233,10 @@
       "bankContribution": "公會倉庫捐獻",
       "fundRequestApproved": "資金申請核准",
       "auctionSale": "拍賣售出",
-      "lotteryRefund": "彩券退款"
+      "lotteryRefund": "彩券退款",
+      "adminTransferOut": "管理員 {admin} 移轉給 {member}",
+      "adminTransferToBank": "管理員 {admin} 移轉至公會倉庫",
+      "adminTransferIn": "管理員 {admin} 從 {member} 移轉"
     },
     "depositSuccess": "存款完成",
     "depositSuccessDetail": "已將 {amount} 存入錢包。",
@@ -380,7 +383,7 @@
       "checkin": "點名：{label}",
       "bank": "公會倉庫申請",
       "auction": "拍賣",
-      "admin": "管理員"
+      "admin": "管理員從 {label} 移轉"
     },
     "history": "歷程",
     "awaitingDelivery": "等待交付",
@@ -564,7 +567,11 @@
     "noUsers": "尚無成員",
     "sections": "管理分頁",
     "usersTable": "使用者",
-    "inbox": "待辦"
+    "inbox": "待辦",
+    "gold": "金幣",
+    "backpackItems": "物品",
+    "assetsUnavailable": "無資料",
+    "assetsLoadError": "無法載入成員的金幣與物品。"
   },
   "adminGuard": {
     "title": "管理區僅限管理人員",
@@ -637,7 +644,8 @@
       "deleteAuction": "刪除已取消的競拍",
       "editLottery": "編輯抽獎",
       "cancelLottery": "取消抽獎並退還彩券",
-      "deleteLottery": "刪除已取消的抽獎"
+      "deleteLottery": "刪除已取消的抽獎",
+      "manageMemberAssets": "查看並移轉成員的金幣與背包物品"
     },
     "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。"
   },
@@ -711,7 +719,8 @@
     "pendingRequestCount": "{count} 筆待審申請",
     "otherPendingRequests": "另有 {count} 位成員也在申請",
     "alreadyRequested": "你已申請過這個物品",
-    "viewHistory": "查看 {item} 的歷程"
+    "viewHistory": "查看 {item} 的歷程",
+    "typeAdminTransfer": "管理員移入"
   },
   "notificationsCard": {
     "notifications": "通知",
@@ -872,7 +881,8 @@
     "lootAssigned": "你從 <b>{checkin}</b> 獲得 <b>{item}</b>",
     "itemDelivered": "<b>{actor}</b> 已在遊戲中交付 <b>{item}</b>",
     "auctionCancelled": "<b>{item}</b> 已取消{refunded, select, yes {，你的出價 <b>{amount}</b> 已退回} other {}}",
-    "lotteryCancelled": "<b>{lottery}</b> 已取消，你的 {tickets} 張彩券已退款（<b>{amount}</b>）"
+    "lotteryCancelled": "<b>{lottery}</b> 已取消，你的 {tickets} 張彩券已退款（<b>{amount}</b>）",
+    "itemMovedByAdmin": "<b>{actor}</b> 將 <b>{item}</b> 從 <b>{from}</b> 移到你的背包"
   },
   "profilePage": {
     "title": "個人資料",
@@ -1644,7 +1654,8 @@
       "transfer": "{subject} 轉讓給 {actor}",
       "checkin": "{actor} 獲得點名戰利品",
       "bank": "{actor} 從公會倉庫取得",
-      "other": "{actor} 取得"
+      "other": "{actor} 取得",
+      "admin": "{label} 將物品從 {subject} 移轉給 {actor}"
     },
     "returned": {
       "bank": "解除鎖定，回到公會倉庫",
@@ -1654,7 +1665,8 @@
       "auction": "查看競拍",
       "lottery": "查看抽獎",
       "checkin": "查看點名"
-    }
+    },
+    "adminDonated": "{label} 將物品從 {actor} 的背包移至公會倉庫"
   },
   "auctionEditModal": {
     "title": "編輯競拍",
@@ -1696,5 +1708,50 @@
   },
   "userName": {
     "unknown": "未知成員"
+  },
+  "memberAssets": {
+    "title": "{name} 的資產",
+    "loading": "正在載入資產",
+    "loadFailed": "無法載入此成員的金幣與物品。",
+    "retry": "重試",
+    "close": "關閉",
+    "balance": "金幣餘額",
+    "itemCount": "背包物品",
+    "destination": "移轉至",
+    "toMember": "其他成員",
+    "toGuildBank": "公會倉庫",
+    "guildBank": "公會倉庫",
+    "recipient": "收件人",
+    "searchRecipient": "搜尋成員",
+    "noMembers": "找不到成員",
+    "recipientRequired": "請選擇收件人",
+    "note": "備註",
+    "notePlaceholder": "選填，會顯示在紀錄中",
+    "noteTooLong": "備註請少於 {max} 個字",
+    "goldSection": "金幣",
+    "amount": "金額",
+    "available": "可用：{amount}",
+    "amountMustBePositive": "請輸入大於 0 的金額",
+    "amountExceedsBalance": "金額超過此成員的餘額",
+    "transferGold": "移轉金幣",
+    "itemsSection": "背包物品（{count}）",
+    "itemList": "背包物品",
+    "noItems": "背包是空的。",
+    "selectAll": "全選可移轉的物品",
+    "selectItem": "選取 {item}",
+    "selectItems": "請至少選擇一件物品",
+    "transferItems": "移轉{count, plural, =0 {物品} other { # 件物品}}",
+    "awaitingDelivery": "等待交付",
+    "history": "{item} 的歷程",
+    "confirmFundsTitle": "要移轉金幣嗎？",
+    "confirmItemsTitle": "要移轉物品嗎？",
+    "confirmFundsBody": "要將 {amount} 從 {member} 移轉至 {destination} 嗎？雙方的錢包都會記錄你的名字。",
+    "confirmItemsBody": "要將 {count} 件物品從 {member} 移轉至 {destination} 嗎？物品歷程會記錄你的名字。",
+    "confirm": "移轉",
+    "fundsTransferred": "已將 {amount} 移轉至 {destination}。",
+    "itemsTransferred": "已將 {count} 件物品移轉至 {destination}。",
+    "fundsUnavailable": "此成員的金幣已不足，已重新整理餘額。",
+    "itemsUnavailable": "部分物品已無法移轉，已重新整理背包。",
+    "transferFailed": "無法完成移轉，請再試一次。"
   }
 }

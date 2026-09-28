@@ -14,12 +14,14 @@ SELECT balance FROM wallets WHERE user_id = $1 AND guild_id = $2 FOR UPDATE;
 UPDATE wallets SET balance = $1, updated_at = NOW() WHERE user_id = $2 AND guild_id = $3;
 
 -- name: InsertTransaction :one
-INSERT INTO transactions (user_id, guild_id, type, amount, balance_after, description, reference_id, reference_type)
+INSERT INTO transactions (user_id, guild_id, type, amount, balance_after, description, reference_id, reference_type, actor_id, counterparty_id)
 VALUES (
     $1, $2, sqlc.arg(type)::text, $3, $4,
     NULLIF(sqlc.arg(description)::text, ''),
     NULLIF(sqlc.arg(reference_id)::text, '')::uuid,
-    NULLIF(sqlc.arg(reference_type)::text, '')
+    NULLIF(sqlc.arg(reference_type)::text, ''),
+    sqlc.narg(actor_id)::uuid,
+    sqlc.narg(counterparty_id)::uuid
 )
 RETURNING id;
 
@@ -32,7 +34,11 @@ SELECT id, user_id, guild_id, type, amount, balance_after,
        COALESCE(description, '')       AS description,
        reference_id,
        COALESCE(reference_type, '')    AS reference_type,
-       created_at
+       created_at,
+       actor_id,
+       COALESCE(member_display_name(guild_id, actor_id), '')::text        AS actor_name,
+       counterparty_id,
+       COALESCE(member_display_name(guild_id, counterparty_id), '')::text AS counterparty_name
 FROM transactions
 WHERE user_id = $1 AND guild_id = $2
   AND (sqlc.arg(type_filter)::text = '' OR type = sqlc.arg(type_filter)::text)
@@ -66,6 +72,7 @@ SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
        COALESCE(
            CASE bi.source
                WHEN 'transfer' THEN member_display_name(bi.guild_id, bi.source_id)
+               WHEN 'admin'    THEN member_display_name(bi.guild_id, bi.source_id)
                WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
                WHEN 'checkin'  THEN (SELECT c.title FROM checkins c WHERE c.id = bi.source_id)
            END,
@@ -133,3 +140,49 @@ SELECT id, COALESCE(item->>'name', '')::text AS item_name, current_bid, end_time
 FROM auctions
 WHERE guild_id = $1 AND current_bidder_id = $2 AND status IN ('UPCOMING', 'ACTIVE')
 ORDER BY end_time ASC;
+
+-- name: ListMemberAssets :many
+SELECT m.user_id,
+       COALESCE(w.balance, 0)::bigint AS balance,
+       (SELECT COUNT(*) FROM backpack_items bi WHERE bi.owner_id = m.user_id AND bi.guild_id = m.guild_id)::int AS item_count
+FROM members m
+LEFT JOIN wallets w ON w.user_id = m.user_id AND w.guild_id = m.guild_id
+WHERE m.guild_id = $1;
+
+-- name: ListAllBackpackItems :many
+SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
+       bi.source, bi.source_id,
+       COALESCE(bi.note, '') AS note,
+       bi.acquired_at,
+       bi.delivery_requested_at,
+       COALESCE(
+           CASE bi.source
+               WHEN 'transfer' THEN member_display_name(bi.guild_id, bi.source_id)
+               WHEN 'admin'    THEN member_display_name(bi.guild_id, bi.source_id)
+               WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
+               WHEN 'checkin'  THEN (SELECT c.title FROM checkins c WHERE c.id = bi.source_id)
+           END,
+           ''
+       )::text AS source_label,
+       COALESCE(bi.locked_by_type, '') AS locked_by_type,
+       bi.locked_by_id
+FROM backpack_items bi
+WHERE bi.owner_id = $1 AND bi.guild_id = $2
+ORDER BY bi.acquired_at DESC, bi.id;
+
+-- name: SetActingAdmin :exec
+SELECT set_config('guma.acting_admin_id', sqlc.arg(admin_id)::text, true);
+
+-- name: AdminMoveBackpackItem :one
+UPDATE backpack_items SET
+    owner_id    = sqlc.arg(to_user_id),
+    source      = 'admin',
+    source_id   = sqlc.arg(from_user_id),
+    note        = NULLIF(sqlc.arg(note)::text, ''),
+    acquired_at = NOW()
+WHERE backpack_items.id = sqlc.arg(id)
+  AND backpack_items.owner_id = sqlc.arg(from_user_id)
+  AND backpack_items.guild_id = sqlc.arg(guild_id)
+  AND backpack_items.locked_by_type IS NULL
+  AND backpack_items.delivery_requested_at IS NULL
+RETURNING backpack_items.id;

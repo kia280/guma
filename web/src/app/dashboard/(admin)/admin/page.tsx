@@ -12,6 +12,8 @@ import {
   Label,
   Skeleton,
   Spinner,
+  useOverlayState,
+  type SortDescriptor,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { isAxiosError } from 'axios';
@@ -24,6 +26,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { GuildAvatar } from '@/components/GuildAvatar';
 import { GuildLogoPrompt } from '@/components/GuildLogoPrompt';
+import { MemberAssetsModal } from '@/components/MemberAssetsModal';
 import { TemplateSettings } from '@/components/TemplateSettings';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
@@ -42,10 +45,20 @@ import { userStatusColor, type UserStatus } from '@/lib/status-colors';
 import { useCurrentGuild, useCurrentGuildStore } from '@/lib/store';
 import type { AdminActivity, AdminAnnouncement, AdminGuildStats } from '@/types/admin';
 import type { MockUser } from '@/types/user';
+import type { MemberAssetSummary } from '@/types/wallet';
 
 
 const STATUSES = ['online', 'offline', 'banned'] as const;
 const ROLES = ['owner', 'admin', 'moderator', 'member'] as const;
+
+type MemberSortKey = 'user' | 'role' | 'gold' | 'items' | 'status' | 'lastActive';
+
+const ROLE_RANK: Record<string, number> = { owner: 0, admin: 1, moderator: 2, member: 3 };
+
+const timeValue = (value?: string) => {
+  const time = value ? new Date(value).getTime() : Number.NaN;
+  return Number.isNaN(time) ? 0 : time;
+};
 
 const RELATIVE_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
   ['year', 365 * 24 * 3600],
@@ -118,8 +131,15 @@ export default function AdminPage() {
   const guildId = useCurrentGuildId();
   const { can } = useGuildPermissions();
   const canEditGuild = can('editGuild');
+  const canManageAssets = can('manageMemberAssets');
 
   const [members, setMembers] = React.useState<MockUser[]>([]);
+  const [memberAssets, setMemberAssets] = React.useState<Map<string, MemberAssetSummary>>(() => new Map());
+  const [assetsStatus, setAssetsStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
+  const [assetsReloadKey, setAssetsReloadKey] = React.useState(0);
+  const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor | undefined>(undefined);
+  const [assetsMember, setAssetsMember] = React.useState<MockUser | null>(null);
+  const assetsModalState = useOverlayState();
   const [recentActivity, setRecentActivity] = React.useState<AdminActivity[]>([]);
   const [activityStatus, setActivityStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
   const [activityReloadKey, setActivityReloadKey] = React.useState(0);
@@ -250,6 +270,72 @@ export default function AdminPage() {
     announcementsState.ready,
     announcementsState.failed,
   ]);
+
+  React.useEffect(() => {
+    if (!canManageAssets) return;
+    let cancelled = false;
+    apiClient
+      .listMemberAssets(guildId)
+      .then(summaries => {
+        if (cancelled) return;
+        setMemberAssets(new Map(summaries.map(summary => [summary.userId, summary])));
+        setAssetsStatus('ready');
+      })
+      .catch(() => {
+        if (!cancelled) setAssetsStatus('error');
+      });
+    return () => { cancelled = true; };
+  }, [guildId, canManageAssets, assetsReloadKey, reloadKey]);
+
+  const refetchAssets = React.useCallback(() => setAssetsReloadKey(key => key + 1), []);
+
+  const sortedMembers = React.useMemo(() => {
+    if (!sortDescriptor?.column) return members;
+    const column = sortDescriptor.column as MemberSortKey;
+    const value = (user: MockUser): string | number => {
+      switch (column) {
+        case 'user':
+          return userName(user.username);
+        case 'role':
+          return ROLE_RANK[user.role ?? ''] ?? ROLE_RANK.member + 1;
+        case 'gold':
+          return memberAssets.get(user.id)?.balance ?? -1;
+        case 'items':
+          return memberAssets.get(user.id)?.itemCount ?? -1;
+        case 'status':
+          return user.status === 'online' ? 0 : 1;
+        case 'lastActive':
+          return timeValue(user.lastActive);
+      }
+    };
+    const direction = sortDescriptor.direction === 'descending' ? -1 : 1;
+    return [...members].sort((a, b) => {
+      const first = value(a);
+      const second = value(b);
+      const cmp =
+        typeof first === 'string' && typeof second === 'string'
+          ? first.localeCompare(second, locale)
+          : Number(first) - Number(second);
+      return cmp * direction;
+    });
+  }, [members, memberAssets, sortDescriptor, userName, locale]);
+
+  const openMemberAssets = (memberId: React.Key) => {
+    const member = members.find(candidate => candidate.id === memberId);
+    if (!member) return;
+    setAssetsMember(member);
+    assetsModalState.open();
+  };
+
+  const assetCell = (userId: string, render: (summary: MemberAssetSummary) => string) => {
+    if (assetsStatus === 'loading') return <Skeleton className="h-5 w-16 rounded-lg" />;
+    const summary = memberAssets.get(userId);
+    return (
+      <p className="type-body tabular-nums text-foreground">
+        {summary ? render(summary) : <span className="text-hint" aria-label={t('assetsUnavailable')}>—</span>}
+      </p>
+    );
+  };
 
   React.useEffect(() => {
     let cancelled = false;
@@ -438,16 +524,51 @@ export default function AdminPage() {
               ) : (
               <Table variant="secondary">
                 <Table.ScrollContainer>
-                  <Table.Content aria-label={t('usersTable')}>
+                  <Table.Content
+                    aria-label={t('usersTable')}
+                    sortDescriptor={sortDescriptor}
+                    onSortChange={setSortDescriptor}
+                    onRowAction={canManageAssets ? openMemberAssets : undefined}
+                  >
                     <Table.Header>
-                      <Table.Column isRowHeader>{t('user')}</Table.Column>
-                      <Table.Column className="max-md:rounded-r-2xl">{t('role')}</Table.Column>
-                      <Table.Column className="hidden md:table-cell">{t('status')}</Table.Column>
-                      <Table.Column className="hidden md:table-cell">{t('lastActive')}</Table.Column>
+                      <Table.Column id="user" allowsSorting isRowHeader>
+                        {({ sortDirection }) => (
+                          <Table.SortableColumnHeader sortDirection={sortDirection}>{t('user')}</Table.SortableColumnHeader>
+                        )}
+                      </Table.Column>
+                      <Table.Column id="role" allowsSorting className={canManageAssets ? undefined : 'max-md:rounded-r-2xl'}>
+                        {({ sortDirection }) => (
+                          <Table.SortableColumnHeader sortDirection={sortDirection}>{t('role')}</Table.SortableColumnHeader>
+                        )}
+                      </Table.Column>
+                      {canManageAssets && (
+                        <Table.Column id="gold" allowsSorting className="max-md:rounded-r-2xl">
+                          {({ sortDirection }) => (
+                            <Table.SortableColumnHeader sortDirection={sortDirection}>{t('gold')}</Table.SortableColumnHeader>
+                          )}
+                        </Table.Column>
+                      )}
+                      {canManageAssets && (
+                        <Table.Column id="items" allowsSorting className="hidden md:table-cell">
+                          {({ sortDirection }) => (
+                            <Table.SortableColumnHeader sortDirection={sortDirection}>{t('backpackItems')}</Table.SortableColumnHeader>
+                          )}
+                        </Table.Column>
+                      )}
+                      <Table.Column id="status" allowsSorting className="hidden md:table-cell">
+                        {({ sortDirection }) => (
+                          <Table.SortableColumnHeader sortDirection={sortDirection}>{t('status')}</Table.SortableColumnHeader>
+                        )}
+                      </Table.Column>
+                      <Table.Column id="lastActive" allowsSorting className="hidden md:table-cell">
+                        {({ sortDirection }) => (
+                          <Table.SortableColumnHeader sortDirection={sortDirection}>{t('lastActive')}</Table.SortableColumnHeader>
+                        )}
+                      </Table.Column>
                     </Table.Header>
                     <Table.Body>
-                      {members.map(user => (
-                        <Table.Row key={user.id}>
+                      {sortedMembers.map(user => (
+                        <Table.Row key={user.id} id={user.id} className={canManageAssets ? 'cursor-pointer' : undefined}>
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
                               <UserAvatar name={userName(user.username)} src={user.avatar} className="shrink-0" />
@@ -466,12 +587,18 @@ export default function AdminPage() {
                             </div>
                           </Table.Cell>
                           <Table.Cell>
-                            <Chip size="sm" color={roleChipColor(user.role)} variant="secondary" className="capitalize">
+                            <Chip size="sm" color={roleChipColor(user.role)} variant="secondary" className="capitalize whitespace-nowrap">
                               {user.role && ROLES.includes(user.role as (typeof ROLES)[number])
                                 ? t(`roles.${user.role as (typeof ROLES)[number]}`)
                                 : user.role}
                             </Chip>
                           </Table.Cell>
+                          {canManageAssets && <Table.Cell>{assetCell(user.id, summary => formatGold(summary.balance))}</Table.Cell>}
+                          {canManageAssets && (
+                            <Table.Cell className="hidden md:table-cell">
+                              {assetCell(user.id, summary => formatCount(summary.itemCount))}
+                            </Table.Cell>
+                          )}
                           <Table.Cell className="hidden md:table-cell">
                             <Chip
                               size="sm"
@@ -495,8 +622,25 @@ export default function AdminPage() {
               </Table>
               )}
               </AsyncContent>
+              {canManageAssets && assetsStatus === 'error' && members.length > 0 && (
+                <div role="alert" className="flex flex-wrap items-center justify-between gap-3 border-t border-divider p-4">
+                  <p className="type-body text-subtle">{t('assetsLoadError')}</p>
+                  <Button size="sm" variant="secondary" onPress={refetchAssets}>
+                    <Icon icon="solar:restart-linear" width={16} aria-hidden />
+                    {t('retry')}
+                  </Button>
+                </div>
+              )}
             </Card.Content>
           </Card>
+          {canManageAssets && (
+            <MemberAssetsModal
+              state={assetsModalState}
+              member={assetsMember}
+              members={members}
+              onTransferred={refetchAssets}
+            />
+          )}
         </Tabs.Panel>
 
         {/* Guild Panel */}

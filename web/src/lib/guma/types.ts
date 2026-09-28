@@ -61,7 +61,15 @@ import type {
 } from '@/types/notification';
 import type { NotificationPreferencesPatch, UserPreferences } from '@/types/preference';
 import type { User, UserStats, BalancePoint, MockUser, UpdateMeRequest } from '@/types/user';
-import type { Wallet, Transaction, TransferRequest } from '@/types/wallet';
+import type {
+  AdminTransferFundsRequest,
+  AdminTransferItemsRequest,
+  MemberAssets,
+  MemberAssetSummary,
+  Transaction,
+  TransferRequest,
+  Wallet,
+} from '@/types/wallet';
 
 export interface AuctionFilters {
   status?: string;
@@ -111,6 +119,10 @@ export interface ApiClient {
   listPendingDeliveries(guildId: string): Promise<BackpackItem[]>;
   confirmBackpackDelivery(guildId: string, itemId: string): Promise<void>;
   transferBackpackItem(guildId: string, itemId: string, req: { recipientId: string; note?: string }): Promise<BackpackItem>;
+  listMemberAssets(guildId: string): Promise<MemberAssetSummary[]>;
+  getMemberAssets(guildId: string, userId: string): Promise<MemberAssets>;
+  adminTransferFunds(guildId: string, userId: string, req: AdminTransferFundsRequest): Promise<number>;
+  adminTransferItems(guildId: string, userId: string, req: AdminTransferItemsRequest): Promise<string[]>;
 
   // ── Auction ──
   listAuctions(guildId: string, filters?: AuctionFilters): Promise<AuctionItem[]>;

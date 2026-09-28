@@ -40,16 +40,20 @@ type LockedBid struct {
 
 // Transaction is the domain model for a wallet transaction.
 type Transaction struct {
-	ID            string
-	UserID        string
-	GuildID       string
-	Type          string
-	Amount        int64
-	BalanceAfter  int64
-	Description   string
-	ReferenceID   string
-	ReferenceType string
-	CreatedAt     time.Time
+	ID               string
+	UserID           string
+	GuildID          string
+	Type             string
+	Amount           int64
+	BalanceAfter     int64
+	Description      string
+	ReferenceID      string
+	ReferenceType    string
+	CreatedAt        time.Time
+	ActorID          string
+	ActorName        string
+	CounterpartyID   string
+	CounterpartyName string
 }
 
 // BackpackItem is the domain model for an item in a user's backpack.
@@ -337,7 +341,8 @@ func (s *Service) ListTransactions(ctx context.Context, p ListTransactionsParams
 			ID: r.ID.String(), UserID: r.UserID.String(), GuildID: r.GuildID.String(),
 			Type: r.Type, Amount: r.Amount, BalanceAfter: r.BalanceAfter,
 			Description: r.Description, ReferenceID: refID, ReferenceType: r.ReferenceType,
-			CreatedAt: r.CreatedAt,
+			CreatedAt: r.CreatedAt, ActorID: uuidString(r.ActorID), ActorName: r.ActorName,
+			CounterpartyID: uuidString(r.CounterpartyID), CounterpartyName: r.CounterpartyName,
 		})
 	}
 
@@ -443,6 +448,13 @@ func parseIDs(userIDStr, guildIDStr string) (uuid.UUID, uuid.UUID, error) {
 		return uuid.Nil, uuid.Nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
 	}
 	return userID, guildID, nil
+}
+
+func uuidString(id *uuid.UUID) string {
+	if id == nil {
+		return ""
+	}
+	return id.String()
 }
 
 func toBackpackItem(id, ownerID, guildID uuid.UUID, itemJSON []byte, source string, sourceID *uuid.UUID, note string, acquiredAt time.Time) *BackpackItem {

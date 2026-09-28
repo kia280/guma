@@ -1125,19 +1125,23 @@ func (x *BalancePoint) GetBalance() int64 {
 }
 
 type Transaction struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	GuildId       string                 `protobuf:"bytes,3,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	Type          string                 `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
-	Amount        int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
-	BalanceAfter  int64                  `protobuf:"varint,6,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`
-	Description   string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
-	ReferenceId   string                 `protobuf:"bytes,8,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`       // Linked entity ID (auction_id, lottery_id, etc.)
-	ReferenceType string                 `protobuf:"bytes,9,opt,name=reference_type,json=referenceType,proto3" json:"reference_type,omitempty"` // "auction" | "lottery" | "checkin" | "manual"
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId           string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	GuildId          string                 `protobuf:"bytes,3,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	Type             string                 `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
+	Amount           int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
+	BalanceAfter     int64                  `protobuf:"varint,6,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`
+	Description      string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
+	ReferenceId      string                 `protobuf:"bytes,8,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`       // Linked entity ID (auction_id, lottery_id, etc.)
+	ReferenceType    string                 `protobuf:"bytes,9,opt,name=reference_type,json=referenceType,proto3" json:"reference_type,omitempty"` // "auction" | "lottery" | "checkin" | "manual"
+	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ActorId          string                 `protobuf:"bytes,11,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	ActorName        string                 `protobuf:"bytes,12,opt,name=actor_name,json=actorName,proto3" json:"actor_name,omitempty"`
+	CounterpartyId   string                 `protobuf:"bytes,13,opt,name=counterparty_id,json=counterpartyId,proto3" json:"counterparty_id,omitempty"`
+	CounterpartyName string                 `protobuf:"bytes,14,opt,name=counterparty_name,json=counterpartyName,proto3" json:"counterparty_name,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *Transaction) Reset() {
@@ -1238,6 +1242,34 @@ func (x *Transaction) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *Transaction) GetActorId() string {
+	if x != nil {
+		return x.ActorId
+	}
+	return ""
+}
+
+func (x *Transaction) GetActorName() string {
+	if x != nil {
+		return x.ActorName
+	}
+	return ""
+}
+
+func (x *Transaction) GetCounterpartyId() string {
+	if x != nil {
+		return x.CounterpartyId
+	}
+	return ""
+}
+
+func (x *Transaction) GetCounterpartyName() string {
+	if x != nil {
+		return x.CounterpartyName
+	}
+	return ""
 }
 
 type BackpackItem struct {
@@ -1652,6 +1684,530 @@ func (x *ConfirmBackpackDeliveryResponse) GetItem() *BackpackItem {
 	return nil
 }
 
+type ListMemberAssetsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMemberAssetsRequest) Reset() {
+	*x = ListMemberAssetsRequest{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMemberAssetsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMemberAssetsRequest) ProtoMessage() {}
+
+func (x *ListMemberAssetsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMemberAssetsRequest.ProtoReflect.Descriptor instead.
+func (*ListMemberAssetsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ListMemberAssetsRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+type MemberAssetSummary struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Balance       int64                  `protobuf:"varint,2,opt,name=balance,proto3" json:"balance,omitempty"`
+	ItemCount     int32                  `protobuf:"varint,3,opt,name=item_count,json=itemCount,proto3" json:"item_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MemberAssetSummary) Reset() {
+	*x = MemberAssetSummary{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MemberAssetSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MemberAssetSummary) ProtoMessage() {}
+
+func (x *MemberAssetSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MemberAssetSummary.ProtoReflect.Descriptor instead.
+func (*MemberAssetSummary) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *MemberAssetSummary) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *MemberAssetSummary) GetBalance() int64 {
+	if x != nil {
+		return x.Balance
+	}
+	return 0
+}
+
+func (x *MemberAssetSummary) GetItemCount() int32 {
+	if x != nil {
+		return x.ItemCount
+	}
+	return 0
+}
+
+type ListMemberAssetsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Members       []*MemberAssetSummary  `protobuf:"bytes,1,rep,name=members,proto3" json:"members,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMemberAssetsResponse) Reset() {
+	*x = ListMemberAssetsResponse{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMemberAssetsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMemberAssetsResponse) ProtoMessage() {}
+
+func (x *ListMemberAssetsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMemberAssetsResponse.ProtoReflect.Descriptor instead.
+func (*ListMemberAssetsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *ListMemberAssetsResponse) GetMembers() []*MemberAssetSummary {
+	if x != nil {
+		return x.Members
+	}
+	return nil
+}
+
+type GetMemberAssetsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMemberAssetsRequest) Reset() {
+	*x = GetMemberAssetsRequest{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMemberAssetsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMemberAssetsRequest) ProtoMessage() {}
+
+func (x *GetMemberAssetsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMemberAssetsRequest.ProtoReflect.Descriptor instead.
+func (*GetMemberAssetsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *GetMemberAssetsRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *GetMemberAssetsRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type GetMemberAssetsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Balance       int64                  `protobuf:"varint,2,opt,name=balance,proto3" json:"balance,omitempty"`
+	Items         []*BackpackItem        `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMemberAssetsResponse) Reset() {
+	*x = GetMemberAssetsResponse{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMemberAssetsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMemberAssetsResponse) ProtoMessage() {}
+
+func (x *GetMemberAssetsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMemberAssetsResponse.ProtoReflect.Descriptor instead.
+func (*GetMemberAssetsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *GetMemberAssetsResponse) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *GetMemberAssetsResponse) GetBalance() int64 {
+	if x != nil {
+		return x.Balance
+	}
+	return 0
+}
+
+func (x *GetMemberAssetsResponse) GetItems() []*BackpackItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type AdminTransferFundsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ToUserId      string                 `protobuf:"bytes,3,opt,name=to_user_id,json=toUserId,proto3" json:"to_user_id,omitempty"`
+	ToGuildBank   bool                   `protobuf:"varint,4,opt,name=to_guild_bank,json=toGuildBank,proto3" json:"to_guild_bank,omitempty"`
+	Amount        int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
+	Note          string                 `protobuf:"bytes,6,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminTransferFundsRequest) Reset() {
+	*x = AdminTransferFundsRequest{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminTransferFundsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminTransferFundsRequest) ProtoMessage() {}
+
+func (x *AdminTransferFundsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminTransferFundsRequest.ProtoReflect.Descriptor instead.
+func (*AdminTransferFundsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *AdminTransferFundsRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *AdminTransferFundsRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *AdminTransferFundsRequest) GetToUserId() string {
+	if x != nil {
+		return x.ToUserId
+	}
+	return ""
+}
+
+func (x *AdminTransferFundsRequest) GetToGuildBank() bool {
+	if x != nil {
+		return x.ToGuildBank
+	}
+	return false
+}
+
+func (x *AdminTransferFundsRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *AdminTransferFundsRequest) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
+type AdminTransferFundsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Transaction   *Transaction           `protobuf:"bytes,1,opt,name=transaction,proto3" json:"transaction,omitempty"`
+	Balance       int64                  `protobuf:"varint,2,opt,name=balance,proto3" json:"balance,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminTransferFundsResponse) Reset() {
+	*x = AdminTransferFundsResponse{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminTransferFundsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminTransferFundsResponse) ProtoMessage() {}
+
+func (x *AdminTransferFundsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminTransferFundsResponse.ProtoReflect.Descriptor instead.
+func (*AdminTransferFundsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *AdminTransferFundsResponse) GetTransaction() *Transaction {
+	if x != nil {
+		return x.Transaction
+	}
+	return nil
+}
+
+func (x *AdminTransferFundsResponse) GetBalance() int64 {
+	if x != nil {
+		return x.Balance
+	}
+	return 0
+}
+
+type AdminTransferBackpackItemsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ItemIds       []string               `protobuf:"bytes,3,rep,name=item_ids,json=itemIds,proto3" json:"item_ids,omitempty"`
+	ToUserId      string                 `protobuf:"bytes,4,opt,name=to_user_id,json=toUserId,proto3" json:"to_user_id,omitempty"`
+	ToGuildBank   bool                   `protobuf:"varint,5,opt,name=to_guild_bank,json=toGuildBank,proto3" json:"to_guild_bank,omitempty"`
+	Note          string                 `protobuf:"bytes,6,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminTransferBackpackItemsRequest) Reset() {
+	*x = AdminTransferBackpackItemsRequest{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminTransferBackpackItemsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminTransferBackpackItemsRequest) ProtoMessage() {}
+
+func (x *AdminTransferBackpackItemsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminTransferBackpackItemsRequest.ProtoReflect.Descriptor instead.
+func (*AdminTransferBackpackItemsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *AdminTransferBackpackItemsRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *AdminTransferBackpackItemsRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *AdminTransferBackpackItemsRequest) GetItemIds() []string {
+	if x != nil {
+		return x.ItemIds
+	}
+	return nil
+}
+
+func (x *AdminTransferBackpackItemsRequest) GetToUserId() string {
+	if x != nil {
+		return x.ToUserId
+	}
+	return ""
+}
+
+func (x *AdminTransferBackpackItemsRequest) GetToGuildBank() bool {
+	if x != nil {
+		return x.ToGuildBank
+	}
+	return false
+}
+
+func (x *AdminTransferBackpackItemsRequest) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
+type AdminTransferBackpackItemsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ItemIds       []string               `protobuf:"bytes,1,rep,name=item_ids,json=itemIds,proto3" json:"item_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminTransferBackpackItemsResponse) Reset() {
+	*x = AdminTransferBackpackItemsResponse{}
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminTransferBackpackItemsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminTransferBackpackItemsResponse) ProtoMessage() {}
+
+func (x *AdminTransferBackpackItemsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_wallet_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminTransferBackpackItemsResponse.ProtoReflect.Descriptor instead.
+func (*AdminTransferBackpackItemsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_wallet_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *AdminTransferBackpackItemsResponse) GetItemIds() []string {
+	if x != nil {
+		return x.ItemIds
+	}
+	return nil
+}
+
 var File_proto_guma_v1_wallet_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_wallet_proto_rawDesc = "" +
@@ -1737,7 +2293,7 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\bend_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\"<\n" +
 	"\fBalancePoint\x12\x12\n" +
 	"\x04date\x18\x01 \x01(\tR\x04date\x12\x18\n" +
-	"\abalance\x18\x02 \x01(\x03R\abalance\"\xc9\x02\n" +
+	"\abalance\x18\x02 \x01(\x03R\abalance\"\xd9\x03\n" +
 	"\vTransaction\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
@@ -1750,7 +2306,12 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\x0ereference_type\x18\t \x01(\tR\rreferenceType\x129\n" +
 	"\n" +
 	"created_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xb6\x03\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x19\n" +
+	"\bactor_id\x18\v \x01(\tR\aactorId\x12\x1d\n" +
+	"\n" +
+	"actor_name\x18\f \x01(\tR\tactorName\x12'\n" +
+	"\x0fcounterparty_id\x18\r \x01(\tR\x0ecounterpartyId\x12+\n" +
+	"\x11counterparty_name\x18\x0e \x01(\tR\x10counterpartyName\"\xb6\x03\n" +
 	"\fBackpackItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bowner_id\x18\x02 \x01(\tR\aownerId\x12\x19\n" +
@@ -1780,7 +2341,44 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
 	"\aitem_id\x18\x02 \x01(\tR\x06itemId\"L\n" +
 	"\x1fConfirmBackpackDeliveryResponse\x12)\n" +
-	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item2\xd3\r\n" +
+	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"4\n" +
+	"\x17ListMemberAssetsRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\"f\n" +
+	"\x12MemberAssetSummary\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x18\n" +
+	"\abalance\x18\x02 \x01(\x03R\abalance\x12\x1d\n" +
+	"\n" +
+	"item_count\x18\x03 \x01(\x05R\titemCount\"Q\n" +
+	"\x18ListMemberAssetsResponse\x125\n" +
+	"\amembers\x18\x01 \x03(\v2\x1b.guma.v1.MemberAssetSummaryR\amembers\"L\n" +
+	"\x16GetMemberAssetsRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"y\n" +
+	"\x17GetMemberAssetsResponse\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x18\n" +
+	"\abalance\x18\x02 \x01(\x03R\abalance\x12+\n" +
+	"\x05items\x18\x03 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\"\xbd\x01\n" +
+	"\x19AdminTransferFundsRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1c\n" +
+	"\n" +
+	"to_user_id\x18\x03 \x01(\tR\btoUserId\x12\"\n" +
+	"\rto_guild_bank\x18\x04 \x01(\bR\vtoGuildBank\x12\x16\n" +
+	"\x06amount\x18\x05 \x01(\x03R\x06amount\x12\x12\n" +
+	"\x04note\x18\x06 \x01(\tR\x04note\"n\n" +
+	"\x1aAdminTransferFundsResponse\x126\n" +
+	"\vtransaction\x18\x01 \x01(\v2\x14.guma.v1.TransactionR\vtransaction\x12\x18\n" +
+	"\abalance\x18\x02 \x01(\x03R\abalance\"\xc8\x01\n" +
+	"!AdminTransferBackpackItemsRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
+	"\bitem_ids\x18\x03 \x03(\tR\aitemIds\x12\x1c\n" +
+	"\n" +
+	"to_user_id\x18\x04 \x01(\tR\btoUserId\x12\"\n" +
+	"\rto_guild_bank\x18\x05 \x01(\bR\vtoGuildBank\x12\x12\n" +
+	"\x04note\x18\x06 \x01(\tR\x04note\"?\n" +
+	"\"AdminTransferBackpackItemsResponse\x12\x19\n" +
+	"\bitem_ids\x18\x01 \x03(\tR\aitemIds2\xea\x12\n" +
 	"\rWalletService\x12h\n" +
 	"\tGetWallet\x12\x19.guma.v1.GetWalletRequest\x1a\x1a.guma.v1.GetWalletResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/guilds/{guild_id}/wallet\x12{\n" +
 	"\fDepositFunds\x12\x1c.guma.v1.DepositFundsRequest\x1a\x1c.guma.v1.TransactionResponse\"/\x82\xd3\xe4\x93\x02):\x01*\"$/v1/guilds/{guild_id}/wallet/deposit\x12~\n" +
@@ -1793,7 +2391,11 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\x14TransferBackpackItem\x12$.guma.v1.TransferBackpackItemRequest\x1a%.guma.v1.TransferBackpackItemResponse\"<\x82\xd3\xe4\x93\x026:\x01*\"1/v1/guilds/{guild_id}/backpack/{item_id}/transfer\x12\xb4\x01\n" +
 	"\x18CancelBackpackWithdrawal\x12(.guma.v1.CancelBackpackWithdrawalRequest\x1a).guma.v1.CancelBackpackWithdrawalResponse\"C\x82\xd3\xe4\x93\x02=:\x01*\"8/v1/guilds/{guild_id}/backpack/{item_id}/withdraw/cancel\x12\x90\x01\n" +
 	"\x15ListPendingDeliveries\x12%.guma.v1.ListPendingDeliveriesRequest\x1a&.guma.v1.ListPendingDeliveriesResponse\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/guilds/{guild_id}/deliveries\x12\xab\x01\n" +
-	"\x17ConfirmBackpackDelivery\x12'.guma.v1.ConfirmBackpackDeliveryRequest\x1a(.guma.v1.ConfirmBackpackDeliveryResponse\"=\x82\xd3\xe4\x93\x027:\x01*\"2/v1/guilds/{guild_id}/deliveries/{item_id}/confirmB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
+	"\x17ConfirmBackpackDelivery\x12'.guma.v1.ConfirmBackpackDeliveryRequest\x1a(.guma.v1.ConfirmBackpackDeliveryResponse\"=\x82\xd3\xe4\x93\x027:\x01*\"2/v1/guilds/{guild_id}/deliveries/{item_id}/confirm\x12\x8a\x01\n" +
+	"\x10ListMemberAssets\x12 .guma.v1.ListMemberAssetsRequest\x1a!.guma.v1.ListMemberAssetsResponse\"1\x82\xd3\xe4\x93\x02+\x12)/v1/guilds/{guild_id}/admin/member-assets\x12\x91\x01\n" +
+	"\x0fGetMemberAssets\x12\x1f.guma.v1.GetMemberAssetsRequest\x1a .guma.v1.GetMemberAssetsResponse\";\x82\xd3\xe4\x93\x025\x123/v1/guilds/{guild_id}/admin/member-assets/{user_id}\x12\xac\x01\n" +
+	"\x12AdminTransferFunds\x12\".guma.v1.AdminTransferFundsRequest\x1a#.guma.v1.AdminTransferFundsResponse\"M\x82\xd3\xe4\x93\x02G:\x01*\"B/v1/guilds/{guild_id}/admin/member-assets/{user_id}/funds/transfer\x12\xc4\x01\n" +
+	"\x1aAdminTransferBackpackItems\x12*.guma.v1.AdminTransferBackpackItemsRequest\x1a+.guma.v1.AdminTransferBackpackItemsResponse\"M\x82\xd3\xe4\x93\x02G:\x01*\"B/v1/guilds/{guild_id}/admin/member-assets/{user_id}/items/transferB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
 var (
 	file_proto_guma_v1_wallet_proto_rawDescOnce sync.Once
@@ -1807,38 +2409,47 @@ func file_proto_guma_v1_wallet_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_wallet_proto_rawDescData
 }
 
-var file_proto_guma_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_proto_guma_v1_wallet_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
 var file_proto_guma_v1_wallet_proto_goTypes = []any{
-	(*GetWalletRequest)(nil),                 // 0: guma.v1.GetWalletRequest
-	(*GetWalletResponse)(nil),                // 1: guma.v1.GetWalletResponse
-	(*DepositFundsRequest)(nil),              // 2: guma.v1.DepositFundsRequest
-	(*WithdrawFundsRequest)(nil),             // 3: guma.v1.WithdrawFundsRequest
-	(*TransferFundsRequest)(nil),             // 4: guma.v1.TransferFundsRequest
-	(*TransactionResponse)(nil),              // 5: guma.v1.TransactionResponse
-	(*ListTransactionsRequest)(nil),          // 6: guma.v1.ListTransactionsRequest
-	(*ListTransactionsResponse)(nil),         // 7: guma.v1.ListTransactionsResponse
-	(*ListBackpackItemsRequest)(nil),         // 8: guma.v1.ListBackpackItemsRequest
-	(*ListBackpackItemsResponse)(nil),        // 9: guma.v1.ListBackpackItemsResponse
-	(*WithdrawBackpackItemRequest)(nil),      // 10: guma.v1.WithdrawBackpackItemRequest
-	(*WithdrawBackpackItemResponse)(nil),     // 11: guma.v1.WithdrawBackpackItemResponse
-	(*TransferBackpackItemRequest)(nil),      // 12: guma.v1.TransferBackpackItemRequest
-	(*TransferBackpackItemResponse)(nil),     // 13: guma.v1.TransferBackpackItemResponse
-	(*GetBalanceTrendRequest)(nil),           // 14: guma.v1.GetBalanceTrendRequest
-	(*GetBalanceTrendResponse)(nil),          // 15: guma.v1.GetBalanceTrendResponse
-	(*Wallet)(nil),                           // 16: guma.v1.Wallet
-	(*LockedBid)(nil),                        // 17: guma.v1.LockedBid
-	(*BalancePoint)(nil),                     // 18: guma.v1.BalancePoint
-	(*Transaction)(nil),                      // 19: guma.v1.Transaction
-	(*BackpackItem)(nil),                     // 20: guma.v1.BackpackItem
-	(*CancelBackpackWithdrawalRequest)(nil),  // 21: guma.v1.CancelBackpackWithdrawalRequest
-	(*CancelBackpackWithdrawalResponse)(nil), // 22: guma.v1.CancelBackpackWithdrawalResponse
-	(*ListPendingDeliveriesRequest)(nil),     // 23: guma.v1.ListPendingDeliveriesRequest
-	(*ListPendingDeliveriesResponse)(nil),    // 24: guma.v1.ListPendingDeliveriesResponse
-	(*ConfirmBackpackDeliveryRequest)(nil),   // 25: guma.v1.ConfirmBackpackDeliveryRequest
-	(*ConfirmBackpackDeliveryResponse)(nil),  // 26: guma.v1.ConfirmBackpackDeliveryResponse
-	(*timestamppb.Timestamp)(nil),            // 27: google.protobuf.Timestamp
-	(*Item)(nil),                             // 28: guma.v1.Item
-	(*ItemLock)(nil),                         // 29: guma.v1.ItemLock
+	(*GetWalletRequest)(nil),                   // 0: guma.v1.GetWalletRequest
+	(*GetWalletResponse)(nil),                  // 1: guma.v1.GetWalletResponse
+	(*DepositFundsRequest)(nil),                // 2: guma.v1.DepositFundsRequest
+	(*WithdrawFundsRequest)(nil),               // 3: guma.v1.WithdrawFundsRequest
+	(*TransferFundsRequest)(nil),               // 4: guma.v1.TransferFundsRequest
+	(*TransactionResponse)(nil),                // 5: guma.v1.TransactionResponse
+	(*ListTransactionsRequest)(nil),            // 6: guma.v1.ListTransactionsRequest
+	(*ListTransactionsResponse)(nil),           // 7: guma.v1.ListTransactionsResponse
+	(*ListBackpackItemsRequest)(nil),           // 8: guma.v1.ListBackpackItemsRequest
+	(*ListBackpackItemsResponse)(nil),          // 9: guma.v1.ListBackpackItemsResponse
+	(*WithdrawBackpackItemRequest)(nil),        // 10: guma.v1.WithdrawBackpackItemRequest
+	(*WithdrawBackpackItemResponse)(nil),       // 11: guma.v1.WithdrawBackpackItemResponse
+	(*TransferBackpackItemRequest)(nil),        // 12: guma.v1.TransferBackpackItemRequest
+	(*TransferBackpackItemResponse)(nil),       // 13: guma.v1.TransferBackpackItemResponse
+	(*GetBalanceTrendRequest)(nil),             // 14: guma.v1.GetBalanceTrendRequest
+	(*GetBalanceTrendResponse)(nil),            // 15: guma.v1.GetBalanceTrendResponse
+	(*Wallet)(nil),                             // 16: guma.v1.Wallet
+	(*LockedBid)(nil),                          // 17: guma.v1.LockedBid
+	(*BalancePoint)(nil),                       // 18: guma.v1.BalancePoint
+	(*Transaction)(nil),                        // 19: guma.v1.Transaction
+	(*BackpackItem)(nil),                       // 20: guma.v1.BackpackItem
+	(*CancelBackpackWithdrawalRequest)(nil),    // 21: guma.v1.CancelBackpackWithdrawalRequest
+	(*CancelBackpackWithdrawalResponse)(nil),   // 22: guma.v1.CancelBackpackWithdrawalResponse
+	(*ListPendingDeliveriesRequest)(nil),       // 23: guma.v1.ListPendingDeliveriesRequest
+	(*ListPendingDeliveriesResponse)(nil),      // 24: guma.v1.ListPendingDeliveriesResponse
+	(*ConfirmBackpackDeliveryRequest)(nil),     // 25: guma.v1.ConfirmBackpackDeliveryRequest
+	(*ConfirmBackpackDeliveryResponse)(nil),    // 26: guma.v1.ConfirmBackpackDeliveryResponse
+	(*ListMemberAssetsRequest)(nil),            // 27: guma.v1.ListMemberAssetsRequest
+	(*MemberAssetSummary)(nil),                 // 28: guma.v1.MemberAssetSummary
+	(*ListMemberAssetsResponse)(nil),           // 29: guma.v1.ListMemberAssetsResponse
+	(*GetMemberAssetsRequest)(nil),             // 30: guma.v1.GetMemberAssetsRequest
+	(*GetMemberAssetsResponse)(nil),            // 31: guma.v1.GetMemberAssetsResponse
+	(*AdminTransferFundsRequest)(nil),          // 32: guma.v1.AdminTransferFundsRequest
+	(*AdminTransferFundsResponse)(nil),         // 33: guma.v1.AdminTransferFundsResponse
+	(*AdminTransferBackpackItemsRequest)(nil),  // 34: guma.v1.AdminTransferBackpackItemsRequest
+	(*AdminTransferBackpackItemsResponse)(nil), // 35: guma.v1.AdminTransferBackpackItemsResponse
+	(*timestamppb.Timestamp)(nil),              // 36: google.protobuf.Timestamp
+	(*Item)(nil),                               // 37: guma.v1.Item
+	(*ItemLock)(nil),                           // 38: guma.v1.ItemLock
 }
 var file_proto_guma_v1_wallet_proto_depIdxs = []int32{
 	16, // 0: guma.v1.GetWalletResponse.wallet:type_name -> guma.v1.Wallet
@@ -1849,47 +2460,58 @@ var file_proto_guma_v1_wallet_proto_depIdxs = []int32{
 	20, // 5: guma.v1.WithdrawBackpackItemResponse.item:type_name -> guma.v1.BackpackItem
 	20, // 6: guma.v1.TransferBackpackItemResponse.item:type_name -> guma.v1.BackpackItem
 	18, // 7: guma.v1.GetBalanceTrendResponse.points:type_name -> guma.v1.BalancePoint
-	27, // 8: guma.v1.Wallet.created_at:type_name -> google.protobuf.Timestamp
-	27, // 9: guma.v1.Wallet.updated_at:type_name -> google.protobuf.Timestamp
+	36, // 8: guma.v1.Wallet.created_at:type_name -> google.protobuf.Timestamp
+	36, // 9: guma.v1.Wallet.updated_at:type_name -> google.protobuf.Timestamp
 	17, // 10: guma.v1.Wallet.locked_bids:type_name -> guma.v1.LockedBid
-	27, // 11: guma.v1.LockedBid.end_time:type_name -> google.protobuf.Timestamp
-	27, // 12: guma.v1.Transaction.created_at:type_name -> google.protobuf.Timestamp
-	28, // 13: guma.v1.BackpackItem.item:type_name -> guma.v1.Item
-	27, // 14: guma.v1.BackpackItem.acquired_at:type_name -> google.protobuf.Timestamp
-	27, // 15: guma.v1.BackpackItem.delivery_requested_at:type_name -> google.protobuf.Timestamp
-	29, // 16: guma.v1.BackpackItem.lock:type_name -> guma.v1.ItemLock
+	36, // 11: guma.v1.LockedBid.end_time:type_name -> google.protobuf.Timestamp
+	36, // 12: guma.v1.Transaction.created_at:type_name -> google.protobuf.Timestamp
+	37, // 13: guma.v1.BackpackItem.item:type_name -> guma.v1.Item
+	36, // 14: guma.v1.BackpackItem.acquired_at:type_name -> google.protobuf.Timestamp
+	36, // 15: guma.v1.BackpackItem.delivery_requested_at:type_name -> google.protobuf.Timestamp
+	38, // 16: guma.v1.BackpackItem.lock:type_name -> guma.v1.ItemLock
 	20, // 17: guma.v1.CancelBackpackWithdrawalResponse.item:type_name -> guma.v1.BackpackItem
 	20, // 18: guma.v1.ListPendingDeliveriesResponse.items:type_name -> guma.v1.BackpackItem
 	20, // 19: guma.v1.ConfirmBackpackDeliveryResponse.item:type_name -> guma.v1.BackpackItem
-	0,  // 20: guma.v1.WalletService.GetWallet:input_type -> guma.v1.GetWalletRequest
-	2,  // 21: guma.v1.WalletService.DepositFunds:input_type -> guma.v1.DepositFundsRequest
-	3,  // 22: guma.v1.WalletService.WithdrawFunds:input_type -> guma.v1.WithdrawFundsRequest
-	4,  // 23: guma.v1.WalletService.TransferFunds:input_type -> guma.v1.TransferFundsRequest
-	6,  // 24: guma.v1.WalletService.ListTransactions:input_type -> guma.v1.ListTransactionsRequest
-	14, // 25: guma.v1.WalletService.GetBalanceTrend:input_type -> guma.v1.GetBalanceTrendRequest
-	8,  // 26: guma.v1.WalletService.ListBackpackItems:input_type -> guma.v1.ListBackpackItemsRequest
-	10, // 27: guma.v1.WalletService.WithdrawBackpackItem:input_type -> guma.v1.WithdrawBackpackItemRequest
-	12, // 28: guma.v1.WalletService.TransferBackpackItem:input_type -> guma.v1.TransferBackpackItemRequest
-	21, // 29: guma.v1.WalletService.CancelBackpackWithdrawal:input_type -> guma.v1.CancelBackpackWithdrawalRequest
-	23, // 30: guma.v1.WalletService.ListPendingDeliveries:input_type -> guma.v1.ListPendingDeliveriesRequest
-	25, // 31: guma.v1.WalletService.ConfirmBackpackDelivery:input_type -> guma.v1.ConfirmBackpackDeliveryRequest
-	1,  // 32: guma.v1.WalletService.GetWallet:output_type -> guma.v1.GetWalletResponse
-	5,  // 33: guma.v1.WalletService.DepositFunds:output_type -> guma.v1.TransactionResponse
-	5,  // 34: guma.v1.WalletService.WithdrawFunds:output_type -> guma.v1.TransactionResponse
-	5,  // 35: guma.v1.WalletService.TransferFunds:output_type -> guma.v1.TransactionResponse
-	7,  // 36: guma.v1.WalletService.ListTransactions:output_type -> guma.v1.ListTransactionsResponse
-	15, // 37: guma.v1.WalletService.GetBalanceTrend:output_type -> guma.v1.GetBalanceTrendResponse
-	9,  // 38: guma.v1.WalletService.ListBackpackItems:output_type -> guma.v1.ListBackpackItemsResponse
-	11, // 39: guma.v1.WalletService.WithdrawBackpackItem:output_type -> guma.v1.WithdrawBackpackItemResponse
-	13, // 40: guma.v1.WalletService.TransferBackpackItem:output_type -> guma.v1.TransferBackpackItemResponse
-	22, // 41: guma.v1.WalletService.CancelBackpackWithdrawal:output_type -> guma.v1.CancelBackpackWithdrawalResponse
-	24, // 42: guma.v1.WalletService.ListPendingDeliveries:output_type -> guma.v1.ListPendingDeliveriesResponse
-	26, // 43: guma.v1.WalletService.ConfirmBackpackDelivery:output_type -> guma.v1.ConfirmBackpackDeliveryResponse
-	32, // [32:44] is the sub-list for method output_type
-	20, // [20:32] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	28, // 20: guma.v1.ListMemberAssetsResponse.members:type_name -> guma.v1.MemberAssetSummary
+	20, // 21: guma.v1.GetMemberAssetsResponse.items:type_name -> guma.v1.BackpackItem
+	19, // 22: guma.v1.AdminTransferFundsResponse.transaction:type_name -> guma.v1.Transaction
+	0,  // 23: guma.v1.WalletService.GetWallet:input_type -> guma.v1.GetWalletRequest
+	2,  // 24: guma.v1.WalletService.DepositFunds:input_type -> guma.v1.DepositFundsRequest
+	3,  // 25: guma.v1.WalletService.WithdrawFunds:input_type -> guma.v1.WithdrawFundsRequest
+	4,  // 26: guma.v1.WalletService.TransferFunds:input_type -> guma.v1.TransferFundsRequest
+	6,  // 27: guma.v1.WalletService.ListTransactions:input_type -> guma.v1.ListTransactionsRequest
+	14, // 28: guma.v1.WalletService.GetBalanceTrend:input_type -> guma.v1.GetBalanceTrendRequest
+	8,  // 29: guma.v1.WalletService.ListBackpackItems:input_type -> guma.v1.ListBackpackItemsRequest
+	10, // 30: guma.v1.WalletService.WithdrawBackpackItem:input_type -> guma.v1.WithdrawBackpackItemRequest
+	12, // 31: guma.v1.WalletService.TransferBackpackItem:input_type -> guma.v1.TransferBackpackItemRequest
+	21, // 32: guma.v1.WalletService.CancelBackpackWithdrawal:input_type -> guma.v1.CancelBackpackWithdrawalRequest
+	23, // 33: guma.v1.WalletService.ListPendingDeliveries:input_type -> guma.v1.ListPendingDeliveriesRequest
+	25, // 34: guma.v1.WalletService.ConfirmBackpackDelivery:input_type -> guma.v1.ConfirmBackpackDeliveryRequest
+	27, // 35: guma.v1.WalletService.ListMemberAssets:input_type -> guma.v1.ListMemberAssetsRequest
+	30, // 36: guma.v1.WalletService.GetMemberAssets:input_type -> guma.v1.GetMemberAssetsRequest
+	32, // 37: guma.v1.WalletService.AdminTransferFunds:input_type -> guma.v1.AdminTransferFundsRequest
+	34, // 38: guma.v1.WalletService.AdminTransferBackpackItems:input_type -> guma.v1.AdminTransferBackpackItemsRequest
+	1,  // 39: guma.v1.WalletService.GetWallet:output_type -> guma.v1.GetWalletResponse
+	5,  // 40: guma.v1.WalletService.DepositFunds:output_type -> guma.v1.TransactionResponse
+	5,  // 41: guma.v1.WalletService.WithdrawFunds:output_type -> guma.v1.TransactionResponse
+	5,  // 42: guma.v1.WalletService.TransferFunds:output_type -> guma.v1.TransactionResponse
+	7,  // 43: guma.v1.WalletService.ListTransactions:output_type -> guma.v1.ListTransactionsResponse
+	15, // 44: guma.v1.WalletService.GetBalanceTrend:output_type -> guma.v1.GetBalanceTrendResponse
+	9,  // 45: guma.v1.WalletService.ListBackpackItems:output_type -> guma.v1.ListBackpackItemsResponse
+	11, // 46: guma.v1.WalletService.WithdrawBackpackItem:output_type -> guma.v1.WithdrawBackpackItemResponse
+	13, // 47: guma.v1.WalletService.TransferBackpackItem:output_type -> guma.v1.TransferBackpackItemResponse
+	22, // 48: guma.v1.WalletService.CancelBackpackWithdrawal:output_type -> guma.v1.CancelBackpackWithdrawalResponse
+	24, // 49: guma.v1.WalletService.ListPendingDeliveries:output_type -> guma.v1.ListPendingDeliveriesResponse
+	26, // 50: guma.v1.WalletService.ConfirmBackpackDelivery:output_type -> guma.v1.ConfirmBackpackDeliveryResponse
+	29, // 51: guma.v1.WalletService.ListMemberAssets:output_type -> guma.v1.ListMemberAssetsResponse
+	31, // 52: guma.v1.WalletService.GetMemberAssets:output_type -> guma.v1.GetMemberAssetsResponse
+	33, // 53: guma.v1.WalletService.AdminTransferFunds:output_type -> guma.v1.AdminTransferFundsResponse
+	35, // 54: guma.v1.WalletService.AdminTransferBackpackItems:output_type -> guma.v1.AdminTransferBackpackItemsResponse
+	39, // [39:55] is the sub-list for method output_type
+	23, // [23:39] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_wallet_proto_init() }
@@ -1904,7 +2526,7 @@ func file_proto_guma_v1_wallet_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_wallet_proto_rawDesc), len(file_proto_guma_v1_wallet_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   27,
+			NumMessages:   36,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

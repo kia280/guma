@@ -10,8 +10,8 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	"github.com/kia280/guma/internal/session"
 	walletsvc "github.com/kia280/guma/internal/services/wallet"
+	"github.com/kia280/guma/internal/session"
 )
 
 // WalletHandler is a thin gRPC adapter over the wallet service.
@@ -233,16 +233,20 @@ func walletToProto(w *walletsvc.Wallet) *gumav1.Wallet {
 
 func transactionToProto(t *walletsvc.Transaction) *gumav1.Transaction {
 	return &gumav1.Transaction{
-		Id:            t.ID,
-		UserId:        t.UserID,
-		GuildId:       t.GuildID,
-		Type:          t.Type,
-		Amount:        t.Amount,
-		BalanceAfter:  t.BalanceAfter,
-		Description:   t.Description,
-		ReferenceId:   t.ReferenceID,
-		ReferenceType: t.ReferenceType,
-		CreatedAt:     timestamppb.New(t.CreatedAt),
+		Id:               t.ID,
+		UserId:           t.UserID,
+		GuildId:          t.GuildID,
+		Type:             t.Type,
+		Amount:           t.Amount,
+		BalanceAfter:     t.BalanceAfter,
+		Description:      t.Description,
+		ReferenceId:      t.ReferenceID,
+		ReferenceType:    t.ReferenceType,
+		CreatedAt:        timestamppb.New(t.CreatedAt),
+		ActorId:          t.ActorID,
+		ActorName:        t.ActorName,
+		CounterpartyId:   t.CounterpartyID,
+		CounterpartyName: t.CounterpartyName,
 	}
 }
 
@@ -316,4 +320,96 @@ func (h *WalletHandler) ConfirmBackpackDelivery(ctx context.Context, req *gumav1
 		return nil, toStatus(err)
 	}
 	return &gumav1.ConfirmBackpackDeliveryResponse{Item: backpackItemToProto(bi)}, nil
+}
+
+func (h *WalletHandler) ListMemberAssets(ctx context.Context, req *gumav1.ListMemberAssetsRequest) (*gumav1.ListMemberAssetsResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	summaries, err := h.svc.ListMemberAssets(ctx, userID, req.GuildId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	members := make([]*gumav1.MemberAssetSummary, len(summaries))
+	for i, m := range summaries {
+		members[i] = &gumav1.MemberAssetSummary{UserId: m.UserID, Balance: m.Balance, ItemCount: m.ItemCount}
+	}
+	return &gumav1.ListMemberAssetsResponse{Members: members}, nil
+}
+
+func (h *WalletHandler) GetMemberAssets(ctx context.Context, req *gumav1.GetMemberAssetsRequest) (*gumav1.GetMemberAssetsResponse, error) {
+	if req.GuildId == "" || req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and user_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	assets, err := h.svc.GetMemberAssets(ctx, userID, req.GuildId, req.UserId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	items := make([]*gumav1.BackpackItem, len(assets.Items))
+	for i, bi := range assets.Items {
+		items[i] = backpackItemToProto(bi)
+	}
+	return &gumav1.GetMemberAssetsResponse{UserId: assets.UserID, Balance: assets.Balance, Items: items}, nil
+}
+
+func (h *WalletHandler) AdminTransferFunds(ctx context.Context, req *gumav1.AdminTransferFundsRequest) (*gumav1.AdminTransferFundsResponse, error) {
+	if req.GuildId == "" || req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and user_id are required")
+	}
+	if req.ToUserId == "" && !req.ToGuildBank {
+		return nil, status.Error(codes.InvalidArgument, "to_user_id or to_guild_bank is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	tx, balance, err := h.svc.AdminTransferFunds(ctx, walletsvc.AdminTransferFundsParams{
+		AdminID:     userID,
+		GuildID:     req.GuildId,
+		FromUserID:  req.UserId,
+		Destination: walletsvc.AssetDestination{UserID: req.ToUserId, GuildBank: req.ToGuildBank},
+		Amount:      req.Amount,
+		Note:        req.Note,
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.AdminTransferFundsResponse{Transaction: transactionToProto(tx), Balance: balance}, nil
+}
+
+func (h *WalletHandler) AdminTransferBackpackItems(ctx context.Context, req *gumav1.AdminTransferBackpackItemsRequest) (*gumav1.AdminTransferBackpackItemsResponse, error) {
+	if req.GuildId == "" || req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and user_id are required")
+	}
+	if req.ToUserId == "" && !req.ToGuildBank {
+		return nil, status.Error(codes.InvalidArgument, "to_user_id or to_guild_bank is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	moved, err := h.svc.AdminTransferBackpackItems(ctx, walletsvc.AdminTransferItemsParams{
+		AdminID:     userID,
+		GuildID:     req.GuildId,
+		FromUserID:  req.UserId,
+		ItemIDs:     req.ItemIds,
+		Destination: walletsvc.AssetDestination{UserID: req.ToUserId, GuildBank: req.ToGuildBank},
+		Note:        req.Note,
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.AdminTransferBackpackItemsResponse{ItemIds: moved}, nil
 }

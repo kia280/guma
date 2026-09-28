@@ -374,6 +374,160 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/admin/member-assets": {
+      "get": {
+        "operationId": "WalletService_ListMemberAssets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMemberAssetsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/admin/member-assets/{userId}": {
+      "get": {
+        "operationId": "WalletService_GetMemberAssets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMemberAssetsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/admin/member-assets/{userId}/funds/transfer": {
+      "post": {
+        "operationId": "WalletService_AdminTransferFunds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AdminTransferFundsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceAdminTransferFundsBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/admin/member-assets/{userId}/items/transfer": {
+      "post": {
+        "operationId": "WalletService_AdminTransferBackpackItems",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AdminTransferBackpackItemsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceAdminTransferBackpackItemsBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/announcements": {
       "get": {
         "operationId": "AnnouncementService_ListAnnouncements",
@@ -5099,6 +5253,44 @@
     "NotificationServiceMarkNotificationReadBody": {
       "type": "object"
     },
+    "WalletServiceAdminTransferBackpackItemsBody": {
+      "type": "object",
+      "properties": {
+        "itemIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "toUserId": {
+          "type": "string"
+        },
+        "toGuildBank": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "WalletServiceAdminTransferFundsBody": {
+      "type": "object",
+      "properties": {
+        "toUserId": {
+          "type": "string"
+        },
+        "toGuildBank": {
+          "type": "boolean"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
     "WalletServiceCancelBackpackWithdrawalBody": {
       "type": "object"
     },
@@ -5246,6 +5438,29 @@
           "additionalProperties": {
             "type": "string"
           }
+        }
+      }
+    },
+    "v1AdminTransferBackpackItemsResponse": {
+      "type": "object",
+      "properties": {
+        "itemIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1AdminTransferFundsResponse": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "$ref": "#/definitions/v1Transaction"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -6254,6 +6469,25 @@
         }
       }
     },
+    "v1GetMemberAssetsResponse": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BackpackItem"
+          }
+        }
+      }
+    },
     "v1GetMemberResponse": {
       "type": "object",
       "properties": {
@@ -7068,6 +7302,18 @@
         }
       }
     },
+    "v1ListMemberAssetsResponse": {
+      "type": "object",
+      "properties": {
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1MemberAssetSummary"
+          }
+        }
+      }
+    },
     "v1ListMembersResponse": {
       "type": "object",
       "properties": {
@@ -7404,6 +7650,22 @@
         }
       },
       "title": "Data structures"
+    },
+    "v1MemberAssetSummary": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
+        },
+        "itemCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
     },
     "v1NavigationItem": {
       "type": "object",
@@ -7808,6 +8070,18 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "actorId": {
+          "type": "string"
+        },
+        "actorName": {
+          "type": "string"
+        },
+        "counterpartyId": {
+          "type": "string"
+        },
+        "counterpartyName": {
+          "type": "string"
         }
       }
     },

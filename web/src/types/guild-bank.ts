@@ -19,7 +19,8 @@ export interface GuildContribution {
     | 'auction_proceeds'
     | 'lottery_revenue'
     | 'checkin_gold_payout'
-    | 'checkin_gold_retracted';
+    | 'checkin_gold_retracted'
+    | 'admin_transfer';
   amount?: number;
   itemName?: string;
   member: string;
@@ -77,7 +78,8 @@ export type BankContributionKind =
   | 'auction_proceeds'
   | 'lottery_revenue'
   | 'checkin_gold_payout'
-  | 'checkin_gold_retracted';
+  | 'checkin_gold_retracted'
+  | 'admin_transfer';
 
 export type RequestStatus = 'pending' | 'approved' | 'rejected';
 

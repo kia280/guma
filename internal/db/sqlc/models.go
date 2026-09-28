@@ -359,16 +359,18 @@ type Notification struct {
 }
 
 type Transaction struct {
-	ID            uuid.UUID
-	UserID        uuid.UUID
-	GuildID       uuid.UUID
-	Type          string
-	Amount        int64
-	BalanceAfter  int64
-	Description   pgtype.Text
-	ReferenceID   *uuid.UUID
-	ReferenceType pgtype.Text
-	CreatedAt     time.Time
+	ID             uuid.UUID
+	UserID         uuid.UUID
+	GuildID        uuid.UUID
+	Type           string
+	Amount         int64
+	BalanceAfter   int64
+	Description    pgtype.Text
+	ReferenceID    *uuid.UUID
+	ReferenceType  pgtype.Text
+	CreatedAt      time.Time
+	ActorID        *uuid.UUID
+	CounterpartyID *uuid.UUID
 }
 
 type User struct {

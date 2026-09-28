@@ -30,7 +30,7 @@ const KIND_ICONS: Record<ItemHistoryKind, string> = {
   delivered: 'solar:box-minimalistic-linear',
 };
 
-const RECEIVED_SOURCES = ['auction', 'lottery', 'transfer', 'checkin', 'bank_item_request', 'bank'] as const;
+const RECEIVED_SOURCES = ['auction', 'lottery', 'transfer', 'admin', 'checkin', 'bank_item_request', 'bank'] as const;
 
 const referenceHref = (event: ItemHistoryEvent): string | undefined => {
   if (!event.referenceId) return undefined;
@@ -86,7 +86,14 @@ export function ItemHistoryModal({ state, itemId, itemName }: ItemHistoryModalPr
     const label = event.referenceLabel;
     if (event.kind === 'received') {
       const source = RECEIVED_SOURCES.find(s => s === event.source) ?? 'other';
-      return t(`received.${source === 'bank_item_request' ? 'bank' : source}`, { actor, subject, label });
+      return t(`received.${source === 'bank_item_request' ? 'bank' : source}`, {
+        actor,
+        subject,
+        label: source === 'admin' ? userName(label) : label,
+      });
+    }
+    if (event.kind === 'donated' && event.source === 'admin') {
+      return t('adminDonated', { actor, label: userName(label) });
     }
     if (event.kind === 'returned') {
       return t(event.source === 'bank' ? 'returned.bank' : 'returned.backpack', { actor });

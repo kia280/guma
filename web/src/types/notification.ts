@@ -11,6 +11,7 @@ export type NotificationKind =
   | 'auctionUnsold'
   | 'auctionCancelled'
   | 'itemReceived'
+  | 'itemMovedByAdmin'
   | 'itemDelivered'
   | 'lootAssigned'
   | 'checkinGoldReceived'
