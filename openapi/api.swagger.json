@@ -975,6 +975,50 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/backpack/{itemId}/transfer": {
+      "post": {
+        "operationId": "WalletService_TransferBackpackItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TransferBackpackItemResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceTransferBackpackItemBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/backpack/{itemId}/withdraw": {
       "post": {
         "operationId": "WalletService_WithdrawBackpackItem",
@@ -1011,6 +1055,50 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/WalletServiceWithdrawBackpackItemBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/backpack/{itemId}/withdraw/cancel": {
+      "post": {
+        "operationId": "WalletService_CancelBackpackWithdrawal",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelBackpackWithdrawalResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceCancelBackpackWithdrawalBody"
             }
           }
         ],
@@ -1403,6 +1491,12 @@
           },
           {
             "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1970,6 +2064,130 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/checkins/{checkinId}/loot/{itemId}/assign": {
+      "post": {
+        "operationId": "CheckInService_AssignLoot",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AssignLootResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInServiceAssignLootBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/deliveries": {
+      "get": {
+        "operationId": "WalletService_ListPendingDeliveries",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPendingDeliveriesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/deliveries/{itemId}/confirm": {
+      "post": {
+        "operationId": "WalletService_ConfirmBackpackDelivery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ConfirmBackpackDeliveryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceConfirmBackpackDeliveryBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/events": {
       "get": {
         "operationId": "EventService_ListEvents",
@@ -2516,6 +2734,42 @@
         ],
         "tags": [
           "ItemTemplateService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/items/{itemId}/history": {
+      "get": {
+        "operationId": "BankService_GetItemHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetItemHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BankService"
         ]
       }
     },
@@ -4076,6 +4330,9 @@
         "status": {
           "type": "string",
           "title": "\"UPCOMING\" (scheduled) or \"ACTIVE\" (starts immediately)"
+        },
+        "source": {
+          "$ref": "#/definitions/v1ItemSourceRef"
         }
       }
     },
@@ -4155,6 +4412,14 @@
           "title": "\"approved\" | \"rejected\""
         },
         "note": {
+          "type": "string"
+        }
+      }
+    },
+    "CheckInServiceAssignLootBody": {
+      "type": "object",
+      "properties": {
+        "userId": {
           "type": "string"
         }
       }
@@ -4521,12 +4786,29 @@
     "NotificationServiceMarkNotificationReadBody": {
       "type": "object"
     },
+    "WalletServiceCancelBackpackWithdrawalBody": {
+      "type": "object"
+    },
+    "WalletServiceConfirmBackpackDeliveryBody": {
+      "type": "object"
+    },
     "WalletServiceDepositFundsBody": {
       "type": "object",
       "properties": {
         "amount": {
           "type": "string",
           "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "WalletServiceTransferBackpackItemBody": {
+      "type": "object",
+      "properties": {
+        "toUserId": {
+          "type": "string"
         },
         "note": {
           "type": "string"
@@ -4718,6 +5000,14 @@
         }
       }
     },
+    "v1AssignLootResponse": {
+      "type": "object",
+      "properties": {
+        "backpackItemId": {
+          "type": "string"
+        }
+      }
+    },
     "v1AuctionItem": {
       "type": "object",
       "properties": {
@@ -4801,6 +5091,19 @@
         "acquiredAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "sourceLabel": {
+          "type": "string"
+        },
+        "deliveryRequestedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ownerName": {
+          "type": "string"
+        },
+        "lock": {
+          "$ref": "#/definitions/v1ItemLock"
         }
       }
     },
@@ -4858,6 +5161,12 @@
         },
         "avatarUrl": {
           "type": "string"
+        },
+        "referenceType": {
+          "type": "string"
+        },
+        "referenceId": {
+          "type": "string"
         }
       }
     },
@@ -4895,6 +5204,16 @@
         },
         "checkinTitle": {
           "type": "string"
+        },
+        "pendingRequestCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "requestedByMe": {
+          "type": "boolean"
+        },
+        "lock": {
+          "$ref": "#/definitions/v1ItemLock"
         }
       }
     },
@@ -4934,6 +5253,14 @@
       "properties": {
         "auction": {
           "$ref": "#/definitions/v1AuctionItem"
+        }
+      }
+    },
+    "v1CancelBackpackWithdrawalResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1BackpackItem"
         }
       }
     },
@@ -5058,6 +5385,14 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "v1ConfirmBackpackDeliveryResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1BackpackItem"
         }
       }
     },
@@ -5423,6 +5758,18 @@
         }
       }
     },
+    "v1GetItemHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ItemHistoryEvent"
+          }
+        }
+      }
+    },
     "v1GetLotteryResponse": {
       "type": "object",
       "properties": {
@@ -5784,6 +6131,53 @@
       },
       "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, check-in loot, lotteries).\n\nItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC\nItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC"
     },
+    "v1ItemHistoryEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "actorId": {
+          "type": "string"
+        },
+        "actorName": {
+          "type": "string"
+        },
+        "subjectId": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "referenceId": {
+          "type": "string"
+        },
+        "referenceLabel": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ItemLock": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    },
     "v1ItemRequest": {
       "type": "object",
       "properties": {
@@ -5827,6 +6221,17 @@
           "$ref": "#/definitions/v1Item"
         },
         "requesterAvatarUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ItemSourceRef": {
+      "type": "object",
+      "properties": {
+        "backpackItemId": {
+          "type": "string"
+        },
+        "bankItemId": {
           "type": "string"
         }
       }
@@ -6268,6 +6673,18 @@
         }
       }
     },
+    "v1ListPendingDeliveriesResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BackpackItem"
+          }
+        }
+      }
+    },
     "v1ListTransactionsResponse": {
       "type": "object",
       "properties": {
@@ -6296,6 +6713,25 @@
             "type": "object",
             "$ref": "#/definitions/v1GuildEvent"
           }
+        }
+      }
+    },
+    "v1LockedBid": {
+      "type": "object",
+      "properties": {
+        "auctionId": {
+          "type": "string"
+        },
+        "itemName": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -6383,6 +6819,9 @@
         "item": {
           "$ref": "#/definitions/v1Item",
           "title": "Item prize; unset if currency prize"
+        },
+        "source": {
+          "$ref": "#/definitions/v1ItemSourceRef"
         }
       }
     },
@@ -6920,6 +7359,14 @@
         }
       }
     },
+    "v1TransferBackpackItemResponse": {
+      "type": "object",
+      "properties": {
+        "item": {
+          "$ref": "#/definitions/v1BackpackItem"
+        }
+      }
+    },
     "v1UnpublishAnnouncementResponse": {
       "type": "object",
       "properties": {
@@ -7225,6 +7672,17 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "lockedInBids": {
+          "type": "string",
+          "format": "int64"
+        },
+        "lockedBids": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1LockedBid"
+          }
         }
       }
     },

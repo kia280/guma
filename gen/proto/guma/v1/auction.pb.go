@@ -280,6 +280,7 @@ type CreateAuctionRequest struct {
 	DurationHours   int32                  `protobuf:"varint,5,opt,name=duration_hours,json=durationHours,proto3" json:"duration_hours,omitempty"`
 	IsBlind         bool                   `protobuf:"varint,6,opt,name=is_blind,json=isBlind,proto3" json:"is_blind,omitempty"`
 	Status          string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"` // "UPCOMING" (scheduled) or "ACTIVE" (starts immediately)
+	Source          *ItemSourceRef         `protobuf:"bytes,8,opt,name=source,proto3" json:"source,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -361,6 +362,13 @@ func (x *CreateAuctionRequest) GetStatus() string {
 		return x.Status
 	}
 	return ""
+}
+
+func (x *CreateAuctionRequest) GetSource() *ItemSourceRef {
+	if x != nil {
+		return x.Source
+	}
+	return nil
 }
 
 type CreateAuctionResponse struct {
@@ -1023,7 +1031,7 @@ const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\n" +
 	"auction_id\x18\x02 \x01(\tR\tauctionId\"D\n" +
 	"\x12GetAuctionResponse\x12.\n" +
-	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"\xfd\x01\n" +
+	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"\xad\x02\n" +
 	"\x14CreateAuctionRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12!\n" +
 	"\x04item\x18\x02 \x01(\v2\r.guma.v1.ItemR\x04item\x12!\n" +
@@ -1031,7 +1039,8 @@ const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\x11min_bid_increment\x18\x04 \x01(\x03R\x0fminBidIncrement\x12%\n" +
 	"\x0eduration_hours\x18\x05 \x01(\x05R\rdurationHours\x12\x19\n" +
 	"\bis_blind\x18\x06 \x01(\bR\aisBlind\x12\x16\n" +
-	"\x06status\x18\a \x01(\tR\x06status\"G\n" +
+	"\x06status\x18\a \x01(\tR\x06status\x12.\n" +
+	"\x06source\x18\b \x01(\v2\x16.guma.v1.ItemSourceRefR\x06source\"G\n" +
 	"\x15CreateAuctionResponse\x12.\n" +
 	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"c\n" +
 	"\x0fPlaceBidRequest\x12\x19\n" +
@@ -1130,40 +1139,42 @@ var file_proto_guma_v1_auction_proto_goTypes = []any{
 	(*AuctionItem)(nil),           // 12: guma.v1.AuctionItem
 	(*Bid)(nil),                   // 13: guma.v1.Bid
 	(*Item)(nil),                  // 14: guma.v1.Item
-	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
+	(*ItemSourceRef)(nil),         // 15: guma.v1.ItemSourceRef
+	(*timestamppb.Timestamp)(nil), // 16: google.protobuf.Timestamp
 }
 var file_proto_guma_v1_auction_proto_depIdxs = []int32{
 	12, // 0: guma.v1.ListAuctionsResponse.auctions:type_name -> guma.v1.AuctionItem
 	12, // 1: guma.v1.GetAuctionResponse.auction:type_name -> guma.v1.AuctionItem
 	14, // 2: guma.v1.CreateAuctionRequest.item:type_name -> guma.v1.Item
-	12, // 3: guma.v1.CreateAuctionResponse.auction:type_name -> guma.v1.AuctionItem
-	12, // 4: guma.v1.PlaceBidResponse.auction:type_name -> guma.v1.AuctionItem
-	13, // 5: guma.v1.PlaceBidResponse.bid:type_name -> guma.v1.Bid
-	13, // 6: guma.v1.GetBidHistoryResponse.bids:type_name -> guma.v1.Bid
-	12, // 7: guma.v1.CancelAuctionResponse.auction:type_name -> guma.v1.AuctionItem
-	14, // 8: guma.v1.AuctionItem.item:type_name -> guma.v1.Item
-	15, // 9: guma.v1.AuctionItem.start_time:type_name -> google.protobuf.Timestamp
-	15, // 10: guma.v1.AuctionItem.end_time:type_name -> google.protobuf.Timestamp
-	15, // 11: guma.v1.AuctionItem.created_at:type_name -> google.protobuf.Timestamp
-	15, // 12: guma.v1.AuctionItem.updated_at:type_name -> google.protobuf.Timestamp
-	15, // 13: guma.v1.Bid.placed_at:type_name -> google.protobuf.Timestamp
-	0,  // 14: guma.v1.AuctionService.ListAuctions:input_type -> guma.v1.ListAuctionsRequest
-	2,  // 15: guma.v1.AuctionService.GetAuction:input_type -> guma.v1.GetAuctionRequest
-	4,  // 16: guma.v1.AuctionService.CreateAuction:input_type -> guma.v1.CreateAuctionRequest
-	6,  // 17: guma.v1.AuctionService.PlaceBid:input_type -> guma.v1.PlaceBidRequest
-	8,  // 18: guma.v1.AuctionService.GetBidHistory:input_type -> guma.v1.GetBidHistoryRequest
-	10, // 19: guma.v1.AuctionService.CancelAuction:input_type -> guma.v1.CancelAuctionRequest
-	1,  // 20: guma.v1.AuctionService.ListAuctions:output_type -> guma.v1.ListAuctionsResponse
-	3,  // 21: guma.v1.AuctionService.GetAuction:output_type -> guma.v1.GetAuctionResponse
-	5,  // 22: guma.v1.AuctionService.CreateAuction:output_type -> guma.v1.CreateAuctionResponse
-	7,  // 23: guma.v1.AuctionService.PlaceBid:output_type -> guma.v1.PlaceBidResponse
-	9,  // 24: guma.v1.AuctionService.GetBidHistory:output_type -> guma.v1.GetBidHistoryResponse
-	11, // 25: guma.v1.AuctionService.CancelAuction:output_type -> guma.v1.CancelAuctionResponse
-	20, // [20:26] is the sub-list for method output_type
-	14, // [14:20] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	15, // 3: guma.v1.CreateAuctionRequest.source:type_name -> guma.v1.ItemSourceRef
+	12, // 4: guma.v1.CreateAuctionResponse.auction:type_name -> guma.v1.AuctionItem
+	12, // 5: guma.v1.PlaceBidResponse.auction:type_name -> guma.v1.AuctionItem
+	13, // 6: guma.v1.PlaceBidResponse.bid:type_name -> guma.v1.Bid
+	13, // 7: guma.v1.GetBidHistoryResponse.bids:type_name -> guma.v1.Bid
+	12, // 8: guma.v1.CancelAuctionResponse.auction:type_name -> guma.v1.AuctionItem
+	14, // 9: guma.v1.AuctionItem.item:type_name -> guma.v1.Item
+	16, // 10: guma.v1.AuctionItem.start_time:type_name -> google.protobuf.Timestamp
+	16, // 11: guma.v1.AuctionItem.end_time:type_name -> google.protobuf.Timestamp
+	16, // 12: guma.v1.AuctionItem.created_at:type_name -> google.protobuf.Timestamp
+	16, // 13: guma.v1.AuctionItem.updated_at:type_name -> google.protobuf.Timestamp
+	16, // 14: guma.v1.Bid.placed_at:type_name -> google.protobuf.Timestamp
+	0,  // 15: guma.v1.AuctionService.ListAuctions:input_type -> guma.v1.ListAuctionsRequest
+	2,  // 16: guma.v1.AuctionService.GetAuction:input_type -> guma.v1.GetAuctionRequest
+	4,  // 17: guma.v1.AuctionService.CreateAuction:input_type -> guma.v1.CreateAuctionRequest
+	6,  // 18: guma.v1.AuctionService.PlaceBid:input_type -> guma.v1.PlaceBidRequest
+	8,  // 19: guma.v1.AuctionService.GetBidHistory:input_type -> guma.v1.GetBidHistoryRequest
+	10, // 20: guma.v1.AuctionService.CancelAuction:input_type -> guma.v1.CancelAuctionRequest
+	1,  // 21: guma.v1.AuctionService.ListAuctions:output_type -> guma.v1.ListAuctionsResponse
+	3,  // 22: guma.v1.AuctionService.GetAuction:output_type -> guma.v1.GetAuctionResponse
+	5,  // 23: guma.v1.AuctionService.CreateAuction:output_type -> guma.v1.CreateAuctionResponse
+	7,  // 24: guma.v1.AuctionService.PlaceBid:output_type -> guma.v1.PlaceBidResponse
+	9,  // 25: guma.v1.AuctionService.GetBidHistory:output_type -> guma.v1.GetBidHistoryResponse
+	11, // 26: guma.v1.AuctionService.CancelAuction:output_type -> guma.v1.CancelAuctionResponse
+	21, // [21:27] is the sub-list for method output_type
+	15, // [15:21] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_auction_proto_init() }

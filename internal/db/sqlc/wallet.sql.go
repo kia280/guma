@@ -10,7 +10,50 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const cancelBackpackWithdrawal = `-- name: CancelBackpackWithdrawal :one
+UPDATE backpack_items SET delivery_requested_at = NULL
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND delivery_requested_at IS NOT NULL
+RETURNING id, owner_id, guild_id, item, source, source_id,
+          COALESCE(note, '') AS note, acquired_at, delivery_requested_at
+`
+
+type CancelBackpackWithdrawalParams struct {
+	ID      uuid.UUID
+	OwnerID uuid.UUID
+	GuildID uuid.UUID
+}
+
+type CancelBackpackWithdrawalRow struct {
+	ID                  uuid.UUID
+	OwnerID             uuid.UUID
+	GuildID             uuid.UUID
+	Item                []byte
+	Source              string
+	SourceID            *uuid.UUID
+	Note                string
+	AcquiredAt          time.Time
+	DeliveryRequestedAt pgtype.Timestamptz
+}
+
+func (q *Queries) CancelBackpackWithdrawal(ctx context.Context, arg CancelBackpackWithdrawalParams) (CancelBackpackWithdrawalRow, error) {
+	row := q.db.QueryRow(ctx, cancelBackpackWithdrawal, arg.ID, arg.OwnerID, arg.GuildID)
+	var i CancelBackpackWithdrawalRow
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.GuildID,
+		&i.Item,
+		&i.Source,
+		&i.SourceID,
+		&i.Note,
+		&i.AcquiredAt,
+		&i.DeliveryRequestedAt,
+	)
+	return i, err
+}
 
 const countBackpackItems = `-- name: CountBackpackItems :one
 SELECT COUNT(*) FROM backpack_items WHERE owner_id = $1 AND guild_id = $2
@@ -47,44 +90,18 @@ func (q *Queries) CountWalletTransactions(ctx context.Context, arg CountWalletTr
 	return count, err
 }
 
-const deleteBackpackItem = `-- name: DeleteBackpackItem :one
-DELETE FROM backpack_items
-WHERE id = $1 AND owner_id = $2 AND guild_id = $3
-RETURNING id, owner_id, guild_id, item, source, source_id,
-          COALESCE(note, '') AS note, acquired_at
+const deleteDeliveredItem = `-- name: DeleteDeliveredItem :exec
+DELETE FROM backpack_items WHERE id = $1 AND guild_id = $2 AND delivery_requested_at IS NOT NULL
 `
 
-type DeleteBackpackItemParams struct {
+type DeleteDeliveredItemParams struct {
 	ID      uuid.UUID
-	OwnerID uuid.UUID
 	GuildID uuid.UUID
 }
 
-type DeleteBackpackItemRow struct {
-	ID         uuid.UUID
-	OwnerID    uuid.UUID
-	GuildID    uuid.UUID
-	Item       []byte
-	Source     string
-	SourceID   *uuid.UUID
-	Note       string
-	AcquiredAt time.Time
-}
-
-func (q *Queries) DeleteBackpackItem(ctx context.Context, arg DeleteBackpackItemParams) (DeleteBackpackItemRow, error) {
-	row := q.db.QueryRow(ctx, deleteBackpackItem, arg.ID, arg.OwnerID, arg.GuildID)
-	var i DeleteBackpackItemRow
-	err := row.Scan(
-		&i.ID,
-		&i.OwnerID,
-		&i.GuildID,
-		&i.Item,
-		&i.Source,
-		&i.SourceID,
-		&i.Note,
-		&i.AcquiredAt,
-	)
-	return i, err
+func (q *Queries) DeleteDeliveredItem(ctx context.Context, arg DeleteDeliveredItemParams) error {
+	_, err := q.db.Exec(ctx, deleteDeliveredItem, arg.ID, arg.GuildID)
+	return err
 }
 
 const ensureWallet = `-- name: EnsureWallet :exec
@@ -207,14 +224,69 @@ func (q *Queries) InsertTransactionSimple(ctx context.Context, arg InsertTransac
 	return err
 }
 
+const listActiveLeadingBids = `-- name: ListActiveLeadingBids :many
+SELECT id, COALESCE(item->>'name', '')::text AS item_name, current_bid, end_time
+FROM auctions
+WHERE guild_id = $1 AND current_bidder_id = $2 AND status IN ('UPCOMING', 'ACTIVE')
+ORDER BY end_time ASC
+`
+
+type ListActiveLeadingBidsParams struct {
+	GuildID         uuid.UUID
+	CurrentBidderID *uuid.UUID
+}
+
+type ListActiveLeadingBidsRow struct {
+	ID         uuid.UUID
+	ItemName   string
+	CurrentBid int64
+	EndTime    time.Time
+}
+
+func (q *Queries) ListActiveLeadingBids(ctx context.Context, arg ListActiveLeadingBidsParams) ([]ListActiveLeadingBidsRow, error) {
+	rows, err := q.db.Query(ctx, listActiveLeadingBids, arg.GuildID, arg.CurrentBidderID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListActiveLeadingBidsRow{}
+	for rows.Next() {
+		var i ListActiveLeadingBidsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ItemName,
+			&i.CurrentBid,
+			&i.EndTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listBackpackItems = `-- name: ListBackpackItems :many
-SELECT id, owner_id, guild_id, item,
-       source, source_id,
-       COALESCE(note, '') AS note,
-       acquired_at
-FROM backpack_items
-WHERE owner_id = $1 AND guild_id = $2
-ORDER BY acquired_at DESC
+SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
+       bi.source, bi.source_id,
+       COALESCE(bi.note, '') AS note,
+       bi.acquired_at,
+       bi.delivery_requested_at,
+       COALESCE(
+           CASE bi.source
+               WHEN 'transfer' THEN (SELECT COALESCE(NULLIF(u.display_name, ''), u.username) FROM users u WHERE u.id = bi.source_id)
+               WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
+               WHEN 'checkin'  THEN (SELECT c.title FROM checkins c WHERE c.id = bi.source_id)
+           END,
+           ''
+       )::text AS source_label,
+       COALESCE(bi.locked_by_type, '') AS locked_by_type,
+       bi.locked_by_id
+FROM backpack_items bi
+WHERE bi.owner_id = $1 AND bi.guild_id = $2
+ORDER BY bi.acquired_at DESC
 LIMIT $4::int OFFSET $3::int
 `
 
@@ -226,14 +298,18 @@ type ListBackpackItemsParams struct {
 }
 
 type ListBackpackItemsRow struct {
-	ID         uuid.UUID
-	OwnerID    uuid.UUID
-	GuildID    uuid.UUID
-	Item       []byte
-	Source     string
-	SourceID   *uuid.UUID
-	Note       string
-	AcquiredAt time.Time
+	ID                  uuid.UUID
+	OwnerID             uuid.UUID
+	GuildID             uuid.UUID
+	Item                []byte
+	Source              string
+	SourceID            *uuid.UUID
+	Note                string
+	AcquiredAt          time.Time
+	DeliveryRequestedAt pgtype.Timestamptz
+	SourceLabel         string
+	LockedByType        string
+	LockedByID          *uuid.UUID
 }
 
 func (q *Queries) ListBackpackItems(ctx context.Context, arg ListBackpackItemsParams) ([]ListBackpackItemsRow, error) {
@@ -259,6 +335,64 @@ func (q *Queries) ListBackpackItems(ctx context.Context, arg ListBackpackItemsPa
 			&i.SourceID,
 			&i.Note,
 			&i.AcquiredAt,
+			&i.DeliveryRequestedAt,
+			&i.SourceLabel,
+			&i.LockedByType,
+			&i.LockedByID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPendingDeliveries = `-- name: ListPendingDeliveries :many
+SELECT bi.id, bi.owner_id, bi.guild_id, bi.item, bi.source, bi.source_id,
+       COALESCE(bi.note, '') AS note, bi.acquired_at, bi.delivery_requested_at,
+       COALESCE(notification_user_name(bi.owner_id), '')::text AS owner_name
+FROM backpack_items bi
+WHERE bi.guild_id = $1 AND bi.delivery_requested_at IS NOT NULL
+ORDER BY bi.delivery_requested_at, bi.id
+LIMIT 200
+`
+
+type ListPendingDeliveriesRow struct {
+	ID                  uuid.UUID
+	OwnerID             uuid.UUID
+	GuildID             uuid.UUID
+	Item                []byte
+	Source              string
+	SourceID            *uuid.UUID
+	Note                string
+	AcquiredAt          time.Time
+	DeliveryRequestedAt pgtype.Timestamptz
+	OwnerName           string
+}
+
+func (q *Queries) ListPendingDeliveries(ctx context.Context, guildID uuid.UUID) ([]ListPendingDeliveriesRow, error) {
+	rows, err := q.db.Query(ctx, listPendingDeliveries, guildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListPendingDeliveriesRow{}
+	for rows.Next() {
+		var i ListPendingDeliveriesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.GuildID,
+			&i.Item,
+			&i.Source,
+			&i.SourceID,
+			&i.Note,
+			&i.AcquiredAt,
+			&i.DeliveryRequestedAt,
+			&i.OwnerName,
 		); err != nil {
 			return nil, err
 		}
@@ -380,6 +514,90 @@ func (q *Queries) ListWalletTransactions(ctx context.Context, arg ListWalletTran
 	return items, nil
 }
 
+const lockPendingDelivery = `-- name: LockPendingDelivery :one
+SELECT id, owner_id, guild_id, item, source, source_id,
+       COALESCE(note, '') AS note, acquired_at, delivery_requested_at
+FROM backpack_items
+WHERE id = $1 AND guild_id = $2 AND delivery_requested_at IS NOT NULL
+FOR UPDATE
+`
+
+type LockPendingDeliveryParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type LockPendingDeliveryRow struct {
+	ID                  uuid.UUID
+	OwnerID             uuid.UUID
+	GuildID             uuid.UUID
+	Item                []byte
+	Source              string
+	SourceID            *uuid.UUID
+	Note                string
+	AcquiredAt          time.Time
+	DeliveryRequestedAt pgtype.Timestamptz
+}
+
+func (q *Queries) LockPendingDelivery(ctx context.Context, arg LockPendingDeliveryParams) (LockPendingDeliveryRow, error) {
+	row := q.db.QueryRow(ctx, lockPendingDelivery, arg.ID, arg.GuildID)
+	var i LockPendingDeliveryRow
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.GuildID,
+		&i.Item,
+		&i.Source,
+		&i.SourceID,
+		&i.Note,
+		&i.AcquiredAt,
+		&i.DeliveryRequestedAt,
+	)
+	return i, err
+}
+
+const requestBackpackWithdrawal = `-- name: RequestBackpackWithdrawal :one
+UPDATE backpack_items SET delivery_requested_at = NOW()
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND delivery_requested_at IS NULL AND locked_by_type IS NULL
+RETURNING id, owner_id, guild_id, item, source, source_id,
+          COALESCE(note, '') AS note, acquired_at, delivery_requested_at
+`
+
+type RequestBackpackWithdrawalParams struct {
+	ID      uuid.UUID
+	OwnerID uuid.UUID
+	GuildID uuid.UUID
+}
+
+type RequestBackpackWithdrawalRow struct {
+	ID                  uuid.UUID
+	OwnerID             uuid.UUID
+	GuildID             uuid.UUID
+	Item                []byte
+	Source              string
+	SourceID            *uuid.UUID
+	Note                string
+	AcquiredAt          time.Time
+	DeliveryRequestedAt pgtype.Timestamptz
+}
+
+func (q *Queries) RequestBackpackWithdrawal(ctx context.Context, arg RequestBackpackWithdrawalParams) (RequestBackpackWithdrawalRow, error) {
+	row := q.db.QueryRow(ctx, requestBackpackWithdrawal, arg.ID, arg.OwnerID, arg.GuildID)
+	var i RequestBackpackWithdrawalRow
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.GuildID,
+		&i.Item,
+		&i.Source,
+		&i.SourceID,
+		&i.Note,
+		&i.AcquiredAt,
+		&i.DeliveryRequestedAt,
+	)
+	return i, err
+}
+
 const sumWalletTransactionsBefore = `-- name: SumWalletTransactionsBefore :one
 SELECT COALESCE(SUM(amount), 0)::bigint AS balance
 FROM transactions
@@ -398,6 +616,64 @@ func (q *Queries) SumWalletTransactionsBefore(ctx context.Context, arg SumWallet
 	var balance int64
 	err := row.Scan(&balance)
 	return balance, err
+}
+
+const transferBackpackItem = `-- name: TransferBackpackItem :one
+UPDATE backpack_items SET
+    owner_id    = $1,
+    source      = 'transfer',
+    source_id   = $2,
+    note        = NULLIF($3::text, ''),
+    acquired_at = NOW()
+WHERE backpack_items.id = $4
+  AND backpack_items.owner_id = $2
+  AND backpack_items.guild_id = $5
+  AND backpack_items.locked_by_type IS NULL
+  AND backpack_items.delivery_requested_at IS NULL
+RETURNING backpack_items.id, backpack_items.owner_id, backpack_items.guild_id, backpack_items.item,
+          backpack_items.source, backpack_items.source_id,
+          COALESCE(backpack_items.note, '') AS note, backpack_items.acquired_at
+`
+
+type TransferBackpackItemParams struct {
+	ToUserID   uuid.UUID
+	FromUserID *uuid.UUID
+	Note       string
+	ID         uuid.UUID
+	GuildID    uuid.UUID
+}
+
+type TransferBackpackItemRow struct {
+	ID         uuid.UUID
+	OwnerID    uuid.UUID
+	GuildID    uuid.UUID
+	Item       []byte
+	Source     string
+	SourceID   *uuid.UUID
+	Note       string
+	AcquiredAt time.Time
+}
+
+func (q *Queries) TransferBackpackItem(ctx context.Context, arg TransferBackpackItemParams) (TransferBackpackItemRow, error) {
+	row := q.db.QueryRow(ctx, transferBackpackItem,
+		arg.ToUserID,
+		arg.FromUserID,
+		arg.Note,
+		arg.ID,
+		arg.GuildID,
+	)
+	var i TransferBackpackItemRow
+	err := row.Scan(
+		&i.ID,
+		&i.OwnerID,
+		&i.GuildID,
+		&i.Item,
+		&i.Source,
+		&i.SourceID,
+		&i.Note,
+		&i.AcquiredAt,
+	)
+	return i, err
 }
 
 const updateWalletBalance = `-- name: UpdateWalletBalance :exec

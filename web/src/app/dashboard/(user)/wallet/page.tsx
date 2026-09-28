@@ -15,14 +15,18 @@ import {
   Spinner,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { ActionSuccess } from '@/components/ActionSuccess';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import BackpackItemCard from '@/components/BackpackItemCard';
+import { BackpackItemMoveModal, type BackpackMoveMode } from '@/components/BackpackItemMoveModal';
 import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
-import { CreateLotteryModal } from '@/components/CreateLotteryModal';
+import { CreateLotteryModal, type LotteryPrizeItem } from '@/components/CreateLotteryModal';
+import { ItemHistoryModal } from '@/components/ItemHistoryModal';
 import { MemberComboBox } from '@/components/MemberComboBox';
 import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
@@ -41,7 +45,7 @@ import { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
 import type { Transaction, Wallet as WalletType } from '@/types/wallet';
 
-const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction'];
+const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'backpack'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
 const TRANSACTION_KIND_LABELS: Record<string, string> = {
@@ -52,6 +56,7 @@ const TRANSACTION_KIND_LABELS: Record<string, string> = {
   REWARD: 'reward',
   PENALTY: 'penalty',
   AUCTION_WIN: 'auctionWin',
+  AUCTION_SALE: 'auctionSale',
   LOTTERY_TICKET: 'lotteryTicket',
   LOTTERY_WIN: 'lotteryWin',
   BANK_CONTRIBUTION: 'bankContribution',
@@ -84,6 +89,23 @@ const transactionNote = (transaction: Transaction): string | undefined => {
   return note === DEFAULT_TRANSFER_NOTE ? undefined : note;
 };
 
+const transactionHref = (transaction: Transaction): string | undefined => {
+  if (!transaction.referenceId) return undefined;
+  switch (transaction.referenceType) {
+    case 'auction':
+      return `/dashboard/auction/${transaction.referenceId}`;
+    case 'lottery':
+      return `/dashboard/lottery/${transaction.referenceId}`;
+    case 'fund_request':
+      return `/dashboard/guild-bank?request=${transaction.referenceId}`;
+    default:
+      return undefined;
+  }
+};
+
+const TRANSACTION_LINK_CLASS =
+  'rounded hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
+
 const transactionAmountSign = (amount: number): string => {
   if (amount > 0) return '+';
   if (amount < 0) return '\u2212';
@@ -110,6 +132,7 @@ const getTransactionIcon = (transaction: Transaction) => {
       return 'solar:arrow-right-linear';
     case 'AUCTION_BID':
     case 'AUCTION_WIN':
+    case 'AUCTION_SALE':
       return 'solar:sledgehammer-linear';
     case 'LOTTERY_TICKET':
     case 'LOTTERY_WIN':
@@ -152,14 +175,20 @@ export default function WalletPage() {
   const guildId = useCurrentGuildId();
   const { can } = useGuildPermissions();
   const balanceTrend = useBalanceTrend(guildId);
+  const highlightedSourceId = useSearchParams().get('source');
   const depositModalState = useOverlayState();
   const transferModalState = useOverlayState();
   const withdrawModalState = useOverlayState();
   const itemWithdrawModalState = useOverlayState();
   const auctionModalState = useOverlayState();
   const lotteryModalState = useOverlayState();
+  const moveModalState = useOverlayState();
+  const historyModalState = useOverlayState();
+  const [historyItem, setHistoryItem] = React.useState<BackpackItem | null>(null);
+  const [moveMode, setMoveMode] = React.useState<BackpackMoveMode>('donate');
+  const [moveItem, setMoveItem] = React.useState<BackpackItem | null>(null);
   const [auctionItem, setAuctionItem] = React.useState<AuctionDraftItem | null>(null);
-  const [lotteryPrize, setLotteryPrize] = React.useState<string | null>(null);
+  const [lotteryPrize, setLotteryPrize] = React.useState<LotteryPrizeItem | null>(null);
 
   const [transferAmount, setTransferAmount] = React.useState('');
   const [transferRecipient, setTransferRecipient] = React.useState('');
@@ -369,6 +398,21 @@ export default function WalletPage() {
     );
   };
 
+  const openItemMove = (mode: BackpackMoveMode) => (item: BackpackItem) => {
+    setMoveMode(mode);
+    setMoveItem(item);
+    moveModalState.open();
+  };
+
+  const cancelItemWithdrawal = (item: BackpackItem) =>
+    apiClient
+      .cancelBackpackWithdrawal(guildId, item.id)
+      .then(() => {
+        notify.success(t('withdrawalCancelled', { name: item.item.name }));
+        refetchBackpack();
+      })
+      .catch(() => notify.error(t('withdrawalCancelFailed')));
+
   const openItemWithdraw = (item: BackpackItem) => {
     setSelectedItem(item);
     openActionModal(itemWithdrawModalState);
@@ -377,8 +421,19 @@ export default function WalletPage() {
 
   const transactionTitle = (transaction: Transaction) => {
     const key = transactionLabelKey(transaction);
-    return key ? t(`transactionKinds.${key}`) : transaction.description;
+    const title = key ? t(`transactionKinds.${key}`) : transaction.description;
+    const href = transactionHref(transaction);
+    return href ? (
+      <Link href={href} className={TRANSACTION_LINK_CLASS}>
+        {title}
+      </Link>
+    ) : (
+      title
+    );
   };
+
+  const lockedInBids = wallet?.lockedInBids ?? 0;
+  const lockedBids = wallet?.lockedBids ?? [];
 
   return (
     <div className="space-y-5">
@@ -396,8 +451,30 @@ export default function WalletPage() {
           {/* Balance Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
+              <p className="type-caption text-hint">{t('availableBalance')}</p>
               <AsyncValue state={walletState.state}>
                 <p className="type-display text-foreground">{formatGold(balance)}</p>
+                {lockedBids.length > 0 && (
+                  <div className="mt-2 flex flex-col gap-1">
+                    <p className="type-caption text-subtle">
+                      {t('lockedInBids', { amount: formatGold(lockedInBids), count: lockedBids.length })}
+                    </p>
+                    <ul className="flex flex-wrap gap-1.5" aria-label={t('lockedBidsLabel')}>
+                      {lockedBids.map(bid => (
+                        <li key={bid.auctionId}>
+                          <Link
+                            href={`/dashboard/auction/${bid.auctionId}`}
+                            className="inline-flex items-center gap-1 rounded-full bg-default px-2 py-0.5 type-caption text-soft hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                          >
+                            <Icon icon="solar:sledgehammer-linear" width={12} aria-hidden />
+                            <span className="max-w-[160px] truncate">{bid.itemName || t('unnamedAuction')}</span>
+                            <span className="tabular-nums">{formatGold(bid.amount)}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </AsyncValue>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -658,25 +735,42 @@ export default function WalletPage() {
                     category: i.item.category,
                     rarity: i.item.rarity,
                     imageUrl: i.item.imageUrl,
+                    source: { backpackItemId: i.id },
                   });
                   auctionModalState.open();
                 }}
                 onPutToLottery={
                   can('createLottery')
                     ? i => {
-                        setLotteryPrize(i.item.name);
+                        setLotteryPrize({ name: i.item.name, source: { backpackItemId: i.id } });
                         lotteryModalState.open();
                       }
                     : undefined
                 }
+                onDonate={openItemMove('donate')}
+                onTransfer={openItemMove('transfer')}
                 onWithdraw={openItemWithdraw}
+                onCancelWithdrawal={cancelItemWithdrawal}
+                onShowHistory={i => {
+                  setHistoryItem(i);
+                  historyModalState.open();
+                }}
+                isHighlighted={Boolean(highlightedSourceId) && item.sourceId === highlightedSourceId}
               />
             ))}
           </div>
           )}
           </AsyncContent>
-          <CreateAuctionModal state={auctionModalState} item={auctionItem} />
-          <CreateLotteryModal state={lotteryModalState} prizeItemName={lotteryPrize} />
+          <CreateAuctionModal state={auctionModalState} item={auctionItem} onCreated={refetchBackpack} />
+          <CreateLotteryModal state={lotteryModalState} prizeItem={lotteryPrize} onCreated={refetchBackpack} />
+          <BackpackItemMoveModal
+            state={moveModalState}
+            mode={moveMode}
+            item={moveItem}
+            members={mockUsers}
+            onMoved={refetchBackpack}
+          />
+          <ItemHistoryModal state={historyModalState} itemId={historyItem?.id ?? null} itemName={historyItem?.item.name ?? ''} />
         </Card.Content>
       </Card>
 
@@ -917,7 +1011,7 @@ export default function WalletPage() {
                   <Button slot="close" variant="secondary" isDisabled={isActionPending}>
                     {t('cancel')}
                   </Button>
-                  <Button variant="danger" onPress={handleItemWithdraw} isPending={pendingAction === 'withdrawItem'}>
+                  <Button variant="primary" onPress={handleItemWithdraw} isPending={pendingAction === 'withdrawItem'}>
                     {({ isPending }) => (
                       <>
                         {isPending && <Spinner color="current" size="sm" />}

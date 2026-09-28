@@ -142,6 +142,22 @@ func (h *CheckInHandler) CancelCheckIn(ctx context.Context, req *gumav1.CancelCh
 	return &gumav1.CancelCheckInResponse{Checkin: checkinToProto(c)}, nil
 }
 
+func (h *CheckInHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLootRequest) (*gumav1.AssignLootResponse, error) {
+	if req.GuildId == "" || req.CheckinId == "" || req.ItemId == "" || req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id, checkin_id, item_id and user_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	backpackItemID, err := h.svc.AssignLoot(ctx, req.GuildId, req.CheckinId, req.ItemId, userID, req.UserId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.AssignLootResponse{BackpackItemId: backpackItemID}, nil
+}
+
 func (h *CheckInHandler) SubmitAttendance(ctx context.Context, req *gumav1.SubmitAttendanceRequest) (*gumav1.SubmitAttendanceResponse, error) {
 	if req.GuildId == "" || req.CheckinId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")

@@ -42,6 +42,7 @@ import type {
   CreateEventData,
   UpdateEventData,
 } from '@/types/guild-events';
+import type { ItemHistoryEvent } from '@/types/item';
 import type {
   Lottery,
   LotteryTicket,
@@ -64,6 +65,7 @@ export interface AuctionFilters {
   category?: string;
   rarity?: string;
   search?: string;
+  pageSize?: number;
 }
 
 export interface ApiClient {
@@ -102,6 +104,10 @@ export interface ApiClient {
   transfer(guildId: string, req: TransferRequest): Promise<Transaction>;
   listBackpack(guildId: string): Promise<BackpackItem[]>;
   withdrawBackpackItem(guildId: string, itemId: string): Promise<void>;
+  cancelBackpackWithdrawal(guildId: string, itemId: string): Promise<void>;
+  listPendingDeliveries(guildId: string): Promise<BackpackItem[]>;
+  confirmBackpackDelivery(guildId: string, itemId: string): Promise<void>;
+  transferBackpackItem(guildId: string, itemId: string, req: { recipientId: string; note?: string }): Promise<BackpackItem>;
 
   // ── Auction ──
   listAuctions(guildId: string, filters?: AuctionFilters): Promise<AuctionItem[]>;
@@ -120,6 +126,7 @@ export interface ApiClient {
   cancelCheckin(guildId: string, id: string): Promise<CheckinEntry>;
   submitAttendance(guildId: string, checkinId: string, notes?: string): Promise<AttendanceMember>;
   listAttendees(guildId: string, checkinId: string): Promise<AttendanceMember[]>;
+  assignLoot(guildId: string, checkinId: string, itemId: string, userId: string): Promise<void>;
   listCheckinTemplates(guildId: string): Promise<CheckinTemplate[]>;
   createCheckinTemplate(guildId: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
   updateCheckinTemplate(guildId: string, id: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
@@ -151,7 +158,7 @@ export interface ApiClient {
   listFundRequests(guildId: string, status?: RequestStatus): Promise<FundRequest[]>;
   listContributions(guildId: string): Promise<GuildContribution[]>;
   donateItem(guildId: string, backpackItemId: string, note?: string): Promise<GuildBankItem>;
-  listBankItems(guildId: string): Promise<GuildBankItem[]>;
+  listBankItems(guildId: string, options?: { checkinId?: string }): Promise<GuildBankItem[]>;
   requestItem(guildId: string, bankItemId: string, reason: string): Promise<ItemRequest>;
   reviewItemRequest(
     guildId: string,
@@ -160,6 +167,7 @@ export interface ApiClient {
     note?: string,
   ): Promise<ItemRequest>;
   listItemRequests(guildId: string, status?: RequestStatus): Promise<ItemRequest[]>;
+  getItemHistory(guildId: string, itemId: string): Promise<ItemHistoryEvent[]>;
 
   // ── Event / Calendar ──
   listEvents(guildId: string): Promise<GuildEvent[]>;

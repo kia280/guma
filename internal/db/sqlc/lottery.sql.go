@@ -66,14 +66,14 @@ func (q *Queries) CountUserTicketsForLottery(ctx context.Context, arg CountUserT
 
 const createLottery = `-- name: CreateLottery :one
 INSERT INTO lotteries (
-    guild_id, created_by, title, description, ticket_price,
+    id, guild_id, created_by, title, description, ticket_price,
     max_tickets, max_tickets_per_user, status, draw_date, prizes
 ) VALUES (
-    $1, $2, $6::text,
-    NULLIF($7::text, ''),
+    $6::uuid, $1, $2, $7::text,
+    NULLIF($8::text, ''),
     $3, $4, $5, 'active',
-    $8::text::timestamptz,
-    $9::jsonb
+    $9::text::timestamptz,
+    $10::jsonb
 )
 RETURNING id, guild_id, created_by, title,
           COALESCE(description, '') AS description,
@@ -89,6 +89,7 @@ type CreateLotteryParams struct {
 	TicketPrice       int64
 	MaxTickets        int32
 	MaxTicketsPerUser int32
+	ID                uuid.UUID
 	Title             string
 	Description       string
 	DrawDate          string
@@ -119,6 +120,7 @@ func (q *Queries) CreateLottery(ctx context.Context, arg CreateLotteryParams) (C
 		arg.TicketPrice,
 		arg.MaxTickets,
 		arg.MaxTicketsPerUser,
+		arg.ID,
 		arg.Title,
 		arg.Description,
 		arg.DrawDate,
@@ -222,7 +224,8 @@ func (q *Queries) GetLottery(ctx context.Context, arg GetLotteryParams) (GetLott
 }
 
 const getLotteryForDraw = `-- name: GetLotteryForDraw :one
-SELECT prizes, status FROM lotteries WHERE id = $1 AND guild_id = $2 FOR UPDATE
+SELECT prizes, status, created_by, title, ticket_price
+FROM lotteries WHERE id = $1 AND guild_id = $2 FOR UPDATE
 `
 
 type GetLotteryForDrawParams struct {
@@ -231,14 +234,23 @@ type GetLotteryForDrawParams struct {
 }
 
 type GetLotteryForDrawRow struct {
-	Prizes []byte
-	Status string
+	Prizes      []byte
+	Status      string
+	CreatedBy   uuid.UUID
+	Title       string
+	TicketPrice int64
 }
 
 func (q *Queries) GetLotteryForDraw(ctx context.Context, arg GetLotteryForDrawParams) (GetLotteryForDrawRow, error) {
 	row := q.db.QueryRow(ctx, getLotteryForDraw, arg.ID, arg.GuildID)
 	var i GetLotteryForDrawRow
-	err := row.Scan(&i.Prizes, &i.Status)
+	err := row.Scan(
+		&i.Prizes,
+		&i.Status,
+		&i.CreatedBy,
+		&i.Title,
+		&i.TicketPrice,
+	)
 	return i, err
 }
 

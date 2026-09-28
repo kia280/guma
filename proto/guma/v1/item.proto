@@ -16,3 +16,13 @@ message Item {
   string category = 4;
   string rarity = 5;
 }
+
+message ItemSourceRef {
+  string backpack_item_id = 1;
+  string bank_item_id = 2;
+}
+
+message ItemLock {
+  string type = 1;
+  string id = 2;
+}

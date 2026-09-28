@@ -87,6 +87,7 @@ message CreateAuctionRequest {
   int32 duration_hours = 5;
   bool is_blind = 6;
   string status = 7; // "UPCOMING" (scheduled) or "ACTIVE" (starts immediately)
+  ItemSourceRef source = 8;
 }
 
 message CreateAuctionResponse {

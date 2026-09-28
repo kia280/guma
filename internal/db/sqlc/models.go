@@ -50,42 +50,54 @@ type Auction struct {
 	IsBlind         bool
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+	SourceType      pgtype.Text
+	SettledAt       pgtype.Timestamptz
+	SourceItemID    *uuid.UUID
 }
 
 type BackpackItem struct {
-	ID         uuid.UUID
-	OwnerID    uuid.UUID
-	GuildID    uuid.UUID
-	Item       []byte
-	Source     string
-	SourceID   *uuid.UUID
-	Note       pgtype.Text
-	AcquiredAt time.Time
+	ID                  uuid.UUID
+	OwnerID             uuid.UUID
+	GuildID             uuid.UUID
+	Item                []byte
+	Source              string
+	SourceID            *uuid.UUID
+	Note                pgtype.Text
+	AcquiredAt          time.Time
+	LockedByType        pgtype.Text
+	LockedByID          *uuid.UUID
+	LockedAt            pgtype.Timestamptz
+	DeliveryRequestedAt pgtype.Timestamptz
 }
 
 type BankContribution struct {
-	ID        uuid.UUID
-	GuildID   uuid.UUID
-	UserID    uuid.UUID
-	Username  string
-	Amount    int64
-	Note      pgtype.Text
-	CreatedAt time.Time
-	Kind      string
-	Items     []byte
-	CheckinID *uuid.UUID
+	ID            uuid.UUID
+	GuildID       uuid.UUID
+	UserID        uuid.UUID
+	Username      string
+	Amount        int64
+	Note          pgtype.Text
+	CreatedAt     time.Time
+	Kind          string
+	Items         []byte
+	CheckinID     *uuid.UUID
+	ReferenceType pgtype.Text
+	ReferenceID   *uuid.UUID
 }
 
 type BankItem struct {
-	ID        uuid.UUID
-	GuildID   uuid.UUID
-	DonorID   uuid.UUID
-	DonorName string
-	Item      []byte
-	Quantity  int32
-	Note      pgtype.Text
-	DonatedAt time.Time
-	CheckinID *uuid.UUID
+	ID           uuid.UUID
+	GuildID      uuid.UUID
+	DonorID      uuid.UUID
+	DonorName    string
+	Item         []byte
+	Quantity     int32
+	Note         pgtype.Text
+	DonatedAt    time.Time
+	CheckinID    *uuid.UUID
+	LockedByType pgtype.Text
+	LockedByID   *uuid.UUID
+	LockedAt     pgtype.Timestamptz
 }
 
 type Bid struct {
@@ -218,6 +230,18 @@ type Item struct {
 	Description pgtype.Text
 	Category    pgtype.Text
 	Rarity      pgtype.Text
+}
+
+type ItemEvent struct {
+	Seq         int64
+	GuildID     uuid.UUID
+	ItemID      uuid.UUID
+	Kind        string
+	ActorID     *uuid.UUID
+	SubjectID   *uuid.UUID
+	Source      string
+	ReferenceID *uuid.UUID
+	CreatedAt   time.Time
 }
 
 type ItemRequest struct {

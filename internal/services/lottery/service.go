@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,14 +18,18 @@ import (
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/inventory"
 )
 
 // LotteryPrize is a prize tier in a lottery.
 type LotteryPrize struct {
-	Rank        int32
-	Description string
-	Amount      int64
-	Item        *models.Item
+	Rank         int32
+	Description  string
+	Amount       int64
+	Item         *models.Item
+	Source       inventory.Ref `json:"-"`
+	SourceType   string        `json:",omitempty"`
+	SourceItemID *uuid.UUID    `json:",omitempty"`
 }
 
 // Lottery is the domain model for a lottery.
@@ -219,19 +224,49 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Lottery, error) 
 		return nil, err
 	}
 
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	lotteryID := uuid.New()
+	for i := range p.Prizes {
+		prize := &p.Prizes[i]
+		locked, err := inventory.Lock(ctx, qtx, guildID, createdBy, prize.Source, lotteryHolder(lotteryID), "Offered as a lottery prize")
+		if err != nil {
+			return nil, err
+		}
+		if locked == nil {
+			continue
+		}
+		item := locked.Item
+		prize.Item = &item
+		prize.Amount = 0
+		prize.SourceType = locked.SourceType
+		prize.SourceItemID = &locked.ItemID
+		if prize.Description == "" {
+			prize.Description = item.Name
+		}
+	}
+
 	prizesJSON, err := json.Marshal(p.Prizes)
 	if err != nil {
 		return nil, fmt.Errorf("%w: encode prizes: %v", errs.ErrInternal, err)
 	}
 
-	r, err := s.q.CreateLottery(ctx, db.CreateLotteryParams{
-		GuildID: guildID, CreatedBy: createdBy,
+	r, err := qtx.CreateLottery(ctx, db.CreateLotteryParams{
+		ID: lotteryID, GuildID: guildID, CreatedBy: createdBy,
 		Title: p.Title, Description: p.Description,
 		TicketPrice: p.TicketPrice, MaxTickets: p.MaxTickets, MaxTicketsPerUser: p.MaxTicketsPerUser,
 		DrawDate: p.DrawDate, Prizes: prizesJSON,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: create lottery: %v", errs.ErrInternal, err)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	l := toLottery(lotteryRow(r))
 	s.logger.Info().Str("lottery_id", l.ID).Str("guild_id", p.GuildID).Msg("lottery created")
@@ -413,6 +448,9 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 		if !allowEmpty {
 			return nil, fmt.Errorf("%w: no tickets sold", errs.ErrFailedPrecondition)
 		}
+		if err := releaseUnawardedPrizes(ctx, qtx, lotteryID, prizeList, 0); err != nil {
+			return nil, err
+		}
 		if err := qtx.EndLottery(ctx, lotteryID); err != nil {
 			return nil, fmt.Errorf("%w: end lottery: %v", errs.ErrInternal, err)
 		}
@@ -447,7 +485,7 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 			prize = prizeList[prizeIdx]
 		}
 
-		info, _ := qtx.GetUserUsernameAndAvatar(ctx, t.UserID)
+		winnerInfo, _ := qtx.GetUserUsernameAndAvatar(ctx, t.UserID)
 
 		winnerID, err := qtx.InsertLotteryWinner(ctx, db.InsertLotteryWinnerParams{
 			LotteryID: lotteryID, UserID: t.UserID,
@@ -458,25 +496,24 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 			return nil, fmt.Errorf("%w: insert winner: %v", errs.ErrInternal, err)
 		}
 
-		if prize.Amount > 0 {
-			_ = qtx.EnsureWalletDefault(ctx, db.EnsureWalletDefaultParams{UserID: t.UserID, GuildID: guildID})
-			bal, _ := qtx.GetWalletBalanceForUpdate(ctx, db.GetWalletBalanceForUpdateParams{UserID: t.UserID, GuildID: guildID})
-			newBal := bal + prize.Amount
-			_ = qtx.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{Balance: newBal, UserID: t.UserID, GuildID: guildID})
-			_, _ = qtx.InsertTransaction(ctx, db.InsertTransactionParams{
-				UserID: t.UserID, GuildID: guildID, Type: "LOTTERY_WIN",
-				Amount: prize.Amount, BalanceAfter: newBal,
-				Description: "Lottery prize", ReferenceID: lotteryIDStr, ReferenceType: "lottery",
-			})
+		if err := awardPrize(ctx, qtx, guildID, lotteryID, t.UserID, prize); err != nil {
+			return nil, err
 		}
 
 		winners = append(winners, &LotteryWinner{
 			ID: winnerID.String(), LotteryID: lotteryIDStr, UserID: t.UserID.String(),
-			Username: info.Username, AvatarURL: info.AvatarUrl,
+			Username: winnerInfo.Username, AvatarURL: winnerInfo.AvatarUrl,
 			Rank: int32(prizeIdx + 1), PrizeAmount: prize.Amount,
 			PrizeDescription: prize.Description, TicketNumber: t.TicketNumber,
 		})
 		prizeIdx++
+	}
+
+	if err := releaseUnawardedPrizes(ctx, qtx, lotteryID, prizeList, prizeIdx); err != nil {
+		return nil, err
+	}
+	if err := creditTicketRevenue(ctx, qtx, guildID, lotteryID, info, int64(len(allTickets))); err != nil {
+		return nil, err
 	}
 
 	if err := qtx.EndLottery(ctx, lotteryID); err != nil {
@@ -487,6 +524,93 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	return winners, nil
+}
+
+func awardPrize(ctx context.Context, qtx *db.Queries, guildID, lotteryID, winnerID uuid.UUID, prize LotteryPrize) error {
+	if prize.Amount > 0 {
+		if err := qtx.EnsureWalletDefault(ctx, db.EnsureWalletDefaultParams{UserID: winnerID, GuildID: guildID}); err != nil {
+			return fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
+		}
+		balance, err := qtx.CreditWallet(ctx, db.CreditWalletParams{Amount: prize.Amount, UserID: winnerID, GuildID: guildID})
+		if err != nil {
+			return fmt.Errorf("%w: credit prize: %v", errs.ErrInternal, err)
+		}
+		if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
+			UserID: winnerID, GuildID: guildID, Type: "LOTTERY_WIN",
+			Amount: prize.Amount, BalanceAfter: balance,
+			Description: "Lottery prize", ReferenceID: lotteryID.String(), ReferenceType: "lottery",
+		}); err != nil {
+			return fmt.Errorf("%w: record prize: %v", errs.ErrInternal, err)
+		}
+	}
+
+	itemJSON, err := inventory.Consume(ctx, qtx, prize.SourceType, prize.SourceItemID, lotteryHolder(lotteryID))
+	if err != nil {
+		return err
+	}
+	itemID := prize.SourceItemID
+	if itemJSON == nil {
+		itemID = nil
+		item, ok := prizeItem(prize)
+		if !ok {
+			return nil
+		}
+		if itemJSON, err = json.Marshal(item); err != nil {
+			return fmt.Errorf("%w: encode prize item: %v", errs.ErrInternal, err)
+		}
+	}
+	if _, err := qtx.InsertBackpackItem(ctx, db.InsertBackpackItemParams{
+		ID: itemID, OwnerID: winnerID, GuildID: guildID, Item: itemJSON,
+		Source: "lottery", SourceID: &lotteryID,
+	}); err != nil {
+		return fmt.Errorf("%w: deliver prize item: %v", errs.ErrInternal, err)
+	}
+	return nil
+}
+
+func prizeItem(prize LotteryPrize) (models.Item, bool) {
+	if prize.Item != nil && prize.Item.Name != "" {
+		return *prize.Item, true
+	}
+	if prize.Amount == 0 && strings.TrimSpace(prize.Description) != "" {
+		return models.Item{Name: strings.TrimSpace(prize.Description), Category: "misc", Rarity: "common"}, true
+	}
+	return models.Item{}, false
+}
+
+func creditTicketRevenue(ctx context.Context, qtx *db.Queries, guildID, lotteryID uuid.UUID, info db.GetLotteryForDrawRow, tickets int64) error {
+	revenue := info.TicketPrice * tickets
+	if revenue <= 0 {
+		return nil
+	}
+	if err := qtx.EnsureGuildBank(ctx, guildID); err != nil {
+		return fmt.Errorf("%w: ensure guild bank: %v", errs.ErrInternal, err)
+	}
+	if err := qtx.CreditGuildBank(ctx, db.CreditGuildBankParams{Amount: revenue, GuildID: guildID}); err != nil {
+		return fmt.Errorf("%w: credit ticket revenue: %v", errs.ErrInternal, err)
+	}
+	creatorName, _ := qtx.GetUserDisplayName(ctx, info.CreatedBy)
+	if err := qtx.InsertBankProceeds(ctx, db.InsertBankProceedsParams{
+		GuildID: guildID, UserID: info.CreatedBy, Username: creatorName,
+		Amount: revenue, Note: info.Title, Kind: "lottery_revenue",
+		ReferenceType: "lottery", ReferenceID: lotteryID,
+	}); err != nil {
+		return fmt.Errorf("%w: record ticket revenue: %v", errs.ErrInternal, err)
+	}
+	return nil
+}
+
+func releaseUnawardedPrizes(ctx context.Context, qtx *db.Queries, lotteryID uuid.UUID, prizes []LotteryPrize, awarded int) error {
+	for i := awarded; i < len(prizes); i++ {
+		if err := inventory.Release(ctx, qtx, prizes[i].SourceType, prizes[i].SourceItemID, lotteryHolder(lotteryID)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func lotteryHolder(id uuid.UUID) inventory.Holder {
+	return inventory.Holder{Type: inventory.HolderLottery, ID: id}
 }
 
 func (s *Service) drawIfDue(ctx context.Context, guildID, lotteryID uuid.UUID, status, drawDate string) bool {

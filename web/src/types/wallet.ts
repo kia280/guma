@@ -8,6 +8,15 @@ export interface Wallet {
   currency: string;
   createdAt: string;
   updatedAt: string;
+  lockedInBids: number;
+  lockedBids: LockedBid[];
+}
+
+export interface LockedBid {
+  auctionId: string;
+  itemName: string;
+  amount: number;
+  endTime: string;
 }
 
 export interface Transaction {
@@ -19,6 +28,8 @@ export interface Transaction {
   date: string;
   status: 'completed' | 'pending' | 'failed';
   description?: string;
+  referenceType?: string;
+  referenceId?: string;
 }
 
 export interface DepositRequest {

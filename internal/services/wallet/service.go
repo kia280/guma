@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -20,12 +21,21 @@ import (
 
 // Wallet is the domain model for a user's guild wallet.
 type Wallet struct {
-	UserID    string
-	GuildID   string
-	Balance   int64
-	Currency  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	UserID       string
+	GuildID      string
+	Balance      int64
+	Currency     string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	LockedInBids int64
+	LockedBids   []LockedBid
+}
+
+type LockedBid struct {
+	AuctionID string
+	ItemName  string
+	Amount    int64
+	EndTime   time.Time
 }
 
 // Transaction is the domain model for a wallet transaction.
@@ -44,14 +54,18 @@ type Transaction struct {
 
 // BackpackItem is the domain model for an item in a user's backpack.
 type BackpackItem struct {
-	ID         string
-	OwnerID    string
-	GuildID    string
-	Item       models.Item
-	Source     string
-	SourceID   string
-	Note       string
-	AcquiredAt time.Time
+	ID                  string
+	OwnerID             string
+	GuildID             string
+	Item                models.Item
+	Source              string
+	SourceID            string
+	Note                string
+	AcquiredAt          time.Time
+	SourceLabel         string
+	DeliveryRequestedAt *time.Time
+	OwnerName           string
+	Lock                *models.ItemLock
 }
 
 // ListTransactionsParams holds the inputs for ListTransactions.
@@ -120,14 +134,26 @@ func (s *Service) GetWallet(ctx context.Context, userIDStr, guildIDStr string) (
 	if err != nil {
 		return nil, fmt.Errorf("%w: wallet", errs.ErrNotFound)
 	}
-	return &Wallet{
-		UserID:    w.UserID.String(),
-		GuildID:   w.GuildID.String(),
-		Balance:   w.Balance,
-		Currency:  w.Currency,
-		CreatedAt: w.CreatedAt,
-		UpdatedAt: w.UpdatedAt,
-	}, nil
+	bids, err := s.q.ListActiveLeadingBids(ctx, db.ListActiveLeadingBidsParams{GuildID: guildID, CurrentBidderID: &userID})
+	if err != nil {
+		return nil, fmt.Errorf("%w: list leading bids: %v", errs.ErrInternal, err)
+	}
+	wallet := &Wallet{
+		UserID:     w.UserID.String(),
+		GuildID:    w.GuildID.String(),
+		Balance:    w.Balance,
+		Currency:   w.Currency,
+		CreatedAt:  w.CreatedAt,
+		UpdatedAt:  w.UpdatedAt,
+		LockedBids: make([]LockedBid, 0, len(bids)),
+	}
+	for _, b := range bids {
+		wallet.LockedInBids += b.CurrentBid
+		wallet.LockedBids = append(wallet.LockedBids, LockedBid{
+			AuctionID: b.ID.String(), ItemName: b.ItemName, Amount: b.CurrentBid, EndTime: b.EndTime,
+		})
+	}
+	return wallet, nil
 }
 
 // Deposit adds funds to a wallet (admin or system operation).
@@ -347,7 +373,11 @@ func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (
 
 	items := make([]*BackpackItem, 0, len(rows))
 	for _, r := range rows {
-		items = append(items, toBackpackItem(r.ID, r.OwnerID, r.GuildID, r.Item, r.Source, r.SourceID, r.Note, r.AcquiredAt))
+		item := toBackpackItem(r.ID, r.OwnerID, r.GuildID, r.Item, r.Source, r.SourceID, r.Note, r.AcquiredAt)
+		item.SourceLabel = r.SourceLabel
+		item.DeliveryRequestedAt = timestampPtr(r.DeliveryRequestedAt)
+		item.Lock = models.NewItemLock(r.LockedByType, r.LockedByID)
+		items = append(items, item)
 	}
 
 	total, _ := s.q.CountBackpackItems(ctx, db.CountBackpackItemsParams{OwnerID: ownerID, GuildID: guildID})
@@ -359,9 +389,8 @@ func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (
 	return &ListBackpackResult{Items: items, TotalCount: int32(total), NextOffset: nextOffset}, nil
 }
 
-// WithdrawBackpackItem marks an item as withdrawn (deletes it).
-func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerIDStr, guildIDStr, itemIDStr string) (*BackpackItem, error) {
-	ownerID, guildID, err := parseIDs(ownerIDStr, guildIDStr)
+func (s *Service) TransferBackpackItem(ctx context.Context, fromUserIDStr, guildIDStr, itemIDStr, toUserIDStr, note string) (*BackpackItem, error) {
+	fromUserID, guildID, err := parseIDs(fromUserIDStr, guildIDStr)
 	if err != nil {
 		return nil, err
 	}
@@ -369,18 +398,38 @@ func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerIDStr, guildIDS
 	if err != nil {
 		return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
 	}
+	toUserID, err := uuid.Parse(toUserIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
+	}
+	if toUserID == fromUserID {
+		return nil, fmt.Errorf("%w: cannot transfer an item to yourself", errs.ErrInvalidArgument)
+	}
+	note = strings.TrimSpace(note)
+	if len([]rune(note)) > maxTransferNoteLength {
+		return nil, fmt.Errorf("%w: note is too long", errs.ErrInvalidArgument)
+	}
+	if _, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: toUserID}); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: recipient is not a guild member", errs.ErrFailedPrecondition)
+		}
+		return nil, fmt.Errorf("%w: load recipient: %v", errs.ErrInternal, err)
+	}
 
-	row, err := s.q.DeleteBackpackItem(ctx, db.DeleteBackpackItemParams{
-		ID: itemID, OwnerID: ownerID, GuildID: guildID,
+	row, err := s.q.TransferBackpackItem(ctx, db.TransferBackpackItemParams{
+		ToUserID: toUserID, FromUserID: &fromUserID, Note: note, ID: itemID, GuildID: guildID,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
 		}
-		return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: transfer item: %v", errs.ErrInternal, err)
 	}
+	s.logger.Info().Str("backpack_item_id", itemIDStr).Str("from", fromUserIDStr).Str("to", toUserIDStr).Msg("backpack item transferred")
 	return toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt), nil
 }
+
+const maxTransferNoteLength = 200
 
 // --- helpers ---
 

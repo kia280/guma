@@ -18,6 +18,7 @@ import { isAxiosError } from 'axios';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import React from 'react';
+import { AdminInbox } from '@/components/AdminInbox';
 import { AsyncContent, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import { BankRequestReview } from '@/components/BankRequestReview';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
@@ -98,7 +99,9 @@ export default function AdminPage() {
   const formatGold = useFormatGold();
   const locale = useLocale();
   const router = useRouter();
-  const selectedTab = adminTabFromParam(useSearchParams().get('tab'));
+  const searchParams = useSearchParams();
+  const selectedTab = adminTabFromParam(searchParams.get('tab'));
+  const focusRequestId = searchParams.get('request');
   const intlLocale = isLocale(locale) ? HTML_LANG[locale] : locale;
   const formatLastActive = (value?: string) => {
     if (!value) return '';
@@ -376,6 +379,12 @@ export default function AdminPage() {
       >
         <Tabs.ListContainer>
           <Tabs.List>
+            <Tabs.Tab id="inbox">
+              <div className="flex items-center gap-2">
+                <span>{t('inbox')}</span>
+              </div>
+              <Tabs.Indicator />
+            </Tabs.Tab>
             <Tabs.Tab id="users">
               <div className="flex items-center gap-2">
                 <span>{t('users')}</span>
@@ -411,6 +420,10 @@ export default function AdminPage() {
             </Tabs.Tab>
           </Tabs.List>
         </Tabs.ListContainer>
+
+        <Tabs.Panel id="inbox" className="pt-4">
+          <AdminInbox guildId={guildId} />
+        </Tabs.Panel>
 
         {/* Users Panel */}
         <Tabs.Panel id="users" className="pt-4">
@@ -840,7 +853,7 @@ export default function AdminPage() {
         </Tabs.Panel>
 
         <Tabs.Panel id="bankRequests" className="pt-4">
-          <BankRequestReview guildId={guildId} />
+          <BankRequestReview guildId={guildId} focusRequestId={focusRequestId} />
         </Tabs.Panel>
 
         <Tabs.Panel id="templates" className="pt-4">

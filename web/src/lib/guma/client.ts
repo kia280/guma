@@ -6,9 +6,10 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 import { env } from '@/lib/env';
 import { clearSession } from '@/lib/session';
 import type { LootEntry } from '@/types/checkin';
+import type { ItemSourceRef } from '@/types/item';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toCheckin, toCheckinTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toNotification, toNotificationPage, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -66,6 +67,11 @@ const toProtoLoot = (entry: LootEntry) => ({
 });
 
 const apiGuild = (g: Parameters<typeof toGuild>[0]) => toGuild(g, env.api.url);
+
+const toProtoSource = (source: ItemSourceRef | undefined) =>
+  source && (source.backpackItemId || source.bankItemId)
+    ? { backpack_item_id: source.backpackItemId, bank_item_id: source.bankItemId }
+    : undefined;
 
 const fileToBase64 = (file: Blob) =>
   new Promise<string>((resolve, reject) => {
@@ -221,10 +227,30 @@ export const gumaApiClient: ApiClient = {
   withdrawBackpackItem: async (guildId, itemId) => {
     await http.post(`/v1/guilds/${guildId}/backpack/${itemId}/withdraw`);
   },
+  cancelBackpackWithdrawal: async (guildId, itemId) => {
+    await http.post(`/v1/guilds/${guildId}/backpack/${itemId}/withdraw/cancel`);
+  },
+  listPendingDeliveries: async guildId => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/deliveries`);
+    return (data.items ?? []).map(toBackpackItem);
+  },
+  confirmBackpackDelivery: async (guildId, itemId) => {
+    await http.post(`/v1/guilds/${guildId}/deliveries/${itemId}/confirm`);
+  },
+  transferBackpackItem: async (guildId, itemId, req) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/backpack/${itemId}/transfer`, {
+      to_user_id: req.recipientId,
+      note: req.note,
+    });
+    return toBackpackItem(data.item);
+  },
 
   // ── Auction ──
   listAuctions: async (guildId, filters) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/auctions`, { params: filters });
+    const { pageSize, ...rest } = filters ?? {};
+    const { data } = await http.get(`/v1/guilds/${guildId}/auctions`, {
+      params: { ...rest, page_size: pageSize },
+    });
     return (data.auctions ?? []).map(toAuctionItem);
   },
   getAuction: async (guildId, id) => {
@@ -251,6 +277,7 @@ export const gumaApiClient: ApiClient = {
       min_bid_increment: toMinorUnits(req.minBidIncrement),
       duration_hours: req.duration,
       status: 'ACTIVE',
+      source: toProtoSource(req.source),
     };
     const { data } = await http.post(`/v1/guilds/${guildId}/auctions`, payload);
     return toAuctionItem(data.auction);
@@ -356,6 +383,9 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/attend`, { notes: notes ?? '' });
     return toAttendee(data.attendee);
   },
+  assignLoot: async (guildId, checkinId, itemId, userId) => {
+    await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/loot/${itemId}/assign`, { user_id: userId });
+  },
   listAttendees: async (guildId, checkinId) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/checkins/${checkinId}/attendees`);
     return (data.attendees ?? []).map(toAttendee);
@@ -380,7 +410,11 @@ export const gumaApiClient: ApiClient = {
       max_tickets: req.maxTickets ?? 0,
       max_tickets_per_user: req.maxTicketsPerUser ?? 0,
       draw_date: req.drawDate,
-      prizes: req.prizes?.map(prize => ({ ...prize, amount: toMinorUnits(prize.amount ?? 0) })),
+      prizes: req.prizes?.map(({ source, ...prize }) => ({
+        ...prize,
+        amount: toMinorUnits(prize.amount ?? 0),
+        source: toProtoSource(source),
+      })),
     });
     return toLottery(data.lottery);
   },
@@ -451,8 +485,10 @@ export const gumaApiClient: ApiClient = {
     });
     return toGuildBankItem(data.bank_item);
   },
-  listBankItems: async (guildId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/bank/items`);
+  listBankItems: async (guildId, options) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/bank/items`, {
+      params: { page_size: 100, checkin_id: options?.checkinId },
+    });
     return (data.items ?? []).map(toGuildBankItem);
   },
   requestItem: async (guildId, bankItemId, reason) => {
@@ -474,6 +510,10 @@ export const gumaApiClient: ApiClient = {
       params: { status, page_size: 100 },
     });
     return (data.requests ?? []).map(toItemRequest);
+  },
+  getItemHistory: async (guildId, itemId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/items/${itemId}/history`);
+    return (data.events ?? []).map(toItemHistoryEvent);
   },
 
   // ── Event / Calendar ──

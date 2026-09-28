@@ -27,6 +27,7 @@ const (
 	CheckInService_CancelCheckIn_FullMethodName    = "/guma.v1.CheckInService/CancelCheckIn"
 	CheckInService_SubmitAttendance_FullMethodName = "/guma.v1.CheckInService/SubmitAttendance"
 	CheckInService_ListAttendees_FullMethodName    = "/guma.v1.CheckInService/ListAttendees"
+	CheckInService_AssignLoot_FullMethodName       = "/guma.v1.CheckInService/AssignLoot"
 )
 
 // CheckInServiceClient is the client API for CheckInService service.
@@ -43,6 +44,7 @@ type CheckInServiceClient interface {
 	SubmitAttendance(ctx context.Context, in *SubmitAttendanceRequest, opts ...grpc.CallOption) (*SubmitAttendanceResponse, error)
 	// List who attended a check-in
 	ListAttendees(ctx context.Context, in *ListAttendeesRequest, opts ...grpc.CallOption) (*ListAttendeesResponse, error)
+	AssignLoot(ctx context.Context, in *AssignLootRequest, opts ...grpc.CallOption) (*AssignLootResponse, error)
 }
 
 type checkInServiceClient struct {
@@ -133,6 +135,16 @@ func (c *checkInServiceClient) ListAttendees(ctx context.Context, in *ListAttend
 	return out, nil
 }
 
+func (c *checkInServiceClient) AssignLoot(ctx context.Context, in *AssignLootRequest, opts ...grpc.CallOption) (*AssignLootResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AssignLootResponse)
+	err := c.cc.Invoke(ctx, CheckInService_AssignLoot_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CheckInServiceServer is the server API for CheckInService service.
 // All implementations must embed UnimplementedCheckInServiceServer
 // for forward compatibility.
@@ -147,6 +159,7 @@ type CheckInServiceServer interface {
 	SubmitAttendance(context.Context, *SubmitAttendanceRequest) (*SubmitAttendanceResponse, error)
 	// List who attended a check-in
 	ListAttendees(context.Context, *ListAttendeesRequest) (*ListAttendeesResponse, error)
+	AssignLoot(context.Context, *AssignLootRequest) (*AssignLootResponse, error)
 	mustEmbedUnimplementedCheckInServiceServer()
 }
 
@@ -180,6 +193,9 @@ func (UnimplementedCheckInServiceServer) SubmitAttendance(context.Context, *Subm
 }
 func (UnimplementedCheckInServiceServer) ListAttendees(context.Context, *ListAttendeesRequest) (*ListAttendeesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListAttendees not implemented")
+}
+func (UnimplementedCheckInServiceServer) AssignLoot(context.Context, *AssignLootRequest) (*AssignLootResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AssignLoot not implemented")
 }
 func (UnimplementedCheckInServiceServer) mustEmbedUnimplementedCheckInServiceServer() {}
 func (UnimplementedCheckInServiceServer) testEmbeddedByValue()                        {}
@@ -346,6 +362,24 @@ func _CheckInService_ListAttendees_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CheckInService_AssignLoot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AssignLootRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckInServiceServer).AssignLoot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckInService_AssignLoot_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckInServiceServer).AssignLoot(ctx, req.(*AssignLootRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CheckInService_ServiceDesc is the grpc.ServiceDesc for CheckInService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -384,6 +418,10 @@ var CheckInService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListAttendees",
 			Handler:    _CheckInService_ListAttendees_Handler,
+		},
+		{
+			MethodName: "AssignLoot",
+			Handler:    _CheckInService_AssignLoot_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

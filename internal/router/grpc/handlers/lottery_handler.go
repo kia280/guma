@@ -270,6 +270,7 @@ func prizesFromProto(protos []*gumav1.LotteryPrize) []lotterysvc.LotteryPrize {
 			item := itemFromProto(p.Item)
 			prize.Item = &item
 		}
+		prize.Source = sourceRefFromProto(p.Source)
 		prizes[i] = prize
 	}
 	return prizes

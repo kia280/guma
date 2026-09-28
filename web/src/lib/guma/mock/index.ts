@@ -25,7 +25,7 @@ import type {
   ItemRequest,
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import { ItemCategory, ItemRarity, type ItemHistoryEvent, type ItemLock, type ItemSourceRef } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
 import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from '@/types/preference';
@@ -49,6 +49,8 @@ const store = {
   notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
   notificationPreferences: { ...DEFAULT_NOTIFICATION_PREFERENCES } as NotificationPreferences,
   preferencesUpdatedAt: undefined as string | undefined,
+  fundRequests: [] as FundRequest[],
+  itemRequests: [] as ItemRequest[],
 };
 
 type StoredCheckinTemplate = Omit<CheckinTemplate, 'items'> & { itemTemplateIds: string[] };
@@ -64,6 +66,22 @@ const failedPrecondition = (message: string) =>
     isAxiosError: true,
     response: { status: 400, data: { code: 'FailedPrecondition' } },
   });
+
+const removeById = <T extends { id: string }>(list: T[], id: string) => {
+  const index = list.findIndex(entry => entry.id === id);
+  if (index === -1) throw Object.assign(new Error('item not found'), { isAxiosError: true, response: { status: 404, data: { code: 'NotFound' } } });
+  list.splice(index, 1);
+};
+
+const lockMockSource = (source: ItemSourceRef | undefined, lock: ItemLock) => {
+  if (!source?.backpackItemId && !source?.bankItemId) return;
+  const target = source.backpackItemId
+    ? mockData.mockBackpackItems.find(entry => entry.id === source.backpackItemId)
+    : mockData.mockGuildItems.find(entry => entry.id === source.bankItemId);
+  if (!target) throw Object.assign(new Error('item not found'), { isAxiosError: true, response: { status: 404, data: { code: 'NotFound' } } });
+  if (target.lock) throw failedPrecondition('item is already in an auction or lottery');
+  target.lock = lock;
+};
 
 const assertUniqueName = (list: Array<{ id: string; name: string }>, id: string, name: string) => {
   if (list.some(t => t.id !== id && t.name === name)) throw conflict();
@@ -163,6 +181,13 @@ const mockMembers = () =>
     ? mockData.mockUsers.map(user => (user.id === defaultOwner.id ? { ...user, role: 'admin' } : user))
     : mockData.mockUsers;
 
+const mockLockedBids = (): Pick<Wallet, 'lockedInBids' | 'lockedBids'> => {
+  const lockedBids = store.auctions
+    .filter(a => a.currentBidder?.id === currentUser.id && (a.status === AuctionStatus.ACTIVE || a.status === AuctionStatus.UPCOMING))
+    .map(a => ({ auctionId: a.id, itemName: a.name, amount: a.currentBid, endTime: a.endTime }));
+  return { lockedBids, lockedInBids: lockedBids.reduce((sum, bid) => sum + bid.amount, 0) };
+};
+
 const mockWallet = (guildId: string): Wallet => ({
   id: `wallet-${guildId}`,
   userId: currentUser.id,
@@ -171,6 +196,7 @@ const mockWallet = (guildId: string): Wallet => ({
   currency: 'gold',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
+  ...mockLockedBids(),
 });
 
 const mockGuildBankData = (guildId: string): GuildBank => ({
@@ -288,13 +314,38 @@ const baseMockApiClient: ApiClient = {
     return tx;
   },
   listBackpack: async () => mockData.mockBackpackItems,
-  withdrawBackpackItem: async () => undefined,
+  withdrawBackpackItem: async (_guildId, itemId) => {
+    const item = mockData.mockBackpackItems.find(i => i.id === itemId);
+    if (!item || item.deliveryRequestedAt || item.lock) throw failedPrecondition('item is not available to withdraw');
+    item.deliveryRequestedAt = new Date().toISOString();
+  },
+  cancelBackpackWithdrawal: async (_guildId, itemId) => {
+    const item = mockData.mockBackpackItems.find(i => i.id === itemId);
+    if (!item?.deliveryRequestedAt) throw new Error('not pending');
+    item.deliveryRequestedAt = undefined;
+  },
+  listPendingDeliveries: async () =>
+    mockData.mockBackpackItems
+      .filter(i => i.deliveryRequestedAt)
+      .map(i => ({ ...i, ownerName: currentUser.username })),
+  confirmBackpackDelivery: async (_guildId, itemId) => {
+    const item = mockData.mockBackpackItems.find(i => i.id === itemId);
+    if (!item?.deliveryRequestedAt) throw new Error('not pending');
+    removeById(mockData.mockBackpackItems, itemId);
+  },
+  transferBackpackItem: async (_guildId, itemId, req) => {
+    const item = mockData.mockBackpackItems.find(i => i.id === itemId);
+    if (!item) throw new Error('not found');
+    if (item.lock) throw failedPrecondition('item is in an auction or lottery');
+    removeById(mockData.mockBackpackItems, itemId);
+    return { ...item, ownerId: req.recipientId, acquiredFrom: 'transfer', note: req.note };
+  },
 
   // ── Auction ──
   listAuctions: async (_guildId, filters) => {
     let items = localizeMock(store.auctions);
     if (filters?.status && filters.status !== 'all') {
-      items = items.filter(i => i.status === filters.status);
+      items = items.filter(i => i.status === filters.status?.toLowerCase());
     }
     if (filters?.category && filters.category !== 'all') {
       items = items.filter(i => i.category === filters.category);
@@ -317,8 +368,10 @@ const baseMockApiClient: ApiClient = {
   },
   createAuction: async (guildId, req) => {
     const now = new Date();
+    const auctionId = `auction-${now.getTime()}`;
+    lockMockSource(req.source, { type: 'auction', id: auctionId });
     const item: AuctionItem = {
-      id: `auction-${now.getTime()}`,
+      id: auctionId,
       name: req.name,
       description: req.description,
       category: req.category,
@@ -406,6 +459,8 @@ const baseMockApiClient: ApiClient = {
         donatedBy: currentUser.displayName,
         donatedAt: new Date().toISOString(),
         quantity: 1,
+        pendingRequestCount: 0,
+        requestedByMe: false,
         checkinId: entry.id,
         checkinTitle: req.title,
       })),
@@ -445,6 +500,9 @@ const baseMockApiClient: ApiClient = {
       throw Object.assign(new Error('check-in is no longer open'), { response: { status: 400 } });
     }
     entry.status = CheckinStatus.CANCELLED;
+    mockData.mockGuildItems
+      .filter(item => item.checkinId === id)
+      .forEach(item => removeById(mockData.mockGuildItems, item.id));
     return entry;
   },
   submitAttendance: async (_guildId, checkinId, notes): Promise<AttendanceMember> => {
@@ -469,6 +527,10 @@ const baseMockApiClient: ApiClient = {
     entry.attendanceList = [...entry.attendanceList, attendee];
     entry.attendanceCount = entry.attendanceList.length;
     return attendee;
+  },
+  assignLoot: async (_guildId, _checkinId, itemId) => {
+    if (mockData.mockGuildItems.find(i => i.id === itemId)?.lock) throw failedPrecondition('loot is in an auction or lottery');
+    removeById(mockData.mockGuildItems, itemId);
   },
   listAttendees: async (_guildId, checkinId) => {
     const entry = store.checkins.find(c => c.id === checkinId);
@@ -520,8 +582,10 @@ const baseMockApiClient: ApiClient = {
     return l;
   },
   createLottery: async (_guildId, req) => {
+    const lotteryId = `lottery-${Date.now()}`;
+    req.prizes?.forEach(prize => lockMockSource(prize.source, { type: 'lottery', id: lotteryId }));
     const lottery: Lottery = {
-      id: `lottery-${Date.now()}`,
+      id: lotteryId,
       title: req.title,
       prizePool: req.prizes?.reduce((sum, prize) => sum + (prize.amount ?? 0), 0) ?? 0,
       ticketPrice: req.ticketPrice,
@@ -601,34 +665,35 @@ const baseMockApiClient: ApiClient = {
     kind: 'gold',
     itemNames: [],
   }),
-  requestFunds: async (guildId, req): Promise<FundRequest> => ({
-    id: `fr-${Date.now()}`,
-    guildId,
-    requesterId: currentUser.id,
-    requesterName: currentUser.username,
-    amount: req.amount,
-    reason: req.reason,
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-  }),
-  reviewFundRequest: async (guildId, reqId, status, note): Promise<FundRequest> => ({
-    id: reqId,
-    guildId,
-    requesterId: '',
-    requesterName: '',
-    amount: 0,
-    reason: '',
-    status,
-    reviewNote: note,
-    createdAt: new Date().toISOString(),
-    reviewedAt: new Date().toISOString(),
-  }),
-  listFundRequests: async (): Promise<FundRequest[]> => [],
+  requestFunds: async (guildId, req): Promise<FundRequest> => {
+    const request: FundRequest = {
+      id: `fr-${Date.now()}`,
+      guildId,
+      requesterId: currentUser.id,
+      requesterName: currentUser.username,
+      amount: req.amount,
+      reason: req.reason,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+    store.fundRequests.push(request);
+    return request;
+  },
+  reviewFundRequest: async (_guildId, reqId, status, note): Promise<FundRequest> => {
+    const request = store.fundRequests.find(r => r.id === reqId);
+    if (!request || request.status !== 'pending') throw new Error('not found');
+    Object.assign(request, { status, reviewNote: note, reviewedAt: new Date().toISOString() });
+    return request;
+  },
+  listFundRequests: async (_guildId, status): Promise<FundRequest[]> =>
+    store.fundRequests.filter(r => !status || r.status === status),
   listContributions: async () => mockData.mockContributions,
   donateItem: async (_guildId, backpackItemId): Promise<GuildBankItem> => {
     const bp = mockData.mockBackpackItems.find(i => i.id === backpackItemId);
     if (!bp) throw new Error('not found');
-    return {
+    if (bp.lock) throw failedPrecondition('item is in an auction or lottery');
+    removeById(mockData.mockBackpackItems, backpackItemId);
+    const donated: GuildBankItem = {
       id: `gi-${Date.now()}`,
       name: bp.item.name,
       description: bp.item.description,
@@ -637,13 +702,22 @@ const baseMockApiClient: ApiClient = {
       donatedBy: currentUser.username,
       donatedAt: new Date().toISOString(),
       quantity: 1,
+      pendingRequestCount: 0,
+      requestedByMe: false,
     };
+    mockData.mockGuildItems.unshift(donated);
+    return donated;
   },
-  listBankItems: async () => mockData.mockGuildItems,
+  listBankItems: async (_guildId, options) =>
+    options?.checkinId ? mockData.mockGuildItems.filter(item => item.checkinId === options.checkinId) : mockData.mockGuildItems,
   requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => {
     const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
     if (!bankItem) throw new Error('not found');
-    return {
+    if (bankItem.lock) throw failedPrecondition('item is in an auction or lottery');
+    if (bankItem.requestedByMe) throw conflict();
+    bankItem.requestedByMe = true;
+    bankItem.pendingRequestCount += 1;
+    const request: ItemRequest = {
       id: `ir-${Date.now()}`,
       guildId,
       bankItemId,
@@ -656,23 +730,52 @@ const baseMockApiClient: ApiClient = {
       itemRarity: bankItem.rarity,
       createdAt: new Date().toISOString(),
     };
+    store.itemRequests.push(request);
+    return request;
   },
-  reviewItemRequest: async (guildId, reqId, status, note): Promise<ItemRequest> => ({
-    id: reqId,
-    guildId,
-    bankItemId: '',
-    requesterId: '',
-    requesterName: '',
-    reason: '',
-    status,
-    itemName: '',
-    itemCategory: ItemCategory.MISC,
-    itemRarity: ItemRarity.COMMON,
-    reviewNote: note,
-    createdAt: new Date().toISOString(),
-    reviewedAt: new Date().toISOString(),
-  }),
-  listItemRequests: async (): Promise<ItemRequest[]> => [],
+  reviewItemRequest: async (_guildId, reqId, status, note): Promise<ItemRequest> => {
+    const request = store.itemRequests.find(r => r.id === reqId);
+    if (!request || request.status !== 'pending') throw new Error('not found');
+    Object.assign(request, { status, reviewNote: note, reviewedAt: new Date().toISOString() });
+    const bankItem = mockData.mockGuildItems.find(i => i.id === request.bankItemId);
+    if (bankItem) {
+      bankItem.pendingRequestCount = Math.max(0, bankItem.pendingRequestCount - 1);
+      if (request.requesterId === currentUser.id) bankItem.requestedByMe = false;
+      if (status === 'approved') removeById(mockData.mockGuildItems, bankItem.id);
+    }
+    return request;
+  },
+  listItemRequests: async (_guildId, status): Promise<ItemRequest[]> =>
+    store.itemRequests.filter(r => !status || r.status === status),
+  getItemHistory: async (_guildId, itemId): Promise<ItemHistoryEvent[]> => {
+    const backpackItem = mockData.mockBackpackItems.find(i => i.id === itemId);
+    const bankItem = mockData.mockGuildItems.find(i => i.id === itemId);
+    const events: ItemHistoryEvent[] = [];
+    const event = (kind: ItemHistoryEvent['kind'], createdAt: string, extra: Partial<ItemHistoryEvent> = {}) =>
+      events.push({ id: `${itemId}-${events.length}`, kind, source: '', actorName: '', subjectName: '', referenceLabel: '', createdAt, ...extra });
+    if (bankItem) {
+      if (bankItem.checkinId) {
+        event('looted', bankItem.donatedAt, { source: 'checkin', actorName: bankItem.donatedBy, referenceId: bankItem.checkinId, referenceLabel: bankItem.checkinTitle ?? '' });
+      } else {
+        event('donated', bankItem.donatedAt, { actorName: bankItem.donatedBy });
+      }
+      store.itemRequests
+        .filter(r => r.bankItemId === itemId)
+        .forEach(r => event('requested', r.createdAt, { actorName: r.requesterName, referenceId: r.id }));
+    }
+    if (backpackItem) {
+      const earlier = new Date(new Date(backpackItem.acquiredAt).getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
+      event('looted', earlier, { source: 'checkin', actorName: 'Night吃貨', referenceLabel: 'Boss raid' });
+      event('received', backpackItem.acquiredAt, {
+        source: backpackItem.acquiredFrom,
+        actorName: currentUser.username,
+        referenceId: backpackItem.sourceId,
+        referenceLabel: backpackItem.sourceLabel ?? '',
+        subjectName: backpackItem.acquiredFrom === 'transfer' ? backpackItem.sourceLabel ?? '' : '',
+      });
+    }
+    return events;
+  },
 
   // ── Events ──
   listEvents: async () => store.events,

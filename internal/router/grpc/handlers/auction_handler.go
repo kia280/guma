@@ -13,6 +13,7 @@ import (
 	"github.com/kia280/guma/internal/session"
 	"github.com/kia280/guma/internal/models"
 	auctionsvc "github.com/kia280/guma/internal/services/auction"
+	"github.com/kia280/guma/internal/services/inventory"
 )
 
 // AuctionHandler is a thin gRPC adapter over the auction service.
@@ -92,6 +93,7 @@ func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAu
 		DurationHours:   req.DurationHours,
 		IsBlind:         req.IsBlind,
 		Status:          req.Status,
+		Source:          sourceRefFromProto(req.Source),
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -193,6 +195,13 @@ func itemToProto(item models.Item) *gumav1.Item {
 	}
 }
 
+func itemLockToProto(lock *models.ItemLock) *gumav1.ItemLock {
+	if lock == nil {
+		return nil
+	}
+	return &gumav1.ItemLock{Type: lock.Type, Id: lock.ID}
+}
+
 func itemFromProto(p *gumav1.Item) models.Item {
 	return models.Item{
 		ID:          p.Id,
@@ -201,4 +210,11 @@ func itemFromProto(p *gumav1.Item) models.Item {
 		Category:    p.Category,
 		Rarity:      p.Rarity,
 	}
+}
+
+func sourceRefFromProto(p *gumav1.ItemSourceRef) inventory.Ref {
+	if p == nil {
+		return inventory.Ref{}
+	}
+	return inventory.Ref{BackpackItemID: p.BackpackItemId, BankItemID: p.BankItemId}
 }

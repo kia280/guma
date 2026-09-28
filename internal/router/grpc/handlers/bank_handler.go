@@ -175,16 +175,19 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
-	if session.UserIDFromContext(ctx) == "" {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
 	result, err := h.svc.ListBankItems(ctx, banksvc.ListBankItemsParams{
-		GuildID:  req.GuildId,
-		Category: req.Category,
-		Rarity:   req.Rarity,
-		PageSize: int(req.PageSize),
-		Offset:   banksvc.ParsePageToken(req.PageToken),
+		GuildID:   req.GuildId,
+		ViewerID:  userID,
+		CheckinID: req.CheckinId,
+		Category:  req.Category,
+		Rarity:    req.Rarity,
+		PageSize:  int(req.PageSize),
+		Offset:    banksvc.ParsePageToken(req.PageToken),
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -289,17 +292,19 @@ func bankToProto(b *banksvc.GuildBank) *gumav1.GuildBank {
 
 func bankContributionToProto(c *banksvc.BankContribution) *gumav1.BankContribution {
 	return &gumav1.BankContribution{
-		Id:        c.ID,
-		GuildId:   c.GuildID,
-		UserId:    c.UserID,
-		Username:  c.Username,
-		AvatarUrl: c.AvatarURL,
-		Amount:    c.Amount,
-		Note:      c.Note,
-		CreatedAt: timestamppb.New(c.CreatedAt),
-		Kind:      c.Kind,
-		Items:     protoItems(c.Items),
-		CheckinId: c.CheckinID,
+		Id:            c.ID,
+		GuildId:       c.GuildID,
+		UserId:        c.UserID,
+		Username:      c.Username,
+		AvatarUrl:     c.AvatarURL,
+		Amount:        c.Amount,
+		Note:          c.Note,
+		CreatedAt:     timestamppb.New(c.CreatedAt),
+		Kind:          c.Kind,
+		Items:         protoItems(c.Items),
+		CheckinId:     c.CheckinID,
+		ReferenceType: c.ReferenceType,
+		ReferenceId:   c.ReferenceID,
 	}
 }
 
@@ -333,16 +338,19 @@ func fundRequestToProto(fr *banksvc.FundRequest) *gumav1.FundRequest {
 
 func bankItemToProto(bi *banksvc.BankItem) *gumav1.BankItem {
 	return &gumav1.BankItem{
-		Id:           bi.ID,
-		GuildId:      bi.GuildID,
-		DonorId:      bi.DonorID,
-		DonorName:    bi.DonorName,
-		Item:         itemToProto(bi.Item),
-		Quantity:     bi.Quantity,
-		Note:         bi.Note,
-		DonatedAt:    timestamppb.New(bi.DonatedAt),
-		CheckinId:    bi.CheckinID,
-		CheckinTitle: bi.CheckinTitle,
+		Id:                  bi.ID,
+		GuildId:             bi.GuildID,
+		DonorId:             bi.DonorID,
+		DonorName:           bi.DonorName,
+		Item:                itemToProto(bi.Item),
+		Quantity:            bi.Quantity,
+		Note:                bi.Note,
+		DonatedAt:           timestamppb.New(bi.DonatedAt),
+		CheckinId:           bi.CheckinID,
+		CheckinTitle:        bi.CheckinTitle,
+		PendingRequestCount: bi.PendingRequestCount,
+		RequestedByMe:       bi.RequestedByMe,
+		Lock:                itemLockToProto(bi.Lock),
 	}
 }
 
@@ -365,4 +373,35 @@ func itemRequestToProto(ir *banksvc.ItemRequest) *gumav1.ItemRequest {
 		proto.ReviewedAt = timestamppb.New(*ir.ReviewedAt)
 	}
 	return proto
+}
+
+func (h *BankHandler) GetItemHistory(ctx context.Context, req *gumav1.GetItemHistoryRequest) (*gumav1.GetItemHistoryResponse, error) {
+	if req.GuildId == "" || req.ItemId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and item_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	events, err := h.svc.GetItemHistory(ctx, req.GuildId, userID, req.ItemId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	protos := make([]*gumav1.ItemHistoryEvent, len(events))
+	for i, e := range events {
+		protos[i] = &gumav1.ItemHistoryEvent{
+			Id:             e.ID,
+			Kind:           e.Kind,
+			Source:         e.Source,
+			ActorId:        e.ActorID,
+			ActorName:      e.ActorName,
+			SubjectId:      e.SubjectID,
+			SubjectName:    e.SubjectName,
+			ReferenceId:    e.ReferenceID,
+			ReferenceLabel: e.ReferenceLabel,
+			CreatedAt:      timestamppb.New(e.CreatedAt),
+		}
+	}
+	return &gumav1.GetItemHistoryResponse{Events: protos}, nil
 }

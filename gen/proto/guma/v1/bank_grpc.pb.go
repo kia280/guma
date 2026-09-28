@@ -30,6 +30,7 @@ const (
 	BankService_RequestItem_FullMethodName       = "/guma.v1.BankService/RequestItem"
 	BankService_ReviewItemRequest_FullMethodName = "/guma.v1.BankService/ReviewItemRequest"
 	BankService_ListItemRequests_FullMethodName  = "/guma.v1.BankService/ListItemRequests"
+	BankService_GetItemHistory_FullMethodName    = "/guma.v1.BankService/GetItemHistory"
 )
 
 // BankServiceClient is the client API for BankService service.
@@ -53,6 +54,7 @@ type BankServiceClient interface {
 	RequestItem(ctx context.Context, in *RequestItemRequest, opts ...grpc.CallOption) (*RequestItemResponse, error)
 	ReviewItemRequest(ctx context.Context, in *ReviewItemRequestRequest, opts ...grpc.CallOption) (*ReviewItemRequestResponse, error)
 	ListItemRequests(ctx context.Context, in *ListItemRequestsRequest, opts ...grpc.CallOption) (*ListItemRequestsResponse, error)
+	GetItemHistory(ctx context.Context, in *GetItemHistoryRequest, opts ...grpc.CallOption) (*GetItemHistoryResponse, error)
 }
 
 type bankServiceClient struct {
@@ -173,6 +175,16 @@ func (c *bankServiceClient) ListItemRequests(ctx context.Context, in *ListItemRe
 	return out, nil
 }
 
+func (c *bankServiceClient) GetItemHistory(ctx context.Context, in *GetItemHistoryRequest, opts ...grpc.CallOption) (*GetItemHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetItemHistoryResponse)
+	err := c.cc.Invoke(ctx, BankService_GetItemHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BankServiceServer is the server API for BankService service.
 // All implementations must embed UnimplementedBankServiceServer
 // for forward compatibility.
@@ -194,6 +206,7 @@ type BankServiceServer interface {
 	RequestItem(context.Context, *RequestItemRequest) (*RequestItemResponse, error)
 	ReviewItemRequest(context.Context, *ReviewItemRequestRequest) (*ReviewItemRequestResponse, error)
 	ListItemRequests(context.Context, *ListItemRequestsRequest) (*ListItemRequestsResponse, error)
+	GetItemHistory(context.Context, *GetItemHistoryRequest) (*GetItemHistoryResponse, error)
 	mustEmbedUnimplementedBankServiceServer()
 }
 
@@ -236,6 +249,9 @@ func (UnimplementedBankServiceServer) ReviewItemRequest(context.Context, *Review
 }
 func (UnimplementedBankServiceServer) ListItemRequests(context.Context, *ListItemRequestsRequest) (*ListItemRequestsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListItemRequests not implemented")
+}
+func (UnimplementedBankServiceServer) GetItemHistory(context.Context, *GetItemHistoryRequest) (*GetItemHistoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetItemHistory not implemented")
 }
 func (UnimplementedBankServiceServer) mustEmbedUnimplementedBankServiceServer() {}
 func (UnimplementedBankServiceServer) testEmbeddedByValue()                     {}
@@ -456,6 +472,24 @@ func _BankService_ListItemRequests_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BankService_GetItemHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetItemHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BankServiceServer).GetItemHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BankService_GetItemHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BankServiceServer).GetItemHistory(ctx, req.(*GetItemHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BankService_ServiceDesc is the grpc.ServiceDesc for BankService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -506,6 +540,10 @@ var BankService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListItemRequests",
 			Handler:    _BankService_ListItemRequests_Handler,
+		},
+		{
+			MethodName: "GetItemHistory",
+			Handler:    _BankService_GetItemHistory_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

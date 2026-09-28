@@ -84,7 +84,8 @@
       "preference": "Preferences",
       "terms": "Terms of service",
       "contact": "Contact us"
-    }
+    },
+    "adminInbox": "Inbox"
   },
   "dashboard": {
     "overview": "Overview",
@@ -206,8 +207,8 @@
     "withdrawMoney": "Withdraw Money",
     "withdrawNote": "Withdrawals may take 1–3 business days to process.",
     "withdrawItem": "Withdraw Item",
-    "withdrawItemConfirm": "Are you sure you want to withdraw <strong>{name}</strong> from your backpack? This action cannot be undone.",
-    "withdrawItemNote": "Withdrawn items will be removed from your backpack and submitted for processing.",
+    "withdrawItemConfirm": "Ask an officer to hand <strong>{name}</strong> over to you in game?",
+    "withdrawItemNote": "The item stays in your backpack, locked, until an officer confirms the handover. You can cancel until then.",
     "sendMoney": "Send Money",
     "recentTransactions": "Recent Transactions",
     "viewAll": "View All",
@@ -225,7 +226,8 @@
       "lotteryTicket": "Lottery ticket purchase",
       "lotteryWin": "Lottery prize",
       "bankContribution": "Guild vault contribution",
-      "fundRequestApproved": "Fund request approved"
+      "fundRequestApproved": "Fund request approved",
+      "auctionSale": "Auction sale"
     },
     "depositSuccess": "Deposit completed",
     "depositSuccessDetail": "{amount} was added to your wallet.",
@@ -236,8 +238,8 @@
     "withdrawSuccess": "Withdrawal submitted",
     "withdrawSuccessDetail": "{amount} is on its way. Withdrawals may take 1–3 business days to process.",
     "withdrawFailed": "Could not complete the withdrawal. Please try again.",
-    "withdrawItemSuccess": "Item submitted for withdrawal",
-    "withdrawItemSuccessDetail": "{name} was removed from your backpack and submitted for processing.",
+    "withdrawItemSuccess": "Withdrawal requested",
+    "withdrawItemSuccessDetail": "{name} stays in your backpack until an officer hands it over in game.",
     "withdrawItemFailed": "Could not withdraw the item. Please try again.",
     "noItems": "No items in your backpack",
     "noItemsHint": "Items you receive from the guild vault or events will show up here.",
@@ -245,7 +247,13 @@
     "noTransactionsHint": "Your deposits, withdrawals, and transfers will show up here.",
     "balance": "Balance",
     "amountMustBePositive": "Enter an amount greater than 0",
-    "recipientRequired": "Choose a recipient"
+    "recipientRequired": "Choose a recipient",
+    "availableBalance": "Available",
+    "lockedInBids": "{amount} held in {count, plural, one {# leading bid} other {# leading bids}}",
+    "lockedBidsLabel": "Auctions holding your bids",
+    "unnamedAuction": "Auction",
+    "withdrawalCancelled": "Withdrawal of {name} cancelled.",
+    "withdrawalCancelFailed": "Could not cancel the withdrawal. Please try again."
   },
   "lotteryPage": {
     "all": "All",
@@ -346,13 +354,26 @@
     "cancel": "Cancel",
     "save": "Save",
     "actions": "Item actions",
-    "comingSoon": "Coming soon",
     "acquiredFrom": {
       "auction": "Auction",
       "lottery": "Lottery",
       "transfer": "Transfer",
+      "admin": "Admin",
+      "bank": "Guild vault request",
+      "checkin": "Roll call loot"
+    },
+    "donate": "Donate to guild vault",
+    "sourceWithLabel": {
+      "transfer": "From {label}",
+      "lottery": "Lottery: {label}",
+      "checkin": "Roll call: {label}",
+      "bank": "Guild vault request",
+      "auction": "Auction",
       "admin": "Admin"
-    }
+    },
+    "history": "History",
+    "awaitingDelivery": "Awaiting handover",
+    "cancelWithdrawal": "Cancel withdrawal"
   },
   "calendarPage": {
     "loadingEvents": "Loading events...",
@@ -531,7 +552,8 @@
     "announcementPublished": "Announcement published.",
     "noUsers": "No members yet",
     "sections": "Admin sections",
-    "usersTable": "Users"
+    "usersTable": "Users",
+    "inbox": "Inbox"
   },
   "adminGuard": {
     "title": "Administration is for guild staff",
@@ -596,7 +618,9 @@
       "createLottery": "Create lotteries",
       "drawLottery": "Draw lottery winners",
       "changeDrawDate": "Change the draw date",
-      "manageWallet": "Manage their own wallet and backpack"
+      "manageWallet": "Manage their own wallet and backpack",
+      "auctionBankItems": "Auction or raffle guild vault items",
+      "distributeLoot": "Hand out roll call loot"
     },
     "ownerLeaveNote": "The owner must transfer ownership before leaving the guild."
   },
@@ -661,7 +685,14 @@
     "activityTable": "Guild vault activity",
     "itemSummary": "{rarity} · {category} · {count, plural, one {# available} other {# available}}",
     "amountMustBePositive": "Enter an amount greater than 0",
-    "reasonRequired": "Enter a reason for the request"
+    "reasonRequired": "Enter a reason for the request",
+    "typeAuctionProceeds": "Auction proceeds",
+    "typeLotteryRevenue": "Lottery ticket revenue",
+    "requestedByMe": "You requested this",
+    "pendingRequestCount": "{count, plural, one {# pending request} other {# pending requests}}",
+    "otherPendingRequests": "{count, plural, one {# other member also asked for it} other {# other members also asked for it}}",
+    "alreadyRequested": "You already requested this item",
+    "viewHistory": "View history of {item}"
   },
   "notificationsCard": {
     "notifications": "Notifications",
@@ -720,7 +751,12 @@
       "mythic": "Mythic"
     },
     "createFailed": "Could not create the auction. Please try again.",
-    "created": "Auction created."
+    "created": "Auction created.",
+    "itemSource": "Item source",
+    "itemSourceManual": "Describe an item",
+    "itemSourceBank": "From guild vault",
+    "sourceBankHint": "Stays in the guild vault, locked, until the auction ends",
+    "sourceBackpackHint": "Stays in your backpack, locked, until the auction ends"
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -808,7 +844,13 @@
     "fundRequestSubmitted": "<b>{actor}</b> requested <b>{amount}</b> from the guild vault",
     "itemRequestSubmitted": "<b>{actor}</b> requested <b>{item}</b> from the guild vault",
     "auctionOutbid": "<b>{actor}</b> outbid you on <b>{item}</b> with {amount}",
-    "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>"
+    "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
+    "auctionWon": "You won <b>{item}</b> for <b>{amount}</b>. It's in your backpack now",
+    "auctionSold": "<b>{actor}</b> won <b>{item}</b> for <b>{amount}</b>, paid to {destination, select, wallet {your wallet} other {the guild vault}}",
+    "auctionUnsold": "<b>{item}</b> ended without bids",
+    "itemReceived": "<b>{actor}</b> sent you <b>{item}</b>",
+    "lootAssigned": "You received <b>{item}</b> from <b>{checkin}</b>",
+    "itemDelivered": "<b>{actor}</b> handed over <b>{item}</b> in game"
   },
   "profilePage": {
     "title": "Personal Information",
@@ -1014,7 +1056,6 @@
     "loot": "Loot",
     "items": "{count, plural, one {# item} other {# items}}",
     "noLootItems": "No loot items added.",
-    "wonBy": "Won by {name}",
     "timing": "Timing",
     "eventDate": "Event date",
     "expires": "Expires",
@@ -1032,7 +1073,7 @@
     "statusFinished": "Finished",
     "cancelCheckin": "Cancel roll call",
     "cancelConfirmTitle": "Cancel this roll call?",
-    "cancelConfirmBody": "Members will no longer be able to mark themselves present. Existing attendance stays on record. This cannot be undone.",
+    "cancelConfirmBody": "Members will no longer be able to mark themselves present. Existing attendance stays on record. Loot from this roll call that is still available in the guild vault is removed, and pending requests for it are rejected; loot already in an auction or lottery follows that listing. This cannot be undone.",
     "cancelConfirm": "Cancel roll call",
     "cancelSuccess": "Roll call cancelled",
     "cancelSuccessDetail": "Members can no longer mark themselves present. Existing attendance stays on record.",
@@ -1194,7 +1235,12 @@
     "cancel": "Cancel",
     "create": "Create lottery",
     "createFailed": "Could not create the lottery. Please try again.",
-    "created": "Lottery created."
+    "created": "Lottery created.",
+    "prizeSource": "Prize source",
+    "prizeSourceManual": "Prize money or custom prize",
+    "prizeSourceBank": "From guild vault",
+    "prizeFromBankHint": "Locked in the guild vault until the draw; the winner receives it in their backpack",
+    "prizeFromBackpackHint": "Locked in your backpack until the draw; the winner receives it in their backpack"
   },
   "bankRequestReview": {
     "viewLabel": "Request status",
@@ -1311,6 +1357,162 @@
       "medium": "Medium",
       "high": "High",
       "critical": "Critical"
+    }
+  },
+  "bankItemPicker": {
+    "label": "Guild vault item",
+    "placeholder": "Choose an item",
+    "loading": "Loading items…",
+    "empty": "The guild vault has no items to list.",
+    "loadFailed": "Could not load guild vault items.",
+    "retry": "Retry"
+  },
+  "itemLock": {
+    "auction": "In auction",
+    "lottery": "Lottery prize"
+  },
+  "backpackItemMoveModal": {
+    "donateTitle": "Donate to guild vault",
+    "transferTitle": "Send to a member",
+    "donateDescription": "The item moves to the guild vault, where members can request it.",
+    "transferDescription": "The item moves to the member’s backpack right away. They get a notification.",
+    "recipient": "Recipient",
+    "searchRecipient": "Search members",
+    "noMembers": "No members found",
+    "recipientRequired": "Choose who receives the item",
+    "note": "Note",
+    "notePlaceholder": "Optional message",
+    "noteTooLong": "Keep the note under {max} characters",
+    "cancel": "Cancel",
+    "donateConfirm": "Donate",
+    "transferConfirm": "Send item",
+    "donateSuccess": "{item} is now in the guild vault.",
+    "transferSuccess": "{item} was sent.",
+    "donateFailed": "Could not donate the item. Please try again.",
+    "transferFailed": "Could not send the item. Please try again."
+  },
+  "checkinLoot": {
+    "loading": "Loading loot status",
+    "loadFailed": "Could not load where the loot is.",
+    "retry": "Retry",
+    "inBank": "In guild vault",
+    "inBankWithRequests": "{count, plural, one {In bank · # request} other {In bank · # requests}}",
+    "distributed": "Handed out",
+    "wonBy": "Won by {name}",
+    "actionsFor": "Actions for {item}",
+    "assign": "Give to an attendee",
+    "auction": "Put up for auction",
+    "lottery": "Raffle it",
+    "noAttendees": "No attendees yet",
+    "assignTitle": "Give {item}",
+    "assignDescription": "The item leaves the guild vault and goes straight to the attendee’s backpack.",
+    "assignRejectsRequests": "{count, plural, one {# pending request for this item will be rejected.} other {# pending requests for this item will be rejected.}}",
+    "recipient": "Attendee",
+    "recipientPlaceholder": "Choose an attendee",
+    "cancel": "Cancel",
+    "assignConfirm": "Give item",
+    "assignSuccess": "{item} was given to {name}.",
+    "assignConflict": "This item is no longer in the guild vault.",
+    "assignFailed": "Could not give the item. Please try again."
+  },
+  "adminInbox": {
+    "loading": "Loading",
+    "loadFailed": "Could not load this section.",
+    "retry": "Retry",
+    "summaryRequests": "{count, plural, =0 {No pending requests} one {# pending request} other {# pending requests}}",
+    "summaryAuctions": "{count, plural, =0 {No auctions need attention} one {# auction needs attention} other {# auctions need attention}}",
+    "summaryLoot": "{count, plural, =0 {All roll call loot distributed} one {# loot item waiting} other {# loot items waiting}}",
+    "pendingRequests": "Pending requests",
+    "noPendingRequests": "No fund or item requests are waiting for review.",
+    "selectAll": "Select all",
+    "approveSelected": "Approve ({count})",
+    "rejectSelected": "Reject ({count})",
+    "fundRequestLabel": "{name} requested funds: {amount}",
+    "itemRequestLabel": "{name} requested {item}",
+    "unknownItem": "an item",
+    "review": "Review",
+    "auctionsNeedingAttention": "Auctions needing attention",
+    "noAuctionAttention": "Every auction is running on schedule.",
+    "auctionReason": {
+      "overdue": "Awaiting settlement",
+      "notStarted": "Not started",
+      "endingWithoutBids": "No bids yet"
+    },
+    "auctionReasonDetail": {
+      "overdue": "Ended {time}",
+      "notStarted": "Was due to start {time}",
+      "endingWithoutBids": "Ends {time}"
+    },
+    "undistributedLoot": "Undistributed roll call loot",
+    "noUndistributedLoot": "All roll call loot has been handed out.",
+    "untitledCheckin": "Untitled roll call",
+    "lootWaiting": "Banked {time}",
+    "lootCount": "{count, plural, one {# item} other {# items}}",
+    "batchTitle": "{decision, select, approved {Approve} other {Reject}} {count, plural, one {# request} other {# requests}}",
+    "batchHint": "Each selected request is reviewed in turn. Requests that can no longer be {decision, select, approved {approved} other {rejected}} are skipped.",
+    "noteLabel": "Review note (optional)",
+    "notePlaceholder": "Shared with every requester",
+    "cancel": "Cancel",
+    "batchSuccess": "{decision, select, approved {Approved} other {Rejected}} {count, plural, one {# request} other {# requests}}.",
+    "batchPartial": "{decision, select, approved {Approved} other {Rejected}} {succeeded}; {failed} could not be processed.",
+    "pendingDeliveries": "Items awaiting handover",
+    "noPendingDeliveries": "No members are waiting for an item handover.",
+    "summaryDeliveries": "{count, plural, =0 {No handovers pending} one {# handover pending} other {# handovers pending}}",
+    "deliveryRequested": "{name} asked {time}",
+    "confirmDelivery": "Mark delivered",
+    "confirmDeliveryTitle": "Confirm handover of {item}?",
+    "confirmDeliveryBody": "Confirm that {name} received {item} in game. The item leaves their backpack and they are notified.",
+    "confirmDeliveryFailed": "Could not confirm the handover. It may have been cancelled.",
+    "deliveryConfirmed": "Marked {item} as delivered to {name}.",
+    "unknownMember": "A member"
+  },
+  "bidAssist": {
+    "quickPicks": "Quick bid amounts",
+    "addIncrement": "+{amount}",
+    "addMultiple": "+{step}× ({amount})",
+    "addIncrementLabel": "Raise bid by {amount}",
+    "balanceAfterBid": "Available after this bid",
+    "raiseOwnBid": "You already hold the top bid, so only the extra {amount} is held."
+  },
+  "itemHistory": {
+    "title": "History — {item}",
+    "timeline": "Item history",
+    "loading": "Loading history",
+    "loadFailed": "Could not load this item's history.",
+    "retry": "Retry",
+    "empty": "No history has been recorded for this item yet.",
+    "close": "Close",
+    "someone": "A member",
+    "kinds": {
+      "looted": "Dropped at roll call {label}",
+      "donated": "{actor} donated it to the guild vault",
+      "requested": "{actor} requested it from the guild vault",
+      "request_approved": "{actor} approved {subject}'s request",
+      "request_rejected": "{actor} declined {subject}'s request",
+      "auction_listed": "{actor} put it up for auction",
+      "lottery_listed": "{actor} offered it as a prize in {label}",
+      "withdrawn": "{actor} withdrew it",
+      "retracted": "Removed when roll call {label} was cancelled",
+      "withdrawal_requested": "{actor} asked to withdraw it",
+      "withdrawal_cancelled": "{actor} cancelled the withdrawal",
+      "delivered": "{actor} handed it over to {subject} in game"
+    },
+    "received": {
+      "auction": "{actor} won it at auction",
+      "lottery": "{actor} won it in {label}",
+      "transfer": "{subject} gave it to {actor}",
+      "checkin": "{actor} received it as roll call loot",
+      "bank": "{actor} received it from the guild vault",
+      "other": "{actor} received it"
+    },
+    "returned": {
+      "bank": "Unlocked and back in the guild vault",
+      "backpack": "Unlocked and back in the backpack"
+    },
+    "view": {
+      "auction": "View auction",
+      "lottery": "View lottery",
+      "checkin": "View roll call"
     }
   }
 }

@@ -4,7 +4,7 @@
 import type { AdminAnnouncement, AdminGuildStats } from '@/types/admin';
 import { AuctionStatus } from '@/types/auction';
 import type { AuctionItem, Bid } from '@/types/auction';
-import type { BackpackItem } from '@/types/backpack';
+import type { BackpackItem, BackpackItemSource } from '@/types/backpack';
 import type { CheckinEntry, CheckinTemplate, AttendanceMember, ItemTemplate, LootItem } from '@/types/checkin';
 import { CheckinStatus } from '@/types/checkin';
 import type { Announcement } from '@/types/dashboard';
@@ -12,13 +12,14 @@ import type { Guild } from '@/types/guild';
 import type {
   GuildBank,
   BankContribution,
+  BankContributionKind,
   FundRequest,
   GuildBankItem,
   ItemRequest,
   GuildContribution,
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import { ItemCategory, ItemRarity, type ItemHistoryEvent, type ItemHistoryKind, type ItemLock } from '@/types/item';
 import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
 import type { UserPreferences } from '@/types/preference';
@@ -27,6 +28,11 @@ import type { Transaction, Wallet } from '@/types/wallet';
 import { fromMinorUnits } from './money';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
+
+type ProtoItemLock = { type?: string; id?: string };
+
+const toItemLock = (raw: ProtoItemLock | undefined): ItemLock | undefined =>
+  raw?.id && (raw.type === 'auction' || raw.type === 'lottery') ? { type: raw.type, id: raw.id } : undefined;
 
 const ts = (v: unknown): string => {
   if (!v) return new Date().toISOString();
@@ -425,6 +431,15 @@ type ProtoTransaction = {
   status?: string;
   description?: string;
   created_at?: string;
+  reference_id?: string;
+  reference_type?: string;
+};
+
+type ProtoLockedBid = {
+  auction_id?: string;
+  item_name?: string;
+  amount?: number | string;
+  end_time?: string;
 };
 
 type ProtoWallet = {
@@ -434,6 +449,8 @@ type ProtoWallet = {
   currency?: string;
   created_at?: string;
   updated_at?: string;
+  locked_in_bids?: number | string;
+  locked_bids?: ProtoLockedBid[];
 };
 
 export const toWallet = (w: ProtoWallet): Wallet => ({
@@ -444,6 +461,13 @@ export const toWallet = (w: ProtoWallet): Wallet => ({
   currency: w.currency ?? 'gold',
   createdAt: ts(w.created_at),
   updatedAt: ts(w.updated_at),
+  lockedInBids: fromMinorUnits(w.locked_in_bids),
+  lockedBids: (w.locked_bids ?? []).map(b => ({
+    auctionId: b.auction_id ?? '',
+    itemName: b.item_name ?? '',
+    amount: fromMinorUnits(b.amount),
+    endTime: ts(b.end_time),
+  })),
 });
 
 export const toTransaction = (raw: ProtoTransaction): Transaction => {
@@ -461,17 +485,32 @@ export const toTransaction = (raw: ProtoTransaction): Transaction => {
     date: ts(raw.created_at).slice(0, 10),
     status: (raw.status?.toLowerCase() as Transaction['status']) || 'completed',
     description: raw.description,
+    referenceType: raw.reference_type || undefined,
+    referenceId: raw.reference_id || undefined,
   };
 };
 
 type ProtoBackpackItem = {
   id: string;
   item?: ProtoItem;
-  acquired_from?: string;
+  source?: string;
+  source_id?: string;
+  source_label?: string;
   acquired_at?: string;
   owner_id?: string;
   guild_id?: string;
   note?: string;
+  delivery_requested_at?: string;
+  owner_name?: string;
+  lock?: ProtoItemLock;
+};
+
+const BACKPACK_SOURCES: Record<string, BackpackItemSource> = {
+  auction: 'auction',
+  lottery: 'lottery',
+  transfer: 'transfer',
+  checkin: 'checkin',
+  bank_item_request: 'bank',
 };
 
 export const toBackpackItem = (raw: ProtoBackpackItem): BackpackItem => ({
@@ -484,11 +523,16 @@ export const toBackpackItem = (raw: ProtoBackpackItem): BackpackItem => ({
     rarity: toRarity(raw.item?.rarity),
     imageUrl: raw.item?.image_url,
   },
-  acquiredFrom: (raw.acquired_from as BackpackItem['acquiredFrom']) || 'admin',
+  acquiredFrom: BACKPACK_SOURCES[raw.source ?? ''] ?? 'admin',
+  sourceId: raw.source_id || undefined,
+  sourceLabel: raw.source_label || undefined,
   acquiredAt: ts(raw.acquired_at),
   ownerId: raw.owner_id ?? '',
   guildId: raw.guild_id ?? '',
   note: raw.note,
+  deliveryRequestedAt: raw.delivery_requested_at || undefined,
+  ownerName: raw.owner_name || undefined,
+  lock: toItemLock(raw.lock),
 });
 
 // ─── Guild Bank ─────────────────────────────────────────────────────────────
@@ -521,7 +565,24 @@ type ProtoBankContribution = {
   kind?: string;
   items?: ProtoItem[];
   checkin_id?: string;
+  reference_type?: string;
+  reference_id?: string;
 };
+
+const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = ['gold', 'checkin_loot', 'auction_proceeds', 'lottery_revenue'];
+
+const contributionReferenceHref = (b: BankContribution): string | undefined => {
+  if (!b.referenceId) return undefined;
+  if (b.referenceType === 'auction') return `/dashboard/auction/${b.referenceId}`;
+  if (b.referenceType === 'lottery') return `/dashboard/lottery/${b.referenceId}`;
+  return undefined;
+};
+
+const contributionType = (kind: BankContributionKind): GuildContribution['type'] =>
+  kind === 'auction_proceeds' || kind === 'lottery_revenue' ? kind : 'contribute';
+
+const toContributionKind = (kind: string | undefined): BankContributionKind =>
+  BANK_CONTRIBUTION_KINDS.find(k => k === kind) ?? 'gold';
 
 export const toBankContribution = (raw: ProtoBankContribution): BankContribution => ({
   id: raw.id,
@@ -532,9 +593,11 @@ export const toBankContribution = (raw: ProtoBankContribution): BankContribution
   amount: fromMinorUnits(raw.amount),
   note: raw.note,
   createdAt: ts(raw.created_at),
-  kind: raw.kind === 'checkin_loot' ? 'checkin_loot' : 'gold',
+  kind: toContributionKind(raw.kind),
   itemNames: (raw.items ?? []).map(i => i.name ?? '').filter(Boolean),
   checkinId: raw.checkin_id || undefined,
+  referenceType: raw.reference_type || undefined,
+  referenceId: raw.reference_id || undefined,
 });
 
 type ProtoFundRequest = {
@@ -573,6 +636,9 @@ type ProtoBankItem = {
   donated_at?: string;
   checkin_id?: string;
   checkin_title?: string;
+  pending_request_count?: number;
+  requested_by_me?: boolean;
+  lock?: ProtoItemLock;
 };
 
 export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
@@ -586,6 +652,9 @@ export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
   quantity: raw.quantity ?? 1,
   checkinId: raw.checkin_id || undefined,
   checkinTitle: raw.checkin_title || undefined,
+  pendingRequestCount: raw.pending_request_count ?? 0,
+  requestedByMe: raw.requested_by_me ?? false,
+  lock: toItemLock(raw.lock),
 });
 
 type ProtoItemRequest = {
@@ -638,11 +707,13 @@ export const toGuildContributions = (
           status: 'completed',
           note: b.note,
           checkinId: b.checkinId,
+          href: b.checkinId ? `/dashboard/attendance/${b.checkinId}` : undefined,
         }
       : {
           id: `c-${b.id}`,
-          type: 'contribute',
+          type: contributionType(b.kind),
           amount: b.amount,
+          href: contributionReferenceHref(b),
           member: b.username,
           memberAvatar: b.avatarUrl,
           date: b.createdAt.slice(0, 10),
@@ -860,4 +931,30 @@ export const toUserPreferences = (raw: ProtoUserPreferences): UserPreferences =>
     checkinReminders: raw.notifications?.checkin_reminders ?? false,
   },
   updatedAt: raw.updated_at ? ts(raw.updated_at) : undefined,
+});
+
+type ProtoItemHistoryEvent = {
+  id?: string;
+  kind?: string;
+  source?: string;
+  actor_id?: string;
+  actor_name?: string;
+  subject_id?: string;
+  subject_name?: string;
+  reference_id?: string;
+  reference_label?: string;
+  created_at?: string;
+};
+
+export const toItemHistoryEvent = (raw: ProtoItemHistoryEvent): ItemHistoryEvent => ({
+  id: raw.id ?? '',
+  kind: (raw.kind ?? 'received') as ItemHistoryKind,
+  source: raw.source ?? '',
+  actorId: raw.actor_id || undefined,
+  actorName: raw.actor_name ?? '',
+  subjectId: raw.subject_id || undefined,
+  subjectName: raw.subject_name ?? '',
+  referenceId: raw.reference_id || undefined,
+  referenceLabel: raw.reference_label ?? '',
+  createdAt: ts(raw.created_at),
 });

@@ -28,3 +28,42 @@ export interface Item {
   rarity: ItemRarity;
   imageUrl?: string;
 }
+
+export interface ItemSourceRef {
+  backpackItemId?: string;
+  bankItemId?: string;
+}
+
+export interface ItemLock {
+  type: 'auction' | 'lottery';
+  id: string;
+}
+
+export type ItemHistoryKind =
+  | 'looted'
+  | 'donated'
+  | 'requested'
+  | 'request_approved'
+  | 'request_rejected'
+  | 'received'
+  | 'auction_listed'
+  | 'lottery_listed'
+  | 'returned'
+  | 'withdrawn'
+  | 'retracted'
+  | 'withdrawal_requested'
+  | 'withdrawal_cancelled'
+  | 'delivered';
+
+export interface ItemHistoryEvent {
+  id: string;
+  kind: ItemHistoryKind;
+  source: string;
+  actorId?: string;
+  actorName: string;
+  subjectId?: string;
+  subjectName: string;
+  referenceId?: string;
+  referenceLabel: string;
+  createdAt: string;
+}

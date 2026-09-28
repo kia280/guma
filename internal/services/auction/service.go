@@ -16,6 +16,7 @@ import (
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/inventory"
 )
 
 // AuctionItem is the domain model for an auction.
@@ -74,6 +75,7 @@ type CreateParams struct {
 	DurationHours   int32
 	IsBlind         bool
 	Status          string
+	Source          inventory.Ref
 }
 
 // BidHistoryResult is returned by GetBidHistory.
@@ -177,6 +179,34 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*AuctionItem, err
 		return nil, fmt.Errorf("%w: seller", errs.ErrInvalidArgument)
 	}
 
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	if p.Source.BankItemID != "" {
+		if err := s.requireRole(ctx, guildID, sellerID, "owner", "admin"); err != nil {
+			return nil, err
+		}
+	}
+	auctionID := uuid.New()
+	locked, err := inventory.Lock(ctx, qtx, guildID, sellerID, p.Source,
+		inventory.Holder{Type: inventory.HolderAuction, ID: auctionID}, "Listed in an auction")
+	if err != nil {
+		return nil, err
+	}
+	var sourceType string
+	var sourceItemID *uuid.UUID
+	if locked != nil {
+		p.Item = locked.Item
+		sourceType, sourceItemID = locked.SourceType, &locked.ItemID
+	}
+	if p.Item.Name == "" {
+		return nil, fmt.Errorf("%w: item name is required", errs.ErrInvalidArgument)
+	}
+
 	itemJSON, err := json.Marshal(p.Item)
 	if err != nil {
 		return nil, fmt.Errorf("%w: marshal item: %v", errs.ErrInternal, err)
@@ -193,13 +223,17 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*AuctionItem, err
 	}
 	endTime := startTime.Add(time.Duration(p.DurationHours) * time.Hour)
 
-	row, err := s.q.CreateAuction(ctx, db.CreateAuctionParams{
-		GuildID: guildID, SellerID: sellerID, Item: itemJSON,
+	row, err := qtx.CreateAuction(ctx, db.CreateAuctionParams{
+		ID: auctionID, GuildID: guildID, SellerID: sellerID, Item: itemJSON,
 		StartingBid: p.StartingBid, MinBidIncrement: p.MinBidIncrement,
 		StartTime: startTime, EndTime: endTime, Status: status, IsBlind: p.IsBlind,
+		SourceType: sourceType, SourceItemID: sourceItemID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: create auction: %v", errs.ErrInternal, err)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	a := toAuctionItem(row)
 	s.logger.Info().Str("auction_id", a.ID).Str("guild_id", p.GuildID).Msg("auction created")
@@ -252,10 +286,15 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: bidder wallet", errs.ErrNotFound)
 	}
-	if bidderBalance < amount {
+	isRaisingOwnBid := info.CurrentBidderID != nil && *info.CurrentBidderID == bidderID
+	charge, description := amount, "Auction bid placed"
+	if isRaisingOwnBid {
+		charge, description = amount-info.CurrentBid, "Auction bid raised"
+	}
+	if bidderBalance < charge {
 		return nil, nil, fmt.Errorf("%w: insufficient funds", errs.ErrFailedPrecondition)
 	}
-	newBidderBalance := bidderBalance - amount
+	newBidderBalance := bidderBalance - charge
 	if err := qtx.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{
 		Balance: newBidderBalance, UserID: bidderID, GuildID: guildID,
 	}); err != nil {
@@ -263,8 +302,8 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 	}
 	if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
 		UserID: bidderID, GuildID: guildID, Type: "AUCTION_BID",
-		Amount: -amount, BalanceAfter: newBidderBalance,
-		Description: "Auction bid placed", ReferenceID: auctionIDStr, ReferenceType: "auction",
+		Amount: -charge, BalanceAfter: newBidderBalance,
+		Description: description, ReferenceID: auctionIDStr, ReferenceType: "auction",
 	}); err != nil {
 		return nil, nil, fmt.Errorf("%w: record bid transaction: %v", errs.ErrInternal, err)
 	}
@@ -374,9 +413,19 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, auctionIDStr, userIDSt
 		return nil, err
 	}
 
-	info, err := s.q.GetAuctionCancelInfo(ctx, db.GetAuctionCancelInfoParams{ID: auctionID, GuildID: guildID})
+	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	info, err := qtx.LockAuctionForCancel(ctx, db.LockAuctionForCancelParams{ID: auctionID, GuildID: guildID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
+		}
+		return nil, fmt.Errorf("%w: load auction: %v", errs.ErrInternal, err)
 	}
 	if info.Status == "ENDED" || info.Status == "CANCELLED" {
 		return nil, fmt.Errorf("%w: auction already finished", errs.ErrFailedPrecondition)
@@ -384,22 +433,33 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, auctionIDStr, userIDSt
 
 	if info.CurrentBidderID != nil && info.CurrentBid > 0 {
 		refundee := *info.CurrentBidderID
-		_ = s.q.EnsureWallet(ctx, db.EnsureWalletParams{UserID: refundee, GuildID: guildID})
-		if bal, err := s.q.GetWalletBalanceForUpdate(ctx, db.GetWalletBalanceForUpdateParams{UserID: refundee, GuildID: guildID}); err == nil {
-			newBal := bal + info.CurrentBid
-			_ = s.q.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{Balance: newBal, UserID: refundee, GuildID: guildID})
-			_, _ = s.q.InsertTransaction(ctx, db.InsertTransactionParams{
-				UserID: refundee, GuildID: guildID, Type: "AUCTION_BID",
-				Amount: info.CurrentBid, BalanceAfter: newBal,
-				Description: "Auction cancelled refund", ReferenceID: auctionIDStr, ReferenceType: "auction",
-			})
+		if err := qtx.EnsureWallet(ctx, db.EnsureWalletParams{UserID: refundee, GuildID: guildID}); err != nil {
+			return nil, fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
+		}
+		newBal, err := qtx.CreditWallet(ctx, db.CreditWalletParams{Amount: info.CurrentBid, UserID: refundee, GuildID: guildID})
+		if err != nil {
+			return nil, fmt.Errorf("%w: refund bidder: %v", errs.ErrInternal, err)
+		}
+		if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
+			UserID: refundee, GuildID: guildID, Type: "AUCTION_BID",
+			Amount: info.CurrentBid, BalanceAfter: newBal,
+			Description: "Auction cancelled refund", ReferenceID: auctionIDStr, ReferenceType: "auction",
+		}); err != nil {
+			return nil, fmt.Errorf("%w: record refund: %v", errs.ErrInternal, err)
 		}
 	}
 
-	if err := s.q.UpdateAuctionStatus(ctx, db.UpdateAuctionStatusParams{
+	if err := inventory.Release(ctx, qtx, info.SourceType.String, info.SourceItemID, auctionHolder(auctionID)); err != nil {
+		return nil, err
+	}
+
+	if err := qtx.UpdateAuctionStatus(ctx, db.UpdateAuctionStatusParams{
 		Status: "CANCELLED", ID: auctionID,
 	}); err != nil {
 		return nil, fmt.Errorf("%w: cancel auction: %v", errs.ErrInternal, err)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	return s.Get(ctx, guildIDStr, auctionIDStr)
 }

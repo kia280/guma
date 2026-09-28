@@ -41,23 +41,26 @@ type TopContributor struct {
 }
 
 const (
-	ContributionKindGold        = "gold"
-	ContributionKindCheckinLoot = "checkin_loot"
+	ContributionKindGold            = "gold"
+	ContributionKindCheckinLoot     = "checkin_loot"
+	ContributionKindAuctionProceeds = "auction_proceeds"
 )
 
 // BankContribution is the domain model for a bank contribution.
 type BankContribution struct {
-	ID        string
-	GuildID   string
-	UserID    string
-	Username  string
-	AvatarURL string
-	Amount    int64
-	Note      string
-	CreatedAt time.Time
-	Kind      string
-	Items     []models.Item
-	CheckinID string
+	ID            string
+	GuildID       string
+	UserID        string
+	Username      string
+	AvatarURL     string
+	Amount        int64
+	Note          string
+	CreatedAt     time.Time
+	Kind          string
+	Items         []models.Item
+	CheckinID     string
+	ReferenceType string
+	ReferenceID   string
 }
 
 // FundRequest is the domain model for a fund request.
@@ -78,16 +81,19 @@ type FundRequest struct {
 
 // BankItem is the domain model for an item in the guild bank.
 type BankItem struct {
-	ID           string
-	GuildID      string
-	DonorID      string
-	DonorName    string
-	Item         models.Item
-	Quantity     int32
-	Note         string
-	DonatedAt    time.Time
-	CheckinID    string
-	CheckinTitle string
+	ID                  string
+	GuildID             string
+	DonorID             string
+	DonorName           string
+	Item                models.Item
+	Quantity            int32
+	Note                string
+	DonatedAt           time.Time
+	CheckinID           string
+	CheckinTitle        string
+	PendingRequestCount int32
+	RequestedByMe       bool
+	Lock                *models.ItemLock
 }
 
 // ItemRequest is the domain model for an item request.
@@ -161,11 +167,13 @@ type ListContributionsResult struct {
 
 // ListBankItemsParams holds inputs for ListBankItems.
 type ListBankItemsParams struct {
-	GuildID  string
-	Category string
-	Rarity   string
-	PageSize int
-	Offset   int
+	GuildID   string
+	ViewerID  string
+	CheckinID string
+	Category  string
+	Rarity    string
+	PageSize  int
+	Offset    int
 }
 
 // ListBankItemsResult is returned by ListBankItems.
@@ -488,7 +496,10 @@ func (s *Service) ListContributions(ctx context.Context, p ListContributionsPara
 		c := &BankContribution{
 			ID: r.ID.String(), GuildID: r.GuildID.String(), UserID: r.UserID.String(),
 			Username: r.Username, AvatarURL: r.AvatarUrl, Amount: r.Amount, Note: r.Note, CreatedAt: r.CreatedAt,
-			Kind: r.Kind, Items: []models.Item{},
+			Kind: r.Kind, Items: []models.Item{}, ReferenceType: r.ReferenceType,
+		}
+		if r.ReferenceID != nil {
+			c.ReferenceID = r.ReferenceID.String()
 		}
 		if len(r.Items) > 0 {
 			_ = json.Unmarshal(r.Items, &c.Items)
@@ -545,7 +556,7 @@ func (s *Service) DonateItem(ctx context.Context, guildIDStr, userIDStr, backpac
 	}
 
 	r, err := qtx.InsertBankItem(ctx, db.InsertBankItemParams{
-		GuildID: guildID, DonorID: userID, DonorName: donorName, Item: itemJSON, Note: note,
+		ID: backpackItemID, GuildID: guildID, DonorID: userID, DonorName: donorName, Item: itemJSON, Note: note,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: insert bank item: %v", errs.ErrInternal, err)
@@ -574,10 +585,15 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
 	}
+	viewerID, err := uuid.Parse(p.ViewerID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
 
 	rows, err := s.q.ListBankItems(ctx, db.ListBankItemsParams{
 		GuildID: guildID, CategoryFilter: p.Category, RarityFilter: p.Rarity,
-		PageSize: int32(pageSize), PageOffset: int32(p.Offset),
+		PageSize: int32(pageSize), PageOffset: int32(p.Offset), ViewerID: viewerID,
+		CheckinFilter: p.CheckinID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: list bank items: %v", errs.ErrInternal, err)
@@ -589,6 +605,8 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 			ID: r.ID.String(), GuildID: r.GuildID.String(), DonorID: r.DonorID.String(),
 			DonorName: r.DonorName, Quantity: r.Quantity,
 			Note: r.Note, DonatedAt: r.DonatedAt, CheckinTitle: r.CheckinTitle,
+			PendingRequestCount: r.PendingRequestCount, RequestedByMe: r.RequestedByMe,
+			Lock: models.NewItemLock(r.LockedByType, r.LockedByID),
 		}
 		if r.CheckinID != nil {
 			bi.CheckinID = r.CheckinID.String()
@@ -601,6 +619,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 
 	total, _ := s.q.CountBankItems(ctx, db.CountBankItemsParams{
 		GuildID: guildID, CategoryFilter: p.Category, RarityFilter: p.Rarity,
+		CheckinFilter: p.CheckinID,
 	})
 
 	nextOffset := 0
@@ -642,6 +661,9 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 		var pgErr *pgconn.PgError
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
+			if exists, _ := s.q.BankItemExists(ctx, db.BankItemExistsParams{ID: bankItemID, GuildID: guildID}); exists {
+				return nil, fmt.Errorf("%w: bank item is in an auction or lottery", errs.ErrFailedPrecondition)
+			}
 			return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
 		case errors.As(err, &pgErr) && pgErr.Code == "23505":
 			return nil, fmt.Errorf("%w: a pending request for this item already exists", errs.ErrAlreadyExists)
@@ -690,6 +712,14 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 		return nil, err
 	}
 
+	r, err := qtx.UpdateItemRequestStatus(ctx, db.UpdateItemRequestStatusParams{
+		Status: status, ReviewerID: &reviewerID, ReviewNote: note,
+		ID: requestID, GuildID: guildID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: update item request: %v", errs.ErrInternal, err)
+	}
+
 	if status == StatusApproved {
 		if pending.BankItemID == nil {
 			return nil, fmt.Errorf("%w: bank item is no longer available", errs.ErrFailedPrecondition)
@@ -712,18 +742,10 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 		}
 
 		if err := qtx.InsertBackpackItemFromRequest(ctx, db.InsertBackpackItemFromRequestParams{
-			OwnerID: pending.RequesterID, GuildID: guildID, Item: itemJSON, SourceID: &requestID,
+			ID: *pending.BankItemID, OwnerID: pending.RequesterID, GuildID: guildID, Item: itemJSON, SourceID: &requestID,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: add to backpack: %v", errs.ErrInternal, err)
 		}
-	}
-
-	r, err := qtx.UpdateItemRequestStatus(ctx, db.UpdateItemRequestStatusParams{
-		Status: status, ReviewerID: &reviewerID, ReviewNote: note,
-		ID: requestID, GuildID: guildID,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("%w: update item request: %v", errs.ErrInternal, err)
 	}
 
 	if err := pgtx.Commit(ctx); err != nil {

@@ -798,6 +798,7 @@ type ListBankItemsRequest struct {
 	Rarity        string                 `protobuf:"bytes,3,opt,name=rarity,proto3" json:"rarity,omitempty"`
 	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	CheckinId     string                 `protobuf:"bytes,6,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -863,6 +864,13 @@ func (x *ListBankItemsRequest) GetPageSize() int32 {
 func (x *ListBankItemsRequest) GetPageToken() string {
 	if x != nil {
 		return x.PageToken
+	}
+	return ""
+}
+
+func (x *ListBankItemsRequest) GetCheckinId() string {
+	if x != nil {
+		return x.CheckinId
 	}
 	return ""
 }
@@ -1444,6 +1452,8 @@ type BankContribution struct {
 	Items         []*Item                `protobuf:"bytes,9,rep,name=items,proto3" json:"items,omitempty"`
 	CheckinId     string                 `protobuf:"bytes,10,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
 	AvatarUrl     string                 `protobuf:"bytes,11,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	ReferenceType string                 `protobuf:"bytes,12,opt,name=reference_type,json=referenceType,proto3" json:"reference_type,omitempty"`
+	ReferenceId   string                 `protobuf:"bytes,13,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1551,6 +1561,20 @@ func (x *BankContribution) GetCheckinId() string {
 func (x *BankContribution) GetAvatarUrl() string {
 	if x != nil {
 		return x.AvatarUrl
+	}
+	return ""
+}
+
+func (x *BankContribution) GetReferenceType() string {
+	if x != nil {
+		return x.ReferenceType
+	}
+	return ""
+}
+
+func (x *BankContribution) GetReferenceId() string {
+	if x != nil {
+		return x.ReferenceId
 	}
 	return ""
 }
@@ -1688,19 +1712,22 @@ func (x *FundRequest) GetRequesterAvatarUrl() string {
 }
 
 type BankItem struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	GuildId       string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	DonorId       string                 `protobuf:"bytes,3,opt,name=donor_id,json=donorId,proto3" json:"donor_id,omitempty"`
-	DonorName     string                 `protobuf:"bytes,4,opt,name=donor_name,json=donorName,proto3" json:"donor_name,omitempty"`
-	Item          *Item                  `protobuf:"bytes,5,opt,name=item,proto3" json:"item,omitempty"`
-	Quantity      int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	Note          string                 `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
-	DonatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=donated_at,json=donatedAt,proto3" json:"donated_at,omitempty"`
-	CheckinId     string                 `protobuf:"bytes,9,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
-	CheckinTitle  string                 `protobuf:"bytes,10,opt,name=checkin_title,json=checkinTitle,proto3" json:"checkin_title,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Id                  string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GuildId             string                 `protobuf:"bytes,2,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	DonorId             string                 `protobuf:"bytes,3,opt,name=donor_id,json=donorId,proto3" json:"donor_id,omitempty"`
+	DonorName           string                 `protobuf:"bytes,4,opt,name=donor_name,json=donorName,proto3" json:"donor_name,omitempty"`
+	Item                *Item                  `protobuf:"bytes,5,opt,name=item,proto3" json:"item,omitempty"`
+	Quantity            int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	Note                string                 `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
+	DonatedAt           *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=donated_at,json=donatedAt,proto3" json:"donated_at,omitempty"`
+	CheckinId           string                 `protobuf:"bytes,9,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
+	CheckinTitle        string                 `protobuf:"bytes,10,opt,name=checkin_title,json=checkinTitle,proto3" json:"checkin_title,omitempty"`
+	PendingRequestCount int32                  `protobuf:"varint,11,opt,name=pending_request_count,json=pendingRequestCount,proto3" json:"pending_request_count,omitempty"`
+	RequestedByMe       bool                   `protobuf:"varint,12,opt,name=requested_by_me,json=requestedByMe,proto3" json:"requested_by_me,omitempty"`
+	Lock                *ItemLock              `protobuf:"bytes,20,opt,name=lock,proto3" json:"lock,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *BankItem) Reset() {
@@ -1801,6 +1828,27 @@ func (x *BankItem) GetCheckinTitle() string {
 		return x.CheckinTitle
 	}
 	return ""
+}
+
+func (x *BankItem) GetPendingRequestCount() int32 {
+	if x != nil {
+		return x.PendingRequestCount
+	}
+	return 0
+}
+
+func (x *BankItem) GetRequestedByMe() bool {
+	if x != nil {
+		return x.RequestedByMe
+	}
+	return false
+}
+
+func (x *BankItem) GetLock() *ItemLock {
+	if x != nil {
+		return x.Lock
+	}
+	return nil
 }
 
 type ItemRequest struct {
@@ -1943,6 +1991,218 @@ func (x *ItemRequest) GetRequesterAvatarUrl() string {
 	return ""
 }
 
+type GetItemHistoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	ItemId        string                 `protobuf:"bytes,2,opt,name=item_id,json=itemId,proto3" json:"item_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetItemHistoryRequest) Reset() {
+	*x = GetItemHistoryRequest{}
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetItemHistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetItemHistoryRequest) ProtoMessage() {}
+
+func (x *GetItemHistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetItemHistoryRequest.ProtoReflect.Descriptor instead.
+func (*GetItemHistoryRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *GetItemHistoryRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *GetItemHistoryRequest) GetItemId() string {
+	if x != nil {
+		return x.ItemId
+	}
+	return ""
+}
+
+type ItemHistoryEvent struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Kind           string                 `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Source         string                 `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
+	ActorId        string                 `protobuf:"bytes,4,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
+	ActorName      string                 `protobuf:"bytes,5,opt,name=actor_name,json=actorName,proto3" json:"actor_name,omitempty"`
+	SubjectId      string                 `protobuf:"bytes,6,opt,name=subject_id,json=subjectId,proto3" json:"subject_id,omitempty"`
+	SubjectName    string                 `protobuf:"bytes,7,opt,name=subject_name,json=subjectName,proto3" json:"subject_name,omitempty"`
+	ReferenceId    string                 `protobuf:"bytes,8,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`
+	ReferenceLabel string                 `protobuf:"bytes,9,opt,name=reference_label,json=referenceLabel,proto3" json:"reference_label,omitempty"`
+	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ItemHistoryEvent) Reset() {
+	*x = ItemHistoryEvent{}
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ItemHistoryEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ItemHistoryEvent) ProtoMessage() {}
+
+func (x *ItemHistoryEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ItemHistoryEvent.ProtoReflect.Descriptor instead.
+func (*ItemHistoryEvent) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *ItemHistoryEvent) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ItemHistoryEvent) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *ItemHistoryEvent) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *ItemHistoryEvent) GetActorId() string {
+	if x != nil {
+		return x.ActorId
+	}
+	return ""
+}
+
+func (x *ItemHistoryEvent) GetActorName() string {
+	if x != nil {
+		return x.ActorName
+	}
+	return ""
+}
+
+func (x *ItemHistoryEvent) GetSubjectId() string {
+	if x != nil {
+		return x.SubjectId
+	}
+	return ""
+}
+
+func (x *ItemHistoryEvent) GetSubjectName() string {
+	if x != nil {
+		return x.SubjectName
+	}
+	return ""
+}
+
+func (x *ItemHistoryEvent) GetReferenceId() string {
+	if x != nil {
+		return x.ReferenceId
+	}
+	return ""
+}
+
+func (x *ItemHistoryEvent) GetReferenceLabel() string {
+	if x != nil {
+		return x.ReferenceLabel
+	}
+	return ""
+}
+
+func (x *ItemHistoryEvent) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+type GetItemHistoryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Events        []*ItemHistoryEvent    `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetItemHistoryResponse) Reset() {
+	*x = GetItemHistoryResponse{}
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetItemHistoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetItemHistoryResponse) ProtoMessage() {}
+
+func (x *GetItemHistoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetItemHistoryResponse.ProtoReflect.Descriptor instead.
+func (*GetItemHistoryResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *GetItemHistoryResponse) GetEvents() []*ItemHistoryEvent {
+	if x != nil {
+		return x.Events
+	}
+	return nil
+}
+
 var File_proto_guma_v1_bank_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_bank_proto_rawDesc = "" +
@@ -1999,14 +2259,16 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x10backpack_item_id\x18\x02 \x01(\tR\x0ebackpackItemId\x12\x12\n" +
 	"\x04note\x18\x03 \x01(\tR\x04note\"D\n" +
 	"\x12DonateItemResponse\x12.\n" +
-	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\xa1\x01\n" +
+	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\xc0\x01\n" +
 	"\x14ListBankItemsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1a\n" +
 	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x16\n" +
 	"\x06rarity\x18\x03 \x01(\tR\x06rarity\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x05 \x01(\tR\tpageToken\"\x89\x01\n" +
+	"page_token\x18\x05 \x01(\tR\tpageToken\x12\x1d\n" +
+	"\n" +
+	"checkin_id\x18\x06 \x01(\tR\tcheckinId\"\x89\x01\n" +
 	"\x15ListBankItemsResponse\x12'\n" +
 	"\x05items\x18\x01 \x03(\v2\x11.guma.v1.BankItemR\x05items\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -2053,7 +2315,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12+\n" +
-	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\xd0\x02\n" +
+	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\x9a\x03\n" +
 	"\x10BankContribution\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x17\n" +
@@ -2069,7 +2331,9 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"checkin_id\x18\n" +
 	" \x01(\tR\tcheckinId\x12\x1d\n" +
 	"\n" +
-	"avatar_url\x18\v \x01(\tR\tavatarUrl\"\xb6\x03\n" +
+	"avatar_url\x18\v \x01(\tR\tavatarUrl\x12%\n" +
+	"\x0ereference_type\x18\f \x01(\tR\rreferenceType\x12!\n" +
+	"\freference_id\x18\r \x01(\tR\vreferenceId\"\xb6\x03\n" +
 	"\vFundRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12!\n" +
@@ -2087,7 +2351,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
 	"\vreviewed_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"reviewedAt\x120\n" +
-	"\x14requester_avatar_url\x18\f \x01(\tR\x12requesterAvatarUrl\"\xc1\x02\n" +
+	"\x14requester_avatar_url\x18\f \x01(\tR\x12requesterAvatarUrl\"\xc4\x03\n" +
 	"\bBankItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x19\n" +
@@ -2102,7 +2366,10 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\n" +
 	"checkin_id\x18\t \x01(\tR\tcheckinId\x12#\n" +
 	"\rcheckin_title\x18\n" +
-	" \x01(\tR\fcheckinTitle\"\xe3\x03\n" +
+	" \x01(\tR\fcheckinTitle\x122\n" +
+	"\x15pending_request_count\x18\v \x01(\x05R\x13pendingRequestCount\x12&\n" +
+	"\x0frequested_by_me\x18\f \x01(\bR\rrequestedByMe\x12%\n" +
+	"\x04lock\x18\x14 \x01(\v2\x11.guma.v1.ItemLockR\x04lock\"\xe3\x03\n" +
 	"\vItemRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12 \n" +
@@ -2122,7 +2389,27 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\vreviewed_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"reviewedAt\x12!\n" +
 	"\x04item\x18\f \x01(\v2\r.guma.v1.ItemR\x04item\x120\n" +
-	"\x14requester_avatar_url\x18\r \x01(\tR\x12requesterAvatarUrl2\xcd\v\n" +
+	"\x14requester_avatar_url\x18\r \x01(\tR\x12requesterAvatarUrl\"K\n" +
+	"\x15GetItemHistoryRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
+	"\aitem_id\x18\x02 \x01(\tR\x06itemId\"\xd1\x02\n" +
+	"\x10ItemHistoryEvent\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04kind\x18\x02 \x01(\tR\x04kind\x12\x16\n" +
+	"\x06source\x18\x03 \x01(\tR\x06source\x12\x19\n" +
+	"\bactor_id\x18\x04 \x01(\tR\aactorId\x12\x1d\n" +
+	"\n" +
+	"actor_name\x18\x05 \x01(\tR\tactorName\x12\x1d\n" +
+	"\n" +
+	"subject_id\x18\x06 \x01(\tR\tsubjectId\x12!\n" +
+	"\fsubject_name\x18\a \x01(\tR\vsubjectName\x12!\n" +
+	"\freference_id\x18\b \x01(\tR\vreferenceId\x12'\n" +
+	"\x0freference_label\x18\t \x01(\tR\x0ereferenceLabel\x129\n" +
+	"\n" +
+	"created_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"K\n" +
+	"\x16GetItemHistoryResponse\x121\n" +
+	"\x06events\x18\x01 \x03(\v2\x19.guma.v1.ItemHistoryEventR\x06events2\xd8\f\n" +
 	"\vBankService\x12`\n" +
 	"\aGetBank\x12\x17.guma.v1.GetBankRequest\x1a\x18.guma.v1.GetBankResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/guilds/{guild_id}/bank\x12\x86\x01\n" +
 	"\x0fContributeFunds\x12\x1f.guma.v1.ContributeFundsRequest\x1a .guma.v1.ContributeFundsResponse\"0\x82\xd3\xe4\x93\x02*:\x01*\"%/v1/guilds/{guild_id}/bank/contribute\x12\x80\x01\n" +
@@ -2135,7 +2422,8 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\rListBankItems\x12\x1d.guma.v1.ListBankItemsRequest\x1a\x1e.guma.v1.ListBankItemsResponse\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/guilds/{guild_id}/bank/items\x12}\n" +
 	"\vRequestItem\x12\x1b.guma.v1.RequestItemRequest\x1a\x1c.guma.v1.RequestItemResponse\"3\x82\xd3\xe4\x93\x02-:\x01*\"(/v1/guilds/{guild_id}/bank/item-requests\x12\x9c\x01\n" +
 	"\x11ReviewItemRequest\x12!.guma.v1.ReviewItemRequestRequest\x1a\".guma.v1.ReviewItemRequestResponse\"@\x82\xd3\xe4\x93\x02::\x01*25/v1/guilds/{guild_id}/bank/item-requests/{request_id}\x12\x89\x01\n" +
-	"\x10ListItemRequests\x12 .guma.v1.ListItemRequestsRequest\x1a!.guma.v1.ListItemRequestsResponse\"0\x82\xd3\xe4\x93\x02*\x12(/v1/guilds/{guild_id}/bank/item-requestsB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
+	"\x10ListItemRequests\x12 .guma.v1.ListItemRequestsRequest\x1a!.guma.v1.ListItemRequestsResponse\"0\x82\xd3\xe4\x93\x02*\x12(/v1/guilds/{guild_id}/bank/item-requests\x12\x88\x01\n" +
+	"\x0eGetItemHistory\x12\x1e.guma.v1.GetItemHistoryRequest\x1a\x1f.guma.v1.GetItemHistoryResponse\"5\x82\xd3\xe4\x93\x02/\x12-/v1/guilds/{guild_id}/items/{item_id}/historyB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
 var (
 	file_proto_guma_v1_bank_proto_rawDescOnce sync.Once
@@ -2149,7 +2437,7 @@ func file_proto_guma_v1_bank_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_bank_proto_rawDescData
 }
 
-var file_proto_guma_v1_bank_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
+var file_proto_guma_v1_bank_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_proto_guma_v1_bank_proto_goTypes = []any{
 	(*GetBankRequest)(nil),            // 0: guma.v1.GetBankRequest
 	(*GetBankResponse)(nil),           // 1: guma.v1.GetBankResponse
@@ -2179,8 +2467,12 @@ var file_proto_guma_v1_bank_proto_goTypes = []any{
 	(*FundRequest)(nil),               // 25: guma.v1.FundRequest
 	(*BankItem)(nil),                  // 26: guma.v1.BankItem
 	(*ItemRequest)(nil),               // 27: guma.v1.ItemRequest
-	(*timestamppb.Timestamp)(nil),     // 28: google.protobuf.Timestamp
-	(*Item)(nil),                      // 29: guma.v1.Item
+	(*GetItemHistoryRequest)(nil),     // 28: guma.v1.GetItemHistoryRequest
+	(*ItemHistoryEvent)(nil),          // 29: guma.v1.ItemHistoryEvent
+	(*GetItemHistoryResponse)(nil),    // 30: guma.v1.GetItemHistoryResponse
+	(*timestamppb.Timestamp)(nil),     // 31: google.protobuf.Timestamp
+	(*Item)(nil),                      // 32: guma.v1.Item
+	(*ItemLock)(nil),                  // 33: guma.v1.ItemLock
 }
 var file_proto_guma_v1_bank_proto_depIdxs = []int32{
 	22, // 0: guma.v1.GetBankResponse.bank:type_name -> guma.v1.GuildBank
@@ -2196,44 +2488,49 @@ var file_proto_guma_v1_bank_proto_depIdxs = []int32{
 	27, // 10: guma.v1.ReviewItemRequestResponse.item_request:type_name -> guma.v1.ItemRequest
 	27, // 11: guma.v1.ListItemRequestsResponse.requests:type_name -> guma.v1.ItemRequest
 	23, // 12: guma.v1.GuildBank.top_contributors:type_name -> guma.v1.TopContributor
-	28, // 13: guma.v1.GuildBank.created_at:type_name -> google.protobuf.Timestamp
-	28, // 14: guma.v1.GuildBank.updated_at:type_name -> google.protobuf.Timestamp
-	28, // 15: guma.v1.BankContribution.created_at:type_name -> google.protobuf.Timestamp
-	29, // 16: guma.v1.BankContribution.items:type_name -> guma.v1.Item
-	28, // 17: guma.v1.FundRequest.created_at:type_name -> google.protobuf.Timestamp
-	28, // 18: guma.v1.FundRequest.reviewed_at:type_name -> google.protobuf.Timestamp
-	29, // 19: guma.v1.BankItem.item:type_name -> guma.v1.Item
-	28, // 20: guma.v1.BankItem.donated_at:type_name -> google.protobuf.Timestamp
-	28, // 21: guma.v1.ItemRequest.created_at:type_name -> google.protobuf.Timestamp
-	28, // 22: guma.v1.ItemRequest.reviewed_at:type_name -> google.protobuf.Timestamp
-	29, // 23: guma.v1.ItemRequest.item:type_name -> guma.v1.Item
-	0,  // 24: guma.v1.BankService.GetBank:input_type -> guma.v1.GetBankRequest
-	2,  // 25: guma.v1.BankService.ContributeFunds:input_type -> guma.v1.ContributeFundsRequest
-	4,  // 26: guma.v1.BankService.RequestFunds:input_type -> guma.v1.RequestFundsRequest
-	6,  // 27: guma.v1.BankService.ReviewFundRequest:input_type -> guma.v1.ReviewFundRequestRequest
-	8,  // 28: guma.v1.BankService.ListFundRequests:input_type -> guma.v1.ListFundRequestsRequest
-	10, // 29: guma.v1.BankService.ListContributions:input_type -> guma.v1.ListContributionsRequest
-	12, // 30: guma.v1.BankService.DonateItem:input_type -> guma.v1.DonateItemRequest
-	14, // 31: guma.v1.BankService.ListBankItems:input_type -> guma.v1.ListBankItemsRequest
-	16, // 32: guma.v1.BankService.RequestItem:input_type -> guma.v1.RequestItemRequest
-	18, // 33: guma.v1.BankService.ReviewItemRequest:input_type -> guma.v1.ReviewItemRequestRequest
-	20, // 34: guma.v1.BankService.ListItemRequests:input_type -> guma.v1.ListItemRequestsRequest
-	1,  // 35: guma.v1.BankService.GetBank:output_type -> guma.v1.GetBankResponse
-	3,  // 36: guma.v1.BankService.ContributeFunds:output_type -> guma.v1.ContributeFundsResponse
-	5,  // 37: guma.v1.BankService.RequestFunds:output_type -> guma.v1.RequestFundsResponse
-	7,  // 38: guma.v1.BankService.ReviewFundRequest:output_type -> guma.v1.ReviewFundRequestResponse
-	9,  // 39: guma.v1.BankService.ListFundRequests:output_type -> guma.v1.ListFundRequestsResponse
-	11, // 40: guma.v1.BankService.ListContributions:output_type -> guma.v1.ListContributionsResponse
-	13, // 41: guma.v1.BankService.DonateItem:output_type -> guma.v1.DonateItemResponse
-	15, // 42: guma.v1.BankService.ListBankItems:output_type -> guma.v1.ListBankItemsResponse
-	17, // 43: guma.v1.BankService.RequestItem:output_type -> guma.v1.RequestItemResponse
-	19, // 44: guma.v1.BankService.ReviewItemRequest:output_type -> guma.v1.ReviewItemRequestResponse
-	21, // 45: guma.v1.BankService.ListItemRequests:output_type -> guma.v1.ListItemRequestsResponse
-	35, // [35:46] is the sub-list for method output_type
-	24, // [24:35] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	31, // 13: guma.v1.GuildBank.created_at:type_name -> google.protobuf.Timestamp
+	31, // 14: guma.v1.GuildBank.updated_at:type_name -> google.protobuf.Timestamp
+	31, // 15: guma.v1.BankContribution.created_at:type_name -> google.protobuf.Timestamp
+	32, // 16: guma.v1.BankContribution.items:type_name -> guma.v1.Item
+	31, // 17: guma.v1.FundRequest.created_at:type_name -> google.protobuf.Timestamp
+	31, // 18: guma.v1.FundRequest.reviewed_at:type_name -> google.protobuf.Timestamp
+	32, // 19: guma.v1.BankItem.item:type_name -> guma.v1.Item
+	31, // 20: guma.v1.BankItem.donated_at:type_name -> google.protobuf.Timestamp
+	33, // 21: guma.v1.BankItem.lock:type_name -> guma.v1.ItemLock
+	31, // 22: guma.v1.ItemRequest.created_at:type_name -> google.protobuf.Timestamp
+	31, // 23: guma.v1.ItemRequest.reviewed_at:type_name -> google.protobuf.Timestamp
+	32, // 24: guma.v1.ItemRequest.item:type_name -> guma.v1.Item
+	31, // 25: guma.v1.ItemHistoryEvent.created_at:type_name -> google.protobuf.Timestamp
+	29, // 26: guma.v1.GetItemHistoryResponse.events:type_name -> guma.v1.ItemHistoryEvent
+	0,  // 27: guma.v1.BankService.GetBank:input_type -> guma.v1.GetBankRequest
+	2,  // 28: guma.v1.BankService.ContributeFunds:input_type -> guma.v1.ContributeFundsRequest
+	4,  // 29: guma.v1.BankService.RequestFunds:input_type -> guma.v1.RequestFundsRequest
+	6,  // 30: guma.v1.BankService.ReviewFundRequest:input_type -> guma.v1.ReviewFundRequestRequest
+	8,  // 31: guma.v1.BankService.ListFundRequests:input_type -> guma.v1.ListFundRequestsRequest
+	10, // 32: guma.v1.BankService.ListContributions:input_type -> guma.v1.ListContributionsRequest
+	12, // 33: guma.v1.BankService.DonateItem:input_type -> guma.v1.DonateItemRequest
+	14, // 34: guma.v1.BankService.ListBankItems:input_type -> guma.v1.ListBankItemsRequest
+	16, // 35: guma.v1.BankService.RequestItem:input_type -> guma.v1.RequestItemRequest
+	18, // 36: guma.v1.BankService.ReviewItemRequest:input_type -> guma.v1.ReviewItemRequestRequest
+	20, // 37: guma.v1.BankService.ListItemRequests:input_type -> guma.v1.ListItemRequestsRequest
+	28, // 38: guma.v1.BankService.GetItemHistory:input_type -> guma.v1.GetItemHistoryRequest
+	1,  // 39: guma.v1.BankService.GetBank:output_type -> guma.v1.GetBankResponse
+	3,  // 40: guma.v1.BankService.ContributeFunds:output_type -> guma.v1.ContributeFundsResponse
+	5,  // 41: guma.v1.BankService.RequestFunds:output_type -> guma.v1.RequestFundsResponse
+	7,  // 42: guma.v1.BankService.ReviewFundRequest:output_type -> guma.v1.ReviewFundRequestResponse
+	9,  // 43: guma.v1.BankService.ListFundRequests:output_type -> guma.v1.ListFundRequestsResponse
+	11, // 44: guma.v1.BankService.ListContributions:output_type -> guma.v1.ListContributionsResponse
+	13, // 45: guma.v1.BankService.DonateItem:output_type -> guma.v1.DonateItemResponse
+	15, // 46: guma.v1.BankService.ListBankItems:output_type -> guma.v1.ListBankItemsResponse
+	17, // 47: guma.v1.BankService.RequestItem:output_type -> guma.v1.RequestItemResponse
+	19, // 48: guma.v1.BankService.ReviewItemRequest:output_type -> guma.v1.ReviewItemRequestResponse
+	21, // 49: guma.v1.BankService.ListItemRequests:output_type -> guma.v1.ListItemRequestsResponse
+	30, // 50: guma.v1.BankService.GetItemHistory:output_type -> guma.v1.GetItemHistoryResponse
+	39, // [39:51] is the sub-list for method output_type
+	27, // [27:39] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_bank_proto_init() }
@@ -2248,7 +2545,7 @@ func file_proto_guma_v1_bank_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_bank_proto_rawDesc), len(file_proto_guma_v1_bank_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   28,
+			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

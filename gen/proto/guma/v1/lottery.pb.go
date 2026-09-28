@@ -1089,6 +1089,7 @@ type LotteryPrize struct {
 	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
 	Amount        int64                  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount,omitempty"` // Currency prize; 0 if item prize
 	Item          *Item                  `protobuf:"bytes,4,opt,name=item,proto3" json:"item,omitempty"`      // Item prize; unset if currency prize
+	Source        *ItemSourceRef         `protobuf:"bytes,5,opt,name=source,proto3" json:"source,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1147,6 +1148,13 @@ func (x *LotteryPrize) GetAmount() int64 {
 func (x *LotteryPrize) GetItem() *Item {
 	if x != nil {
 		return x.Item
+	}
+	return nil
+}
+
+func (x *LotteryPrize) GetSource() *ItemSourceRef {
+	if x != nil {
+		return x.Source
 	}
 	return nil
 }
@@ -1428,12 +1436,13 @@ const file_proto_guma_v1_lottery_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x7f\n" +
+	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xaf\x01\n" +
 	"\fLotteryPrize\x12\x12\n" +
 	"\x04rank\x18\x01 \x01(\x05R\x04rank\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x16\n" +
 	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12!\n" +
-	"\x04item\x18\x04 \x01(\v2\r.guma.v1.ItemR\x04item\"\xbb\x01\n" +
+	"\x04item\x18\x04 \x01(\v2\r.guma.v1.ItemR\x04item\x12.\n" +
+	"\x06source\x18\x05 \x01(\v2\x16.guma.v1.ItemSourceRefR\x06source\"\xbb\x01\n" +
 	"\rLotteryTicket\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1500,6 +1509,7 @@ var file_proto_guma_v1_lottery_proto_goTypes = []any{
 	(*LotteryWinner)(nil),             // 19: guma.v1.LotteryWinner
 	(*timestamppb.Timestamp)(nil),     // 20: google.protobuf.Timestamp
 	(*Item)(nil),                      // 21: guma.v1.Item
+	(*ItemSourceRef)(nil),             // 22: guma.v1.ItemSourceRef
 }
 var file_proto_guma_v1_lottery_proto_depIdxs = []int32{
 	16, // 0: guma.v1.ListLotteriesResponse.lotteries:type_name -> guma.v1.Lottery
@@ -1517,28 +1527,29 @@ var file_proto_guma_v1_lottery_proto_depIdxs = []int32{
 	20, // 12: guma.v1.Lottery.created_at:type_name -> google.protobuf.Timestamp
 	20, // 13: guma.v1.Lottery.updated_at:type_name -> google.protobuf.Timestamp
 	21, // 14: guma.v1.LotteryPrize.item:type_name -> guma.v1.Item
-	20, // 15: guma.v1.LotteryTicket.purchased_at:type_name -> google.protobuf.Timestamp
-	0,  // 16: guma.v1.LotteryService.ListLotteries:input_type -> guma.v1.ListLotteriesRequest
-	2,  // 17: guma.v1.LotteryService.GetLottery:input_type -> guma.v1.GetLotteryRequest
-	4,  // 18: guma.v1.LotteryService.CreateLottery:input_type -> guma.v1.CreateLotteryRequest
-	6,  // 19: guma.v1.LotteryService.PurchaseTickets:input_type -> guma.v1.PurchaseTicketsRequest
-	8,  // 20: guma.v1.LotteryService.GetLotteryWinners:input_type -> guma.v1.GetLotteryWinnersRequest
-	12, // 21: guma.v1.LotteryService.UpdateLottery:input_type -> guma.v1.UpdateLotteryRequest
-	10, // 22: guma.v1.LotteryService.DrawLottery:input_type -> guma.v1.DrawLotteryRequest
-	14, // 23: guma.v1.LotteryService.ListMyTickets:input_type -> guma.v1.ListMyTicketsRequest
-	1,  // 24: guma.v1.LotteryService.ListLotteries:output_type -> guma.v1.ListLotteriesResponse
-	3,  // 25: guma.v1.LotteryService.GetLottery:output_type -> guma.v1.GetLotteryResponse
-	5,  // 26: guma.v1.LotteryService.CreateLottery:output_type -> guma.v1.CreateLotteryResponse
-	7,  // 27: guma.v1.LotteryService.PurchaseTickets:output_type -> guma.v1.PurchaseTicketsResponse
-	9,  // 28: guma.v1.LotteryService.GetLotteryWinners:output_type -> guma.v1.GetLotteryWinnersResponse
-	13, // 29: guma.v1.LotteryService.UpdateLottery:output_type -> guma.v1.UpdateLotteryResponse
-	11, // 30: guma.v1.LotteryService.DrawLottery:output_type -> guma.v1.DrawLotteryResponse
-	15, // 31: guma.v1.LotteryService.ListMyTickets:output_type -> guma.v1.ListMyTicketsResponse
-	24, // [24:32] is the sub-list for method output_type
-	16, // [16:24] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	22, // 15: guma.v1.LotteryPrize.source:type_name -> guma.v1.ItemSourceRef
+	20, // 16: guma.v1.LotteryTicket.purchased_at:type_name -> google.protobuf.Timestamp
+	0,  // 17: guma.v1.LotteryService.ListLotteries:input_type -> guma.v1.ListLotteriesRequest
+	2,  // 18: guma.v1.LotteryService.GetLottery:input_type -> guma.v1.GetLotteryRequest
+	4,  // 19: guma.v1.LotteryService.CreateLottery:input_type -> guma.v1.CreateLotteryRequest
+	6,  // 20: guma.v1.LotteryService.PurchaseTickets:input_type -> guma.v1.PurchaseTicketsRequest
+	8,  // 21: guma.v1.LotteryService.GetLotteryWinners:input_type -> guma.v1.GetLotteryWinnersRequest
+	12, // 22: guma.v1.LotteryService.UpdateLottery:input_type -> guma.v1.UpdateLotteryRequest
+	10, // 23: guma.v1.LotteryService.DrawLottery:input_type -> guma.v1.DrawLotteryRequest
+	14, // 24: guma.v1.LotteryService.ListMyTickets:input_type -> guma.v1.ListMyTicketsRequest
+	1,  // 25: guma.v1.LotteryService.ListLotteries:output_type -> guma.v1.ListLotteriesResponse
+	3,  // 26: guma.v1.LotteryService.GetLottery:output_type -> guma.v1.GetLotteryResponse
+	5,  // 27: guma.v1.LotteryService.CreateLottery:output_type -> guma.v1.CreateLotteryResponse
+	7,  // 28: guma.v1.LotteryService.PurchaseTickets:output_type -> guma.v1.PurchaseTicketsResponse
+	9,  // 29: guma.v1.LotteryService.GetLotteryWinners:output_type -> guma.v1.GetLotteryWinnersResponse
+	13, // 30: guma.v1.LotteryService.UpdateLottery:output_type -> guma.v1.UpdateLotteryResponse
+	11, // 31: guma.v1.LotteryService.DrawLottery:output_type -> guma.v1.DrawLotteryResponse
+	15, // 32: guma.v1.LotteryService.ListMyTickets:output_type -> guma.v1.ListMyTicketsResponse
+	25, // [25:33] is the sub-list for method output_type
+	17, // [17:25] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_lottery_proto_init() }

@@ -29,16 +29,23 @@ SELECT COUNT(*) FROM bank_items
 WHERE guild_id = $1
   AND ($2::text = '' OR item->>'category' = $2::text)
   AND ($3::text   = '' OR item->>'rarity'   = $3::text)
+  AND ($4::text  = '' OR checkin_id::text  = $4::text)
 `
 
 type CountBankItemsParams struct {
 	GuildID        uuid.UUID
 	CategoryFilter string
 	RarityFilter   string
+	CheckinFilter  string
 }
 
 func (q *Queries) CountBankItems(ctx context.Context, arg CountBankItemsParams) (int64, error) {
-	row := q.db.QueryRow(ctx, countBankItems, arg.GuildID, arg.CategoryFilter, arg.RarityFilter)
+	row := q.db.QueryRow(ctx, countBankItems,
+		arg.GuildID,
+		arg.CategoryFilter,
+		arg.RarityFilter,
+		arg.CheckinFilter,
+	)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -149,7 +156,8 @@ func (q *Queries) DeductWalletIfSufficient(ctx context.Context, arg DeductWallet
 }
 
 const deleteBackpackItemReturningItem = `-- name: DeleteBackpackItemReturningItem :one
-DELETE FROM backpack_items WHERE id = $1 AND owner_id = $2 AND guild_id = $3
+DELETE FROM backpack_items
+WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND locked_by_type IS NULL AND delivery_requested_at IS NULL
 RETURNING item
 `
 
@@ -167,7 +175,7 @@ func (q *Queries) DeleteBackpackItemReturningItem(ctx context.Context, arg Delet
 }
 
 const deleteBankItemReturningItem = `-- name: DeleteBankItemReturningItem :one
-DELETE FROM bank_items WHERE id = $1 AND guild_id = $2
+DELETE FROM bank_items WHERE id = $1 AND guild_id = $2 AND locked_by_type IS NULL
 RETURNING item
 `
 
@@ -225,11 +233,12 @@ func (q *Queries) GetUserDisplayName(ctx context.Context, id uuid.UUID) (string,
 }
 
 const insertBackpackItemFromRequest = `-- name: InsertBackpackItemFromRequest :exec
-INSERT INTO backpack_items (owner_id, guild_id, item, source, source_id)
-VALUES ($1, $2, $3::jsonb, 'bank_item_request', $4)
+INSERT INTO backpack_items (id, owner_id, guild_id, item, source, source_id)
+VALUES ($1, $2, $3, $4::jsonb, 'bank_item_request', $5)
 `
 
 type InsertBackpackItemFromRequestParams struct {
+	ID       uuid.UUID
 	OwnerID  uuid.UUID
 	GuildID  uuid.UUID
 	Item     []byte
@@ -238,6 +247,7 @@ type InsertBackpackItemFromRequestParams struct {
 
 func (q *Queries) InsertBackpackItemFromRequest(ctx context.Context, arg InsertBackpackItemFromRequestParams) error {
 	_, err := q.db.Exec(ctx, insertBackpackItemFromRequest,
+		arg.ID,
 		arg.OwnerID,
 		arg.GuildID,
 		arg.Item,
@@ -279,14 +289,16 @@ func (q *Queries) InsertBankContribution(ctx context.Context, arg InsertBankCont
 }
 
 const insertBankItem = `-- name: InsertBankItem :one
-INSERT INTO bank_items (guild_id, donor_id, donor_name, item, note)
-VALUES ($1, $2, $3::text, $4::jsonb, NULLIF($5::text, ''))
+INSERT INTO bank_items (id, guild_id, donor_id, donor_name, item, note)
+VALUES ($1, $2, $3, $4::text, $5::jsonb,
+        NULLIF($6::text, ''))
 RETURNING id, guild_id, donor_id, donor_name, item, quantity,
           COALESCE(note, '') AS note,
           donated_at
 `
 
 type InsertBankItemParams struct {
+	ID        uuid.UUID
 	GuildID   uuid.UUID
 	DonorID   uuid.UUID
 	DonorName string
@@ -307,6 +319,7 @@ type InsertBankItemRow struct {
 
 func (q *Queries) InsertBankItem(ctx context.Context, arg InsertBankItemParams) (InsertBankItemRow, error) {
 	row := q.db.QueryRow(ctx, insertBankItem,
+		arg.ID,
 		arg.GuildID,
 		arg.DonorID,
 		arg.DonorName,
@@ -394,7 +407,7 @@ INSERT INTO item_requests (guild_id, bank_item_id, requester_id, requester_name,
 SELECT bi.guild_id, bi.id, $1, $2::text,
        NULLIF($3::text, ''), bi.item
 FROM bank_items bi
-WHERE bi.id = $4 AND bi.guild_id = $5
+WHERE bi.id = $4 AND bi.guild_id = $5 AND bi.locked_by_type IS NULL
 RETURNING item_requests.id, item_requests.guild_id, item_requests.bank_item_id, item_requests.requester_id, item_requests.requester_name,
           (SELECT COALESCE(u.avatar_url, '') FROM users u WHERE u.id = item_requests.requester_id)::text AS requester_avatar_url,
           COALESCE(item_requests.reason, '')      AS reason,
@@ -460,7 +473,9 @@ SELECT bc.id, bc.guild_id, bc.user_id, bc.username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        bc.amount,
        COALESCE(bc.note, '')      AS note,
-       bc.created_at, bc.kind, bc.items, bc.checkin_id
+       bc.created_at, bc.kind, bc.items, bc.checkin_id,
+       COALESCE(bc.reference_type, '') AS reference_type,
+       bc.reference_id
 FROM bank_contributions bc
 LEFT JOIN users u ON u.id = bc.user_id
 WHERE bc.guild_id = $1
@@ -475,17 +490,19 @@ type ListBankContributionsParams struct {
 }
 
 type ListBankContributionsRow struct {
-	ID        uuid.UUID
-	GuildID   uuid.UUID
-	UserID    uuid.UUID
-	Username  string
-	AvatarUrl string
-	Amount    int64
-	Note      string
-	CreatedAt time.Time
-	Kind      string
-	Items     []byte
-	CheckinID *uuid.UUID
+	ID            uuid.UUID
+	GuildID       uuid.UUID
+	UserID        uuid.UUID
+	Username      string
+	AvatarUrl     string
+	Amount        int64
+	Note          string
+	CreatedAt     time.Time
+	Kind          string
+	Items         []byte
+	CheckinID     *uuid.UUID
+	ReferenceType string
+	ReferenceID   *uuid.UUID
 }
 
 func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContributionsParams) ([]ListBankContributionsRow, error) {
@@ -509,6 +526,8 @@ func (q *Queries) ListBankContributions(ctx context.Context, arg ListBankContrib
 			&i.Kind,
 			&i.Items,
 			&i.CheckinID,
+			&i.ReferenceType,
+			&i.ReferenceID,
 		); err != nil {
 			return nil, err
 		}
@@ -525,42 +544,58 @@ SELECT bi.id, bi.guild_id, bi.donor_id, bi.donor_name, bi.item, bi.quantity,
        COALESCE(bi.note, '') AS note,
        bi.donated_at,
        bi.checkin_id,
-       COALESCE(c.title, '') AS checkin_title
+       COALESCE(c.title, '') AS checkin_title,
+       (SELECT COUNT(*) FROM item_requests ir WHERE ir.bank_item_id = bi.id AND ir.status = 'pending')::int AS pending_request_count,
+       EXISTS (
+           SELECT 1 FROM item_requests ir
+           WHERE ir.bank_item_id = bi.id AND ir.status = 'pending' AND ir.requester_id = $2
+       ) AS requested_by_me,
+       COALESCE(bi.locked_by_type, '') AS locked_by_type,
+       bi.locked_by_id
 FROM bank_items bi
 LEFT JOIN checkins c ON c.id = bi.checkin_id
 WHERE bi.guild_id = $1
-  AND ($2::text = '' OR bi.item->>'category' = $2::text)
-  AND ($3::text   = '' OR bi.item->>'rarity'   = $3::text)
+  AND ($3::text = '' OR bi.item->>'category' = $3::text)
+  AND ($4::text   = '' OR bi.item->>'rarity'   = $4::text)
+  AND ($5::text  = '' OR bi.checkin_id::text  = $5::text)
 ORDER BY bi.donated_at DESC
-LIMIT $5::int OFFSET $4::int
+LIMIT $7::int OFFSET $6::int
 `
 
 type ListBankItemsParams struct {
 	GuildID        uuid.UUID
+	ViewerID       uuid.UUID
 	CategoryFilter string
 	RarityFilter   string
+	CheckinFilter  string
 	PageOffset     int32
 	PageSize       int32
 }
 
 type ListBankItemsRow struct {
-	ID           uuid.UUID
-	GuildID      uuid.UUID
-	DonorID      uuid.UUID
-	DonorName    string
-	Item         []byte
-	Quantity     int32
-	Note         string
-	DonatedAt    time.Time
-	CheckinID    *uuid.UUID
-	CheckinTitle string
+	ID                  uuid.UUID
+	GuildID             uuid.UUID
+	DonorID             uuid.UUID
+	DonorName           string
+	Item                []byte
+	Quantity            int32
+	Note                string
+	DonatedAt           time.Time
+	CheckinID           *uuid.UUID
+	CheckinTitle        string
+	PendingRequestCount int32
+	RequestedByMe       bool
+	LockedByType        string
+	LockedByID          *uuid.UUID
 }
 
 func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([]ListBankItemsRow, error) {
 	rows, err := q.db.Query(ctx, listBankItems,
 		arg.GuildID,
+		arg.ViewerID,
 		arg.CategoryFilter,
 		arg.RarityFilter,
+		arg.CheckinFilter,
 		arg.PageOffset,
 		arg.PageSize,
 	)
@@ -582,6 +617,10 @@ func (q *Queries) ListBankItems(ctx context.Context, arg ListBankItemsParams) ([
 			&i.DonatedAt,
 			&i.CheckinID,
 			&i.CheckinTitle,
+			&i.PendingRequestCount,
+			&i.RequestedByMe,
+			&i.LockedByType,
+			&i.LockedByID,
 		); err != nil {
 			return nil, err
 		}

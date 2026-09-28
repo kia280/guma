@@ -16,6 +16,7 @@ import (
 	"github.com/kia280/guma/internal/router/gateway"
 	"github.com/kia280/guma/internal/router/grpc"
 	"github.com/kia280/guma/internal/scheduler"
+	auctionsvc "github.com/kia280/guma/internal/services/auction"
 	lotterysvc "github.com/kia280/guma/internal/services/lottery"
 )
 
@@ -107,11 +108,19 @@ func runServe(cmd *cobra.Command, args []string) {
 	logger.Info().Msg("health service startup marked as complete")
 
 	lotteries := lotterysvc.New(db, logger)
+	auctions := auctionsvc.New(db, logger)
 	jobs := scheduler.New(logger, scheduler.Job{
 		Name:     "lottery-draw",
 		Interval: cfg.Scheduler.LotteryDrawInterval,
 		Run: func(ctx context.Context) error {
 			_, err := lotteries.DrawDueLotteries(ctx)
+			return err
+		},
+	}, scheduler.Job{
+		Name:     "auction-settle",
+		Interval: cfg.Scheduler.AuctionSettleInterval,
+		Run: func(ctx context.Context) error {
+			_, err := auctions.ProcessDueAuctions(ctx)
 			return err
 		},
 	})

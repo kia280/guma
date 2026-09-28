@@ -9,6 +9,7 @@ export type NavLabelKey =
   | 'wallet'
   | 'guildBank'
   | 'admin'
+  | 'adminInbox'
   | 'adminMembers'
   | 'adminRequests'
   | 'adminTemplates'
@@ -37,10 +38,11 @@ export interface NavSection {
   items: Array<NavLink | NavGroup>;
 }
 
-export const ADMIN_TABS = ['users', 'bankRequests', 'templates', 'guild', 'announcements'] as const;
+export const ADMIN_TABS = ['inbox', 'users', 'bankRequests', 'templates', 'guild', 'announcements'] as const;
 export type AdminTab = (typeof ADMIN_TABS)[number];
 
 const ADMIN_TAB_LABELS: Record<AdminTab, NavLabelKey> = {
+  inbox: 'adminInbox',
   users: 'adminMembers',
   bankRequests: 'adminRequests',
   templates: 'adminTemplates',
@@ -85,6 +87,7 @@ export const NAV_SECTIONS: NavSection[] = [
         label: 'admin',
         shortcut: 's',
         children: [
+          { key: 'admin-inbox', href: adminTabHref('inbox'), icon: 'solar:inbox-in-linear', label: 'adminInbox' },
           { key: 'admin-users', href: adminTabHref('users'), icon: 'solar:users-group-rounded-linear', label: 'adminMembers' },
           { key: 'admin-requests', href: adminTabHref('bankRequests'), icon: 'solar:inbox-linear', label: 'adminRequests' },
           { key: 'admin-templates', href: adminTabHref('templates'), icon: 'solar:layers-minimalistic-linear', label: 'adminTemplates' },
@@ -106,7 +109,7 @@ export const NAV_SHORTCUTS: Record<string, string> = Object.fromEntries(
 );
 
 export const adminTabFromParam = (value: string | null): AdminTab =>
-  value === 'activity' ? 'guild' : ADMIN_TABS.find(tab => tab === value) ?? 'users';
+  value === 'activity' ? 'guild' : ADMIN_TABS.find(tab => tab === value) ?? 'inbox';
 
 export const isLinkActive = (href: string, pathname: string, tab: string | null) => {
   const [path, query] = href.split('?');

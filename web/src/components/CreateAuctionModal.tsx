@@ -8,6 +8,7 @@ import {
   Modal,
   NumberField,
   Select,
+  Tabs,
   TextArea,
   TextField,
   type UseOverlayStateReturn,
@@ -19,8 +20,11 @@ import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
+import { useGuildPermissions } from '@/lib/permissions';
 import type { AuctionItem } from '@/types/auction';
-import { ItemCategory, ItemRarity } from '@/types/item';
+import type { GuildBankItem } from '@/types/guild-bank';
+import { ItemCategory, ItemRarity, type ItemSourceRef } from '@/types/item';
+import { BankItemPicker } from './BankItemPicker';
 import { ItemThumbnail } from './ItemThumbnail';
 
 export type AuctionDraftItem = {
@@ -29,7 +33,18 @@ export type AuctionDraftItem = {
   category: ItemCategory;
   rarity: ItemRarity;
   imageUrl?: string;
+  source?: ItemSourceRef;
 };
+
+type ItemMode = 'manual' | 'bank';
+
+const bankItemDraft = (item: GuildBankItem): AuctionDraftItem => ({
+  name: item.name,
+  description: item.description,
+  category: item.category,
+  rarity: item.rarity,
+  source: { bankItemId: item.id },
+});
 
 type CreateAuctionModalProps = {
   state: UseOverlayStateReturn;
@@ -57,7 +72,10 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
   const t = useTranslations('createAuctionModal');
   const notify = useToast();
   const guildId = useCurrentGuildId();
+  const { can } = useGuildPermissions();
   const [draft, setDraft] = React.useState<AuctionDraftItem>(EMPTY_ITEM);
+  const [mode, setMode] = React.useState<ItemMode>('manual');
+  const [bankItem, setBankItem] = React.useState<GuildBankItem | null>(null);
   const [startingBid, setStartingBid] = React.useState(100);
   const [minBidIncrement, setMinBidIncrement] = React.useState(10);
   const [duration, setDuration] = React.useState<number>(24);
@@ -67,6 +85,8 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
   React.useEffect(() => {
     if (!state.isOpen) return;
     setDraft(item ?? EMPTY_ITEM);
+    setMode('manual');
+    setBankItem(null);
     setStartingBid(100);
     setMinBidIncrement(10);
     setDuration(24);
@@ -74,20 +94,24 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
   }, [state.isOpen, item]);
 
   const isFromBackpack = !!item;
-  const canSubmit = draft.name.trim() !== '' && startingBid > 0 && minBidIncrement > 0;
+  const canPickBankItem = !isFromBackpack && can('auctionBankItems');
+  const isFromBank = canPickBankItem && mode === 'bank';
+  const activeDraft = isFromBank ? (bankItem ? bankItemDraft(bankItem) : null) : draft;
+  const canSubmit = !!activeDraft && activeDraft.name.trim() !== '' && startingBid > 0 && minBidIncrement > 0;
 
   const submit = async () => {
-    if (!canSubmit) return;
+    if (!canSubmit || !activeDraft) return;
     setIsSubmitting(true);
     setError('');
     try {
       const auction = await apiClient.createAuction(guildId, {
         guildId,
-        name: draft.name.trim(),
-        description: draft.description.trim(),
-        category: draft.category,
-        rarity: draft.rarity,
-        imageUrl: draft.imageUrl,
+        name: activeDraft.name.trim(),
+        description: activeDraft.description.trim(),
+        category: activeDraft.category,
+        rarity: activeDraft.rarity,
+        imageUrl: activeDraft.imageUrl,
+        source: activeDraft.source,
         startingBid,
         minBidIncrement,
         duration,
@@ -120,14 +144,35 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
                   submit();
                 }}
               >
-                {isFromBackpack ? (
-                  <div className="flex items-center gap-3 rounded-xl border border-divider bg-surface-secondary p-3">
-                    <ItemThumbnail category={draft.category} rarity={draft.rarity} imageUrl={draft.imageUrl} />
-                    <div className="min-w-0">
-                      <p className="type-body font-medium text-foreground truncate">{draft.name}</p>
-                      <p className="type-caption text-hint capitalize">{draft.rarity}</p>
+                {canPickBankItem && (
+                  <Tabs variant="secondary" selectedKey={mode} onSelectionChange={key => setMode(key as ItemMode)}>
+                    <Tabs.ListContainer>
+                      <Tabs.List aria-label={t('itemSource')}>
+                        <Tabs.Tab id="manual">
+                          {t('itemSourceManual')}
+                          <Tabs.Indicator />
+                        </Tabs.Tab>
+                        <Tabs.Tab id="bank">
+                          {t('itemSourceBank')}
+                          <Tabs.Indicator />
+                        </Tabs.Tab>
+                      </Tabs.List>
+                    </Tabs.ListContainer>
+                  </Tabs>
+                )}
+                {isFromBank && <BankItemPicker value={bankItem} onChange={setBankItem} />}
+                {isFromBackpack || isFromBank ? (
+                  activeDraft && (
+                    <div className="flex items-center gap-3 rounded-xl border border-divider bg-surface-secondary p-3">
+                      <ItemThumbnail category={activeDraft.category} rarity={activeDraft.rarity} imageUrl={activeDraft.imageUrl} />
+                      <div className="min-w-0">
+                        <p className="type-body font-medium text-foreground truncate">{activeDraft.name}</p>
+                        <p className="type-caption text-hint">
+                          {t(`rarities.${activeDraft.rarity}`)} · {t(activeDraft.source?.bankItemId ? 'sourceBankHint' : 'sourceBackpackHint')}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )
                 ) : (
                   <>
                     <TextField isRequired>

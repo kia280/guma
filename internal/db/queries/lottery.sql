@@ -26,10 +26,10 @@ FROM lotteries WHERE id = $1 AND guild_id = $2;
 
 -- name: CreateLottery :one
 INSERT INTO lotteries (
-    guild_id, created_by, title, description, ticket_price,
+    id, guild_id, created_by, title, description, ticket_price,
     max_tickets, max_tickets_per_user, status, draw_date, prizes
 ) VALUES (
-    $1, $2, sqlc.arg(title)::text,
+    sqlc.arg(id)::uuid, $1, $2, sqlc.arg(title)::text,
     NULLIF(sqlc.arg(description)::text, ''),
     $3, $4, $5, 'active',
     sqlc.arg(draw_date)::text::timestamptz,
@@ -64,7 +64,8 @@ UPDATE lotteries SET tickets_sold = tickets_sold + sqlc.arg(n)::int, updated_at 
 SELECT EXISTS(SELECT 1 FROM lotteries WHERE id = $1 AND guild_id = $2);
 
 -- name: GetLotteryForDraw :one
-SELECT prizes, status FROM lotteries WHERE id = $1 AND guild_id = $2 FOR UPDATE;
+SELECT prizes, status, created_by, title, ticket_price
+FROM lotteries WHERE id = $1 AND guild_id = $2 FOR UPDATE;
 
 -- name: ListAllLotteryTickets :many
 SELECT id, user_id, ticket_number FROM lottery_tickets WHERE lottery_id = $1;

@@ -86,6 +86,12 @@ service BankService {
       get: "/v1/guilds/{guild_id}/bank/item-requests"
     };
   }
+
+  rpc GetItemHistory(GetItemHistoryRequest) returns (GetItemHistoryResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/items/{item_id}/history"
+    };
+  }
 }
 
 // Request/Response messages
@@ -171,6 +177,7 @@ message ListBankItemsRequest {
   string rarity = 3;
   int32 page_size = 4;
   string page_token = 5;
+  string checkin_id = 6;
 }
 
 message ListBankItemsResponse {
@@ -246,6 +253,8 @@ message BankContribution {
   repeated Item items = 9;
   string checkin_id = 10;
   string avatar_url = 11;
+  string reference_type = 12;
+  string reference_id = 13;
 }
 
 message FundRequest {
@@ -274,6 +283,9 @@ message BankItem {
   google.protobuf.Timestamp donated_at = 8;
   string checkin_id = 9;
   string checkin_title = 10;
+  int32 pending_request_count = 11;
+  bool requested_by_me = 12;
+  ItemLock lock = 20;
 }
 
 message ItemRequest {
@@ -290,4 +302,26 @@ message ItemRequest {
   google.protobuf.Timestamp reviewed_at = 11;
   Item item = 12;
   string requester_avatar_url = 13;
+}
+
+message GetItemHistoryRequest {
+  string guild_id = 1;
+  string item_id = 2;
+}
+
+message ItemHistoryEvent {
+  string id = 1;
+  string kind = 2;
+  string source = 3;
+  string actor_id = 4;
+  string actor_name = 5;
+  string subject_id = 6;
+  string subject_name = 7;
+  string reference_id = 8;
+  string reference_label = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message GetItemHistoryResponse {
+  repeated ItemHistoryEvent events = 1;
 }

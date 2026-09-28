@@ -38,6 +38,7 @@ export const PERMISSION_SECTIONS = [
       { key: 'attendCheckin', roles: ALL },
       { key: 'createCheckin', roles: STAFF },
       { key: 'cancelCheckin', roles: OWNER_ADMIN },
+      { key: 'distributeLoot', roles: STAFF },
     ],
   },
   {
@@ -56,6 +57,7 @@ export const PERMISSION_SECTIONS = [
       { key: 'createAuction', roles: ALL },
       { key: 'placeBid', roles: ALL },
       { key: 'cancelAuction', roles: OWNER_ADMIN },
+      { key: 'auctionBankItems', roles: OWNER_ADMIN },
     ],
   },
   {
