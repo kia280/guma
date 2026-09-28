@@ -15,7 +15,11 @@ import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { useGuildPermissions } from '@/lib/permissions';
 import { lotteryStatusColor } from '@/lib/status-colors';
-import type { Lottery } from '@/types/lottery';
+import type { Lottery, LotteryStatus } from '@/types/lottery';
+
+type LotteryTab = 'all' | LotteryStatus;
+
+const LOTTERY_TABS: readonly LotteryTab[] = ['all', 'active', 'upcoming', 'ended', 'cancelled'];
 
 export default function LotteryPage() {
   const t = useTranslations('lotteryPage');
@@ -65,6 +69,7 @@ export default function LotteryPage() {
         const drawAt = new Date(lottery.drawDate).getTime();
         return (
           lottery.status !== 'upcoming' &&
+          lottery.status !== 'cancelled' &&
           drawAt > watchedSince.current &&
           drawAt <= now &&
           !announcedDraws.current.has(lottery.id)
@@ -82,11 +87,12 @@ export default function LotteryPage() {
   const filtered =
     activeTab === 'all' ? mockLotteries : mockLotteries.filter(l => l.status === activeTab);
 
-  const counts = {
+  const counts: Record<LotteryTab, number> = {
     all: mockLotteries.length,
     active: mockLotteries.filter(l => l.status === 'active').length,
     upcoming: mockLotteries.filter(l => l.status === 'upcoming').length,
     ended: mockLotteries.filter(l => l.status === 'ended').length,
+    cancelled: mockLotteries.filter(l => l.status === 'cancelled').length,
   };
 
   return (
@@ -101,42 +107,17 @@ export default function LotteryPage() {
         <div className="flex items-center gap-3">
           <Tabs.ListContainer className="min-w-0 flex-1">
             <Tabs.List aria-label={t('statusTabs')}>
-              <Tabs.Tab id="all">
-                <div className="flex items-center gap-2">
-                  <span>{t('all')}</span>
-                  <Chip size="sm" variant="secondary">
-                    {counts.all}
-                  </Chip>
-                </div>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="active">
-                <div className="flex items-center gap-2">
-                  <span>{t('active')}</span>
-                  <Chip size="sm" color={lotteryStatusColor.active} variant="secondary">
-                    {counts.active}
-                  </Chip>
-                </div>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="upcoming">
-                <div className="flex items-center gap-2">
-                  <span>{t('upcoming')}</span>
-                  <Chip size="sm" color={lotteryStatusColor.upcoming} variant="secondary">
-                    {counts.upcoming}
-                  </Chip>
-                </div>
-                <Tabs.Indicator />
-              </Tabs.Tab>
-              <Tabs.Tab id="ended">
-                <div className="flex items-center gap-2">
-                  <span>{t('ended')}</span>
-                  <Chip size="sm" color={lotteryStatusColor.ended} variant="secondary">
-                    {counts.ended}
-                  </Chip>
-                </div>
-                <Tabs.Indicator />
-              </Tabs.Tab>
+              {LOTTERY_TABS.map(tab => (
+                <Tabs.Tab key={tab} id={tab}>
+                  <div className="flex items-center gap-2">
+                    <span>{t(tab)}</span>
+                    <Chip size="sm" color={tab === 'all' ? undefined : lotteryStatusColor[tab]} variant="secondary">
+                      {counts[tab]}
+                    </Chip>
+                  </div>
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              ))}
             </Tabs.List>
           </Tabs.ListContainer>
           {can('createLottery') && (
@@ -147,114 +128,28 @@ export default function LotteryPage() {
             </Button>
           )}
         </div>
-        <Tabs.Panel id="all" className="pt-4">
-          <AsyncContent
-            state={lotteriesState.state}
-            onRetry={reload}
-            skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
-          >
-          {filtered.length === 0 ? (
-            <div className="text-center py-12 text-hint">
-              <Icon
-                icon="solar:ticket-linear"
-                width={40}
-                className="mx-auto mb-3 text-disabled"
-              />
-              <p className="type-body">{t('noLotteries')}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filtered.map(lottery => (
-                <LotteryCard
-                  key={lottery.id}
-                  {...lottery}
-                />
-              ))}
-            </div>
-          )}
-          </AsyncContent>
-        </Tabs.Panel>
-        <Tabs.Panel id="active" className="pt-4">
-          <AsyncContent
-            state={lotteriesState.state}
-            onRetry={reload}
-            skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
-          >
-          {filtered.length === 0 ? (
-            <div className="text-center py-12 text-hint">
-              <Icon
-                icon="solar:ticket-linear"
-                width={40}
-                className="mx-auto mb-3 text-disabled"
-              />
-              <p className="type-body">{t('noLotteries')}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filtered.map(lottery => (
-                <LotteryCard
-                  key={lottery.id}
-                  {...lottery}
-                />
-              ))}
-            </div>
-          )}
-          </AsyncContent>
-        </Tabs.Panel>
-        <Tabs.Panel id="upcoming" className="pt-4">
-          <AsyncContent
-            state={lotteriesState.state}
-            onRetry={reload}
-            skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
-          >
-          {filtered.length === 0 ? (
-            <div className="text-center py-12 text-hint">
-              <Icon
-                icon="solar:ticket-linear"
-                width={40}
-                className="mx-auto mb-3 text-disabled"
-              />
-              <p className="type-body">{t('noLotteries')}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filtered.map(lottery => (
-                <LotteryCard
-                  key={lottery.id}
-                  {...lottery}
-                />
-              ))}
-            </div>
-          )}
-          </AsyncContent>
-        </Tabs.Panel>
-        <Tabs.Panel id="ended" className="pt-4">
-          <AsyncContent
-            state={lotteriesState.state}
-            onRetry={reload}
-            skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
-          >
-          {filtered.length === 0 ? (
-            <div className="text-center py-12 text-hint">
-              <Icon
-                icon="solar:ticket-linear"
-                width={40}
-                className="mx-auto mb-3 text-disabled"
-              />
-              <p className="type-body">{t('noLotteries')}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filtered.map(lottery => (
-                <LotteryCard
-                  key={lottery.id}
-                  {...lottery}
-                />
-              ))}
-            </div>
-          )}
-          </AsyncContent>
-        </Tabs.Panel>
+        {LOTTERY_TABS.map(tab => (
+          <Tabs.Panel key={tab} id={tab} className="pt-4">
+            <AsyncContent
+              state={lotteriesState.state}
+              onRetry={reload}
+              skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
+            >
+              {filtered.length === 0 ? (
+                <div className="text-center py-12 text-hint">
+                  <Icon icon="solar:ticket-linear" width={40} className="mx-auto mb-3 text-disabled" />
+                  <p className="type-body">{t('noLotteries')}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filtered.map(lottery => (
+                    <LotteryCard key={lottery.id} {...lottery} />
+                  ))}
+                </div>
+              )}
+            </AsyncContent>
+          </Tabs.Panel>
+        ))}
       </Tabs>
     </div>
   );

@@ -83,6 +83,15 @@ const lockMockSource = (source: ItemSourceRef | undefined, lock: ItemLock) => {
   target.lock = lock;
 };
 
+const notFound = () =>
+  Object.assign(new Error('not found'), { isAxiosError: true, response: { status: 404, data: { code: 'NotFound' } } });
+
+const releaseMockLocks = (lock: ItemLock) => {
+  for (const entry of [...mockData.mockBackpackItems, ...mockData.mockGuildItems]) {
+    if (entry.lock?.type === lock.type && entry.lock.id === lock.id) entry.lock = undefined;
+  }
+};
+
 const assertUniqueName = (list: Array<{ id: string; name: string }>, id: string, name: string) => {
   if (list.some(t => t.id !== id && t.name === name)) throw conflict();
 };
@@ -418,11 +427,50 @@ const baseMockApiClient: ApiClient = {
     const item = store.auctions.find(a => a.id === auctionId);
     return item?.bidHistory ?? [];
   },
-  cancelAuction: async (_guildId, id) => {
+  updateAuction: async (_guildId, id, patch) => {
     const item = store.auctions.find(a => a.id === id);
-    if (!item) throw new Error('not found');
-    item.status = AuctionStatus.CANCELLED;
+    if (!item) throw notFound();
+    const isOpen = item.status === AuctionStatus.UPCOMING || item.status === AuctionStatus.ACTIVE;
+    if (!isOpen || new Date(item.endTime).getTime() <= Date.now()) throw failedPrecondition('auction is no longer open');
+    if (item.currentBidder && (patch.item || patch.startingBid !== undefined || patch.minBidIncrement !== undefined)) {
+      const changed =
+        (patch.startingBid !== undefined && patch.startingBid !== item.startingBid) ||
+        (patch.minBidIncrement !== undefined && patch.minBidIncrement !== item.minBidIncrement) ||
+        (patch.item && patch.item.name !== item.name);
+      if (changed) throw failedPrecondition('pricing is locked after the first bid');
+    }
+    Object.assign(item, {
+      ...(patch.item && !item.sourceType ? patch.item : {}),
+      ...(patch.startingBid !== undefined ? { startingBid: patch.startingBid } : {}),
+      ...(patch.minBidIncrement !== undefined ? { minBidIncrement: patch.minBidIncrement } : {}),
+      ...(patch.startTime ? { startTime: patch.startTime } : {}),
+      ...(patch.endTime ? { endTime: patch.endTime } : {}),
+      updatedAt: new Date().toISOString(),
+    });
+    if (!item.currentBidder) item.currentBid = item.startingBid;
     return item;
+  },
+  cancelAuction: async (guildId, id) => {
+    const item = store.auctions.find(a => a.id === id);
+    if (!item) throw notFound();
+    if (item.status !== AuctionStatus.UPCOMING && item.status !== AuctionStatus.ACTIVE) {
+      throw failedPrecondition('auction is no longer open');
+    }
+    if (item.currentBidder?.id === currentUser.id) {
+      currentUser.balance = Math.round((currentUser.balance + item.currentBid) * 100) / 100;
+      emitLiveEvent({ kind: 'wallet', guildId, balance: currentUser.balance });
+    }
+    releaseMockLocks({ type: 'auction', id });
+    item.bidHistory = item.bidHistory.map(bid => ({ ...bid, isWinning: false }));
+    item.status = AuctionStatus.CANCELLED;
+    item.cancelledAt = new Date().toISOString();
+    return item;
+  },
+  deleteAuction: async (_guildId, id) => {
+    const item = store.auctions.find(a => a.id === id);
+    if (!item) throw notFound();
+    if (item.status !== AuctionStatus.CANCELLED) throw failedPrecondition('only cancelled auctions can be deleted');
+    store.auctions = store.auctions.filter(a => a.id !== id);
   },
 
   // ── CheckIn ──
@@ -587,6 +635,8 @@ const baseMockApiClient: ApiClient = {
     const lottery: Lottery = {
       id: lotteryId,
       title: req.title,
+      description: req.description ?? '',
+      prizes: req.prizes?.map(prize => ({ rank: prize.rank, description: prize.description, amount: prize.amount })),
       prizePool: req.prizes?.reduce((sum, prize) => sum + (prize.amount ?? 0), 0) ?? 0,
       ticketPrice: req.ticketPrice,
       drawDate: req.drawDate,
@@ -600,16 +650,45 @@ const baseMockApiClient: ApiClient = {
   },
   updateLottery: async (_guildId, lotteryId, patch) => {
     const lottery = store.lotteries.find(x => x.id === lotteryId);
-    if (!lottery) throw new Error('not found');
-    if (lottery.status === 'ended') throw new Error('lottery already drawn');
-    if (new Date(patch.drawDate).getTime() <= Date.now()) throw new Error('draw date must be in the future');
-    lottery.drawDate = patch.drawDate;
+    if (!lottery) throw notFound();
+    if (lottery.status === 'ended' || lottery.status === 'cancelled') throw failedPrecondition('lottery is no longer open');
+    if (patch.drawDate && new Date(patch.drawDate).getTime() <= Date.now()) throw failedPrecondition('draw date must be in the future');
+    const pricingChanged =
+      (patch.ticketPrice !== undefined && patch.ticketPrice !== lottery.ticketPrice) ||
+      (patch.maxTickets !== undefined && patch.maxTickets !== lottery.maxTickets);
+    if (lottery.ticketsSold > 0 && pricingChanged) throw failedPrecondition('ticket settings are locked after the first sale');
+    Object.assign(lottery, {
+      ...(patch.title !== undefined ? { title: patch.title } : {}),
+      ...(patch.description !== undefined ? { description: patch.description } : {}),
+      ...(patch.drawDate ? { drawDate: patch.drawDate } : {}),
+      ...(patch.ticketPrice !== undefined ? { ticketPrice: patch.ticketPrice } : {}),
+      ...(patch.maxTickets !== undefined ? { maxTickets: patch.maxTickets } : {}),
+    });
     return lottery;
+  },
+  cancelLottery: async (guildId, lotteryId) => {
+    const lottery = store.lotteries.find(x => x.id === lotteryId);
+    if (!lottery) throw notFound();
+    if (lottery.status === 'ended' || lottery.status === 'cancelled') throw failedPrecondition('lottery is no longer open');
+    const mine = lottery.participants?.find(p => p.id === currentUser.id)?.tickets ?? 0;
+    if (mine > 0) {
+      currentUser.balance = Math.round((currentUser.balance + mine * lottery.ticketPrice) * 100) / 100;
+      emitLiveEvent({ kind: 'wallet', guildId, balance: currentUser.balance });
+    }
+    releaseMockLocks({ type: 'lottery', id: lotteryId });
+    Object.assign(lottery, { status: 'cancelled', cancelledAt: new Date().toISOString() });
+    return lottery;
+  },
+  deleteLottery: async (_guildId, lotteryId) => {
+    const lottery = store.lotteries.find(x => x.id === lotteryId);
+    if (!lottery) throw notFound();
+    if (lottery.status !== 'cancelled') throw failedPrecondition('only cancelled lotteries can be deleted');
+    store.lotteries = store.lotteries.filter(x => x.id !== lotteryId);
   },
   purchaseTickets: async (guildId, lotteryId, quantity): Promise<LotteryTicket[]> => {
     const lottery = store.lotteries.find(x => x.id === lotteryId);
     if (!lottery) throw new Error('not found');
-    if (lottery.status === 'ended') throw failedPrecondition('lottery is not open for ticket purchase');
+    if (lottery.status === 'ended' || lottery.status === 'cancelled') throw failedPrecondition('lottery is not open for ticket purchase');
     if (lottery.maxTickets > 0 && lottery.ticketsSold + quantity > lottery.maxTickets) {
       throw failedPrecondition('not enough tickets available');
     }

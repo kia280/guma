@@ -187,9 +187,14 @@ type ProtoAuctionItem = {
   end_time?: string;
   status?: string;
   is_blind?: boolean;
+  source_type?: string;
   created_at?: string;
   updated_at?: string;
+  cancelled_at?: string;
 };
+
+const toSourceType = (s?: string): AuctionItem['sourceType'] =>
+  s === 'backpack' || s === 'bank' ? s : undefined;
 
 const toCategory = (s?: string): ItemCategory =>
   (s as ItemCategory) || ItemCategory.MISC;
@@ -214,12 +219,14 @@ export const toAuctionItem = (raw: ProtoAuctionItem): AuctionItem => ({
   endTime: ts(raw.end_time),
   status: toStatus(raw.status),
   isBlind: Boolean(raw.is_blind),
+  sourceType: toSourceType(raw.source_type),
   guildId: raw.guild_id ?? '',
   sellerId: raw.seller_id ?? '',
   seller: { id: raw.seller_id ?? '', username: raw.seller_id ?? '' },
   bidHistory: [],
   createdAt: ts(raw.created_at),
   updatedAt: ts(raw.updated_at),
+  ...(raw.cancelled_at ? { cancelledAt: ts(raw.cancelled_at) } : {}),
 });
 
 type ProtoBid = {
@@ -356,11 +363,13 @@ export const toAttendee = (raw: ProtoAttendee): AttendanceMember => ({
 
 // ─── Lottery ────────────────────────────────────────────────────────────────
 
-type ProtoPrize = { rank?: number; description?: string; amount?: number | string };
+type ProtoPrize = { rank?: number; description?: string; amount?: number | string; item?: ProtoItem };
 
 type ProtoLottery = {
   id: string;
   title?: string;
+  description?: string;
+  cancelled_at?: string;
   ticket_price?: number | string;
   tickets_sold?: number;
   max_tickets?: number;
@@ -387,12 +396,20 @@ export const toLottery = (raw: ProtoLottery): Lottery => {
   return {
     id: raw.id,
     title: raw.title ?? '',
+    description: raw.description ?? '',
     prizePool,
+    prizes: (raw.prizes ?? []).map((prize, index) => ({
+      rank: prize.rank ?? index + 1,
+      description: prize.description ?? '',
+      amount: prize.amount ? fromMinorUnits(prize.amount) : undefined,
+      itemName: prize.item?.name || undefined,
+    })),
     ticketPrice: fromMinorUnits(raw.ticket_price),
     drawDate: raw.draw_date ?? '',
     ticketsSold: raw.tickets_sold ?? 0,
     maxTickets: raw.max_tickets ?? 0,
     status: (raw.status?.toLowerCase() as Lottery['status']) || 'active',
+    ...(raw.cancelled_at ? { cancelledAt: raw.cancelled_at } : {}),
     winners,
   };
 };

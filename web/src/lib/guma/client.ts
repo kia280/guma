@@ -290,9 +290,22 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.get(`/v1/guilds/${guildId}/auctions/${auctionId}/bids`);
     return (data.bids ?? []).map(toBid);
   },
+  updateAuction: async (guildId, id, patch) => {
+    const { data } = await http.patch(`/v1/guilds/${guildId}/auctions/${id}`, {
+      item: patch.item,
+      starting_bid: patch.startingBid === undefined ? undefined : toMinorUnits(patch.startingBid),
+      min_bid_increment: patch.minBidIncrement === undefined ? undefined : toMinorUnits(patch.minBidIncrement),
+      start_time: patch.startTime,
+      end_time: patch.endTime,
+    });
+    return toAuctionItem(data.auction);
+  },
   cancelAuction: async (guildId, id, reason) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/auctions/${id}/cancel`, { reason });
     return toAuctionItem(data.auction);
+  },
+  deleteAuction: async (guildId, id) => {
+    await http.delete(`/v1/guilds/${guildId}/auctions/${id}`);
   },
 
   // ── CheckIn ──
@@ -420,9 +433,20 @@ export const gumaApiClient: ApiClient = {
   },
   updateLottery: async (guildId, lotteryId, patch) => {
     const { data } = await http.patch(`/v1/guilds/${guildId}/lotteries/${lotteryId}`, {
+      title: patch.title,
+      description: patch.description,
       draw_date: patch.drawDate,
+      ticket_price: patch.ticketPrice === undefined ? undefined : toMinorUnits(patch.ticketPrice),
+      max_tickets: patch.maxTickets,
     });
     return toLottery(data.lottery);
+  },
+  cancelLottery: async (guildId, lotteryId) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/lotteries/${lotteryId}/cancel`, {});
+    return toLottery(data.lottery);
+  },
+  deleteLottery: async (guildId, lotteryId) => {
+    await http.delete(`/v1/guilds/${guildId}/lotteries/${lotteryId}`);
   },
   purchaseTickets: async (guildId, lotteryId, quantity) => {
     const { data } = await http.post(

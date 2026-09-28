@@ -24,7 +24,7 @@ import { auctionStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory } from '@/types/item';
-import { BidAssist, bidCost } from './BidAssist';
+import { BidAssist, bidCost, minimumBidFor } from './BidAssist';
 import { UserAvatar } from './UserAvatar';
 
 const PROGRESS_FILL = {
@@ -73,13 +73,14 @@ const AuctionItemCard = ({
   const formatCountdown = useCountdownFormatter();
   const userId = useUserStore(s => s.user?.id);
   const [bidInput, setBidInput] = useState<number | null>(null);
-  const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
+  const minimumBid = minimumBidFor(item);
   const bidAmount = bidInput ?? minimumBid;
 
   const isActive = item.status === AuctionStatus.ACTIVE;
   const isUpcoming = item.status === AuctionStatus.UPCOMING;
   const isClosed = !isActive && !isUpcoming;
   const isEnded = item.status === AuctionStatus.ENDED;
+  const isCancelled = item.status === AuctionStatus.CANCELLED;
   const hasEndedWithoutBids = isEnded && !item.currentBidder;
 
   const scheduleTarget = isUpcoming ? item.startTime : item.endTime;
@@ -183,36 +184,43 @@ const AuctionItemCard = ({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="type-body text-subtle">
-                    {isEnded ? t('finalPrice') : t('currentBid')}
-                  </span>
-                  {hasEndedWithoutBids ? (
-                    <span className="type-body text-hint">{t('noBids')}</span>
-                  ) : (
-                    <span className="type-heading tabular-nums text-foreground">
-                      {formatGold(item.currentBid)}
-                    </span>
-                  )}
+              {isCancelled ? (
+                <div className="flex min-h-[4.25rem] items-center gap-1.5 type-body text-subtle">
+                  <Icon icon="solar:forbidden-circle-linear" width={16} className="shrink-0" aria-hidden />
+                  <span>{t('cancelledNote')}</span>
                 </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="type-body text-subtle">
+                      {isEnded ? t('finalPrice') : t('currentBid')}
+                    </span>
+                    {hasEndedWithoutBids ? (
+                      <span className="type-body text-hint">{t('noBids')}</span>
+                    ) : (
+                      <span className="type-heading tabular-nums text-foreground">
+                        {formatGold(item.currentBid)}
+                      </span>
+                    )}
+                  </div>
 
-                <div className="flex min-h-8 items-center justify-between">
-                  <span className="type-caption text-hint">
-                    {isEnded ? t('winner') : t('leadingBidder')}
-                  </span>
-                  {item.currentBidder ? (
-                    <div className="flex items-center gap-2">
-                      <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
-                      <span className="type-body text-foreground">{item.currentBidder.username}</span>
-                    </div>
-                  ) : (
-                    <span className="type-body text-hint">
-                      {isEnded ? t('noWinner') : t('noBids')}
+                  <div className="flex min-h-8 items-center justify-between">
+                    <span className="type-caption text-hint">
+                      {isEnded ? t('winner') : t('leadingBidder')}
                     </span>
-                  )}
+                    {item.currentBidder ? (
+                      <div className="flex items-center gap-2">
+                        <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
+                        <span className="type-body text-foreground">{item.currentBidder.username}</span>
+                      </div>
+                    ) : (
+                      <span className="type-body text-hint">
+                        {isEnded ? t('noWinner') : t('noBids')}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <Separator />
 

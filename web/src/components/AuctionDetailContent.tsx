@@ -29,12 +29,16 @@ import { apiClient } from '@/lib/guma';
 import { isNotFoundError } from '@/lib/guma/errors';
 import { GOLD_FORMAT_OPTIONS, roundGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
+import { emitLiveEvent } from '@/lib/live-events';
+import { useGuildPermissions } from '@/lib/permissions';
 import { auctionStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory } from '@/types/item';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
-import { BidAssist, bidCost } from './BidAssist';
+import { AuctionEditModal } from './AuctionEditModal';
+import { BidAssist, bidCost, minimumBidFor } from './BidAssist';
+import { ConfirmDialog } from './ConfirmDialog';
 import { UserAvatar } from './UserAvatar';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -75,6 +79,10 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const { balance: userBalance, isLoaded: isBalanceLoaded, refresh: refreshBalance } = useWalletBalance();
   const userId = useUserStore(s => s.user?.id);
   const bidBlockedReasonId = useId();
+  const { can } = useGuildPermissions();
+  const editModal = useOverlayState();
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const formatCountdown = useCountdownFormatter();
 
   const [item, setItem] = useState<AuctionItem | null>(null);
@@ -149,12 +157,18 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     );
   }
 
-  const minimumBid = roundGold(item.currentBid + item.minBidIncrement);
+  const minimumBid = minimumBidFor(item);
   const bidAmount = bidInput?.auctionId === id ? bidInput.amount : minimumBid;
   const isActive = item.status === AuctionStatus.ACTIVE;
   const isUpcoming = item.status === AuctionStatus.UPCOMING;
   const isEnded = item.status === AuctionStatus.ENDED;
   const isClosed = !isActive && !isUpcoming;
+  const isCancelled = item.status === AuctionStatus.CANCELLED;
+  const isSeller = !!userId && userId === item.sellerId;
+  const isOpen = isUpcoming || (isActive && !isExpired);
+  const canEdit = isOpen && (can('editAuction') || isSeller);
+  const canCancel = isOpen && (can('cancelAuction') || (isSeller && !item.currentBidder));
+  const canDelete = isCancelled && (can('deleteAuction') || isSeller);
   const countdown = formatCountdown(remainingMs);
   const timeRemaining = isExpired ? t('ended') : t('remaining', { time: countdown });
   const startsIn = t('startsInTime', { time: countdown });
@@ -188,6 +202,39 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const announceChange = () => {
+    emitLiveEvent({ kind: 'resource', guildId, resource: 'auction', resourceId: id });
+  };
+
+  const handleEditSaved = (updated: AuctionItem) => {
+    setItem(current => (current ? { ...updated, bidHistory: current.bidHistory } : updated));
+    refetchItem();
+    announceChange();
+  };
+
+  const handleEditRejected = () => {
+    refetchItem();
+    announceChange();
+  };
+
+  const handleCancelConfirm = async () => {
+    try {
+      await apiClient.cancelAuction(guildId, id);
+    } finally {
+      refetchItem();
+      refreshBalance();
+      announceChange();
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    await apiClient.deleteAuction(guildId, id);
+    announceChange();
+    notify.success(t('deleted'));
+    if (onClose) onClose();
+    else router.push('/dashboard/auction');
   };
 
   const sortedHistory = [...item.bidHistory].sort(
@@ -242,7 +289,45 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           <h1 className="type-title text-foreground">{item.name}</h1>
           <p className="type-body text-subtle mt-1">{item.description}</p>
         </div>
+        {(canEdit || canCancel || canDelete) && (
+          <div className="flex flex-wrap gap-2 shrink-0">
+            {canEdit && (
+              <Button variant="secondary" className="max-sm:h-11" onPress={editModal.open}>
+                <Icon icon="solar:pen-linear" width={16} />
+                {t('editAuction')}
+              </Button>
+            )}
+            {canCancel && (
+              <Button variant="danger-soft" className="max-sm:h-11" onPress={() => setIsCancelConfirmOpen(true)}>
+                <Icon icon="solar:forbidden-circle-linear" width={16} />
+                {t('cancelAuction')}
+              </Button>
+            )}
+            {canDelete && (
+              <Button variant="danger-soft" className="max-sm:h-11" onPress={() => setIsDeleteConfirmOpen(true)}>
+                <Icon icon="solar:trash-bin-trash-linear" width={16} />
+                {t('deleteAuction')}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
+
+      {isCancelled && (
+        <div className="flex items-start gap-3 rounded-xl border border-divider bg-surface-secondary p-4">
+          <Icon icon="solar:forbidden-circle-linear" width={20} className="text-subtle shrink-0 mt-0.5" aria-hidden />
+          <div className="min-w-0">
+            <p className="type-body font-medium text-foreground">
+              {item.cancelledAt
+                ? t('cancelledBanner', {
+                    date: format.dateTime(new Date(item.cancelledAt), { dateStyle: 'medium', timeStyle: 'short' }),
+                  })
+                : t('cancelledBannerNoDate')}
+            </p>
+            <p className="type-caption text-subtle">{t('cancelledBannerDetail')}</p>
+          </div>
+        </div>
+      )}
 
       <div className={`grid grid-cols-1 lg:grid-cols-5 ${sectionGap}`}>
         {/* Left column — bid info + history */}
@@ -519,6 +604,35 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           </div>
         </div>
       </div>
+
+      {canEdit && (
+        <AuctionEditModal item={item} state={editModal} onSaved={handleEditSaved} onRejected={handleEditRejected} />
+      )}
+
+      <ConfirmDialog
+        heading={t('cancelConfirmTitle')}
+        body={t('cancelConfirmBody', {
+          hasBid: item.currentBidder ? 'yes' : 'no',
+          amount: formatGold(item.currentBid),
+          source: item.sourceType ?? 'none',
+        })}
+        confirmLabel={t('cancelConfirm')}
+        failedMessage={t('cancelFailed')}
+        isOpen={isCancelConfirmOpen}
+        onOpenChange={setIsCancelConfirmOpen}
+        onConfirm={handleCancelConfirm}
+        success={{ title: t('cancelSuccess'), detail: t('cancelSuccessDetail') }}
+      />
+
+      <ConfirmDialog
+        heading={t('deleteConfirmTitle')}
+        body={t('deleteConfirmBody')}
+        confirmLabel={t('deleteConfirm')}
+        failedMessage={t('deleteFailed')}
+        isOpen={isDeleteConfirmOpen}
+        onOpenChange={setIsDeleteConfirmOpen}
+        onConfirm={handleDeleteConfirm}
+      />
 
       {/* Place Bid Modal */}
       <Modal state={bidModalState}>

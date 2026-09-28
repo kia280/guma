@@ -80,6 +80,9 @@ const transactionLabelKey = (transaction: Transaction): string | undefined => {
   if (transaction.kind === 'AUCTION_BID') {
     return transaction.amount > 0 ? 'auctionRefund' : 'auctionBid';
   }
+  if (transaction.kind === 'LOTTERY_TICKET' && transaction.amount > 0) {
+    return 'lotteryRefund';
+  }
   return transaction.kind ? TRANSACTION_KIND_LABELS[transaction.kind] : undefined;
 };
 

@@ -1,29 +1,17 @@
 'use client';
 
-import {
-  Button,
-  Input,
-  Label,
-  ListBox,
-  Modal,
-  NumberField,
-  Select,
-  Tabs,
-  TextArea,
-  TextField,
-  type UseOverlayStateReturn,
-} from '@heroui/react';
+import { Button, Label, ListBox, Modal, Select, Tabs, type UseOverlayStateReturn } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
-import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
 import { useGuildPermissions } from '@/lib/permissions';
 import type { AuctionItem } from '@/types/auction';
 import type { GuildBankItem } from '@/types/guild-bank';
 import { ItemCategory, ItemRarity, type ItemSourceRef } from '@/types/item';
+import { AuctionItemFields, AuctionPricingFields } from './AuctionFormFields';
 import { BankItemPicker } from './BankItemPicker';
 import { ItemThumbnail } from './ItemThumbnail';
 
@@ -174,102 +162,16 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
                     </div>
                   )
                 ) : (
-                  <>
-                    <TextField isRequired>
-                      <Label>{t('itemName')}</Label>
-                      <Input
-                        variant="secondary"
-                        placeholder={t('itemNamePlaceholder')}
-                        value={draft.name}
-                        onChange={event => setDraft(d => ({ ...d, name: event.target.value }))}
-                        autoFocus
-                      />
-                    </TextField>
-                    <TextField>
-                      <Label>{t('description')}</Label>
-                      <TextArea
-                        variant="secondary"
-                        rows={2}
-                        placeholder={t('descriptionPlaceholder')}
-                        value={draft.description}
-                        onChange={event => setDraft(d => ({ ...d, description: event.target.value }))}
-                      />
-                    </TextField>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Select
-                        value={draft.category}
-                        onChange={value => setDraft(d => ({ ...d, category: value as ItemCategory }))}
-                      >
-                        <Label>{t('category')}</Label>
-                        <Select.Trigger>
-                          <Select.Value />
-                          <Select.Indicator />
-                        </Select.Trigger>
-                        <Select.Popover>
-                          <ListBox>
-                            {Object.values(ItemCategory).map(category => (
-                              <ListBox.Item key={category} id={category} textValue={t(`categories.${category}`)}>
-                                {t(`categories.${category}`)}
-                                <ListBox.ItemIndicator />
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
-                      <Select
-                        value={draft.rarity}
-                        onChange={value => setDraft(d => ({ ...d, rarity: value as ItemRarity }))}
-                      >
-                        <Label>{t('rarity')}</Label>
-                        <Select.Trigger>
-                          <Select.Value />
-                          <Select.Indicator />
-                        </Select.Trigger>
-                        <Select.Popover>
-                          <ListBox>
-                            {Object.values(ItemRarity).map(rarity => (
-                              <ListBox.Item key={rarity} id={rarity} textValue={t(`rarities.${rarity}`)}>
-                                {t(`rarities.${rarity}`)}
-                                <ListBox.ItemIndicator />
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
-                    </div>
-                  </>
+                  <AuctionItemFields values={draft} onChange={updates => setDraft(d => ({ ...d, ...updates }))} autoFocus />
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <NumberField
-                    isRequired
-                    formatOptions={GOLD_FORMAT_OPTIONS}
-                    minValue={GOLD_STEP}
-                    value={startingBid}
-                    onChange={value => setStartingBid(Number.isFinite(value) ? value : 0)}
-                  >
-                    <Label>{t('startingBid')}</Label>
-                    <NumberField.Group>
-                      <NumberField.DecrementButton />
-                      <NumberField.Input className="w-full min-w-0" />
-                      <NumberField.IncrementButton />
-                    </NumberField.Group>
-                  </NumberField>
-                  <NumberField
-                    isRequired
-                    formatOptions={GOLD_FORMAT_OPTIONS}
-                    minValue={GOLD_STEP}
-                    value={minBidIncrement}
-                    onChange={value => setMinBidIncrement(Number.isFinite(value) ? value : 0)}
-                  >
-                    <Label>{t('minBidIncrement')}</Label>
-                    <NumberField.Group>
-                      <NumberField.DecrementButton />
-                      <NumberField.Input className="w-full min-w-0" />
-                      <NumberField.IncrementButton />
-                    </NumberField.Group>
-                  </NumberField>
-                </div>
+                <AuctionPricingFields
+                  values={{ startingBid, minBidIncrement }}
+                  onChange={updates => {
+                    if (updates.startingBid !== undefined) setStartingBid(updates.startingBid);
+                    if (updates.minBidIncrement !== undefined) setMinBidIncrement(updates.minBidIncrement);
+                  }}
+                />
 
                 <Select value={String(duration)} onChange={value => setDuration(Number(value))}>
                   <Label>{t('auctionDuration')}</Label>

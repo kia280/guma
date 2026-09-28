@@ -227,7 +227,8 @@
       "lotteryWin": "Lottery prize",
       "bankContribution": "Guild vault contribution",
       "fundRequestApproved": "Fund request approved",
-      "auctionSale": "Auction sale"
+      "auctionSale": "Auction sale",
+      "lotteryRefund": "Lottery ticket refund"
     },
     "depositSuccess": "Deposit completed",
     "depositSuccessDetail": "{amount} was added to your wallet.",
@@ -264,7 +265,8 @@
     "createLottery": "Create lottery",
     "statusTabs": "Lottery status",
     "drawStarted": "{title} is drawing now",
-    "watchDraw": "Watch draw"
+    "watchDraw": "Watch draw",
+    "cancelled": "Cancelled"
   },
   "lotteryCard": {
     "drawComplete": "Draw complete",
@@ -286,8 +288,10 @@
     "status": {
       "active": "Active",
       "upcoming": "Upcoming",
-      "ended": "Ended"
-    }
+      "ended": "Ended",
+      "cancelled": "Cancelled"
+    },
+    "cancelledFooter": "Lottery cancelled"
   },
   "auctionPage": {
     "searchItems": "Search items...",
@@ -302,7 +306,8 @@
     "createAuction": "Create auction",
     "bidSuccess": "Bid placed.",
     "bidFailed": "Could not place the bid. Please try again.",
-    "statusTabs": "Auction status"
+    "statusTabs": "Auction status",
+    "cancelled": "Cancelled"
   },
   "auctionItemCard": {
     "timeRemaining": "Time remaining",
@@ -341,7 +346,8 @@
       "active": "Active",
       "ended": "Ended",
       "cancelled": "Cancelled"
-    }
+    },
+    "cancelledNote": "Cancelled · bids refunded"
   },
   "backpackItemCard": {
     "editNote": "Edit Note",
@@ -620,7 +626,12 @@
       "changeDrawDate": "Change the draw date",
       "manageWallet": "Manage their own wallet and backpack",
       "auctionBankItems": "Auction or raffle guild vault items",
-      "distributeLoot": "Hand out roll call loot"
+      "distributeLoot": "Hand out roll call loot",
+      "editAuction": "Edit any open auction (sellers can edit their own)",
+      "deleteAuction": "Delete cancelled auctions",
+      "editLottery": "Edit lotteries",
+      "cancelLottery": "Cancel lotteries and refund tickets",
+      "deleteLottery": "Delete cancelled lotteries"
     },
     "ownerLeaveNote": "The owner must transfer ownership before leaving the guild."
   },
@@ -850,7 +861,9 @@
     "auctionUnsold": "<b>{item}</b> ended without bids",
     "itemReceived": "<b>{actor}</b> sent you <b>{item}</b>",
     "lootAssigned": "You received <b>{item}</b> from <b>{checkin}</b>",
-    "itemDelivered": "<b>{actor}</b> handed over <b>{item}</b> in game"
+    "itemDelivered": "<b>{actor}</b> handed over <b>{item}</b> in game",
+    "auctionCancelled": "<b>{item}</b> was cancelled{refunded, select, yes {. Your bid of <b>{amount}</b> was refunded} other {}}",
+    "lotteryCancelled": "<b>{lottery}</b> was cancelled. Your {tickets, plural, one {# ticket was} other {# tickets were}} refunded (<b>{amount}</b>)"
   },
   "profilePage": {
     "title": "Personal Information",
@@ -1042,7 +1055,24 @@
       "active": "Active",
       "ended": "Ended",
       "cancelled": "Cancelled"
-    }
+    },
+    "editAuction": "Edit",
+    "cancelAuction": "Cancel auction",
+    "deleteAuction": "Delete",
+    "cancelConfirmTitle": "Cancel this auction?",
+    "cancelConfirmBody": "Bidding stops immediately. {hasBid, select, yes {The highest bid of {amount} is refunded to the bidder's wallet.} other {No bids have been placed yet.}} {source, select, backpack {The item returns to the seller's backpack.} bank {The item returns to the guild vault.} other {}} This cannot be undone.",
+    "cancelConfirm": "Cancel auction",
+    "cancelFailed": "Couldn't cancel the auction. Please try again.",
+    "cancelSuccess": "Auction cancelled",
+    "cancelSuccessDetail": "Any held bid has been refunded.",
+    "deleteConfirmTitle": "Delete this auction?",
+    "deleteConfirmBody": "The auction and its bid history are removed permanently. Refunds and other wallet transactions stay in everyone's history. This cannot be undone.",
+    "deleteConfirm": "Delete auction",
+    "deleteFailed": "Couldn't delete the auction. Please try again.",
+    "deleted": "Auction deleted.",
+    "cancelledBanner": "This auction was cancelled on {date}.",
+    "cancelledBannerNoDate": "This auction was cancelled.",
+    "cancelledBannerDetail": "Bids were refunded and the item was returned. Nobody can bid on it anymore."
   },
   "checkinDetailPage": {
     "notFound": "Roll call not found.",
@@ -1200,7 +1230,8 @@
     "status": {
       "active": "Active",
       "upcoming": "Upcoming",
-      "ended": "Ended"
+      "ended": "Ended",
+      "cancelled": "Cancelled"
     },
     "wheelDetail": "{count, plural, one {# ticket} other {# tickets}} · {chance}%",
     "reschedule": "Change draw time",
@@ -1216,7 +1247,25 @@
     "purchaseClosed": "This lottery is no longer selling tickets.",
     "insufficientBalance": "Your balance is too low for this purchase.",
     "yourBalance": "Your balance: {amount}",
-    "purchaseFailed": "Could not purchase tickets. Please try again."
+    "purchaseFailed": "Could not purchase tickets. Please try again.",
+    "editLottery": "Edit",
+    "cancelLottery": "Cancel lottery",
+    "deleteLottery": "Delete",
+    "cancelConfirmTitle": "Cancel this lottery?",
+    "cancelConfirmBody": "Ticket sales stop and no winners will be drawn. {sold, plural, =0 {No tickets have been sold yet.} one {The # ticket sold is refunded to its buyer's wallet.} other {All # tickets sold are refunded to their buyers' wallets.}} Prizes from the guild vault or a backpack are returned. This cannot be undone.",
+    "cancelConfirm": "Cancel lottery",
+    "cancelFailed": "Couldn't cancel the lottery. Please try again.",
+    "cancelSuccess": "Lottery cancelled",
+    "cancelSuccessDetail": "Every ticket has been refunded.",
+    "deleteConfirmTitle": "Delete this lottery?",
+    "deleteConfirmBody": "The lottery and its tickets are removed permanently. Refunds and other wallet transactions stay in everyone's history. This cannot be undone.",
+    "deleteConfirm": "Delete lottery",
+    "deleteFailed": "Couldn't delete the lottery. Please try again.",
+    "deleted": "Lottery deleted.",
+    "cancelledBanner": "This lottery was cancelled on {date}.",
+    "cancelledBannerNoDate": "This lottery was cancelled.",
+    "cancelledBannerDetail": "All tickets were refunded and no winners will be drawn.",
+    "cancelledCaption": "Cancelled"
   },
   "createLotteryModal": {
     "title": "Create lottery",
@@ -1514,5 +1563,43 @@
       "lottery": "View lottery",
       "checkin": "View roll call"
     }
+  },
+  "auctionEditModal": {
+    "title": "Edit auction",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "success": "Auction updated.",
+    "failed": "Couldn't save the auction. Please try again.",
+    "closed": "This auction has ended or was cancelled, or someone just bid on it. Review the latest details and try again.",
+    "forbidden": "You don't have permission to edit this auction.",
+    "invalid": "Some details were rejected. Check the fields and try again.",
+    "itemLockedHint": "This item comes from {source, select, bank {the guild vault} other {a backpack}}, so its details can't be changed.",
+    "pricingLockedHint": "The item, starting bid, and bid increment are locked after the first bid. The end time can only be extended.",
+    "startTime": "Starts at",
+    "endTime": "Ends at",
+    "nameRequired": "Enter an item name",
+    "amountRequired": "Enter an amount greater than 0",
+    "startInPast": "The auction must start in the future",
+    "endRequired": "Choose when the auction ends",
+    "endInPast": "The auction must end in the future",
+    "endBeforeStart": "The auction must end after it starts",
+    "endShortened": "Once there are bids, the end time can only be extended"
+  },
+  "lotteryEditModal": {
+    "title": "Edit lottery",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "success": "Lottery updated.",
+    "failed": "Couldn't save the lottery. Please try again.",
+    "closed": "This lottery has been drawn or cancelled, or its tickets just started selling. Review the latest details and try again.",
+    "forbidden": "Only guild owners and admins can edit lotteries.",
+    "invalid": "Some details were rejected. Check the fields and try again.",
+    "titleRequired": "Enter a title",
+    "ticketPriceRequired": "Enter a ticket price greater than 0",
+    "maxTicketsRequired": "Allow at least 1 ticket",
+    "ticketsLockedHint": "Ticket price and limit are locked because tickets have been sold.",
+    "prizes": "Prizes",
+    "noPrizes": "No prizes.",
+    "prizesLockedHint": "Prizes can't be changed after the lottery is created."
   }
 }

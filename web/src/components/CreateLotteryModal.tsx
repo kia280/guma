@@ -7,7 +7,6 @@ import {
   Modal,
   NumberField,
   Tabs,
-  TextArea,
   TextField,
   type UseOverlayStateReturn,
 } from '@heroui/react';
@@ -17,13 +16,13 @@ import React from 'react';
 import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
-import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
+import { GOLD_FORMAT_OPTIONS } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import type { GuildBankItem } from '@/types/guild-bank';
 import type { ItemSourceRef } from '@/types/item';
 import type { Lottery } from '@/types/lottery';
 import { BankItemPicker } from './BankItemPicker';
-import { DateTimePicker } from './DateTimePicker';
+import { LotteryFormFields } from './LotteryFormFields';
 
 export type LotteryPrizeItem = {
   name: string;
@@ -139,102 +138,69 @@ export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotter
                   submit();
                 }}
               >
-                <TextField isRequired>
-                  <Label>{t('lotteryTitle')}</Label>
-                  <Input
-                    variant="secondary"
-                    placeholder={t('lotteryTitlePlaceholder')}
-                    value={title}
-                    onChange={event => setTitle(event.target.value)}
-                    autoFocus
-                  />
-                </TextField>
-                <TextField>
-                  <Label>{t('description')}</Label>
-                  <TextArea
-                    variant="secondary"
-                    rows={2}
-                    value={description}
-                    onChange={event => setDescription(event.target.value)}
-                  />
-                </TextField>
-
-                {!prizeItem && (
-                  <Tabs variant="secondary" selectedKey={prizeMode} onSelectionChange={key => setPrizeMode(key as PrizeMode)}>
-                    <Tabs.ListContainer>
-                      <Tabs.List aria-label={t('prizeSource')}>
-                        <Tabs.Tab id="manual">
-                          {t('prizeSourceManual')}
-                          <Tabs.Indicator />
-                        </Tabs.Tab>
-                        <Tabs.Tab id="bank">
-                          {t('prizeSourceBank')}
-                          <Tabs.Indicator />
-                        </Tabs.Tab>
-                      </Tabs.List>
-                    </Tabs.ListContainer>
-                  </Tabs>
-                )}
-                {isFromBank && <BankItemPicker value={bankItem} onChange={selectBankItem} />}
-                {lockedPrize && (
-                  <div className="flex items-center gap-3 rounded-xl border border-divider bg-surface-secondary p-3">
-                    <Icon icon="solar:gift-linear" width={20} className="text-subtle shrink-0" aria-hidden />
-                    <div className="min-w-0">
-                      <p className="type-body font-medium text-foreground truncate">{lockedPrize.name}</p>
-                      <p className="type-caption text-hint">
-                        {t(lockedPrize.source.bankItemId ? 'prizeFromBankHint' : 'prizeFromBackpackHint')}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-3">
-                  {!lockedPrize && !isFromBank && (
+                <LotteryFormFields
+                  values={{ title, description, ticketPrice, maxTickets, drawDate }}
+                  errors={{ drawDate: isFuture ? null : t('drawDateInPast') }}
+                  onChange={updates => {
+                    if (updates.title !== undefined) setTitle(updates.title);
+                    if (updates.description !== undefined) setDescription(updates.description);
+                    if (updates.ticketPrice !== undefined) setTicketPrice(updates.ticketPrice);
+                    if (updates.maxTickets !== undefined) setMaxTickets(updates.maxTickets);
+                    if (updates.drawDate !== undefined) setDrawDate(updates.drawDate);
+                  }}
+                  prizes={
                     <>
-                      <TextField>
-                        <Label>{t('prizeName')}</Label>
-                        <Input
-                          variant="secondary"
-                          placeholder={t('prizeNamePlaceholder')}
-                          value={prizeName}
-                          onChange={event => setPrizeName(event.target.value)}
-                        />
-                      </TextField>
-                      <NumberField formatOptions={GOLD_FORMAT_OPTIONS} minValue={0} value={prizeAmount} onChange={value => setPrizeAmount(Number.isFinite(value) ? value : 0)}>
-                        <Label>{t('prizeAmount')}</Label>
-                        <NumberField.Group>
-                          <NumberField.DecrementButton />
-                          <NumberField.Input className="w-full min-w-0" />
-                          <NumberField.IncrementButton />
-                        </NumberField.Group>
-                      </NumberField>
+                      {!prizeItem && (
+                        <Tabs variant="secondary" selectedKey={prizeMode} onSelectionChange={key => setPrizeMode(key as PrizeMode)}>
+                          <Tabs.ListContainer>
+                            <Tabs.List aria-label={t('prizeSource')}>
+                              <Tabs.Tab id="manual">
+                                {t('prizeSourceManual')}
+                                <Tabs.Indicator />
+                              </Tabs.Tab>
+                              <Tabs.Tab id="bank">
+                                {t('prizeSourceBank')}
+                                <Tabs.Indicator />
+                              </Tabs.Tab>
+                            </Tabs.List>
+                          </Tabs.ListContainer>
+                        </Tabs>
+                      )}
+                      {isFromBank && <BankItemPicker value={bankItem} onChange={selectBankItem} />}
+                      {lockedPrize && (
+                        <div className="flex items-center gap-3 rounded-xl border border-divider bg-surface-secondary p-3">
+                          <Icon icon="solar:gift-linear" width={20} className="text-subtle shrink-0" aria-hidden />
+                          <div className="min-w-0">
+                            <p className="type-body font-medium text-foreground truncate">{lockedPrize.name}</p>
+                            <p className="type-caption text-hint">
+                              {t(lockedPrize.source.bankItemId ? 'prizeFromBankHint' : 'prizeFromBackpackHint')}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {!lockedPrize && !isFromBank && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <TextField>
+                            <Label>{t('prizeName')}</Label>
+                            <Input
+                              variant="secondary"
+                              placeholder={t('prizeNamePlaceholder')}
+                              value={prizeName}
+                              onChange={event => setPrizeName(event.target.value)}
+                            />
+                          </TextField>
+                          <NumberField formatOptions={GOLD_FORMAT_OPTIONS} minValue={0} value={prizeAmount} onChange={value => setPrizeAmount(Number.isFinite(value) ? value : 0)}>
+                            <Label>{t('prizeAmount')}</Label>
+                            <NumberField.Group>
+                              <NumberField.DecrementButton />
+                              <NumberField.Input className="w-full min-w-0" />
+                              <NumberField.IncrementButton />
+                            </NumberField.Group>
+                          </NumberField>
+                        </div>
+                      )}
                     </>
-                  )}
-                  <NumberField isRequired formatOptions={GOLD_FORMAT_OPTIONS} minValue={GOLD_STEP} value={ticketPrice} onChange={value => setTicketPrice(Number.isFinite(value) ? value : 0)}>
-                    <Label>{t('ticketPrice')}</Label>
-                    <NumberField.Group>
-                      <NumberField.DecrementButton />
-                      <NumberField.Input className="w-full min-w-0" />
-                      <NumberField.IncrementButton />
-                    </NumberField.Group>
-                  </NumberField>
-                  <NumberField isRequired minValue={1} value={maxTickets} onChange={value => setMaxTickets(Number.isFinite(value) ? value : 0)}>
-                    <Label>{t('maxTickets')}</Label>
-                    <NumberField.Group>
-                      <NumberField.DecrementButton />
-                      <NumberField.Input className="w-full min-w-0" />
-                      <NumberField.IncrementButton />
-                    </NumberField.Group>
-                  </NumberField>
-                </div>
-
-                <DateTimePicker
-                  isRequired
-                  label={t('drawDate')}
-                  value={drawDate}
-                  onChange={setDrawDate}
-                  isInvalid={!isFuture}
-                  errorMessage={t('drawDateInPast')}
+                  }
                 />
 
                 {error && (

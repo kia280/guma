@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Chip, Label, NumberField, ProgressBar, ScrollShadow } from '@heroui/react';
+import { Button, Chip, Label, NumberField, ProgressBar, ScrollShadow, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -14,14 +14,16 @@ import { splitDuration } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
-import { useGuildPermissions } from '@/lib/permissions';
 import { GrpcCode, apiErrorCode, isNotFoundError } from '@/lib/guma/errors';
 import { type FormatGold, formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
+import { emitLiveEvent } from '@/lib/live-events';
+import { useGuildPermissions } from '@/lib/permissions';
 import { lotteryStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import type { Lottery, LotteryWinner } from '@/types/lottery';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
-import { DateTimePicker } from './DateTimePicker';
+import { ConfirmDialog } from './ConfirmDialog';
+import { LotteryEditModal } from './LotteryEditModal';
 import { LotteryWheel, type WheelEntry } from './LotteryWheel';
 import { UserAvatar } from './UserAvatar';
 
@@ -86,10 +88,9 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const [phase, setPhase] = React.useState<DrawPhase>('idle');
   const [spinKey, setSpinKey] = React.useState(0);
   const [drawWinners, setDrawWinners] = React.useState<LotteryWinner[]>([]);
-  const [isRescheduling, setIsRescheduling] = React.useState(false);
-  const [rescheduleDate, setRescheduleDate] = React.useState('');
-  const [rescheduleError, setRescheduleError] = React.useState('');
-  const [isSavingSchedule, setIsSavingSchedule] = React.useState(false);
+  const editModal = useOverlayState();
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = React.useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false);
   const retryTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
   const changedDuringDraw = React.useRef(false);
   const lotteryRef = React.useRef(lottery);
@@ -242,7 +243,11 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const participants = lottery.participants ?? [];
   const totalTickets = participants.reduce((sum, p) => sum + p.tickets, 0) || lottery.ticketsSold;
   const myTickets = participants.find(p => p.id === currentUserId)?.tickets ?? 0;
-  const canReschedule = can('changeDrawDate') && lottery.status !== 'ended' && phase === 'idle' && !isDue;
+  const isUndrawn = (lottery.status === 'active' || lottery.status === 'upcoming') && phase === 'idle' && !isDue;
+  const canEdit = can('editLottery') && isUndrawn;
+  const canCancel = can('cancelLottery') && isUndrawn;
+  const isCancelled = lottery.status === 'cancelled';
+  const canDelete = can('deleteLottery') && isCancelled;
   const soldPercent = hasCap ? Math.round((lottery.ticketsSold / lottery.maxTickets) * 100) : 0;
   const isOpen = lottery.status === 'active' && !isDue && phase === 'idle';
   const isSettled = lottery.status === 'ended' && (phase === 'idle' || phase === 'revealed');
@@ -255,7 +260,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     const code = apiErrorCode(err);
     if (!isNotFoundError(err) && code !== GrpcCode.FailedPrecondition) return t('purchaseFailed');
     const [latest] = await Promise.all([load(), refreshMe()]);
-    if (!latest || latest.status === 'ended') return t('purchaseClosed');
+    if (!latest || (latest.status !== 'active' && latest.status !== 'upcoming')) return t('purchaseClosed');
     if (latest.maxTickets > 0 && latest.ticketsSold + requested > latest.maxTickets) {
       return t('purchaseSoldOut', { count: Math.max(0, latest.maxTickets - latest.ticketsSold) });
     }
@@ -290,29 +295,37 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     load();
   };
 
-  const startRescheduling = () => {
-    setRescheduleDate(lottery.drawDate);
-    setRescheduleError('');
-    setIsRescheduling(true);
+  const announceChange = () => {
+    emitLiveEvent({ kind: 'resource', guildId, resource: 'lottery', resourceId: id });
   };
 
-  const saveSchedule = async () => {
-    if (new Date(rescheduleDate).getTime() <= Date.now()) {
-      setRescheduleError(t('drawDateInPast'));
-      return;
-    }
-    setIsSavingSchedule(true);
-    setRescheduleError('');
+  const handleEditSaved = (updated: Lottery) => {
+    setLottery(current => (current ? { ...updated, participants: current.participants } : updated));
+    load();
+    announceChange();
+  };
+
+  const handleEditRejected = () => {
+    load();
+    announceChange();
+  };
+
+  const handleCancelConfirm = async () => {
     try {
-      await apiClient.updateLottery(guildId, id, { drawDate: rescheduleDate });
-      await load();
-      setIsRescheduling(false);
-    } catch (err) {
-      const status = (err as { response?: { status?: number } }).response?.status;
-      setRescheduleError(status === 403 ? t('rescheduleForbidden') : t('rescheduleFailed'));
+      await apiClient.cancelLottery(guildId, id);
     } finally {
-      setIsSavingSchedule(false);
+      load();
+      refreshMe();
+      announceChange();
     }
+  };
+
+  const handleDeleteConfirm = async () => {
+    await apiClient.deleteLottery(guildId, id);
+    announceChange();
+    notify.success(t('deleted'));
+    if (onClose) onClose();
+    else router.push('/dashboard/lottery');
   };
 
   const wheelCaption = () => {
@@ -320,6 +333,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     if (phase === 'spinning') return t('spinning');
     if (showWinners && topWinner) return t('winnerIs', { name: topWinner });
     if (lottery.status === 'ended') return t('noWinners');
+    if (isCancelled) return t('cancelledCaption');
     if (lottery.status === 'upcoming') return t('notStarted');
     return t('drawsIn', {
       time: formatCountdown(drawTime - now, (days, clock) => tCountdown('daysClock', { days, clock })),
@@ -344,12 +358,54 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
             {t(`status.${lottery.status}`)}
           </Chip>
           <h2 className="type-title text-foreground">{lottery.title}</h2>
+          {lottery.description && (
+            <p className="type-body text-subtle mt-1 whitespace-pre-line break-words">{lottery.description}</p>
+          )}
         </div>
         <div className="text-right">
           <p className="type-caption text-hint">{t('prizePool')}</p>
           <p className="type-display text-foreground">{formatGold(lottery.prizePool)}</p>
         </div>
       </div>
+
+      {(canEdit || canCancel || canDelete) && (
+        <div className="flex flex-wrap gap-2">
+          {canEdit && (
+            <Button variant="secondary" className="max-sm:h-11" onPress={editModal.open}>
+              <Icon icon="solar:pen-linear" width={16} />
+              {t('editLottery')}
+            </Button>
+          )}
+          {canCancel && (
+            <Button variant="danger-soft" className="max-sm:h-11" onPress={() => setIsCancelConfirmOpen(true)}>
+              <Icon icon="solar:forbidden-circle-linear" width={16} />
+              {t('cancelLottery')}
+            </Button>
+          )}
+          {canDelete && (
+            <Button variant="danger-soft" className="max-sm:h-11" onPress={() => setIsDeleteConfirmOpen(true)}>
+              <Icon icon="solar:trash-bin-trash-linear" width={16} />
+              {t('deleteLottery')}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {isCancelled && (
+        <div className="flex items-start gap-3 rounded-xl border border-divider bg-surface-secondary p-4">
+          <Icon icon="solar:forbidden-circle-linear" width={20} className="text-subtle shrink-0 mt-0.5" aria-hidden />
+          <div className="min-w-0">
+            <p className="type-body font-medium text-foreground">
+              {lottery.cancelledAt
+                ? t('cancelledBanner', {
+                    date: format.dateTime(new Date(lottery.cancelledAt), { dateStyle: 'medium', timeStyle: 'short' }),
+                  })
+                : t('cancelledBannerNoDate')}
+            </p>
+            <p className="type-caption text-subtle">{t('cancelledBannerDetail')}</p>
+          </div>
+        </div>
+      )}
 
       <div className={`grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] lg:grid-rows-[auto_1fr] gap-x-5 ${stackGap}`}>
         <div className={`lg:col-start-2 lg:row-start-1 flex flex-col ${stackGap}`}>
@@ -371,42 +427,19 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                   })}
                 </dd>
               </div>
-              {canReschedule && !isRescheduling && (
+              {canEdit && (
                 <Button
                   isIconOnly
                   size="sm"
                   variant="ghost"
                   className="text-hint shrink-0 -mr-1 -mt-1"
                   aria-label={t('reschedule')}
-                  onPress={startRescheduling}
+                  onPress={editModal.open}
                 >
                   <Icon icon="solar:pen-linear" width={16} />
                 </Button>
               )}
             </div>
-            {isRescheduling && canReschedule && (
-              <div className="col-span-2 rounded-xl border border-divider p-3 space-y-3">
-                <DateTimePicker
-                  isRequired
-                  label={t('newDrawDate')}
-                  value={rescheduleDate}
-                  onChange={value => {
-                    setRescheduleDate(value);
-                    setRescheduleError('');
-                  }}
-                  isInvalid={!!rescheduleError}
-                  errorMessage={rescheduleError}
-                />
-                <div className="flex justify-end gap-2">
-                  <Button size="sm" variant="secondary" onPress={() => setIsRescheduling(false)}>
-                    {t('cancel')}
-                  </Button>
-                  <Button size="sm" isPending={isSavingSchedule} onPress={saveSchedule}>
-                    {t('saveSchedule')}
-                  </Button>
-                </div>
-              </div>
-            )}
             <div className="col-span-2 rounded-xl border border-divider p-3 space-y-2">
               {hasCap ? (
                 <>
@@ -540,6 +573,31 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           </section>
         </div>
       </div>
+
+      {canEdit && (
+        <LotteryEditModal lottery={lottery} state={editModal} onSaved={handleEditSaved} onRejected={handleEditRejected} />
+      )}
+
+      <ConfirmDialog
+        heading={t('cancelConfirmTitle')}
+        body={t('cancelConfirmBody', { sold: lottery.ticketsSold })}
+        confirmLabel={t('cancelConfirm')}
+        failedMessage={t('cancelFailed')}
+        isOpen={isCancelConfirmOpen}
+        onOpenChange={setIsCancelConfirmOpen}
+        onConfirm={handleCancelConfirm}
+        success={{ title: t('cancelSuccess'), detail: t('cancelSuccessDetail') }}
+      />
+
+      <ConfirmDialog
+        heading={t('deleteConfirmTitle')}
+        body={t('deleteConfirmBody')}
+        confirmLabel={t('deleteConfirm')}
+        failedMessage={t('deleteFailed')}
+        isOpen={isDeleteConfirmOpen}
+        onOpenChange={setIsDeleteConfirmOpen}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }
