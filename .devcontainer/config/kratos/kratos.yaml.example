@@ -19,14 +19,20 @@ selfservice:
     - http://localhost:8081/login
 
   methods:
-    # password:
-    #   enabled: true
-    # lookup_secret:
-    #   enabled: false
-    # link:
-    #   enabled: false
-    # code:
-    #   enabled: false
+    password:
+      enabled: false
+    code:
+      enabled: false
+    link:
+      enabled: false
+    lookup_secret:
+      enabled: false
+    totp:
+      enabled: false
+    webauthn:
+      enabled: false
+    passkey:
+      enabled: false
     oidc:
       config:
         providers:
@@ -72,11 +78,6 @@ selfservice:
     # registration:
     #   lifespan: 10m
     #   ui_url: http://localhost:8081/registration
-    #   after:
-    #     password:
-    #       hooks:
-    #         - hook: session
-    #         - hook: show_verification_ui
 
 log:
   level: debug

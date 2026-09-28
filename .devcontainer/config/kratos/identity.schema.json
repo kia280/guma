@@ -12,11 +12,6 @@
           "title": "E-Mail",
           "minLength": 3,
           "ory.sh/kratos": {
-            "credentials": {
-              "password": {
-                "identifier": true
-              }
-            },
             "verification": {
               "via": "email"
             },
