@@ -477,8 +477,9 @@ func (q *Queries) InsertGuildMember(ctx context.Context, arg InsertGuildMemberPa
 }
 
 const listGuildMemberUsers = `-- name: ListGuildMemberUsers :many
-SELECT u.id, u.email, u.username,
-       COALESCE(u.display_name, '') AS display_name,
+SELECT u.id, u.email,
+       COALESCE(u.username, '')::text AS username,
+       m.display_name,
        COALESCE(u.avatar_url, '')   AS avatar_url,
        u.created_at,
        m.role
@@ -540,9 +541,9 @@ func (q *Queries) ListGuildMemberUsers(ctx context.Context, arg ListGuildMemberU
 
 const listGuildMembers = `-- name: ListGuildMembers :many
 SELECT m.id, m.user_id, m.guild_id,
-       COALESCE(NULLIF(m.display_name, ''), NULLIF(u.display_name, ''), u.username)::text AS display_name,
+       m.display_name,
        m.role, m.profile, m.joined_at, m.last_active,
-       u.email,
+       COALESCE(u.discord_username, '')::text AS discord_username,
        COALESCE(u.avatar_url, '') AS avatar_url
 FROM members m
 JOIN users u ON u.id = m.user_id
@@ -567,16 +568,16 @@ type ListGuildMembersParams struct {
 }
 
 type ListGuildMembersRow struct {
-	ID          uuid.UUID
-	UserID      uuid.UUID
-	GuildID     uuid.UUID
-	DisplayName string
-	Role        string
-	Profile     []byte
-	JoinedAt    time.Time
-	LastActive  time.Time
-	Email       string
-	AvatarUrl   string
+	ID              uuid.UUID
+	UserID          uuid.UUID
+	GuildID         uuid.UUID
+	DisplayName     string
+	Role            string
+	Profile         []byte
+	JoinedAt        time.Time
+	LastActive      time.Time
+	DiscordUsername string
+	AvatarUrl       string
 }
 
 func (q *Queries) ListGuildMembers(ctx context.Context, arg ListGuildMembersParams) ([]ListGuildMembersRow, error) {
@@ -602,7 +603,7 @@ func (q *Queries) ListGuildMembers(ctx context.Context, arg ListGuildMembersPara
 			&i.Profile,
 			&i.JoinedAt,
 			&i.LastActive,
-			&i.Email,
+			&i.DiscordUsername,
 			&i.AvatarUrl,
 		); err != nil {
 			return nil, err

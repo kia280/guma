@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -35,8 +36,8 @@ func TestUserService_UpdateMe_InvalidArgument(t *testing.T) {
 		name string
 		req  *gumav1.UpdateMeRequest
 	}{
-		{name: "empty display name", req: &gumav1.UpdateMeRequest{DisplayName: "", Username: "ada"}},
-		{name: "invalid username", req: &gumav1.UpdateMeRequest{DisplayName: "Ada", Username: "a b!!"}},
+		{name: "empty display name", req: &gumav1.UpdateMeRequest{DisplayName: ""}},
+		{name: "display name too long", req: &gumav1.UpdateMeRequest{DisplayName: strings.Repeat("名", 33)}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

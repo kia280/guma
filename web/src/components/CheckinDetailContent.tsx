@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useCountdown } from '@/hooks/useNow';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
@@ -35,6 +36,7 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
   const router = useRouter();
   const t = useTranslations('checkinDetailPage');
   const formatGold = useFormatGold();
+  const userName = useUserName();
   const format = useIntlFormatter();
 
   const formatDateTime = (value: string) => {
@@ -230,10 +232,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           )}
         </div>
         {hasCheckedIn ? (
-          <Chip size="sm" color="success" variant="secondary" className="shrink-0">
-            <Icon icon="solar:check-circle-linear" width={14} />
+          <Button
+            isDisabled
+            variant="secondary"
+            className="shrink-0 max-sm:h-11 bg-success-soft text-success-soft-foreground disabled:opacity-100 disabled:cursor-default"
+          >
+            <Icon icon="solar:check-circle-linear" width={16} />
             {t('checkedIn')}
-          </Chip>
+          </Button>
         ) : isOpen_ ? (
           <Button variant="primary" className="shrink-0 max-sm:h-11" onPress={openCheckinModal}>
             {t('checkIn')}
@@ -397,10 +403,10 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                     <span className="type-caption text-hint w-5 text-right shrink-0">
                       {idx + 1}
                     </span>
-                    <UserAvatar name={member.username} src={member.avatar} className="shrink-0" />
+                    <UserAvatar name={userName(member.username)} src={member.avatar} className="shrink-0" />
                     <div className="flex-1 min-w-0 sm:flex sm:items-center sm:gap-3">
                       <div className="min-w-0 sm:flex-1">
-                        <p className="type-body font-medium text-foreground truncate">{member.username}</p>
+                        <p className="type-body font-medium text-foreground truncate">{userName(member.username)}</p>
                         {member.notes && (
                           <p className="type-caption text-hint truncate">{member.notes}</p>
                         )}

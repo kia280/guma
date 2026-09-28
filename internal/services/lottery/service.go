@@ -509,7 +509,7 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 			prize = prizeList[prizeIdx]
 		}
 
-		winnerInfo, _ := qtx.GetUserUsernameAndAvatar(ctx, t.UserID)
+		winnerInfo, _ := qtx.GetUserUsernameAndAvatar(ctx, db.GetUserUsernameAndAvatarParams{GuildID: guildID, UserID: t.UserID})
 
 		winnerID, err := qtx.InsertLotteryWinner(ctx, db.InsertLotteryWinnerParams{
 			LotteryID: lotteryID, UserID: t.UserID,
@@ -613,7 +613,7 @@ func creditTicketRevenue(ctx context.Context, qtx *db.Queries, guildID, lotteryI
 	if err := qtx.CreditGuildBank(ctx, db.CreditGuildBankParams{Amount: revenue, GuildID: guildID}); err != nil {
 		return fmt.Errorf("%w: credit ticket revenue: %v", errs.ErrInternal, err)
 	}
-	creatorName, _ := qtx.GetUserDisplayName(ctx, info.CreatedBy)
+	creatorName, _ := qtx.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: info.CreatedBy})
 	if err := qtx.InsertBankProceeds(ctx, db.InsertBankProceedsParams{
 		GuildID: guildID, UserID: info.CreatedBy, Username: creatorName,
 		Amount: revenue, Note: info.Title, Kind: "lottery_revenue",

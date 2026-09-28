@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
@@ -44,6 +45,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
   const guildId = useCurrentGuildId();
   const notify = useToast();
   const format = useIntlFormatter();
+  const userName = useUserName();
   const formatGold = useFormatGold();
   const { can } = useGuildPermissions();
   const modal = useOverlayState();
@@ -81,7 +83,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
   useLiveResource(['bank'], load, { guildId });
 
   const eligible = attendees.filter((member): member is AttendanceMember & { userId: string } => !!member.userId);
-  const nameOf = (userId: string) => eligible.find(member => member.userId === userId)?.username ?? '';
+  const nameOf = (userId: string) => userName(eligible.find(member => member.userId === userId)?.username);
   const isRetracted = pot.retracted > 0;
   const canDistribute = can('distributeLoot') && !isRetracted && pot.remaining > 0 && eligible.length > 0;
 
@@ -314,9 +316,9 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
                     <ul aria-label={t('recipients')} className="-mt-2 flex flex-col divide-y divide-divider">
                       {eligible.map(member => (
                         <li key={member.userId} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2">
-                          <UserAvatar name={member.username} src={member.avatar} className="size-8 shrink-0" />
+                          <UserAvatar name={userName(member.username)} src={member.avatar} className="size-8 shrink-0" />
                           <div className="flex-1 min-w-[7rem]">
-                            <p className="type-body font-medium text-foreground truncate">{member.username}</p>
+                            <p className="type-body font-medium text-foreground truncate">{userName(member.username)}</p>
                             {(received[member.userId] ?? 0) > 0 && (
                               <p className="type-caption text-hint tabular-nums">
                                 {t('receivedSoFar', { amount: formatGold(received[member.userId]) })}
@@ -325,7 +327,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
                           </div>
                           <div className="ml-auto flex shrink-0 gap-2">
                             <NumberField
-                              aria-label={t('weightFor', { name: member.username })}
+                              aria-label={t('weightFor', { name: userName(member.username) })}
                               className="w-20"
                               formatOptions={WEIGHT_FORMAT_OPTIONS}
                               minValue={0}
@@ -333,13 +335,13 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
                               value={weightOf(weights, member.userId)}
                               onChange={value => setWeight(member.userId, value)}
                             >
-                              <Label className="sr-only">{t('weightFor', { name: member.username })}</Label>
+                              <Label className="sr-only">{t('weightFor', { name: userName(member.username) })}</Label>
                               <NumberField.Group>
                                 <NumberField.Input className="w-full min-w-0 text-right" />
                               </NumberField.Group>
                             </NumberField>
                             <NumberField
-                              aria-label={t('amountFor', { name: member.username })}
+                              aria-label={t('amountFor', { name: userName(member.username) })}
                               className="w-32"
                               validationBehavior="aria"
                               isInvalid={allocation.isOverAllocated && (amounts[member.userId] ?? 0) > 0}
@@ -349,7 +351,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
                               value={amounts[member.userId] ?? Number.NaN}
                               onChange={value => setAmount(member.userId, Number.isFinite(value) ? value : Number.NaN)}
                             >
-                              <Label className="sr-only">{t('amountFor', { name: member.username })}</Label>
+                              <Label className="sr-only">{t('amountFor', { name: userName(member.username) })}</Label>
                               <NumberField.Group>
                                 <NumberField.Input className="w-full min-w-0 text-right" placeholder="0.00" />
                               </NumberField.Group>

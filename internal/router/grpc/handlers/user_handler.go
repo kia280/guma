@@ -55,7 +55,6 @@ func (h *UserHandler) UpdateMe(ctx context.Context, req *gumav1.UpdateMeRequest)
 
 	u, err := h.svc.UpdateMe(ctx, userID, session.CookieFromContext(ctx), usersvc.UpdateParams{
 		DisplayName: req.DisplayName,
-		Username:    req.Username,
 		Bio:         req.Bio,
 		AvatarURL:   req.AvatarUrl,
 	})
@@ -106,7 +105,6 @@ func userToProto(u *usersvc.User) *gumav1.User {
 	return &gumav1.User{
 		Id:             u.ID,
 		Email:          u.Email,
-		Username:       u.Username,
 		DisplayName:    u.DisplayName,
 		Bio:            u.Bio,
 		AvatarUrl:      u.AvatarURL,

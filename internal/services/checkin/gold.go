@@ -266,7 +266,7 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 	if err != nil {
 		return nil, fmt.Errorf("%w: checkin", errs.ErrNotFound)
 	}
-	actorName, _ := s.q.GetUserDisplayName(ctx, actorID)
+	actorName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: actorID})
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -417,7 +417,7 @@ func (s *Service) retractGoldLoot(ctx context.Context, qtx *db.Queries, guildID,
 	if err != nil {
 		return nil, fmt.Errorf("%w: retract gold pot: %v", errs.ErrInternal, err)
 	}
-	actorName, _ := qtx.GetUserDisplayName(ctx, actorID)
+	actorName, _ := qtx.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: actorID})
 	if err := qtx.InsertCheckinGoldBankActivity(ctx, db.InsertCheckinGoldBankActivityParams{
 		GuildID: guildID, UserID: actorID, Username: actorName, Amount: -remaining, Note: title,
 		Kind: goldRetractedActivityKind, CheckinID: checkinID,

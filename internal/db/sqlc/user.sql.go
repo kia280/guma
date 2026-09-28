@@ -72,11 +72,11 @@ INSERT INTO users (id, email, username, display_name, avatar_url)
 VALUES (
     $1,
     $2,
-    $3,
+    NULLIF($3::text, ''),
     NULLIF($4::text, ''),
     NULLIF($5::text, '')
 )
-RETURNING id, email, username,
+RETURNING id, email, COALESCE(username, '')::text AS username,
           COALESCE(display_name, '') AS display_name,
           COALESCE(bio, '')          AS bio,
           COALESCE(avatar_url, '')   AS avatar_url,
@@ -125,7 +125,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, username,
+SELECT id, email, COALESCE(username, '')::text AS username,
        COALESCE(display_name, '') AS display_name,
        COALESCE(bio, '')          AS bio,
        COALESCE(avatar_url, '')   AS avatar_url,
@@ -164,6 +164,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 const getUserCurrentGuildBalance = `-- name: GetUserCurrentGuildBalance :one
 SELECT m.guild_id,
        m.role,
+       m.display_name,
        COALESCE(w.balance, 0)::bigint AS balance
 FROM members m
 LEFT JOIN wallets w ON w.user_id = m.user_id AND w.guild_id = m.guild_id
@@ -173,20 +174,26 @@ LIMIT 1
 `
 
 type GetUserCurrentGuildBalanceRow struct {
-	GuildID uuid.UUID
-	Role    string
-	Balance int64
+	GuildID     uuid.UUID
+	Role        string
+	DisplayName string
+	Balance     int64
 }
 
 func (q *Queries) GetUserCurrentGuildBalance(ctx context.Context, userID uuid.UUID) (GetUserCurrentGuildBalanceRow, error) {
 	row := q.db.QueryRow(ctx, getUserCurrentGuildBalance, userID)
 	var i GetUserCurrentGuildBalanceRow
-	err := row.Scan(&i.GuildID, &i.Role, &i.Balance)
+	err := row.Scan(
+		&i.GuildID,
+		&i.Role,
+		&i.DisplayName,
+		&i.Balance,
+	)
 	return i, err
 }
 
 const getUserPublicByID = `-- name: GetUserPublicByID :one
-SELECT id, username,
+SELECT id, COALESCE(username, '')::text AS username,
        COALESCE(display_name, '') AS display_name,
        COALESCE(avatar_url, '')   AS avatar_url,
        created_at, updated_at
@@ -242,7 +249,7 @@ func (q *Queries) ListUserGuildIDs(ctx context.Context, userID uuid.UUID) ([]uui
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, username,
+SELECT id, email, COALESCE(username, '')::text AS username,
        COALESCE(display_name, '') AS display_name,
        COALESCE(avatar_url, '')   AS avatar_url,
        created_at
@@ -307,15 +314,33 @@ func (q *Queries) SumUserEarnedSpent(ctx context.Context, userID uuid.UUID) (Sum
 	return i, err
 }
 
+const updateMemberDisplayName = `-- name: UpdateMemberDisplayName :execrows
+UPDATE members SET display_name = $1::text
+WHERE user_id = $2 AND guild_id = $3
+`
+
+type UpdateMemberDisplayNameParams struct {
+	DisplayName string
+	UserID      uuid.UUID
+	GuildID     uuid.UUID
+}
+
+func (q *Queries) UpdateMemberDisplayName(ctx context.Context, arg UpdateMemberDisplayNameParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateMemberDisplayName, arg.DisplayName, arg.UserID, arg.GuildID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users SET
     display_name = CASE WHEN $1::text != '' THEN $1::text ELSE display_name END,
-    username     = CASE WHEN $2::text     != '' THEN $2::text     ELSE username     END,
-    bio          = CASE WHEN $3::text          != '' THEN $3::text          ELSE bio          END,
-    avatar_url   = CASE WHEN $4::text   != '' THEN $4::text   ELSE avatar_url   END,
+    bio          = CASE WHEN $2::text          != '' THEN $2::text          ELSE bio          END,
+    avatar_url   = CASE WHEN $3::text   != '' THEN $3::text   ELSE avatar_url   END,
     updated_at   = NOW()
-WHERE id = $5
-RETURNING id, email, username,
+WHERE id = $4
+RETURNING id, email, COALESCE(username, '')::text AS username,
           COALESCE(display_name, '') AS display_name,
           COALESCE(bio, '')          AS bio,
           COALESCE(avatar_url, '')   AS avatar_url,
@@ -324,7 +349,6 @@ RETURNING id, email, username,
 
 type UpdateUserParams struct {
 	DisplayName string
-	Username    string
 	Bio         string
 	AvatarUrl   string
 	ID          uuid.UUID
@@ -344,7 +368,6 @@ type UpdateUserRow struct {
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
 	row := q.db.QueryRow(ctx, updateUser,
 		arg.DisplayName,
-		arg.Username,
 		arg.Bio,
 		arg.AvatarUrl,
 		arg.ID,
@@ -364,19 +387,21 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateU
 }
 
 const upsertUserFromKratos = `-- name: UpsertUserFromKratos :one
-INSERT INTO users (id, email, username, display_name, avatar_url)
+INSERT INTO users (id, email, display_name, avatar_url, discord_username)
 VALUES (
     $1,
     $2,
-    $3,
+    NULLIF($3::text, ''),
     NULLIF($4::text, ''),
     NULLIF($5::text, '')
 )
 ON CONFLICT (id) DO UPDATE SET
-    email      = EXCLUDED.email,
-    avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
-    updated_at = NOW()
-RETURNING id, email, username,
+    email            = EXCLUDED.email,
+    avatar_url       = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
+    display_name     = COALESCE(NULLIF(users.display_name, ''), EXCLUDED.display_name),
+    discord_username = COALESCE(EXCLUDED.discord_username, users.discord_username),
+    updated_at       = NOW()
+RETURNING id, email, COALESCE(username, '')::text AS username,
           COALESCE(display_name, '') AS display_name,
           COALESCE(bio, '')          AS bio,
           COALESCE(avatar_url, '')   AS avatar_url,
@@ -384,11 +409,11 @@ RETURNING id, email, username,
 `
 
 type UpsertUserFromKratosParams struct {
-	ID          uuid.UUID
-	Email       string
-	Username    string
-	DisplayName string
-	AvatarUrl   string
+	ID              uuid.UUID
+	Email           string
+	DisplayName     string
+	AvatarUrl       string
+	DiscordUsername string
 }
 
 type UpsertUserFromKratosRow struct {
@@ -410,9 +435,9 @@ func (q *Queries) UpsertUserFromKratos(ctx context.Context, arg UpsertUserFromKr
 	row := q.db.QueryRow(ctx, upsertUserFromKratos,
 		arg.ID,
 		arg.Email,
-		arg.Username,
 		arg.DisplayName,
 		arg.AvatarUrl,
+		arg.DiscordUsername,
 	)
 	var i UpsertUserFromKratosRow
 	err := row.Scan(

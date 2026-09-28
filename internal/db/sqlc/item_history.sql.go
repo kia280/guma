@@ -59,8 +59,8 @@ func (q *Queries) InsertItemEvent(ctx context.Context, arg InsertItemEventParams
 
 const listItemEvents = `-- name: ListItemEvents :many
 SELECT e.seq, e.kind, e.source, e.actor_id, e.subject_id, e.reference_id, e.created_at,
-       COALESCE(notification_user_name(e.actor_id), '')::text AS actor_name,
-       COALESCE(notification_user_name(e.subject_id), '')::text AS subject_name,
+       COALESCE(member_display_name(e.guild_id, e.actor_id), '')::text AS actor_name,
+       COALESCE(member_display_name(e.guild_id, e.subject_id), '')::text AS subject_name,
        COALESCE(CASE e.source
            WHEN 'checkin' THEN (SELECT c.title FROM checkins c WHERE c.id = e.reference_id)
            WHEN 'auction' THEN (SELECT a.item->>'name' FROM auctions a WHERE a.id = e.reference_id)

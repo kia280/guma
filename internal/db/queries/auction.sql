@@ -1,15 +1,18 @@
 -- name: ListAuctions :many
-SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
-       current_bidder_id, min_bid_increment, start_time, end_time,
-       status, is_blind, created_at, updated_at,
-       source_type, settled_at, source_item_id, cancelled_at
+SELECT sqlc.embed(auctions),
+       COALESCE(member_display_name(auctions.guild_id, auctions.seller_id), '')::text          AS seller_name,
+       COALESCE(seller.avatar_url, '')::text                                   AS seller_avatar_url,
+       COALESCE(member_display_name(auctions.guild_id, auctions.current_bidder_id), '')::text AS current_bidder_name,
+       COALESCE(bidder.avatar_url, '')::text                                   AS current_bidder_avatar_url
 FROM auctions
-WHERE guild_id = $1
-  AND (sqlc.arg(status_filter)::text   = '' OR status             = sqlc.arg(status_filter)::text)
-  AND (sqlc.arg(category_filter)::text = '' OR item->>'category'  = sqlc.arg(category_filter)::text)
-  AND (sqlc.arg(rarity_filter)::text   = '' OR item->>'rarity'    = sqlc.arg(rarity_filter)::text)
-  AND (sqlc.arg(search)::text          = '%%' OR item->>'name'   ILIKE sqlc.arg(search)::text)
-ORDER BY created_at DESC
+LEFT JOIN users seller ON seller.id = auctions.seller_id
+LEFT JOIN users bidder ON bidder.id = auctions.current_bidder_id
+WHERE auctions.guild_id = $1
+  AND (sqlc.arg(status_filter)::text   = '' OR auctions.status            = sqlc.arg(status_filter)::text)
+  AND (sqlc.arg(category_filter)::text = '' OR auctions.item->>'category' = sqlc.arg(category_filter)::text)
+  AND (sqlc.arg(rarity_filter)::text   = '' OR auctions.item->>'rarity'   = sqlc.arg(rarity_filter)::text)
+  AND (sqlc.arg(search)::text          = '%%' OR auctions.item->>'name'  ILIKE sqlc.arg(search)::text)
+ORDER BY auctions.created_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountAuctions :one
@@ -21,11 +24,15 @@ WHERE guild_id = $1
   AND (sqlc.arg(search)::text          = '%%' OR item->>'name'   ILIKE sqlc.arg(search)::text);
 
 -- name: GetAuction :one
-SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
-       current_bidder_id, min_bid_increment, start_time, end_time,
-       status, is_blind, created_at, updated_at,
-       source_type, settled_at, source_item_id, cancelled_at
-FROM auctions WHERE id = $1 AND guild_id = $2;
+SELECT sqlc.embed(auctions),
+       COALESCE(member_display_name(auctions.guild_id, auctions.seller_id), '')::text          AS seller_name,
+       COALESCE(seller.avatar_url, '')::text                                   AS seller_avatar_url,
+       COALESCE(member_display_name(auctions.guild_id, auctions.current_bidder_id), '')::text AS current_bidder_name,
+       COALESCE(bidder.avatar_url, '')::text                                   AS current_bidder_avatar_url
+FROM auctions
+LEFT JOIN users seller ON seller.id = auctions.seller_id
+LEFT JOIN users bidder ON bidder.id = auctions.current_bidder_id
+WHERE auctions.id = $1 AND auctions.guild_id = $2;
 
 -- name: CreateAuction :one
 INSERT INTO auctions (
@@ -90,9 +97,14 @@ RETURNING id, placed_at;
 SELECT EXISTS(SELECT 1 FROM auctions WHERE id = $1 AND guild_id = $2);
 
 -- name: ListBids :many
-SELECT id, auction_id, bidder_id, amount, is_winning, placed_at
-FROM bids WHERE auction_id = $1
-ORDER BY placed_at DESC
+SELECT b.id, b.auction_id, b.bidder_id, b.amount, b.is_winning, b.placed_at,
+       COALESCE(member_display_name(a.guild_id, b.bidder_id), '')::text AS bidder_name,
+       COALESCE(u.avatar_url, '')::text                                AS bidder_avatar_url
+FROM bids b
+JOIN auctions a ON a.id = b.auction_id
+LEFT JOIN users u ON u.id = b.bidder_id
+WHERE b.auction_id = $1
+ORDER BY b.placed_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountBids :one

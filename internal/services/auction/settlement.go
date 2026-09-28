@@ -142,7 +142,7 @@ func creditGuildBank(ctx context.Context, qtx *db.Queries, a db.LockAuctionForSe
 	if err := qtx.CreditGuildBank(ctx, db.CreditGuildBankParams{Amount: a.CurrentBid, GuildID: a.GuildID}); err != nil {
 		return fmt.Errorf("credit guild bank: %w", err)
 	}
-	winnerName, _ := qtx.GetUserDisplayName(ctx, *a.CurrentBidderID)
+	winnerName, _ := qtx.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: a.GuildID, UserID: *a.CurrentBidderID})
 	if err := qtx.InsertBankProceeds(ctx, db.InsertBankProceedsParams{
 		GuildID: a.GuildID, UserID: *a.CurrentBidderID, Username: winnerName,
 		Amount: a.CurrentBid, Note: itemName(a.Item), Kind: "auction_proceeds",

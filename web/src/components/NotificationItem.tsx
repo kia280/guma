@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useNow, useTranslations } from 'next-intl';
 import React from 'react';
+import { useUserName } from '@/hooks/useUserName';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
@@ -44,6 +45,7 @@ export type NotificationItemProps = {
 
 export function NotificationItem({ notification, onOpen }: NotificationItemProps) {
   const t = useTranslations('notificationItem');
+  const userName = useUserName();
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const now = useNow({ updateInterval: 60 * 1000 });
@@ -64,6 +66,7 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
           <p className={cn('type-body', isRead ? 'text-subtle' : 'text-foreground')}>
             {t.rich(type, {
               ...params,
+              actor: userName(textParam(params.actor)),
               amount,
               b: chunks => <span className="font-medium text-foreground">{chunks}</span>,
             })}

@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useCountdown } from '@/hooks/useNow';
+import { useUserName } from '@/hooks/useUserName';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
@@ -46,6 +47,7 @@ const LotteryCard = ({
   winners,
 }: LotteryCardProps) => {
   const t = useTranslations('lotteryCard');
+  const userName = useUserName();
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const href = `/dashboard/lottery/${id}`;
@@ -144,10 +146,10 @@ const LotteryCard = ({
               <p className="type-caption text-hint">{t('winners')}</p>
               {winners.slice(0, 3).map(winner => (
                 <div key={winner.id} className="flex items-center gap-2">
-                  <UserAvatar name={winner.username} src={winner.avatar} />
+                  <UserAvatar name={userName(winner.username)} src={winner.avatar} />
                   <div className="flex-1 min-w-0">
                     <p className="type-label text-foreground truncate">
-                      {winner.username}
+                      {userName(winner.username)}
                     </p>
                     <p className="type-caption text-success tabular-nums">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</p>
                   </div>

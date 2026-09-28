@@ -458,6 +458,7 @@
     "endBeforeStart": "結束時間必須晚於開始時間。"
   },
   "adminPage": {
+    "discordUsername": "Discord 使用者名稱",
     "users": "用戶",
     "guild": "公會",
     "announcements": "公告",
@@ -927,6 +928,11 @@
     "usernameInvalid": "用戶名只能包含任何語言的文字或數字、點、底線與連字號，且須以文字或數字開頭。",
     "usernameTaken": "此用戶名已被使用。",
     "usernameHint": "{min}–{max} 個字元，可使用任何語言的文字或數字、點、底線或連字號。",
+    "name": "名稱",
+    "nameHint": "公會成員看到的名稱，同一公會內不能和其他成員重複，最多 {max} 個字元。",
+    "nameRequired": "請輸入名稱。",
+    "nameTooLong": "名稱最多 {max} 個字元。",
+    "nameTaken": "公會裡已經有成員使用這個名稱。",
     "bioTooLong": "個人簡介最多 {max} 個字元。",
     "saveInvalid": "請修正標示的欄位後再試一次。"
   },
@@ -1516,7 +1522,7 @@
     "loadFailed": "無法載入戰利品的去向。",
     "retry": "重試",
     "inBank": "在公會倉庫",
-    "inBankWithRequests": "在銀行 · {count} 筆申請",
+    "inBankWithRequests": "在公會倉庫 · {count} 筆申請",
     "distributed": "已分配",
     "wonBy": "獲得者：{name}",
     "actionsFor": "{item} 的操作",
@@ -1529,6 +1535,7 @@
     "assignRejectsRequests": "這個物品的 {count} 筆待審申請會被拒絕。",
     "recipient": "出席成員",
     "recipientPlaceholder": "選擇出席成員",
+    "recipientRequired": "請選擇出席成員",
     "cancel": "取消",
     "assignConfirm": "分配物品",
     "assignSuccess": "已將 {item} 分配給 {name}。",
@@ -1672,5 +1679,8 @@
     "prizes": "獎品",
     "noPrizes": "沒有獎品。",
     "prizesLockedHint": "建立抽獎後就無法修改獎品。"
+  },
+  "userName": {
+    "unknown": "未知成員"
   }
 }

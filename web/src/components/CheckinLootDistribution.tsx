@@ -1,22 +1,12 @@
 'use client';
 
-import {
-  Button,
-  Chip,
-  Description,
-  Dropdown,
-  Label,
-  ListBox,
-  Modal,
-  Select,
-  Spinner,
-  useOverlayState,
-} from '@heroui/react';
+import { Button, Chip, Dropdown, Modal, Spinner, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
@@ -26,7 +16,7 @@ import type { GuildBankItem } from '@/types/guild-bank';
 import { CreateAuctionModal, type AuctionDraftItem } from './CreateAuctionModal';
 import { CreateLotteryModal, type LotteryPrizeItem } from './CreateLotteryModal';
 import { ItemLockChip } from './ItemLockChip';
-import { UserAvatar } from './UserAvatar';
+import { MemberComboBox, type MemberOption } from './MemberComboBox';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
 
@@ -39,6 +29,7 @@ type CheckinLootDistributionProps = {
 export function CheckinLootDistribution({ checkinId, lootList, attendees }: CheckinLootDistributionProps) {
   const t = useTranslations('checkinLoot');
   const labels = useTranslations('createAuctionModal');
+  const userName = useUserName();
   const guildId = useCurrentGuildId();
   const notify = useToast();
   const { can } = useGuildPermissions();
@@ -49,7 +40,8 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees }: Chec
   const [bankItems, setBankItems] = React.useState<GuildBankItem[]>([]);
   const [status, setStatus] = React.useState<LoadStatus>('loading');
   const [assignTarget, setAssignTarget] = React.useState<GuildBankItem | null>(null);
-  const [recipientId, setRecipientId] = React.useState<string | null>(null);
+  const [recipientId, setRecipientId] = React.useState('');
+  const [showRecipientError, setShowRecipientError] = React.useState(false);
   const [isAssigning, setIsAssigning] = React.useState(false);
   const [assignError, setAssignError] = React.useState<string | null>(null);
   const [auctionItem, setAuctionItem] = React.useState<AuctionDraftItem | null>(null);
@@ -74,24 +66,37 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees }: Chec
   const canDistribute = can('distributeLoot');
   const canAuction = can('auctionBankItems');
   const canRaffle = can('createLottery');
-  const eligibleAttendees = attendees.filter(member => member.userId);
+  const recipientOptions = React.useMemo<MemberOption[]>(
+    () =>
+      attendees.flatMap(member =>
+        member.userId
+          ? [{ id: member.userId, name: userName(member.username), avatar: member.avatar, description: member.notes }]
+          : [],
+      ),
+    [attendees, userName],
+  );
   const inBank = new Map(bankItems.map(item => [item.id, item]));
 
   const openAssign = (item: GuildBankItem) => {
     setAssignTarget(item);
-    setRecipientId(null);
+    setRecipientId('');
+    setShowRecipientError(false);
     setAssignError(null);
     assignModal.open();
   };
 
   const submitAssign = async () => {
-    if (!assignTarget || !recipientId) return;
+    if (!assignTarget) return;
+    if (!recipientId) {
+      setShowRecipientError(true);
+      return;
+    }
     setIsAssigning(true);
     setAssignError(null);
     try {
       await apiClient.assignLoot(guildId, checkinId, assignTarget.id, recipientId);
-      const recipient = eligibleAttendees.find(member => member.userId === recipientId);
-      notify.success(t('assignSuccess', { item: assignTarget.name, name: recipient?.username ?? '' }));
+      const recipient = recipientOptions.find(member => member.id === recipientId);
+      notify.success(t('assignSuccess', { item: assignTarget.name, name: recipient?.name ?? '' }));
       assignModal.close();
       load();
     } catch (err) {
@@ -187,13 +192,13 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees }: Chec
                   <Dropdown.Popover>
                     <Dropdown.Menu
                       aria-label={t('actionsFor', { item: loot.name })}
-                      disabledKeys={eligibleAttendees.length === 0 ? ['assign'] : []}
+                      disabledKeys={recipientOptions.length === 0 ? ['assign'] : []}
                       onAction={key => onAction(bankItem, key)}
                     >
                       <Dropdown.Item id="assign" textValue={t('assign')}>
                         <Icon icon="solar:user-hand-up-linear" width={16} />
                         <span>{t('assign')}</span>
-                        {eligibleAttendees.length === 0 && (
+                        {recipientOptions.length === 0 && (
                           <span className="ml-auto type-caption text-hint">{t('noAttendees')}</span>
                         )}
                       </Dropdown.Item>
@@ -238,34 +243,16 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees }: Chec
                     {t('assignRejectsRequests', { count: assignTarget.pendingRequestCount })}
                   </p>
                 )}
-                <Select
-                  isRequired
-                  placeholder={t('recipientPlaceholder')}
+                <MemberComboBox
+                  members={recipientOptions}
                   value={recipientId}
-                  onChange={key => setRecipientId(key ? String(key) : null)}
-                >
-                  <Label>{t('recipient')}</Label>
-                  <Select.Trigger>
-                    <Select.Value />
-                    <Select.Indicator />
-                  </Select.Trigger>
-                  <Select.Popover>
-                    <ListBox>
-                      {eligibleAttendees.map(member => (
-                        <ListBox.Item key={member.userId} id={member.userId} textValue={member.username}>
-                          <div className="flex items-center gap-2">
-                            <UserAvatar name={member.username} src={member.avatar} className="size-6" />
-                            <div className="flex flex-col">
-                              <Label>{member.username}</Label>
-                              {member.notes && <Description>{member.notes}</Description>}
-                            </div>
-                          </div>
-                          <ListBox.ItemIndicator />
-                        </ListBox.Item>
-                      ))}
-                    </ListBox>
-                  </Select.Popover>
-                </Select>
+                  onChange={setRecipientId}
+                  label={t('recipient')}
+                  placeholder={t('recipientPlaceholder')}
+                  emptyMessage={t('noAttendees')}
+                  isInvalid={showRecipientError && !recipientId}
+                  errorMessage={t('recipientRequired')}
+                />
                 {assignError && (
                   <p role="alert" className="type-caption text-danger">
                     {assignError}
@@ -276,7 +263,7 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees }: Chec
                 <Button slot="close" variant="secondary">
                   {t('cancel')}
                 </Button>
-                <Button variant="primary" isDisabled={!recipientId} isPending={isAssigning} onPress={submitAssign}>
+                <Button variant="primary" isPending={isAssigning} onPress={submitAssign}>
                   {t('assignConfirm')}
                 </Button>
               </Modal.Footer>

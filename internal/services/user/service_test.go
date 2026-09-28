@@ -28,7 +28,6 @@ func TestIdentityFromKratos(t *testing.T) {
 			},
 			want: kratosIdentity{
 				email:           "ada@example.com",
-				username:        "ada@example.com",
 				avatarURL:       "https://cdn.example.com/a.png",
 				emailVerified:   true,
 				discordUsername: "ada",
@@ -52,7 +51,7 @@ func TestIdentityFromKratos(t *testing.T) {
 					{Via: "email", Value: "old@example.com", Verified: true},
 				},
 			},
-			want: kratosIdentity{email: "ada@example.com", username: "ada@example.com"},
+			want: kratosIdentity{email: "ada@example.com"},
 		},
 		{
 			name: "missing traits",
@@ -66,6 +65,16 @@ func TestIdentityFromKratos(t *testing.T) {
 			assert.Equal(t, tt.want, identityFromKratos(&tt.kid))
 		})
 	}
+}
+
+func TestDefaultDisplayName(t *testing.T) {
+	assert.Equal(t, "Ada L", defaultDisplayName(kratosIdentity{username: "Ada L", discordUsername: "ada"}))
+	assert.Equal(t, "ada", defaultDisplayName(kratosIdentity{discordUsername: " ada "}))
+	assert.Equal(t, strings.Repeat("名", MaxDisplayNameLength), defaultDisplayName(kratosIdentity{discordUsername: strings.Repeat("名", MaxDisplayNameLength+5)}))
+
+	generated := defaultDisplayName(kratosIdentity{email: "ada@example.com"})
+	assert.Regexp(t, `^member-[0-9a-f]{8}$`, generated)
+	assert.NotContains(t, generated, "ada")
 }
 
 func TestLinkedAccountFromCredentials(t *testing.T) {
@@ -114,11 +123,11 @@ func TestLinkedAccountFromCredentials(t *testing.T) {
 }
 
 func TestValidateUpdateParams(t *testing.T) {
-	valid := UpdateParams{DisplayName: " Ada Lovelace ", Username: " ada.lovelace-1_ ", Bio: " hello "}
+	valid := UpdateParams{DisplayName: " Ada Lovelace ", Bio: " hello "}
 
 	got, err := validateUpdateParams(valid)
 	require.NoError(t, err)
-	assert.Equal(t, UpdateParams{DisplayName: "Ada Lovelace", Username: "ada.lovelace-1_", Bio: "hello"}, got)
+	assert.Equal(t, UpdateParams{DisplayName: "Ada Lovelace", Bio: "hello"}, got)
 
 	tests := []struct {
 		name   string
@@ -127,11 +136,6 @@ func TestValidateUpdateParams(t *testing.T) {
 	}{
 		{name: "empty display name", mutate: func(p *UpdateParams) { p.DisplayName = "   " }, want: "display_name is required"},
 		{name: "display name too long", mutate: func(p *UpdateParams) { p.DisplayName = strings.Repeat("名", MaxDisplayNameLength+1) }, want: "display_name must be at most"},
-		{name: "empty username", mutate: func(p *UpdateParams) { p.Username = "" }, want: "username is required"},
-		{name: "username too short", mutate: func(p *UpdateParams) { p.Username = "ab" }, want: "username must be between"},
-		{name: "username too long", mutate: func(p *UpdateParams) { p.Username = strings.Repeat("a", MaxUsernameLength+1) }, want: "username must be between"},
-		{name: "username with spaces and symbols", mutate: func(p *UpdateParams) { p.Username = "a b!!" }, want: "username may only contain"},
-		{name: "username starting with punctuation", mutate: func(p *UpdateParams) { p.Username = "_ada" }, want: "username may only contain"},
 		{name: "bio too long", mutate: func(p *UpdateParams) { p.Bio = strings.Repeat("b", MaxBioLength+1) }, want: "bio must be at most"},
 	}
 	for _, tt := range tests {
@@ -145,12 +149,12 @@ func TestValidateUpdateParams(t *testing.T) {
 	}
 }
 
-func TestValidateUpdateParams_AllowsUnicodeUsername(t *testing.T) {
-	for _, username := range []string{"小明明", "測試_成員", "Zoë.Müller", "ユーザー1", "사용자-2", "नमस्ते", strings.Repeat("名", MaxUsernameLength)} {
-		t.Run(username, func(t *testing.T) {
-			got, err := validateUpdateParams(UpdateParams{DisplayName: "Ada", Username: " " + username + " "})
+func TestValidateUpdateParams_AllowsAnyScript(t *testing.T) {
+	for _, name := range []string{"小明明", "測試 成員", "Zoë Müller", "ユーザー1", "사용자-2", "Night法師!", strings.Repeat("名", MaxDisplayNameLength)} {
+		t.Run(name, func(t *testing.T) {
+			got, err := validateUpdateParams(UpdateParams{DisplayName: " " + name + " "})
 			require.NoError(t, err)
-			assert.Equal(t, username, got.Username)
+			assert.Equal(t, name, got.DisplayName)
 		})
 	}
 }
@@ -160,46 +164,16 @@ func TestValidateUpdateParams_NormalizesToNFC(t *testing.T) {
 	composed := "Zo\u00eb.M\u00fcller"
 	require.NotEqual(t, composed, decomposed)
 
-	got, err := validateUpdateParams(UpdateParams{DisplayName: decomposed, Username: decomposed, Bio: decomposed})
+	got, err := validateUpdateParams(UpdateParams{DisplayName: decomposed, Bio: decomposed})
 	require.NoError(t, err)
-	assert.Equal(t, composed, got.Username)
 	assert.Equal(t, composed, got.DisplayName)
 	assert.Equal(t, composed, got.Bio)
 }
 
 func TestValidateUpdateParams_CountsNormalizedLength(t *testing.T) {
-	username := strings.Repeat("e\u0301", MaxUsernameLength)
+	name := strings.Repeat("e\u0301", MaxDisplayNameLength)
 
-	got, err := validateUpdateParams(UpdateParams{DisplayName: "Ada", Username: username})
+	got, err := validateUpdateParams(UpdateParams{DisplayName: name})
 	require.NoError(t, err)
-	assert.Equal(t, strings.Repeat("\u00e9", MaxUsernameLength), got.Username)
-}
-
-func TestValidateUpdateParams_RejectsInvalidUnicodeUsername(t *testing.T) {
-	tests := []struct {
-		name     string
-		username string
-		want     string
-	}{
-		{name: "too short in runes", username: "小明", want: "username must be between"},
-		{name: "too long in runes", username: strings.Repeat("名", MaxUsernameLength+1), want: "username must be between"},
-		{name: "ideographic space", username: "小明　明", want: "username may only contain"},
-		{name: "emoji", username: "ada😀", want: "username may only contain"},
-		{name: "full-width punctuation", username: "小明！", want: "username may only contain"},
-		{name: "starts with combining mark", username: "\u0301abc", want: "username may only contain"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := validateUpdateParams(UpdateParams{DisplayName: "Ada", Username: tt.username})
-			require.ErrorIs(t, err, errs.ErrInvalidArgument)
-			assert.Contains(t, err.Error(), tt.want)
-		})
-	}
-}
-
-func TestValidateUpdateParams_DisplayNameCountsRunes(t *testing.T) {
-	p := UpdateParams{DisplayName: strings.Repeat("名", MaxDisplayNameLength), Username: "ada"}
-
-	_, err := validateUpdateParams(p)
-	require.NoError(t, err)
+	assert.Equal(t, strings.Repeat("\u00e9", MaxDisplayNameLength), got.DisplayName)
 }

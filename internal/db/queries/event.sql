@@ -1,6 +1,6 @@
 -- name: ListEvents :many
 SELECT e.id, e.guild_id, e.created_by,
-       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       COALESCE(member_display_name(e.guild_id, e.created_by), '')::text AS created_by_name,
        e.title,
        COALESCE(e.description, '') AS description,
        e.type,
@@ -23,7 +23,7 @@ SELECT COUNT(*) FROM guild_events WHERE guild_id = $1;
 
 -- name: GetEvent :one
 SELECT e.id, e.guild_id, e.created_by,
-       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       COALESCE(member_display_name(e.guild_id, e.created_by), '')::text AS created_by_name,
        e.title,
        COALESCE(e.description, '') AS description,
        e.type,
@@ -57,7 +57,7 @@ INSERT INTO guild_events (
     sqlc.narg(recurring_pattern)::jsonb
 )
 RETURNING guild_events.id, guild_events.guild_id, guild_events.created_by,
-          COALESCE((SELECT COALESCE(u.display_name, u.username) FROM users u WHERE u.id = guild_events.created_by), '')::text AS created_by_name,
+          COALESCE(member_display_name(guild_events.guild_id, guild_events.created_by), '')::text AS created_by_name,
           guild_events.title,
           COALESCE(guild_events.description, '') AS description,
           guild_events.type,
@@ -85,7 +85,7 @@ UPDATE guild_events SET
     updated_at        = NOW()
 WHERE guild_events.id = sqlc.arg(id) AND guild_events.guild_id = sqlc.arg(guild_id)
 RETURNING guild_events.id, guild_events.guild_id, guild_events.created_by,
-          COALESCE((SELECT COALESCE(u.display_name, u.username) FROM users u WHERE u.id = guild_events.created_by), '')::text AS created_by_name,
+          COALESCE(member_display_name(guild_events.guild_id, guild_events.created_by), '')::text AS created_by_name,
           guild_events.title,
           COALESCE(guild_events.description, '') AS description,
           guild_events.type,
@@ -103,7 +103,7 @@ DELETE FROM guild_events WHERE id = $1 AND guild_id = $2;
 
 -- name: ListEventsByRange :many
 SELECT e.id, e.guild_id, e.created_by,
-       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       COALESCE(member_display_name(e.guild_id, e.created_by), '')::text AS created_by_name,
        e.title,
        COALESCE(e.description, '') AS description,
        e.type,
@@ -124,7 +124,7 @@ ORDER BY e.start_date ASC;
 
 -- name: ListUpcomingEvents :many
 SELECT e.id, e.guild_id, e.created_by,
-       COALESCE(u.display_name, u.username, '')::text AS created_by_name,
+       COALESCE(member_display_name(e.guild_id, e.created_by), '')::text AS created_by_name,
        e.title,
        COALESCE(e.description, '') AS description,
        e.type,

@@ -168,11 +168,15 @@ func (q *Queries) DeleteCancelledAuction(ctx context.Context, arg DeleteCancelle
 }
 
 const getAuction = `-- name: GetAuction :one
-SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
-       current_bidder_id, min_bid_increment, start_time, end_time,
-       status, is_blind, created_at, updated_at,
-       source_type, settled_at, source_item_id, cancelled_at
-FROM auctions WHERE id = $1 AND guild_id = $2
+SELECT auctions.id, auctions.guild_id, auctions.seller_id, auctions.item, auctions.starting_bid, auctions.current_bid, auctions.current_bidder_id, auctions.min_bid_increment, auctions.start_time, auctions.end_time, auctions.status, auctions.is_blind, auctions.created_at, auctions.updated_at, auctions.source_type, auctions.settled_at, auctions.source_item_id, auctions.cancelled_at,
+       COALESCE(member_display_name(auctions.guild_id, auctions.seller_id), '')::text          AS seller_name,
+       COALESCE(seller.avatar_url, '')::text                                   AS seller_avatar_url,
+       COALESCE(member_display_name(auctions.guild_id, auctions.current_bidder_id), '')::text AS current_bidder_name,
+       COALESCE(bidder.avatar_url, '')::text                                   AS current_bidder_avatar_url
+FROM auctions
+LEFT JOIN users seller ON seller.id = auctions.seller_id
+LEFT JOIN users bidder ON bidder.id = auctions.current_bidder_id
+WHERE auctions.id = $1 AND auctions.guild_id = $2
 `
 
 type GetAuctionParams struct {
@@ -180,28 +184,40 @@ type GetAuctionParams struct {
 	GuildID uuid.UUID
 }
 
-func (q *Queries) GetAuction(ctx context.Context, arg GetAuctionParams) (Auction, error) {
+type GetAuctionRow struct {
+	Auction                Auction
+	SellerName             string
+	SellerAvatarUrl        string
+	CurrentBidderName      string
+	CurrentBidderAvatarUrl string
+}
+
+func (q *Queries) GetAuction(ctx context.Context, arg GetAuctionParams) (GetAuctionRow, error) {
 	row := q.db.QueryRow(ctx, getAuction, arg.ID, arg.GuildID)
-	var i Auction
+	var i GetAuctionRow
 	err := row.Scan(
-		&i.ID,
-		&i.GuildID,
-		&i.SellerID,
-		&i.Item,
-		&i.StartingBid,
-		&i.CurrentBid,
-		&i.CurrentBidderID,
-		&i.MinBidIncrement,
-		&i.StartTime,
-		&i.EndTime,
-		&i.Status,
-		&i.IsBlind,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.SourceType,
-		&i.SettledAt,
-		&i.SourceItemID,
-		&i.CancelledAt,
+		&i.Auction.ID,
+		&i.Auction.GuildID,
+		&i.Auction.SellerID,
+		&i.Auction.Item,
+		&i.Auction.StartingBid,
+		&i.Auction.CurrentBid,
+		&i.Auction.CurrentBidderID,
+		&i.Auction.MinBidIncrement,
+		&i.Auction.StartTime,
+		&i.Auction.EndTime,
+		&i.Auction.Status,
+		&i.Auction.IsBlind,
+		&i.Auction.CreatedAt,
+		&i.Auction.UpdatedAt,
+		&i.Auction.SourceType,
+		&i.Auction.SettledAt,
+		&i.Auction.SourceItemID,
+		&i.Auction.CancelledAt,
+		&i.SellerName,
+		&i.SellerAvatarUrl,
+		&i.CurrentBidderName,
+		&i.CurrentBidderAvatarUrl,
 	)
 	return i, err
 }
@@ -327,17 +343,20 @@ func (q *Queries) InsertBid(ctx context.Context, arg InsertBidParams) (InsertBid
 }
 
 const listAuctions = `-- name: ListAuctions :many
-SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
-       current_bidder_id, min_bid_increment, start_time, end_time,
-       status, is_blind, created_at, updated_at,
-       source_type, settled_at, source_item_id, cancelled_at
+SELECT auctions.id, auctions.guild_id, auctions.seller_id, auctions.item, auctions.starting_bid, auctions.current_bid, auctions.current_bidder_id, auctions.min_bid_increment, auctions.start_time, auctions.end_time, auctions.status, auctions.is_blind, auctions.created_at, auctions.updated_at, auctions.source_type, auctions.settled_at, auctions.source_item_id, auctions.cancelled_at,
+       COALESCE(member_display_name(auctions.guild_id, auctions.seller_id), '')::text          AS seller_name,
+       COALESCE(seller.avatar_url, '')::text                                   AS seller_avatar_url,
+       COALESCE(member_display_name(auctions.guild_id, auctions.current_bidder_id), '')::text AS current_bidder_name,
+       COALESCE(bidder.avatar_url, '')::text                                   AS current_bidder_avatar_url
 FROM auctions
-WHERE guild_id = $1
-  AND ($2::text   = '' OR status             = $2::text)
-  AND ($3::text = '' OR item->>'category'  = $3::text)
-  AND ($4::text   = '' OR item->>'rarity'    = $4::text)
-  AND ($5::text          = '%%' OR item->>'name'   ILIKE $5::text)
-ORDER BY created_at DESC
+LEFT JOIN users seller ON seller.id = auctions.seller_id
+LEFT JOIN users bidder ON bidder.id = auctions.current_bidder_id
+WHERE auctions.guild_id = $1
+  AND ($2::text   = '' OR auctions.status            = $2::text)
+  AND ($3::text = '' OR auctions.item->>'category' = $3::text)
+  AND ($4::text   = '' OR auctions.item->>'rarity'   = $4::text)
+  AND ($5::text          = '%%' OR auctions.item->>'name'  ILIKE $5::text)
+ORDER BY auctions.created_at DESC
 LIMIT $7::int OFFSET $6::int
 `
 
@@ -351,7 +370,15 @@ type ListAuctionsParams struct {
 	PageSize       int32
 }
 
-func (q *Queries) ListAuctions(ctx context.Context, arg ListAuctionsParams) ([]Auction, error) {
+type ListAuctionsRow struct {
+	Auction                Auction
+	SellerName             string
+	SellerAvatarUrl        string
+	CurrentBidderName      string
+	CurrentBidderAvatarUrl string
+}
+
+func (q *Queries) ListAuctions(ctx context.Context, arg ListAuctionsParams) ([]ListAuctionsRow, error) {
 	rows, err := q.db.Query(ctx, listAuctions,
 		arg.GuildID,
 		arg.StatusFilter,
@@ -365,28 +392,32 @@ func (q *Queries) ListAuctions(ctx context.Context, arg ListAuctionsParams) ([]A
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Auction{}
+	items := []ListAuctionsRow{}
 	for rows.Next() {
-		var i Auction
+		var i ListAuctionsRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.GuildID,
-			&i.SellerID,
-			&i.Item,
-			&i.StartingBid,
-			&i.CurrentBid,
-			&i.CurrentBidderID,
-			&i.MinBidIncrement,
-			&i.StartTime,
-			&i.EndTime,
-			&i.Status,
-			&i.IsBlind,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.SourceType,
-			&i.SettledAt,
-			&i.SourceItemID,
-			&i.CancelledAt,
+			&i.Auction.ID,
+			&i.Auction.GuildID,
+			&i.Auction.SellerID,
+			&i.Auction.Item,
+			&i.Auction.StartingBid,
+			&i.Auction.CurrentBid,
+			&i.Auction.CurrentBidderID,
+			&i.Auction.MinBidIncrement,
+			&i.Auction.StartTime,
+			&i.Auction.EndTime,
+			&i.Auction.Status,
+			&i.Auction.IsBlind,
+			&i.Auction.CreatedAt,
+			&i.Auction.UpdatedAt,
+			&i.Auction.SourceType,
+			&i.Auction.SettledAt,
+			&i.Auction.SourceItemID,
+			&i.Auction.CancelledAt,
+			&i.SellerName,
+			&i.SellerAvatarUrl,
+			&i.CurrentBidderName,
+			&i.CurrentBidderAvatarUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -399,9 +430,14 @@ func (q *Queries) ListAuctions(ctx context.Context, arg ListAuctionsParams) ([]A
 }
 
 const listBids = `-- name: ListBids :many
-SELECT id, auction_id, bidder_id, amount, is_winning, placed_at
-FROM bids WHERE auction_id = $1
-ORDER BY placed_at DESC
+SELECT b.id, b.auction_id, b.bidder_id, b.amount, b.is_winning, b.placed_at,
+       COALESCE(member_display_name(a.guild_id, b.bidder_id), '')::text AS bidder_name,
+       COALESCE(u.avatar_url, '')::text                                AS bidder_avatar_url
+FROM bids b
+JOIN auctions a ON a.id = b.auction_id
+LEFT JOIN users u ON u.id = b.bidder_id
+WHERE b.auction_id = $1
+ORDER BY b.placed_at DESC
 LIMIT $3::int OFFSET $2::int
 `
 
@@ -411,15 +447,26 @@ type ListBidsParams struct {
 	PageSize   int32
 }
 
-func (q *Queries) ListBids(ctx context.Context, arg ListBidsParams) ([]Bid, error) {
+type ListBidsRow struct {
+	ID              uuid.UUID
+	AuctionID       uuid.UUID
+	BidderID        uuid.UUID
+	Amount          int64
+	IsWinning       bool
+	PlacedAt        time.Time
+	BidderName      string
+	BidderAvatarUrl string
+}
+
+func (q *Queries) ListBids(ctx context.Context, arg ListBidsParams) ([]ListBidsRow, error) {
 	rows, err := q.db.Query(ctx, listBids, arg.AuctionID, arg.PageOffset, arg.PageSize)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Bid{}
+	items := []ListBidsRow{}
 	for rows.Next() {
-		var i Bid
+		var i ListBidsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.AuctionID,
@@ -427,6 +474,8 @@ func (q *Queries) ListBids(ctx context.Context, arg ListBidsParams) ([]Bid, erro
 			&i.Amount,
 			&i.IsWinning,
 			&i.PlacedAt,
+			&i.BidderName,
+			&i.BidderAvatarUrl,
 		); err != nil {
 			return nil, err
 		}

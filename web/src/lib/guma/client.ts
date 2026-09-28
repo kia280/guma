@@ -122,7 +122,6 @@ export const gumaApiClient: ApiClient = {
   updateMe: async (patch) => {
     const { data } = await http.patch('/v1/me', {
       display_name: patch.displayName,
-      username: patch.username,
       bio: patch.bio,
       avatar_url: patch.avatarUrl,
     });

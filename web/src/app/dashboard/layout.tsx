@@ -15,8 +15,10 @@ import { useDashboardShortcuts } from '@/hooks/useDashboardShortcuts';
 import { useLiveBalance } from '@/hooks/useLiveBalance';
 import { CurrentGuildProvider } from '@/lib/current-guild';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
+import { isGuildRole } from '@/lib/permissions';
 import { clearSession } from '@/lib/session';
 import { useUserStore } from '@/lib/store';
+import { ownUserName } from '@/lib/user-name';
 
 const COLLAPSED_STORAGE_KEY = 'guma-sidebar-collapsed';
 
@@ -38,6 +40,7 @@ const saveCollapsed = (value: boolean) => {
 
 export default function DashboardLayout({ children, modal }: { children: React.ReactNode; modal: React.ReactNode }) {
   const t = useTranslations('dashboardLayout');
+  const roleLabels = useTranslations('adminPage.roles');
   const formatGold = useFormatGold();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -76,7 +79,8 @@ export default function DashboardLayout({ children, modal }: { children: React.R
   const me = useUserStore(s => s.user);
   useLiveBalance();
   const userBalance = me?.balance ?? 0;
-  const displayName = me?.displayName || me?.username || '';
+  const displayName = ownUserName(me);
+  const roleLabel = isGuildRole(me?.guildRole) ? roleLabels(me.guildRole) : '';
   const toggleLabel = isCompact ? t('openMenu') : showCollapsed ? t('expandSidebar') : t('collapseSidebar');
 
   return (
@@ -141,7 +145,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                       className="size-11 min-w-11 rounded-full relative overflow-visible p-0 sm:size-7 sm:min-w-7"
                     >
                       <Badge.Anchor>
-                        <UserAvatar name={displayName || me?.email || ''} src={me?.avatarUrl} className="size-7" />
+                        <UserAvatar name={displayName} src={me?.avatarUrl} className="size-7" />
                         <Badge color="success" placement="bottom-right" size="sm" />
                       </Badge.Anchor>
                     </Button>
@@ -170,7 +174,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                         <Dropdown.Section>
                           <Dropdown.Item id="user-info" textValue={t('signedInAs')}>
                             <p className="font-semibold">{displayName || t('signedInAs')}</p>
-                            <p className="font-semibold text-subtle">{me?.email ?? ''}</p>
+                            {roleLabel && <p className="font-semibold text-subtle">{roleLabel}</p>}
                           </Dropdown.Item>
                         </Dropdown.Section>
                         <Dropdown.Section>

@@ -250,7 +250,7 @@ func (s *Service) ContributeFunds(ctx context.Context, guildIDStr, userIDStr str
 		return nil, nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
 
-	username, _ := s.q.GetUserDisplayName(ctx, userID)
+	username, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -335,7 +335,7 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 		return nil, fmt.Errorf("%w: amount exceeds bank balance", errs.ErrFailedPrecondition)
 	}
 
-	requesterName, _ := s.q.GetUserDisplayName(ctx, userID)
+	requesterName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
 
 	r, err := s.q.InsertFundRequest(ctx, db.InsertFundRequestParams{
 		GuildID: guildID, RequesterID: userID, RequesterName: requesterName,
@@ -534,7 +534,7 @@ func (s *Service) DonateItem(ctx context.Context, guildIDStr, userIDStr, backpac
 		return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
 	}
 
-	donorName, _ := s.q.GetUserDisplayName(ctx, userID)
+	donorName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -651,7 +651,7 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 		return nil, err
 	}
 
-	requesterName, _ := s.q.GetUserDisplayName(ctx, userID)
+	requesterName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
 
 	r, err := s.q.InsertItemRequest(ctx, db.InsertItemRequestParams{
 		GuildID: guildID, BankItemID: bankItemID, RequesterID: userID,

@@ -19,6 +19,7 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { ItemThumbnail, getRarityColor } from '@/components/ItemThumbnail';
 import { useLiveResource } from '@/hooks/useLiveResource';
+import { useUserName } from '@/hooks/useUserName';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
@@ -59,6 +60,7 @@ interface RequestRowProps {
 
 function RequestRow({ requester, createdAt, reason, status, reviewNote, leading, summary, onReview, isHighlighted = false }: RequestRowProps) {
   const t = useTranslations('bankRequestReview');
+  const userName = useUserName();
   const format = useIntlFormatter();
   const rowRef = React.useRef<HTMLLIElement>(null);
 
@@ -78,7 +80,7 @@ function RequestRow({ requester, createdAt, reason, status, reviewNote, leading,
         {leading}
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <div className="flex flex-wrap items-center gap-x-2">
-            <p className="type-body font-medium text-foreground truncate">{requester}</p>
+            <p className="type-body font-medium text-foreground truncate">{userName(requester)}</p>
             <p className="type-caption text-hint">
               {format.dateTime(new Date(createdAt), { dateStyle: 'medium', timeStyle: 'short' })}
             </p>
@@ -143,6 +145,7 @@ function RequestSection({ title, icon, count, emptyText, children }: RequestSect
 
 export function BankRequestReview({ guildId, focusRequestId }: { guildId: string; focusRequestId?: string | null }) {
   const t = useTranslations('bankRequestReview');
+  const userName = useUserName();
   const formatGold = useFormatGold();
   const reviewModal = useOverlayState();
 
@@ -353,7 +356,7 @@ export function BankRequestReview({ guildId, focusRequestId }: { guildId: string
                         : target.request.itemName || t('unknownItem')}
                     </p>
                     <p className="type-caption text-hint">
-                      {t('requestedBy', { name: target.request.requesterName })}
+                      {t('requestedBy', { name: userName(target.request.requesterName) })}
                     </p>
                     {target.request.reason && (
                       <p className="type-body text-subtle break-words">{target.request.reason}</p>

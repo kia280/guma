@@ -21,6 +21,7 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useCountdown } from '@/hooks/useNow';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
@@ -74,6 +75,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
   const bidModalState = useOverlayState();
   const t = useTranslations('auctionItemPage');
   const labels = useTranslations('createAuctionModal');
+  const userName = useUserName();
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const { balance: userBalance, isLoaded: isBalanceLoaded, refresh: refreshBalance } = useWalletBalance();
@@ -453,8 +455,8 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                       {isEnded ? t('winner') : t('leadingBidder')}
                     </span>
                     <div className="flex items-center gap-2">
-                      <UserAvatar name={item.currentBidder.username} src={item.currentBidder.avatar} />
-                      <span className="type-body text-foreground">{item.currentBidder.username}</span>
+                      <UserAvatar name={userName(item.currentBidder.username)} src={item.currentBidder.avatar} />
+                      <span className="type-body text-foreground">{userName(item.currentBidder.username)}</span>
                     </div>
                   </div>
                 )}
@@ -512,10 +514,10 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <UserAvatar name={bid.bidder.username} src={bid.bidder.avatar} />
+                          <UserAvatar name={userName(bid.bidder.username)} src={bid.bidder.avatar} />
                           <div>
                             <p className="type-body font-medium text-foreground">
-                              {bid.bidder.username}
+                              {userName(bid.bidder.username)}
                             </p>
                             <p className="type-caption text-hint">
                               {format.dateTime(new Date(bid.timestamp), { dateStyle: 'medium', timeStyle: 'short' })}
@@ -549,9 +551,9 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               {t('seller')}
             </h2>
             <div className="flex items-center gap-3">
-              <UserAvatar name={item.seller.username} src={item.seller.avatar} size="md" />
+              <UserAvatar name={userName(item.seller.username)} src={item.seller.avatar} size="md" />
               <div>
-                <p className="font-medium text-foreground">{item.seller.username}</p>
+                <p className="font-medium text-foreground">{userName(item.seller.username)}</p>
                 <p className="type-caption text-hint">{t('guildMember')}</p>
               </div>
             </div>

@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	auctionsvc "github.com/kia280/guma/internal/services/auction"
 	"github.com/kia280/guma/internal/session"
 )
 
@@ -80,4 +81,36 @@ func TestCancelAndDeleteAuction_Validation(t *testing.T) {
 	requireCode(t, err, codes.Unauthenticated)
 	_, err = h.DeleteAuction(authed, &gumav1.DeleteAuctionRequest{GuildId: guildID, AuctionId: "bad"})
 	requireCode(t, err, codes.NotFound)
+}
+
+func TestAuctionToProtoIncludesParticipantNames(t *testing.T) {
+	got := auctionToProto(&auctionsvc.AuctionItem{
+		ID:                     "auction",
+		SellerID:               "seller",
+		SellerName:             "Seller",
+		SellerAvatarURL:        "https://cdn.example.com/s.png",
+		CurrentBidderID:        "bidder",
+		CurrentBidderName:      "Bidder",
+		CurrentBidderAvatarURL: "https://cdn.example.com/b.png",
+	})
+
+	assert.Equal(t, "seller", got.GetSellerId())
+	assert.Equal(t, "Seller", got.GetSellerName())
+	assert.Equal(t, "https://cdn.example.com/s.png", got.GetSellerAvatarUrl())
+	assert.Equal(t, "bidder", got.GetCurrentBidderId())
+	assert.Equal(t, "Bidder", got.GetCurrentBidderName())
+	assert.Equal(t, "https://cdn.example.com/b.png", got.GetCurrentBidderAvatarUrl())
+}
+
+func TestBidToProtoIncludesBidderName(t *testing.T) {
+	got := bidToProto(&auctionsvc.Bid{
+		ID:              "bid",
+		BidderID:        "bidder",
+		BidderName:      "Bidder",
+		BidderAvatarURL: "https://cdn.example.com/b.png",
+	})
+
+	assert.Equal(t, "bidder", got.GetBidderId())
+	assert.Equal(t, "Bidder", got.GetBidderUsername())
+	assert.Equal(t, "https://cdn.example.com/b.png", got.GetBidderAvatarUrl())
 }
