@@ -21,6 +21,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useNow } from '@/hooks/useNow';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { adminTabHref } from '@/lib/dashboard-nav';
 import { apiClient } from '@/lib/guma';
@@ -137,6 +138,7 @@ function InboxSection({
 
 export function AdminInbox({ guildId }: { guildId: string }) {
   const t = useTranslations('adminInbox');
+  const userName = useUserName();
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const notify = useToast();
@@ -224,7 +226,7 @@ export function AdminInbox({ guildId }: { guildId: string }) {
     } finally {
       loadDeliveries();
     }
-    notify.success(t('deliveryConfirmed', { item: deliveryTarget.item.name, name: deliveryTarget.ownerName ?? '' }));
+    notify.success(t('deliveryConfirmed', { item: deliveryTarget.item.name, name: userName(deliveryTarget.ownerName) }));
   };
 
     const attention: AttentionAuction[] = auctions
@@ -329,8 +331,8 @@ export function AdminInbox({ guildId }: { guildId: string }) {
               const key = requestKey(entry);
               const label =
                 entry.kind === 'fund'
-                  ? t('fundRequestLabel', { name: entry.request.requesterName, amount: formatGold(entry.request.amount) })
-                  : t('itemRequestLabel', { name: entry.request.requesterName, item: entry.request.itemName || t('unknownItem') });
+                  ? t('fundRequestLabel', { name: userName(entry.request.requesterName), amount: formatGold(entry.request.amount) })
+                  : t('itemRequestLabel', { name: userName(entry.request.requesterName), item: entry.request.itemName || t('unknownItem') });
               return (
                 <li key={key} className="flex items-start gap-3 rounded-lg bg-surface-secondary px-3 py-3">
                   <Checkbox aria-label={label} isSelected={selected.has(key)} onChange={value => toggleOne(key, value)} className="mt-0.5">
@@ -411,7 +413,7 @@ export function AdminInbox({ guildId }: { guildId: string }) {
                 <p className="type-body font-medium text-foreground truncate">{item.item.name}</p>
                 <p className="type-caption text-hint truncate">
                   {t('deliveryRequested', {
-                    name: item.ownerName || t('unknownMember'),
+                    name: userName(item.ownerName),
                     time: formatAge(item.deliveryRequestedAt ?? item.acquiredAt),
                   })}
                 </p>
@@ -457,7 +459,7 @@ export function AdminInbox({ guildId }: { guildId: string }) {
         heading={t('confirmDeliveryTitle', { item: deliveryTarget?.item.name ?? '' })}
         body={t('confirmDeliveryBody', {
           item: deliveryTarget?.item.name ?? '',
-          name: deliveryTarget?.ownerName || t('unknownMember'),
+          name: userName(deliveryTarget?.ownerName),
         })}
         confirmLabel={t('confirmDelivery')}
         failedMessage={t('confirmDeliveryFailed')}

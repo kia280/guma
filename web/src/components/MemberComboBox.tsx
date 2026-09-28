@@ -2,7 +2,6 @@
 
 import {
   ComboBox,
-  Description,
   EmptyState,
   FieldError,
   Input,
@@ -15,6 +14,7 @@ import {
 } from '@heroui/react';
 import React from 'react';
 import type { MockUser } from '@/types/user';
+import { MemberOptionLabel } from './MemberOptionLabel';
 
 const OPTION_ROW_HEIGHT = 52;
 
@@ -61,7 +61,7 @@ export const MemberComboBox = React.memo(function MemberComboBox({
   const options = React.useMemo(
     () =>
       deferredQuery
-        ? members.filter(member => contains(member.username, deferredQuery) || contains(member.email, deferredQuery))
+        ? members.filter(member => contains(member.username, deferredQuery))
         : members,
     [members, deferredQuery, contains],
   );
@@ -76,7 +76,7 @@ export const MemberComboBox = React.memo(function MemberComboBox({
     if (selectedMember?.username === text) return;
     const query = text.trim();
     const exactMatch = query
-      ? members.find(member => matchesExactly(member.username, query) || matchesExactly(member.email, query))
+      ? members.find(member => matchesExactly(member.username, query))
       : undefined;
     commit(exactMatch?.id ?? '');
   };
@@ -114,10 +114,7 @@ export const MemberComboBox = React.memo(function MemberComboBox({
           <ListBox className="max-h-72 overflow-y-auto" renderEmptyState={() => <EmptyState>{emptyMessage}</EmptyState>}>
             {(member: MockUser) => (
               <ListBox.Item id={member.id} textValue={member.username}>
-                <div className="flex min-w-0 flex-col">
-                  <Label className="truncate">{member.username}</Label>
-                  <Description className="truncate">{member.email}</Description>
-                </div>
+                <MemberOptionLabel member={member} />
                 <ListBox.ItemIndicator />
               </ListBox.Item>
             )}

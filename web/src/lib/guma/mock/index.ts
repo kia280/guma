@@ -3,6 +3,7 @@
 
 import { getDevMockRole } from '@/lib/dev-mock';
 import { emitLiveEvent } from '@/lib/live-events';
+import { ownUserName } from '@/lib/user-name';
 import type { AdminAnnouncement } from '@/types/admin';
 import { AuctionStatus, type AuctionItem } from '@/types/auction';
 import type {
@@ -327,7 +328,7 @@ const baseMockApiClient: ApiClient = {
   listPendingDeliveries: async () =>
     mockData.mockBackpackItems
       .filter(i => i.deliveryRequestedAt)
-      .map(i => ({ ...i, ownerName: currentUser.username })),
+      .map(i => ({ ...i, ownerName: ownUserName(currentUser) })),
   confirmBackpackDelivery: async (_guildId, itemId) => {
     const item = mockData.mockBackpackItems.find(i => i.id === itemId);
     if (!item?.deliveryRequestedAt) throw new Error('not pending');
@@ -385,7 +386,7 @@ const baseMockApiClient: ApiClient = {
       status: AuctionStatus.ACTIVE,
       guildId,
       sellerId: currentUser.id,
-      seller: { id: currentUser.id, username: currentUser.username },
+      seller: { id: currentUser.id, username: ownUserName(currentUser) },
       bidHistory: [],
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
@@ -400,7 +401,7 @@ const baseMockApiClient: ApiClient = {
       id: `bid-${Date.now()}`,
       auctionItemId: auctionId,
       bidderId: currentUser.id,
-      bidder: { id: currentUser.id, username: currentUser.username },
+      bidder: { id: currentUser.id, username: ownUserName(currentUser) },
       amount,
       timestamp: new Date().toISOString(),
       isWinning: true,
@@ -410,7 +411,7 @@ const baseMockApiClient: ApiClient = {
       bid,
     ];
     item.currentBid = amount;
-    item.currentBidder = { id: currentUser.id, username: currentUser.username };
+    item.currentBidder = { id: currentUser.id, username: ownUserName(currentUser) };
     item.updatedAt = new Date().toISOString();
     return { auction: item, bid };
   },
@@ -457,7 +458,7 @@ const baseMockApiClient: ApiClient = {
         description: item.description ?? '',
         category: item.category ?? ItemCategory.MISC,
         rarity: item.rarity ?? ItemRarity.COMMON,
-        donatedBy: currentUser.displayName,
+        donatedBy: ownUserName(currentUser),
         donatedAt: new Date().toISOString(),
         quantity: 1,
         pendingRequestCount: 0,
@@ -471,7 +472,7 @@ const baseMockApiClient: ApiClient = {
         id: `c-${entry.id}`,
         type: 'checkin_loot',
         itemName: req.lootList.map(item => item.name).join(', '),
-        member: currentUser.displayName,
+        member: ownUserName(currentUser),
         date: new Date().toISOString().slice(0, 10),
         status: 'completed',
         note: req.title,
@@ -525,7 +526,7 @@ const baseMockApiClient: ApiClient = {
     const attendee: AttendanceMember = {
       id: `a-${Date.now()}`,
       userId: currentUser.id,
-      username: currentUser.username,
+      username: ownUserName(currentUser),
       checkedInAt: new Date().toISOString(),
       ...(notes?.trim() ? { notes: notes.trim() } : {}),
     };
@@ -625,7 +626,7 @@ const baseMockApiClient: ApiClient = {
     const participants = [...(lottery.participants ?? [])];
     const mine = participants.find(p => p.id === currentUser.id);
     if (mine) mine.tickets += quantity;
-    else participants.unshift({ id: currentUser.id, username: currentUser.username, tickets: quantity });
+    else participants.unshift({ id: currentUser.id, username: ownUserName(currentUser), tickets: quantity });
     Object.assign(lottery, {
       ticketsSold: lottery.ticketsSold + quantity,
       participants: participants.sort((a, b) => b.tickets - a.tickets),
@@ -649,7 +650,7 @@ const baseMockApiClient: ApiClient = {
       Object.assign(lottery, {
         status: 'ended',
         winners: winner
-          ? [{ id: `w-${Date.now()}`, username: winner.username, prize: '', prizeAmount: lottery.prizePool }]
+          ? [{ id: `w-${Date.now()}`, userId: winner.id, username: winner.username, prize: '', prizeAmount: lottery.prizePool }]
           : [],
       });
     }
@@ -663,7 +664,7 @@ const baseMockApiClient: ApiClient = {
     id: `bc-${Date.now()}`,
     guildId,
     userId: currentUser.id,
-    username: currentUser.username,
+    username: ownUserName(currentUser),
     amount: req.amount,
     note: req.note,
     createdAt: new Date().toISOString(),
@@ -675,7 +676,7 @@ const baseMockApiClient: ApiClient = {
       id: `fr-${Date.now()}`,
       guildId,
       requesterId: currentUser.id,
-      requesterName: currentUser.username,
+      requesterName: ownUserName(currentUser),
       amount: req.amount,
       reason: req.reason,
       status: 'pending',
@@ -704,7 +705,7 @@ const baseMockApiClient: ApiClient = {
       description: bp.item.description,
       category: bp.item.category,
       rarity: bp.item.rarity,
-      donatedBy: currentUser.username,
+      donatedBy: ownUserName(currentUser),
       donatedAt: new Date().toISOString(),
       quantity: 1,
       pendingRequestCount: 0,
@@ -727,7 +728,7 @@ const baseMockApiClient: ApiClient = {
       guildId,
       bankItemId,
       requesterId: currentUser.id,
-      requesterName: currentUser.username,
+      requesterName: ownUserName(currentUser),
       reason,
       status: 'pending',
       itemName: bankItem.name,
@@ -773,7 +774,7 @@ const baseMockApiClient: ApiClient = {
       event('looted', earlier, { source: 'checkin', actorName: 'Night吃貨', referenceLabel: 'Boss raid' });
       event('received', backpackItem.acquiredAt, {
         source: backpackItem.acquiredFrom,
-        actorName: currentUser.username,
+        actorName: ownUserName(currentUser),
         referenceId: backpackItem.sourceId,
         referenceLabel: backpackItem.sourceLabel ?? '',
         subjectName: backpackItem.acquiredFrom === 'transfer' ? backpackItem.sourceLabel ?? '' : '',
@@ -795,7 +796,7 @@ const baseMockApiClient: ApiClient = {
       id: `evt-${Date.now()}`,
       participants: [],
       createdBy: currentUser.id,
-      createdByName: currentUser.displayName,
+      createdByName: ownUserName(currentUser),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -879,7 +880,7 @@ const baseMockApiClient: ApiClient = {
       content: '',
       pinned: false,
       status: 'draft',
-      author: currentUser.username,
+      author: ownUserName(currentUser),
       createdAt: now,
       updatedAt: now,
     };

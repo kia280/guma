@@ -1526,5 +1526,8 @@
       "lottery": "查看抽獎",
       "checkin": "查看點名"
     }
+  },
+  "userName": {
+    "unknown": "未知成員"
   }
 }

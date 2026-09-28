@@ -10,6 +10,7 @@ import { useCalendarFormat } from '@/hooks/useCalendarFormat';
 import { useDeviceClass } from '@/hooks/useDeviceClass';
 import { useGuildEvents } from '@/hooks/useGuildEvents';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { type CalendarView, fillsViewport, isSameDay, readStoredView, storeView } from '@/lib/calendar';
 import type { EventOccurrence } from '@/lib/event-occurrences';
 import {
@@ -22,6 +23,7 @@ import {
 
 export default function CalendarPage() {
   const t = useTranslations('calendarPage');
+  const userName = useUserName();
   const eventLabels = useTranslations('guildEvents');
   const nav = useTranslations('dashboardLayout');
   const calendarLabels = useTranslations('guildCalendar');
@@ -233,7 +235,7 @@ export default function CalendarPage() {
                           <Icon icon="solar:users-group-rounded-linear" width={18} className="text-hint" aria-hidden />
                           <span className="sr-only">{t('organizer')}</span>
                         </dt>
-                        <dd className="text-subtle">{t('createdBy', { name: selectedEvent.createdByName })}</dd>
+                        <dd className="text-subtle">{t('createdBy', { name: userName(selectedEvent.createdByName) })}</dd>
                       </div>
                     )}
                   </dl>

@@ -29,6 +29,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
@@ -104,6 +105,7 @@ function ContributionAmount({
 
 export default function GuildBankPage() {
   const t = useTranslations('guildBankPage');
+  const userName = useUserName();
   const labels = useTranslations('createAuctionModal');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
@@ -697,8 +699,8 @@ export default function GuildBankPage() {
                         </Table.Cell>
                         <Table.Cell>
                           <div className="flex items-center gap-2">
-                            <UserAvatar name={entry.member} src={entry.memberAvatar} className="size-6" />
-                            <p className="type-body text-foreground">{entry.member}</p>
+                            <UserAvatar name={userName(entry.member)} src={entry.memberAvatar} className="size-6" />
+                            <p className="type-body text-foreground">{userName(entry.member)}</p>
                           </div>
                         </Table.Cell>
                         <Table.Cell>
@@ -762,7 +764,7 @@ export default function GuildBankPage() {
                         </Link>
                       )}
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap type-caption">
-                        <p className="text-hint">{entry.member}</p>
+                        <p className="text-hint">{userName(entry.member)}</p>
                         <p className="text-hint">
                           {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
                         </p>

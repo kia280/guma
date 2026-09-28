@@ -9,14 +9,15 @@ import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useNow } from '@/hooks/useNow';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
 import { splitDuration } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
-import { useGuildPermissions } from '@/lib/permissions';
 import { GrpcCode, apiErrorCode, isNotFoundError } from '@/lib/guma/errors';
 import { type FormatGold, formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
+import { useGuildPermissions } from '@/lib/permissions';
 import { lotteryStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import type { Lottery, LotteryWinner } from '@/types/lottery';
@@ -36,23 +37,27 @@ function formatCountdown(ms: number, withDays: (days: number, clock: string) => 
   return days > 0 ? withDays(days, clock) : clock;
 }
 
+const winnerEntryId = (winner: LotteryWinner) => winner.userId ?? winner.id;
+
 function wheelEntries(
   lottery: Lottery,
   winners: LotteryWinner[],
   describe: (tickets: number, chance: string) => string,
-  formatGold: FormatGold
+  formatGold: FormatGold,
+  userName: (name: string) => string
 ): WheelEntry[] {
   const participants = lottery.participants ?? [];
   const total = participants.reduce((sum, p) => sum + p.tickets, 0) || 1;
   const entries = participants.map(p => ({
-    id: p.username,
-    label: p.username,
+    id: p.id,
+    label: userName(p.username),
     weight: p.tickets,
     detail: describe(p.tickets, ((p.tickets / total) * 100).toFixed(1)),
   }));
   for (const winner of winners) {
-    if (!entries.some(entry => entry.id === winner.username)) {
-      entries.push({ id: winner.username, label: winner.username, weight: 1, detail: formatPrize(winner.prize, winner.prizeAmount, formatGold) });
+    const winnerKey = winnerEntryId(winner);
+    if (!entries.some(entry => entry.id === winnerKey)) {
+      entries.push({ id: winnerKey, label: userName(winner.username), weight: 1, detail: formatPrize(winner.prize, winner.prizeAmount, formatGold) });
     }
   }
   return entries;
@@ -66,6 +71,7 @@ type LotteryDetailContentProps = {
 export default function LotteryDetailContent({ id, onClose }: LotteryDetailContentProps) {
   const t = useTranslations('lotteryDetail');
   const tCountdown = useTranslations('countdown');
+  const userName = useUserName();
   const formatGold = useFormatGold();
   const format = useIntlFormatter();
   const now = useNow(1000);
@@ -236,9 +242,10 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     lottery,
     winners,
     (tickets, chance) => t('wheelDetail', { count: tickets, chance }),
-    formatGold
+    formatGold,
+    userName
   );
-  const topWinner = winners[0]?.username;
+  const topWinner = winners[0];
   const participants = lottery.participants ?? [];
   const totalTickets = participants.reduce((sum, p) => sum + p.tickets, 0) || lottery.ticketsSold;
   const myTickets = participants.find(p => p.id === currentUserId)?.tickets ?? 0;
@@ -318,7 +325,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const wheelCaption = () => {
     if (phase === 'drawing') return t('drawing');
     if (phase === 'spinning') return t('spinning');
-    if (showWinners && topWinner) return t('winnerIs', { name: topWinner });
+    if (showWinners && topWinner) return t('winnerIs', { name: userName(topWinner.username) });
     if (lottery.status === 'ended') return t('noWinners');
     if (lottery.status === 'upcoming') return t('notStarted');
     return t('drawsIn', {
@@ -483,7 +490,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
         <section className="lg:col-start-1 lg:row-start-1 lg:row-span-2 flex flex-col items-center justify-center gap-4 rounded-xl border border-divider bg-surface-secondary p-4 sm:p-6">
           <LotteryWheel
             entries={entries}
-            winnerId={topWinner}
+            winnerId={topWinner && winnerEntryId(topWinner)}
             spinKey={spinKey}
             isRevealed={phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended')}
             onSpinEnd={finishSpin}
@@ -507,7 +514,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                 {winners.map(winner => (
                   <li key={winner.id} className="flex items-center gap-3">
                     <Icon icon="solar:cup-star-linear" width={18} className="text-warning shrink-0" />
-                    <span className="type-body font-medium text-foreground flex-1 min-w-0 truncate">{winner.username}</span>
+                    <span className="type-body font-medium text-foreground flex-1 min-w-0 truncate">{userName(winner.username)}</span>
                     <span className="type-body text-success tabular-nums">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</span>
                   </li>
                 ))}
@@ -525,8 +532,8 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                 <ul className={`flex flex-col ${onClose ? '' : 'px-2 pb-2'}`}>
                   {participants.map(p => (
                     <li key={p.id} className={`flex items-center gap-3 rounded-lg py-1.5 ${onClose ? '' : 'px-2'}`}>
-                      <UserAvatar name={p.username} src={p.avatar} className="shrink-0" />
-                      <span className="type-body text-foreground flex-1 min-w-0 truncate">{p.username}</span>
+                      <UserAvatar name={userName(p.username)} src={p.avatar} className="shrink-0" />
+                      <span className="type-body text-foreground flex-1 min-w-0 truncate">{userName(p.username)}</span>
                       <span className="type-caption text-hint tabular-nums">
                         {t('ticketCount', { count: p.tickets })} · {((p.tickets / totalTickets) * 100).toFixed(1)}%
                       </span>

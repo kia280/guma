@@ -30,6 +30,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
+import { useUserName } from '@/hooks/useUserName';
 import { HTML_LANG, isLocale } from '@/i18n/locales';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { adminTabFromParam, adminTabHref } from '@/lib/dashboard-nav';
@@ -96,6 +97,7 @@ const getActivityColor = (type: string) => {
 
 export default function AdminPage() {
   const t = useTranslations('adminPage');
+  const userName = useUserName();
   const formatGold = useFormatGold();
   const locale = useLocale();
   const router = useRouter();
@@ -451,13 +453,10 @@ export default function AdminPage() {
                         <Table.Row key={user.id}>
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
-                              <UserAvatar name={user.username} src={user.avatar} className="shrink-0" />
-                              <div className="min-w-0">
-                                <p className="type-body font-medium text-foreground truncate">
-                                  {user.username}
-                                </p>
-                                <p className="type-caption text-hint truncate hidden sm:block">{user.email}</p>
-                              </div>
+                              <UserAvatar name={userName(user.username)} src={user.avatar} className="shrink-0" />
+                              <p className="type-body font-medium text-foreground truncate min-w-0">
+                                {userName(user.username)}
+                              </p>
                             </div>
                           </Table.Cell>
                           <Table.Cell>
@@ -691,7 +690,7 @@ export default function AdminPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="type-body text-foreground">
-                                <span className="font-medium">{item.actor}</span>{' '}
+                                <span className="font-medium">{userName(item.actor)}</span>{' '}
                                 <span className="text-subtle">{item.action}</span>
                               </p>
                               <p className="type-caption text-hint mt-0.5">
@@ -789,7 +788,7 @@ export default function AdminPage() {
                         <DiscordMarkdown content={ann.content} className="type-body text-subtle" />
                         <div className="flex items-center gap-2 mt-2">
                           <p className="type-caption text-hint">
-                            {t('by')} {ann.author}
+                            {t('by')} {userName(ann.author)}
                           </p>
                           <span className="type-caption text-disabled">·</span>
                           <p className="type-caption text-hint">

@@ -1526,5 +1526,8 @@
       "lottery": "View lottery",
       "checkin": "View roll call"
     }
+  },
+  "userName": {
+    "unknown": "Unknown member"
   }
 }

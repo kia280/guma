@@ -25,6 +25,7 @@ import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { isGuildRole, roleChipColor } from '@/lib/permissions';
 import { useUserStore } from '@/lib/store';
+import { ownUserName } from '@/lib/user-name';
 
 const DISPLAY_NAME_MAX_LENGTH = 50;
 const USERNAME_MIN_LENGTH = 3;
@@ -131,7 +132,7 @@ export default function ProfilePage() {
     }
   };
 
-  const shownName = user?.displayName || user?.username || '';
+  const shownName = ownUserName(user);
   const guildRole = user?.guildRole ?? '';
   const roleLabel = isGuildRole(guildRole) ? t(`roles.${guildRole}`) : guildRole;
   const roleColor = roleChipColor(guildRole);
