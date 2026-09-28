@@ -10,10 +10,10 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	"github.com/kia280/guma/internal/session"
 	"github.com/kia280/guma/internal/models"
 	auctionsvc "github.com/kia280/guma/internal/services/auction"
 	"github.com/kia280/guma/internal/services/inventory"
+	"github.com/kia280/guma/internal/session"
 )
 
 // AuctionHandler is a thin gRPC adapter over the auction service.
@@ -137,6 +137,64 @@ func (h *AuctionHandler) GetBidHistory(ctx context.Context, req *gumav1.GetBidHi
 	}, nil
 }
 
+func (h *AuctionHandler) UpdateAuction(ctx context.Context, req *gumav1.UpdateAuctionRequest) (*gumav1.UpdateAuctionResponse, error) {
+	if req.GuildId == "" || req.AuctionId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	params := auctionsvc.UpdateParams{
+		GuildID:         req.GuildId,
+		AuctionID:       req.AuctionId,
+		UpdatedBy:       userID,
+		StartingBid:     req.StartingBid,
+		MinBidIncrement: req.MinBidIncrement,
+		IsBlind:         req.IsBlind,
+	}
+	if req.Item != nil {
+		item := itemFromProto(req.Item)
+		params.Item = &item
+	}
+	if req.StartTime != nil {
+		if err := req.StartTime.CheckValid(); err != nil {
+			return nil, status.Error(codes.InvalidArgument, "start_time is invalid")
+		}
+		startTime := req.StartTime.AsTime()
+		params.StartTime = &startTime
+	}
+	if req.EndTime != nil {
+		if err := req.EndTime.CheckValid(); err != nil {
+			return nil, status.Error(codes.InvalidArgument, "end_time is invalid")
+		}
+		endTime := req.EndTime.AsTime()
+		params.EndTime = &endTime
+	}
+
+	a, err := h.svc.Update(ctx, params)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.UpdateAuctionResponse{Auction: auctionToProto(a)}, nil
+}
+
+func (h *AuctionHandler) DeleteAuction(ctx context.Context, req *gumav1.DeleteAuctionRequest) (*gumav1.DeleteAuctionResponse, error) {
+	if req.GuildId == "" || req.AuctionId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	if err := h.svc.Delete(ctx, req.GuildId, req.AuctionId, userID); err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.DeleteAuctionResponse{Success: true}, nil
+}
+
 func (h *AuctionHandler) CancelAuction(ctx context.Context, req *gumav1.CancelAuctionRequest) (*gumav1.CancelAuctionResponse, error) {
 	if req.GuildId == "" || req.AuctionId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
@@ -156,7 +214,7 @@ func (h *AuctionHandler) CancelAuction(ctx context.Context, req *gumav1.CancelAu
 // --- proto conversion helpers ---
 
 func auctionToProto(a *auctionsvc.AuctionItem) *gumav1.AuctionItem {
-	return &gumav1.AuctionItem{
+	proto := &gumav1.AuctionItem{
 		Id:              a.ID,
 		GuildId:         a.GuildID,
 		SellerId:        a.SellerID,
@@ -169,9 +227,14 @@ func auctionToProto(a *auctionsvc.AuctionItem) *gumav1.AuctionItem {
 		EndTime:         timestamppb.New(a.EndTime),
 		Status:          a.Status,
 		IsBlind:         a.IsBlind,
+		SourceType:      a.SourceType,
 		CreatedAt:       timestamppb.New(a.CreatedAt),
 		UpdatedAt:       timestamppb.New(a.UpdatedAt),
 	}
+	if a.CancelledAt != nil {
+		proto.CancelledAt = timestamppb.New(*a.CancelledAt)
+	}
+	return proto
 }
 
 func bidToProto(b *auctionsvc.Bid) *gumav1.Bid {
