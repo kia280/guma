@@ -180,3 +180,59 @@ func TestLootFromProto(t *testing.T) {
 	assert.Equal(t, int64(700), loot[0].Amount)
 	assert.Equal(t, "Ring", loot[1].Item.Name)
 }
+
+func TestCompleteCheckIn_Validation(t *testing.T) {
+	h := NewCheckInService(nil, zerolog.Nop())
+	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	const guildID = "00000000-0000-0000-0000-000000000002"
+	const checkinID = "00000000-0000-0000-0000-000000000003"
+
+	tests := []struct {
+		name     string
+		ctx      context.Context
+		req      *gumav1.CompleteCheckInRequest
+		wantCode codes.Code
+	}{
+		{name: "missing guild", ctx: authed, req: &gumav1.CompleteCheckInRequest{CheckinId: checkinID}, wantCode: codes.InvalidArgument},
+		{name: "missing checkin", ctx: authed, req: &gumav1.CompleteCheckInRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
+		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.CompleteCheckInRequest{GuildId: guildID, CheckinId: checkinID}, wantCode: codes.Unauthenticated},
+		{name: "malformed checkin id", ctx: authed, req: &gumav1.CompleteCheckInRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := h.CompleteCheckIn(tt.ctx, tt.req)
+			require.Error(t, err)
+			st, ok := status.FromError(err)
+			require.True(t, ok)
+			assert.Equal(t, tt.wantCode, st.Code())
+		})
+	}
+}
+
+func TestUpdateCheckInLoot_Validation(t *testing.T) {
+	h := NewCheckInService(nil, zerolog.Nop())
+	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	const guildID = "00000000-0000-0000-0000-000000000002"
+	const checkinID = "00000000-0000-0000-0000-000000000003"
+
+	tests := []struct {
+		name     string
+		ctx      context.Context
+		req      *gumav1.UpdateCheckInLootRequest
+		wantCode codes.Code
+	}{
+		{name: "missing guild", ctx: authed, req: &gumav1.UpdateCheckInLootRequest{CheckinId: checkinID}, wantCode: codes.InvalidArgument},
+		{name: "missing checkin", ctx: authed, req: &gumav1.UpdateCheckInLootRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
+		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.UpdateCheckInLootRequest{GuildId: guildID, CheckinId: checkinID}, wantCode: codes.Unauthenticated},
+		{name: "malformed checkin id", ctx: authed, req: &gumav1.UpdateCheckInLootRequest{GuildId: guildID, CheckinId: "bad"}, wantCode: codes.NotFound},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := h.UpdateCheckInLoot(tt.ctx, tt.req)
+			require.Error(t, err)
+			st, ok := status.FromError(err)
+			require.True(t, ok)
+			assert.Equal(t, tt.wantCode, st.Code())
+		})
+	}
+}

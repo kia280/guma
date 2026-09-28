@@ -1983,7 +1983,7 @@
           },
           {
             "name": "status",
-            "description": "\"active\" | \"expired\" | \"cancelled\" | \"\" (all)",
+            "description": "\"active\" | \"expired\" | \"cancelled\" | \"completed\" | \"\" (all)",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2294,6 +2294,50 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/checkins/{checkinId}/complete": {
+      "post": {
+        "operationId": "CheckInService_CompleteCheckIn",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CompleteCheckInResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInServiceCompleteCheckInBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/checkins/{checkinId}/gold": {
       "get": {
         "operationId": "CheckInService_GetCheckInGold",
@@ -2366,6 +2410,50 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/CheckInServiceDistributeCheckInGoldBody"
+            }
+          }
+        ],
+        "tags": [
+          "CheckInService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/checkins/{checkinId}/loot": {
+      "put": {
+        "operationId": "CheckInService_UpdateCheckInLoot",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateCheckInLootResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "checkinId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CheckInServiceUpdateCheckInLootBody"
             }
           }
         ],
@@ -4842,6 +4930,9 @@
     "CheckInServiceCancelCheckInBody": {
       "type": "object"
     },
+    "CheckInServiceCompleteCheckInBody": {
+      "type": "object"
+    },
     "CheckInServiceCreateCheckInBody": {
       "type": "object",
       "properties": {
@@ -4934,6 +5025,18 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1CheckInLootEntry"
+          }
+        }
+      }
+    },
+    "CheckInServiceUpdateCheckInLootBody": {
+      "type": "object",
+      "properties": {
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
           }
         }
       }
@@ -5890,6 +5993,13 @@
         "goldPot": {
           "$ref": "#/definitions/v1CheckInGoldPot",
           "title": "Unset when the roll call has no gold loot"
+        },
+        "isCompleted": {
+          "type": "boolean"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
@@ -6003,6 +6113,14 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "v1CompleteCheckInResponse": {
+      "type": "object",
+      "properties": {
+        "checkin": {
+          "$ref": "#/definitions/v1CheckIn"
         }
       }
     },
@@ -8125,6 +8243,14 @@
       "properties": {
         "auction": {
           "$ref": "#/definitions/v1AuctionItem"
+        }
+      }
+    },
+    "v1UpdateCheckInLootResponse": {
+      "type": "object",
+      "properties": {
+        "checkin": {
+          "$ref": "#/definitions/v1CheckIn"
         }
       }
     },

@@ -25,6 +25,8 @@ const (
 	CheckInService_UpdateCheckIn_FullMethodName         = "/guma.v1.CheckInService/UpdateCheckIn"
 	CheckInService_DeleteCheckIn_FullMethodName         = "/guma.v1.CheckInService/DeleteCheckIn"
 	CheckInService_CancelCheckIn_FullMethodName         = "/guma.v1.CheckInService/CancelCheckIn"
+	CheckInService_CompleteCheckIn_FullMethodName       = "/guma.v1.CheckInService/CompleteCheckIn"
+	CheckInService_UpdateCheckInLoot_FullMethodName     = "/guma.v1.CheckInService/UpdateCheckInLoot"
 	CheckInService_SubmitAttendance_FullMethodName      = "/guma.v1.CheckInService/SubmitAttendance"
 	CheckInService_ListAttendees_FullMethodName         = "/guma.v1.CheckInService/ListAttendees"
 	CheckInService_AssignLoot_FullMethodName            = "/guma.v1.CheckInService/AssignLoot"
@@ -42,6 +44,8 @@ type CheckInServiceClient interface {
 	UpdateCheckIn(ctx context.Context, in *UpdateCheckInRequest, opts ...grpc.CallOption) (*UpdateCheckInResponse, error)
 	DeleteCheckIn(ctx context.Context, in *DeleteCheckInRequest, opts ...grpc.CallOption) (*DeleteCheckInResponse, error)
 	CancelCheckIn(ctx context.Context, in *CancelCheckInRequest, opts ...grpc.CallOption) (*CancelCheckInResponse, error)
+	CompleteCheckIn(ctx context.Context, in *CompleteCheckInRequest, opts ...grpc.CallOption) (*CompleteCheckInResponse, error)
+	UpdateCheckInLoot(ctx context.Context, in *UpdateCheckInLootRequest, opts ...grpc.CallOption) (*UpdateCheckInLootResponse, error)
 	// Member submits their attendance for a check-in
 	SubmitAttendance(ctx context.Context, in *SubmitAttendanceRequest, opts ...grpc.CallOption) (*SubmitAttendanceResponse, error)
 	// List who attended a check-in
@@ -119,6 +123,26 @@ func (c *checkInServiceClient) CancelCheckIn(ctx context.Context, in *CancelChec
 	return out, nil
 }
 
+func (c *checkInServiceClient) CompleteCheckIn(ctx context.Context, in *CompleteCheckInRequest, opts ...grpc.CallOption) (*CompleteCheckInResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CompleteCheckInResponse)
+	err := c.cc.Invoke(ctx, CheckInService_CompleteCheckIn_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *checkInServiceClient) UpdateCheckInLoot(ctx context.Context, in *UpdateCheckInLootRequest, opts ...grpc.CallOption) (*UpdateCheckInLootResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateCheckInLootResponse)
+	err := c.cc.Invoke(ctx, CheckInService_UpdateCheckInLoot_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *checkInServiceClient) SubmitAttendance(ctx context.Context, in *SubmitAttendanceRequest, opts ...grpc.CallOption) (*SubmitAttendanceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SubmitAttendanceResponse)
@@ -179,6 +203,8 @@ type CheckInServiceServer interface {
 	UpdateCheckIn(context.Context, *UpdateCheckInRequest) (*UpdateCheckInResponse, error)
 	DeleteCheckIn(context.Context, *DeleteCheckInRequest) (*DeleteCheckInResponse, error)
 	CancelCheckIn(context.Context, *CancelCheckInRequest) (*CancelCheckInResponse, error)
+	CompleteCheckIn(context.Context, *CompleteCheckInRequest) (*CompleteCheckInResponse, error)
+	UpdateCheckInLoot(context.Context, *UpdateCheckInLootRequest) (*UpdateCheckInLootResponse, error)
 	// Member submits their attendance for a check-in
 	SubmitAttendance(context.Context, *SubmitAttendanceRequest) (*SubmitAttendanceResponse, error)
 	// List who attended a check-in
@@ -213,6 +239,12 @@ func (UnimplementedCheckInServiceServer) DeleteCheckIn(context.Context, *DeleteC
 }
 func (UnimplementedCheckInServiceServer) CancelCheckIn(context.Context, *CancelCheckInRequest) (*CancelCheckInResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CancelCheckIn not implemented")
+}
+func (UnimplementedCheckInServiceServer) CompleteCheckIn(context.Context, *CompleteCheckInRequest) (*CompleteCheckInResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteCheckIn not implemented")
+}
+func (UnimplementedCheckInServiceServer) UpdateCheckInLoot(context.Context, *UpdateCheckInLootRequest) (*UpdateCheckInLootResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateCheckInLoot not implemented")
 }
 func (UnimplementedCheckInServiceServer) SubmitAttendance(context.Context, *SubmitAttendanceRequest) (*SubmitAttendanceResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SubmitAttendance not implemented")
@@ -358,6 +390,42 @@ func _CheckInService_CancelCheckIn_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CheckInService_CompleteCheckIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteCheckInRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckInServiceServer).CompleteCheckIn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckInService_CompleteCheckIn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckInServiceServer).CompleteCheckIn(ctx, req.(*CompleteCheckInRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CheckInService_UpdateCheckInLoot_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateCheckInLootRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckInServiceServer).UpdateCheckInLoot(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CheckInService_UpdateCheckInLoot_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckInServiceServer).UpdateCheckInLoot(ctx, req.(*UpdateCheckInLootRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CheckInService_SubmitAttendance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SubmitAttendanceRequest)
 	if err := dec(in); err != nil {
@@ -478,6 +546,14 @@ var CheckInService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CancelCheckIn",
 			Handler:    _CheckInService_CancelCheckIn_Handler,
+		},
+		{
+			MethodName: "CompleteCheckIn",
+			Handler:    _CheckInService_CompleteCheckIn_Handler,
+		},
+		{
+			MethodName: "UpdateCheckInLoot",
+			Handler:    _CheckInService_UpdateCheckInLoot_Handler,
 		},
 		{
 			MethodName: "SubmitAttendance",

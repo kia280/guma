@@ -10,6 +10,7 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/models"
 	checkinsvc "github.com/kia280/guma/internal/services/checkin"
 	"github.com/kia280/guma/internal/session"
 )
@@ -124,6 +125,48 @@ func (h *CheckInHandler) DeleteCheckIn(ctx context.Context, req *gumav1.DeleteCh
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteCheckInResponse{Success: true}, nil
+}
+
+func (h *CheckInHandler) CompleteCheckIn(ctx context.Context, req *gumav1.CompleteCheckInRequest) (*gumav1.CompleteCheckInResponse, error) {
+	if req.GuildId == "" || req.CheckinId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	c, err := h.svc.Complete(ctx, req.GuildId, req.CheckinId, userID)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.CompleteCheckInResponse{Checkin: checkinToProto(c)}, nil
+}
+
+func (h *CheckInHandler) UpdateCheckInLoot(ctx context.Context, req *gumav1.UpdateCheckInLootRequest) (*gumav1.UpdateCheckInLootResponse, error) {
+	if req.GuildId == "" || req.CheckinId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	lootList := make([]models.Item, len(req.LootList))
+	for i, item := range req.LootList {
+		lootList[i] = itemFromProto(item)
+	}
+
+	c, err := h.svc.UpdateLoot(ctx, checkinsvc.UpdateLootParams{
+		GuildID:   req.GuildId,
+		CheckInID: req.CheckinId,
+		UpdatedBy: userID,
+		LootList:  lootList,
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.UpdateCheckInLootResponse{Checkin: checkinToProto(c)}, nil
 }
 
 func (h *CheckInHandler) CancelCheckIn(ctx context.Context, req *gumav1.CancelCheckInRequest) (*gumav1.CancelCheckInResponse, error) {
@@ -253,7 +296,7 @@ func checkinToProto(c *checkinsvc.CheckIn) *gumav1.CheckIn {
 	for i, item := range c.LootList {
 		lootList[i] = itemToProto(item)
 	}
-	return &gumav1.CheckIn{
+	proto := &gumav1.CheckIn{
 		Id:              c.ID,
 		GuildId:         c.GuildID,
 		CreatedBy:       c.CreatedBy,
@@ -270,7 +313,12 @@ func checkinToProto(c *checkinsvc.CheckIn) *gumav1.CheckIn {
 		UpdatedAt:       timestamppb.New(c.UpdatedAt),
 		Loot:            lootToProto(c.Loot),
 		GoldPot:         goldPotToProto(c.GoldPot),
+		IsCompleted:     c.IsCompleted,
 	}
+	if c.CompletedAt != nil {
+		proto.CompletedAt = timestamppb.New(*c.CompletedAt)
+	}
+	return proto
 }
 
 func lootToProto(entries []checkinsvc.LootEntry) []*gumav1.CheckInLootEntry {

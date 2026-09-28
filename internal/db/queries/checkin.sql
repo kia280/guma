@@ -7,13 +7,16 @@ SELECT id, guild_id, created_by, title,
        loot_list, attendance_count,
        (expire_time < NOW())::bool AS is_expired,
        (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+       (completed_at IS NOT NULL)::bool AS is_completed,
+       completed_at,
        created_at, updated_at
 FROM checkins
 WHERE guild_id = $1
   AND CASE
     WHEN sqlc.arg(status_filter)::text = 'active'    THEN cancelled_at IS NULL AND expire_time >= NOW()
-    WHEN sqlc.arg(status_filter)::text = 'expired'   THEN cancelled_at IS NULL AND expire_time < NOW()
+    WHEN sqlc.arg(status_filter)::text = 'expired'   THEN cancelled_at IS NULL AND completed_at IS NULL AND expire_time < NOW()
     WHEN sqlc.arg(status_filter)::text = 'cancelled' THEN cancelled_at IS NOT NULL
+    WHEN sqlc.arg(status_filter)::text = 'completed' THEN completed_at IS NOT NULL
     ELSE true
   END
 ORDER BY datetime DESC
@@ -23,8 +26,9 @@ LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 SELECT COUNT(*) FROM checkins WHERE guild_id = $1
   AND CASE
     WHEN sqlc.arg(status_filter)::text = 'active'    THEN cancelled_at IS NULL AND expire_time >= NOW()
-    WHEN sqlc.arg(status_filter)::text = 'expired'   THEN cancelled_at IS NULL AND expire_time < NOW()
+    WHEN sqlc.arg(status_filter)::text = 'expired'   THEN cancelled_at IS NULL AND completed_at IS NULL AND expire_time < NOW()
     WHEN sqlc.arg(status_filter)::text = 'cancelled' THEN cancelled_at IS NOT NULL
+    WHEN sqlc.arg(status_filter)::text = 'completed' THEN completed_at IS NOT NULL
     ELSE true
   END;
 
@@ -37,6 +41,8 @@ SELECT id, guild_id, created_by, title,
        loot_list, attendance_count,
        (expire_time < NOW())::bool AS is_expired,
        (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+       (completed_at IS NOT NULL)::bool AS is_completed,
+       completed_at,
        created_at, updated_at
 FROM checkins WHERE id = $1 AND guild_id = $2;
 
@@ -58,6 +64,8 @@ RETURNING id, guild_id, created_by, title,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
           (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
           created_at, updated_at;
 
 -- name: UpdateCheckin :one
@@ -78,6 +86,8 @@ RETURNING id, guild_id, created_by, title,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
           (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
           created_at, updated_at;
 
 -- name: DeleteCheckin :execrows
@@ -98,6 +108,8 @@ RETURNING id, guild_id, created_by, title,
           loot_list, attendance_count,
           (expire_time < NOW())::bool AS is_expired,
           (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
           created_at, updated_at;
 
 -- name: GetUserDisplayAndAvatar :one
@@ -257,3 +269,78 @@ INSERT INTO bank_contributions (guild_id, user_id, username, amount, note, kind,
 VALUES (sqlc.arg(guild_id), sqlc.arg(user_id), sqlc.arg(username)::text, sqlc.arg(amount)::bigint,
         NULLIF(sqlc.arg(note)::text, ''), sqlc.arg(kind)::text, sqlc.arg(checkin_id)::uuid,
         NULLIF(sqlc.arg(reference_type)::text, ''), sqlc.narg(reference_id)::uuid);
+-- name: LockCheckinState :one
+SELECT title, (expire_time < NOW())::bool AS is_expired,
+       (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+       (completed_at IS NOT NULL)::bool AS is_completed,
+       loot_list
+FROM checkins WHERE id = $1 AND guild_id = $2
+FOR UPDATE;
+
+-- name: LockCheckinBankItems :many
+SELECT bank_items.id, bank_items.item, (bank_items.locked_by_type IS NOT NULL)::bool AS is_locked
+FROM bank_items
+WHERE bank_items.checkin_id = sqlc.arg(checkin_id)::uuid AND bank_items.guild_id = sqlc.arg(guild_id)
+FOR UPDATE;
+
+-- name: UpdateCheckinBankItem :execrows
+UPDATE bank_items SET item = sqlc.arg(item)::jsonb
+WHERE bank_items.id = sqlc.arg(id) AND bank_items.guild_id = sqlc.arg(guild_id)
+  AND bank_items.checkin_id = sqlc.arg(checkin_id)::uuid AND bank_items.locked_by_type IS NULL;
+
+-- name: RejectPendingRequestsForLootItems :execrows
+UPDATE item_requests SET
+    status = 'rejected',
+    reviewer_id = sqlc.arg(reviewer_id),
+    review_note = NULLIF(sqlc.arg(review_note)::text, ''),
+    reviewed_at = NOW()
+WHERE item_requests.guild_id = sqlc.arg(guild_id)
+  AND item_requests.status = 'pending'
+  AND item_requests.bank_item_id = ANY(sqlc.arg(bank_item_ids)::uuid[]);
+
+-- name: LogRemovedCheckinLoot :exec
+INSERT INTO item_events (guild_id, item_id, kind, actor_id, source, reference_id)
+SELECT bi.guild_id, bi.id, 'retracted', sqlc.arg(actor_id)::uuid, 'checkin', bi.checkin_id
+FROM bank_items bi
+WHERE bi.id = ANY(sqlc.arg(ids)::uuid[]) AND bi.guild_id = sqlc.arg(guild_id)
+  AND bi.checkin_id = sqlc.arg(checkin_id)::uuid AND bi.locked_by_type IS NULL;
+
+-- name: RemoveCheckinLoot :execrows
+DELETE FROM bank_items
+WHERE bank_items.id = ANY(sqlc.arg(ids)::uuid[]) AND bank_items.guild_id = sqlc.arg(guild_id)
+  AND bank_items.checkin_id = sqlc.arg(checkin_id)::uuid AND bank_items.locked_by_type IS NULL;
+
+-- name: SetCheckinLootList :one
+UPDATE checkins SET loot_list = sqlc.arg(loot_list)::jsonb, updated_at = NOW()
+WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id)
+RETURNING id, guild_id, created_by, title,
+          COALESCE(description, '') AS description,
+          TO_CHAR(datetime    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS datetime,
+          TO_CHAR(expire_time AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS expire_time,
+          COALESCE(image_url, '') AS image_url,
+          loot_list, attendance_count,
+          (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
+          created_at, updated_at;
+
+-- name: CountCheckinBankItems :one
+SELECT COUNT(*) FROM bank_items
+WHERE bank_items.checkin_id = sqlc.arg(checkin_id)::uuid AND bank_items.guild_id = sqlc.arg(guild_id);
+
+-- name: CompleteCheckin :one
+UPDATE checkins SET completed_at = NOW(), completed_by = sqlc.arg(completed_by), updated_at = NOW()
+WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id)
+  AND cancelled_at IS NULL AND completed_at IS NULL AND expire_time < NOW()
+RETURNING id, guild_id, created_by, title,
+          COALESCE(description, '') AS description,
+          TO_CHAR(datetime    AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS datetime,
+          TO_CHAR(expire_time AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS expire_time,
+          COALESCE(image_url, '') AS image_url,
+          loot_list, attendance_count,
+          (expire_time < NOW())::bool AS is_expired,
+          (cancelled_at IS NOT NULL)::bool AS is_cancelled,
+          (completed_at IS NOT NULL)::bool AS is_completed,
+          completed_at,
+          created_at, updated_at;

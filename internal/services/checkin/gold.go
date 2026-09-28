@@ -153,6 +153,22 @@ func decodeLoot(raw []byte) []LootEntry {
 	return entries
 }
 
+func storeLoot(entries []LootEntry, items []models.Item) []storedLootEntry {
+	stored := make([]storedLootEntry, 0, len(items)+1)
+	for _, item := range items {
+		stored = append(stored, storedLootEntry{Kind: LootKindItem, Item: item})
+	}
+	for i, e := range entries {
+		if e.Kind != LootKindGold {
+			continue
+		}
+		gold := storedLootEntry{Kind: LootKindGold, Item: models.Item{ID: e.Item.ID}, Amount: e.Amount}
+		at := min(i, len(stored))
+		stored = append(stored[:at], append([]storedLootEntry{gold}, stored[at:]...)...)
+	}
+	return stored
+}
+
 func lootItems(entries []LootEntry) []models.Item {
 	items := make([]models.Item, 0, len(entries))
 	for _, e := range entries {
