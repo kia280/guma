@@ -27,7 +27,7 @@ import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal, type LotteryPrizeItem } from '@/components/CreateLotteryModal';
 import { ItemHistoryModal } from '@/components/ItemHistoryModal';
-import { MemberComboBox } from '@/components/MemberComboBox';
+import { MemberComboBox, type MemberOption } from '@/components/MemberComboBox';
 import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -40,7 +40,7 @@ import { apiClient } from '@/lib/guma';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 import { type FormatGold, useFormatGold } from '@/lib/guma/useFormatGold';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
-import { useGuildPermissions } from '@/lib/permissions';
+import { isGuildRole, useGuildPermissions } from '@/lib/permissions';
 import { transactionStatusColor } from '@/lib/status-colors';
 import { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
@@ -175,6 +175,7 @@ export default function WalletPage() {
   const t = useTranslations('walletPage');
   const labels = useTranslations('createAuctionModal');
   const userName = useUserName();
+  const roleLabels = useTranslations('adminPage.roles');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
@@ -208,13 +209,23 @@ export default function WalletPage() {
   const [wallet, setWallet] = React.useState<WalletType | null>(null);
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>([]);
-  const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
+  const [members, setMembers] = React.useState<MockUser[]>([]);
   const [pendingAction, setPendingAction] = React.useState<WalletAction | null>(null);
   const [completedAction, setCompletedAction] = React.useState<{ action: WalletAction; detail: string } | null>(null);
   const walletState = useLoadState();
   const transactionsState = useLoadState();
   const backpackState = useLoadState();
   const notify = useToast();
+  const recipientOptions = React.useMemo<MemberOption[]>(
+    () =>
+      members.map(user => ({
+        id: user.id,
+        name: userName(user.username),
+        avatar: user.avatar,
+        description: isGuildRole(user.role) ? roleLabels(user.role) : undefined,
+      })),
+    [members, userName, roleLabels],
+  );
   const [reloadKey, setReloadKey] = React.useState(0);
 
   const reload = React.useCallback(() => {
@@ -271,7 +282,7 @@ export default function WalletPage() {
     refetchWallet();
     apiClient
       .listMembers(guildId)
-      .then(setMockUsers)
+      .then(setMembers)
       .catch(() => notify.loadFailed(reload, 'wallet'));
   }, [guildId, refetchWallet, reloadKey, notify, reload]);
 
@@ -360,7 +371,7 @@ export default function WalletPage() {
       return;
     }
     const amount = transferAmountValue;
-    const recipient = userName(mockUsers.find(user => user.id === transferRecipient)?.username);
+    const recipient = userName(members.find(user => user.id === transferRecipient)?.username);
     return runAction(
       'transfer',
       () => apiClient.transfer(guildId, { recipientId: transferRecipient, amount }),
@@ -576,7 +587,7 @@ export default function WalletPage() {
                             {showTransferAmountError && <FieldError>{transferAmountError}</FieldError>}
                           </TextField>
                           <MemberComboBox
-                            members={mockUsers}
+                            members={recipientOptions}
                             value={transferRecipient}
                             onChange={setTransferRecipient}
                             label={t('recipient')}
@@ -772,7 +783,7 @@ export default function WalletPage() {
             state={moveModalState}
             mode={moveMode}
             item={moveItem}
-            members={mockUsers}
+            members={members}
             onMoved={refetchBackpack}
           />
           <ItemHistoryModal state={historyModalState} itemId={historyItem?.id ?? null} itemName={historyItem?.item.name ?? ''} />

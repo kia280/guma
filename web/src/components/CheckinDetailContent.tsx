@@ -225,10 +225,14 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
           )}
         </div>
         {hasCheckedIn ? (
-          <Chip size="sm" color="success" variant="secondary" className="shrink-0">
-            <Icon icon="solar:check-circle-linear" width={14} />
+          <Button
+            isDisabled
+            variant="secondary"
+            className="shrink-0 max-sm:h-11 bg-success-soft text-success-soft-foreground disabled:opacity-100 disabled:cursor-default"
+          >
+            <Icon icon="solar:check-circle-linear" width={16} />
             {t('checkedIn')}
-          </Chip>
+          </Button>
         ) : isOpen_ ? (
           <Button variant="primary" className="shrink-0 max-sm:h-11" onPress={openCheckinModal}>
             {t('checkIn')}
