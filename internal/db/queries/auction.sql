@@ -44,23 +44,46 @@ INSERT INTO auctions (
 RETURNING id, guild_id, seller_id, item, starting_bid, current_bid,
           current_bidder_id, min_bid_increment, start_time, end_time,
           status, is_blind, created_at, updated_at,
-          source_type, settled_at, source_item_id;
+          source_type, settled_at, source_item_id, cancelled_at;
 
 -- name: GetAuctionForUpdate :one
-SELECT current_bid, current_bidder_id, min_bid_increment, status, end_time
+SELECT starting_bid, current_bid, current_bidder_id, min_bid_increment, status, end_time
 FROM auctions WHERE id = $1 AND guild_id = $2 FOR UPDATE;
 
 -- name: UpdateAuctionBid :exec
 UPDATE auctions SET current_bid = $1, current_bidder_id = $2, updated_at = NOW()
 WHERE id = $3;
 
--- name: UpdateAuctionStatus :exec
-UPDATE auctions SET status = sqlc.arg(status)::text, updated_at = NOW() WHERE id = sqlc.arg(id);
-
--- name: LockAuctionForCancel :one
-SELECT current_bid, current_bidder_id, status, source_type, source_item_id
+-- name: LockAuction :one
+SELECT id, guild_id, seller_id, item, starting_bid, current_bid,
+       current_bidder_id, min_bid_increment, start_time, end_time,
+       status, is_blind, created_at, updated_at,
+       source_type, settled_at, source_item_id, cancelled_at
 FROM auctions WHERE id = $1 AND guild_id = $2
 FOR UPDATE;
+
+-- name: UpdateAuctionDetails :one
+UPDATE auctions SET
+    item              = sqlc.arg(item)::jsonb,
+    starting_bid      = sqlc.arg(starting_bid),
+    min_bid_increment = sqlc.arg(min_bid_increment),
+    is_blind          = sqlc.arg(is_blind),
+    start_time        = sqlc.arg(start_time),
+    end_time          = sqlc.arg(end_time),
+    updated_at        = NOW()
+WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id)
+  AND status IN ('UPCOMING', 'ACTIVE')
+RETURNING id, guild_id, seller_id, item, starting_bid, current_bid,
+          current_bidder_id, min_bid_increment, start_time, end_time,
+          status, is_blind, created_at, updated_at,
+          source_type, settled_at, source_item_id, cancelled_at;
+
+-- name: MarkAuctionCancelled :exec
+UPDATE auctions SET status = 'CANCELLED', cancelled_at = NOW(), updated_at = NOW()
+WHERE id = $1;
+
+-- name: DeleteCancelledAuction :execrows
+DELETE FROM auctions WHERE id = $1 AND guild_id = $2 AND status = 'CANCELLED';
 
 -- name: MarkAllBidsNotWinning :exec
 UPDATE bids SET is_winning = false WHERE auction_id = $1;

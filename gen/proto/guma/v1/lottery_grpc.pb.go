@@ -25,6 +25,8 @@ const (
 	LotteryService_PurchaseTickets_FullMethodName   = "/guma.v1.LotteryService/PurchaseTickets"
 	LotteryService_GetLotteryWinners_FullMethodName = "/guma.v1.LotteryService/GetLotteryWinners"
 	LotteryService_UpdateLottery_FullMethodName     = "/guma.v1.LotteryService/UpdateLottery"
+	LotteryService_CancelLottery_FullMethodName     = "/guma.v1.LotteryService/CancelLottery"
+	LotteryService_DeleteLottery_FullMethodName     = "/guma.v1.LotteryService/DeleteLottery"
 	LotteryService_DrawLottery_FullMethodName       = "/guma.v1.LotteryService/DrawLottery"
 	LotteryService_ListMyTickets_FullMethodName     = "/guma.v1.LotteryService/ListMyTickets"
 )
@@ -40,6 +42,8 @@ type LotteryServiceClient interface {
 	GetLotteryWinners(ctx context.Context, in *GetLotteryWinnersRequest, opts ...grpc.CallOption) (*GetLotteryWinnersResponse, error)
 	// Update a lottery that has not been drawn yet (admin action)
 	UpdateLottery(ctx context.Context, in *UpdateLotteryRequest, opts ...grpc.CallOption) (*UpdateLotteryResponse, error)
+	CancelLottery(ctx context.Context, in *CancelLotteryRequest, opts ...grpc.CallOption) (*CancelLotteryResponse, error)
+	DeleteLottery(ctx context.Context, in *DeleteLotteryRequest, opts ...grpc.CallOption) (*DeleteLotteryResponse, error)
 	// Draw the lottery manually (admin action)
 	DrawLottery(ctx context.Context, in *DrawLotteryRequest, opts ...grpc.CallOption) (*DrawLotteryResponse, error)
 	// List tickets owned by the current user
@@ -114,6 +118,26 @@ func (c *lotteryServiceClient) UpdateLottery(ctx context.Context, in *UpdateLott
 	return out, nil
 }
 
+func (c *lotteryServiceClient) CancelLottery(ctx context.Context, in *CancelLotteryRequest, opts ...grpc.CallOption) (*CancelLotteryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelLotteryResponse)
+	err := c.cc.Invoke(ctx, LotteryService_CancelLottery_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lotteryServiceClient) DeleteLottery(ctx context.Context, in *DeleteLotteryRequest, opts ...grpc.CallOption) (*DeleteLotteryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteLotteryResponse)
+	err := c.cc.Invoke(ctx, LotteryService_DeleteLottery_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *lotteryServiceClient) DrawLottery(ctx context.Context, in *DrawLotteryRequest, opts ...grpc.CallOption) (*DrawLotteryResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DrawLotteryResponse)
@@ -145,6 +169,8 @@ type LotteryServiceServer interface {
 	GetLotteryWinners(context.Context, *GetLotteryWinnersRequest) (*GetLotteryWinnersResponse, error)
 	// Update a lottery that has not been drawn yet (admin action)
 	UpdateLottery(context.Context, *UpdateLotteryRequest) (*UpdateLotteryResponse, error)
+	CancelLottery(context.Context, *CancelLotteryRequest) (*CancelLotteryResponse, error)
+	DeleteLottery(context.Context, *DeleteLotteryRequest) (*DeleteLotteryResponse, error)
 	// Draw the lottery manually (admin action)
 	DrawLottery(context.Context, *DrawLotteryRequest) (*DrawLotteryResponse, error)
 	// List tickets owned by the current user
@@ -176,6 +202,12 @@ func (UnimplementedLotteryServiceServer) GetLotteryWinners(context.Context, *Get
 }
 func (UnimplementedLotteryServiceServer) UpdateLottery(context.Context, *UpdateLotteryRequest) (*UpdateLotteryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateLottery not implemented")
+}
+func (UnimplementedLotteryServiceServer) CancelLottery(context.Context, *CancelLotteryRequest) (*CancelLotteryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelLottery not implemented")
+}
+func (UnimplementedLotteryServiceServer) DeleteLottery(context.Context, *DeleteLotteryRequest) (*DeleteLotteryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteLottery not implemented")
 }
 func (UnimplementedLotteryServiceServer) DrawLottery(context.Context, *DrawLotteryRequest) (*DrawLotteryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DrawLottery not implemented")
@@ -312,6 +344,42 @@ func _LotteryService_UpdateLottery_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LotteryService_CancelLottery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelLotteryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LotteryServiceServer).CancelLottery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LotteryService_CancelLottery_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LotteryServiceServer).CancelLottery(ctx, req.(*CancelLotteryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LotteryService_DeleteLottery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteLotteryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LotteryServiceServer).DeleteLottery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LotteryService_DeleteLottery_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LotteryServiceServer).DeleteLottery(ctx, req.(*DeleteLotteryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _LotteryService_DrawLottery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DrawLotteryRequest)
 	if err := dec(in); err != nil {
@@ -378,6 +446,14 @@ var LotteryService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateLottery",
 			Handler:    _LotteryService_UpdateLottery_Handler,
+		},
+		{
+			MethodName: "CancelLottery",
+			Handler:    _LotteryService_CancelLottery_Handler,
+		},
+		{
+			MethodName: "DeleteLottery",
+			Handler:    _LotteryService_DeleteLottery_Handler,
 		},
 		{
 			MethodName: "DrawLottery",

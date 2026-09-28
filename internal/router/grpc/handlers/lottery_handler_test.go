@@ -75,3 +75,47 @@ func TestLotteryService_UpdateLottery_Validation(t *testing.T) {
 		})
 	}
 }
+
+func TestLotteryService_UpdateLottery_FieldValidation(t *testing.T) {
+	service := NewLotteryService(nil, zerolog.Nop())
+	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	const guildID = "00000000-0000-0000-0000-000000000002"
+	const lotteryID = "00000000-0000-0000-0000-000000000003"
+	blank, negative, negativeCount := " ", int64(-1), int32(-1)
+
+	for name, req := range map[string]*gumav1.UpdateLotteryRequest{
+		"blank title":           {GuildId: guildID, LotteryId: lotteryID, Title: &blank},
+		"negative price":        {GuildId: guildID, LotteryId: lotteryID, TicketPrice: &negative},
+		"negative max":          {GuildId: guildID, LotteryId: lotteryID, MaxTickets: &negativeCount},
+		"negative per user max": {GuildId: guildID, LotteryId: lotteryID, MaxTicketsPerUser: &negativeCount},
+	} {
+		t.Run(name, func(t *testing.T) {
+			_, err := service.UpdateLottery(authed, req)
+			requireCode(t, err, codes.InvalidArgument)
+		})
+	}
+
+	title := "Raffle"
+	_, err := service.UpdateLottery(authed, &gumav1.UpdateLotteryRequest{GuildId: guildID, LotteryId: "bad", Title: &title})
+	requireCode(t, err, codes.NotFound)
+}
+
+func TestCancelAndDeleteLottery_Validation(t *testing.T) {
+	service := NewLotteryService(nil, zerolog.Nop())
+	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	const guildID = "00000000-0000-0000-0000-000000000002"
+
+	_, err := service.CancelLottery(authed, &gumav1.CancelLotteryRequest{GuildId: guildID})
+	requireCode(t, err, codes.InvalidArgument)
+	_, err = service.CancelLottery(context.Background(), &gumav1.CancelLotteryRequest{GuildId: guildID, LotteryId: "l"})
+	requireCode(t, err, codes.Unauthenticated)
+	_, err = service.CancelLottery(authed, &gumav1.CancelLotteryRequest{GuildId: guildID, LotteryId: "bad"})
+	requireCode(t, err, codes.NotFound)
+
+	_, err = service.DeleteLottery(authed, &gumav1.DeleteLotteryRequest{LotteryId: "l"})
+	requireCode(t, err, codes.InvalidArgument)
+	_, err = service.DeleteLottery(context.Background(), &gumav1.DeleteLotteryRequest{GuildId: guildID, LotteryId: "l"})
+	requireCode(t, err, codes.Unauthenticated)
+	_, err = service.DeleteLottery(authed, &gumav1.DeleteLotteryRequest{GuildId: guildID, LotteryId: "bad"})
+	requireCode(t, err, codes.NotFound)
+}

@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 
 	"github.com/kia280/guma/internal/database"
@@ -49,6 +50,7 @@ type Lottery struct {
 	Winners           []*LotteryWinner
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+	CancelledAt       *time.Time
 }
 
 // LotteryTicket is the domain model for a lottery ticket.
@@ -101,6 +103,18 @@ type CreateParams struct {
 	Prizes            []LotteryPrize
 }
 
+type UpdateParams struct {
+	GuildID           string
+	LotteryID         string
+	UpdatedBy         string
+	Title             *string
+	Description       *string
+	DrawDate          string
+	TicketPrice       *int64
+	MaxTickets        *int32
+	MaxTicketsPerUser *int32
+}
+
 // ListTicketsResult is returned by ListMyTickets.
 type ListTicketsResult struct {
 	Tickets    []*LotteryTicket
@@ -124,6 +138,7 @@ type lotteryRow struct {
 	Prizes            []byte
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+	CancelledAt       pgtype.Timestamptz
 }
 
 // Service handles lottery business logic.
@@ -291,32 +306,38 @@ func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, lotteryIDStr,
 		return nil, 0, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
 
-	info, err := s.q.GetLotteryForPurchase(ctx, db.GetLotteryForPurchaseParams{ID: lotteryID, GuildID: guildID})
-	if err != nil {
-		return nil, 0, fmt.Errorf("%w: lottery", errs.ErrNotFound)
-	}
-	if info.Status != "active" && info.Status != "upcoming" {
-		return nil, 0, fmt.Errorf("%w: lottery is not open for ticket purchase", errs.ErrFailedPrecondition)
-	}
-	if info.MaxTickets > 0 && info.TicketsSold+quantity > info.MaxTickets {
-		return nil, 0, fmt.Errorf("%w: not enough tickets available", errs.ErrFailedPrecondition)
-	}
-
-	if info.MaxTicketsPerUser > 0 {
-		n, _ := s.q.CountUserTicketsForLottery(ctx, db.CountUserTicketsForLotteryParams{LotteryID: lotteryID, UserID: userID})
-		if int32(n)+quantity > info.MaxTicketsPerUser {
-			return nil, 0, fmt.Errorf("%w: ticket limit per user exceeded", errs.ErrFailedPrecondition)
-		}
-	}
-
-	totalCost := info.TicketPrice * int64(quantity)
-
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, 0, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
 	}
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
+
+	info, err := qtx.LockLotteryForPurchase(ctx, db.LockLotteryForPurchaseParams{ID: lotteryID, GuildID: guildID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, 0, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		}
+		return nil, 0, fmt.Errorf("%w: load lottery: %v", errs.ErrInternal, err)
+	}
+	if err := checkOpen(info.Status, info.DrawDate, time.Now()); err != nil {
+		return nil, 0, err
+	}
+	if info.MaxTickets > 0 && info.TicketsSold+quantity > info.MaxTickets {
+		return nil, 0, fmt.Errorf("%w: not enough tickets available", errs.ErrFailedPrecondition)
+	}
+
+	if info.MaxTicketsPerUser > 0 {
+		n, err := qtx.CountUserTicketsForLottery(ctx, db.CountUserTicketsForLotteryParams{LotteryID: lotteryID, UserID: userID})
+		if err != nil {
+			return nil, 0, fmt.Errorf("%w: count tickets: %v", errs.ErrInternal, err)
+		}
+		if int32(n)+quantity > info.MaxTicketsPerUser {
+			return nil, 0, fmt.Errorf("%w: ticket limit per user exceeded", errs.ErrFailedPrecondition)
+		}
+	}
+
+	totalCost := info.TicketPrice * int64(quantity)
 
 	if err := qtx.EnsureWalletDefault(ctx, db.EnsureWalletDefaultParams{UserID: userID, GuildID: guildID}); err != nil {
 		return nil, 0, fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
@@ -431,8 +452,11 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 	if err != nil {
 		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
 	}
-	if info.Status == "ended" {
+	switch info.Status {
+	case statusEnded:
 		return nil, fmt.Errorf("%w: lottery already drawn", errs.ErrFailedPrecondition)
+	case statusCancelled:
+		return nil, fmt.Errorf("%w: lottery is cancelled", errs.ErrFailedPrecondition)
 	}
 
 	var prizeList []LotteryPrize
@@ -614,7 +638,7 @@ func lotteryHolder(id uuid.UUID) inventory.Holder {
 }
 
 func (s *Service) drawIfDue(ctx context.Context, guildID, lotteryID uuid.UUID, status, drawDate string) bool {
-	if status == "ended" || !isDue(drawDate, time.Now()) {
+	if !isOpenStatus(status) || !isDue(drawDate, time.Now()) {
 		return false
 	}
 	return s.drawScheduled(ctx, guildID, lotteryID)
@@ -657,46 +681,198 @@ func isDue(drawDate string, now time.Time) bool {
 	return err == nil && !now.Before(at)
 }
 
-func (s *Service) UpdateDrawDate(ctx context.Context, guildIDStr, lotteryIDStr, callerIDStr, drawDate string) (*Lottery, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+func (s *Service) Update(ctx context.Context, p UpdateParams) (*Lottery, error) {
+	now := time.Now()
+	if err := validateUpdate(p, now); err != nil {
+		return nil, err
 	}
-	lotteryID, err := uuid.Parse(lotteryIDStr)
+	guildID, lotteryID, callerID, err := parseIDs(p.GuildID, p.LotteryID, p.UpdatedBy)
 	if err != nil {
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
-	}
-	callerID, err := uuid.Parse(callerIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	at, err := time.Parse(time.RFC3339, drawDate)
-	if err != nil {
-		return nil, fmt.Errorf("%w: draw_date must be an ISO 8601 datetime", errs.ErrInvalidArgument)
-	}
-	if !at.After(time.Now()) {
-		return nil, fmt.Errorf("%w: draw_date must be in the future", errs.ErrInvalidArgument)
+		return nil, err
 	}
 	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
 		return nil, err
 	}
 
-	r, err := s.q.UpdateLotteryDrawDate(ctx, db.UpdateLotteryDrawDateParams{
-		DrawDate: at.UTC().Format(time.RFC3339), ID: lotteryID, GuildID: guildID,
-	})
+	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("%w: update lottery: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	current, err := lockLottery(ctx, qtx, guildID, lotteryID)
+	if err != nil {
+		return nil, err
+	}
+	if err := checkEditable(current.Status, current.DrawDate, now); err != nil {
+		return nil, err
+	}
+	params, err := applyUpdate(current, p)
+	if err != nil {
+		return nil, err
+	}
+	params.ID, params.GuildID = lotteryID, guildID
+
+	r, err := qtx.UpdateLottery(ctx, params)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: lottery is no longer open", errs.ErrFailedPrecondition)
 		}
-		if exists, _ := s.q.LotteryExists(ctx, db.LotteryExistsParams{ID: lotteryID, GuildID: guildID}); exists {
-			return nil, fmt.Errorf("%w: lottery already drawn", errs.ErrFailedPrecondition)
-		}
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: update lottery: %v", errs.ErrInternal, err)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	l := toLottery(lotteryRow(r))
 	l.Winners = []*LotteryWinner{}
-	s.logger.Info().Str("lottery_id", l.ID).Str("draw_date", l.DrawDate).Msg("lottery rescheduled")
+	s.logger.Info().Str("lottery_id", l.ID).Str("guild_id", l.GuildID).Str("user_id", p.UpdatedBy).Msg("lottery updated")
 	return l, nil
+}
+
+// Cancel cancels an undrawn lottery, refunds every ticket to its buyer and
+// returns item prizes to where they came from.
+func (s *Service) Cancel(ctx context.Context, guildIDStr, lotteryIDStr, callerIDStr string) (*Lottery, error) {
+	guildID, lotteryID, callerID, err := parseIDs(guildIDStr, lotteryIDStr, callerIDStr)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
+		return nil, err
+	}
+
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	current, err := lockLottery(ctx, qtx, guildID, lotteryID)
+	if err != nil {
+		return nil, err
+	}
+	if err := checkCancellable(current.Status, current.DrawDate, time.Now()); err != nil {
+		return nil, err
+	}
+
+	holders, err := qtx.ListLotteryTicketHolders(ctx, lotteryID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: list ticket holders: %v", errs.ErrInternal, err)
+	}
+	var refunded int64
+	for _, h := range holders {
+		amount := current.TicketPrice * int64(h.Tickets)
+		if err := refundTickets(ctx, qtx, guildID, lotteryID, h.UserID, amount); err != nil {
+			return nil, err
+		}
+		refunded += amount
+	}
+
+	var prizes []LotteryPrize
+	if len(current.Prizes) > 0 {
+		if err := json.Unmarshal(current.Prizes, &prizes); err != nil {
+			return nil, fmt.Errorf("%w: decode prizes: %v", errs.ErrInternal, err)
+		}
+	}
+	if err := releaseUnawardedPrizes(ctx, qtx, lotteryID, prizes, 0); err != nil {
+		return nil, err
+	}
+	if err := qtx.MarkLotteryCancelled(ctx, lotteryID); err != nil {
+		return nil, fmt.Errorf("%w: cancel lottery: %v", errs.ErrInternal, err)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("lottery_id", lotteryIDStr).Str("guild_id", guildIDStr).Str("user_id", callerIDStr).
+		Int("ticket_holders", len(holders)).Int64("refunded", refunded).Msg("lottery cancelled")
+	return s.Get(ctx, guildIDStr, lotteryIDStr)
+}
+
+// Delete permanently removes a cancelled lottery together with its tickets.
+func (s *Service) Delete(ctx context.Context, guildIDStr, lotteryIDStr, callerIDStr string) error {
+	guildID, lotteryID, callerID, err := parseIDs(guildIDStr, lotteryIDStr, callerIDStr)
+	if err != nil {
+		return err
+	}
+	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
+		return err
+	}
+
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	current, err := lockLottery(ctx, qtx, guildID, lotteryID)
+	if err != nil {
+		return err
+	}
+	if err := checkDeletable(current.Status); err != nil {
+		return err
+	}
+	n, err := qtx.DeleteCancelledLottery(ctx, db.DeleteCancelledLotteryParams{ID: lotteryID, GuildID: guildID})
+	if err != nil {
+		return fmt.Errorf("%w: delete lottery: %v", errs.ErrInternal, err)
+	}
+	if n == 0 {
+		return fmt.Errorf("%w: only cancelled lotteries can be deleted", errs.ErrFailedPrecondition)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("lottery_id", lotteryIDStr).Str("guild_id", guildIDStr).Str("user_id", callerIDStr).Msg("lottery deleted")
+	return nil
+}
+
+func refundTickets(ctx context.Context, qtx *db.Queries, guildID, lotteryID, userID uuid.UUID, amount int64) error {
+	if amount <= 0 {
+		return nil
+	}
+	if err := qtx.EnsureWalletDefault(ctx, db.EnsureWalletDefaultParams{UserID: userID, GuildID: guildID}); err != nil {
+		return fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
+	}
+	balance, err := qtx.CreditWallet(ctx, db.CreditWalletParams{Amount: amount, UserID: userID, GuildID: guildID})
+	if err != nil {
+		return fmt.Errorf("%w: refund tickets: %v", errs.ErrInternal, err)
+	}
+	if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
+		UserID: userID, GuildID: guildID, Type: "LOTTERY_TICKET",
+		Amount: amount, BalanceAfter: balance,
+		Description: "Lottery cancelled refund", ReferenceID: lotteryID.String(), ReferenceType: "lottery",
+	}); err != nil {
+		return fmt.Errorf("%w: record refund: %v", errs.ErrInternal, err)
+	}
+	return nil
+}
+
+func lockLottery(ctx context.Context, qtx *db.Queries, guildID, lotteryID uuid.UUID) (db.LockLotteryRow, error) {
+	l, err := qtx.LockLottery(ctx, db.LockLotteryParams{ID: lotteryID, GuildID: guildID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return db.LockLotteryRow{}, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		}
+		return db.LockLotteryRow{}, fmt.Errorf("%w: load lottery: %v", errs.ErrInternal, err)
+	}
+	return l, nil
+}
+
+func parseIDs(guildIDStr, lotteryIDStr, userIDStr string) (uuid.UUID, uuid.UUID, uuid.UUID, error) {
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	lotteryID, err := uuid.Parse(lotteryIDStr)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	}
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	return guildID, lotteryID, userID, nil
 }
 
 // ListMyTickets returns tickets owned by a user across all guilds (or filtered by guild).
@@ -745,6 +921,10 @@ func toLottery(r lotteryRow) *Lottery {
 		Status: r.Status, DrawDate: r.DrawDate,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
 		Prizes: []LotteryPrize{},
+	}
+	if r.CancelledAt.Valid {
+		cancelledAt := r.CancelledAt.Time
+		l.CancelledAt = &cancelledAt
 	}
 	if len(r.Prizes) > 0 {
 		_ = json.Unmarshal(r.Prizes, &l.Prizes)

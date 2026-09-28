@@ -10,6 +10,7 @@ import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
 import { lotteryStatusColor } from '@/lib/status-colors';
+import type { LotteryStatus } from '@/types/lottery';
 import { CardFooterStatus } from './CardFooterStatus';
 import { CardLinkHint } from './CardLinkHint';
 import { UserAvatar } from './UserAvatar';
@@ -30,7 +31,7 @@ interface LotteryCardProps {
   drawDate: string;
   ticketsSold: number;
   maxTickets: number;
-  status: 'active' | 'upcoming' | 'ended';
+  status: LotteryStatus;
   winners?: LotteryWinner[];
 }
 
@@ -171,6 +172,9 @@ const LotteryCard = ({
         )}
         {status === 'upcoming' && (
           <CardFooterStatus icon="solar:clock-circle-linear" label={countdown('startsIn')} tone="warning" />
+        )}
+        {status === 'cancelled' && (
+          <CardFooterStatus icon="solar:forbidden-circle-linear" label={t('cancelledFooter')} />
         )}
       </Card.Footer>
     </Card>

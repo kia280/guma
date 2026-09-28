@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countLotteries = `-- name: CountLotteries :one
@@ -80,7 +81,7 @@ RETURNING id, guild_id, created_by, title,
           ticket_price, tickets_sold,
           max_tickets, max_tickets_per_user, status,
           TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
-          prizes, created_at, updated_at
+          prizes, created_at, updated_at, cancelled_at
 `
 
 type CreateLotteryParams struct {
@@ -111,6 +112,7 @@ type CreateLotteryRow struct {
 	Prizes            []byte
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+	CancelledAt       pgtype.Timestamptz
 }
 
 func (q *Queries) CreateLottery(ctx context.Context, arg CreateLotteryParams) (CreateLotteryRow, error) {
@@ -142,8 +144,26 @@ func (q *Queries) CreateLottery(ctx context.Context, arg CreateLotteryParams) (C
 		&i.Prizes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CancelledAt,
 	)
 	return i, err
+}
+
+const deleteCancelledLottery = `-- name: DeleteCancelledLottery :execrows
+DELETE FROM lotteries WHERE id = $1 AND guild_id = $2 AND status = 'cancelled'
+`
+
+type DeleteCancelledLotteryParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+func (q *Queries) DeleteCancelledLottery(ctx context.Context, arg DeleteCancelledLotteryParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteCancelledLottery, arg.ID, arg.GuildID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const endLottery = `-- name: EndLottery :exec
@@ -175,7 +195,7 @@ SELECT id, guild_id, created_by, title,
        ticket_price, tickets_sold,
        max_tickets, max_tickets_per_user, status,
        TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
-       prizes, created_at, updated_at
+       prizes, created_at, updated_at, cancelled_at
 FROM lotteries WHERE id = $1 AND guild_id = $2
 `
 
@@ -199,6 +219,7 @@ type GetLotteryRow struct {
 	Prizes            []byte
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+	CancelledAt       pgtype.Timestamptz
 }
 
 func (q *Queries) GetLottery(ctx context.Context, arg GetLotteryParams) (GetLotteryRow, error) {
@@ -219,6 +240,7 @@ func (q *Queries) GetLottery(ctx context.Context, arg GetLotteryParams) (GetLott
 		&i.Prizes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CancelledAt,
 	)
 	return i, err
 }
@@ -250,37 +272,6 @@ func (q *Queries) GetLotteryForDraw(ctx context.Context, arg GetLotteryForDrawPa
 		&i.CreatedBy,
 		&i.Title,
 		&i.TicketPrice,
-	)
-	return i, err
-}
-
-const getLotteryForPurchase = `-- name: GetLotteryForPurchase :one
-SELECT ticket_price, status, max_tickets, max_tickets_per_user, tickets_sold
-FROM lotteries WHERE id = $1 AND guild_id = $2
-`
-
-type GetLotteryForPurchaseParams struct {
-	ID      uuid.UUID
-	GuildID uuid.UUID
-}
-
-type GetLotteryForPurchaseRow struct {
-	TicketPrice       int64
-	Status            string
-	MaxTickets        int32
-	MaxTicketsPerUser int32
-	TicketsSold       int32
-}
-
-func (q *Queries) GetLotteryForPurchase(ctx context.Context, arg GetLotteryForPurchaseParams) (GetLotteryForPurchaseRow, error) {
-	row := q.db.QueryRow(ctx, getLotteryForPurchase, arg.ID, arg.GuildID)
-	var i GetLotteryForPurchaseRow
-	err := row.Scan(
-		&i.TicketPrice,
-		&i.Status,
-		&i.MaxTickets,
-		&i.MaxTicketsPerUser,
-		&i.TicketsSold,
 	)
 	return i, err
 }
@@ -402,7 +393,7 @@ func (q *Queries) ListAllLotteryTickets(ctx context.Context, lotteryID uuid.UUID
 
 const listDueLotteries = `-- name: ListDueLotteries :many
 SELECT id, guild_id FROM lotteries
-WHERE status <> 'ended' AND draw_date <= NOW()
+WHERE status IN ('active', 'upcoming') AND draw_date <= NOW()
 ORDER BY draw_date ASC
 LIMIT $1::int
 `
@@ -438,7 +429,7 @@ SELECT id, guild_id, created_by, title,
        ticket_price, tickets_sold,
        max_tickets, max_tickets_per_user, status,
        TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
-       prizes, created_at, updated_at
+       prizes, created_at, updated_at, cancelled_at
 FROM lotteries
 WHERE guild_id = $1
   AND ($2::text = '' OR status = $2::text)
@@ -468,6 +459,7 @@ type ListLotteriesRow struct {
 	Prizes            []byte
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+	CancelledAt       pgtype.Timestamptz
 }
 
 func (q *Queries) ListLotteries(ctx context.Context, arg ListLotteriesParams) ([]ListLotteriesRow, error) {
@@ -499,7 +491,40 @@ func (q *Queries) ListLotteries(ctx context.Context, arg ListLotteriesParams) ([
 			&i.Prizes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.CancelledAt,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listLotteryTicketHolders = `-- name: ListLotteryTicketHolders :many
+SELECT user_id, COUNT(*)::int AS tickets
+FROM lottery_tickets WHERE lottery_id = $1
+GROUP BY user_id
+ORDER BY user_id
+`
+
+type ListLotteryTicketHoldersRow struct {
+	UserID  uuid.UUID
+	Tickets int32
+}
+
+func (q *Queries) ListLotteryTicketHolders(ctx context.Context, lotteryID uuid.UUID) ([]ListLotteryTicketHoldersRow, error) {
+	rows, err := q.db.Query(ctx, listLotteryTicketHolders, lotteryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListLotteryTicketHoldersRow{}
+	for rows.Next() {
+		var i ListLotteryTicketHoldersRow
+		if err := rows.Scan(&i.UserID, &i.Tickets); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -613,6 +638,83 @@ func (q *Queries) ListUserTickets(ctx context.Context, arg ListUserTicketsParams
 	return items, nil
 }
 
+const lockLottery = `-- name: LockLottery :one
+SELECT id, created_by, title, ticket_price, tickets_sold, max_tickets,
+       max_tickets_per_user, status, draw_date, prizes
+FROM lotteries WHERE id = $1 AND guild_id = $2
+FOR UPDATE
+`
+
+type LockLotteryParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type LockLotteryRow struct {
+	ID                uuid.UUID
+	CreatedBy         uuid.UUID
+	Title             string
+	TicketPrice       int64
+	TicketsSold       int32
+	MaxTickets        int32
+	MaxTicketsPerUser int32
+	Status            string
+	DrawDate          time.Time
+	Prizes            []byte
+}
+
+func (q *Queries) LockLottery(ctx context.Context, arg LockLotteryParams) (LockLotteryRow, error) {
+	row := q.db.QueryRow(ctx, lockLottery, arg.ID, arg.GuildID)
+	var i LockLotteryRow
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedBy,
+		&i.Title,
+		&i.TicketPrice,
+		&i.TicketsSold,
+		&i.MaxTickets,
+		&i.MaxTicketsPerUser,
+		&i.Status,
+		&i.DrawDate,
+		&i.Prizes,
+	)
+	return i, err
+}
+
+const lockLotteryForPurchase = `-- name: LockLotteryForPurchase :one
+SELECT ticket_price, status, max_tickets, max_tickets_per_user, tickets_sold, draw_date
+FROM lotteries WHERE id = $1 AND guild_id = $2
+FOR UPDATE
+`
+
+type LockLotteryForPurchaseParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type LockLotteryForPurchaseRow struct {
+	TicketPrice       int64
+	Status            string
+	MaxTickets        int32
+	MaxTicketsPerUser int32
+	TicketsSold       int32
+	DrawDate          time.Time
+}
+
+func (q *Queries) LockLotteryForPurchase(ctx context.Context, arg LockLotteryForPurchaseParams) (LockLotteryForPurchaseRow, error) {
+	row := q.db.QueryRow(ctx, lockLotteryForPurchase, arg.ID, arg.GuildID)
+	var i LockLotteryForPurchaseRow
+	err := row.Scan(
+		&i.TicketPrice,
+		&i.Status,
+		&i.MaxTickets,
+		&i.MaxTicketsPerUser,
+		&i.TicketsSold,
+		&i.DrawDate,
+	)
+	return i, err
+}
+
 const lotteryExists = `-- name: LotteryExists :one
 SELECT EXISTS(SELECT 1 FROM lotteries WHERE id = $1 AND guild_id = $2)
 `
@@ -629,26 +731,50 @@ func (q *Queries) LotteryExists(ctx context.Context, arg LotteryExistsParams) (b
 	return exists, err
 }
 
-const updateLotteryDrawDate = `-- name: UpdateLotteryDrawDate :one
+const markLotteryCancelled = `-- name: MarkLotteryCancelled :exec
+UPDATE lotteries SET status = 'cancelled', cancelled_at = NOW(), updated_at = NOW()
+WHERE id = $1
+`
+
+func (q *Queries) MarkLotteryCancelled(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, markLotteryCancelled, id)
+	return err
+}
+
+const updateLottery = `-- name: UpdateLottery :one
 UPDATE lotteries SET
-    draw_date  = $1::text::timestamptz,
-    updated_at = NOW()
-WHERE id = $2 AND guild_id = $3 AND status <> 'ended'
+    title                = $1::text,
+    description          = CASE WHEN $2::bool
+                                THEN NULLIF($3::text, '')
+                                ELSE description END,
+    ticket_price         = $4,
+    max_tickets          = $5,
+    max_tickets_per_user = $6,
+    draw_date            = $7,
+    updated_at           = NOW()
+WHERE id = $8 AND guild_id = $9
+  AND status IN ('active', 'upcoming')
 RETURNING id, guild_id, created_by, title,
           COALESCE(description, '') AS description,
           ticket_price, tickets_sold,
           max_tickets, max_tickets_per_user, status,
           TO_CHAR(draw_date AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS draw_date,
-          prizes, created_at, updated_at
+          prizes, created_at, updated_at, cancelled_at
 `
 
-type UpdateLotteryDrawDateParams struct {
-	DrawDate string
-	ID       uuid.UUID
-	GuildID  uuid.UUID
+type UpdateLotteryParams struct {
+	Title             string
+	SetDescription    bool
+	Description       string
+	TicketPrice       int64
+	MaxTickets        int32
+	MaxTicketsPerUser int32
+	DrawDate          time.Time
+	ID                uuid.UUID
+	GuildID           uuid.UUID
 }
 
-type UpdateLotteryDrawDateRow struct {
+type UpdateLotteryRow struct {
 	ID                uuid.UUID
 	GuildID           uuid.UUID
 	CreatedBy         uuid.UUID
@@ -663,11 +789,22 @@ type UpdateLotteryDrawDateRow struct {
 	Prizes            []byte
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
+	CancelledAt       pgtype.Timestamptz
 }
 
-func (q *Queries) UpdateLotteryDrawDate(ctx context.Context, arg UpdateLotteryDrawDateParams) (UpdateLotteryDrawDateRow, error) {
-	row := q.db.QueryRow(ctx, updateLotteryDrawDate, arg.DrawDate, arg.ID, arg.GuildID)
-	var i UpdateLotteryDrawDateRow
+func (q *Queries) UpdateLottery(ctx context.Context, arg UpdateLotteryParams) (UpdateLotteryRow, error) {
+	row := q.db.QueryRow(ctx, updateLottery,
+		arg.Title,
+		arg.SetDescription,
+		arg.Description,
+		arg.TicketPrice,
+		arg.MaxTickets,
+		arg.MaxTicketsPerUser,
+		arg.DrawDate,
+		arg.ID,
+		arg.GuildID,
+	)
+	var i UpdateLotteryRow
 	err := row.Scan(
 		&i.ID,
 		&i.GuildID,
@@ -683,6 +820,7 @@ func (q *Queries) UpdateLotteryDrawDate(ctx context.Context, arg UpdateLotteryDr
 		&i.Prizes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.CancelledAt,
 	)
 	return i, err
 }

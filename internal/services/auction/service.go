@@ -37,8 +37,10 @@ type AuctionItem struct {
 	EndTime                time.Time
 	Status                 string
 	IsBlind                bool
+	SourceType             string
 	CreatedAt              time.Time
 	UpdatedAt              time.Time
+	CancelledAt            *time.Time
 }
 
 // Bid is the domain model for a bid.
@@ -82,6 +84,18 @@ type CreateParams struct {
 	IsBlind         bool
 	Status          string
 	Source          inventory.Ref
+}
+
+type UpdateParams struct {
+	GuildID         string
+	AuctionID       string
+	UpdatedBy       string
+	Item            *models.Item
+	StartingBid     *int64
+	MinBidIncrement *int64
+	IsBlind         *bool
+	StartTime       *time.Time
+	EndTime         *time.Time
 }
 
 // BidHistoryResult is returned by GetBidHistory.
@@ -278,7 +292,7 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 	if time.Now().UTC().After(info.EndTime) {
 		return nil, nil, fmt.Errorf("%w: auction has ended", errs.ErrFailedPrecondition)
 	}
-	minRequired := info.CurrentBid + info.MinBidIncrement
+	minRequired := minimumBid(info.StartingBid, info.CurrentBid, info.MinBidIncrement, info.CurrentBidderID != nil)
 	if amount < minRequired {
 		return nil, nil, fmt.Errorf("%w: bid must be at least %d", errs.ErrFailedPrecondition, minRequired)
 	}
@@ -313,19 +327,9 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 		return nil, nil, fmt.Errorf("%w: record bid transaction: %v", errs.ErrInternal, err)
 	}
 
-	// Refund previous bidder
-	if info.CurrentBidderID != nil && *info.CurrentBidderID != bidderID {
-		prevID := *info.CurrentBidderID
-		if err := qtx.EnsureWallet(ctx, db.EnsureWalletParams{UserID: prevID, GuildID: guildID}); err == nil {
-			if prevBalance, err := qtx.GetWalletBalanceForUpdate(ctx, db.GetWalletBalanceForUpdateParams{UserID: prevID, GuildID: guildID}); err == nil {
-				newPrevBalance := prevBalance + info.CurrentBid
-				_ = qtx.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{Balance: newPrevBalance, UserID: prevID, GuildID: guildID})
-				_, _ = qtx.InsertTransaction(ctx, db.InsertTransactionParams{
-					UserID: prevID, GuildID: guildID, Type: "AUCTION_BID",
-					Amount: info.CurrentBid, BalanceAfter: newPrevBalance,
-					Description: "Outbid refund", ReferenceID: auctionIDStr, ReferenceType: "auction",
-				})
-			}
+	if info.CurrentBidderID != nil && *info.CurrentBidderID != bidderID && info.CurrentBid > 0 {
+		if err := refundBid(ctx, qtx, guildID, *info.CurrentBidderID, info.CurrentBid, auctionIDStr, "Outbid refund"); err != nil {
+			return nil, nil, err
 		}
 	}
 
@@ -403,22 +407,12 @@ func (s *Service) GetBidHistory(ctx context.Context, guildIDStr, auctionIDStr st
 	return &BidHistoryResult{Bids: bids, TotalCount: int32(total), NextOffset: nextOffset}, nil
 }
 
-// Cancel cancels an auction. Requires owner or admin role.
-func (s *Service) Cancel(ctx context.Context, guildIDStr, auctionIDStr, userIDStr string) (*AuctionItem, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
+func (s *Service) Update(ctx context.Context, p UpdateParams) (*AuctionItem, error) {
+	if err := validateUpdate(p); err != nil {
+		return nil, err
 	}
-	auctionID, err := uuid.Parse(auctionIDStr)
+	guildID, auctionID, userID, err := parseIDs(p.GuildID, p.AuctionID, p.UpdatedBy)
 	if err != nil {
-		return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
 		return nil, err
 	}
 
@@ -429,48 +423,132 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, auctionIDStr, userIDSt
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	info, err := qtx.LockAuctionForCancel(ctx, db.LockAuctionForCancelParams{ID: auctionID, GuildID: guildID})
+	current, err := lockAuction(ctx, qtx, guildID, auctionID)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := authorizeManage(ctx, qtx, guildID, userID, current); err != nil {
+		return nil, err
+	}
+	now := time.Now().UTC()
+	if err := checkEditable(current.Status, current.EndTime, now); err != nil {
+		return nil, err
+	}
+	next, err := applyUpdate(toAuctionItem(current), current.SourceType.String, p, now)
+	if err != nil {
+		return nil, err
+	}
+	itemJSON, err := json.Marshal(next.Item)
+	if err != nil {
+		return nil, fmt.Errorf("%w: marshal item: %v", errs.ErrInternal, err)
+	}
+	_, err = qtx.UpdateAuctionDetails(ctx, db.UpdateAuctionDetailsParams{
+		Item: itemJSON, StartingBid: next.StartingBid, MinBidIncrement: next.MinBidIncrement,
+		IsBlind: next.IsBlind, StartTime: next.StartTime, EndTime: next.EndTime,
+		ID: auctionID, GuildID: guildID,
+	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
+			return nil, fmt.Errorf("%w: auction is no longer open", errs.ErrFailedPrecondition)
 		}
-		return nil, fmt.Errorf("%w: load auction: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: update auction: %v", errs.ErrInternal, err)
 	}
-	if info.Status == "ENDED" || info.Status == "CANCELLED" {
-		return nil, fmt.Errorf("%w: auction already finished", errs.ErrFailedPrecondition)
+	if err := pgtx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
+	s.logger.Info().Str("auction_id", p.AuctionID).Str("guild_id", p.GuildID).Str("user_id", p.UpdatedBy).Msg("auction updated")
+	return s.Get(ctx, p.GuildID, p.AuctionID)
+}
 
-	if info.CurrentBidderID != nil && info.CurrentBid > 0 {
-		refundee := *info.CurrentBidderID
-		if err := qtx.EnsureWallet(ctx, db.EnsureWalletParams{UserID: refundee, GuildID: guildID}); err != nil {
-			return nil, fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
-		}
-		newBal, err := qtx.CreditWallet(ctx, db.CreditWalletParams{Amount: info.CurrentBid, UserID: refundee, GuildID: guildID})
-		if err != nil {
-			return nil, fmt.Errorf("%w: refund bidder: %v", errs.ErrInternal, err)
-		}
-		if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
-			UserID: refundee, GuildID: guildID, Type: "AUCTION_BID",
-			Amount: info.CurrentBid, BalanceAfter: newBal,
-			Description: "Auction cancelled refund", ReferenceID: auctionIDStr, ReferenceType: "auction",
-		}); err != nil {
-			return nil, fmt.Errorf("%w: record refund: %v", errs.ErrInternal, err)
-		}
-	}
-
-	if err := inventory.Release(ctx, qtx, info.SourceType.String, info.SourceItemID, auctionHolder(auctionID)); err != nil {
+// Cancel cancels an open auction, refunds the escrowed highest bid and returns
+// the listed item to where it came from.
+func (s *Service) Cancel(ctx context.Context, guildIDStr, auctionIDStr, userIDStr string) (*AuctionItem, error) {
+	guildID, auctionID, userID, err := parseIDs(guildIDStr, auctionIDStr, userIDStr)
+	if err != nil {
 		return nil, err
 	}
 
-	if err := qtx.UpdateAuctionStatus(ctx, db.UpdateAuctionStatusParams{
-		Status: "CANCELLED", ID: auctionID,
-	}); err != nil {
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	current, err := lockAuction(ctx, qtx, guildID, auctionID)
+	if err != nil {
+		return nil, err
+	}
+	isOfficer, err := authorizeManage(ctx, qtx, guildID, userID, current)
+	if err != nil {
+		return nil, err
+	}
+	if err := checkCancellable(current.Status, current.EndTime, time.Now().UTC()); err != nil {
+		return nil, err
+	}
+	hasBids := current.CurrentBidderID != nil
+	if hasBids && !isOfficer {
+		return nil, fmt.Errorf("%w: only an owner or admin can cancel an auction that has bids", errs.ErrPermissionDenied)
+	}
+
+	if hasBids && current.CurrentBid > 0 {
+		if err := refundBid(ctx, qtx, guildID, *current.CurrentBidderID, current.CurrentBid, auctionIDStr, "Auction cancelled refund"); err != nil {
+			return nil, err
+		}
+	}
+	if err := qtx.MarkAllBidsNotWinning(ctx, auctionID); err != nil {
+		return nil, fmt.Errorf("%w: update bids: %v", errs.ErrInternal, err)
+	}
+	if err := inventory.Release(ctx, qtx, current.SourceType.String, current.SourceItemID, auctionHolder(auctionID)); err != nil {
+		return nil, err
+	}
+	if err := qtx.MarkAuctionCancelled(ctx, auctionID); err != nil {
 		return nil, fmt.Errorf("%w: cancel auction: %v", errs.ErrInternal, err)
 	}
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
+	s.logger.Info().Str("auction_id", auctionIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).
+		Int64("refunded", current.CurrentBid).Msg("auction cancelled")
 	return s.Get(ctx, guildIDStr, auctionIDStr)
+}
+
+// Delete permanently removes a cancelled auction and its bid history.
+func (s *Service) Delete(ctx context.Context, guildIDStr, auctionIDStr, userIDStr string) error {
+	guildID, auctionID, userID, err := parseIDs(guildIDStr, auctionIDStr, userIDStr)
+	if err != nil {
+		return err
+	}
+
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	current, err := lockAuction(ctx, qtx, guildID, auctionID)
+	if err != nil {
+		return err
+	}
+	if _, err := authorizeManage(ctx, qtx, guildID, userID, current); err != nil {
+		return err
+	}
+	if err := checkDeletable(current.Status); err != nil {
+		return err
+	}
+	n, err := qtx.DeleteCancelledAuction(ctx, db.DeleteCancelledAuctionParams{ID: auctionID, GuildID: guildID})
+	if err != nil {
+		return fmt.Errorf("%w: delete auction: %v", errs.ErrInternal, err)
+	}
+	if n == 0 {
+		return fmt.Errorf("%w: only cancelled auctions can be deleted", errs.ErrFailedPrecondition)
+	}
+	if err := pgtx.Commit(ctx); err != nil {
+		return fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("auction_id", auctionIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).Msg("auction deleted")
+	return nil
 }
 
 // --- helpers ---
@@ -480,7 +558,12 @@ func toAuctionItem(a db.Auction) *AuctionItem {
 		ID: a.ID.String(), GuildID: a.GuildID.String(), SellerID: a.SellerID.String(),
 		StartingBid: a.StartingBid, CurrentBid: a.CurrentBid,
 		MinBidIncrement: a.MinBidIncrement, StartTime: a.StartTime, EndTime: a.EndTime,
-		Status: a.Status, IsBlind: a.IsBlind, CreatedAt: a.CreatedAt, UpdatedAt: a.UpdatedAt,
+		Status: a.Status, IsBlind: a.IsBlind, SourceType: a.SourceType.String,
+		CreatedAt: a.CreatedAt, UpdatedAt: a.UpdatedAt,
+	}
+	if a.CancelledAt.Valid {
+		cancelledAt := a.CancelledAt.Time
+		out.CancelledAt = &cancelledAt
 	}
 	if a.CurrentBidderID != nil {
 		out.CurrentBidderID = a.CurrentBidderID.String()
@@ -497,6 +580,63 @@ func withParticipants(a *AuctionItem, sellerName, sellerAvatarURL, bidderName, b
 		a.CurrentBidderName, a.CurrentBidderAvatarURL = bidderName, bidderAvatarURL
 	}
 	return a
+}
+
+func lockAuction(ctx context.Context, qtx *db.Queries, guildID, auctionID uuid.UUID) (db.Auction, error) {
+	a, err := qtx.LockAuction(ctx, db.LockAuctionParams{ID: auctionID, GuildID: guildID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return db.Auction{}, fmt.Errorf("%w: auction", errs.ErrNotFound)
+		}
+		return db.Auction{}, fmt.Errorf("%w: load auction: %v", errs.ErrInternal, err)
+	}
+	return a, nil
+}
+
+func authorizeManage(ctx context.Context, qtx *db.Queries, guildID, userID uuid.UUID, a db.Auction) (bool, error) {
+	role, err := qtx.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
+	if err != nil {
+		return false, fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
+	}
+	isOfficer := role == "owner" || role == "admin"
+	if !isOfficer && a.SellerID != userID {
+		return false, fmt.Errorf("%w: only the seller or an owner or admin can manage this auction", errs.ErrPermissionDenied)
+	}
+	return isOfficer, nil
+}
+
+func refundBid(ctx context.Context, qtx *db.Queries, guildID, bidderID uuid.UUID, amount int64, auctionID, description string) error {
+	if err := qtx.EnsureWallet(ctx, db.EnsureWalletParams{UserID: bidderID, GuildID: guildID}); err != nil {
+		return fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
+	}
+	balance, err := qtx.CreditWallet(ctx, db.CreditWalletParams{Amount: amount, UserID: bidderID, GuildID: guildID})
+	if err != nil {
+		return fmt.Errorf("%w: refund bid: %v", errs.ErrInternal, err)
+	}
+	if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
+		UserID: bidderID, GuildID: guildID, Type: "AUCTION_BID",
+		Amount: amount, BalanceAfter: balance,
+		Description: description, ReferenceID: auctionID, ReferenceType: "auction",
+	}); err != nil {
+		return fmt.Errorf("%w: record refund: %v", errs.ErrInternal, err)
+	}
+	return nil
+}
+
+func parseIDs(guildIDStr, auctionIDStr, userIDStr string) (uuid.UUID, uuid.UUID, uuid.UUID, error) {
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
+	}
+	auctionID, err := uuid.Parse(auctionIDStr)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
+	}
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	return guildID, auctionID, userID, nil
 }
 
 func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {

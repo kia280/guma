@@ -8,7 +8,7 @@ import type {
   AdminGuildStats,
   AnnouncementDraftInput,
 } from '@/types/admin';
-import type { AuctionItem, Bid, CreateAuctionRequest } from '@/types/auction';
+import type { AuctionItem, Bid, CreateAuctionRequest, UpdateAuctionRequest } from '@/types/auction';
 import type { BackpackItem } from '@/types/backpack';
 import type {
   CheckinEntry,
@@ -115,7 +115,9 @@ export interface ApiClient {
   createAuction(guildId: string, req: CreateAuctionRequest): Promise<AuctionItem>;
   placeBid(guildId: string, auctionId: string, amount: number): Promise<{ auction: AuctionItem; bid: Bid }>;
   getBidHistory(guildId: string, auctionId: string): Promise<Bid[]>;
+  updateAuction(guildId: string, id: string, patch: UpdateAuctionRequest): Promise<AuctionItem>;
   cancelAuction(guildId: string, id: string, reason?: string): Promise<AuctionItem>;
+  deleteAuction(guildId: string, id: string): Promise<void>;
 
   // ── CheckIn ──
   listCheckins(guildId: string): Promise<CheckinEntry[]>;
@@ -141,6 +143,8 @@ export interface ApiClient {
   getLottery(guildId: string, id: string): Promise<Lottery>;
   createLottery(guildId: string, req: CreateLotteryRequest): Promise<Lottery>;
   updateLottery(guildId: string, lotteryId: string, patch: UpdateLotteryRequest): Promise<Lottery>;
+  cancelLottery(guildId: string, lotteryId: string): Promise<Lottery>;
+  deleteLottery(guildId: string, lotteryId: string): Promise<void>;
   purchaseTickets(guildId: string, lotteryId: string, quantity: number): Promise<LotteryTicket[]>;
   getLotteryWinners(guildId: string, lotteryId: string): Promise<LotteryWinner[]>;
   listMyTickets(): Promise<LotteryTicket[]>;

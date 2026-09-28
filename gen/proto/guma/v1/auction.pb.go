@@ -655,6 +655,246 @@ func (x *GetBidHistoryResponse) GetTotalCount() int32 {
 	return 0
 }
 
+type UpdateAuctionRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	GuildId         string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	AuctionId       string                 `protobuf:"bytes,2,opt,name=auction_id,json=auctionId,proto3" json:"auction_id,omitempty"`
+	Item            *Item                  `protobuf:"bytes,3,opt,name=item,proto3" json:"item,omitempty"`
+	StartingBid     *int64                 `protobuf:"varint,4,opt,name=starting_bid,json=startingBid,proto3,oneof" json:"starting_bid,omitempty"`
+	MinBidIncrement *int64                 `protobuf:"varint,5,opt,name=min_bid_increment,json=minBidIncrement,proto3,oneof" json:"min_bid_increment,omitempty"`
+	IsBlind         *bool                  `protobuf:"varint,6,opt,name=is_blind,json=isBlind,proto3,oneof" json:"is_blind,omitempty"`
+	StartTime       *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndTime         *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *UpdateAuctionRequest) Reset() {
+	*x = UpdateAuctionRequest{}
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAuctionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAuctionRequest) ProtoMessage() {}
+
+func (x *UpdateAuctionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAuctionRequest.ProtoReflect.Descriptor instead.
+func (*UpdateAuctionRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UpdateAuctionRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *UpdateAuctionRequest) GetAuctionId() string {
+	if x != nil {
+		return x.AuctionId
+	}
+	return ""
+}
+
+func (x *UpdateAuctionRequest) GetItem() *Item {
+	if x != nil {
+		return x.Item
+	}
+	return nil
+}
+
+func (x *UpdateAuctionRequest) GetStartingBid() int64 {
+	if x != nil && x.StartingBid != nil {
+		return *x.StartingBid
+	}
+	return 0
+}
+
+func (x *UpdateAuctionRequest) GetMinBidIncrement() int64 {
+	if x != nil && x.MinBidIncrement != nil {
+		return *x.MinBidIncrement
+	}
+	return 0
+}
+
+func (x *UpdateAuctionRequest) GetIsBlind() bool {
+	if x != nil && x.IsBlind != nil {
+		return *x.IsBlind
+	}
+	return false
+}
+
+func (x *UpdateAuctionRequest) GetStartTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartTime
+	}
+	return nil
+}
+
+func (x *UpdateAuctionRequest) GetEndTime() *timestamppb.Timestamp {
+	if x != nil {
+		return x.EndTime
+	}
+	return nil
+}
+
+type UpdateAuctionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Auction       *AuctionItem           `protobuf:"bytes,1,opt,name=auction,proto3" json:"auction,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAuctionResponse) Reset() {
+	*x = UpdateAuctionResponse{}
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAuctionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAuctionResponse) ProtoMessage() {}
+
+func (x *UpdateAuctionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAuctionResponse.ProtoReflect.Descriptor instead.
+func (*UpdateAuctionResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *UpdateAuctionResponse) GetAuction() *AuctionItem {
+	if x != nil {
+		return x.Auction
+	}
+	return nil
+}
+
+type DeleteAuctionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	AuctionId     string                 `protobuf:"bytes,2,opt,name=auction_id,json=auctionId,proto3" json:"auction_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteAuctionRequest) Reset() {
+	*x = DeleteAuctionRequest{}
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteAuctionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteAuctionRequest) ProtoMessage() {}
+
+func (x *DeleteAuctionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteAuctionRequest.ProtoReflect.Descriptor instead.
+func (*DeleteAuctionRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *DeleteAuctionRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *DeleteAuctionRequest) GetAuctionId() string {
+	if x != nil {
+		return x.AuctionId
+	}
+	return ""
+}
+
+type DeleteAuctionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteAuctionResponse) Reset() {
+	*x = DeleteAuctionResponse{}
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteAuctionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteAuctionResponse) ProtoMessage() {}
+
+func (x *DeleteAuctionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteAuctionResponse.ProtoReflect.Descriptor instead.
+func (*DeleteAuctionResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *DeleteAuctionResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 type CancelAuctionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
@@ -666,7 +906,7 @@ type CancelAuctionRequest struct {
 
 func (x *CancelAuctionRequest) Reset() {
 	*x = CancelAuctionRequest{}
-	mi := &file_proto_guma_v1_auction_proto_msgTypes[10]
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -678,7 +918,7 @@ func (x *CancelAuctionRequest) String() string {
 func (*CancelAuctionRequest) ProtoMessage() {}
 
 func (x *CancelAuctionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_auction_proto_msgTypes[10]
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -691,7 +931,7 @@ func (x *CancelAuctionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelAuctionRequest.ProtoReflect.Descriptor instead.
 func (*CancelAuctionRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{10}
+	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CancelAuctionRequest) GetGuildId() string {
@@ -724,7 +964,7 @@ type CancelAuctionResponse struct {
 
 func (x *CancelAuctionResponse) Reset() {
 	*x = CancelAuctionResponse{}
-	mi := &file_proto_guma_v1_auction_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -736,7 +976,7 @@ func (x *CancelAuctionResponse) String() string {
 func (*CancelAuctionResponse) ProtoMessage() {}
 
 func (x *CancelAuctionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_auction_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -749,7 +989,7 @@ func (x *CancelAuctionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelAuctionResponse.ProtoReflect.Descriptor instead.
 func (*CancelAuctionResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{11}
+	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CancelAuctionResponse) GetAuction() *AuctionItem {
@@ -775,17 +1015,19 @@ type AuctionItem struct {
 	IsBlind                bool                   `protobuf:"varint,12,opt,name=is_blind,json=isBlind,proto3" json:"is_blind,omitempty"`
 	CreatedAt              *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt              *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	SellerName             string                 `protobuf:"bytes,15,opt,name=seller_name,json=sellerName,proto3" json:"seller_name,omitempty"`
-	SellerAvatarUrl        string                 `protobuf:"bytes,16,opt,name=seller_avatar_url,json=sellerAvatarUrl,proto3" json:"seller_avatar_url,omitempty"`
-	CurrentBidderName      string                 `protobuf:"bytes,17,opt,name=current_bidder_name,json=currentBidderName,proto3" json:"current_bidder_name,omitempty"`
-	CurrentBidderAvatarUrl string                 `protobuf:"bytes,18,opt,name=current_bidder_avatar_url,json=currentBidderAvatarUrl,proto3" json:"current_bidder_avatar_url,omitempty"`
+	SourceType             string                 `protobuf:"bytes,15,opt,name=source_type,json=sourceType,proto3" json:"source_type,omitempty"`
+	CancelledAt            *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=cancelled_at,json=cancelledAt,proto3" json:"cancelled_at,omitempty"`
+	SellerName             string                 `protobuf:"bytes,17,opt,name=seller_name,json=sellerName,proto3" json:"seller_name,omitempty"`
+	SellerAvatarUrl        string                 `protobuf:"bytes,18,opt,name=seller_avatar_url,json=sellerAvatarUrl,proto3" json:"seller_avatar_url,omitempty"`
+	CurrentBidderName      string                 `protobuf:"bytes,19,opt,name=current_bidder_name,json=currentBidderName,proto3" json:"current_bidder_name,omitempty"`
+	CurrentBidderAvatarUrl string                 `protobuf:"bytes,20,opt,name=current_bidder_avatar_url,json=currentBidderAvatarUrl,proto3" json:"current_bidder_avatar_url,omitempty"`
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
 
 func (x *AuctionItem) Reset() {
 	*x = AuctionItem{}
-	mi := &file_proto_guma_v1_auction_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -797,7 +1039,7 @@ func (x *AuctionItem) String() string {
 func (*AuctionItem) ProtoMessage() {}
 
 func (x *AuctionItem) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_auction_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -810,7 +1052,7 @@ func (x *AuctionItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuctionItem.ProtoReflect.Descriptor instead.
 func (*AuctionItem) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{12}
+	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *AuctionItem) GetId() string {
@@ -911,6 +1153,20 @@ func (x *AuctionItem) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *AuctionItem) GetSourceType() string {
+	if x != nil {
+		return x.SourceType
+	}
+	return ""
+}
+
+func (x *AuctionItem) GetCancelledAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CancelledAt
+	}
+	return nil
+}
+
 func (x *AuctionItem) GetSellerName() string {
 	if x != nil {
 		return x.SellerName
@@ -955,7 +1211,7 @@ type Bid struct {
 
 func (x *Bid) Reset() {
 	*x = Bid{}
-	mi := &file_proto_guma_v1_auction_proto_msgTypes[13]
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -967,7 +1223,7 @@ func (x *Bid) String() string {
 func (*Bid) ProtoMessage() {}
 
 func (x *Bid) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_auction_proto_msgTypes[13]
+	mi := &file_proto_guma_v1_auction_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -980,7 +1236,7 @@ func (x *Bid) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bid.ProtoReflect.Descriptor instead.
 func (*Bid) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{13}
+	return file_proto_guma_v1_auction_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Bid) GetId() string {
@@ -1094,14 +1350,36 @@ const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\x04bids\x18\x01 \x03(\v2\f.guma.v1.BidR\x04bids\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"h\n" +
+	"totalCount\"\x92\x03\n" +
+	"\x14UpdateAuctionRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
+	"\n" +
+	"auction_id\x18\x02 \x01(\tR\tauctionId\x12!\n" +
+	"\x04item\x18\x03 \x01(\v2\r.guma.v1.ItemR\x04item\x12&\n" +
+	"\fstarting_bid\x18\x04 \x01(\x03H\x00R\vstartingBid\x88\x01\x01\x12/\n" +
+	"\x11min_bid_increment\x18\x05 \x01(\x03H\x01R\x0fminBidIncrement\x88\x01\x01\x12\x1e\n" +
+	"\bis_blind\x18\x06 \x01(\bH\x02R\aisBlind\x88\x01\x01\x129\n" +
+	"\n" +
+	"start_time\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
+	"\bend_time\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\aendTimeB\x0f\n" +
+	"\r_starting_bidB\x14\n" +
+	"\x12_min_bid_incrementB\v\n" +
+	"\t_is_blind\"G\n" +
+	"\x15UpdateAuctionResponse\x12.\n" +
+	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"P\n" +
+	"\x14DeleteAuctionRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
+	"\n" +
+	"auction_id\x18\x02 \x01(\tR\tauctionId\"1\n" +
+	"\x15DeleteAuctionResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"h\n" +
 	"\x14CancelAuctionRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
 	"\n" +
 	"auction_id\x18\x02 \x01(\tR\tauctionId\x12\x16\n" +
 	"\x06reason\x18\x03 \x01(\tR\x06reason\"G\n" +
 	"\x15CancelAuctionResponse\x12.\n" +
-	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"\xe7\x05\n" +
+	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"\xc7\x06\n" +
 	"\vAuctionItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1b\n" +
@@ -1122,11 +1400,14 @@ const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1f\n" +
-	"\vseller_name\x18\x0f \x01(\tR\n" +
+	"\vsource_type\x18\x0f \x01(\tR\n" +
+	"sourceType\x12=\n" +
+	"\fcancelled_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\vcancelledAt\x12\x1f\n" +
+	"\vseller_name\x18\x11 \x01(\tR\n" +
 	"sellerName\x12*\n" +
-	"\x11seller_avatar_url\x18\x10 \x01(\tR\x0fsellerAvatarUrl\x12.\n" +
-	"\x13current_bidder_name\x18\x11 \x01(\tR\x11currentBidderName\x129\n" +
-	"\x19current_bidder_avatar_url\x18\x12 \x01(\tR\x16currentBidderAvatarUrl\"\x96\x02\n" +
+	"\x11seller_avatar_url\x18\x12 \x01(\tR\x0fsellerAvatarUrl\x12.\n" +
+	"\x13current_bidder_name\x18\x13 \x01(\tR\x11currentBidderName\x129\n" +
+	"\x19current_bidder_avatar_url\x18\x14 \x01(\tR\x16currentBidderAvatarUrl\"\x96\x02\n" +
 	"\x03Bid\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1137,14 +1418,16 @@ const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"is_winning\x18\x05 \x01(\bR\tisWinning\x127\n" +
 	"\tplaced_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\bplacedAt\x12'\n" +
 	"\x0fbidder_username\x18\a \x01(\tR\x0ebidderUsername\x12*\n" +
-	"\x11bidder_avatar_url\x18\b \x01(\tR\x0fbidderAvatarUrl2\x95\x06\n" +
+	"\x11bidder_avatar_url\x18\b \x01(\tR\x0fbidderAvatarUrl2\xa4\b\n" +
 	"\x0eAuctionService\x12s\n" +
 	"\fListAuctions\x12\x1c.guma.v1.ListAuctionsRequest\x1a\x1d.guma.v1.ListAuctionsResponse\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/guilds/{guild_id}/auctions\x12z\n" +
 	"\n" +
 	"GetAuction\x12\x1a.guma.v1.GetAuctionRequest\x1a\x1b.guma.v1.GetAuctionResponse\"3\x82\xd3\xe4\x93\x02-\x12+/v1/guilds/{guild_id}/auctions/{auction_id}\x12y\n" +
 	"\rCreateAuction\x12\x1d.guma.v1.CreateAuctionRequest\x1a\x1e.guma.v1.CreateAuctionResponse\")\x82\xd3\xe4\x93\x02#:\x01*\"\x1e/v1/guilds/{guild_id}/auctions\x12|\n" +
 	"\bPlaceBid\x12\x18.guma.v1.PlaceBidRequest\x1a\x19.guma.v1.PlaceBidResponse\";\x82\xd3\xe4\x93\x025:\x01*\"0/v1/guilds/{guild_id}/auctions/{auction_id}/bids\x12\x88\x01\n" +
-	"\rGetBidHistory\x12\x1d.guma.v1.GetBidHistoryRequest\x1a\x1e.guma.v1.GetBidHistoryResponse\"8\x82\xd3\xe4\x93\x022\x120/v1/guilds/{guild_id}/auctions/{auction_id}/bids\x12\x8d\x01\n" +
+	"\rGetBidHistory\x12\x1d.guma.v1.GetBidHistoryRequest\x1a\x1e.guma.v1.GetBidHistoryResponse\"8\x82\xd3\xe4\x93\x022\x120/v1/guilds/{guild_id}/auctions/{auction_id}/bids\x12\x86\x01\n" +
+	"\rUpdateAuction\x12\x1d.guma.v1.UpdateAuctionRequest\x1a\x1e.guma.v1.UpdateAuctionResponse\"6\x82\xd3\xe4\x93\x020:\x01*2+/v1/guilds/{guild_id}/auctions/{auction_id}\x12\x83\x01\n" +
+	"\rDeleteAuction\x12\x1d.guma.v1.DeleteAuctionRequest\x1a\x1e.guma.v1.DeleteAuctionResponse\"3\x82\xd3\xe4\x93\x02-*+/v1/guilds/{guild_id}/auctions/{auction_id}\x12\x8d\x01\n" +
 	"\rCancelAuction\x12\x1d.guma.v1.CancelAuctionRequest\x1a\x1e.guma.v1.CancelAuctionResponse\"=\x82\xd3\xe4\x93\x027:\x01*\"2/v1/guilds/{guild_id}/auctions/{auction_id}/cancelB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"
 
 var (
@@ -1159,7 +1442,7 @@ func file_proto_guma_v1_auction_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_auction_proto_rawDescData
 }
 
-var file_proto_guma_v1_auction_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_proto_guma_v1_auction_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_proto_guma_v1_auction_proto_goTypes = []any{
 	(*ListAuctionsRequest)(nil),   // 0: guma.v1.ListAuctionsRequest
 	(*ListAuctionsResponse)(nil),  // 1: guma.v1.ListAuctionsResponse
@@ -1171,47 +1454,60 @@ var file_proto_guma_v1_auction_proto_goTypes = []any{
 	(*PlaceBidResponse)(nil),      // 7: guma.v1.PlaceBidResponse
 	(*GetBidHistoryRequest)(nil),  // 8: guma.v1.GetBidHistoryRequest
 	(*GetBidHistoryResponse)(nil), // 9: guma.v1.GetBidHistoryResponse
-	(*CancelAuctionRequest)(nil),  // 10: guma.v1.CancelAuctionRequest
-	(*CancelAuctionResponse)(nil), // 11: guma.v1.CancelAuctionResponse
-	(*AuctionItem)(nil),           // 12: guma.v1.AuctionItem
-	(*Bid)(nil),                   // 13: guma.v1.Bid
-	(*Item)(nil),                  // 14: guma.v1.Item
-	(*ItemSourceRef)(nil),         // 15: guma.v1.ItemSourceRef
-	(*timestamppb.Timestamp)(nil), // 16: google.protobuf.Timestamp
+	(*UpdateAuctionRequest)(nil),  // 10: guma.v1.UpdateAuctionRequest
+	(*UpdateAuctionResponse)(nil), // 11: guma.v1.UpdateAuctionResponse
+	(*DeleteAuctionRequest)(nil),  // 12: guma.v1.DeleteAuctionRequest
+	(*DeleteAuctionResponse)(nil), // 13: guma.v1.DeleteAuctionResponse
+	(*CancelAuctionRequest)(nil),  // 14: guma.v1.CancelAuctionRequest
+	(*CancelAuctionResponse)(nil), // 15: guma.v1.CancelAuctionResponse
+	(*AuctionItem)(nil),           // 16: guma.v1.AuctionItem
+	(*Bid)(nil),                   // 17: guma.v1.Bid
+	(*Item)(nil),                  // 18: guma.v1.Item
+	(*ItemSourceRef)(nil),         // 19: guma.v1.ItemSourceRef
+	(*timestamppb.Timestamp)(nil), // 20: google.protobuf.Timestamp
 }
 var file_proto_guma_v1_auction_proto_depIdxs = []int32{
-	12, // 0: guma.v1.ListAuctionsResponse.auctions:type_name -> guma.v1.AuctionItem
-	12, // 1: guma.v1.GetAuctionResponse.auction:type_name -> guma.v1.AuctionItem
-	14, // 2: guma.v1.CreateAuctionRequest.item:type_name -> guma.v1.Item
-	15, // 3: guma.v1.CreateAuctionRequest.source:type_name -> guma.v1.ItemSourceRef
-	12, // 4: guma.v1.CreateAuctionResponse.auction:type_name -> guma.v1.AuctionItem
-	12, // 5: guma.v1.PlaceBidResponse.auction:type_name -> guma.v1.AuctionItem
-	13, // 6: guma.v1.PlaceBidResponse.bid:type_name -> guma.v1.Bid
-	13, // 7: guma.v1.GetBidHistoryResponse.bids:type_name -> guma.v1.Bid
-	12, // 8: guma.v1.CancelAuctionResponse.auction:type_name -> guma.v1.AuctionItem
-	14, // 9: guma.v1.AuctionItem.item:type_name -> guma.v1.Item
-	16, // 10: guma.v1.AuctionItem.start_time:type_name -> google.protobuf.Timestamp
-	16, // 11: guma.v1.AuctionItem.end_time:type_name -> google.protobuf.Timestamp
-	16, // 12: guma.v1.AuctionItem.created_at:type_name -> google.protobuf.Timestamp
-	16, // 13: guma.v1.AuctionItem.updated_at:type_name -> google.protobuf.Timestamp
-	16, // 14: guma.v1.Bid.placed_at:type_name -> google.protobuf.Timestamp
-	0,  // 15: guma.v1.AuctionService.ListAuctions:input_type -> guma.v1.ListAuctionsRequest
-	2,  // 16: guma.v1.AuctionService.GetAuction:input_type -> guma.v1.GetAuctionRequest
-	4,  // 17: guma.v1.AuctionService.CreateAuction:input_type -> guma.v1.CreateAuctionRequest
-	6,  // 18: guma.v1.AuctionService.PlaceBid:input_type -> guma.v1.PlaceBidRequest
-	8,  // 19: guma.v1.AuctionService.GetBidHistory:input_type -> guma.v1.GetBidHistoryRequest
-	10, // 20: guma.v1.AuctionService.CancelAuction:input_type -> guma.v1.CancelAuctionRequest
-	1,  // 21: guma.v1.AuctionService.ListAuctions:output_type -> guma.v1.ListAuctionsResponse
-	3,  // 22: guma.v1.AuctionService.GetAuction:output_type -> guma.v1.GetAuctionResponse
-	5,  // 23: guma.v1.AuctionService.CreateAuction:output_type -> guma.v1.CreateAuctionResponse
-	7,  // 24: guma.v1.AuctionService.PlaceBid:output_type -> guma.v1.PlaceBidResponse
-	9,  // 25: guma.v1.AuctionService.GetBidHistory:output_type -> guma.v1.GetBidHistoryResponse
-	11, // 26: guma.v1.AuctionService.CancelAuction:output_type -> guma.v1.CancelAuctionResponse
-	21, // [21:27] is the sub-list for method output_type
-	15, // [15:21] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	16, // 0: guma.v1.ListAuctionsResponse.auctions:type_name -> guma.v1.AuctionItem
+	16, // 1: guma.v1.GetAuctionResponse.auction:type_name -> guma.v1.AuctionItem
+	18, // 2: guma.v1.CreateAuctionRequest.item:type_name -> guma.v1.Item
+	19, // 3: guma.v1.CreateAuctionRequest.source:type_name -> guma.v1.ItemSourceRef
+	16, // 4: guma.v1.CreateAuctionResponse.auction:type_name -> guma.v1.AuctionItem
+	16, // 5: guma.v1.PlaceBidResponse.auction:type_name -> guma.v1.AuctionItem
+	17, // 6: guma.v1.PlaceBidResponse.bid:type_name -> guma.v1.Bid
+	17, // 7: guma.v1.GetBidHistoryResponse.bids:type_name -> guma.v1.Bid
+	18, // 8: guma.v1.UpdateAuctionRequest.item:type_name -> guma.v1.Item
+	20, // 9: guma.v1.UpdateAuctionRequest.start_time:type_name -> google.protobuf.Timestamp
+	20, // 10: guma.v1.UpdateAuctionRequest.end_time:type_name -> google.protobuf.Timestamp
+	16, // 11: guma.v1.UpdateAuctionResponse.auction:type_name -> guma.v1.AuctionItem
+	16, // 12: guma.v1.CancelAuctionResponse.auction:type_name -> guma.v1.AuctionItem
+	18, // 13: guma.v1.AuctionItem.item:type_name -> guma.v1.Item
+	20, // 14: guma.v1.AuctionItem.start_time:type_name -> google.protobuf.Timestamp
+	20, // 15: guma.v1.AuctionItem.end_time:type_name -> google.protobuf.Timestamp
+	20, // 16: guma.v1.AuctionItem.created_at:type_name -> google.protobuf.Timestamp
+	20, // 17: guma.v1.AuctionItem.updated_at:type_name -> google.protobuf.Timestamp
+	20, // 18: guma.v1.AuctionItem.cancelled_at:type_name -> google.protobuf.Timestamp
+	20, // 19: guma.v1.Bid.placed_at:type_name -> google.protobuf.Timestamp
+	0,  // 20: guma.v1.AuctionService.ListAuctions:input_type -> guma.v1.ListAuctionsRequest
+	2,  // 21: guma.v1.AuctionService.GetAuction:input_type -> guma.v1.GetAuctionRequest
+	4,  // 22: guma.v1.AuctionService.CreateAuction:input_type -> guma.v1.CreateAuctionRequest
+	6,  // 23: guma.v1.AuctionService.PlaceBid:input_type -> guma.v1.PlaceBidRequest
+	8,  // 24: guma.v1.AuctionService.GetBidHistory:input_type -> guma.v1.GetBidHistoryRequest
+	10, // 25: guma.v1.AuctionService.UpdateAuction:input_type -> guma.v1.UpdateAuctionRequest
+	12, // 26: guma.v1.AuctionService.DeleteAuction:input_type -> guma.v1.DeleteAuctionRequest
+	14, // 27: guma.v1.AuctionService.CancelAuction:input_type -> guma.v1.CancelAuctionRequest
+	1,  // 28: guma.v1.AuctionService.ListAuctions:output_type -> guma.v1.ListAuctionsResponse
+	3,  // 29: guma.v1.AuctionService.GetAuction:output_type -> guma.v1.GetAuctionResponse
+	5,  // 30: guma.v1.AuctionService.CreateAuction:output_type -> guma.v1.CreateAuctionResponse
+	7,  // 31: guma.v1.AuctionService.PlaceBid:output_type -> guma.v1.PlaceBidResponse
+	9,  // 32: guma.v1.AuctionService.GetBidHistory:output_type -> guma.v1.GetBidHistoryResponse
+	11, // 33: guma.v1.AuctionService.UpdateAuction:output_type -> guma.v1.UpdateAuctionResponse
+	13, // 34: guma.v1.AuctionService.DeleteAuction:output_type -> guma.v1.DeleteAuctionResponse
+	15, // 35: guma.v1.AuctionService.CancelAuction:output_type -> guma.v1.CancelAuctionResponse
+	28, // [28:36] is the sub-list for method output_type
+	20, // [20:28] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_auction_proto_init() }
@@ -1220,13 +1516,14 @@ func file_proto_guma_v1_auction_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_auction_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_auction_proto_rawDesc), len(file_proto_guma_v1_auction_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

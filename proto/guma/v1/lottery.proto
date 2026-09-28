@@ -49,6 +49,19 @@ service LotteryService {
     };
   }
 
+  rpc CancelLottery(CancelLotteryRequest) returns (CancelLotteryResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/lotteries/{lottery_id}/cancel"
+      body: "*"
+    };
+  }
+
+  rpc DeleteLottery(DeleteLotteryRequest) returns (DeleteLotteryResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/lotteries/{lottery_id}"
+    };
+  }
+
   // Draw the lottery manually (admin action)
   rpc DrawLottery(DrawLotteryRequest) returns (DrawLotteryResponse) {
     option (google.api.http) = {
@@ -69,7 +82,7 @@ service LotteryService {
 
 message ListLotteriesRequest {
   string guild_id = 1;
-  string status = 2;     // "active" | "upcoming" | "ended" | "" (all)
+  string status = 2;     // "active" | "upcoming" | "ended" | "cancelled" | "" (all)
   int32 page_size = 3;
   string page_token = 4;
 }
@@ -138,10 +151,33 @@ message UpdateLotteryRequest {
   string guild_id = 1;
   string lottery_id = 2;
   string draw_date = 3; // ISO 8601 datetime; must be in the future
+  optional string title = 4;
+  optional string description = 5;
+  optional int64 ticket_price = 6;
+  optional int32 max_tickets = 7;
+  optional int32 max_tickets_per_user = 8;
 }
 
 message UpdateLotteryResponse {
   Lottery lottery = 1;
+}
+
+message CancelLotteryRequest {
+  string guild_id = 1;
+  string lottery_id = 2;
+}
+
+message CancelLotteryResponse {
+  Lottery lottery = 1;
+}
+
+message DeleteLotteryRequest {
+  string guild_id = 1;
+  string lottery_id = 2;
+}
+
+message DeleteLotteryResponse {
+  bool success = 1;
 }
 
 message ListMyTicketsRequest {
@@ -158,7 +194,7 @@ message ListMyTicketsResponse {
 
 // Data structures
 
-// LotteryStatus values: upcoming, active, ended
+// LotteryStatus values: upcoming, active, ended, cancelled
 
 message Lottery {
   string id = 1;
@@ -176,6 +212,7 @@ message Lottery {
   repeated LotteryWinner winners = 13;
   google.protobuf.Timestamp created_at = 14;
   google.protobuf.Timestamp updated_at = 15;
+  google.protobuf.Timestamp cancelled_at = 16;
 }
 
 message LotteryPrize {

@@ -11,7 +11,7 @@ import { useDeviceClass } from '@/hooks/useDeviceClass';
 import { useGuildEvents } from '@/hooks/useGuildEvents';
 import { useToast } from '@/hooks/useToast';
 import { useUserName } from '@/hooks/useUserName';
-import { type CalendarView, fillsViewport, isSameDay, readStoredView, storeView } from '@/lib/calendar';
+import { allowedView, type CalendarView, fillsViewport, isSameDay, readStoredView, storeView } from '@/lib/calendar';
 import type { EventOccurrence } from '@/lib/event-occurrences';
 import {
   type CreateEventData,
@@ -141,14 +141,16 @@ export default function CalendarPage() {
     );
   }
 
+  const view = allowedView(device, calendarView.view);
+
   return (
-    <div className={`flex flex-col ${fillsViewport(calendarView.view, device) ? 'h-full' : ''}`}>
+    <div className={`flex flex-col ${fillsViewport(view, device) ? 'h-full' : ''}`}>
       <h1 className="sr-only">{nav('calendar')}</h1>
 
       <GuildCalendar
         events={events}
         currentDate={calendarView.currentDate}
-        view={calendarView.view}
+        view={view}
         device={device}
         onDateChange={setCalendarDate}
         onViewChange={handleViewChange}

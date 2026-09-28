@@ -44,6 +44,19 @@ service AuctionService {
     };
   }
 
+  rpc UpdateAuction(UpdateAuctionRequest) returns (UpdateAuctionResponse) {
+    option (google.api.http) = {
+      patch: "/v1/guilds/{guild_id}/auctions/{auction_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteAuction(DeleteAuctionRequest) returns (DeleteAuctionResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/auctions/{auction_id}"
+    };
+  }
+
   rpc CancelAuction(CancelAuctionRequest) returns (CancelAuctionResponse) {
     option (google.api.http) = {
       post: "/v1/guilds/{guild_id}/auctions/{auction_id}/cancel"
@@ -118,6 +131,30 @@ message GetBidHistoryResponse {
   int32 total_count = 3;
 }
 
+message UpdateAuctionRequest {
+  string guild_id = 1;
+  string auction_id = 2;
+  Item item = 3;
+  optional int64 starting_bid = 4;
+  optional int64 min_bid_increment = 5;
+  optional bool is_blind = 6;
+  google.protobuf.Timestamp start_time = 7;
+  google.protobuf.Timestamp end_time = 8;
+}
+
+message UpdateAuctionResponse {
+  AuctionItem auction = 1;
+}
+
+message DeleteAuctionRequest {
+  string guild_id = 1;
+  string auction_id = 2;
+}
+
+message DeleteAuctionResponse {
+  bool success = 1;
+}
+
 message CancelAuctionRequest {
   string guild_id = 1;
   string auction_id = 2;
@@ -145,10 +182,12 @@ message AuctionItem {
   bool is_blind = 12;
   google.protobuf.Timestamp created_at = 13;
   google.protobuf.Timestamp updated_at = 14;
-  string seller_name = 15;
-  string seller_avatar_url = 16;
-  string current_bidder_name = 17;
-  string current_bidder_avatar_url = 18;
+  string source_type = 15;
+  google.protobuf.Timestamp cancelled_at = 16;
+  string seller_name = 17;
+  string seller_avatar_url = 18;
+  string current_bidder_name = 19;
+  string current_bidder_avatar_url = 20;
 }
 
 message Bid {

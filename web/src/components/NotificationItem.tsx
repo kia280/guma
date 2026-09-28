@@ -22,10 +22,12 @@ const KIND_META: Record<NotificationKind, { icon: string; tint: string }> = {
   auctionWon: { icon: 'solar:cup-star-linear', tint: 'bg-success/10 text-success' },
   auctionSold: { icon: 'solar:sledgehammer-linear', tint: 'bg-success/10 text-success' },
   auctionUnsold: { icon: 'solar:sledgehammer-linear', tint: 'bg-default text-subtle' },
+  auctionCancelled: { icon: 'solar:forbidden-circle-linear', tint: 'bg-default text-subtle' },
   itemReceived: { icon: 'solar:backpack-linear', tint: 'bg-accent/10 text-accent' },
   itemDelivered: { icon: 'solar:box-minimalistic-linear', tint: 'bg-success/10 text-success' },
   lootAssigned: { icon: 'solar:clipboard-check-linear', tint: 'bg-success/10 text-success' },
   lotteryWon: { icon: 'solar:ticket-linear', tint: 'bg-warning/10 text-warning' },
+  lotteryCancelled: { icon: 'solar:forbidden-circle-linear', tint: 'bg-default text-subtle' },
 };
 
 const FALLBACK_META = { icon: 'solar:bell-linear', tint: 'bg-default text-subtle' };

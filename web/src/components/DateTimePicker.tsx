@@ -10,6 +10,7 @@ type DateTimePickerProps = {
   onChange: (iso: string) => void;
   isRequired?: boolean;
   isInvalid?: boolean;
+  validationBehavior?: 'aria' | 'native';
   description?: string;
   errorMessage?: string;
   className?: string;
@@ -21,6 +22,7 @@ export function DateTimePicker({
   onChange,
   isRequired,
   isInvalid,
+  validationBehavior,
   description,
   errorMessage,
   className,
@@ -30,6 +32,7 @@ export function DateTimePicker({
       className={className}
       isRequired={isRequired}
       isInvalid={isInvalid}
+      validationBehavior={validationBehavior}
       granularity="minute"
       hourCycle={24}
       value={value ? parseAbsoluteToLocal(new Date(value).toISOString()) : null}
