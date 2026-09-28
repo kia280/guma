@@ -204,12 +204,24 @@ See `migrations/` for complete schema definitions.
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Run `make check` to verify code quality
-5. Submit a pull request
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, conventions, checks, and the terms under which contributions are accepted.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Copyright (C) 2026 K1a
+
+This project is licensed under the Elastic License 2.0 (Elastic-2.0). See the [LICENSE](LICENSE) file for the full text.
+
+The license does not allow providing the software to third parties as a hosted or managed service that gives them access to a substantial set of its features.
+
+### Why the Elastic License 2.0
+
+Guma is built for gaming guilds. The goal is for any guild to be able to read the source, run its own instance, and adapt it to how the guild works, without paying for it. At the same time, the project should not be taken as-is and turned into someone else's commercial product.
+
+The Elastic License 2.0 fits that balance:
+
+- Guilds may use, self-host, and modify Guma for free.
+- No one may offer Guma to others as a hosted or managed service, such as a paid guild-management platform built on this code.
+- Copyright and license notices must be kept, so the project's origin stays visible.
+
+If you want to use Guma in a way the license does not allow, such as running it as a hosted service, contact the project owner to discuss a separate license.
