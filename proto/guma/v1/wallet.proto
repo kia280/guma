@@ -245,7 +245,7 @@ message Transaction {
   int64 balance_after = 6;
   string description = 7;
   string reference_id = 8;    // Linked entity ID (auction_id, lottery_id, etc.)
-  string reference_type = 9;  // "auction" | "lottery" | "checkin" | "manual"
+  string reference_type = 9;  // "auction" | "lottery" | "roll_call" | "manual"
   google.protobuf.Timestamp created_at = 10;
   string actor_id = 11;
   string actor_name = 12;

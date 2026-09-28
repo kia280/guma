@@ -1134,7 +1134,7 @@ type Transaction struct {
 	BalanceAfter     int64                  `protobuf:"varint,6,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`
 	Description      string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
 	ReferenceId      string                 `protobuf:"bytes,8,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`       // Linked entity ID (auction_id, lottery_id, etc.)
-	ReferenceType    string                 `protobuf:"bytes,9,opt,name=reference_type,json=referenceType,proto3" json:"reference_type,omitempty"` // "auction" | "lottery" | "checkin" | "manual"
+	ReferenceType    string                 `protobuf:"bytes,9,opt,name=reference_type,json=referenceType,proto3" json:"reference_type,omitempty"` // "auction" | "lottery" | "roll_call" | "manual"
 	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	ActorId          string                 `protobuf:"bytes,11,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
 	ActorName        string                 `protobuf:"bytes,12,opt,name=actor_name,json=actorName,proto3" json:"actor_name,omitempty"`

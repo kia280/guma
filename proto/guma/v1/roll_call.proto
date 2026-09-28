@@ -1,0 +1,301 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "proto/guma/v1/item.proto";
+
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
+
+service RollCallService {
+  rpc ListRollCalls(ListRollCallsRequest) returns (ListRollCallsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/roll-calls"
+    };
+  }
+
+  rpc GetRollCall(GetRollCallRequest) returns (GetRollCallResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}"
+    };
+  }
+
+  rpc CreateRollCall(CreateRollCallRequest) returns (CreateRollCallResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/roll-calls"
+      body: "*"
+    };
+  }
+
+  rpc UpdateRollCall(UpdateRollCallRequest) returns (UpdateRollCallResponse) {
+    option (google.api.http) = {
+      patch: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteRollCall(DeleteRollCallRequest) returns (DeleteRollCallResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}"
+    };
+  }
+
+  rpc CancelRollCall(CancelRollCallRequest) returns (CancelRollCallResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}/cancel"
+      body: "*"
+    };
+  }
+
+  rpc CompleteRollCall(CompleteRollCallRequest) returns (CompleteRollCallResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}/complete"
+      body: "*"
+    };
+  }
+
+  rpc UpdateRollCallLoot(UpdateRollCallLootRequest) returns (UpdateRollCallLootResponse) {
+    option (google.api.http) = {
+      put: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}/loot"
+      body: "*"
+    };
+  }
+
+  // Member checks in to a roll call
+  rpc CheckIn(CheckInRequest) returns (CheckInResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}/check-in"
+      body: "*"
+    };
+  }
+
+  // List the members who checked in to a roll call
+  rpc ListAttendees(ListAttendeesRequest) returns (ListAttendeesResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}/attendees"
+    };
+  }
+
+  rpc AssignLoot(AssignLootRequest) returns (AssignLootResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}/loot/{item_id}/assign"
+      body: "*"
+    };
+  }
+
+  rpc GetRollCallGold(GetRollCallGoldRequest) returns (GetRollCallGoldResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}/gold"
+    };
+  }
+
+  rpc DistributeRollCallGold(DistributeRollCallGoldRequest) returns (DistributeRollCallGoldResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/roll-calls/{roll_call_id}/gold/distribute"
+      body: "*"
+    };
+  }
+}
+
+// Request/Response messages
+
+message ListRollCallsRequest {
+  string guild_id = 1;
+  string status = 2;     // "active" | "expired" | "cancelled" | "completed" | "" (all)
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListRollCallsResponse {
+  repeated RollCall roll_calls = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message GetRollCallRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+}
+
+message GetRollCallResponse {
+  RollCall roll_call = 1;
+}
+
+message CreateRollCallRequest {
+  string guild_id = 1;
+  string title = 2;
+  string description = 3;
+  string datetime = 4;      // ISO 8601 datetime of the roll call
+  string expire_time = 5;   // ISO 8601 datetime when the window closes
+  string image_url = 6;
+  repeated Item loot_list = 7; // Items distributed to attendees
+  repeated RollCallLootEntry loot = 8; // Supersedes loot_list when set; supports gold entries
+}
+
+message CreateRollCallResponse {
+  RollCall roll_call = 1;
+}
+
+message UpdateRollCallRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+  string title = 3;
+  optional string description = 4;
+  string datetime = 5;
+  string expire_time = 6;
+  optional string image_url = 7;
+  repeated Item loot_list = 8;
+  repeated RollCallLootEntry loot = 9;
+}
+
+message UpdateRollCallResponse {
+  RollCall roll_call = 1;
+}
+
+message DeleteRollCallRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+}
+
+message DeleteRollCallResponse {
+  bool success = 1;
+}
+
+message CancelRollCallRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+}
+
+message CancelRollCallResponse {
+  RollCall roll_call = 1;
+}
+
+message CompleteRollCallRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+}
+
+message CompleteRollCallResponse {
+  RollCall roll_call = 1;
+}
+
+message UpdateRollCallLootRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+  repeated Item loot_list = 3;
+}
+
+message UpdateRollCallLootResponse {
+  RollCall roll_call = 1;
+}
+
+message AssignLootRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+  string item_id = 3;
+  string user_id = 4;
+}
+
+message AssignLootResponse {
+  string backpack_item_id = 1;
+}
+
+message GetRollCallGoldRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+}
+
+message GetRollCallGoldResponse {
+  RollCallGoldPot pot = 1;
+  repeated RollCallGoldPayout recipients = 2; // Total gold received per attendee
+}
+
+message DistributeRollCallGoldRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+  string request_id = 3; // Client-generated UUID; repeating it returns the original result
+  repeated RollCallGoldPayout payouts = 4;
+}
+
+message DistributeRollCallGoldResponse {
+  string distribution_id = 1;
+  RollCallGoldPot pot = 2;
+  repeated RollCallGoldPayout payouts = 3;
+  bool replayed = 4;
+}
+
+message CheckInRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+  string notes = 3;
+}
+
+message CheckInResponse {
+  RollCallAttendee attendee = 1;
+}
+
+message ListAttendeesRequest {
+  string guild_id = 1;
+  string roll_call_id = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListAttendeesResponse {
+  repeated RollCallAttendee attendees = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+// Data structures
+
+message RollCall {
+  string id = 1;
+  string guild_id = 2;
+  string created_by = 3;
+  string title = 4;
+  string description = 5;
+  string datetime = 6;
+  string expire_time = 7;
+  string image_url = 8;
+  repeated Item loot_list = 9;
+  int32 attendance_count = 10;
+  bool is_expired = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+  bool is_cancelled = 14;
+  repeated RollCallLootEntry loot = 15; // All loot entries, including gold
+  RollCallGoldPot gold_pot = 16;        // Unset when the roll call has no gold loot
+  bool is_completed = 17;
+  google.protobuf.Timestamp completed_at = 18;
+}
+
+// LootKind values: item, gold
+message RollCallLootEntry {
+  string kind = 1;
+  Item item = 2;    // Set when kind is item
+  int64 amount = 3; // Gold in minor units when kind is gold
+}
+
+message RollCallGoldPot {
+  int64 total = 1;
+  int64 distributed = 2;
+  int64 retracted = 3;
+  int64 remaining = 4;
+}
+
+message RollCallGoldPayout {
+  string user_id = 1;
+  int64 amount = 2;
+}
+
+message RollCallAttendee {
+  string id = 1;
+  string roll_call_id = 2;
+  string user_id = 3;
+  string display_name = 4;
+  string avatar_url = 5;
+  google.protobuf.Timestamp checked_in_at = 6;
+  string notes = 7;
+}

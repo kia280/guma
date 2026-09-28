@@ -85,7 +85,7 @@ func TestNotificationPreferencesToProto(t *testing.T) {
 	assert.False(t, got.AuctionAlerts)
 	assert.True(t, got.LotteryAlerts)
 	assert.False(t, got.EventReminders)
-	assert.True(t, got.CheckinReminders)
+	assert.True(t, got.RollCallReminders)
 }
 
 func TestPreferencesUpdatedAt(t *testing.T) {

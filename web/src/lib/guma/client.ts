@@ -347,18 +347,18 @@ export const gumaApiClient: ApiClient = {
 
   // ── CheckIn ──
   listCheckins: async (guildId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/checkins`);
-    return (data.checkins ?? []).map((c: Parameters<typeof toCheckin>[0]) => toCheckin(c));
+    const { data } = await http.get(`/v1/guilds/${guildId}/roll-calls`);
+    return (data.roll_calls ?? []).map((c: Parameters<typeof toCheckin>[0]) => toCheckin(c));
   },
   getCheckin: async (guildId, id) => {
     const [{ data: detailData }, { data: attendeeData }] = await Promise.all([
-      http.get(`/v1/guilds/${guildId}/checkins/${id}`),
+      http.get(`/v1/guilds/${guildId}/roll-calls/${id}`),
       http
-        .get(`/v1/guilds/${guildId}/checkins/${id}/attendees`)
+        .get(`/v1/guilds/${guildId}/roll-calls/${id}/attendees`)
         .catch(() => ({ data: { attendees: [] } })),
     ]);
     const attendees = (attendeeData.attendees ?? []).map(toAttendee);
-    return toCheckin(detailData.checkin, attendees);
+    return toCheckin(detailData.roll_call, attendees);
   },
   createCheckin: async (guildId, req) => {
     const payload = {
@@ -369,8 +369,8 @@ export const gumaApiClient: ApiClient = {
       image_url: req.imageUrl,
       loot: (req.lootList ?? []).map(toProtoLoot),
     };
-    const { data } = await http.post(`/v1/guilds/${guildId}/checkins`, payload);
-    return toCheckin(data.checkin);
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls`, payload);
+    return toCheckin(data.roll_call);
   },
   updateCheckin: async (guildId, id, patch) => {
     const payload = {
@@ -380,32 +380,32 @@ export const gumaApiClient: ApiClient = {
       expire_time: patch.expireTime,
       image_url: patch.imageUrl,
     };
-    const { data } = await http.patch(`/v1/guilds/${guildId}/checkins/${id}`, payload);
-    return toCheckin(data.checkin);
+    const { data } = await http.patch(`/v1/guilds/${guildId}/roll-calls/${id}`, payload);
+    return toCheckin(data.roll_call);
   },
   deleteCheckin: async (guildId, id) => {
-    await http.delete(`/v1/guilds/${guildId}/checkins/${id}`);
+    await http.delete(`/v1/guilds/${guildId}/roll-calls/${id}`);
   },
   cancelCheckin: async (guildId, id) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${id}/cancel`, {});
-    return toCheckin(data.checkin);
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/cancel`, {});
+    return toCheckin(data.roll_call);
   },
   completeCheckin: async (guildId, id) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${id}/complete`, {});
-    return toCheckin(data.checkin);
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/complete`, {});
+    return toCheckin(data.roll_call);
   },
   updateCheckinLoot: async (guildId, id, lootList) => {
-    const { data } = await http.put(`/v1/guilds/${guildId}/checkins/${id}/loot`, {
+    const { data } = await http.put(`/v1/guilds/${guildId}/roll-calls/${id}/loot`, {
       loot_list: lootList.map(toProtoItem),
     });
-    return toCheckin(data.checkin);
+    return toCheckin(data.roll_call);
   },
   listCheckinTemplates: async (guildId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/checkin-templates`);
+    const { data } = await http.get(`/v1/guilds/${guildId}/roll-call-templates`);
     return (data.templates ?? []).map(toCheckinTemplate);
   },
   createCheckinTemplate: async (guildId, input) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/checkin-templates`, {
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-call-templates`, {
       name: input.name,
       title: input.title,
       item_template_ids: input.itemTemplateIds,
@@ -413,7 +413,7 @@ export const gumaApiClient: ApiClient = {
     return toCheckinTemplate(data.template);
   },
   updateCheckinTemplate: async (guildId, id, input) => {
-    const { data } = await http.patch(`/v1/guilds/${guildId}/checkin-templates/${id}`, {
+    const { data } = await http.patch(`/v1/guilds/${guildId}/roll-call-templates/${id}`, {
       name: input.name,
       title: input.title,
       item_template_ids: input.itemTemplateIds,
@@ -421,7 +421,7 @@ export const gumaApiClient: ApiClient = {
     return toCheckinTemplate(data.template);
   },
   deleteCheckinTemplate: async (guildId, id) => {
-    await http.delete(`/v1/guilds/${guildId}/checkin-templates/${id}`);
+    await http.delete(`/v1/guilds/${guildId}/roll-call-templates/${id}`);
   },
   listItemTemplates: async (guildId) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/item-templates`);
@@ -439,25 +439,25 @@ export const gumaApiClient: ApiClient = {
     await http.delete(`/v1/guilds/${guildId}/item-templates/${id}`);
   },
   submitAttendance: async (guildId, checkinId, notes) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/attend`, { notes: notes ?? '' });
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${checkinId}/check-in`, { notes: notes ?? '' });
     return toAttendee(data.attendee);
   },
   assignLoot: async (guildId, checkinId, itemId, userId) => {
-    await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/loot/${itemId}/assign`, { user_id: userId });
+    await http.post(`/v1/guilds/${guildId}/roll-calls/${checkinId}/loot/${itemId}/assign`, { user_id: userId });
   },
   getCheckinGold: async (guildId, checkinId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/checkins/${checkinId}/gold`);
+    const { data } = await http.get(`/v1/guilds/${guildId}/roll-calls/${checkinId}/gold`);
     return toCheckinGoldSummary(data);
   },
   distributeCheckinGold: async (guildId, checkinId, requestId, payouts) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/checkins/${checkinId}/gold/distribute`, {
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${checkinId}/gold/distribute`, {
       request_id: requestId,
       payouts: payouts.map(p => ({ user_id: p.userId, amount: toMinorUnits(p.amount) })),
     });
     return toCheckinGoldDistribution(data);
   },
   listAttendees: async (guildId, checkinId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/checkins/${checkinId}/attendees`);
+    const { data } = await http.get(`/v1/guilds/${guildId}/roll-calls/${checkinId}/attendees`);
     return (data.attendees ?? []).map(toAttendee);
   },
 
@@ -568,7 +568,7 @@ export const gumaApiClient: ApiClient = {
   },
   listBankItems: async (guildId, options) => {
     const { data } = await http.get(`/v1/guilds/${guildId}/bank/items`, {
-      params: { page_size: 100, checkin_id: options?.checkinId },
+      params: { page_size: 100, roll_call_id: options?.checkinId },
     });
     return (data.items ?? []).map(toGuildBankItem);
   },
@@ -654,7 +654,7 @@ export const gumaApiClient: ApiClient = {
         auction_alerts: patch.auctionAlerts,
         lottery_alerts: patch.lotteryAlerts,
         event_reminders: patch.eventReminders,
-        checkin_reminders: patch.checkinReminders,
+        roll_call_reminders: patch.checkinReminders,
       },
     });
     return toUserPreferences(data);

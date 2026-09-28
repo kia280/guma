@@ -17,7 +17,7 @@ import (
 
 // RollCallHandler is a thin gRPC adapter over the roll call service.
 type RollCallHandler struct {
-	gumav1.UnimplementedCheckInServiceServer
+	gumav1.UnimplementedRollCallServiceServer
 	svc    *rollcallsvc.Service
 	logger zerolog.Logger
 }
@@ -30,7 +30,7 @@ func NewRollCallService(db *database.Pool, logger zerolog.Logger) *RollCallHandl
 	}
 }
 
-func (h *RollCallHandler) ListCheckIns(ctx context.Context, req *gumav1.ListCheckInsRequest) (*gumav1.ListCheckInsResponse, error) {
+func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRollCallsRequest) (*gumav1.ListRollCallsResponse, error) {
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
@@ -44,29 +44,29 @@ func (h *RollCallHandler) ListCheckIns(ctx context.Context, req *gumav1.ListChec
 		return nil, toStatus(err)
 	}
 
-	protos := make([]*gumav1.CheckIn, len(result.RollCalls))
+	protos := make([]*gumav1.RollCall, len(result.RollCalls))
 	for i, c := range result.RollCalls {
 		protos[i] = rollCallToProto(c)
 	}
-	return &gumav1.ListCheckInsResponse{
-		Checkins:      protos,
+	return &gumav1.ListRollCallsResponse{
+		RollCalls:     protos,
 		NextPageToken: rollcallsvc.NextPageToken(result.NextOffset),
 		TotalCount:    result.TotalCount,
 	}, nil
 }
 
-func (h *RollCallHandler) GetCheckIn(ctx context.Context, req *gumav1.GetCheckInRequest) (*gumav1.GetCheckInResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCallRequest) (*gumav1.GetRollCallResponse, error) {
+	if req.GuildId == "" || req.RollCallId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
-	c, err := h.svc.Get(ctx, req.GuildId, req.CheckinId)
+	c, err := h.svc.Get(ctx, req.GuildId, req.RollCallId)
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.GetCheckInResponse{Checkin: rollCallToProto(c)}, nil
+	return &gumav1.GetRollCallResponse{RollCall: rollCallToProto(c)}, nil
 }
 
-func (h *RollCallHandler) CreateCheckIn(ctx context.Context, req *gumav1.CreateCheckInRequest) (*gumav1.CreateCheckInResponse, error) {
+func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.CreateRollCallRequest) (*gumav1.CreateRollCallResponse, error) {
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
@@ -88,12 +88,12 @@ func (h *RollCallHandler) CreateCheckIn(ctx context.Context, req *gumav1.CreateC
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.CreateCheckInResponse{Checkin: rollCallToProto(c)}, nil
+	return &gumav1.CreateRollCallResponse{RollCall: rollCallToProto(c)}, nil
 }
 
-func (h *RollCallHandler) UpdateCheckIn(ctx context.Context, req *gumav1.UpdateCheckInRequest) (*gumav1.UpdateCheckInResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.UpdateRollCallRequest) (*gumav1.UpdateRollCallResponse, error) {
+	if req.GuildId == "" || req.RollCallId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
@@ -102,7 +102,7 @@ func (h *RollCallHandler) UpdateCheckIn(ctx context.Context, req *gumav1.UpdateC
 
 	c, err := h.svc.Update(ctx, rollcallsvc.UpdateParams{
 		GuildID:     req.GuildId,
-		RollCallID:  req.CheckinId,
+		RollCallID:  req.RollCallId,
 		UpdatedBy:   userID,
 		Title:       req.Title,
 		Description: req.Description,
@@ -114,38 +114,38 @@ func (h *RollCallHandler) UpdateCheckIn(ctx context.Context, req *gumav1.UpdateC
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.UpdateCheckInResponse{Checkin: rollCallToProto(c)}, nil
+	return &gumav1.UpdateRollCallResponse{RollCall: rollCallToProto(c)}, nil
 }
 
-func (h *RollCallHandler) DeleteCheckIn(ctx context.Context, req *gumav1.DeleteCheckInRequest) (*gumav1.DeleteCheckInResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.DeleteRollCallRequest) (*gumav1.DeleteRollCallResponse, error) {
+	if req.GuildId == "" || req.RollCallId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
-	if err := h.svc.Delete(ctx, req.GuildId, req.CheckinId); err != nil {
+	if err := h.svc.Delete(ctx, req.GuildId, req.RollCallId); err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.DeleteCheckInResponse{Success: true}, nil
+	return &gumav1.DeleteRollCallResponse{Success: true}, nil
 }
 
-func (h *RollCallHandler) CompleteCheckIn(ctx context.Context, req *gumav1.CompleteCheckInRequest) (*gumav1.CompleteCheckInResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.CompleteRollCallRequest) (*gumav1.CompleteRollCallResponse, error) {
+	if req.GuildId == "" || req.RollCallId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	c, err := h.svc.Complete(ctx, req.GuildId, req.CheckinId, userID)
+	c, err := h.svc.Complete(ctx, req.GuildId, req.RollCallId, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.CompleteCheckInResponse{Checkin: rollCallToProto(c)}, nil
+	return &gumav1.CompleteRollCallResponse{RollCall: rollCallToProto(c)}, nil
 }
 
-func (h *RollCallHandler) UpdateCheckInLoot(ctx context.Context, req *gumav1.UpdateCheckInLootRequest) (*gumav1.UpdateCheckInLootResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.UpdateRollCallLootRequest) (*gumav1.UpdateRollCallLootResponse, error) {
+	if req.GuildId == "" || req.RollCallId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
@@ -159,69 +159,69 @@ func (h *RollCallHandler) UpdateCheckInLoot(ctx context.Context, req *gumav1.Upd
 
 	c, err := h.svc.UpdateLoot(ctx, rollcallsvc.UpdateLootParams{
 		GuildID:    req.GuildId,
-		RollCallID: req.CheckinId,
+		RollCallID: req.RollCallId,
 		UpdatedBy:  userID,
 		LootList:   lootList,
 	})
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.UpdateCheckInLootResponse{Checkin: rollCallToProto(c)}, nil
+	return &gumav1.UpdateRollCallLootResponse{RollCall: rollCallToProto(c)}, nil
 }
 
-func (h *RollCallHandler) CancelCheckIn(ctx context.Context, req *gumav1.CancelCheckInRequest) (*gumav1.CancelCheckInResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.CancelRollCallRequest) (*gumav1.CancelRollCallResponse, error) {
+	if req.GuildId == "" || req.RollCallId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	c, err := h.svc.Cancel(ctx, req.GuildId, req.CheckinId, userID)
+	c, err := h.svc.Cancel(ctx, req.GuildId, req.RollCallId, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.CancelCheckInResponse{Checkin: rollCallToProto(c)}, nil
+	return &gumav1.CancelRollCallResponse{RollCall: rollCallToProto(c)}, nil
 }
 
 func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLootRequest) (*gumav1.AssignLootResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" || req.ItemId == "" || req.UserId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id, checkin_id, item_id and user_id are required")
+	if req.GuildId == "" || req.RollCallId == "" || req.ItemId == "" || req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id, roll_call_id, item_id and user_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	backpackItemID, err := h.svc.AssignLoot(ctx, req.GuildId, req.CheckinId, req.ItemId, userID, req.UserId)
+	backpackItemID, err := h.svc.AssignLoot(ctx, req.GuildId, req.RollCallId, req.ItemId, userID, req.UserId)
 	if err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.AssignLootResponse{BackpackItemId: backpackItemID}, nil
 }
 
-func (h *RollCallHandler) GetCheckInGold(ctx context.Context, req *gumav1.GetCheckInGoldRequest) (*gumav1.GetCheckInGoldResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and checkin_id are required")
+func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRollCallGoldRequest) (*gumav1.GetRollCallGoldResponse, error) {
+	if req.GuildId == "" || req.RollCallId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	if session.UserIDFromContext(ctx) == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	summary, err := h.svc.GetGold(ctx, req.GuildId, req.CheckinId)
+	summary, err := h.svc.GetGold(ctx, req.GuildId, req.RollCallId)
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.GetCheckInGoldResponse{
+	return &gumav1.GetRollCallGoldResponse{
 		Pot:        goldPotToProto(summary.Pot),
 		Recipients: goldPayoutsToProto(summary.Recipients),
 	}, nil
 }
 
-func (h *RollCallHandler) DistributeCheckInGold(ctx context.Context, req *gumav1.DistributeCheckInGoldRequest) (*gumav1.DistributeCheckInGoldResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" || req.RequestId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id, checkin_id and request_id are required")
+func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav1.DistributeRollCallGoldRequest) (*gumav1.DistributeRollCallGoldResponse, error) {
+	if req.GuildId == "" || req.RollCallId == "" || req.RequestId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id, roll_call_id and request_id are required")
 	}
 	if len(req.Payouts) == 0 {
 		return nil, status.Error(codes.InvalidArgument, "payouts are required")
@@ -237,7 +237,7 @@ func (h *RollCallHandler) DistributeCheckInGold(ctx context.Context, req *gumav1
 	}
 	result, err := h.svc.DistributeGold(ctx, rollcallsvc.DistributeGoldParams{
 		GuildID:    req.GuildId,
-		RollCallID: req.CheckinId,
+		RollCallID: req.RollCallId,
 		ActorID:    userID,
 		RequestID:  req.RequestId,
 		Payouts:    payouts,
@@ -245,7 +245,7 @@ func (h *RollCallHandler) DistributeCheckInGold(ctx context.Context, req *gumav1
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.DistributeCheckInGoldResponse{
+	return &gumav1.DistributeRollCallGoldResponse{
 		DistributionId: result.DistributionID,
 		Pot:            goldPotToProto(&result.Pot),
 		Payouts:        goldPayoutsToProto(result.Payouts),
@@ -253,32 +253,32 @@ func (h *RollCallHandler) DistributeCheckInGold(ctx context.Context, req *gumav1
 	}, nil
 }
 
-func (h *RollCallHandler) SubmitAttendance(ctx context.Context, req *gumav1.SubmitAttendanceRequest) (*gumav1.SubmitAttendanceResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInRequest) (*gumav1.CheckInResponse, error) {
+	if req.GuildId == "" || req.RollCallId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	attendee, err := h.svc.CheckIn(ctx, req.GuildId, req.CheckinId, userID, req.Notes)
+	attendee, err := h.svc.CheckIn(ctx, req.GuildId, req.RollCallId, userID, req.Notes)
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.SubmitAttendanceResponse{Attendee: attendeeToProto(attendee)}, nil
+	return &gumav1.CheckInResponse{Attendee: attendeeToProto(attendee)}, nil
 }
 
 func (h *RollCallHandler) ListAttendees(ctx context.Context, req *gumav1.ListAttendeesRequest) (*gumav1.ListAttendeesResponse, error) {
-	if req.GuildId == "" || req.CheckinId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and check_in_id are required")
+	if req.GuildId == "" || req.RollCallId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
-	result, err := h.svc.ListAttendees(ctx, req.GuildId, req.CheckinId, int(req.PageSize), rollcallsvc.ParsePageToken(req.PageToken))
+	result, err := h.svc.ListAttendees(ctx, req.GuildId, req.RollCallId, int(req.PageSize), rollcallsvc.ParsePageToken(req.PageToken))
 	if err != nil {
 		return nil, toStatus(err)
 	}
 
-	protos := make([]*gumav1.CheckInAttendee, len(result.Attendees))
+	protos := make([]*gumav1.RollCallAttendee, len(result.Attendees))
 	for i, a := range result.Attendees {
 		protos[i] = attendeeToProto(a)
 	}
@@ -291,12 +291,12 @@ func (h *RollCallHandler) ListAttendees(ctx context.Context, req *gumav1.ListAtt
 
 // --- proto conversion helpers ---
 
-func rollCallToProto(c *rollcallsvc.RollCall) *gumav1.CheckIn {
+func rollCallToProto(c *rollcallsvc.RollCall) *gumav1.RollCall {
 	lootList := make([]*gumav1.Item, len(c.LootList))
 	for i, item := range c.LootList {
 		lootList[i] = itemToProto(item)
 	}
-	proto := &gumav1.CheckIn{
+	proto := &gumav1.RollCall{
 		Id:              c.ID,
 		GuildId:         c.GuildID,
 		CreatedBy:       c.CreatedBy,
@@ -321,15 +321,15 @@ func rollCallToProto(c *rollcallsvc.RollCall) *gumav1.CheckIn {
 	return proto
 }
 
-func lootToProto(entries []rollcallsvc.LootEntry) []*gumav1.CheckInLootEntry {
-	protos := make([]*gumav1.CheckInLootEntry, len(entries))
+func lootToProto(entries []rollcallsvc.LootEntry) []*gumav1.RollCallLootEntry {
+	protos := make([]*gumav1.RollCallLootEntry, len(entries))
 	for i, e := range entries {
-		protos[i] = &gumav1.CheckInLootEntry{Kind: e.Kind, Item: itemToProto(e.Item), Amount: e.Amount}
+		protos[i] = &gumav1.RollCallLootEntry{Kind: e.Kind, Item: itemToProto(e.Item), Amount: e.Amount}
 	}
 	return protos
 }
 
-func lootFromProto(entries []*gumav1.CheckInLootEntry, legacy []*gumav1.Item) []rollcallsvc.LootEntry {
+func lootFromProto(entries []*gumav1.RollCallLootEntry, legacy []*gumav1.Item) []rollcallsvc.LootEntry {
 	if len(entries) == 0 {
 		loot := make([]rollcallsvc.LootEntry, len(legacy))
 		for i, item := range legacy {
@@ -347,11 +347,11 @@ func lootFromProto(entries []*gumav1.CheckInLootEntry, legacy []*gumav1.Item) []
 	return loot
 }
 
-func goldPotToProto(pot *rollcallsvc.GoldPot) *gumav1.CheckInGoldPot {
+func goldPotToProto(pot *rollcallsvc.GoldPot) *gumav1.RollCallGoldPot {
 	if pot == nil {
 		return nil
 	}
-	return &gumav1.CheckInGoldPot{
+	return &gumav1.RollCallGoldPot{
 		Total:       pot.Total,
 		Distributed: pot.Distributed,
 		Retracted:   pot.Retracted,
@@ -359,22 +359,22 @@ func goldPotToProto(pot *rollcallsvc.GoldPot) *gumav1.CheckInGoldPot {
 	}
 }
 
-func goldPayoutsToProto(payouts []rollcallsvc.GoldPayout) []*gumav1.CheckInGoldPayout {
-	protos := make([]*gumav1.CheckInGoldPayout, len(payouts))
+func goldPayoutsToProto(payouts []rollcallsvc.GoldPayout) []*gumav1.RollCallGoldPayout {
+	protos := make([]*gumav1.RollCallGoldPayout, len(payouts))
 	for i, p := range payouts {
-		protos[i] = &gumav1.CheckInGoldPayout{UserId: p.UserID, Amount: p.Amount}
+		protos[i] = &gumav1.RollCallGoldPayout{UserId: p.UserID, Amount: p.Amount}
 	}
 	return protos
 }
 
-func attendeeToProto(a *rollcallsvc.Attendee) *gumav1.CheckInAttendee {
-	return &gumav1.CheckInAttendee{
+func attendeeToProto(a *rollcallsvc.Attendee) *gumav1.RollCallAttendee {
+	return &gumav1.RollCallAttendee{
 		Id:          a.ID,
-		CheckinId:   a.RollCallID,
+		RollCallId:  a.RollCallID,
 		UserId:      a.UserID,
 		DisplayName: a.DisplayName,
 		AvatarUrl:   a.AvatarURL,
-		AttendedAt:  timestamppb.New(a.CheckedInAt),
+		CheckedInAt: timestamppb.New(a.CheckedInAt),
 		Notes:       a.Notes,
 	}
 }

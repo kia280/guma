@@ -15,12 +15,6 @@
       "name": "BankService"
     },
     {
-      "name": "CheckInService"
-    },
-    {
-      "name": "CheckInTemplateService"
-    },
-    {
       "name": "EventService"
     },
     {
@@ -43,6 +37,12 @@
     },
     {
       "name": "PreferenceService"
+    },
+    {
+      "name": "RollCallService"
+    },
+    {
+      "name": "RollCallTemplateService"
     },
     {
       "name": "StreamService"
@@ -1726,7 +1726,7 @@
             "type": "string"
           },
           {
-            "name": "checkinId",
+            "name": "rollCallId",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1810,705 +1810,6 @@
         ],
         "tags": [
           "BankService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkin-templates": {
-      "get": {
-        "operationId": "CheckInTemplateService_ListCheckInTemplates",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListCheckInTemplatesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "CheckInTemplateService"
-        ]
-      },
-      "post": {
-        "operationId": "CheckInTemplateService_CreateCheckInTemplate",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1CreateCheckInTemplateResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInTemplateServiceCreateCheckInTemplateBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInTemplateService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkin-templates/{templateId}": {
-      "delete": {
-        "operationId": "CheckInTemplateService_DeleteCheckInTemplate",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1DeleteCheckInTemplateResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "templateId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "CheckInTemplateService"
-        ]
-      },
-      "patch": {
-        "operationId": "CheckInTemplateService_UpdateCheckInTemplate",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1UpdateCheckInTemplateResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "templateId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInTemplateServiceUpdateCheckInTemplateBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInTemplateService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins": {
-      "get": {
-        "operationId": "CheckInService_ListCheckIns",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListCheckInsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "description": "\"active\" | \"expired\" | \"cancelled\" | \"completed\" | \"\" (all)",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      },
-      "post": {
-        "operationId": "CheckInService_CreateCheckIn",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1CreateCheckInResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInServiceCreateCheckInBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins/{checkinId}": {
-      "get": {
-        "operationId": "CheckInService_GetCheckIn",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetCheckInResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      },
-      "delete": {
-        "operationId": "CheckInService_DeleteCheckIn",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1DeleteCheckInResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      },
-      "patch": {
-        "operationId": "CheckInService_UpdateCheckIn",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1UpdateCheckInResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInServiceUpdateCheckInBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins/{checkinId}/attend": {
-      "post": {
-        "summary": "Member submits their attendance for a check-in",
-        "operationId": "CheckInService_SubmitAttendance",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1SubmitAttendanceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInServiceSubmitAttendanceBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins/{checkinId}/attendees": {
-      "get": {
-        "summary": "List who attended a check-in",
-        "operationId": "CheckInService_ListAttendees",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListAttendeesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins/{checkinId}/cancel": {
-      "post": {
-        "operationId": "CheckInService_CancelCheckIn",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1CancelCheckInResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInServiceCancelCheckInBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins/{checkinId}/complete": {
-      "post": {
-        "operationId": "CheckInService_CompleteCheckIn",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1CompleteCheckInResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInServiceCompleteCheckInBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins/{checkinId}/gold": {
-      "get": {
-        "operationId": "CheckInService_GetCheckInGold",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetCheckInGoldResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins/{checkinId}/gold/distribute": {
-      "post": {
-        "operationId": "CheckInService_DistributeCheckInGold",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1DistributeCheckInGoldResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInServiceDistributeCheckInGoldBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins/{checkinId}/loot": {
-      "put": {
-        "operationId": "CheckInService_UpdateCheckInLoot",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1UpdateCheckInLootResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInServiceUpdateCheckInLootBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/checkins/{checkinId}/loot/{itemId}/assign": {
-      "post": {
-        "operationId": "CheckInService_AssignLoot",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1AssignLootResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "checkinId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "itemId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CheckInServiceAssignLootBody"
-            }
-          }
-        ],
-        "tags": [
-          "CheckInService"
         ]
       }
     },
@@ -3915,6 +3216,705 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/roll-call-templates": {
+      "get": {
+        "operationId": "RollCallTemplateService_ListRollCallTemplates",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListRollCallTemplatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RollCallTemplateService"
+        ]
+      },
+      "post": {
+        "operationId": "RollCallTemplateService_CreateRollCallTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateRollCallTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallTemplateServiceCreateRollCallTemplateBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallTemplateService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-call-templates/{templateId}": {
+      "delete": {
+        "operationId": "RollCallTemplateService_DeleteRollCallTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRollCallTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RollCallTemplateService"
+        ]
+      },
+      "patch": {
+        "operationId": "RollCallTemplateService_UpdateRollCallTemplate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateRollCallTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallTemplateServiceUpdateRollCallTemplateBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallTemplateService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls": {
+      "get": {
+        "operationId": "RollCallService_ListRollCalls",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListRollCallsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "\"active\" | \"expired\" | \"cancelled\" | \"completed\" | \"\" (all)",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      },
+      "post": {
+        "operationId": "RollCallService_CreateRollCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateRollCallResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallServiceCreateRollCallBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls/{rollCallId}": {
+      "get": {
+        "operationId": "RollCallService_GetRollCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetRollCallResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      },
+      "delete": {
+        "operationId": "RollCallService_DeleteRollCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRollCallResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      },
+      "patch": {
+        "operationId": "RollCallService_UpdateRollCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateRollCallResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallServiceUpdateRollCallBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls/{rollCallId}/attendees": {
+      "get": {
+        "summary": "List the members who checked in to a roll call",
+        "operationId": "RollCallService_ListAttendees",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListAttendeesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls/{rollCallId}/cancel": {
+      "post": {
+        "operationId": "RollCallService_CancelRollCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelRollCallResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallServiceCancelRollCallBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls/{rollCallId}/check-in": {
+      "post": {
+        "summary": "Member checks in to a roll call",
+        "operationId": "RollCallService_CheckIn",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CheckInResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallServiceCheckInBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls/{rollCallId}/complete": {
+      "post": {
+        "operationId": "RollCallService_CompleteRollCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CompleteRollCallResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallServiceCompleteRollCallBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls/{rollCallId}/gold": {
+      "get": {
+        "operationId": "RollCallService_GetRollCallGold",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetRollCallGoldResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls/{rollCallId}/gold/distribute": {
+      "post": {
+        "operationId": "RollCallService_DistributeRollCallGold",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DistributeRollCallGoldResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallServiceDistributeRollCallGoldBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls/{rollCallId}/loot": {
+      "put": {
+        "operationId": "RollCallService_UpdateRollCallLoot",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateRollCallLootResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallServiceUpdateRollCallLootBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/roll-calls/{rollCallId}/loot/{itemId}/assign": {
+      "post": {
+        "operationId": "RollCallService_AssignLoot",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AssignLootResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rollCallId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "itemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RollCallServiceAssignLootBody"
+            }
+          }
+        ],
+        "tags": [
+          "RollCallService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/settings": {
       "get": {
         "operationId": "GuildService_GetGuildSettings",
@@ -4919,162 +4919,6 @@
         }
       }
     },
-    "CheckInServiceAssignLootBody": {
-      "type": "object",
-      "properties": {
-        "userId": {
-          "type": "string"
-        }
-      }
-    },
-    "CheckInServiceCancelCheckInBody": {
-      "type": "object"
-    },
-    "CheckInServiceCompleteCheckInBody": {
-      "type": "object"
-    },
-    "CheckInServiceCreateCheckInBody": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "datetime": {
-          "type": "string",
-          "title": "ISO 8601 datetime of the check-in event"
-        },
-        "expireTime": {
-          "type": "string",
-          "title": "ISO 8601 datetime when the window closes"
-        },
-        "imageUrl": {
-          "type": "string"
-        },
-        "lootList": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Item"
-          },
-          "title": "Items distributed to attendees"
-        },
-        "loot": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1CheckInLootEntry"
-          },
-          "title": "Supersedes loot_list when set; supports gold entries"
-        }
-      }
-    },
-    "CheckInServiceDistributeCheckInGoldBody": {
-      "type": "object",
-      "properties": {
-        "requestId": {
-          "type": "string",
-          "title": "Client-generated UUID; repeating it returns the original result"
-        },
-        "payouts": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1CheckInGoldPayout"
-          }
-        }
-      }
-    },
-    "CheckInServiceSubmitAttendanceBody": {
-      "type": "object",
-      "properties": {
-        "notes": {
-          "type": "string"
-        }
-      }
-    },
-    "CheckInServiceUpdateCheckInBody": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "datetime": {
-          "type": "string"
-        },
-        "expireTime": {
-          "type": "string"
-        },
-        "imageUrl": {
-          "type": "string"
-        },
-        "lootList": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Item"
-          }
-        },
-        "loot": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1CheckInLootEntry"
-          }
-        }
-      }
-    },
-    "CheckInServiceUpdateCheckInLootBody": {
-      "type": "object",
-      "properties": {
-        "lootList": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Item"
-          }
-        }
-      }
-    },
-    "CheckInTemplateServiceCreateCheckInTemplateBody": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "itemTemplateIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "CheckInTemplateServiceUpdateCheckInTemplateBody": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "itemTemplateIds": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "EventServiceCreateEventBody": {
       "type": "object",
       "properties": {
@@ -5355,6 +5199,162 @@
     },
     "NotificationServiceMarkNotificationReadBody": {
       "type": "object"
+    },
+    "RollCallServiceAssignLootBody": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        }
+      }
+    },
+    "RollCallServiceCancelRollCallBody": {
+      "type": "object"
+    },
+    "RollCallServiceCheckInBody": {
+      "type": "object",
+      "properties": {
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "RollCallServiceCompleteRollCallBody": {
+      "type": "object"
+    },
+    "RollCallServiceCreateRollCallBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "datetime": {
+          "type": "string",
+          "title": "ISO 8601 datetime of the roll call"
+        },
+        "expireTime": {
+          "type": "string",
+          "title": "ISO 8601 datetime when the window closes"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          },
+          "title": "Items distributed to attendees"
+        },
+        "loot": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RollCallLootEntry"
+          },
+          "title": "Supersedes loot_list when set; supports gold entries"
+        }
+      }
+    },
+    "RollCallServiceDistributeRollCallGoldBody": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "title": "Client-generated UUID; repeating it returns the original result"
+        },
+        "payouts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RollCallGoldPayout"
+          }
+        }
+      }
+    },
+    "RollCallServiceUpdateRollCallBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "datetime": {
+          "type": "string"
+        },
+        "expireTime": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        },
+        "loot": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RollCallLootEntry"
+          }
+        }
+      }
+    },
+    "RollCallServiceUpdateRollCallLootBody": {
+      "type": "object",
+      "properties": {
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        }
+      }
+    },
+    "RollCallTemplateServiceCreateRollCallTemplateBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "itemTemplateIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "RollCallTemplateServiceUpdateRollCallTemplateBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "itemTemplateIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "WalletServiceAdminTransferBackpackItemsBody": {
       "type": "object",
@@ -5806,7 +5806,7 @@
             "$ref": "#/definitions/v1Item"
           }
         },
-        "checkinId": {
+        "rollCallId": {
           "type": "string"
         },
         "avatarUrl": {
@@ -5849,10 +5849,10 @@
           "type": "string",
           "format": "date-time"
         },
-        "checkinId": {
+        "rollCallId": {
           "type": "string"
         },
-        "checkinTitle": {
+        "rollCallTitle": {
           "type": "string"
         },
         "pendingRequestCount": {
@@ -5914,14 +5914,6 @@
         }
       }
     },
-    "v1CancelCheckInResponse": {
-      "type": "object",
-      "properties": {
-        "checkin": {
-          "$ref": "#/definitions/v1CheckIn"
-        }
-      }
-    },
     "v1CancelLotteryResponse": {
       "type": "object",
       "properties": {
@@ -5930,197 +5922,27 @@
         }
       }
     },
-    "v1CheckIn": {
+    "v1CancelRollCallResponse": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
-        "guildId": {
-          "type": "string"
-        },
-        "createdBy": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "datetime": {
-          "type": "string"
-        },
-        "expireTime": {
-          "type": "string"
-        },
-        "imageUrl": {
-          "type": "string"
-        },
-        "lootList": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Item"
-          }
-        },
-        "attendanceCount": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "isExpired": {
-          "type": "boolean"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "isCancelled": {
-          "type": "boolean"
-        },
-        "loot": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1CheckInLootEntry"
-          },
-          "title": "All loot entries, including gold"
-        },
-        "goldPot": {
-          "$ref": "#/definitions/v1CheckInGoldPot",
-          "title": "Unset when the roll call has no gold loot"
-        },
-        "isCompleted": {
-          "type": "boolean"
-        },
-        "completedAt": {
-          "type": "string",
-          "format": "date-time"
+        "rollCall": {
+          "$ref": "#/definitions/v1RollCall"
         }
       }
     },
-    "v1CheckInAttendee": {
+    "v1CheckInResponse": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
-        "checkinId": {
-          "type": "string"
-        },
-        "userId": {
-          "type": "string"
-        },
-        "displayName": {
-          "type": "string"
-        },
-        "avatarUrl": {
-          "type": "string"
-        },
-        "attendedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "notes": {
-          "type": "string"
+        "attendee": {
+          "$ref": "#/definitions/v1RollCallAttendee"
         }
       }
     },
-    "v1CheckInGoldPayout": {
+    "v1CompleteRollCallResponse": {
       "type": "object",
       "properties": {
-        "userId": {
-          "type": "string"
-        },
-        "amount": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "v1CheckInGoldPot": {
-      "type": "object",
-      "properties": {
-        "total": {
-          "type": "string",
-          "format": "int64"
-        },
-        "distributed": {
-          "type": "string",
-          "format": "int64"
-        },
-        "retracted": {
-          "type": "string",
-          "format": "int64"
-        },
-        "remaining": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "v1CheckInLootEntry": {
-      "type": "object",
-      "properties": {
-        "kind": {
-          "type": "string"
-        },
-        "item": {
-          "$ref": "#/definitions/v1Item",
-          "title": "Set when kind is item"
-        },
-        "amount": {
-          "type": "string",
-          "format": "int64",
-          "title": "Gold in minor units when kind is gold"
-        }
-      },
-      "title": "LootKind values: item, gold"
-    },
-    "v1CheckInTemplate": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "guildId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "items": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Item"
-          }
-        },
-        "createdBy": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "v1CompleteCheckInResponse": {
-      "type": "object",
-      "properties": {
-        "checkin": {
-          "$ref": "#/definitions/v1CheckIn"
+        "rollCall": {
+          "$ref": "#/definitions/v1RollCall"
         }
       }
     },
@@ -6156,22 +5978,6 @@
       "properties": {
         "auction": {
           "$ref": "#/definitions/v1AuctionItem"
-        }
-      }
-    },
-    "v1CreateCheckInResponse": {
-      "type": "object",
-      "properties": {
-        "checkin": {
-          "$ref": "#/definitions/v1CheckIn"
-        }
-      }
-    },
-    "v1CreateCheckInTemplateResponse": {
-      "type": "object",
-      "properties": {
-        "template": {
-          "$ref": "#/definitions/v1CheckInTemplate"
         }
       }
     },
@@ -6225,6 +6031,22 @@
         }
       }
     },
+    "v1CreateRollCallResponse": {
+      "type": "object",
+      "properties": {
+        "rollCall": {
+          "$ref": "#/definitions/v1RollCall"
+        }
+      }
+    },
+    "v1CreateRollCallTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "$ref": "#/definitions/v1RollCallTemplate"
+        }
+      }
+    },
     "v1DashboardData": {
       "type": "object",
       "properties": {
@@ -6251,22 +6073,6 @@
       "type": "object"
     },
     "v1DeleteAuctionResponse": {
-      "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean"
-        }
-      }
-    },
-    "v1DeleteCheckInResponse": {
-      "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean"
-        }
-      }
-    },
-    "v1DeleteCheckInTemplateResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -6314,20 +6120,36 @@
         }
       }
     },
-    "v1DistributeCheckInGoldResponse": {
+    "v1DeleteRollCallResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteRollCallTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DistributeRollCallGoldResponse": {
       "type": "object",
       "properties": {
         "distributionId": {
           "type": "string"
         },
         "pot": {
-          "$ref": "#/definitions/v1CheckInGoldPot"
+          "$ref": "#/definitions/v1RollCallGoldPot"
         },
         "payouts": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1CheckInGoldPayout"
+            "$ref": "#/definitions/v1RollCallGoldPayout"
           }
         },
         "replayed": {
@@ -6474,30 +6296,6 @@
         }
       }
     },
-    "v1GetCheckInGoldResponse": {
-      "type": "object",
-      "properties": {
-        "pot": {
-          "$ref": "#/definitions/v1CheckInGoldPot"
-        },
-        "recipients": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1CheckInGoldPayout"
-          },
-          "title": "Total gold received per attendee"
-        }
-      }
-    },
-    "v1GetCheckInResponse": {
-      "type": "object",
-      "properties": {
-        "checkin": {
-          "$ref": "#/definitions/v1CheckIn"
-        }
-      }
-    },
     "v1GetCurrentGuildResponse": {
       "type": "object",
       "properties": {
@@ -6635,6 +6433,30 @@
             "type": "object",
             "$ref": "#/definitions/v1NavigationItem"
           }
+        }
+      }
+    },
+    "v1GetRollCallGoldResponse": {
+      "type": "object",
+      "properties": {
+        "pot": {
+          "$ref": "#/definitions/v1RollCallGoldPot"
+        },
+        "recipients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RollCallGoldPayout"
+          },
+          "title": "Total gold received per attendee"
+        }
+      }
+    },
+    "v1GetRollCallResponse": {
+      "type": "object",
+      "properties": {
+        "rollCall": {
+          "$ref": "#/definitions/v1RollCall"
         }
       }
     },
@@ -6937,7 +6759,7 @@
           "type": "string"
         }
       },
-      "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, check-in loot, lotteries).\n\nItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC\nItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC"
+      "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, roll call loot, lotteries).\n\nItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC\nItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC"
     },
     "v1ItemHistoryEvent": {
       "type": "object",
@@ -7160,7 +6982,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1CheckInAttendee"
+            "$ref": "#/definitions/v1RollCallAttendee"
           }
         },
         "nextPageToken": {
@@ -7218,37 +7040,6 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1BankItem"
-          }
-        },
-        "nextPageToken": {
-          "type": "string"
-        },
-        "totalCount": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
-    "v1ListCheckInTemplatesResponse": {
-      "type": "object",
-      "properties": {
-        "templates": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1CheckInTemplate"
-          }
-        }
-      }
-    },
-    "v1ListCheckInsResponse": {
-      "type": "object",
-      "properties": {
-        "checkins": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1CheckIn"
           }
         },
         "nextPageToken": {
@@ -7502,6 +7293,37 @@
             "type": "object",
             "$ref": "#/definitions/v1BackpackItem"
           }
+        }
+      }
+    },
+    "v1ListRollCallTemplatesResponse": {
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RollCallTemplate"
+          }
+        }
+      }
+    },
+    "v1ListRollCallsResponse": {
+      "type": "object",
+      "properties": {
+        "rollCalls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RollCall"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -7869,7 +7691,7 @@
         "eventReminders": {
           "type": "boolean"
         },
-        "checkinReminders": {
+        "rollCallReminders": {
           "type": "boolean"
         }
       }
@@ -7889,7 +7711,7 @@
         "eventReminders": {
           "type": "boolean"
         },
-        "checkinReminders": {
+        "rollCallReminders": {
           "type": "boolean"
         }
       }
@@ -8074,6 +7896,192 @@
         }
       }
     },
+    "v1RollCall": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "datetime": {
+          "type": "string"
+        },
+        "expireTime": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "lootList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        },
+        "attendanceCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "isExpired": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "isCancelled": {
+          "type": "boolean"
+        },
+        "loot": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RollCallLootEntry"
+          },
+          "title": "All loot entries, including gold"
+        },
+        "goldPot": {
+          "$ref": "#/definitions/v1RollCallGoldPot",
+          "title": "Unset when the roll call has no gold loot"
+        },
+        "isCompleted": {
+          "type": "boolean"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1RollCallAttendee": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rollCallId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "checkedInAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RollCallGoldPayout": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1RollCallGoldPot": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "string",
+          "format": "int64"
+        },
+        "distributed": {
+          "type": "string",
+          "format": "int64"
+        },
+        "retracted": {
+          "type": "string",
+          "format": "int64"
+        },
+        "remaining": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1RollCallLootEntry": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "item": {
+          "$ref": "#/definitions/v1Item",
+          "title": "Set when kind is item"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "title": "Gold in minor units when kind is gold"
+        }
+      },
+      "title": "LootKind values: item, gold"
+    },
+    "v1RollCallTemplate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Item"
+          }
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "v1SearchGlobalResponse": {
       "type": "object",
       "properties": {
@@ -8122,14 +8130,6 @@
         "totalCount": {
           "type": "integer",
           "format": "int32"
-        }
-      }
-    },
-    "v1SubmitAttendanceResponse": {
-      "type": "object",
-      "properties": {
-        "attendee": {
-          "$ref": "#/definitions/v1CheckInAttendee"
         }
       }
     },
@@ -8183,7 +8183,7 @@
         },
         "referenceType": {
           "type": "string",
-          "title": "\"auction\" | \"lottery\" | \"checkin\" | \"manual\""
+          "title": "\"auction\" | \"lottery\" | \"roll_call\" | \"manual\""
         },
         "createdAt": {
           "type": "string",
@@ -8243,30 +8243,6 @@
       "properties": {
         "auction": {
           "$ref": "#/definitions/v1AuctionItem"
-        }
-      }
-    },
-    "v1UpdateCheckInLootResponse": {
-      "type": "object",
-      "properties": {
-        "checkin": {
-          "$ref": "#/definitions/v1CheckIn"
-        }
-      }
-    },
-    "v1UpdateCheckInResponse": {
-      "type": "object",
-      "properties": {
-        "checkin": {
-          "$ref": "#/definitions/v1CheckIn"
-        }
-      }
-    },
-    "v1UpdateCheckInTemplateResponse": {
-      "type": "object",
-      "properties": {
-        "template": {
-          "$ref": "#/definitions/v1CheckInTemplate"
         }
       }
     },
@@ -8360,6 +8336,30 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "v1UpdateRollCallLootResponse": {
+      "type": "object",
+      "properties": {
+        "rollCall": {
+          "$ref": "#/definitions/v1RollCall"
+        }
+      }
+    },
+    "v1UpdateRollCallResponse": {
+      "type": "object",
+      "properties": {
+        "rollCall": {
+          "$ref": "#/definitions/v1RollCall"
+        }
+      }
+    },
+    "v1UpdateRollCallTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "$ref": "#/definitions/v1RollCallTemplate"
         }
       }
     },
@@ -8499,7 +8499,7 @@
           "type": "string",
           "format": "int64"
         },
-        "checkinsCompleted": {
+        "rollCallsAttended": {
           "type": "integer",
           "format": "int32"
         }

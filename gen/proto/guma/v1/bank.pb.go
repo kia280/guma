@@ -798,7 +798,7 @@ type ListBankItemsRequest struct {
 	Rarity        string                 `protobuf:"bytes,3,opt,name=rarity,proto3" json:"rarity,omitempty"`
 	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	CheckinId     string                 `protobuf:"bytes,6,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
+	RollCallId    string                 `protobuf:"bytes,6,opt,name=roll_call_id,json=rollCallId,proto3" json:"roll_call_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -868,9 +868,9 @@ func (x *ListBankItemsRequest) GetPageToken() string {
 	return ""
 }
 
-func (x *ListBankItemsRequest) GetCheckinId() string {
+func (x *ListBankItemsRequest) GetRollCallId() string {
 	if x != nil {
-		return x.CheckinId
+		return x.RollCallId
 	}
 	return ""
 }
@@ -1450,7 +1450,7 @@ type BankContribution struct {
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	Kind          string                 `protobuf:"bytes,8,opt,name=kind,proto3" json:"kind,omitempty"`
 	Items         []*Item                `protobuf:"bytes,9,rep,name=items,proto3" json:"items,omitempty"`
-	CheckinId     string                 `protobuf:"bytes,10,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
+	RollCallId    string                 `protobuf:"bytes,10,opt,name=roll_call_id,json=rollCallId,proto3" json:"roll_call_id,omitempty"`
 	AvatarUrl     string                 `protobuf:"bytes,11,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	ReferenceType string                 `protobuf:"bytes,12,opt,name=reference_type,json=referenceType,proto3" json:"reference_type,omitempty"`
 	ReferenceId   string                 `protobuf:"bytes,13,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`
@@ -1551,9 +1551,9 @@ func (x *BankContribution) GetItems() []*Item {
 	return nil
 }
 
-func (x *BankContribution) GetCheckinId() string {
+func (x *BankContribution) GetRollCallId() string {
 	if x != nil {
-		return x.CheckinId
+		return x.RollCallId
 	}
 	return ""
 }
@@ -1721,8 +1721,8 @@ type BankItem struct {
 	Quantity            int32                  `protobuf:"varint,6,opt,name=quantity,proto3" json:"quantity,omitempty"`
 	Note                string                 `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
 	DonatedAt           *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=donated_at,json=donatedAt,proto3" json:"donated_at,omitempty"`
-	CheckinId           string                 `protobuf:"bytes,9,opt,name=checkin_id,json=checkinId,proto3" json:"checkin_id,omitempty"`
-	CheckinTitle        string                 `protobuf:"bytes,10,opt,name=checkin_title,json=checkinTitle,proto3" json:"checkin_title,omitempty"`
+	RollCallId          string                 `protobuf:"bytes,9,opt,name=roll_call_id,json=rollCallId,proto3" json:"roll_call_id,omitempty"`
+	RollCallTitle       string                 `protobuf:"bytes,10,opt,name=roll_call_title,json=rollCallTitle,proto3" json:"roll_call_title,omitempty"`
 	PendingRequestCount int32                  `protobuf:"varint,11,opt,name=pending_request_count,json=pendingRequestCount,proto3" json:"pending_request_count,omitempty"`
 	RequestedByMe       bool                   `protobuf:"varint,12,opt,name=requested_by_me,json=requestedByMe,proto3" json:"requested_by_me,omitempty"`
 	Lock                *ItemLock              `protobuf:"bytes,20,opt,name=lock,proto3" json:"lock,omitempty"`
@@ -1816,16 +1816,16 @@ func (x *BankItem) GetDonatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *BankItem) GetCheckinId() string {
+func (x *BankItem) GetRollCallId() string {
 	if x != nil {
-		return x.CheckinId
+		return x.RollCallId
 	}
 	return ""
 }
 
-func (x *BankItem) GetCheckinTitle() string {
+func (x *BankItem) GetRollCallTitle() string {
 	if x != nil {
-		return x.CheckinTitle
+		return x.RollCallTitle
 	}
 	return ""
 }
@@ -2259,16 +2259,16 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x10backpack_item_id\x18\x02 \x01(\tR\x0ebackpackItemId\x12\x12\n" +
 	"\x04note\x18\x03 \x01(\tR\x04note\"D\n" +
 	"\x12DonateItemResponse\x12.\n" +
-	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\xc0\x01\n" +
+	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\xc3\x01\n" +
 	"\x14ListBankItemsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1a\n" +
 	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x16\n" +
 	"\x06rarity\x18\x03 \x01(\tR\x06rarity\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x05 \x01(\tR\tpageToken\x12\x1d\n" +
-	"\n" +
-	"checkin_id\x18\x06 \x01(\tR\tcheckinId\"\x89\x01\n" +
+	"page_token\x18\x05 \x01(\tR\tpageToken\x12 \n" +
+	"\froll_call_id\x18\x06 \x01(\tR\n" +
+	"rollCallId\"\x89\x01\n" +
 	"\x15ListBankItemsResponse\x12'\n" +
 	"\x05items\x18\x01 \x03(\v2\x11.guma.v1.BankItemR\x05items\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -2315,7 +2315,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12+\n" +
-	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\x9a\x03\n" +
+	"\x11total_contributed\x18\x04 \x01(\x03R\x10totalContributed\"\x9d\x03\n" +
 	"\x10BankContribution\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x17\n" +
@@ -2326,10 +2326,10 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x12\n" +
 	"\x04kind\x18\b \x01(\tR\x04kind\x12#\n" +
-	"\x05items\x18\t \x03(\v2\r.guma.v1.ItemR\x05items\x12\x1d\n" +
-	"\n" +
-	"checkin_id\x18\n" +
-	" \x01(\tR\tcheckinId\x12\x1d\n" +
+	"\x05items\x18\t \x03(\v2\r.guma.v1.ItemR\x05items\x12 \n" +
+	"\froll_call_id\x18\n" +
+	" \x01(\tR\n" +
+	"rollCallId\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\v \x01(\tR\tavatarUrl\x12%\n" +
 	"\x0ereference_type\x18\f \x01(\tR\rreferenceType\x12!\n" +
@@ -2351,7 +2351,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
 	"\vreviewed_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"reviewedAt\x120\n" +
-	"\x14requester_avatar_url\x18\f \x01(\tR\x12requesterAvatarUrl\"\xc4\x03\n" +
+	"\x14requester_avatar_url\x18\f \x01(\tR\x12requesterAvatarUrl\"\xca\x03\n" +
 	"\bBankItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x19\n" +
@@ -2362,11 +2362,11 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\bquantity\x18\x06 \x01(\x05R\bquantity\x12\x12\n" +
 	"\x04note\x18\a \x01(\tR\x04note\x129\n" +
 	"\n" +
-	"donated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tdonatedAt\x12\x1d\n" +
-	"\n" +
-	"checkin_id\x18\t \x01(\tR\tcheckinId\x12#\n" +
-	"\rcheckin_title\x18\n" +
-	" \x01(\tR\fcheckinTitle\x122\n" +
+	"donated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tdonatedAt\x12 \n" +
+	"\froll_call_id\x18\t \x01(\tR\n" +
+	"rollCallId\x12&\n" +
+	"\x0froll_call_title\x18\n" +
+	" \x01(\tR\rrollCallTitle\x122\n" +
 	"\x15pending_request_count\x18\v \x01(\x05R\x13pendingRequestCount\x12&\n" +
 	"\x0frequested_by_me\x18\f \x01(\bR\rrequestedByMe\x12%\n" +
 	"\x04lock\x18\x14 \x01(\v2\x11.guma.v1.ItemLockR\x04lock\"\xe3\x03\n" +

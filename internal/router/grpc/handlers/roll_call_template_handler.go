@@ -15,7 +15,7 @@ import (
 )
 
 type RollCallTemplateHandler struct {
-	gumav1.UnimplementedCheckInTemplateServiceServer
+	gumav1.UnimplementedRollCallTemplateServiceServer
 	svc    *rollcalltemplatesvc.Service
 	logger zerolog.Logger
 }
@@ -27,7 +27,7 @@ func NewRollCallTemplateService(db *database.Pool, logger zerolog.Logger) *RollC
 	}
 }
 
-func (h *RollCallTemplateHandler) ListCheckInTemplates(ctx context.Context, req *gumav1.ListCheckInTemplatesRequest) (*gumav1.ListCheckInTemplatesResponse, error) {
+func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req *gumav1.ListRollCallTemplatesRequest) (*gumav1.ListRollCallTemplatesResponse, error) {
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
@@ -39,14 +39,14 @@ func (h *RollCallTemplateHandler) ListCheckInTemplates(ctx context.Context, req 
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	protos := make([]*gumav1.CheckInTemplate, len(templates))
+	protos := make([]*gumav1.RollCallTemplate, len(templates))
 	for i, t := range templates {
 		protos[i] = rollCallTemplateToProto(t)
 	}
-	return &gumav1.ListCheckInTemplatesResponse{Templates: protos}, nil
+	return &gumav1.ListRollCallTemplatesResponse{Templates: protos}, nil
 }
 
-func (h *RollCallTemplateHandler) CreateCheckInTemplate(ctx context.Context, req *gumav1.CreateCheckInTemplateRequest) (*gumav1.CreateCheckInTemplateResponse, error) {
+func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, req *gumav1.CreateRollCallTemplateRequest) (*gumav1.CreateRollCallTemplateResponse, error) {
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
@@ -62,10 +62,10 @@ func (h *RollCallTemplateHandler) CreateCheckInTemplate(ctx context.Context, req
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.CreateCheckInTemplateResponse{Template: rollCallTemplateToProto(t)}, nil
+	return &gumav1.CreateRollCallTemplateResponse{Template: rollCallTemplateToProto(t)}, nil
 }
 
-func (h *RollCallTemplateHandler) UpdateCheckInTemplate(ctx context.Context, req *gumav1.UpdateCheckInTemplateRequest) (*gumav1.UpdateCheckInTemplateResponse, error) {
+func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, req *gumav1.UpdateRollCallTemplateRequest) (*gumav1.UpdateRollCallTemplateResponse, error) {
 	if req.GuildId == "" || req.TemplateId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
 	}
@@ -81,10 +81,10 @@ func (h *RollCallTemplateHandler) UpdateCheckInTemplate(ctx context.Context, req
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.UpdateCheckInTemplateResponse{Template: rollCallTemplateToProto(t)}, nil
+	return &gumav1.UpdateRollCallTemplateResponse{Template: rollCallTemplateToProto(t)}, nil
 }
 
-func (h *RollCallTemplateHandler) DeleteCheckInTemplate(ctx context.Context, req *gumav1.DeleteCheckInTemplateRequest) (*gumav1.DeleteCheckInTemplateResponse, error) {
+func (h *RollCallTemplateHandler) DeleteRollCallTemplate(ctx context.Context, req *gumav1.DeleteRollCallTemplateRequest) (*gumav1.DeleteRollCallTemplateResponse, error) {
 	if req.GuildId == "" || req.TemplateId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
 	}
@@ -95,15 +95,15 @@ func (h *RollCallTemplateHandler) DeleteCheckInTemplate(ctx context.Context, req
 	if err := h.svc.Delete(ctx, req.GuildId, req.TemplateId, userID); err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.DeleteCheckInTemplateResponse{Success: true}, nil
+	return &gumav1.DeleteRollCallTemplateResponse{Success: true}, nil
 }
 
-func rollCallTemplateToProto(t *rollcalltemplatesvc.Template) *gumav1.CheckInTemplate {
+func rollCallTemplateToProto(t *rollcalltemplatesvc.Template) *gumav1.RollCallTemplate {
 	items := make([]*gumav1.Item, len(t.Items))
 	for i, item := range t.Items {
 		items[i] = itemToProto(item)
 	}
-	return &gumav1.CheckInTemplate{
+	return &gumav1.RollCallTemplate{
 		Id:        t.ID,
 		GuildId:   t.GuildID,
 		Name:      t.Name,

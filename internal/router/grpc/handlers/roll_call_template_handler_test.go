@@ -14,7 +14,7 @@ import (
 	"github.com/kia280/guma/internal/session"
 )
 
-func TestCheckInTemplateService_Validation(t *testing.T) {
+func TestRollCallTemplateService_Validation(t *testing.T) {
 	h := NewRollCallTemplateService(nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
@@ -27,7 +27,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "list missing guild",
 			call: func() error {
-				_, err := h.ListCheckInTemplates(authed, &gumav1.ListCheckInTemplatesRequest{})
+				_, err := h.ListRollCallTemplates(authed, &gumav1.ListRollCallTemplatesRequest{})
 				return err
 			},
 			wantCode: codes.InvalidArgument,
@@ -35,7 +35,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "list unauthenticated",
 			call: func() error {
-				_, err := h.ListCheckInTemplates(context.Background(), &gumav1.ListCheckInTemplatesRequest{GuildId: guildID})
+				_, err := h.ListRollCallTemplates(context.Background(), &gumav1.ListRollCallTemplatesRequest{GuildId: guildID})
 				return err
 			},
 			wantCode: codes.Unauthenticated,
@@ -43,7 +43,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "create unauthenticated",
 			call: func() error {
-				_, err := h.CreateCheckInTemplate(context.Background(), &gumav1.CreateCheckInTemplateRequest{GuildId: guildID, Name: "n", Title: "t"})
+				_, err := h.CreateRollCallTemplate(context.Background(), &gumav1.CreateRollCallTemplateRequest{GuildId: guildID, Name: "n", Title: "t"})
 				return err
 			},
 			wantCode: codes.Unauthenticated,
@@ -51,7 +51,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "create blank name",
 			call: func() error {
-				_, err := h.CreateCheckInTemplate(authed, &gumav1.CreateCheckInTemplateRequest{GuildId: guildID, Name: " ", Title: "t"})
+				_, err := h.CreateRollCallTemplate(authed, &gumav1.CreateRollCallTemplateRequest{GuildId: guildID, Name: " ", Title: "t"})
 				return err
 			},
 			wantCode: codes.InvalidArgument,
@@ -59,7 +59,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "create malformed item template id",
 			call: func() error {
-				_, err := h.CreateCheckInTemplate(authed, &gumav1.CreateCheckInTemplateRequest{
+				_, err := h.CreateRollCallTemplate(authed, &gumav1.CreateRollCallTemplateRequest{
 					GuildId: guildID, Name: "n", Title: "t", ItemTemplateIds: []string{"nope"},
 				})
 				return err
@@ -69,7 +69,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "update missing template id",
 			call: func() error {
-				_, err := h.UpdateCheckInTemplate(authed, &gumav1.UpdateCheckInTemplateRequest{GuildId: guildID, Name: "n", Title: "t"})
+				_, err := h.UpdateRollCallTemplate(authed, &gumav1.UpdateRollCallTemplateRequest{GuildId: guildID, Name: "n", Title: "t"})
 				return err
 			},
 			wantCode: codes.InvalidArgument,
@@ -77,7 +77,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "update malformed template id",
 			call: func() error {
-				_, err := h.UpdateCheckInTemplate(authed, &gumav1.UpdateCheckInTemplateRequest{
+				_, err := h.UpdateRollCallTemplate(authed, &gumav1.UpdateRollCallTemplateRequest{
 					GuildId: guildID, TemplateId: "nope", Name: "n", Title: "t",
 				})
 				return err
@@ -87,7 +87,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "delete unauthenticated",
 			call: func() error {
-				_, err := h.DeleteCheckInTemplate(context.Background(), &gumav1.DeleteCheckInTemplateRequest{GuildId: guildID, TemplateId: "x"})
+				_, err := h.DeleteRollCallTemplate(context.Background(), &gumav1.DeleteRollCallTemplateRequest{GuildId: guildID, TemplateId: "x"})
 				return err
 			},
 			wantCode: codes.Unauthenticated,
@@ -95,7 +95,7 @@ func TestCheckInTemplateService_Validation(t *testing.T) {
 		{
 			name: "delete malformed template id",
 			call: func() error {
-				_, err := h.DeleteCheckInTemplate(authed, &gumav1.DeleteCheckInTemplateRequest{GuildId: guildID, TemplateId: "nope"})
+				_, err := h.DeleteRollCallTemplate(authed, &gumav1.DeleteRollCallTemplateRequest{GuildId: guildID, TemplateId: "nope"})
 				return err
 			},
 			wantCode: codes.NotFound,

@@ -45,7 +45,7 @@ message NotificationPreferences {
   bool auction_alerts = 2;
   bool lottery_alerts = 3;
   bool event_reminders = 4;
-  bool checkin_reminders = 5;
+  bool roll_call_reminders = 5;
 }
 
 message NotificationPreferencesPatch {
@@ -53,5 +53,5 @@ message NotificationPreferencesPatch {
   optional bool auction_alerts = 2;
   optional bool lottery_alerts = 3;
   optional bool event_reminders = 4;
-  optional bool checkin_reminders = 5;
+  optional bool roll_call_reminders = 5;
 }

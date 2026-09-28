@@ -599,7 +599,7 @@ type UserStats struct {
 	LotteriesWon      int32                  `protobuf:"varint,4,opt,name=lotteries_won,json=lotteriesWon,proto3" json:"lotteries_won,omitempty"`
 	TotalEarned       int64                  `protobuf:"varint,5,opt,name=total_earned,json=totalEarned,proto3" json:"total_earned,omitempty"`
 	TotalSpent        int64                  `protobuf:"varint,6,opt,name=total_spent,json=totalSpent,proto3" json:"total_spent,omitempty"`
-	CheckinsCompleted int32                  `protobuf:"varint,7,opt,name=checkins_completed,json=checkinsCompleted,proto3" json:"checkins_completed,omitempty"`
+	RollCallsAttended int32                  `protobuf:"varint,7,opt,name=roll_calls_attended,json=rollCallsAttended,proto3" json:"roll_calls_attended,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -676,9 +676,9 @@ func (x *UserStats) GetTotalSpent() int64 {
 	return 0
 }
 
-func (x *UserStats) GetCheckinsCompleted() int32 {
+func (x *UserStats) GetRollCallsAttended() int32 {
 	if x != nil {
-		return x.CheckinsCompleted
+		return x.RollCallsAttended
 	}
 	return 0
 }
@@ -730,7 +730,7 @@ const file_proto_guma_v1_user_proto_rawDesc = "" +
 	"\rLinkedAccount\x12\x1a\n" +
 	"\bprovider\x18\x01 \x01(\tR\bprovider\x12\x18\n" +
 	"\asubject\x18\x02 \x01(\tR\asubject\x12\x1a\n" +
-	"\busername\x18\x03 \x01(\tR\busername\"\x94\x02\n" +
+	"\busername\x18\x03 \x01(\tR\busername\"\x95\x02\n" +
 	"\tUserStats\x12#\n" +
 	"\rguilds_joined\x18\x01 \x01(\x05R\fguildsJoined\x12'\n" +
 	"\x0fevents_attended\x18\x02 \x01(\x05R\x0eeventsAttended\x12!\n" +
@@ -738,8 +738,8 @@ const file_proto_guma_v1_user_proto_rawDesc = "" +
 	"\rlotteries_won\x18\x04 \x01(\x05R\flotteriesWon\x12!\n" +
 	"\ftotal_earned\x18\x05 \x01(\x03R\vtotalEarned\x12\x1f\n" +
 	"\vtotal_spent\x18\x06 \x01(\x03R\n" +
-	"totalSpent\x12-\n" +
-	"\x12checkins_completed\x18\a \x01(\x05R\x11checkinsCompleted2\xe7\x02\n" +
+	"totalSpent\x12.\n" +
+	"\x13roll_calls_attended\x18\a \x01(\x05R\x11rollCallsAttended2\xe7\x02\n" +
 	"\vUserService\x12F\n" +
 	"\x05GetMe\x12\x15.guma.v1.GetMeRequest\x1a\x16.guma.v1.GetMeResponse\"\x0e\x82\xd3\xe4\x93\x02\b\x12\x06/v1/me\x12R\n" +
 	"\bUpdateMe\x12\x18.guma.v1.UpdateMeRequest\x1a\x19.guma.v1.UpdateMeResponse\"\x11\x82\xd3\xe4\x93\x02\v:\x01*2\x06/v1/me\x12a\n" +

@@ -106,5 +106,5 @@ message UserStats {
   int32 lotteries_won = 4;
   int64 total_earned = 5;
   int64 total_spent = 6;
-  int32 checkins_completed = 7;
+  int32 roll_calls_attended = 7;
 }

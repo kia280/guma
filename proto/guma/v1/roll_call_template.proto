@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package guma.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "proto/guma/v1/item.proto";
+
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
+
+service RollCallTemplateService {
+  rpc ListRollCallTemplates(ListRollCallTemplatesRequest) returns (ListRollCallTemplatesResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/roll-call-templates"
+    };
+  }
+
+  rpc CreateRollCallTemplate(CreateRollCallTemplateRequest) returns (CreateRollCallTemplateResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/roll-call-templates"
+      body: "*"
+    };
+  }
+
+  rpc UpdateRollCallTemplate(UpdateRollCallTemplateRequest) returns (UpdateRollCallTemplateResponse) {
+    option (google.api.http) = {
+      patch: "/v1/guilds/{guild_id}/roll-call-templates/{template_id}"
+      body: "*"
+    };
+  }
+
+  rpc DeleteRollCallTemplate(DeleteRollCallTemplateRequest) returns (DeleteRollCallTemplateResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/roll-call-templates/{template_id}"
+    };
+  }
+}
+
+message ListRollCallTemplatesRequest {
+  string guild_id = 1;
+}
+
+message ListRollCallTemplatesResponse {
+  repeated RollCallTemplate templates = 1;
+}
+
+message CreateRollCallTemplateRequest {
+  string guild_id = 1;
+  string name = 2;
+  string title = 3;
+  repeated string item_template_ids = 4;
+}
+
+message CreateRollCallTemplateResponse {
+  RollCallTemplate template = 1;
+}
+
+message UpdateRollCallTemplateRequest {
+  string guild_id = 1;
+  string template_id = 2;
+  string name = 3;
+  string title = 4;
+  repeated string item_template_ids = 5;
+}
+
+message UpdateRollCallTemplateResponse {
+  RollCallTemplate template = 1;
+}
+
+message DeleteRollCallTemplateRequest {
+  string guild_id = 1;
+  string template_id = 2;
+}
+
+message DeleteRollCallTemplateResponse {
+  bool success = 1;
+}
+
+message RollCallTemplate {
+  string id = 1;
+  string guild_id = 2;
+  string name = 3;
+  string title = 4;
+  repeated Item items = 5;
+  string created_by = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}

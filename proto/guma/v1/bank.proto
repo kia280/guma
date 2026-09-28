@@ -177,7 +177,7 @@ message ListBankItemsRequest {
   string rarity = 3;
   int32 page_size = 4;
   string page_token = 5;
-  string checkin_id = 6;
+  string roll_call_id = 6;
 }
 
 message ListBankItemsResponse {
@@ -251,7 +251,7 @@ message BankContribution {
   google.protobuf.Timestamp created_at = 7;
   string kind = 8;
   repeated Item items = 9;
-  string checkin_id = 10;
+  string roll_call_id = 10;
   string avatar_url = 11;
   string reference_type = 12;
   string reference_id = 13;
@@ -281,8 +281,8 @@ message BankItem {
   int32 quantity = 6;
   string note = 7;
   google.protobuf.Timestamp donated_at = 8;
-  string checkin_id = 9;
-  string checkin_title = 10;
+  string roll_call_id = 9;
+  string roll_call_title = 10;
   int32 pending_request_count = 11;
   bool requested_by_me = 12;
   ItemLock lock = 20;

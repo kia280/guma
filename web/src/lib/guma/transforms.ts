@@ -435,7 +435,7 @@ type ProtoAttendee = {
   user_id?: string;
   display_name?: string;
   avatar_url?: string;
-  attended_at?: string;
+  checked_in_at?: string;
   notes?: string;
 };
 
@@ -444,7 +444,7 @@ export const toAttendee = (raw: ProtoAttendee): AttendanceMember => ({
   userId: raw.user_id,
   username: raw.display_name ?? '',
   avatar: raw.avatar_url || undefined,
-  checkedInAt: ts(raw.attended_at),
+  checkedInAt: ts(raw.checked_in_at),
   ...(raw.notes ? { notes: raw.notes } : {}),
 });
 
@@ -701,7 +701,7 @@ type ProtoBankContribution = {
   created_at?: string;
   kind?: string;
   items?: ProtoItem[];
-  checkin_id?: string;
+  roll_call_id?: string;
   reference_type?: string;
   reference_id?: string;
 };
@@ -743,7 +743,7 @@ export const toBankContribution = (raw: ProtoBankContribution): BankContribution
   createdAt: ts(raw.created_at),
   kind: toContributionKind(raw.kind),
   itemNames: (raw.items ?? []).map(i => i.name ?? '').filter(Boolean),
-  checkinId: raw.checkin_id || undefined,
+  checkinId: raw.roll_call_id || undefined,
   referenceType: raw.reference_type || undefined,
   referenceId: raw.reference_id || undefined,
 });
@@ -782,8 +782,8 @@ type ProtoBankItem = {
   item?: ProtoItem;
   quantity?: number;
   donated_at?: string;
-  checkin_id?: string;
-  checkin_title?: string;
+  roll_call_id?: string;
+  roll_call_title?: string;
   pending_request_count?: number;
   requested_by_me?: boolean;
   lock?: ProtoItemLock;
@@ -798,8 +798,8 @@ export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
   donatedBy: raw.donor_name ?? '',
   donatedAt: ts(raw.donated_at),
   quantity: raw.quantity ?? 1,
-  checkinId: raw.checkin_id || undefined,
-  checkinTitle: raw.checkin_title || undefined,
+  checkinId: raw.roll_call_id || undefined,
+  checkinTitle: raw.roll_call_title || undefined,
   pendingRequestCount: raw.pending_request_count ?? 0,
   requestedByMe: raw.requested_by_me ?? false,
   lock: toItemLock(raw.lock),
@@ -1058,7 +1058,7 @@ type ProtoNotificationPreferences = {
   auction_alerts?: boolean;
   lottery_alerts?: boolean;
   event_reminders?: boolean;
-  checkin_reminders?: boolean;
+  roll_call_reminders?: boolean;
 };
 
 type ProtoUserPreferences = {
@@ -1072,7 +1072,7 @@ export const toUserPreferences = (raw: ProtoUserPreferences): UserPreferences =>
     auctionAlerts: raw.notifications?.auction_alerts ?? false,
     lotteryAlerts: raw.notifications?.lottery_alerts ?? false,
     eventReminders: raw.notifications?.event_reminders ?? false,
-    checkinReminders: raw.notifications?.checkin_reminders ?? false,
+    checkinReminders: raw.notifications?.roll_call_reminders ?? false,
   },
   updatedAt: raw.updated_at ? ts(raw.updated_at) : undefined,
 });
