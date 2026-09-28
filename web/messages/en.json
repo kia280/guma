@@ -1476,6 +1476,7 @@
     "assignRejectsRequests": "{count, plural, one {# pending request for this item will be rejected.} other {# pending requests for this item will be rejected.}}",
     "recipient": "Attendee",
     "recipientPlaceholder": "Choose an attendee",
+    "recipientRequired": "Choose who receives the item",
     "cancel": "Cancel",
     "assignConfirm": "Give item",
     "assignSuccess": "{item} was given to {name}.",
