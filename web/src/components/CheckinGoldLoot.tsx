@@ -6,16 +6,20 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useToast } from '@/hooks/useToast';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import {
-  type EvenSplit,
+  DEFAULT_GOLD_WEIGHT,
   type GoldAmounts,
+  type GoldWeights,
+  WEIGHT_FORMAT_OPTIONS,
   newRequestId,
-  splitRemainderEvenly,
+  splitRemainderByWeight,
   summarizeAllocation,
   toGoldPayouts,
+  weightOf,
 } from '@/lib/guma/gold-split';
 import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
@@ -26,6 +30,7 @@ import { UserAvatar } from './UserAvatar';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
 type Step = 'edit' | 'review';
+type AppliedSplit = { count: number; leftover: number };
 
 type CheckinGoldLootProps = {
   checkinId: string;
@@ -38,6 +43,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
   const t = useTranslations('checkinGold');
   const guildId = useCurrentGuildId();
   const notify = useToast();
+  const format = useIntlFormatter();
   const formatGold = useFormatGold();
   const { can } = useGuildPermissions();
   const modal = useOverlayState();
@@ -45,9 +51,10 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
   const [status, setStatus] = React.useState<LoadStatus>('loading');
   const [received, setReceived] = React.useState<Record<string, number>>({});
   const [amounts, setAmounts] = React.useState<GoldAmounts>({});
+  const [weights, setWeights] = React.useState<GoldWeights>({});
   const [step, setStep] = React.useState<Step>('edit');
   const [showErrors, setShowErrors] = React.useState(false);
-  const [lastSplit, setLastSplit] = React.useState<EvenSplit | null>(null);
+  const [lastSplit, setLastSplit] = React.useState<AppliedSplit | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const requestId = React.useRef(newRequestId());
@@ -80,9 +87,10 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
 
   const allocation = summarizeAllocation(pot.remaining, amounts);
   const payouts = toGoldPayouts(amounts);
-  const split = splitRemainderEvenly(
+  const split = splitRemainderByWeight(
     pot.remaining,
     amounts,
+    weights,
     eligible.map(member => member.userId),
   );
   const formError = allocation.isOverAllocated
@@ -93,6 +101,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
 
   const openModal = () => {
     setAmounts({});
+    setWeights({});
     setStep('edit');
     setShowErrors(false);
     setLastSplit(null);
@@ -106,13 +115,18 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
     setLastSplit(null);
   };
 
+  const setWeight = (userId: string, value: number) => {
+    setWeights(current => ({ ...current, [userId]: Number.isFinite(value) ? value : DEFAULT_GOLD_WEIGHT }));
+    setLastSplit(null);
+  };
+
   const applySplit = () => {
     if (!split) return;
-    setAmounts(current => ({
-      ...current,
-      ...Object.fromEntries(split.recipients.map(userId => [userId, split.share])),
-    }));
-    setLastSplit(split);
+    setAmounts(current => ({ ...current, ...split.shares }));
+    setLastSplit({
+      count: Object.values(split.shares).filter(share => share > 0).length,
+      leftover: split.leftover,
+    });
   };
 
   const clearAmounts = () => {
@@ -257,7 +271,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
                       <div className="flex flex-wrap items-center gap-2">
                         <Button size="sm" variant="secondary" isDisabled={!split} onPress={applySplit}>
                           <Icon icon="solar:pie-chart-2-linear" width={16} />
-                          {t('splitEvenly')}
+                          {t('splitByWeight')}
                         </Button>
                         <Button
                           size="sm"
@@ -271,8 +285,8 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
                       <p className="type-caption text-hint">
                         {split
                           ? t('splitPreview', {
-                              count: split.recipients.length,
-                              share: formatGold(split.share),
+                              count: Object.keys(split.shares).length,
+                              weight: format.number(split.totalWeight, WEIGHT_FORMAT_OPTIONS),
                               leftover: formatGold(split.leftover),
                               hasLeftover: split.leftover > 0 ? 'yes' : 'no',
                             })
@@ -281,10 +295,7 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
                       {lastSplit && (
                         <p role="status" className="type-caption text-success">
                           <span className="block">
-                            {t('splitApplied', {
-                              count: lastSplit.recipients.length,
-                              share: formatGold(lastSplit.share),
-                            })}
+                            {t('splitApplied', { count: lastSplit.count })}
                           </span>
                           {lastSplit.leftover > 0 && (
                             <span className="block">
@@ -295,11 +306,16 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
                       )}
                     </div>
 
-                    <ul aria-label={t('recipients')} className="flex flex-col divide-y divide-divider">
+                    <p className="type-caption text-hint">{t('weightHint')}</p>
+                    <div aria-hidden className="flex justify-end gap-2 type-label text-soft">
+                      <span className="w-20 text-right">{t('weightColumn')}</span>
+                      <span className="w-32 text-right">{t('amountColumn')}</span>
+                    </div>
+                    <ul aria-label={t('recipients')} className="-mt-2 flex flex-col divide-y divide-divider">
                       {eligible.map(member => (
-                        <li key={member.userId} className="flex items-center gap-3 py-2">
+                        <li key={member.userId} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2">
                           <UserAvatar name={member.username} src={member.avatar} className="size-8 shrink-0" />
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-[7rem]">
                             <p className="type-body font-medium text-foreground truncate">{member.username}</p>
                             {(received[member.userId] ?? 0) > 0 && (
                               <p className="type-caption text-hint tabular-nums">
@@ -307,22 +323,38 @@ export function CheckinGoldLoot({ checkinId, pot, attendees, onPotChange }: Chec
                               </p>
                             )}
                           </div>
-                          <NumberField
-                            aria-label={t('amountFor', { name: member.username })}
-                            className="w-36 shrink-0"
-                            validationBehavior="aria"
-                            isInvalid={allocation.isOverAllocated && (amounts[member.userId] ?? 0) > 0}
-                            formatOptions={GOLD_FORMAT_OPTIONS}
-                            minValue={0}
-                            step={GOLD_STEP}
-                            value={amounts[member.userId] ?? Number.NaN}
-                            onChange={value => setAmount(member.userId, Number.isFinite(value) ? value : Number.NaN)}
-                          >
-                            <Label className="sr-only">{t('amountFor', { name: member.username })}</Label>
-                            <NumberField.Group>
-                              <NumberField.Input className="w-full min-w-0 text-right" placeholder="0.00" />
-                            </NumberField.Group>
-                          </NumberField>
+                          <div className="ml-auto flex shrink-0 gap-2">
+                            <NumberField
+                              aria-label={t('weightFor', { name: member.username })}
+                              className="w-20"
+                              formatOptions={WEIGHT_FORMAT_OPTIONS}
+                              minValue={0}
+                              step={0.5}
+                              value={weightOf(weights, member.userId)}
+                              onChange={value => setWeight(member.userId, value)}
+                            >
+                              <Label className="sr-only">{t('weightFor', { name: member.username })}</Label>
+                              <NumberField.Group>
+                                <NumberField.Input className="w-full min-w-0 text-right" />
+                              </NumberField.Group>
+                            </NumberField>
+                            <NumberField
+                              aria-label={t('amountFor', { name: member.username })}
+                              className="w-32"
+                              validationBehavior="aria"
+                              isInvalid={allocation.isOverAllocated && (amounts[member.userId] ?? 0) > 0}
+                              formatOptions={GOLD_FORMAT_OPTIONS}
+                              minValue={0}
+                              step={GOLD_STEP}
+                              value={amounts[member.userId] ?? Number.NaN}
+                              onChange={value => setAmount(member.userId, Number.isFinite(value) ? value : Number.NaN)}
+                            >
+                              <Label className="sr-only">{t('amountFor', { name: member.username })}</Label>
+                              <NumberField.Group>
+                                <NumberField.Input className="w-full min-w-0 text-right" placeholder="0.00" />
+                              </NumberField.Group>
+                            </NumberField>
+                          </div>
                         </li>
                       ))}
                     </ul>

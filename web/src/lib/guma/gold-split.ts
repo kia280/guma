@@ -9,9 +9,15 @@ export interface GoldAllocation {
   hasPayout: boolean;
 }
 
-export interface EvenSplit {
-  recipients: string[];
-  share: number;
+export type GoldWeights = Record<string, number>;
+
+export const DEFAULT_GOLD_WEIGHT = 1;
+
+export const WEIGHT_FORMAT_OPTIONS = { maximumFractionDigits: 2 } as const satisfies Intl.NumberFormatOptions;
+
+export interface WeightedSplit {
+  shares: GoldAmounts;
+  totalWeight: number;
   leftover: number;
 }
 
@@ -29,16 +35,37 @@ export const summarizeAllocation = (remaining: number, amounts: GoldAmounts): Go
   };
 };
 
-export const splitRemainderEvenly = (remaining: number, amounts: GoldAmounts, userIds: string[]): EvenSplit | null => {
-  const recipients = userIds.filter(userId => amountInMinorUnits(amounts[userId]) === 0);
-  const unallocatedMinor = toMinorUnits(summarizeAllocation(remaining, amounts).unallocated);
-  if (recipients.length === 0 || unallocatedMinor <= 0) return null;
-  const shareMinor = Math.floor(unallocatedMinor / recipients.length);
-  if (shareMinor === 0) return null;
+export const weightOf = (weights: GoldWeights, userId: string): number => {
+  const weight = weights[userId];
+  return weight !== undefined && Number.isFinite(weight) && weight >= 0 ? weight : DEFAULT_GOLD_WEIGHT;
+};
+
+const weightUnits = (weight: number): bigint => BigInt(Math.round(weight * 100));
+
+export const splitRemainderByWeight = (
+  remaining: number,
+  amounts: GoldAmounts,
+  weights: GoldWeights,
+  userIds: string[],
+): WeightedSplit | null => {
+  const recipients = userIds.filter(
+    userId => amountInMinorUnits(amounts[userId]) === 0 && weightUnits(weightOf(weights, userId)) > BigInt(0),
+  );
+  const unallocatedMinor = BigInt(toMinorUnits(summarizeAllocation(remaining, amounts).unallocated));
+  if (recipients.length === 0 || unallocatedMinor <= BigInt(0)) return null;
+  const totalUnits = recipients.reduce((sum, userId) => sum + weightUnits(weightOf(weights, userId)), BigInt(0));
+  let distributedMinor = BigInt(0);
+  const shares: GoldAmounts = {};
+  for (const userId of recipients) {
+    const shareMinor = (unallocatedMinor * weightUnits(weightOf(weights, userId))) / totalUnits;
+    distributedMinor += shareMinor;
+    shares[userId] = fromMinorUnits(Number(shareMinor));
+  }
+  if (distributedMinor === BigInt(0)) return null;
   return {
-    recipients,
-    share: fromMinorUnits(shareMinor),
-    leftover: fromMinorUnits(unallocatedMinor - shareMinor * recipients.length),
+    shares,
+    totalWeight: Number(totalUnits) / 100,
+    leftover: fromMinorUnits(Number(unallocatedMinor - distributedMinor)),
   };
 };
 
