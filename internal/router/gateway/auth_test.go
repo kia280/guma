@@ -177,13 +177,15 @@ func TestWithAuth_DevRoutesUnreachableWhenDisabled(t *testing.T) {
 	}
 }
 
-func TestGatewayMetadataIgnoresClientSuppliedIdentityHeaders(t *testing.T) {
+func TestGatewayMetadataForwardsOnlyAllowlistedHeaders(t *testing.T) {
 	mux := newServeMux(zerolog.New(io.Discard))
 
 	req := httptest.NewRequest(http.MethodGet, "/v1/me", nil)
 	req.Header.Set("Grpc-Metadata-X-User-Id", devUserID)
 	req.Header.Set("Grpc-Metadata-X-Kratos-Cookie", "guma_sess=forged")
-	req.Header.Set("Grpc-Metadata-X-Trace", "kept")
+	req.Header.Set("Grpc-Metadata-X-Trace", "dropped")
+	req.Header.Set("User-Agent", "dropped")
+	req.Header.Set("X-Request-Id", "request-1")
 	ctx := session.WithUserID(req.Context(), kratosUserID)
 	ctx = session.WithCookie(ctx, "guma_sess="+kratosCookie)
 	req = req.WithContext(ctx)
@@ -200,7 +202,12 @@ func TestGatewayMetadataIgnoresClientSuppliedIdentityHeaders(t *testing.T) {
 	if got := md.Get(session.CookieMetadataKey); len(got) != 1 || got[0] != "guma_sess="+kratosCookie {
 		t.Fatalf("expected only the authenticated kratos cookie, got %v", got)
 	}
-	if got := md.Get("x-trace"); len(got) != 1 || got[0] != "kept" {
-		t.Fatalf("expected unrelated metadata headers to be forwarded, got %v", got)
+	if got := md.Get("x-request-id"); len(got) != 1 || got[0] != "request-1" {
+		t.Fatalf("expected allowlisted header to be forwarded, got %v", got)
+	}
+	for _, key := range []string{"x-trace", "grpcgateway-user-agent"} {
+		if got := md.Get(key); len(got) != 0 {
+			t.Fatalf("expected %s not to be forwarded, got %v", key, got)
+		}
 	}
 }

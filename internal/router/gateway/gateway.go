@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -279,21 +278,8 @@ func customHeaderMatcher(key string) (string, bool) {
 	switch key {
 	case "Authorization", "X-Request-Id", "X-Forwarded-For":
 		return key, true
-	}
-
-	forwarded, ok := runtime.DefaultHeaderMatcher(key)
-	if !ok || isSessionMetadataKey(forwarded) {
-		return "", false
-	}
-	return forwarded, true
-}
-
-func isSessionMetadataKey(key string) bool {
-	switch strings.ToLower(key) {
-	case session.UserIDMetadataKey, session.CookieMetadataKey:
-		return true
 	default:
-		return false
+		return "", false
 	}
 }
 
