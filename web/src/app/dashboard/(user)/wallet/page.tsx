@@ -209,7 +209,7 @@ export default function WalletPage() {
   const [wallet, setWallet] = React.useState<WalletType | null>(null);
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>([]);
-  const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
+  const [members, setMembers] = React.useState<MockUser[]>([]);
   const [pendingAction, setPendingAction] = React.useState<WalletAction | null>(null);
   const [completedAction, setCompletedAction] = React.useState<{ action: WalletAction; detail: string } | null>(null);
   const walletState = useLoadState();
@@ -218,13 +218,13 @@ export default function WalletPage() {
   const notify = useToast();
   const recipientOptions = React.useMemo<MemberOption[]>(
     () =>
-      mockUsers.map(user => ({
+      members.map(user => ({
         id: user.id,
         name: userName(user.username),
         avatar: user.avatar,
         description: isGuildRole(user.role) ? roleLabels(user.role) : undefined,
       })),
-    [mockUsers, userName, roleLabels],
+    [members, userName, roleLabels],
   );
   const [reloadKey, setReloadKey] = React.useState(0);
 
@@ -282,7 +282,7 @@ export default function WalletPage() {
     refetchWallet();
     apiClient
       .listMembers(guildId)
-      .then(setMockUsers)
+      .then(setMembers)
       .catch(() => notify.loadFailed(reload, 'wallet'));
   }, [guildId, refetchWallet, reloadKey, notify, reload]);
 
@@ -371,7 +371,7 @@ export default function WalletPage() {
       return;
     }
     const amount = transferAmountValue;
-    const recipient = userName(mockUsers.find(user => user.id === transferRecipient)?.username);
+    const recipient = userName(members.find(user => user.id === transferRecipient)?.username);
     return runAction(
       'transfer',
       () => apiClient.transfer(guildId, { recipientId: transferRecipient, amount }),
@@ -783,7 +783,7 @@ export default function WalletPage() {
             state={moveModalState}
             mode={moveMode}
             item={moveItem}
-            members={mockUsers}
+            members={members}
             onMoved={refetchBackpack}
           />
           <ItemHistoryModal state={historyModalState} itemId={historyItem?.id ?? null} itemName={historyItem?.item.name ?? ''} />
