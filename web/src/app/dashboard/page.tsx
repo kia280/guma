@@ -12,6 +12,7 @@ import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
+import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
@@ -292,6 +293,9 @@ export default function DashboardPage() {
   const t = useTranslations('dashboard');
   const nav = useTranslations('dashboardLayout');
   const guildId = useCurrentGuildId();
+  const format = useIntlFormatter();
+  const formatAnnouncementDate = (value: string) =>
+    format.dateTime(new Date(value), { year: 'numeric', month: '2-digit', day: '2-digit' });
   const [selectedAnn, setSelectedAnn] = useState<Announcement | null>(null);
   const annModalState = useOverlayState({
     onOpenChange: (isOpen) => {
@@ -427,7 +431,7 @@ export default function DashboardPage() {
                           )}
                           <p className="type-body text-foreground truncate">{ann.title}</p>
                         </div>
-                        <span className="type-caption text-hint shrink-0">{ann.date}</span>
+                        <span className="type-caption text-hint shrink-0">{formatAnnouncementDate(ann.date)}</span>
                       </div>
                     </button>
                   </li>
@@ -507,7 +511,7 @@ export default function DashboardPage() {
             </Modal.Header>
 
             <Modal.Body className="flex flex-col gap-3">
-              <p className="type-body text-subtle">{selectedAnn?.date}</p>
+              <p className="type-body text-subtle">{selectedAnn && formatAnnouncementDate(selectedAnn.date)}</p>
               <DiscordMarkdown content={selectedAnn?.content ?? ''} className="type-prose text-foreground" />
             </Modal.Body>
 
