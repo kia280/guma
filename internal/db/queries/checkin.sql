@@ -101,7 +101,7 @@ RETURNING id, guild_id, created_by, title,
           created_at, updated_at;
 
 -- name: GetUserDisplayAndAvatar :one
-SELECT COALESCE(display_name, '') AS display_name,
+SELECT COALESCE(notification_user_name(id), '')::text AS display_name,
        COALESCE(avatar_url, '')   AS avatar_url
 FROM users WHERE id = $1;
 
@@ -118,13 +118,15 @@ UPDATE checkins SET attendance_count = attendance_count + 1, updated_at = NOW() 
 SELECT EXISTS(SELECT 1 FROM checkins WHERE id = $1 AND guild_id = $2);
 
 -- name: ListCheckinAttendees :many
-SELECT id, checkin_id, user_id,
-       COALESCE(display_name, '') AS display_name,
-       COALESCE(avatar_url, '')   AS avatar_url,
-       notes,
-       attended_at
-FROM checkin_attendees WHERE checkin_id = $1
-ORDER BY attended_at ASC
+SELECT ca.id, ca.checkin_id, ca.user_id,
+       COALESCE(NULLIF(notification_user_name(ca.user_id), ''), ca.display_name, '')::text AS display_name,
+       COALESCE(NULLIF(u.avatar_url, ''), ca.avatar_url, '')::text                        AS avatar_url,
+       ca.notes,
+       ca.attended_at
+FROM checkin_attendees ca
+LEFT JOIN users u ON u.id = ca.user_id
+WHERE ca.checkin_id = $1
+ORDER BY ca.attended_at ASC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountCheckinAttendees :one

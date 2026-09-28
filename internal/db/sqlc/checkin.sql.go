@@ -296,7 +296,7 @@ func (q *Queries) GetCheckinAttendanceWindow(ctx context.Context, arg GetCheckin
 }
 
 const getUserDisplayAndAvatar = `-- name: GetUserDisplayAndAvatar :one
-SELECT COALESCE(display_name, '') AS display_name,
+SELECT COALESCE(notification_user_name(id), '')::text AS display_name,
        COALESCE(avatar_url, '')   AS avatar_url
 FROM users WHERE id = $1
 `
@@ -420,13 +420,15 @@ func (q *Queries) IsCheckinAttendee(ctx context.Context, arg IsCheckinAttendeePa
 }
 
 const listCheckinAttendees = `-- name: ListCheckinAttendees :many
-SELECT id, checkin_id, user_id,
-       COALESCE(display_name, '') AS display_name,
-       COALESCE(avatar_url, '')   AS avatar_url,
-       notes,
-       attended_at
-FROM checkin_attendees WHERE checkin_id = $1
-ORDER BY attended_at ASC
+SELECT ca.id, ca.checkin_id, ca.user_id,
+       COALESCE(NULLIF(notification_user_name(ca.user_id), ''), ca.display_name, '')::text AS display_name,
+       COALESCE(NULLIF(u.avatar_url, ''), ca.avatar_url, '')::text                        AS avatar_url,
+       ca.notes,
+       ca.attended_at
+FROM checkin_attendees ca
+LEFT JOIN users u ON u.id = ca.user_id
+WHERE ca.checkin_id = $1
+ORDER BY ca.attended_at ASC
 LIMIT $3::int OFFSET $2::int
 `
 

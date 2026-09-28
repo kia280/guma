@@ -10,10 +10,10 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	"github.com/kia280/guma/internal/session"
 	"github.com/kia280/guma/internal/models"
 	auctionsvc "github.com/kia280/guma/internal/services/auction"
 	"github.com/kia280/guma/internal/services/inventory"
+	"github.com/kia280/guma/internal/session"
 )
 
 // AuctionHandler is a thin gRPC adapter over the auction service.
@@ -157,31 +157,37 @@ func (h *AuctionHandler) CancelAuction(ctx context.Context, req *gumav1.CancelAu
 
 func auctionToProto(a *auctionsvc.AuctionItem) *gumav1.AuctionItem {
 	return &gumav1.AuctionItem{
-		Id:              a.ID,
-		GuildId:         a.GuildID,
-		SellerId:        a.SellerID,
-		Item:            itemToProto(a.Item),
-		StartingBid:     a.StartingBid,
-		CurrentBid:      a.CurrentBid,
-		CurrentBidderId: a.CurrentBidderID,
-		MinBidIncrement: a.MinBidIncrement,
-		StartTime:       timestamppb.New(a.StartTime),
-		EndTime:         timestamppb.New(a.EndTime),
-		Status:          a.Status,
-		IsBlind:         a.IsBlind,
-		CreatedAt:       timestamppb.New(a.CreatedAt),
-		UpdatedAt:       timestamppb.New(a.UpdatedAt),
+		Id:                     a.ID,
+		GuildId:                a.GuildID,
+		SellerId:               a.SellerID,
+		Item:                   itemToProto(a.Item),
+		StartingBid:            a.StartingBid,
+		CurrentBid:             a.CurrentBid,
+		CurrentBidderId:        a.CurrentBidderID,
+		MinBidIncrement:        a.MinBidIncrement,
+		StartTime:              timestamppb.New(a.StartTime),
+		EndTime:                timestamppb.New(a.EndTime),
+		Status:                 a.Status,
+		IsBlind:                a.IsBlind,
+		CreatedAt:              timestamppb.New(a.CreatedAt),
+		UpdatedAt:              timestamppb.New(a.UpdatedAt),
+		SellerName:             a.SellerName,
+		SellerAvatarUrl:        a.SellerAvatarURL,
+		CurrentBidderName:      a.CurrentBidderName,
+		CurrentBidderAvatarUrl: a.CurrentBidderAvatarURL,
 	}
 }
 
 func bidToProto(b *auctionsvc.Bid) *gumav1.Bid {
 	return &gumav1.Bid{
-		Id:        b.ID,
-		AuctionId: b.AuctionID,
-		BidderId:  b.BidderID,
-		Amount:    b.Amount,
-		IsWinning: b.IsWinning,
-		PlacedAt:  timestamppb.New(b.PlacedAt),
+		Id:              b.ID,
+		AuctionId:       b.AuctionID,
+		BidderId:        b.BidderID,
+		BidderUsername:  b.BidderName,
+		BidderAvatarUrl: b.BidderAvatarURL,
+		Amount:          b.Amount,
+		IsWinning:       b.IsWinning,
+		PlacedAt:        timestamppb.New(b.PlacedAt),
 	}
 }
 

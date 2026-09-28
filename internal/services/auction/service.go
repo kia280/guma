@@ -21,30 +21,36 @@ import (
 
 // AuctionItem is the domain model for an auction.
 type AuctionItem struct {
-	ID              string
-	GuildID         string
-	SellerID        string
-	Item            models.Item
-	StartingBid     int64
-	CurrentBid      int64
-	CurrentBidderID string
-	MinBidIncrement int64
-	StartTime       time.Time
-	EndTime         time.Time
-	Status          string
-	IsBlind         bool
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID                     string
+	GuildID                string
+	SellerID               string
+	SellerName             string
+	SellerAvatarURL        string
+	Item                   models.Item
+	StartingBid            int64
+	CurrentBid             int64
+	CurrentBidderID        string
+	CurrentBidderName      string
+	CurrentBidderAvatarURL string
+	MinBidIncrement        int64
+	StartTime              time.Time
+	EndTime                time.Time
+	Status                 string
+	IsBlind                bool
+	CreatedAt              time.Time
+	UpdatedAt              time.Time
 }
 
 // Bid is the domain model for a bid.
 type Bid struct {
-	ID        string
-	AuctionID string
-	BidderID  string
-	Amount    int64
-	IsWinning bool
-	PlacedAt  time.Time
+	ID              string
+	AuctionID       string
+	BidderID        string
+	BidderName      string
+	BidderAvatarURL string
+	Amount          int64
+	IsWinning       bool
+	PlacedAt        time.Time
 }
 
 // ListParams holds the inputs for List.
@@ -132,7 +138,7 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 
 	auctions := make([]*AuctionItem, 0, len(rows))
 	for _, r := range rows {
-		auctions = append(auctions, toAuctionItem(r))
+		auctions = append(auctions, withParticipants(toAuctionItem(r.Auction), r.SellerName, r.SellerAvatarUrl, r.CurrentBidderName, r.CurrentBidderAvatarUrl))
 	}
 
 	total, _ := s.q.CountAuctions(ctx, db.CountAuctionsParams{
@@ -160,7 +166,7 @@ func (s *Service) Get(ctx context.Context, guildIDStr, auctionIDStr string) (*Au
 	if err != nil {
 		return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
 	}
-	return toAuctionItem(row), nil
+	return withParticipants(toAuctionItem(row.Auction), row.SellerName, row.SellerAvatarUrl, row.CurrentBidderName, row.CurrentBidderAvatarUrl), nil
 }
 
 const defaultMinBidIncrement = 100
@@ -235,9 +241,8 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*AuctionItem, err
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	a := toAuctionItem(row)
-	s.logger.Info().Str("auction_id", a.ID).Str("guild_id", p.GuildID).Msg("auction created")
-	return a, nil
+	s.logger.Info().Str("auction_id", row.ID.String()).Str("guild_id", p.GuildID).Msg("auction created")
+	return s.Get(ctx, p.GuildID, row.ID.String())
 }
 
 // PlaceBid places a bid on an active auction, handling wallet escrow atomically.
@@ -347,7 +352,11 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 	if err != nil {
 		return nil, nil, err
 	}
-	bid := &Bid{ID: bidRow.ID.String(), AuctionID: auctionIDStr, BidderID: bidderIDStr, Amount: amount, IsWinning: true, PlacedAt: bidRow.PlacedAt}
+	bid := &Bid{
+		ID: bidRow.ID.String(), AuctionID: auctionIDStr, BidderID: bidderIDStr,
+		BidderName: a.CurrentBidderName, BidderAvatarURL: a.CurrentBidderAvatarURL,
+		Amount: amount, IsWinning: true, PlacedAt: bidRow.PlacedAt,
+	}
 	return a, bid, nil
 }
 
@@ -381,7 +390,7 @@ func (s *Service) GetBidHistory(ctx context.Context, guildIDStr, auctionIDStr st
 	for _, r := range rows {
 		bids = append(bids, &Bid{
 			ID: r.ID.String(), AuctionID: r.AuctionID.String(), BidderID: r.BidderID.String(),
-			Amount: r.Amount, IsWinning: r.IsWinning, PlacedAt: r.PlacedAt,
+			BidderName: r.BidderName, BidderAvatarURL: r.BidderAvatarUrl, Amount: r.Amount, IsWinning: r.IsWinning, PlacedAt: r.PlacedAt,
 		})
 	}
 
@@ -480,6 +489,14 @@ func toAuctionItem(a db.Auction) *AuctionItem {
 		_ = json.Unmarshal(a.Item, &out.Item)
 	}
 	return out
+}
+
+func withParticipants(a *AuctionItem, sellerName, sellerAvatarURL, bidderName, bidderAvatarURL string) *AuctionItem {
+	a.SellerName, a.SellerAvatarURL = sellerName, sellerAvatarURL
+	if a.CurrentBidderID != "" {
+		a.CurrentBidderName, a.CurrentBidderAvatarURL = bidderName, bidderAvatarURL
+	}
+	return a
 }
 
 func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {

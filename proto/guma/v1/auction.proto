@@ -145,6 +145,10 @@ message AuctionItem {
   bool is_blind = 12;
   google.protobuf.Timestamp created_at = 13;
   google.protobuf.Timestamp updated_at = 14;
+  string seller_name = 15;
+  string seller_avatar_url = 16;
+  string current_bidder_name = 17;
+  string current_bidder_avatar_url = 18;
 }
 
 message Bid {

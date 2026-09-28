@@ -5059,6 +5059,18 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "sellerName": {
+          "type": "string"
+        },
+        "sellerAvatarUrl": {
+          "type": "string"
+        },
+        "currentBidderName": {
+          "type": "string"
+        },
+        "currentBidderAvatarUrl": {
+          "type": "string"
         }
       }
     },

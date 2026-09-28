@@ -286,8 +286,8 @@ func (q *Queries) GetLotteryForPurchase(ctx context.Context, arg GetLotteryForPu
 }
 
 const getUserUsernameAndAvatar = `-- name: GetUserUsernameAndAvatar :one
-SELECT COALESCE(username, '')   AS username,
-       COALESCE(avatar_url, '') AS avatar_url
+SELECT COALESCE(notification_user_name(id), '')::text AS username,
+       COALESCE(avatar_url, '')                        AS avatar_url
 FROM users WHERE id = $1
 `
 
@@ -512,7 +512,7 @@ func (q *Queries) ListLotteries(ctx context.Context, arg ListLotteriesParams) ([
 
 const listLotteryWinners = `-- name: ListLotteryWinners :many
 SELECT lw.id, lw.lottery_id, lw.user_id,
-       COALESCE(u.username, '')   AS username,
+       COALESCE(notification_user_name(lw.user_id), '')::text AS username,
        COALESCE(u.avatar_url, '') AS avatar_url,
        lw.rank, lw.prize_amount,
        COALESCE(lw.prize_description, '') AS prize_description,
