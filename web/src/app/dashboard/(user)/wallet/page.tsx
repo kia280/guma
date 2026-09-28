@@ -61,6 +61,7 @@ const TRANSACTION_KIND_LABELS: Record<string, string> = {
   LOTTERY_WIN: 'lotteryWin',
   BANK_CONTRIBUTION: 'bankContribution',
   FUND_REQUEST_APPROVED: 'fundRequestApproved',
+  CHECKIN_GOLD: 'checkinGold',
 };
 
 const USER_NOTE_KINDS = new Set([
@@ -70,6 +71,7 @@ const USER_NOTE_KINDS = new Set([
   'TRANSFER_OUT',
   'BANK_CONTRIBUTION',
   'FUND_REQUEST_APPROVED',
+  'CHECKIN_GOLD',
 ]);
 
 const DEFAULT_TRANSFER_NOTE = 'Transfer';
@@ -101,6 +103,8 @@ const transactionHref = (transaction: Transaction): string | undefined => {
       return `/dashboard/lottery/${transaction.referenceId}`;
     case 'fund_request':
       return `/dashboard/guild-bank?request=${transaction.referenceId}`;
+    case 'checkin':
+      return `/dashboard/attendance/${transaction.referenceId}`;
     default:
       return undefined;
   }
@@ -143,6 +147,8 @@ const getTransactionIcon = (transaction: Transaction) => {
     case 'BANK_CONTRIBUTION':
     case 'FUND_REQUEST_APPROVED':
       return 'solar:safe-2-linear';
+    case 'CHECKIN_GOLD':
+      return 'solar:clipboard-check-linear';
   }
   switch (transaction.type) {
     case 'transfer':

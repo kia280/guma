@@ -8,6 +8,8 @@ import { AuctionStatus, type AuctionItem } from '@/types/auction';
 import type {
   AttendanceMember,
   CheckinEntry,
+  CheckinGoldDistribution,
+  CheckinGoldPot,
   CheckinTemplate,
   CheckinTemplateInput,
   ItemTemplate,
@@ -31,6 +33,7 @@ import type { GuildNotification } from '@/types/notification';
 import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from '@/types/preference';
 import type { User, UserStats } from '@/types/user';
 import type { Transaction, Wallet } from '@/types/wallet';
+import { fromMinorUnits, toMinorUnits } from '../money';
 import type { ApiClient } from '../types';
 import * as mockData from './data';
 import { localizeMock } from './i18n';
@@ -51,7 +54,35 @@ const store = {
   preferencesUpdatedAt: undefined as string | undefined,
   fundRequests: [] as FundRequest[],
   itemRequests: [] as ItemRequest[],
+  bankBalance: 8750,
+  checkinGold: {} as Record<string, MockCheckinGold>,
 };
+
+type MockCheckinGold = {
+  recipients: Record<string, number>;
+  requests: Record<string, CheckinGoldDistribution>;
+};
+
+const checkinGoldState = (checkinId: string): MockCheckinGold =>
+  (store.checkinGold[checkinId] ??= { recipients: {}, requests: {} });
+
+const goldPot = (total: number, distributed: number, retracted: number): CheckinGoldPot => ({
+  total,
+  distributed,
+  retracted,
+  remaining: fromMinorUnits(toMinorUnits(total) - toMinorUnits(distributed) - toMinorUnits(retracted)),
+});
+
+const addGold = (a: number, b: number): number => fromMinorUnits(toMinorUnits(a) + toMinorUnits(b));
+
+const invalidArgument = (message: string) =>
+  Object.assign(new Error(message), {
+    isAxiosError: true,
+    response: { status: 400, data: { code: 'InvalidArgument' } },
+  });
+
+const emitBankChanged = (guildId: string, resourceId: string) =>
+  emitLiveEvent({ kind: 'resource', guildId, resource: 'bank', resourceId });
 
 type StoredCheckinTemplate = Omit<CheckinTemplate, 'items'> & { itemTemplateIds: string[] };
 
@@ -211,7 +242,7 @@ const mockWallet = (guildId: string): Wallet => ({
 const mockGuildBankData = (guildId: string): GuildBank => ({
   id: `bank-${guildId}`,
   guildId,
-  balance: 8750,
+  balance: store.bankBalance,
   currency: 'gold',
   updatedAt: new Date().toISOString(),
 });
@@ -481,6 +512,8 @@ const baseMockApiClient: ApiClient = {
     return c;
   },
   createCheckin: async (_guildId, req) => {
+    const itemLoot = (req.lootList ?? []).filter(entry => entry.kind !== 'gold');
+    const gold = (req.lootList ?? []).find(entry => entry.kind === 'gold')?.amount ?? 0;
     const entry: CheckinEntry = {
       id: `ci-${Date.now()}`,
       status: CheckinStatus.OPEN,
@@ -490,16 +523,18 @@ const baseMockApiClient: ApiClient = {
       expireTime: req.expireTime,
       attendanceCount: 0,
       attendanceList: [],
-      lootList: (req.lootList ?? []).map<LootItem>((i, idx) => ({
+      lootList: itemLoot.map<LootItem>((i, idx) => ({
         id: `l-${Date.now()}-${idx}`,
         name: i.name,
         quantity: i.quantity,
       })),
+      goldLoot: gold > 0 ? goldPot(gold, 0, 0) : undefined,
       imageUrl: req.imageUrl,
     };
     store.checkins = [entry, ...store.checkins];
+    store.bankBalance = addGold(store.bankBalance, gold);
     mockData.mockGuildItems.unshift(
-      ...(req.lootList ?? []).map((item, idx) => ({
+      ...itemLoot.map((item, idx) => ({
         id: entry.lootList[idx].id,
         name: item.name,
         description: item.description ?? '',
@@ -514,11 +549,13 @@ const baseMockApiClient: ApiClient = {
         checkinTitle: req.title,
       })),
     );
-    if (req.lootList?.length) {
+    if (itemLoot.length || gold > 0) {
       mockData.mockContributions.unshift({
         id: `c-${entry.id}`,
         type: 'checkin_loot',
-        itemName: req.lootList.map(item => item.name).join(', '),
+        itemName: itemLoot.map(item => item.name).join(', ') || undefined,
+        amount: gold > 0 ? gold : undefined,
+        href: `/dashboard/attendance/${entry.id}`,
         member: currentUser.displayName,
         date: new Date().toISOString().slice(0, 10),
         status: 'completed',
@@ -556,6 +593,22 @@ const baseMockApiClient: ApiClient = {
     mockData.mockGuildItems
       .filter(item => item.checkinId === id)
       .forEach(item => removeById(mockData.mockGuildItems, item.id));
+    const pot = entry.goldLoot;
+    if (pot && pot.remaining > 0) {
+      store.bankBalance = addGold(store.bankBalance, -pot.remaining);
+      mockData.mockContributions.unshift({
+        id: `c-retract-${entry.id}`,
+        type: 'checkin_gold_retracted',
+        amount: pot.remaining,
+        member: currentUser.displayName,
+        date: new Date().toISOString().slice(0, 10),
+        status: 'completed',
+        note: entry.title,
+        checkinId: entry.id,
+        href: `/dashboard/attendance/${entry.id}`,
+      });
+      entry.goldLoot = goldPot(pot.total, pot.distributed, addGold(pot.retracted, pot.remaining));
+    }
     return entry;
   },
   submitAttendance: async (_guildId, checkinId, notes): Promise<AttendanceMember> => {
@@ -588,6 +641,68 @@ const baseMockApiClient: ApiClient = {
   listAttendees: async (_guildId, checkinId) => {
     const entry = store.checkins.find(c => c.id === checkinId);
     return entry?.attendanceList ?? [];
+  },
+  getCheckinGold: async (_guildId, checkinId) => {
+    const entry = store.checkins.find(c => c.id === checkinId);
+    if (!entry) throw notFound();
+    const state = checkinGoldState(checkinId);
+    return {
+      pot: entry.goldLoot,
+      recipients: Object.entries(state.recipients).map(([userId, amount]) => ({ userId, amount })),
+    };
+  },
+  distributeCheckinGold: async (guildId, checkinId, requestId, payouts) => {
+    const entry = store.checkins.find(c => c.id === checkinId);
+    if (!entry) throw notFound();
+    const state = checkinGoldState(checkinId);
+    const previous = state.requests[requestId];
+    if (previous) return { ...previous, replayed: true };
+    const lines = payouts.filter(p => p.amount !== 0);
+    if (payouts.some(p => p.amount < 0) || lines.length === 0) throw invalidArgument('invalid payouts');
+    if (new Set(payouts.map(p => p.userId)).size !== payouts.length) throw invalidArgument('duplicate recipient');
+    const pot = entry.goldLoot;
+    if (!pot || entry.status === CheckinStatus.CANCELLED) throw failedPrecondition('no gold to distribute');
+    if (lines.some(p => !entry.attendanceList.some(a => a.userId === p.userId))) {
+      throw failedPrecondition('recipient did not attend');
+    }
+    const total = fromMinorUnits(lines.reduce((sum, p) => sum + toMinorUnits(p.amount), 0));
+    if (toMinorUnits(total) > toMinorUnits(pot.remaining)) throw failedPrecondition('pot is insufficient');
+
+    lines.forEach(p => {
+      state.recipients[p.userId] = addGold(state.recipients[p.userId] ?? 0, p.amount);
+      if (p.userId === currentUser.id) {
+        currentUser.balance = addGold(currentUser.balance, p.amount);
+        store.transactions.unshift({
+          id: `tx-${Date.now()}`,
+          type: 'deposit',
+          kind: 'CHECKIN_GOLD',
+          amount: p.amount,
+          date: new Date().toISOString(),
+          status: 'completed',
+          description: entry.title,
+          referenceType: 'checkin',
+          referenceId: entry.id,
+        });
+        emitLiveEvent({ kind: 'wallet', guildId, balance: currentUser.balance });
+      }
+    });
+    entry.goldLoot = goldPot(pot.total, addGold(pot.distributed, total), pot.retracted);
+    store.bankBalance = addGold(store.bankBalance, -total);
+    mockData.mockContributions.unshift({
+      id: `c-payout-${requestId}`,
+      type: 'checkin_gold_payout',
+      amount: total,
+      member: currentUser.displayName,
+      date: new Date().toISOString().slice(0, 10),
+      status: 'completed',
+      note: entry.title,
+      checkinId: entry.id,
+      href: `/dashboard/attendance/${entry.id}`,
+    });
+    const result: CheckinGoldDistribution = { pot: entry.goldLoot, payouts: lines, replayed: false };
+    state.requests[requestId] = result;
+    emitBankChanged(guildId, checkinId);
+    return result;
   },
   listCheckinTemplates: async () => store.checkinTemplates.map(resolveCheckinTemplate).sort(byName),
   createCheckinTemplate: async (_guildId, input) => {

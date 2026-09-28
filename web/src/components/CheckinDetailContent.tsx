@@ -13,14 +13,16 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { isNotFoundError } from '@/lib/guma/errors';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { emitLiveEvent } from '@/lib/live-events';
 import { useGuildPermissions } from '@/lib/permissions';
 import { checkinStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
-import { CheckinStatus, type CheckinEntry } from '@/types/checkin';
+import { CheckinStatus, type CheckinEntry, type CheckinGoldPot } from '@/types/checkin';
 import { ActionSuccess } from './ActionSuccess';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
 import { CheckinEditModal } from './CheckinEditModal';
+import { CheckinGoldLoot } from './CheckinGoldLoot';
 import { CheckinLootDistribution } from './CheckinLootDistribution';
 import { ConfirmDialog } from './ConfirmDialog';
 import { UserAvatar } from './UserAvatar';
@@ -32,6 +34,7 @@ import { UserAvatar } from './UserAvatar';
 export default function CheckinDetailContent({ id, onClose }: { id: string; onClose?: () => void }) {
   const router = useRouter();
   const t = useTranslations('checkinDetailPage');
+  const formatGold = useFormatGold();
   const format = useIntlFormatter();
 
   const formatDateTime = (value: string) => {
@@ -142,6 +145,10 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
     setEntry(current => (current ? { ...updated, attendanceList: current.attendanceList } : updated));
     refetchEntry();
     announceChange();
+  };
+
+  const handleGoldPotChange = (goldLoot: CheckinGoldPot) => {
+    setEntry(current => (current ? { ...current, goldLoot } : current));
   };
 
   const handleEditRejected = () => {
@@ -344,14 +351,26 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
               </Chip>
             </div>
 
-            {entry.lootList.length === 0 ? (
+            {entry.lootList.length === 0 && !entry.goldLoot ? (
               <p className="type-body text-subtle text-center py-4">{t('noLootItems')}</p>
             ) : (
-              <CheckinLootDistribution
-                checkinId={entry.id}
-                lootList={entry.lootList}
-                attendees={entry.attendanceList}
-              />
+              <div className="space-y-2">
+                {entry.goldLoot && (
+                  <CheckinGoldLoot
+                    checkinId={entry.id}
+                    pot={entry.goldLoot}
+                    attendees={entry.attendanceList}
+                    onPotChange={handleGoldPotChange}
+                  />
+                )}
+                {entry.lootList.length > 0 && (
+                  <CheckinLootDistribution
+                    checkinId={entry.id}
+                    lootList={entry.lootList}
+                    attendees={entry.attendanceList}
+                  />
+                )}
+              </div>
             )}
           </div>
 
@@ -443,6 +462,17 @@ export default function CheckinDetailContent({ id, onClose }: { id: string; onCl
                 <span className="text-subtle">{t('lootItems')}</span>
                 <span className="text-foreground">{entry.lootList.length}</span>
               </div>
+              {entry.goldLoot && (
+                <div className="flex justify-between gap-2">
+                  <span className="text-subtle shrink-0">{t('goldLoot')}</span>
+                  <span className="text-foreground tabular-nums text-right">
+                    {t('goldDistributedOfTotal', {
+                      distributed: formatGold(entry.goldLoot.distributed),
+                      total: formatGold(entry.goldLoot.total),
+                    })}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-subtle">{t('awarded')}</span>
                 <span className="text-foreground">

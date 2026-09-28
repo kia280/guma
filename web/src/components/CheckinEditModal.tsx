@@ -10,7 +10,9 @@ import { useCurrentGuildId } from '@/lib/current-guild';
 import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import type { CheckinEntry } from '@/types/checkin';
+import { GOLD_LOOT_ICON } from './LootListEditor';
 
 type SaveError = 'closed' | 'forbidden' | 'invalid' | 'failed';
 
@@ -47,6 +49,7 @@ export function CheckinEditModal({
   onClosed: () => void;
 }) {
   const t = useTranslations('checkIn');
+  const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
   const notify = useToast();
   const [values, setValues] = React.useState<CheckinFormValues>(() => toFormValues(entry));
@@ -124,10 +127,18 @@ export function CheckinEditModal({
                 loot={
                   <div className="flex flex-col gap-2">
                     <p className="type-body font-medium text-foreground">{t('lootList')}</p>
-                    {entry.lootList.length === 0 ? (
+                    {entry.lootList.length === 0 && !entry.goldLoot ? (
                       <p className="type-body text-subtle">{t('noLoot')}</p>
                     ) : (
                       <ul className="flex flex-wrap gap-1.5">
+                        {entry.goldLoot && (
+                          <li>
+                            <Chip size="sm" variant="secondary" color="warning">
+                              <Icon icon={GOLD_LOOT_ICON} width={12} aria-hidden />
+                              {t('goldLoot')} <span className="tabular-nums">{formatGold(entry.goldLoot.total)}</span>
+                            </Chip>
+                          </li>
+                        )}
                         {entry.lootList.map(item => (
                           <li key={item.id}>
                             <Chip size="sm" variant="secondary">

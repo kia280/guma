@@ -12,6 +12,9 @@ import type { AuctionItem, Bid, CreateAuctionRequest, UpdateAuctionRequest } fro
 import type { BackpackItem } from '@/types/backpack';
 import type {
   CheckinEntry,
+  CheckinGoldDistribution,
+  CheckinGoldPayout,
+  CheckinGoldSummary,
   AttendanceMember,
   CheckinTemplate,
   CheckinTemplateInput,
@@ -129,6 +132,13 @@ export interface ApiClient {
   submitAttendance(guildId: string, checkinId: string, notes?: string): Promise<AttendanceMember>;
   listAttendees(guildId: string, checkinId: string): Promise<AttendanceMember[]>;
   assignLoot(guildId: string, checkinId: string, itemId: string, userId: string): Promise<void>;
+  getCheckinGold(guildId: string, checkinId: string): Promise<CheckinGoldSummary>;
+  distributeCheckinGold(
+    guildId: string,
+    checkinId: string,
+    requestId: string,
+    payouts: CheckinGoldPayout[],
+  ): Promise<CheckinGoldDistribution>;
   listCheckinTemplates(guildId: string): Promise<CheckinTemplate[]>;
   createCheckinTemplate(guildId: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;
   updateCheckinTemplate(guildId: string, id: string, input: CheckinTemplateInput): Promise<CheckinTemplate>;

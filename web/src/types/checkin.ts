@@ -24,6 +24,31 @@ export interface LootItem {
   winner?: string;
 }
 
+export type LootKind = 'item' | 'gold';
+
+export interface CheckinGoldPot {
+  total: number;
+  distributed: number;
+  retracted: number;
+  remaining: number;
+}
+
+export interface CheckinGoldPayout {
+  userId: string;
+  amount: number;
+}
+
+export interface CheckinGoldSummary {
+  pot?: CheckinGoldPot;
+  recipients: CheckinGoldPayout[];
+}
+
+export interface CheckinGoldDistribution {
+  pot: CheckinGoldPot;
+  payouts: CheckinGoldPayout[];
+  replayed: boolean;
+}
+
 export interface CheckinEntry {
   id: string;
   status: CheckinStatus;
@@ -34,6 +59,7 @@ export interface CheckinEntry {
   attendanceCount: number;
   attendanceList: AttendanceMember[];
   lootList: LootItem[];
+  goldLoot?: CheckinGoldPot;
   isDisabled?: boolean;
   imageUrl?: string;
 }
@@ -56,6 +82,8 @@ export interface UpdateCheckinRequest {
 }
 
 export interface LootEntry {
+  kind?: LootKind;
+  amount?: number;
   name: string;
   quantity?: number;
   description?: string;
