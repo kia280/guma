@@ -11,8 +11,8 @@ export type DeviceClass = 'phone' | 'tablet' | 'desktop';
 
 export const VIEWS_BY_DEVICE: Record<DeviceClass, readonly CalendarView[]> = {
   phone: ['agenda', 'day'],
-  tablet: ['month', 'week', 'day', 'agenda'],
-  desktop: ['month', 'week', 'day', 'agenda'],
+  tablet: ['month', 'week', 'day'],
+  desktop: ['month', 'week', 'day'],
 };
 
 export const DEFAULT_VIEW: Record<DeviceClass, CalendarView> = {
@@ -23,6 +23,9 @@ export const DEFAULT_VIEW: Record<DeviceClass, CalendarView> = {
 
 export const fillsViewport = (view: CalendarView, device: DeviceClass) =>
   view === 'week' || view === 'day' || (view === 'month' && device === 'desktop');
+
+export const allowedView = (device: DeviceClass, view: CalendarView): CalendarView =>
+  VIEWS_BY_DEVICE[device].includes(view) ? view : DEFAULT_VIEW[device];
 
 const viewStorageKey = (device: DeviceClass) => `guma-calendar-view-${device}`;
 
