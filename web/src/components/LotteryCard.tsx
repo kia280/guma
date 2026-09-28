@@ -9,6 +9,7 @@ import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
 import { lotteryStatusColor } from '@/lib/status-colors';
+import { CardFooterStatus } from './CardFooterStatus';
 import { CardLinkHint } from './CardLinkHint';
 import { UserAvatar } from './UserAvatar';
 
@@ -62,7 +63,7 @@ const LotteryCard = ({
     <Card className="group border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
       <Card.Header className="pb-2">
         <div className="flex justify-between items-start w-full">
-          <div>
+          <div className="type-caption">
             <Chip
               size="sm"
               color={isDrawing ? 'accent' : lotteryStatusColor[status]}
@@ -167,12 +168,7 @@ const LotteryCard = ({
           <CardLinkHint icon="solar:cup-star-linear" label={t('viewWinners')} tone="subtle" />
         )}
         {status === 'upcoming' && (
-          <Chip color="warning" variant="secondary" className="w-full justify-center py-2">
-            <div className="flex items-center gap-1.5">
-              <Icon icon="solar:clock-circle-linear" width={14} />
-              <span>{countdown('startsIn')}</span>
-            </div>
-          </Chip>
+          <CardFooterStatus icon="solar:clock-circle-linear" label={countdown('startsIn')} tone="warning" />
         )}
       </Card.Footer>
     </Card>

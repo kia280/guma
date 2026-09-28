@@ -10,9 +10,9 @@ const ZHT_TEXT: Record<string, string> = {
   'Weekly Raid Night - Friday 8PM': '每週團戰夜 - 週五晚上 8 點',
   'This Friday we will be tackling the Ancient Dragon. All members level 50+ are encouraged to join.':
     '本週五我們將挑戰遠古巨龍，歡迎所有 50 級以上的成員參加。',
-  'Guild Treasury Update': '公會金庫更新',
-  'The guild treasury has been updated. Auction proceeds for this month have been distributed.':
-    '公會金庫已更新，本月的競拍收益已經分配完畢。',
+  'Guild Vault Update': '公會倉庫更新',
+  'The guild vault has been updated. Auction proceeds for this month have been distributed.':
+    '公會倉庫已更新，本月的競拍收益已經分配完畢。',
   'Guild Hall Renovation': '公會大廳整修',
   'We are planning to renovate the guild hall next month.': '我們計劃在下個月整修公會大廳。',
 

@@ -8,22 +8,18 @@ import {
   Modal,
   useOverlayState,
   Input,
-  Autocomplete,
   Label,
-  ListBox,
-  SearchField,
-  EmptyState,
-  Description,
   FieldError,
   TextField,
   Pagination,
-  useFilter,
+  Spinner,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { ActionSuccess } from '@/components/ActionSuccess';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
 import BackpackItemCard from '@/components/BackpackItemCard';
 import { BackpackItemMoveModal, type BackpackMoveMode } from '@/components/BackpackItemMoveModal';
@@ -31,6 +27,7 @@ import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateLotteryModal, type LotteryPrizeItem } from '@/components/CreateLotteryModal';
 import { ItemHistoryModal } from '@/components/ItemHistoryModal';
+import { MemberComboBox } from '@/components/MemberComboBox';
 import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -198,7 +195,6 @@ export default function WalletPage() {
   const [showTransferErrors, setShowTransferErrors] = React.useState(false);
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
   const [depositAmount, setDepositAmount] = React.useState('');
-  const { contains } = useFilter({ sensitivity: 'base' });
   const [selectedItem, setSelectedItem] = React.useState<BackpackItem | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [paginatedGuildId, setPaginatedGuildId] = React.useState(guildId);
@@ -209,6 +205,7 @@ export default function WalletPage() {
   const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>([]);
   const [mockUsers, setMockUsers] = React.useState<MockUser[]>([]);
   const [pendingAction, setPendingAction] = React.useState<WalletAction | null>(null);
+  const [completedAction, setCompletedAction] = React.useState<{ action: WalletAction; detail: string } | null>(null);
   const walletState = useLoadState();
   const transactionsState = useLoadState();
   const backpackState = useLoadState();
@@ -320,18 +317,20 @@ export default function WalletPage() {
   const showTransferAmountError = Boolean(transferAmountError) && (showTransferErrors || transferAmount !== '');
   const showTransferRecipientError = Boolean(transferRecipientError) && showTransferErrors;
   const canWithdraw = withdrawAmountValue > 0 && !withdrawExceedsBalance;
+  const isActionPending = pendingAction !== null;
 
   const runAction = async (
     action: WalletAction,
     request: () => Promise<unknown>,
-    onSuccess: () => void,
+    detail: string,
+    onSuccess?: () => void,
   ) => {
     setPendingAction(action);
     try {
       await request();
       refetchWallet();
-      notify.success(t(`${action}Success`));
-      onSuccess();
+      onSuccess?.();
+      setCompletedAction({ action, detail });
     } catch {
       notify.error(t(`${action}Failed`));
     } finally {
@@ -339,9 +338,14 @@ export default function WalletPage() {
     }
   };
 
+  const openActionModal = (modalState: { open: () => void }) => {
+    setCompletedAction(null);
+    modalState.open();
+  };
+
   const openTransfer = () => {
     setShowTransferErrors(false);
-    transferModalState.open();
+    openActionModal(transferModalState);
   };
 
   const handleTransfer = (trigger: Element) => {
@@ -351,41 +355,47 @@ export default function WalletPage() {
       return;
     }
     const amount = transferAmountValue;
+    const recipient = mockUsers.find(user => user.id === transferRecipient)?.username ?? transferRecipient;
     return runAction(
       'transfer',
       () => apiClient.transfer(guildId, { recipientId: transferRecipient, amount }),
+      t('transferSuccessDetail', { amount: formatGold(amount), recipient }),
       () => {
         setTransferAmount('');
         setTransferRecipient('');
-        transferModalState.close();
       },
     );
   };
 
   const handleWithdraw = () => {
     if (!canWithdraw) return;
-    return runAction('withdraw', () => apiClient.withdraw(guildId, withdrawAmountValue), () => {
-      setWithdrawAmount('');
-      withdrawModalState.close();
-    });
+    return runAction(
+      'withdraw',
+      () => apiClient.withdraw(guildId, withdrawAmountValue),
+      t('withdrawSuccessDetail', { amount: formatGold(withdrawAmountValue) }),
+      () => setWithdrawAmount(''),
+    );
   };
 
   const handleDeposit = () => {
     const amount = parseGold(depositAmount);
     if (!(amount > 0)) return;
-    return runAction('deposit', () => apiClient.deposit(guildId, amount), () => {
-      setDepositAmount('');
-      depositModalState.close();
-    });
+    return runAction(
+      'deposit',
+      () => apiClient.deposit(guildId, amount),
+      t('depositSuccessDetail', { amount: formatGold(amount) }),
+      () => setDepositAmount(''),
+    );
   };
 
   const handleItemWithdraw = () => {
     if (!selectedItem) return;
     const itemId = selectedItem.id;
-    return runAction('withdrawItem', () => apiClient.withdrawBackpackItem(guildId, itemId), () => {
-      setSelectedItem(null);
-      itemWithdrawModalState.close();
-    });
+    return runAction(
+      'withdrawItem',
+      () => apiClient.withdrawBackpackItem(guildId, itemId),
+      t('withdrawItemSuccessDetail', { name: selectedItem.item.name }),
+    );
   };
 
   const openItemMove = (mode: BackpackMoveMode) => (item: BackpackItem) => {
@@ -405,7 +415,7 @@ export default function WalletPage() {
 
   const openItemWithdraw = (item: BackpackItem) => {
     setSelectedItem(item);
-    itemWithdrawModalState.open();
+    openActionModal(itemWithdrawModalState);
   };
 
 
@@ -468,50 +478,61 @@ export default function WalletPage() {
               </AsyncValue>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button variant="tertiary" className="w-full sm:w-auto" onPress={depositModalState.open}>
+              <Button variant="tertiary" className="w-full sm:w-auto" onPress={() => openActionModal(depositModalState)}>
                 <Icon icon="solar:arrow-down-linear" width={16} />
                 {t('deposit')}
               </Button>
               <Modal state={depositModalState}>
-              <Modal.Backdrop>
+              <Modal.Backdrop isDismissable={!isActionPending} isKeyboardDismissDisabled={isActionPending}>
                 <Modal.Container size="sm">
                   <Modal.Dialog>
-                    <Modal.CloseTrigger />
-                    <Modal.Header>
-                      <Modal.Heading>{t('depositMoney')}</Modal.Heading>
-                    </Modal.Header>
-                    <Modal.Body className="flex flex-col gap-3">
-                      <TextField>
-                        <Label>{t('amountLabel')}</Label>
-                        <Input
-                          autoFocus
-                          placeholder="0.00"
-                          type="number"
-                          min={0}
-                          step={GOLD_STEP}
-                          inputMode="decimal"
-                          value={depositAmount}
-                          variant="secondary"
-                          onChange={e => setDepositAmount(e.target.value)}
-                        />
-                      </TextField>
-                      <p className="type-caption text-hint px-1">
-                        {t('currentBalanceLabel')} {formatGold(balance)}
-                      </p>
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button slot="close" variant="secondary">
-                        {t('cancel')}
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onPress={handleDeposit}
-                        isPending={pendingAction === 'deposit'}
-                        isDisabled={!(parseGold(depositAmount) > 0)}
-                      >
-                        {t('deposit')}
-                      </Button>
-                    </Modal.Footer>
+                    <Modal.CloseTrigger isDisabled={isActionPending} />
+                    {completedAction?.action === 'deposit' ? (
+                      <ActionSuccess title={t('depositSuccess')} detail={completedAction.detail} />
+                    ) : (
+                      <>
+                        <Modal.Header>
+                          <Modal.Heading>{t('depositMoney')}</Modal.Heading>
+                        </Modal.Header>
+                        <Modal.Body className="flex flex-col gap-3">
+                          <TextField>
+                            <Label>{t('amountLabel')}</Label>
+                            <Input
+                              autoFocus
+                              placeholder="0.00"
+                              type="number"
+                              min={0}
+                              step={GOLD_STEP}
+                              inputMode="decimal"
+                              value={depositAmount}
+                              variant="secondary"
+                              onChange={e => setDepositAmount(e.target.value)}
+                            />
+                          </TextField>
+                          <p className="type-caption text-hint px-1">
+                            {t('currentBalanceLabel')} {formatGold(balance)}
+                          </p>
+                        </Modal.Body>
+                        <Modal.Footer>
+                          <Button slot="close" variant="secondary" isDisabled={isActionPending}>
+                            {t('cancel')}
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onPress={handleDeposit}
+                            isPending={pendingAction === 'deposit'}
+                            isDisabled={!(parseGold(depositAmount) > 0)}
+                          >
+                            {({ isPending }) => (
+                              <>
+                                {isPending && <Spinner color="current" size="sm" />}
+                                {t('deposit')}
+                              </>
+                            )}
+                          </Button>
+                        </Modal.Footer>
+                      </>
+                    )}
                   </Modal.Dialog>
                 </Modal.Container>
               </Modal.Backdrop>
@@ -521,144 +542,138 @@ export default function WalletPage() {
                 {t('transfer')}
               </Button>
               <Modal state={transferModalState}>
-              <Modal.Backdrop>
+              <Modal.Backdrop isDismissable={!isActionPending} isKeyboardDismissDisabled={isActionPending}>
                 <Modal.Container size="sm">
                   <Modal.Dialog>
-                    <Modal.CloseTrigger />
-                    <Modal.Header>
-                      <Modal.Heading>{t('transferMoney')}</Modal.Heading>
-                    </Modal.Header>
-                    <Modal.Body className="flex flex-col gap-3">
-                      <TextField validationBehavior="aria" isInvalid={showTransferAmountError}>
-                        <Label>{t('amountLabel')}</Label>
-                        <Input
-                          autoFocus
-                          placeholder="0.00"
-                          type="number"
-                          min={0}
-                          max={balance}
-                          step={GOLD_STEP}
-                          inputMode="decimal"
-                          value={transferAmount}
-                          variant="secondary"
-                          onChange={e => setTransferAmount(e.target.value)}
-                        />
-                        {showTransferAmountError && <FieldError>{transferAmountError}</FieldError>}
-                      </TextField>
-                      <Autocomplete
-                        className="w-full"
-                        placeholder={t('searchRecipient')}
-                        selectionMode="single"
-                        validationBehavior="aria"
-                        isInvalid={showTransferRecipientError}
-                        value={transferRecipient}
-                        onChange={key => setTransferRecipient(key as string)}
-                      >
-                        <Label>{t('recipient')}</Label>
-                        <Autocomplete.Trigger>
-                          <Autocomplete.Value />
-                          <Autocomplete.Indicator />
-                        </Autocomplete.Trigger>
-                        <Autocomplete.Popover>
-                          <Autocomplete.Filter filter={contains}>
-                            <SearchField autoFocus name="search" variant="secondary">
-                              <SearchField.Group>
-                                <SearchField.SearchIcon />
-                                <SearchField.Input placeholder={t('searchRecipient')} />
-                                <SearchField.ClearButton />
-                              </SearchField.Group>
-                            </SearchField>
-                            <ListBox renderEmptyState={() => <EmptyState>{t('noResults')}</EmptyState>}>
-                              {mockUsers.map(user => (
-                                <ListBox.Item key={user.id} id={user.id} textValue={user.username}>
-                                  <div className="flex flex-col">
-                                    <Label>{user.username}</Label>
-                                    <Description>{user.email}</Description>
-                                  </div>
-                                  <ListBox.ItemIndicator />
-                                </ListBox.Item>
-                              ))}
-                            </ListBox>
-                          </Autocomplete.Filter>
-                        </Autocomplete.Popover>
-                        {showTransferRecipientError && <FieldError>{transferRecipientError}</FieldError>}
-                      </Autocomplete>
-                      <p className="type-caption text-hint px-1">
-                        {t('available')} {formatGold(balance)}
-                      </p>
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button slot="close" variant="secondary">
-                        {t('cancel')}
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onPress={e => handleTransfer(e.target)}
-                        isPending={pendingAction === 'transfer'}
-                      >
-                        {t('transfer')}
-                      </Button>
-                    </Modal.Footer>
+                    <Modal.CloseTrigger isDisabled={isActionPending} />
+                    {completedAction?.action === 'transfer' ? (
+                      <ActionSuccess title={t('transferSuccess')} detail={completedAction.detail} />
+                    ) : (
+                      <>
+                        <Modal.Header>
+                          <Modal.Heading>{t('transferMoney')}</Modal.Heading>
+                        </Modal.Header>
+                        <Modal.Body className="flex flex-col gap-3">
+                          <TextField validationBehavior="aria" isInvalid={showTransferAmountError}>
+                            <Label>{t('amountLabel')}</Label>
+                            <Input
+                              autoFocus
+                              placeholder="0.00"
+                              type="number"
+                              min={0}
+                              max={balance}
+                              step={GOLD_STEP}
+                              inputMode="decimal"
+                              value={transferAmount}
+                              variant="secondary"
+                              onChange={e => setTransferAmount(e.target.value)}
+                            />
+                            {showTransferAmountError && <FieldError>{transferAmountError}</FieldError>}
+                          </TextField>
+                          <MemberComboBox
+                            members={mockUsers}
+                            value={transferRecipient}
+                            onChange={setTransferRecipient}
+                            label={t('recipient')}
+                            placeholder={t('searchRecipient')}
+                            emptyMessage={t('noResults')}
+                            isInvalid={showTransferRecipientError}
+                            errorMessage={transferRecipientError}
+                          />
+                          <p className="type-caption text-hint px-1">
+                            {t('available')} {formatGold(balance)}
+                          </p>
+                        </Modal.Body>
+                        <Modal.Footer>
+                          <Button slot="close" variant="secondary" isDisabled={isActionPending}>
+                            {t('cancel')}
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onPress={e => handleTransfer(e.target)}
+                            isPending={pendingAction === 'transfer'}
+                          >
+                            {({ isPending }) => (
+                              <>
+                                {isPending && <Spinner color="current" size="sm" />}
+                                {t('transfer')}
+                              </>
+                            )}
+                          </Button>
+                        </Modal.Footer>
+                      </>
+                    )}
                   </Modal.Dialog>
                 </Modal.Container>
               </Modal.Backdrop>
               </Modal>
-              <Button variant="secondary" className="w-full sm:w-auto" onPress={withdrawModalState.open}>
+              <Button variant="secondary" className="w-full sm:w-auto" onPress={() => openActionModal(withdrawModalState)}>
                 <Icon icon="solar:arrow-up-linear" width={16} />
                 {t('withdraw')}
               </Button>
               <Modal state={withdrawModalState}>
-              <Modal.Backdrop>
+              <Modal.Backdrop isDismissable={!isActionPending} isKeyboardDismissDisabled={isActionPending}>
                 <Modal.Container size="sm">
                   <Modal.Dialog>
-                    <Modal.CloseTrigger />
-                    <Modal.Header>
-                      <Modal.Heading>{t('withdrawMoney')}</Modal.Heading>
-                    </Modal.Header>
-                    <Modal.Body className="flex flex-col gap-3">
-                      <TextField isInvalid={withdrawExceedsBalance}>
-                        <Label>{t('amountLabel')}</Label>
-                        <Input
-                          autoFocus
-                          placeholder="0.00"
-                          type="number"
-                          min={0}
-                          max={balance}
-                          step={GOLD_STEP}
-                          inputMode="decimal"
-                          value={withdrawAmount}
-                          variant="secondary"
-                          onChange={e => setWithdrawAmount(e.target.value)}
-                        />
-                        <FieldError>{t('insufficientBalance')}</FieldError>
-                      </TextField>
-                      <p className="type-caption text-hint px-1">
-                        {t('available')} {formatGold(balance)}
-                      </p>
-                      <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
-                        <div className="flex items-start gap-2">
-                          <Icon
-                            className="text-warning shrink-0 mt-0.5"
-                            icon="solar:info-circle-bold"
-                            width={14}
-                          />
-                          <p className="type-caption text-warning">{t('withdrawNote')}</p>
-                        </div>
-                      </div>
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button slot="close" variant="secondary">
-                        {t('cancel')}
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onPress={handleWithdraw}
-                        isPending={pendingAction === 'withdraw'}
-                        isDisabled={!canWithdraw}
-                      >
-                        {t('withdraw')}
-                      </Button>
-                    </Modal.Footer>
+                    <Modal.CloseTrigger isDisabled={isActionPending} />
+                    {completedAction?.action === 'withdraw' ? (
+                      <ActionSuccess title={t('withdrawSuccess')} detail={completedAction.detail} />
+                    ) : (
+                      <>
+                        <Modal.Header>
+                          <Modal.Heading>{t('withdrawMoney')}</Modal.Heading>
+                        </Modal.Header>
+                        <Modal.Body className="flex flex-col gap-3">
+                          <TextField isInvalid={withdrawExceedsBalance}>
+                            <Label>{t('amountLabel')}</Label>
+                            <Input
+                              autoFocus
+                              placeholder="0.00"
+                              type="number"
+                              min={0}
+                              max={balance}
+                              step={GOLD_STEP}
+                              inputMode="decimal"
+                              value={withdrawAmount}
+                              variant="secondary"
+                              onChange={e => setWithdrawAmount(e.target.value)}
+                            />
+                            <FieldError>{t('insufficientBalance')}</FieldError>
+                          </TextField>
+                          <p className="type-caption text-hint px-1">
+                            {t('available')} {formatGold(balance)}
+                          </p>
+                          <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+                            <div className="flex items-start gap-2">
+                              <Icon
+                                className="text-warning shrink-0 mt-0.5"
+                                icon="solar:info-circle-bold"
+                                width={14}
+                              />
+                              <p className="type-caption text-warning">{t('withdrawNote')}</p>
+                            </div>
+                          </div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                          <Button slot="close" variant="secondary" isDisabled={isActionPending}>
+                            {t('cancel')}
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onPress={handleWithdraw}
+                            isPending={pendingAction === 'withdraw'}
+                            isDisabled={!canWithdraw}
+                          >
+                            {({ isPending }) => (
+                              <>
+                                {isPending && <Spinner color="current" size="sm" />}
+                                {t('withdraw')}
+                              </>
+                            )}
+                          </Button>
+                        </Modal.Footer>
+                      </>
+                    )}
                   </Modal.Dialog>
                 </Modal.Container>
               </Modal.Backdrop>
@@ -686,7 +701,7 @@ export default function WalletPage() {
             <Icon className="text-accent" icon="solar:backpack-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col flex-1 min-w-0">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between type-body">
               <p className="type-subheading text-foreground">{t('yourItems')}</p>
               <Chip size="sm" variant="tertiary">
                 {t('items', { count: backpackItems.length })}
@@ -870,8 +885,8 @@ export default function WalletPage() {
                           {transactionNote(transaction)}
                         </p>
                       )}
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <p className="type-caption text-hint">
+                      <div className="flex items-center gap-2 mt-0.5 type-caption">
+                        <p className="text-hint">
                           {format.dateTime(new Date(transaction.date), { dateStyle: 'medium' })}
                         </p>
                         <Chip
@@ -948,54 +963,65 @@ export default function WalletPage() {
 
       {/* Withdraw Item Modal */}
       <Modal state={itemWithdrawModalState}>
-      <Modal.Backdrop>
+      <Modal.Backdrop isDismissable={!isActionPending} isKeyboardDismissDisabled={isActionPending}>
         <Modal.Container size="sm">
           <Modal.Dialog>
-            <Modal.CloseTrigger />
-            <Modal.Header>
-              <Modal.Heading>{t('withdrawItem')}</Modal.Heading>
-            </Modal.Header>
-            <Modal.Body className="flex flex-col gap-3">
-              {selectedItem && (
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary">
-                    <div className="p-2 rounded-lg bg-default">
-                      <Icon icon="solar:backpack-linear" width={20} className="text-subtle" />
-                    </div>
-                    <div>
-                      <p className="type-body font-medium text-foreground">{selectedItem.item.name}</p>
-                      <p className="type-caption text-hint">
-                        {labels(`rarities.${selectedItem.item.rarity}`)} · {labels(`categories.${selectedItem.item.category}`)}
+            <Modal.CloseTrigger isDisabled={isActionPending} />
+            {completedAction?.action === 'withdrawItem' ? (
+              <ActionSuccess title={t('withdrawItemSuccess')} detail={completedAction.detail} />
+            ) : (
+              <>
+                <Modal.Header>
+                  <Modal.Heading>{t('withdrawItem')}</Modal.Heading>
+                </Modal.Header>
+                <Modal.Body className="flex flex-col gap-3">
+                  {selectedItem && (
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-surface-secondary">
+                        <div className="p-2 rounded-lg bg-default">
+                          <Icon icon="solar:backpack-linear" width={20} className="text-subtle" />
+                        </div>
+                        <div>
+                          <p className="type-body font-medium text-foreground">{selectedItem.item.name}</p>
+                          <p className="type-caption text-hint">
+                            {labels(`rarities.${selectedItem.item.rarity}`)} · {labels(`categories.${selectedItem.item.category}`)}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="type-body text-soft">
+                        {t.rich('withdrawItemConfirm', {
+                          name: selectedItem.item.name,
+                          strong: chunks => <span className="font-medium text-foreground">{chunks}</span>,
+                        })}
                       </p>
+                      <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
+                        <div className="flex items-start gap-2">
+                          <Icon
+                            className="text-warning shrink-0 mt-0.5"
+                            icon="solar:info-circle-bold"
+                            width={14}
+                          />
+                          <p className="type-caption text-warning">{t('withdrawItemNote')}</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <p className="type-body text-soft">
-                    {t.rich('withdrawItemConfirm', {
-                      name: selectedItem.item.name,
-                      strong: chunks => <span className="font-medium text-foreground">{chunks}</span>,
-                    })}
-                  </p>
-                  <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <Icon
-                        className="text-warning shrink-0 mt-0.5"
-                        icon="solar:info-circle-bold"
-                        width={14}
-                      />
-                      <p className="type-caption text-warning">{t('withdrawItemNote')}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </Modal.Body>
-            <Modal.Footer>
-              <Button slot="close" variant="secondary">
-                {t('cancel')}
-              </Button>
-              <Button variant="primary" onPress={handleItemWithdraw} isPending={pendingAction === 'withdrawItem'}>
-                {t('withdrawItem')}
-              </Button>
-            </Modal.Footer>
+                  )}
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button slot="close" variant="secondary" isDisabled={isActionPending}>
+                    {t('cancel')}
+                  </Button>
+                  <Button variant="primary" onPress={handleItemWithdraw} isPending={pendingAction === 'withdrawItem'}>
+                    {({ isPending }) => (
+                      <>
+                        {isPending && <Spinner color="current" size="sm" />}
+                        {t('withdrawItem')}
+                      </>
+                    )}
+                  </Button>
+                </Modal.Footer>
+              </>
+            )}
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>

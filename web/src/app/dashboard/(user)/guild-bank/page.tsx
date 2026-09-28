@@ -518,7 +518,7 @@ export default function GuildBankPage() {
             <Icon className="text-accent" icon="solar:box-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col flex-1 min-w-0">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between type-body">
               <p className="type-subheading text-foreground">{t('storage')}</p>
               <Chip size="sm" variant="tertiary">
                 {t('items', { count: mockGuildItems.length })}
@@ -556,7 +556,7 @@ export default function GuildBankPage() {
                         <span className="text-hint tabular-nums"> ×{item.quantity}</span>
                       )}
                     </p>
-                    <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                    <div className="flex flex-wrap items-center gap-1 mt-0.5 type-caption">
                       <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
                         {labels(`rarities.${item.rarity}`)}
                       </Chip>
@@ -761,9 +761,9 @@ export default function GuildBankPage() {
                           {entry.note}
                         </Link>
                       )}
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <p className="type-caption text-hint">{entry.member}</p>
-                        <p className="type-caption text-hint">
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap type-caption">
+                        <p className="text-hint">{entry.member}</p>
+                        <p className="text-hint">
                           {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
                         </p>
                         <Chip size="sm" color={contributionStatusColor[entry.status]} variant="secondary">

@@ -213,7 +213,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           <Icon icon={CATEGORY_ICONS[item.category]} width={36} className="text-subtle" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1 type-body">
             <Chip size="sm" color={getRarityColor(item.rarity)} variant="tertiary">
               {labels(`rarities.${item.rarity}`)}
             </Chip>
@@ -437,7 +437,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 type-body">
                           <span className="type-subheading tabular-nums text-foreground">
                             {formatGold(bid.amount)}
                           </span>
@@ -482,7 +482,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 <span className="text-hint">{t('category')}</span>
                 <span className="text-foreground">{labels(`categories.${item.category}`)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between">
                 <span className="text-hint">{t('rarity')}</span>
                 <Chip size="sm" color={getRarityColor(item.rarity)} variant="tertiary">
                   {labels(`rarities.${item.rarity}`)}

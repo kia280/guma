@@ -158,7 +158,7 @@ export function CheckinLootDistribution({ checkinId, lootList, attendees }: Chec
           return (
             <div
               key={loot.id}
-              className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-divider bg-surface-secondary"
+              className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-divider bg-surface-secondary type-body"
             >
               <div className="p-1.5 rounded-lg bg-default shrink-0">
                 <Icon icon="solar:box-linear" width={16} className="text-subtle" />

@@ -143,14 +143,14 @@ const AuctionItemCard = ({
                       {item.name}
                     </Link>
                   </h4>
-                  <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className="flex items-center gap-1.5 mt-0.5 type-caption">
                     <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
                       {labels(`rarities.${item.rarity}`)}
                     </Chip>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex flex-col items-end gap-1 type-caption">
                 <Chip
                   size="sm"
                   color={auctionStatusColor[item.status]}
@@ -158,7 +158,7 @@ const AuctionItemCard = ({
                 >
                   {t(`status.${item.status}`)}
                 </Chip>
-                <div className="flex items-center gap-1 whitespace-nowrap type-caption text-hint">
+                <div className="flex items-center gap-1 whitespace-nowrap text-hint">
                   <Icon icon="solar:clock-circle-linear" width={12} />
                   <span>{scheduleLabel}</span>
                 </div>
@@ -379,7 +379,7 @@ const AuctionItemCard = ({
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 type-body">
                             <span className="type-subheading tabular-nums text-foreground">
                               {formatGold(bid.amount)}
                             </span>

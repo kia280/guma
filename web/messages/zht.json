@@ -53,7 +53,7 @@
     "lottery": "抽獎",
     "admin": "管理",
     "calendar": "王表",
-    "guildBank": "公會銀行",
+    "guildBank": "公會倉庫",
     "expandSidebar": "展開側邊欄",
     "collapseSidebar": "收起側邊欄",
     "signedInAs": "已登入為",
@@ -74,7 +74,8 @@
     "adminRoles": "角色權限",
     "sections": {
       "activities": "公會活動",
-      "assets": "資產"
+      "assets": "資產",
+      "admin": "公會管理"
     },
     "pages": {
       "detail": "詳細資料",
@@ -171,6 +172,9 @@
     "loadFailed": "無法載入餘額紀錄。",
     "retry": "重試"
   },
+  "actionSuccess": {
+    "done": "完成"
+  },
   "walletPage": {
     "wallet": "錢包",
     "manageBalance": "管理您的餘額和交易",
@@ -194,6 +198,7 @@
     "amountLabel": "金額",
     "recipient": "收款人",
     "searchRecipient": "以用戶名或電子郵件搜尋",
+    "noResults": "找不到符合的成員",
     "available": "可用：",
     "insufficientBalance": "餘額不足",
     "cancel": "取消",
@@ -220,17 +225,21 @@
       "auctionWin": "拍賣得標",
       "lotteryTicket": "購買彩券",
       "lotteryWin": "彩券獎金",
-      "bankContribution": "公會銀行捐獻",
+      "bankContribution": "公會倉庫捐獻",
       "fundRequestApproved": "資金申請核准",
       "auctionSale": "拍賣售出"
     },
-    "depositSuccess": "存款完成。",
+    "depositSuccess": "存款完成",
+    "depositSuccessDetail": "已將 {amount} 存入錢包。",
     "depositFailed": "無法完成存款，請再試一次。",
-    "transferSuccess": "轉帳完成。",
+    "transferSuccess": "轉帳完成",
+    "transferSuccessDetail": "已將 {amount} 轉給 {recipient}。",
     "transferFailed": "無法完成轉帳，請再試一次。",
-    "withdrawSuccess": "提款完成。",
+    "withdrawSuccess": "提款已送出",
+    "withdrawSuccessDetail": "已申請提款 {amount}，處理可能需要 1–3 個工作日。",
     "withdrawFailed": "無法完成提款，請再試一次。",
-    "withdrawItemSuccess": "已送出提取申請，幹部會在遊戲中交付物品。",
+    "withdrawItemSuccess": "已送出提取申請",
+    "withdrawItemSuccessDetail": "{name} 會留在背包中，直到幹部在遊戲中交付。",
     "withdrawItemFailed": "無法提取物品，請再試一次。",
     "noItems": "背包裡沒有物品",
     "noItemsHint": "從公會倉庫或活動獲得的物品會顯示在這裡。",
@@ -350,15 +359,15 @@
       "lottery": "抽獎",
       "transfer": "轉讓",
       "admin": "管理員",
-      "bank": "公會銀行申請",
+      "bank": "公會倉庫申請",
       "checkin": "點名戰利品"
     },
-    "donate": "捐給公會銀行",
+    "donate": "捐給公會倉庫",
     "sourceWithLabel": {
       "transfer": "來自 {label}",
       "lottery": "抽獎：{label}",
       "checkin": "點名：{label}",
-      "bank": "公會銀行申請",
+      "bank": "公會倉庫申請",
       "auction": "拍賣",
       "admin": "管理員"
     },
@@ -378,7 +387,11 @@
     "deleteSuccess": "活動已刪除。",
     "deleteFailed": "無法刪除活動，請再試一次。",
     "eventActions": "活動操作",
-    "repeatsEvery": "{type, select, daily {{interval, plural, =1 {每天重複} other {每 # 天重複}}} weekly {{interval, plural, =1 {每週重複} other {每 # 週重複}}} monthly {{interval, plural, =1 {每月重複} other {每 # 個月重複}}} other {依自訂間隔重複}}"
+    "repeatsEvery": "{type, select, daily {{interval, plural, =1 {每天重複} other {每 # 天重複}}} weekly {{interval, plural, =1 {每週重複} other {每 # 週重複}}} monthly {{interval, plural, =1 {每月重複} other {每 # 個月重複}}} other {依自訂間隔重複}}",
+    "when": "時間",
+    "where": "地點",
+    "recurrence": "重複",
+    "organizer": "建立者"
   },
   "eventFormModal": {
     "editEvent": "編輯活動",
@@ -557,8 +570,8 @@
     "roleSummaries": {
       "owner": "公會建立者，擁有管理員的所有權限，也是唯一可以刪除公會的角色。",
       "admin": "管理公會：編輯設定、舉辦抽獎並取消拍賣。",
-      "moderator": "協助日常運作：建立點名並審核公會銀行申請。",
-      "member": "參與公會活動：點名簽到、拍賣、抽獎與公會銀行。"
+      "moderator": "協助日常運作：建立點名並審核公會倉庫申請。",
+      "member": "參與公會活動：點名簽到、拍賣、抽獎與公會倉庫。"
     },
     "sections": {
       "guild": {
@@ -570,7 +583,7 @@
         "description": "公會活動的出席紀錄"
       },
       "bank": {
-        "title": "公會銀行",
+        "title": "公會倉庫",
         "description": "公會共用的資金與物品"
       },
       "auction": {
@@ -606,19 +619,19 @@
       "drawLottery": "開獎",
       "changeDrawDate": "變更開獎日期",
       "manageWallet": "管理自己的錢包與背包",
-      "auctionBankItems": "拍賣或抽出公會銀行物品",
+      "auctionBankItems": "拍賣或抽出公會倉庫物品",
       "distributeLoot": "分配點名戰利品"
     },
     "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。"
   },
   "guildBankPage": {
-    "treasury": "公會金庫",
+    "treasury": "資金",
     "treasuryDesc": "所有公會成員的共同資金",
-    "guildGold": "公會金幣",
+    "guildGold": "倉庫餘額",
     "contribute": "貢獻",
     "requestFunds": "申請資金",
     "topContributors": "頂級貢獻者",
-    "storage": "公會倉庫",
+    "storage": "物品",
     "storageDesc": "公會成員分享的物品",
     "items": "{count} 件物品",
     "by": "由",
@@ -634,7 +647,7 @@
     "approved": "已批准",
     "rejected": "已拒絕",
     "amountPending": "尚未扣除",
-    "contributeTitle": "貢獻至公會銀行",
+    "contributeTitle": "貢獻至公會倉庫",
     "amountLabel": "金額",
     "noteOptional": "備注（選填）",
     "notePlaceholder": "留下您的貢獻備注…",
@@ -654,7 +667,7 @@
     "typeRequest": "資金申請",
     "typeItemDonate": "物品捐贈",
     "typeItemDistribute": "物品分發",
-    "errorExceedsBalance": "申請金額超過公會金庫目前的餘額。",
+    "errorExceedsBalance": "申請金額超過公會倉庫目前的資金餘額。",
     "errorDuplicateItemRequest": "您已經有一筆此物品的申請正在審核中。",
     "errorItemUnavailable": "此物品已不在公會倉庫中。",
     "errorNotMember": "只有公會成員可以提出申請。",
@@ -669,7 +682,7 @@
     "noItemsHint": "捐贈的物品與點名戰利品會顯示在這裡。",
     "noActivity": "尚無活動紀錄",
     "noActivityHint": "貢獻與申請會顯示在這裡。",
-    "activityTable": "公會銀行活動記錄",
+    "activityTable": "公會倉庫活動記錄",
     "itemSummary": "{rarity} · {category} · 剩餘 {count} 件",
     "amountMustBePositive": "請輸入大於 0 的金額",
     "reasonRequired": "請輸入申請原因",
@@ -741,8 +754,8 @@
     "created": "競拍已建立。",
     "itemSource": "物品來源",
     "itemSourceManual": "自行填寫物品",
-    "itemSourceBank": "從公會銀行",
-    "sourceBankHint": "拍賣期間會鎖定在公會銀行中",
+    "itemSourceBank": "從公會倉庫",
+    "sourceBankHint": "拍賣期間會鎖定在公會倉庫中",
     "sourceBackpackHint": "拍賣期間會鎖定在你的背包中"
   },
   "navigation": {
@@ -796,9 +809,26 @@
     "previous": "上一個",
     "next": "下一個",
     "today": "今天",
-    "day": "日檢視",
-    "week": "週檢視",
-    "month": "月檢視"
+    "views": {
+      "month": "月",
+      "week": "週",
+      "day": "日",
+      "agenda": "清單"
+    },
+    "viewLabel": "行事曆檢視",
+    "createEvent": "建立活動",
+    "allDay": "全天",
+    "continued": "續",
+    "until": "至 {time}",
+    "tomorrow": "明天",
+    "eventCount": "{count, plural, =0 {沒有活動} other {# 個活動}}",
+    "more": "還有 {count} 個",
+    "showMore": "顯示 {date} 的另外 {count} 個活動",
+    "moreEventsTitle": "另外 {count} 個活動",
+    "openDay": "以日檢視開啟 {date}",
+    "noEventsDay": "這天沒有活動。",
+    "upcoming": "接下來",
+    "noUpcoming": "接下來 {days} 天沒有排定的活動。"
   },
   "ThemeSwitcher": {
     "DarkTheme": "深色主題"
@@ -807,16 +837,16 @@
     "unread": "未讀",
     "note": "備註：{note}",
     "reason": "原因：{reason}",
-    "fundRequestApproved": "<b>{actor}</b> 核准了你 <b>{amount}</b> 的公會銀行申請",
-    "fundRequestRejected": "<b>{actor}</b> 拒絕了你 <b>{amount}</b> 的公會銀行申請",
+    "fundRequestApproved": "<b>{actor}</b> 核准了你 <b>{amount}</b> 的公會倉庫申請",
+    "fundRequestRejected": "<b>{actor}</b> 拒絕了你 <b>{amount}</b> 的公會倉庫申請",
     "itemRequestApproved": "<b>{actor}</b> 核准了你申請的 <b>{item}</b>",
     "itemRequestRejected": "<b>{actor}</b> 拒絕了你申請的 <b>{item}</b>",
-    "fundRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{amount}</b>",
-    "itemRequestSubmitted": "<b>{actor}</b> 向公會銀行申請 <b>{item}</b>",
+    "fundRequestSubmitted": "<b>{actor}</b> 向公會倉庫申請 <b>{amount}</b>",
+    "itemRequestSubmitted": "<b>{actor}</b> 向公會倉庫申請 <b>{item}</b>",
     "auctionOutbid": "<b>{actor}</b> 以 {amount} 超過你在 <b>{item}</b> 的出價",
     "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
     "auctionWon": "你以 <b>{amount}</b> 得標 <b>{item}</b>，物品已放入背包",
-    "auctionSold": "<b>{actor}</b> 以 <b>{amount}</b> 得標 <b>{item}</b>，款項已存入{destination, select, wallet {你的錢包} other {公會銀行}}",
+    "auctionSold": "<b>{actor}</b> 以 <b>{amount}</b> 得標 <b>{item}</b>，款項已存入{destination, select, wallet {你的錢包} other {公會倉庫}}",
     "auctionUnsold": "<b>{item}</b> 已結束，無人出價",
     "itemReceived": "<b>{actor}</b> 送給你 <b>{item}</b>",
     "lootAssigned": "你從 <b>{checkin}</b> 獲得 <b>{item}</b>",
@@ -1043,9 +1073,10 @@
     "statusFinished": "已完成",
     "cancelCheckin": "取消點名",
     "cancelConfirmTitle": "確定要取消這次點名？",
-    "cancelConfirmBody": "成員將無法再登記出席，已登記的出席紀錄會保留。這次點名仍可在公會銀行申請的戰利品會被移除，相關的待審申請也會被拒絕；已在競拍或抽獎中的戰利品依該活動結果處理。此操作無法復原。",
+    "cancelConfirmBody": "成員將無法再登記出席，已登記的出席紀錄會保留。這次點名仍可在公會倉庫申請的戰利品會被移除，相關的待審申請也會被拒絕；已在競拍或抽獎中的戰利品依該活動結果處理。此操作無法復原。",
     "cancelConfirm": "取消點名",
-    "cancelSuccess": "點名已取消。",
+    "cancelSuccess": "點名已取消",
+    "cancelSuccessDetail": "成員已無法再登記出席，已登記的出席紀錄會保留。",
     "cancelFailed": "無法取消點名，請再試一次。",
     "expired": "已過期",
     "remaining": "剩餘 {time}",
@@ -1053,7 +1084,8 @@
     "checkInExpired": "此點名已截止。",
     "checkInCancelled": "此點名已取消。",
     "checkInFailed": "簽到失敗，請稍後再試。",
-    "checkInSuccess": "簽到完成。",
+    "checkInSuccess": "簽到完成",
+    "checkInSuccessDetail": "簽到時間：{time}",
     "alreadyCheckedIn": "您已經簽到過了。",
     "checkInTitle": "簽到 — {title}"
   },
@@ -1206,8 +1238,8 @@
     "created": "抽獎已建立。",
     "prizeSource": "獎品來源",
     "prizeSourceManual": "獎金或自訂獎品",
-    "prizeSourceBank": "從公會銀行",
-    "prizeFromBankHint": "開獎前會鎖定在公會銀行中，得獎者會在背包收到",
+    "prizeSourceBank": "從公會倉庫",
+    "prizeFromBankHint": "開獎前會鎖定在公會倉庫中，得獎者會在背包收到",
     "prizeFromBackpackHint": "開獎前會鎖定在你的背包中，得獎者會在背包收到"
   },
   "bankRequestReview": {
@@ -1215,7 +1247,7 @@
     "pending": "待審核",
     "reviewed": "已審核",
     "loading": "正在載入申請",
-    "loadFailed": "無法載入金庫申請。",
+    "loadFailed": "無法載入倉庫申請。",
     "retry": "重試",
     "fundRequests": "資金申請",
     "itemRequests": "物品申請",
@@ -1227,7 +1259,7 @@
     "approveTitle": "批准申請",
     "rejectTitle": "拒絕申請",
     "requestedBy": "申請人：{name}",
-    "approveFundHint": "金額將從公會金庫轉入該成員的錢包。",
+    "approveFundHint": "金額將從公會倉庫轉入該成員的錢包。",
     "approveItemHint": "物品將移至該成員的背包，其他人對此物品的待審核申請會自動拒絕。",
     "rejectHint": "該成員會看到此申請已被拒絕。",
     "noteLabel": "審核備註（選填）",
@@ -1235,7 +1267,7 @@
     "reviewNoteLabel": "審核備註",
     "cancel": "取消",
     "errorForbidden": "您沒有權限審核此申請。",
-    "errorConflict": "此申請已無法批准：可能已被審核，或金庫餘額、物品不足。",
+    "errorConflict": "此申請已無法批准：可能已被審核，或公會倉庫的資金、物品不足。",
     "errorNotFound": "此申請已不存在。",
     "errorGeneric": "發生錯誤，請再試一次。",
     "statuses": {
@@ -1328,11 +1360,11 @@
     }
   },
   "bankItemPicker": {
-    "label": "公會銀行物品",
+    "label": "公會倉庫物品",
     "placeholder": "選擇物品",
     "loading": "正在載入物品…",
-    "empty": "公會銀行目前沒有可選的物品。",
-    "loadFailed": "無法載入公會銀行物品。",
+    "empty": "公會倉庫目前沒有可選的物品。",
+    "loadFailed": "無法載入公會倉庫物品。",
     "retry": "重試"
   },
   "itemLock": {
@@ -1340,9 +1372,9 @@
     "lottery": "抽獎獎品"
   },
   "backpackItemMoveModal": {
-    "donateTitle": "捐給公會銀行",
+    "donateTitle": "捐給公會倉庫",
     "transferTitle": "轉讓給成員",
-    "donateDescription": "物品會移到公會銀行，成員可以提出申請。",
+    "donateDescription": "物品會移到公會倉庫，成員可以提出申請。",
     "transferDescription": "物品會立刻移到對方的背包，對方會收到通知。",
     "recipient": "收件人",
     "searchRecipient": "搜尋成員",
@@ -1354,7 +1386,7 @@
     "cancel": "取消",
     "donateConfirm": "捐出",
     "transferConfirm": "送出物品",
-    "donateSuccess": "{item} 已放入公會銀行。",
+    "donateSuccess": "{item} 已放入公會倉庫。",
     "transferSuccess": "已送出 {item}。",
     "donateFailed": "無法捐出物品，請再試一次。",
     "transferFailed": "無法送出物品，請再試一次。"
@@ -1363,7 +1395,7 @@
     "loading": "正在載入戰利品狀態",
     "loadFailed": "無法載入戰利品的去向。",
     "retry": "重試",
-    "inBank": "在公會銀行",
+    "inBank": "在公會倉庫",
     "inBankWithRequests": "在銀行 · {count} 筆申請",
     "distributed": "已分配",
     "wonBy": "獲得者：{name}",
@@ -1373,14 +1405,14 @@
     "lottery": "放入抽獎",
     "noAttendees": "尚無出席成員",
     "assignTitle": "分配 {item}",
-    "assignDescription": "物品會從公會銀行移出，直接放入該成員的背包。",
+    "assignDescription": "物品會從公會倉庫移出，直接放入該成員的背包。",
     "assignRejectsRequests": "這個物品的 {count} 筆待審申請會被拒絕。",
     "recipient": "出席成員",
     "recipientPlaceholder": "選擇出席成員",
     "cancel": "取消",
     "assignConfirm": "分配物品",
     "assignSuccess": "已將 {item} 分配給 {name}。",
-    "assignConflict": "這個物品已不在公會銀行。",
+    "assignConflict": "這個物品已不在公會倉庫。",
     "assignFailed": "無法分配物品，請再試一次。"
   },
   "adminInbox": {
@@ -1453,8 +1485,8 @@
     "someone": "某位成員",
     "kinds": {
       "looted": "在點名「{label}」中掉落",
-      "donated": "{actor} 捐給了公會銀行",
-      "requested": "{actor} 向公會銀行申請",
+      "donated": "{actor} 捐給了公會倉庫",
+      "requested": "{actor} 向公會倉庫申請",
       "request_approved": "{actor} 核准了 {subject} 的申請",
       "request_rejected": "{actor} 駁回了 {subject} 的申請",
       "auction_listed": "{actor} 放入競拍",
@@ -1470,11 +1502,11 @@
       "lottery": "{actor} 在「{label}」中抽中",
       "transfer": "{subject} 轉讓給 {actor}",
       "checkin": "{actor} 獲得點名戰利品",
-      "bank": "{actor} 從公會銀行取得",
+      "bank": "{actor} 從公會倉庫取得",
       "other": "{actor} 取得"
     },
     "returned": {
-      "bank": "解除鎖定，回到公會銀行",
+      "bank": "解除鎖定，回到公會倉庫",
       "backpack": "解除鎖定，回到背包"
     },
     "view": {

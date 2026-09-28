@@ -105,8 +105,13 @@ export const useGuildEvents = (guildIdOverride?: string) => {
       const newDate = new Date(prev.currentDate);
       switch (prev.view) {
         case 'month':
-          newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
+        case 'agenda': {
+          const targetMonth = newDate.getMonth() + (direction === 'next' ? 1 : -1);
+          const lastDay = new Date(newDate.getFullYear(), targetMonth + 1, 0).getDate();
+          newDate.setDate(Math.min(newDate.getDate(), lastDay));
+          newDate.setMonth(targetMonth);
           break;
+        }
         case 'week':
           newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
           break;
