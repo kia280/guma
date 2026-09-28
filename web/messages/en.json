@@ -16,25 +16,14 @@
   },
   "loginPage": {
     "loginWithDiscord": "Login with Discord",
-    "dontHaveAccount": "Don't have an account?",
-    "register": "Register",
-    "password": "Password",
-    "logIn": "Log In",
-    "emailAddress": "Email Address",
-    "rememberMe": "Remember me",
-    "forgotPassword": "Forgot password?",
-    "or": "or",
     "redirecting": "Redirecting to login...",
     "loginUnavailable": "Login is unavailable",
     "loginUnavailableDescription": "The authentication service could not be reached. Check that it is running, then try again.",
     "retry": "Try again",
     "welcomeBack": "Welcome back",
-    "showPassword": "Show password",
-    "hidePassword": "Hide password",
     "title": "Sign in to Guma",
-    "emailRequired": "Enter your email address.",
-    "emailInvalid": "Enter a valid email address, such as name@example.com.",
-    "passwordRequired": "Enter your password."
+    "discordLoginFailed": "Discord login failed",
+    "discordLoginFailedDescription": "We couldn't sign you in with Discord. Try again."
   },
   "sidebar": {
     "dashboard": "Dashboard",
