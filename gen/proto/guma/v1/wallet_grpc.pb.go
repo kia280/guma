@@ -19,18 +19,22 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	WalletService_GetWallet_FullMethodName                = "/guma.v1.WalletService/GetWallet"
-	WalletService_DepositFunds_FullMethodName             = "/guma.v1.WalletService/DepositFunds"
-	WalletService_WithdrawFunds_FullMethodName            = "/guma.v1.WalletService/WithdrawFunds"
-	WalletService_TransferFunds_FullMethodName            = "/guma.v1.WalletService/TransferFunds"
-	WalletService_ListTransactions_FullMethodName         = "/guma.v1.WalletService/ListTransactions"
-	WalletService_GetBalanceTrend_FullMethodName          = "/guma.v1.WalletService/GetBalanceTrend"
-	WalletService_ListBackpackItems_FullMethodName        = "/guma.v1.WalletService/ListBackpackItems"
-	WalletService_WithdrawBackpackItem_FullMethodName     = "/guma.v1.WalletService/WithdrawBackpackItem"
-	WalletService_TransferBackpackItem_FullMethodName     = "/guma.v1.WalletService/TransferBackpackItem"
-	WalletService_CancelBackpackWithdrawal_FullMethodName = "/guma.v1.WalletService/CancelBackpackWithdrawal"
-	WalletService_ListPendingDeliveries_FullMethodName    = "/guma.v1.WalletService/ListPendingDeliveries"
-	WalletService_ConfirmBackpackDelivery_FullMethodName  = "/guma.v1.WalletService/ConfirmBackpackDelivery"
+	WalletService_GetWallet_FullMethodName                  = "/guma.v1.WalletService/GetWallet"
+	WalletService_DepositFunds_FullMethodName               = "/guma.v1.WalletService/DepositFunds"
+	WalletService_WithdrawFunds_FullMethodName              = "/guma.v1.WalletService/WithdrawFunds"
+	WalletService_TransferFunds_FullMethodName              = "/guma.v1.WalletService/TransferFunds"
+	WalletService_ListTransactions_FullMethodName           = "/guma.v1.WalletService/ListTransactions"
+	WalletService_GetBalanceTrend_FullMethodName            = "/guma.v1.WalletService/GetBalanceTrend"
+	WalletService_ListBackpackItems_FullMethodName          = "/guma.v1.WalletService/ListBackpackItems"
+	WalletService_WithdrawBackpackItem_FullMethodName       = "/guma.v1.WalletService/WithdrawBackpackItem"
+	WalletService_TransferBackpackItem_FullMethodName       = "/guma.v1.WalletService/TransferBackpackItem"
+	WalletService_CancelBackpackWithdrawal_FullMethodName   = "/guma.v1.WalletService/CancelBackpackWithdrawal"
+	WalletService_ListPendingDeliveries_FullMethodName      = "/guma.v1.WalletService/ListPendingDeliveries"
+	WalletService_ConfirmBackpackDelivery_FullMethodName    = "/guma.v1.WalletService/ConfirmBackpackDelivery"
+	WalletService_ListMemberAssets_FullMethodName           = "/guma.v1.WalletService/ListMemberAssets"
+	WalletService_GetMemberAssets_FullMethodName            = "/guma.v1.WalletService/GetMemberAssets"
+	WalletService_AdminTransferFunds_FullMethodName         = "/guma.v1.WalletService/AdminTransferFunds"
+	WalletService_AdminTransferBackpackItems_FullMethodName = "/guma.v1.WalletService/AdminTransferBackpackItems"
 )
 
 // WalletServiceClient is the client API for WalletService service.
@@ -52,6 +56,10 @@ type WalletServiceClient interface {
 	CancelBackpackWithdrawal(ctx context.Context, in *CancelBackpackWithdrawalRequest, opts ...grpc.CallOption) (*CancelBackpackWithdrawalResponse, error)
 	ListPendingDeliveries(ctx context.Context, in *ListPendingDeliveriesRequest, opts ...grpc.CallOption) (*ListPendingDeliveriesResponse, error)
 	ConfirmBackpackDelivery(ctx context.Context, in *ConfirmBackpackDeliveryRequest, opts ...grpc.CallOption) (*ConfirmBackpackDeliveryResponse, error)
+	ListMemberAssets(ctx context.Context, in *ListMemberAssetsRequest, opts ...grpc.CallOption) (*ListMemberAssetsResponse, error)
+	GetMemberAssets(ctx context.Context, in *GetMemberAssetsRequest, opts ...grpc.CallOption) (*GetMemberAssetsResponse, error)
+	AdminTransferFunds(ctx context.Context, in *AdminTransferFundsRequest, opts ...grpc.CallOption) (*AdminTransferFundsResponse, error)
+	AdminTransferBackpackItems(ctx context.Context, in *AdminTransferBackpackItemsRequest, opts ...grpc.CallOption) (*AdminTransferBackpackItemsResponse, error)
 }
 
 type walletServiceClient struct {
@@ -182,6 +190,46 @@ func (c *walletServiceClient) ConfirmBackpackDelivery(ctx context.Context, in *C
 	return out, nil
 }
 
+func (c *walletServiceClient) ListMemberAssets(ctx context.Context, in *ListMemberAssetsRequest, opts ...grpc.CallOption) (*ListMemberAssetsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMemberAssetsResponse)
+	err := c.cc.Invoke(ctx, WalletService_ListMemberAssets_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletServiceClient) GetMemberAssets(ctx context.Context, in *GetMemberAssetsRequest, opts ...grpc.CallOption) (*GetMemberAssetsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMemberAssetsResponse)
+	err := c.cc.Invoke(ctx, WalletService_GetMemberAssets_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletServiceClient) AdminTransferFunds(ctx context.Context, in *AdminTransferFundsRequest, opts ...grpc.CallOption) (*AdminTransferFundsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminTransferFundsResponse)
+	err := c.cc.Invoke(ctx, WalletService_AdminTransferFunds_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *walletServiceClient) AdminTransferBackpackItems(ctx context.Context, in *AdminTransferBackpackItemsRequest, opts ...grpc.CallOption) (*AdminTransferBackpackItemsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminTransferBackpackItemsResponse)
+	err := c.cc.Invoke(ctx, WalletService_AdminTransferBackpackItems_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WalletServiceServer is the server API for WalletService service.
 // All implementations must embed UnimplementedWalletServiceServer
 // for forward compatibility.
@@ -201,6 +249,10 @@ type WalletServiceServer interface {
 	CancelBackpackWithdrawal(context.Context, *CancelBackpackWithdrawalRequest) (*CancelBackpackWithdrawalResponse, error)
 	ListPendingDeliveries(context.Context, *ListPendingDeliveriesRequest) (*ListPendingDeliveriesResponse, error)
 	ConfirmBackpackDelivery(context.Context, *ConfirmBackpackDeliveryRequest) (*ConfirmBackpackDeliveryResponse, error)
+	ListMemberAssets(context.Context, *ListMemberAssetsRequest) (*ListMemberAssetsResponse, error)
+	GetMemberAssets(context.Context, *GetMemberAssetsRequest) (*GetMemberAssetsResponse, error)
+	AdminTransferFunds(context.Context, *AdminTransferFundsRequest) (*AdminTransferFundsResponse, error)
+	AdminTransferBackpackItems(context.Context, *AdminTransferBackpackItemsRequest) (*AdminTransferBackpackItemsResponse, error)
 	mustEmbedUnimplementedWalletServiceServer()
 }
 
@@ -246,6 +298,18 @@ func (UnimplementedWalletServiceServer) ListPendingDeliveries(context.Context, *
 }
 func (UnimplementedWalletServiceServer) ConfirmBackpackDelivery(context.Context, *ConfirmBackpackDeliveryRequest) (*ConfirmBackpackDeliveryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ConfirmBackpackDelivery not implemented")
+}
+func (UnimplementedWalletServiceServer) ListMemberAssets(context.Context, *ListMemberAssetsRequest) (*ListMemberAssetsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMemberAssets not implemented")
+}
+func (UnimplementedWalletServiceServer) GetMemberAssets(context.Context, *GetMemberAssetsRequest) (*GetMemberAssetsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMemberAssets not implemented")
+}
+func (UnimplementedWalletServiceServer) AdminTransferFunds(context.Context, *AdminTransferFundsRequest) (*AdminTransferFundsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminTransferFunds not implemented")
+}
+func (UnimplementedWalletServiceServer) AdminTransferBackpackItems(context.Context, *AdminTransferBackpackItemsRequest) (*AdminTransferBackpackItemsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AdminTransferBackpackItems not implemented")
 }
 func (UnimplementedWalletServiceServer) mustEmbedUnimplementedWalletServiceServer() {}
 func (UnimplementedWalletServiceServer) testEmbeddedByValue()                       {}
@@ -484,6 +548,78 @@ func _WalletService_ConfirmBackpackDelivery_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletService_ListMemberAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMemberAssetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).ListMemberAssets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_ListMemberAssets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).ListMemberAssets(ctx, req.(*ListMemberAssetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WalletService_GetMemberAssets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMemberAssetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).GetMemberAssets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_GetMemberAssets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).GetMemberAssets(ctx, req.(*GetMemberAssetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WalletService_AdminTransferFunds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminTransferFundsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).AdminTransferFunds(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_AdminTransferFunds_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).AdminTransferFunds(ctx, req.(*AdminTransferFundsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _WalletService_AdminTransferBackpackItems_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminTransferBackpackItemsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletServiceServer).AdminTransferBackpackItems(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WalletService_AdminTransferBackpackItems_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletServiceServer).AdminTransferBackpackItems(ctx, req.(*AdminTransferBackpackItemsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WalletService_ServiceDesc is the grpc.ServiceDesc for WalletService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -538,6 +674,22 @@ var WalletService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ConfirmBackpackDelivery",
 			Handler:    _WalletService_ConfirmBackpackDelivery_Handler,
+		},
+		{
+			MethodName: "ListMemberAssets",
+			Handler:    _WalletService_ListMemberAssets_Handler,
+		},
+		{
+			MethodName: "GetMemberAssets",
+			Handler:    _WalletService_GetMemberAssets_Handler,
+		},
+		{
+			MethodName: "AdminTransferFunds",
+			Handler:    _WalletService_AdminTransferFunds_Handler,
+		},
+		{
+			MethodName: "AdminTransferBackpackItems",
+			Handler:    _WalletService_AdminTransferBackpackItems_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -13,6 +13,42 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const adminMoveBackpackItem = `-- name: AdminMoveBackpackItem :one
+UPDATE backpack_items SET
+    owner_id    = $1,
+    source      = 'admin',
+    source_id   = $2,
+    note        = NULLIF($3::text, ''),
+    acquired_at = NOW()
+WHERE backpack_items.id = $4
+  AND backpack_items.owner_id = $2
+  AND backpack_items.guild_id = $5
+  AND backpack_items.locked_by_type IS NULL
+  AND backpack_items.delivery_requested_at IS NULL
+RETURNING backpack_items.id
+`
+
+type AdminMoveBackpackItemParams struct {
+	ToUserID   uuid.UUID
+	FromUserID *uuid.UUID
+	Note       string
+	ID         uuid.UUID
+	GuildID    uuid.UUID
+}
+
+func (q *Queries) AdminMoveBackpackItem(ctx context.Context, arg AdminMoveBackpackItemParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, adminMoveBackpackItem,
+		arg.ToUserID,
+		arg.FromUserID,
+		arg.Note,
+		arg.ID,
+		arg.GuildID,
+	)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const cancelBackpackWithdrawal = `-- name: CancelBackpackWithdrawal :one
 UPDATE backpack_items SET delivery_requested_at = NULL
 WHERE id = $1 AND owner_id = $2 AND guild_id = $3 AND delivery_requested_at IS NOT NULL
@@ -161,25 +197,29 @@ func (q *Queries) GetWalletBalanceForUpdate(ctx context.Context, arg GetWalletBa
 }
 
 const insertTransaction = `-- name: InsertTransaction :one
-INSERT INTO transactions (user_id, guild_id, type, amount, balance_after, description, reference_id, reference_type)
+INSERT INTO transactions (user_id, guild_id, type, amount, balance_after, description, reference_id, reference_type, actor_id, counterparty_id)
 VALUES (
     $1, $2, $5::text, $3, $4,
     NULLIF($6::text, ''),
     NULLIF($7::text, '')::uuid,
-    NULLIF($8::text, '')
+    NULLIF($8::text, ''),
+    $9::uuid,
+    $10::uuid
 )
 RETURNING id
 `
 
 type InsertTransactionParams struct {
-	UserID        uuid.UUID
-	GuildID       uuid.UUID
-	Amount        int64
-	BalanceAfter  int64
-	Type          string
-	Description   string
-	ReferenceID   string
-	ReferenceType string
+	UserID         uuid.UUID
+	GuildID        uuid.UUID
+	Amount         int64
+	BalanceAfter   int64
+	Type           string
+	Description    string
+	ReferenceID    string
+	ReferenceType  string
+	ActorID        *uuid.UUID
+	CounterpartyID *uuid.UUID
 }
 
 func (q *Queries) InsertTransaction(ctx context.Context, arg InsertTransactionParams) (uuid.UUID, error) {
@@ -192,6 +232,8 @@ func (q *Queries) InsertTransaction(ctx context.Context, arg InsertTransactionPa
 		arg.Description,
 		arg.ReferenceID,
 		arg.ReferenceType,
+		arg.ActorID,
+		arg.CounterpartyID,
 	)
 	var id uuid.UUID
 	err := row.Scan(&id)
@@ -268,6 +310,81 @@ func (q *Queries) ListActiveLeadingBids(ctx context.Context, arg ListActiveLeadi
 	return items, nil
 }
 
+const listAllBackpackItems = `-- name: ListAllBackpackItems :many
+SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
+       bi.source, bi.source_id,
+       COALESCE(bi.note, '') AS note,
+       bi.acquired_at,
+       bi.delivery_requested_at,
+       COALESCE(
+           CASE bi.source
+               WHEN 'transfer' THEN member_display_name(bi.guild_id, bi.source_id)
+               WHEN 'admin'    THEN member_display_name(bi.guild_id, bi.source_id)
+               WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
+               WHEN 'checkin'  THEN (SELECT c.title FROM checkins c WHERE c.id = bi.source_id)
+           END,
+           ''
+       )::text AS source_label,
+       COALESCE(bi.locked_by_type, '') AS locked_by_type,
+       bi.locked_by_id
+FROM backpack_items bi
+WHERE bi.owner_id = $1 AND bi.guild_id = $2
+ORDER BY bi.acquired_at DESC, bi.id
+`
+
+type ListAllBackpackItemsParams struct {
+	OwnerID uuid.UUID
+	GuildID uuid.UUID
+}
+
+type ListAllBackpackItemsRow struct {
+	ID                  uuid.UUID
+	OwnerID             uuid.UUID
+	GuildID             uuid.UUID
+	Item                []byte
+	Source              string
+	SourceID            *uuid.UUID
+	Note                string
+	AcquiredAt          time.Time
+	DeliveryRequestedAt pgtype.Timestamptz
+	SourceLabel         string
+	LockedByType        string
+	LockedByID          *uuid.UUID
+}
+
+func (q *Queries) ListAllBackpackItems(ctx context.Context, arg ListAllBackpackItemsParams) ([]ListAllBackpackItemsRow, error) {
+	rows, err := q.db.Query(ctx, listAllBackpackItems, arg.OwnerID, arg.GuildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListAllBackpackItemsRow{}
+	for rows.Next() {
+		var i ListAllBackpackItemsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OwnerID,
+			&i.GuildID,
+			&i.Item,
+			&i.Source,
+			&i.SourceID,
+			&i.Note,
+			&i.AcquiredAt,
+			&i.DeliveryRequestedAt,
+			&i.SourceLabel,
+			&i.LockedByType,
+			&i.LockedByID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listBackpackItems = `-- name: ListBackpackItems :many
 SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
        bi.source, bi.source_id,
@@ -277,6 +394,7 @@ SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
        COALESCE(
            CASE bi.source
                WHEN 'transfer' THEN member_display_name(bi.guild_id, bi.source_id)
+               WHEN 'admin'    THEN member_display_name(bi.guild_id, bi.source_id)
                WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
                WHEN 'checkin'  THEN (SELECT c.title FROM checkins c WHERE c.id = bi.source_id)
            END,
@@ -340,6 +458,41 @@ func (q *Queries) ListBackpackItems(ctx context.Context, arg ListBackpackItemsPa
 			&i.LockedByType,
 			&i.LockedByID,
 		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMemberAssets = `-- name: ListMemberAssets :many
+SELECT m.user_id,
+       COALESCE(w.balance, 0)::bigint AS balance,
+       (SELECT COUNT(*) FROM backpack_items bi WHERE bi.owner_id = m.user_id AND bi.guild_id = m.guild_id)::int AS item_count
+FROM members m
+LEFT JOIN wallets w ON w.user_id = m.user_id AND w.guild_id = m.guild_id
+WHERE m.guild_id = $1
+`
+
+type ListMemberAssetsRow struct {
+	UserID    uuid.UUID
+	Balance   int64
+	ItemCount int32
+}
+
+func (q *Queries) ListMemberAssets(ctx context.Context, guildID uuid.UUID) ([]ListMemberAssetsRow, error) {
+	rows, err := q.db.Query(ctx, listMemberAssets, guildID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListMemberAssetsRow{}
+	for rows.Next() {
+		var i ListMemberAssetsRow
+		if err := rows.Scan(&i.UserID, &i.Balance, &i.ItemCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -448,7 +601,11 @@ SELECT id, user_id, guild_id, type, amount, balance_after,
        COALESCE(description, '')       AS description,
        reference_id,
        COALESCE(reference_type, '')    AS reference_type,
-       created_at
+       created_at,
+       actor_id,
+       COALESCE(member_display_name(guild_id, actor_id), '')::text        AS actor_name,
+       counterparty_id,
+       COALESCE(member_display_name(guild_id, counterparty_id), '')::text AS counterparty_name
 FROM transactions
 WHERE user_id = $1 AND guild_id = $2
   AND ($3::text = '' OR type = $3::text)
@@ -465,16 +622,20 @@ type ListWalletTransactionsParams struct {
 }
 
 type ListWalletTransactionsRow struct {
-	ID            uuid.UUID
-	UserID        uuid.UUID
-	GuildID       uuid.UUID
-	Type          string
-	Amount        int64
-	BalanceAfter  int64
-	Description   string
-	ReferenceID   *uuid.UUID
-	ReferenceType string
-	CreatedAt     time.Time
+	ID               uuid.UUID
+	UserID           uuid.UUID
+	GuildID          uuid.UUID
+	Type             string
+	Amount           int64
+	BalanceAfter     int64
+	Description      string
+	ReferenceID      *uuid.UUID
+	ReferenceType    string
+	CreatedAt        time.Time
+	ActorID          *uuid.UUID
+	ActorName        string
+	CounterpartyID   *uuid.UUID
+	CounterpartyName string
 }
 
 func (q *Queries) ListWalletTransactions(ctx context.Context, arg ListWalletTransactionsParams) ([]ListWalletTransactionsRow, error) {
@@ -503,6 +664,10 @@ func (q *Queries) ListWalletTransactions(ctx context.Context, arg ListWalletTran
 			&i.ReferenceID,
 			&i.ReferenceType,
 			&i.CreatedAt,
+			&i.ActorID,
+			&i.ActorName,
+			&i.CounterpartyID,
+			&i.CounterpartyName,
 		); err != nil {
 			return nil, err
 		}
@@ -596,6 +761,15 @@ func (q *Queries) RequestBackpackWithdrawal(ctx context.Context, arg RequestBack
 		&i.DeliveryRequestedAt,
 	)
 	return i, err
+}
+
+const setActingAdmin = `-- name: SetActingAdmin :exec
+SELECT set_config('guma.acting_admin_id', $1::text, true)
+`
+
+func (q *Queries) SetActingAdmin(ctx context.Context, adminID string) error {
+	_, err := q.db.Exec(ctx, setActingAdmin, adminID)
+	return err
 }
 
 const sumWalletTransactionsBefore = `-- name: SumWalletTransactionsBefore :one

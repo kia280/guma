@@ -94,6 +94,32 @@ service WalletService {
       body: "*"
     };
   }
+
+  rpc ListMemberAssets(ListMemberAssetsRequest) returns (ListMemberAssetsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/admin/member-assets"
+    };
+  }
+
+  rpc GetMemberAssets(GetMemberAssetsRequest) returns (GetMemberAssetsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/admin/member-assets/{user_id}"
+    };
+  }
+
+  rpc AdminTransferFunds(AdminTransferFundsRequest) returns (AdminTransferFundsResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/admin/member-assets/{user_id}/funds/transfer"
+      body: "*"
+    };
+  }
+
+  rpc AdminTransferBackpackItems(AdminTransferBackpackItemsRequest) returns (AdminTransferBackpackItemsResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/admin/member-assets/{user_id}/items/transfer"
+      body: "*"
+    };
+  }
 }
 
 // Request/Response messages
@@ -221,6 +247,10 @@ message Transaction {
   string reference_id = 8;    // Linked entity ID (auction_id, lottery_id, etc.)
   string reference_type = 9;  // "auction" | "lottery" | "checkin" | "manual"
   google.protobuf.Timestamp created_at = 10;
+  string actor_id = 11;
+  string actor_name = 12;
+  string counterparty_id = 13;
+  string counterparty_name = 14;
 }
 
 message BackpackItem {
@@ -262,4 +292,56 @@ message ConfirmBackpackDeliveryRequest {
 
 message ConfirmBackpackDeliveryResponse {
   BackpackItem item = 1;
+}
+
+message ListMemberAssetsRequest {
+  string guild_id = 1;
+}
+
+message MemberAssetSummary {
+  string user_id = 1;
+  int64 balance = 2;
+  int32 item_count = 3;
+}
+
+message ListMemberAssetsResponse {
+  repeated MemberAssetSummary members = 1;
+}
+
+message GetMemberAssetsRequest {
+  string guild_id = 1;
+  string user_id = 2;
+}
+
+message GetMemberAssetsResponse {
+  string user_id = 1;
+  int64 balance = 2;
+  repeated BackpackItem items = 3;
+}
+
+message AdminTransferFundsRequest {
+  string guild_id = 1;
+  string user_id = 2;
+  string to_user_id = 3;
+  bool to_guild_bank = 4;
+  int64 amount = 5;
+  string note = 6;
+}
+
+message AdminTransferFundsResponse {
+  Transaction transaction = 1;
+  int64 balance = 2;
+}
+
+message AdminTransferBackpackItemsRequest {
+  string guild_id = 1;
+  string user_id = 2;
+  repeated string item_ids = 3;
+  string to_user_id = 4;
+  bool to_guild_bank = 5;
+  string note = 6;
+}
+
+message AdminTransferBackpackItemsResponse {
+  repeated string item_ids = 1;
 }
