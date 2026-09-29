@@ -60,7 +60,12 @@ export function ConfirmDialog({
 
   return (
     <AlertDialog>
-      <AlertDialog.Backdrop isOpen={isOpen} onOpenChange={handleOpenChange} isDismissable={!isPending}>
+      <AlertDialog.Backdrop
+        isOpen={isOpen}
+        onOpenChange={handleOpenChange}
+        isDismissable={!isPending}
+        isKeyboardDismissDisabled={isPending}
+      >
         <AlertDialog.Container size="sm">
           <AlertDialog.Dialog>
             {isDone && success ? (
@@ -69,10 +74,10 @@ export function ConfirmDialog({
               <>
                 <AlertDialog.Header>
                   <AlertDialog.Icon status={status} />
-                  <AlertDialog.Heading>{heading}</AlertDialog.Heading>
+                  <AlertDialog.Heading className="wrap-anywhere">{heading}</AlertDialog.Heading>
                 </AlertDialog.Header>
                 <AlertDialog.Body className="flex flex-col gap-2">
-                  <p className="type-body text-subtle">{body}</p>
+                  <p className="type-body text-subtle wrap-anywhere">{body}</p>
                   {failed && (
                     <p role="alert" className="type-caption text-danger">
                       {failedMessage}
@@ -80,10 +85,15 @@ export function ConfirmDialog({
                   )}
                 </AlertDialog.Body>
                 <AlertDialog.Footer>
-                  <Button slot="close" variant="tertiary" isDisabled={isPending}>
+                  <Button slot="close" variant="tertiary" className="max-sm:h-11" isDisabled={isPending}>
                     {t('cancel')}
                   </Button>
-                  <Button variant={status === 'danger' ? 'danger' : 'primary'} onPress={confirm} isPending={isPending}>
+                  <Button
+                    variant={status === 'danger' ? 'danger' : 'primary'}
+                    className="max-sm:h-11"
+                    onPress={confirm}
+                    isPending={isPending}
+                  >
                     {({ isPending }) => (
                       <>
                         {isPending && <Spinner color="current" size="sm" />}
