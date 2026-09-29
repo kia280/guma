@@ -128,7 +128,7 @@ export default function ProfilePage() {
 
       {/* Avatar */}
       <Card className="border border-divider shadow-none bg-surface">
-        <Card.Content className="flex flex-row items-center gap-4 sm:gap-5 p-4 sm:p-5">
+        <Card.Content className="flex flex-row flex-wrap items-center gap-4 sm:flex-nowrap sm:gap-5 p-4 sm:p-5">
           <div className="relative shrink-0">
             <UserAvatar
               name={shownName}
@@ -148,17 +148,18 @@ export default function ProfilePage() {
             </button>
           </div>
           <div className="flex flex-col gap-1 flex-1 min-w-0 type-caption">
-            <p className="type-subheading text-foreground truncate">{shownName}</p>
+            <p className="type-subheading text-foreground line-clamp-2 wrap-anywhere">{shownName}</p>
             {guildRole && (
               <Chip size="sm" variant="secondary" color={roleColor} className="w-fit mt-0.5 whitespace-nowrap">
                 {roleLabel}
               </Chip>
             )}
           </div>
-          <div className="shrink-0">
+          <div className="w-full sm:w-auto sm:shrink-0">
             <Button
               size="sm"
               variant="secondary"
+              className="max-sm:h-11 max-sm:w-full"
               onPress={toggleEditing}
             >
               {isEditing ? t('cancel') : t('editProfile')}
@@ -179,26 +180,37 @@ export default function ProfilePage() {
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-4">
-          <TextField
-            isReadOnly={!isEditing}
-            isRequired={isEditing}
-            isInvalid={isEditing && !!draftErrors.displayName}
-          >
-            <Label>{t('name')}</Label>
-            <Input value={displayName} onChange={e => setDisplayName(e.target.value)} />
-            {isEditing && (
-              draftErrors.displayName ? (
-                <FieldError>{draftErrors.displayName}</FieldError>
-              ) : (
-                <Description>{t('nameHint', { max: NAME_MAX_LENGTH })}</Description>
-              )
-            )}
-          </TextField>
-          <TextField isReadOnly={!isEditing} isInvalid={isEditing && !!draftErrors.bio}>
-            <Label>{t('bio')}</Label>
-            <TextArea value={bio} onChange={e => setBio(e.target.value)} rows={2} />
-            {isEditing && draftErrors.bio && <FieldError>{draftErrors.bio}</FieldError>}
-          </TextField>
+          {isEditing ? (
+            <>
+              <TextField isRequired isInvalid={!!draftErrors.displayName}>
+                <Label>{t('name')}</Label>
+                <Input value={displayName} onChange={e => setDisplayName(e.target.value)} />
+                {draftErrors.displayName ? (
+                  <FieldError>{draftErrors.displayName}</FieldError>
+                ) : (
+                  <Description>{t('nameHint', { max: NAME_MAX_LENGTH })}</Description>
+                )}
+              </TextField>
+              <TextField isInvalid={!!draftErrors.bio}>
+                <Label>{t('bio')}</Label>
+                <TextArea value={bio} onChange={e => setBio(e.target.value)} rows={4} />
+                {draftErrors.bio && <FieldError>{draftErrors.bio}</FieldError>}
+              </TextField>
+            </>
+          ) : (
+            <dl className="flex flex-col gap-4 type-body">
+              <div className="flex flex-col gap-1">
+                <dt className="type-label text-soft">{t('name')}</dt>
+                <dd className="text-foreground wrap-anywhere">{shownName}</dd>
+              </div>
+              <div className="flex flex-col gap-1">
+                <dt className="type-label text-soft">{t('bio')}</dt>
+                <dd className={`whitespace-pre-line wrap-break-word ${user?.bio ? 'text-foreground' : 'text-hint'}`}>
+                  {user?.bio || t('bioEmpty')}
+                </dd>
+              </div>
+            </dl>
+          )}
           {isEditing && (
             <div className="flex items-center justify-end gap-3">
               {saveError && (

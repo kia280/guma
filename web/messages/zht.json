@@ -937,7 +937,8 @@
     "nameTooLong": "名稱最多 {max} 個字元。",
     "nameTaken": "公會裡已經有成員使用這個名稱。",
     "bioTooLong": "個人簡介最多 {max} 個字元。",
-    "saveInvalid": "請修正標示的欄位後再試一次。"
+    "saveInvalid": "請修正標示的欄位後再試一次。",
+    "bioEmpty": "尚未填寫個人簡介。"
   },
   "preferencePage": {
     "title": "偏好設定",

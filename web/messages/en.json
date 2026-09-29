@@ -937,7 +937,8 @@
     "nameTooLong": "Names can be up to {max} characters.",
     "nameTaken": "Another member of this guild already uses this name.",
     "bioTooLong": "Bio must be at most {max} characters.",
-    "saveInvalid": "Please fix the highlighted fields and try again."
+    "saveInvalid": "Please fix the highlighted fields and try again.",
+    "bioEmpty": "No bio yet."
   },
   "preferencePage": {
     "title": "Preference",
