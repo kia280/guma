@@ -101,16 +101,21 @@ export function DevAuthPanel() {
     }
   };
 
+  const enterAsDevUser = () => {
+    setDevMockEnabled(false);
+    window.location.assign(AFTER_LOGIN_PATH);
+  };
+
   const loginAs = (user: DevUser) =>
     run(`login:${user.id}`, async () => {
       await devLoginAs(user.id);
-      window.location.assign(AFTER_LOGIN_PATH);
+      enterAsDevUser();
     });
 
   const createAndLogin = () =>
     run('create', async () => {
       await createDevUser(newName, true);
-      window.location.assign(AFTER_LOGIN_PATH);
+      enterAsDevUser();
     });
 
   const seedMembers = async () => {
@@ -233,7 +238,7 @@ export function DevAuthPanel() {
             <Label>{t('displayName')}</Label>
             <Input className="min-w-0" placeholder={t('displayNamePlaceholder')} />
           </TextField>
-          <Button type="submit" size="sm" isPending={pendingAction === 'create'}>
+          <Button type="submit" size="sm" isPending={pendingAction === 'create'} isDisabled={env.useMock}>
             {t('createAndLogin')}
           </Button>
         </form>
@@ -339,7 +344,7 @@ export function DevAuthPanel() {
                       size="sm"
                       variant="secondary"
                       isPending={pendingAction === `login:${user.id}`}
-                      isDisabled={pendingAction !== null}
+                      isDisabled={pendingAction !== null || env.useMock}
                       onPress={() => void loginAs(user)}
                     >
                       {t('login')}

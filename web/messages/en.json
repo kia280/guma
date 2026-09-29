@@ -1177,6 +1177,8 @@
     "empty": "No users found",
     "active": "Current",
     "login": "Log in",
+    "actingAs": "Acting as {name}",
+    "backToMyAccount": "Stop acting as {name} and return to my account",
     "mockData": "Use mock data",
     "mockDataDescription": "Serve all API calls from the in-memory mock client. Dashboard pages open without logging in. The page reloads when toggled.",
     "mockDataForcedByEnv": "Forced on by NEXT_PUBLIC_USE_MOCK.",

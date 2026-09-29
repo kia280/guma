@@ -10,10 +10,12 @@ import { useMediaQuery } from 'usehooks-ts';
 import { NotificationBell, SidebarDrawer } from '@/components';
 import { AppSidebar, ShortcutKeys } from '@/components/AppSidebar';
 import { DashboardBreadcrumbs } from '@/components/DashboardBreadcrumbs';
+import { DevImpersonationIndicator } from '@/components/dev/DevImpersonationIndicator';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useDashboardShortcuts } from '@/hooks/useDashboardShortcuts';
 import { useLiveBalance } from '@/hooks/useLiveBalance';
 import { CurrentGuildProvider } from '@/lib/current-guild';
+import { env } from '@/lib/env';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { isGuildRole } from '@/lib/permissions';
 import { clearSession } from '@/lib/session';
@@ -116,6 +118,8 @@ export default function DashboardLayout({ children, modal }: { children: React.R
               </React.Suspense>
 
               <div className="ml-auto flex items-center gap-2">
+                {env.devTools && <DevImpersonationIndicator />}
+
                 <Button
                   isIconOnly
                   size="sm"
