@@ -170,16 +170,20 @@ export function RollCallLootDistribution({ rollCallId, lootList, attendees, onVa
               <div className="p-1.5 rounded-lg bg-default shrink-0">
                 <Icon icon="solar:box-linear" width={16} className="text-subtle" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="type-body font-medium text-foreground truncate">{loot.name}</p>
-                {loot.winner && <p className="type-caption text-hint">{t('wonBy', { name: loot.winner })}</p>}
+              <div className="flex-1 min-w-0 sm:flex sm:items-center sm:gap-3">
+                <div className="min-w-0 sm:flex-1">
+                  <p className="type-body font-medium text-foreground wrap-break-word">{loot.name}</p>
+                  {loot.winner && <p className="type-caption text-hint">{t('wonBy', { name: loot.winner })}</p>}
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-2 empty:hidden sm:mt-0 sm:shrink-0">
+                  {(loot.quantity ?? 0) > 1 && (
+                    <Chip size="sm" variant="secondary">
+                      ×{loot.quantity}
+                    </Chip>
+                  )}
+                  {rowStatus(loot)}
+                </div>
               </div>
-              {(loot.quantity ?? 0) > 1 && (
-                <Chip size="sm" variant="secondary">
-                  ×{loot.quantity}
-                </Chip>
-              )}
-              {rowStatus(loot)}
               {showActions && (
                 <Dropdown>
                   <Button
