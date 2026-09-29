@@ -164,6 +164,7 @@ export default function CalendarPage() {
         state={formModalState}
         onSubmit={handleFormSubmit}
         event={selectedEvent}
+        initialDate={calendarView.currentDate}
         isLoading={isCreating || isUpdating}
       />
 

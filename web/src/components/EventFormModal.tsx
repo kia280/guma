@@ -39,6 +39,7 @@ interface EventFormModalProps {
   state: UseOverlayStateReturn;
   onSubmit: (data: CreateEventData | UpdateEventData) => Promise<void>;
   event?: GuildEvent | null;
+  initialDate?: Date;
   isLoading?: boolean;
 }
 
@@ -92,6 +93,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
   state,
   onSubmit,
   event,
+  initialDate,
   isLoading = false,
 }) => {
   const t = useTranslations('eventFormModal');
@@ -125,6 +127,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     },
   });
 
+  const initialDateInput = toLocalDateInput(initialDate ?? new Date());
   const isAllDay = watch('isAllDay');
   const isRecurring = watch('isRecurring');
   const recurringType = watch('recurringType');
@@ -158,7 +161,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         title: '',
         description: '',
         type: 'other',
-        startDate: toLocalDateInput(new Date()),
+        startDate: initialDateInput,
         startTime: '09:00',
         endDate: '',
         endTime: '10:00',
@@ -173,7 +176,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         recurringSeconds: 0,
       });
     }
-  }, [event, reset]);
+  }, [event, reset, initialDateInput, state.isOpen]);
 
   const dateRangeMessage = t('dateOutOfRange', {
     min: MIN_EVENT_DATE.year,
