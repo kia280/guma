@@ -247,7 +247,7 @@ export default function CalendarPage() {
                 <Modal.Footer className="flex-wrap justify-between gap-2">
                   <Button variant="ghost" className="text-danger" onPress={deleteModalState.open}>
                     <Icon icon="solar:trash-bin-trash-linear" width={16} aria-hidden />
-                    {t('deleteEvent')}
+                    {selectedEvent.isRecurring ? t('deleteSeries') : t('deleteEvent')}
                   </Button>
                   <Button
                     variant="primary"
@@ -257,7 +257,7 @@ export default function CalendarPage() {
                     }}
                   >
                     <Icon icon="solar:pen-linear" width={16} aria-hidden />
-                    {t('editEvent')}
+                    {selectedEvent.isRecurring ? t('editSeries') : t('editEvent')}
                   </Button>
                 </Modal.Footer>
               </>
@@ -274,17 +274,26 @@ export default function CalendarPage() {
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header className="text-center items-center">
-              <Modal.Heading>{t('deleteEvent')}</Modal.Heading>
+              <Modal.Heading>{selectedEvent?.isRecurring ? t('deleteSeries') : t('deleteEvent')}</Modal.Heading>
             </Modal.Header>
             <Modal.Body className="flex flex-col gap-3">
-              <p>{t('deleteConfirm')}</p>
+              <p>{selectedEvent?.isRecurring ? t('deleteSeriesConfirm') : t('deleteConfirm')}</p>
               {selectedEvent && (
                 <div className="p-3 bg-danger/10 border border-danger/20 rounded-lg">
                   <p className="type-body font-medium text-danger">{selectedEvent.title}</p>
-                  {selectedWhen && (
-                    <p className="type-caption text-subtle mt-0.5 tabular-nums">
-                      {selectedWhen.date} · {selectedWhen.time}
+                  {selectedEvent.isRecurring ? (
+                    <p className="type-caption text-subtle mt-0.5">
+                      {t('repeatsEvery', {
+                        type: selectedEvent.recurringPattern?.type ?? 'custom',
+                        interval: selectedEvent.recurringPattern?.interval ?? 1,
+                      })}
                     </p>
+                  ) : (
+                    selectedWhen && (
+                      <p className="type-caption text-subtle mt-0.5 tabular-nums">
+                        {selectedWhen.date} · {selectedWhen.time}
+                      </p>
+                    )
                   )}
                 </div>
               )}
@@ -294,7 +303,7 @@ export default function CalendarPage() {
                 {t('cancel')}
               </Button>
               <Button variant="danger" onPress={handleDeleteEvent} isPending={isDeleting}>
-                {t('deleteEvent')}
+                {selectedEvent?.isRecurring ? t('deleteSeries') : t('deleteEvent')}
               </Button>
             </Modal.Footer>
           </Modal.Dialog>

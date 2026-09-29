@@ -408,7 +408,10 @@
     "when": "時間",
     "where": "地點",
     "recurrence": "重複",
-    "organizer": "建立者"
+    "organizer": "建立者",
+    "editSeries": "編輯整個系列",
+    "deleteSeries": "刪除整個系列",
+    "deleteSeriesConfirm": "這是重複活動。刪除後，所有日期的場次都會一併移除，不只是這一天。此操作無法撤銷。"
   },
   "eventFormModal": {
     "editEvent": "編輯活動",
@@ -449,7 +452,9 @@
     "updateSuccess": "活動已更新。",
     "saveFailed": "無法儲存活動，請再試一次。",
     "dateOutOfRange": "請輸入 {min} 年至 {max} 年之間的日期。",
-    "endBeforeStart": "結束時間必須晚於開始時間。"
+    "endBeforeStart": "結束時間必須晚於開始時間。",
+    "editSeries": "編輯重複活動系列",
+    "editSeriesNote": "變更會套用到此系列的所有場次。開始日期是系列的第一場。"
   },
   "adminPage": {
     "discordUsername": "Discord 使用者名稱",

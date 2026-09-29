@@ -251,7 +251,10 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
           <Modal.CloseTrigger />
           <form onSubmit={handleSubmit(onFormSubmit)} className="contents">
             <Modal.Header className="text-center items-center pb-2 border-b border-divider">
-              <Modal.Heading>{event ? t('editEvent') : t('createNewEvent')}</Modal.Heading>
+              <Modal.Heading>
+                {event?.isRecurring ? t('editSeries') : event ? t('editEvent') : t('createNewEvent')}
+              </Modal.Heading>
+              {event?.isRecurring && <p className="type-caption text-subtle text-balance">{t('editSeriesNote')}</p>}
             </Modal.Header>
 
             <Modal.Body className="p-1 gap-4 flex flex-col">

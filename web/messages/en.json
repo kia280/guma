@@ -408,7 +408,10 @@
     "when": "When",
     "where": "Location",
     "recurrence": "Recurrence",
-    "organizer": "Organizer"
+    "organizer": "Organizer",
+    "editSeries": "Edit series",
+    "deleteSeries": "Delete series",
+    "deleteSeriesConfirm": "This is a recurring event. Deleting it removes every occurrence, not just this date. This action cannot be undone."
   },
   "eventFormModal": {
     "editEvent": "Edit Event",
@@ -449,7 +452,9 @@
     "updateSuccess": "Event updated.",
     "saveFailed": "Could not save the event. Please try again.",
     "dateOutOfRange": "Enter a date between {min} and {max}.",
-    "endBeforeStart": "End must be after the start."
+    "endBeforeStart": "End must be after the start.",
+    "editSeries": "Edit recurring series",
+    "editSeriesNote": "Changes apply to every occurrence. The start date is the first occurrence of the series."
   },
   "adminPage": {
     "discordUsername": "Discord username",
