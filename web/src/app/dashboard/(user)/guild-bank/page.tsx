@@ -774,13 +774,15 @@ export default function GuildBankPage() {
                           {getContributionLabel(entry.type)}
                         </p>
                       </div>
-                      {entry.href && entry.note && (
+                      {entry.note && entry.href ? (
                         <Link
                           href={entry.href}
-                          className="self-start rounded type-caption text-hint hover:text-accent truncate max-w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                          className="self-start rounded type-caption text-hint hover:text-accent line-clamp-2 max-w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                         >
                           {entry.note}
                         </Link>
+                      ) : entry.note && (
+                        <p className="type-caption text-hint line-clamp-2 wrap-break-word">{entry.note}</p>
                       )}
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap type-caption">
                         <p className="text-hint">{userName(entry.member)}</p>
