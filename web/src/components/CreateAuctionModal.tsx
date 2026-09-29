@@ -121,7 +121,7 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header className="flex-col items-start gap-1">
-              <h2 className="type-heading text-foreground">{t('createNewAuction')}</h2>
+              <Modal.Heading>{t('createNewAuction')}</Modal.Heading>
               <p className="type-caption text-hint">{t('subtitle')}</p>
             </Modal.Header>
             <Modal.Body>

@@ -128,7 +128,7 @@ export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotter
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header className="flex-col items-start gap-1">
-              <h2 className="type-heading text-foreground">{t('title')}</h2>
+              <Modal.Heading>{t('title')}</Modal.Heading>
               <p className="type-caption text-hint">{t('subtitle')}</p>
             </Modal.Header>
             <Modal.Body>
