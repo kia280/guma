@@ -68,6 +68,7 @@ export default function AnnouncementEditorPage() {
   const savedKey = React.useRef('');
   const inFlight = React.useRef<Promise<boolean> | null>(null);
   const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const pendingHref = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -161,6 +162,26 @@ export default function AnnouncementEditorPage() {
 
   const hasUnsavedChanges = () => latest.current !== null && draftKey(latest.current) !== savedKey.current;
 
+  const hasUnsavedChangesRef = React.useRef(hasUnsavedChanges);
+  React.useEffect(() => { hasUnsavedChangesRef.current = hasUnsavedChanges; });
+
+  React.useEffect(() => {
+    const guardLinks = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const anchor = (event.target as Element | null)?.closest?.('a[href]');
+      if (!(anchor instanceof HTMLAnchorElement) || anchor.target === '_blank') return;
+      const url = new URL(anchor.href, window.location.href);
+      if (url.origin !== window.location.origin || url.pathname === window.location.pathname) return;
+      if (isDraftRef.current || !hasUnsavedChangesRef.current()) return;
+      event.preventDefault();
+      event.stopPropagation();
+      pendingHref.current = `${url.pathname}${url.search}`;
+      setPendingConfirm('discard');
+    };
+    document.addEventListener('click', guardLinks, true);
+    return () => document.removeEventListener('click', guardLinks, true);
+  }, []);
+
   const unpublish = async () => {
     const ann = await apiClient.unpublishAnnouncement(guildId, id);
     isDraftRef.current = true;
@@ -175,6 +196,7 @@ export default function AnnouncementEditorPage() {
 
   const leave = async () => {
     if (!isDraftRef.current && hasUnsavedChanges()) {
+      pendingHref.current = null;
       setPendingConfirm('discard');
       return;
     }
@@ -184,7 +206,7 @@ export default function AnnouncementEditorPage() {
 
   const discardAndLeave = () => {
     latest.current = null;
-    router.push(ANNOUNCEMENTS_HREF);
+    router.push(pendingHref.current ?? ANNOUNCEMENTS_HREF);
   };
 
   const publish = async () => {
