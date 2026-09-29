@@ -6,6 +6,8 @@ import { dayKey, eventTone, isSameDay, sortForDay } from '@/lib/calendar';
 import type { EventOccurrence } from '@/lib/event-occurrences';
 import { WEEKDAY_KEYS } from './MonthGrid';
 
+const MAX_DOTS = 3;
+
 interface MiniMonthProps {
   days: Date[];
   currentDate: Date;
@@ -27,7 +29,6 @@ export function MiniMonth({ days, currentDate, occurrencesByDay, format, onSelec
       ))}
       {days.map(day => {
         const occurrences = sortForDay(occurrencesByDay.get(dayKey(day)) ?? [], day);
-        const first = occurrences[0];
         const isSelected = isSameDay(day, currentDate);
         const isToday = isSameDay(day, today);
         const isOutside = day.getMonth() !== currentDate.getMonth();
@@ -54,16 +55,17 @@ export function MiniMonth({ days, currentDate, occurrencesByDay, format, onSelec
             >
               {day.getDate()}
             </span>
-            {first && (
-              <span aria-hidden className="flex min-w-0 flex-col">
-                <span
-                  className="overflow-hidden whitespace-nowrap text-clip rounded-sm px-1 text-left type-caption text-foreground"
-                  style={{ backgroundColor: eventTone(first.event).tint, boxShadow: `inset 2px 0 0 ${eventTone(first.event).accent}` }}
-                >
-                  {first.event.title}
-                </span>
-                {occurrences.length > 1 && (
-                  <span className="px-1 text-left type-caption tabular-nums text-soft">+{occurrences.length - 1}</span>
+            {occurrences.length > 0 && (
+              <span aria-hidden className="flex h-3 items-center justify-center gap-0.5">
+                {occurrences.slice(0, MAX_DOTS).map(occurrence => (
+                  <span
+                    key={occurrence.key}
+                    className="size-1.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: eventTone(occurrence.event).accent }}
+                  />
+                ))}
+                {occurrences.length > MAX_DOTS && (
+                  <span className="type-caption leading-none tabular-nums text-soft">+{occurrences.length - MAX_DOTS}</span>
                 )}
               </span>
             )}
