@@ -299,7 +299,9 @@
       "ended": "已結束",
       "cancelled": "已取消"
     },
-    "cancelledFooter": "抽獎已取消"
+    "cancelledFooter": "抽獎已取消",
+    "prize": "獎品",
+    "plusItems": "另加 {items}"
   },
   "auctionPage": {
     "searchItems": "搜尋物品...",

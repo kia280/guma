@@ -299,7 +299,9 @@
       "ended": "Ended",
       "cancelled": "Cancelled"
     },
-    "cancelledFooter": "Lottery cancelled"
+    "cancelledFooter": "Lottery cancelled",
+    "prize": "Prize",
+    "plusItems": "Plus {items}"
   },
   "auctionPage": {
     "searchItems": "Search items...",

@@ -8,9 +8,9 @@ import { useCountdown } from '@/hooks/useNow';
 import { useUserName } from '@/hooks/useUserName';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
-import { formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
+import { formatPrize, prizeItemNames, useFormatGold } from '@/lib/guma/useFormatGold';
 import { lotteryStatusColor } from '@/lib/status-colors';
-import type { LotteryStatus } from '@/types/lottery';
+import type { LotteryPrize, LotteryStatus } from '@/types/lottery';
 import { CardFooterStatus } from './CardFooterStatus';
 import { CardLinkHint } from './CardLinkHint';
 import { UserAvatar } from './UserAvatar';
@@ -27,6 +27,7 @@ interface LotteryCardProps {
   id: string;
   title: string;
   prizePool: number;
+  prizes?: LotteryPrize[];
   ticketPrice: number;
   drawDate: string;
   ticketsSold: number;
@@ -39,6 +40,7 @@ const LotteryCard = ({
   id,
   title,
   prizePool,
+  prizes,
   ticketPrice,
   drawDate,
   ticketsSold,
@@ -60,13 +62,14 @@ const LotteryCard = ({
   const countdown = (key: 'timeLeftValue' | 'startsIn') =>
     isExpired ? t('drawComplete') : t(key, { duration: formatCountdown(remainingMs) });
 
+  const itemPrizes = format.list(prizeItemNames(prizes, formatGold));
   const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
 
   return (
     <Card className="group border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
       <Card.Header className="pb-2">
-        <div className="flex justify-between items-start w-full">
-          <div className="type-caption">
+        <div className="flex justify-between items-start gap-3 w-full">
+          <div className="min-w-0 type-caption">
             <Chip
               size="sm"
               color={isDrawing ? 'accent' : lotteryStatusColor[status]}
@@ -75,7 +78,7 @@ const LotteryCard = ({
             >
               {isDrawing ? t('drawingNow') : t(`status.${status}`)}
             </Chip>
-            <h4 className="type-subheading text-foreground">
+            <h4 className="type-subheading text-foreground line-clamp-2 wrap-anywhere" title={title}>
               <Link href={href} className="outline-none after:absolute after:inset-0">
                 {title}
               </Link>
@@ -89,8 +92,22 @@ const LotteryCard = ({
         <div className="space-y-4">
           {/* Prize Pool */}
           <div className="text-center py-2">
-            <p className="type-caption text-hint">{t('prizePool')}</p>
-            <p className="type-display text-foreground mt-1">{formatGold(prizePool)}</p>
+            {itemPrizes && prizePool <= 0 ? (
+              <>
+                <p className="type-caption text-hint">{t('prize')}</p>
+                <p className="type-heading text-foreground mt-1 line-clamp-2 wrap-break-word">{itemPrizes}</p>
+              </>
+            ) : (
+              <>
+                <p className="type-caption text-hint">{t('prizePool')}</p>
+                <p className="type-display text-foreground mt-1">{formatGold(prizePool)}</p>
+                {itemPrizes && (
+                  <p className="type-body text-subtle mt-1 line-clamp-2 wrap-break-word">
+                    {t('plusItems', { items: itemPrizes })}
+                  </p>
+                )}
+              </>
+            )}
           </div>
 
           {/* Details */}

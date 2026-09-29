@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useIntlFormatter, useIntlLocale } from '@/i18n/useIntlFormatter';
+import type { LotteryPrize } from '@/types/lottery';
 import { GOLD_FORMAT_OPTIONS } from './money';
 
 export type FormatGold = (amount: number) => string;
@@ -24,3 +25,10 @@ export function useFormatGoldAxisTick(): FormatGold {
 
 export const formatPrize = (prize: string, amount: number | undefined, formatGold: FormatGold): string =>
   prize || (amount === undefined ? '' : formatGold(amount));
+
+export const prizeItemNames = (prizes: readonly LotteryPrize[] | undefined, formatGold: FormatGold): string[] =>
+  (prizes ?? []).flatMap(prize => {
+    const name = prize.itemName ?? prize.description;
+    if (!name || (prize.amount !== undefined && name === formatGold(prize.amount))) return [];
+    return [name];
+  });
