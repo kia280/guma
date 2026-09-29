@@ -16,7 +16,7 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode, isNotFoundError } from '@/lib/guma/errors';
-import { type FormatGold, formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
+import { type FormatGold, formatPrize, prizeItemNames, useFormatGold } from '@/lib/guma/useFormatGold';
 import { emitLiveEvent } from '@/lib/live-events';
 import { useGuildPermissions } from '@/lib/permissions';
 import { lotteryStatusColor } from '@/lib/status-colors';
@@ -29,6 +29,7 @@ import { LotteryWheel, type WheelEntry } from './LotteryWheel';
 import { UserAvatar } from './UserAvatar';
 
 const DRAW_RETRY_MS = 3000;
+const DESCRIPTION_PREVIEW_LENGTH = 240;
 
 type DrawPhase = 'idle' | 'drawing' | 'spinning' | 'revealed';
 
@@ -96,6 +97,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const [drawWinners, setDrawWinners] = React.useState<LotteryWinner[]>([]);
   const editModal = useOverlayState();
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = React.useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false);
   const retryTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
   const changedDuringDraw = React.useRef(false);
@@ -106,6 +108,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const { balance, isLoaded: isBalanceLoaded } = useWalletBalance();
   const refreshMe = useUserStore(state => state.refreshMe);
   const purchaseBlockedReasonId = React.useId();
+  const descriptionId = React.useId();
 
   const load = React.useCallback(
     () =>
@@ -347,6 +350,11 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     });
   };
 
+  const itemPrizes = format.list(prizeItemNames(lottery.prizes, formatGold));
+  const rankedPrizes = [...(lottery.prizes ?? [])].sort((a, b) => a.rank - b.rank);
+  const showPrizeList = rankedPrizes.length > 1;
+  const isLongDescription = (lottery.description?.length ?? 0) > DESCRIPTION_PREVIEW_LENGTH;
+
   const sectionClass = onClose ? '' : 'rounded-xl border border-divider p-4';
   const stackGap = onClose ? 'gap-y-6' : 'gap-y-4';
 
@@ -364,15 +372,44 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           <Chip size="sm" color={lotteryStatusColor[lottery.status]} variant="secondary" className="mb-1">
             {t(`status.${lottery.status}`)}
           </Chip>
-          <h2 className="type-title text-foreground">{lottery.title}</h2>
-          {lottery.description && (
-            <p className="type-body text-subtle mt-1 whitespace-pre-line break-words">{lottery.description}</p>
+          <h2 className="type-title text-foreground wrap-break-word">{lottery.title}</h2>
+        </div>
+        <div className="min-w-0 sm:text-right">
+          {itemPrizes && lottery.prizePool <= 0 ? (
+            <>
+              <p className="type-caption text-hint">{t('prize')}</p>
+              <p className="type-heading text-foreground wrap-break-word">{itemPrizes}</p>
+            </>
+          ) : (
+            <>
+              <p className="type-caption text-hint">{t('prizePool')}</p>
+              <p className="type-display text-foreground">{formatGold(lottery.prizePool)}</p>
+              {itemPrizes && <p className="type-body text-subtle wrap-break-word">{t('plusItems', { items: itemPrizes })}</p>}
+            </>
           )}
         </div>
-        <div className="text-right">
-          <p className="type-caption text-hint">{t('prizePool')}</p>
-          <p className="type-display text-foreground">{formatGold(lottery.prizePool)}</p>
-        </div>
+        {lottery.description && (
+          <div className="w-full type-body">
+            <p
+              id={descriptionId}
+              className={`text-subtle whitespace-pre-line wrap-break-word ${isLongDescription && !isDescriptionExpanded ? 'line-clamp-3' : ''}`}
+            >
+              {lottery.description}
+            </p>
+            {isLongDescription && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="-ml-2 mt-1 max-sm:h-11"
+                aria-expanded={isDescriptionExpanded}
+                aria-controls={descriptionId}
+                onPress={() => setIsDescriptionExpanded(expanded => !expanded)}
+              >
+                {isDescriptionExpanded ? t('showLess') : t('showMore')}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {(canEdit || canCancel || canDelete) && (
@@ -416,6 +453,40 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
 
       <div className={`grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(0,6fr)] lg:grid-rows-[auto_1fr] gap-x-5 ${stackGap}`}>
         <div className={`lg:col-start-2 lg:row-start-1 flex flex-col ${stackGap}`}>
+          {showWinners && winners.length > 0 && (
+            <section className={`space-y-2 ${sectionClass}`}>
+              <h3 className="type-subheading text-foreground">{t('winners')}</h3>
+              <ul className="flex flex-col gap-2">
+                {winners.map(winner => (
+                  <li key={winner.id} className="flex items-center gap-3">
+                    <Icon icon="solar:cup-star-linear" width={18} className="text-warning shrink-0" />
+                    <span className="type-body font-medium text-foreground flex-1 min-w-0 truncate">{userName(winner.username)}</span>
+                    <span className="type-body text-success tabular-nums">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {showPrizeList && (
+            <section className={`space-y-2 ${sectionClass}`}>
+              <h3 className="type-subheading text-foreground">{t('prizes')}</h3>
+              <ol className="flex flex-col gap-2">
+                {rankedPrizes.map(prize => (
+                  <li key={prize.rank} className="flex items-baseline gap-3 type-body">
+                    <span className="type-caption text-hint shrink-0">{t('prizeRank', { rank: prize.rank })}</span>
+                    <span className="flex-1 min-w-0 text-foreground wrap-break-word">
+                      {formatPrize(prize.itemName ?? prize.description, prize.amount, formatGold)}
+                    </span>
+                    {prize.amount !== undefined && prize.amount > 0 && (prize.itemName ?? prize.description) !== formatGold(prize.amount) && (
+                      <span className="text-foreground tabular-nums">{formatGold(prize.amount)}</span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
           <dl className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-divider p-3">
               <dt className="type-caption text-hint">{t('ticketPrice')}</dt>
@@ -540,21 +611,6 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
         </section>
 
         <div className={`lg:col-start-2 lg:row-start-2 flex flex-col ${stackGap}`}>
-          {showWinners && winners.length > 0 && (
-            <section className={`space-y-2 ${sectionClass}`}>
-              <h3 className="type-subheading text-foreground">{t('winners')}</h3>
-              <ul className="flex flex-col gap-2">
-                {winners.map(winner => (
-                  <li key={winner.id} className="flex items-center gap-3">
-                    <Icon icon="solar:cup-star-linear" width={18} className="text-warning shrink-0" />
-                    <span className="type-body font-medium text-foreground flex-1 min-w-0 truncate">{userName(winner.username)}</span>
-                    <span className="type-body text-success tabular-nums">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
           <section className={onClose ? undefined : 'rounded-xl border border-divider'}>
             <div className={`flex items-center justify-between pb-2 ${onClose ? '' : 'px-4 pt-3'}`}>
               <h3 className="type-subheading text-foreground">{t('participants')}</h3>

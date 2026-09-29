@@ -1314,7 +1314,13 @@
     "cancelledBanner": "這個抽獎已於 {date} 取消。",
     "cancelledBannerNoDate": "這個抽獎已取消。",
     "cancelledBannerDetail": "所有彩券皆已退款，不會開獎。",
-    "cancelledCaption": "已取消"
+    "cancelledCaption": "已取消",
+    "prize": "獎品",
+    "plusItems": "另加 {items}",
+    "prizes": "獎品",
+    "prizeRank": "第 {rank} 名",
+    "showMore": "顯示更多",
+    "showLess": "收合"
   },
   "createLotteryModal": {
     "title": "建立抽獎",

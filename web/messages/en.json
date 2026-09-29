@@ -1314,7 +1314,13 @@
     "cancelledBanner": "This lottery was cancelled on {date}.",
     "cancelledBannerNoDate": "This lottery was cancelled.",
     "cancelledBannerDetail": "All tickets were refunded and no winners will be drawn.",
-    "cancelledCaption": "Cancelled"
+    "cancelledCaption": "Cancelled",
+    "prize": "Prize",
+    "plusItems": "Plus {items}",
+    "prizes": "Prizes",
+    "prizeRank": "Rank {rank}",
+    "showMore": "Show more",
+    "showLess": "Show less"
   },
   "createLotteryModal": {
     "title": "Create lottery",
