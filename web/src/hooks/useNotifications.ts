@@ -103,14 +103,20 @@ export function useNotifications() {
     setIsMarkingAll(true);
     try {
       await apiClient.markAllNotificationsRead();
-      setNotifications(current => current.map(n => ({ ...n, isRead: true })));
+      if (filter === 'unread') {
+        loadedRef.current = 0;
+        setNotifications([]);
+        setNextPageToken(undefined);
+      } else {
+        setNotifications(current => current.map(n => ({ ...n, isRead: true })));
+      }
       setUnreadCount(0);
     } catch {
       void refresh();
     } finally {
       setIsMarkingAll(false);
     }
-  }, [refresh]);
+  }, [filter, refresh]);
 
   return {
     filter,
