@@ -968,7 +968,8 @@
     "fontSize": "字體大小",
     "fontSizeDefault": "標準",
     "fontSizeLarge": "大",
-    "fontSizeXLarge": "特大"
+    "fontSizeXLarge": "特大",
+    "theme": "主題"
   },
   "termsPage": {
     "title": "服務條款",

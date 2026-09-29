@@ -968,7 +968,8 @@
     "fontSize": "Font size",
     "fontSizeDefault": "Default",
     "fontSizeLarge": "Large",
-    "fontSizeXLarge": "Extra large"
+    "fontSizeXLarge": "Extra large",
+    "theme": "Theme"
   },
   "termsPage": {
     "title": "Terms of Service",

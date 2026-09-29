@@ -120,7 +120,7 @@ export default function PreferencePage() {
   };
 
   return (
-    <div className="flex flex-col gap-5 w-full">
+    <div className="flex flex-col gap-5 w-full max-w-2xl mx-auto">
       {/* Header */}
       <PageHeader title={t('title')} description={t('subtitle')} />
 
@@ -136,30 +136,35 @@ export default function PreferencePage() {
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-4">
-          <div className="grid grid-cols-3 gap-3">
-            {(['light', 'dark', 'system'] as const).map(themeKey => (
-              <button
-                key={themeKey}
-                onClick={() => setTheme(themeKey)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
-                  theme === themeKey
-                    ? 'border-accent bg-accent/10 text-accent'
-                    : 'border-divider bg-surface-secondary text-subtle hover:border-foreground/20'
-                }`}
-              >
-                <Icon
-                  icon={
-                    themeKey === 'light'
-                      ? 'solar:sun-bold'
-                      : themeKey === 'dark'
-                        ? 'solar:moon-bold'
-                        : 'solar:monitor-bold'
-                  }
-                  width={20}
-                />
-                <span className="type-label capitalize">{themeLabels[themeKey]}</span>
-              </button>
-            ))}
+          <div className="flex flex-col gap-2">
+            <p id="theme-label" className="type-body text-foreground">{t('theme')}</p>
+            <div role="group" aria-labelledby="theme-label" className="grid grid-cols-3 gap-3">
+              {(['light', 'dark', 'system'] as const).map(themeKey => (
+                <button
+                  key={themeKey}
+                  type="button"
+                  aria-pressed={theme === themeKey}
+                  onClick={() => setTheme(themeKey)}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
+                    theme === themeKey
+                      ? 'border-accent bg-accent/10 text-foreground'
+                      : 'border-divider bg-surface-secondary text-subtle hover:border-foreground/20'
+                  }`}
+                >
+                  <Icon
+                    icon={
+                      themeKey === 'light'
+                        ? 'solar:sun-bold'
+                        : themeKey === 'dark'
+                          ? 'solar:moon-bold'
+                          : 'solar:monitor-bold'
+                    }
+                    width={20}
+                  />
+                  <span className="type-label capitalize">{themeLabels[themeKey]}</span>
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col gap-2">
             <p id="font-size-label" className="type-body text-foreground">{t('fontSize')}</p>
@@ -172,7 +177,7 @@ export default function PreferencePage() {
                   onClick={() => handleFontSizeChange(size)}
                   className={`flex flex-col items-center gap-1 p-3 rounded-xl border transition-all ${
                     fontSize === size
-                      ? 'border-accent bg-accent/10 text-accent'
+                      ? 'border-accent bg-accent/10 text-foreground'
                       : 'border-divider bg-surface-secondary text-subtle hover:border-foreground/20'
                   }`}
                 >
