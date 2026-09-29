@@ -236,17 +236,8 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
         </Button>
       )}
 
-      {entry.imageUrl && (
-        <div className="overflow-hidden rounded-xl border border-divider bg-surface-secondary">
-          <img alt={entry.title} src={entry.imageUrl} className="max-h-[480px] w-full object-cover" />
-        </div>
-      )}
-
             {/* Header */}
       <div className={`flex flex-col sm:flex-row items-start gap-4 type-body ${onClose ? 'pr-8' : sectionClass}`}>
-        <div className="p-4 rounded-xl bg-default shrink-0">
-          <Icon icon="heroicons:clipboard-document-check" width={36} className="text-subtle" />
-        </div>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <Chip size="sm" color={statusColor} variant="secondary">
@@ -265,44 +256,46 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
             <p className="type-body text-foreground mt-3 whitespace-pre-line break-words">{entry.description}</p>
           )}
         </div>
-        {hasCheckedIn ? (
-          <Button
-            isDisabled
-            variant="secondary"
-            className="shrink-0 max-sm:h-11 bg-success-soft text-success-soft-foreground disabled:opacity-100 disabled:cursor-default"
-          >
-            <Icon icon="solar:check-circle-linear" width={16} />
-            {t('checkedIn')}
-          </Button>
-        ) : isOpen_ ? (
-          <Button variant="primary" className="shrink-0 max-sm:h-11" onPress={openCheckInModal}>
-            {t('checkIn')}
-          </Button>
-        ) : null}
-        {canEdit && (
-          <Button variant="secondary" className="shrink-0 max-sm:h-11" onPress={editModal.open}>
-            <Icon icon="solar:pen-linear" width={16} />
-            {t('editRollCall')}
-          </Button>
-        )}
-        {canComplete && (
-          <Button
-            variant="primary"
-            className="shrink-0 max-sm:h-11"
-            isDisabled={isCompleteBlocked}
-            aria-describedby={completeBlockers.length > 0 ? completeBlockedId : undefined}
-            onPress={() => setIsCompleteConfirmOpen(true)}
-          >
-            <Icon icon="solar:check-read-linear" width={16} />
-            {t('completeRollCall')}
-          </Button>
-        )}
-        {canCancel && (
-          <Button variant="danger-soft" className="shrink-0 max-sm:h-11" onPress={() => setIsCancelConfirmOpen(true)}>
-            <Icon icon="solar:forbidden-circle-linear" width={16} />
-            {t('cancelRollCall')}
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
+          {hasCheckedIn ? (
+            <Button
+              isDisabled
+              variant="secondary"
+              className="shrink-0 max-sm:h-11 bg-success-soft text-success-soft-foreground disabled:opacity-100 disabled:cursor-default"
+            >
+              <Icon icon="solar:check-circle-linear" width={16} />
+              {t('checkedIn')}
+            </Button>
+          ) : isOpen_ ? (
+            <Button variant="primary" className="shrink-0 max-sm:h-11" onPress={openCheckInModal}>
+              {t('checkIn')}
+            </Button>
+          ) : null}
+          {canEdit && (
+            <Button variant="secondary" className="shrink-0 max-sm:h-11" onPress={editModal.open}>
+              <Icon icon="solar:pen-linear" width={16} />
+              {t('editRollCall')}
+            </Button>
+          )}
+          {canComplete && (
+            <Button
+              variant="primary"
+              className="shrink-0 max-sm:h-11"
+              isDisabled={isCompleteBlocked}
+              aria-describedby={completeBlockers.length > 0 ? completeBlockedId : undefined}
+              onPress={() => setIsCompleteConfirmOpen(true)}
+            >
+              <Icon icon="solar:check-read-linear" width={16} />
+              {t('completeRollCall')}
+            </Button>
+          )}
+          {canCancel && (
+            <Button variant="danger-soft" className="shrink-0 max-sm:h-11" onPress={() => setIsCancelConfirmOpen(true)}>
+              <Icon icon="solar:forbidden-circle-linear" width={16} />
+              {t('cancelRollCall')}
+            </Button>
+          )}
+        </div>
         {(!hasCheckedIn || checkedInAt) && (
           <Modal state={checkInModal}>
           <Modal.Backdrop isDismissable={!isSubmitting} isKeyboardDismissDisabled={isSubmitting}>
@@ -369,6 +362,12 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
         )}
       </div>
 
+      {entry.imageUrl && (
+        <div className="overflow-hidden rounded-xl border border-divider bg-surface-secondary">
+          <img alt={entry.title} src={entry.imageUrl} className="max-h-60 w-full object-cover sm:max-h-80" />
+        </div>
+      )}
+
       {canEdit && (
         <RollCallEditModal
           entry={entry}
@@ -410,104 +409,62 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
         success={{ title: t('cancelSuccess'), detail: t('cancelSuccessDetail') }}
       />
 
-      <div className={`grid grid-cols-1 lg:grid-cols-5 ${sectionGap}`}>
-        {/* Left — loot + attendance */}
-        <div className={`lg:col-span-3 ${sectionStack}`}>
-          {/* Loot List */}
-          <div className={`space-y-4 ${sectionClass}`}>
-            <div className="flex items-center justify-between type-body">
-              <div className="flex items-center gap-2">
-                <h2 className="type-subheading text-foreground">
-                  {t('loot')}
-                </h2>
+      <div className={`grid grid-cols-1 items-start lg:grid-cols-5 ${sectionGap}`}>
+        {/* Loot List */}
+        <div className={`space-y-4 lg:col-span-3 lg:col-start-1 lg:row-start-1 ${sectionClass}`}>
+          <div className="flex items-center justify-between type-body">
+            <div className="flex items-center gap-2">
+              <h2 className="type-subheading text-foreground">
+                {t('loot')}
+              </h2>
+              {(entry.lootList.length > 0 || !entry.goldLoot) && (
                 <Chip size="sm" variant="secondary">
                   {t('items', { count: entry.lootList.length })}
                 </Chip>
-              </div>
-              {canEditLoot && (
-                <Button size="sm" variant="secondary" className="max-sm:h-11" onPress={lootEditModal.open}>
-                  <Icon icon="solar:pen-linear" width={16} />
-                  {t('editLoot')}
-                </Button>
               )}
             </div>
-
-            {canComplete && completeBlockers.length > 0 && (
-              <div id={completeBlockedId} className="type-caption text-warning flex items-start gap-1.5">
-                <Icon icon="solar:info-circle-linear" width={14} className="mt-0.5 shrink-0" />
-                <span>{completeBlockers.join(' ')}</span>
-              </div>
-            )}
-
-            {entry.lootList.length === 0 && !entry.goldLoot ? (
-              <p className="type-body text-subtle text-center py-4">{t('noLootItems')}</p>
-            ) : (
-              <div className="space-y-2">
-                {entry.goldLoot && (
-                  <RollCallGoldLoot
-                    rollCallId={entry.id}
-                    pot={entry.goldLoot}
-                    attendees={entry.attendanceList}
-                    onPotChange={handleGoldPotChange}
-                  />
-                )}
-                {entry.lootList.length > 0 && (
-                  <RollCallLootDistribution
-                    key={lootVersion}
-                    rollCallId={entry.id}
-                    lootList={entry.lootList}
-                    attendees={entry.attendanceList}
-                    onVaultCountChange={setLootInVault}
-                  />
-                )}
-              </div>
+            {canEditLoot && (
+              <Button size="sm" variant="secondary" className="max-sm:h-11" onPress={lootEditModal.open}>
+                <Icon icon="solar:pen-linear" width={16} />
+                {t('editLoot')}
+              </Button>
             )}
           </div>
 
-          {/* Attendance List */}
-          <div className={`space-y-4 ${sectionClass}`}>
-            <div className="flex items-center justify-between type-body">
-              <h2 className="type-subheading text-foreground">
-                {t('attendance')}
-              </h2>
-              <Chip size="sm" variant="secondary">
-                {t('members', { count: entry.attendanceList.length })}
-              </Chip>
+          {canComplete && completeBlockers.length > 0 && (
+            <div id={completeBlockedId} className="type-caption text-warning flex items-start gap-1.5">
+              <Icon icon="solar:info-circle-linear" width={14} className="mt-0.5 shrink-0" />
+              <span>{completeBlockers.join(' ')}</span>
             </div>
+          )}
 
-            {entry.attendanceList.length === 0 ? (
-              <p className="type-body text-subtle text-center py-4">{t('noAttendeesYet')}</p>
-            ) : (
-              <div className="space-y-2">
-                {entry.attendanceList.map((member, idx) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-divider bg-surface-secondary"
-                  >
-                    <span className="type-caption text-hint w-5 text-right shrink-0">
-                      {idx + 1}
-                    </span>
-                    <UserAvatar name={userName(member.username)} src={member.avatar} className="shrink-0" />
-                    <div className="flex-1 min-w-0 sm:flex sm:items-center sm:gap-3">
-                      <div className="min-w-0 sm:flex-1">
-                        <p className="type-body font-medium text-foreground truncate">{userName(member.username)}</p>
-                        {member.notes && (
-                          <p className="type-caption text-hint truncate">{member.notes}</p>
-                        )}
-                      </div>
-                      <span className="block type-caption text-hint sm:shrink-0">
-                        {formatDateTime(member.checkedInAt)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {entry.lootList.length === 0 && !entry.goldLoot ? (
+            <p className="type-body text-subtle text-center py-4">{t('noLootItems')}</p>
+          ) : (
+            <div className="space-y-2">
+              {entry.goldLoot && (
+                <RollCallGoldLoot
+                  rollCallId={entry.id}
+                  pot={entry.goldLoot}
+                  attendees={entry.attendanceList}
+                  onPotChange={handleGoldPotChange}
+                />
+              )}
+              {entry.lootList.length > 0 && (
+                <RollCallLootDistribution
+                  key={lootVersion}
+                  rollCallId={entry.id}
+                  lootList={entry.lootList}
+                  attendees={entry.attendanceList}
+                  onVaultCountChange={setLootInVault}
+                />
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Right — details */}
-        <div className={`lg:col-span-2 ${sectionStack}`}>
+        {/* Details */}
+        <div className={`lg:sticky lg:top-0 lg:col-span-2 lg:col-start-4 lg:row-span-2 lg:row-start-1 ${sectionStack}`}>
           {/* Timing */}
           <div className={`space-y-3 ${sectionClass}`}>
             <h2 className="type-subheading text-foreground">
@@ -551,12 +508,6 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
               {t('summary')}
             </h2>
             <div className="space-y-2 type-body">
-              <div className="flex items-center justify-between">
-                <span className="text-subtle">{t('status')}</span>
-                <Chip size="sm" color={statusColor} variant="secondary">
-                  {statusLabel}
-                </Chip>
-              </div>
               <div className="flex justify-between">
                 <span className="text-subtle">{t('lootItems')}</span>
                 <span className="text-foreground">{entry.lootList.length}</span>
@@ -586,6 +537,47 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Attendance List */}
+        <div className={`space-y-4 lg:col-span-3 lg:col-start-1 lg:row-start-2 ${sectionClass}`}>
+          <div className="flex items-center justify-between type-body">
+            <h2 className="type-subheading text-foreground">
+              {t('attendance')}
+            </h2>
+            <Chip size="sm" variant="secondary">
+              {t('members', { count: entry.attendanceList.length })}
+            </Chip>
+          </div>
+
+          {entry.attendanceList.length === 0 ? (
+            <p className="type-body text-subtle text-center py-4">{t('noAttendeesYet')}</p>
+          ) : (
+            <div className="space-y-2">
+              {entry.attendanceList.map((member, idx) => (
+                <div
+                  key={member.id}
+                  className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-divider bg-surface-secondary"
+                >
+                  <span className="type-caption text-hint w-5 text-right shrink-0">
+                    {idx + 1}
+                  </span>
+                  <UserAvatar name={userName(member.username)} src={member.avatar} className="shrink-0" />
+                  <div className="flex-1 min-w-0 sm:flex sm:items-center sm:gap-3">
+                    <div className="min-w-0 sm:flex-1">
+                      <p className="type-body font-medium text-foreground truncate">{userName(member.username)}</p>
+                      {member.notes && (
+                        <p className="type-caption text-hint truncate">{member.notes}</p>
+                      )}
+                    </div>
+                    <span className="block type-caption text-hint sm:shrink-0">
+                      {formatDateTime(member.checkedInAt)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
