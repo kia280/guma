@@ -143,11 +143,11 @@ export const INCOMING_EVENTS: FeedEvent[] = [
 export const ANNOUNCEMENTS: Announcement[] = [
   {
     id: '1',
-    title: 'Report any problems to 抽貝比',
+    title: 'Report any problems to the guild officers',
     date: '2024-07-24T04:00:00Z',
     pinned: true,
     content:
-      'If you run into system problems, bugs, or any other questions, please message 抽貝比 directly. Include a description of the problem and a screenshot so it can be handled quickly. Thank you for your cooperation!',
+      'If you run into system problems, bugs, or any other questions, please message a guild officer directly. Include a description of the problem and a screenshot so it can be handled quickly. Thank you for your cooperation!',
   },
   {
     id: '2',

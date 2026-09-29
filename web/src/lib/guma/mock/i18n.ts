@@ -1,9 +1,9 @@
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, type Locale } from '@/i18n/locales';
 
 const ZHT_TEXT: Record<string, string> = {
-  'Report any problems to 抽貝比': '有任何問題，請回報給抽貝比',
-  'If you run into system problems, bugs, or any other questions, please message 抽貝比 directly. Include a description of the problem and a screenshot so it can be handled quickly. Thank you for your cooperation!':
-    '公會成員若遇到任何系統問題、功能錯誤或其他疑問，請直接私訊抽貝比。回報時請附上問題描述與截圖，以便快速處理。感謝大家的配合！',
+  'Report any problems to the guild officers': '有任何問題，請回報給公會幹部',
+  'If you run into system problems, bugs, or any other questions, please message a guild officer directly. Include a description of the problem and a screenshot so it can be handled quickly. Thank you for your cooperation!':
+    '公會成員若遇到任何系統問題、功能錯誤或其他疑問，請直接私訊公會幹部。回報時請附上問題描述與截圖，以便快速處理。感謝大家的配合！',
   'Guild raid night every Friday at 21:00': '每週五 21:00 公會團戰夜',
   'All guild members are welcome to join our weekly raid night every Friday starting at 21:00 server time. Please ensure your gear is up to date and bring consumables. Loot will be distributed via the in-guild auction system. See you there!':
     '歡迎所有公會成員參加每週五伺服器時間 21:00 開始的團戰夜。請確認裝備已更新並攜帶消耗品，戰利品將透過公會競拍系統分配。到時見！',
