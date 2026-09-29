@@ -707,7 +707,7 @@ export default function AdminPage() {
                           </div>
                         )}
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 basis-full order-last sm:order-none sm:basis-0 sm:flex-1">
                         <p className="type-body text-subtle">{t('guildLogo')}</p>
                         <p className="type-caption text-hint">{t('guildLogoHint')}</p>
                         {logoError && (
@@ -715,7 +715,7 @@ export default function AdminPage() {
                         )}
                       </div>
                       {canEditGuild && (
-                        <div className="flex shrink-0 gap-2">
+                        <div className="ml-auto flex shrink-0 gap-2 sm:ml-0">
                           <input
                             ref={logoInputRef}
                             type="file"
