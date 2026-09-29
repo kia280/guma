@@ -60,6 +60,7 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const requestId = React.useRef(newRequestId());
+  const recipientListRef = React.useRef<HTMLUListElement>(null);
   const onPotChangeRef = React.useRef(onPotChange);
   React.useEffect(() => {
     onPotChangeRef.current = onPotChange;
@@ -138,7 +139,12 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
 
   const goToReview = () => {
     setShowErrors(true);
-    if (allocation.isOverAllocated || !allocation.hasPayout) return;
+    if (allocation.isOverAllocated || !allocation.hasPayout) {
+      const inputs = recipientListRef.current?.querySelectorAll<HTMLInputElement>('input[data-amount]');
+      const target = [...(inputs ?? [])].find(input => input.getAttribute('aria-invalid') === 'true') ?? inputs?.[0];
+      target?.focus();
+      return;
+    }
     setSubmitError(null);
     setStep('review');
   };
@@ -243,41 +249,25 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
                 <Modal.Heading>{step === 'edit' ? t('modalTitle') : t('reviewTitle')}</Modal.Heading>
               </Modal.Header>
               <Modal.Body className="flex flex-col gap-4">
-                <dl className="grid grid-cols-3 gap-2 rounded-lg border border-divider p-3 type-body">
-                  <div className="flex flex-col">
-                    <dt className="type-caption text-hint">{t('potRemaining')}</dt>
-                    <dd className="font-medium tabular-nums text-foreground">{formatGold(pot.remaining)}</dd>
-                  </div>
-                  <div className="flex flex-col">
-                    <dt className="type-caption text-hint">{t('allocated')}</dt>
-                    <dd
-                      className={`font-medium tabular-nums ${allocation.isOverAllocated ? 'text-danger' : 'text-foreground'}`}
-                    >
-                      {formatGold(allocation.allocated)}
-                    </dd>
-                  </div>
-                  <div className="flex flex-col">
-                    <dt className="type-caption text-hint">{t('unallocated')}</dt>
-                    <dd
-                      className={`font-medium tabular-nums ${allocation.isOverAllocated ? 'text-danger' : 'text-foreground'}`}
-                    >
-                      {formatGold(allocation.unallocated)}
-                    </dd>
-                  </div>
-                </dl>
-
-                {step === 'edit' ? (
+                {step === 'edit' && (
                   <>
                     <p className="type-body text-soft">{t('modalDescription')}</p>
                     <div className="flex flex-col gap-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Button size="sm" variant="secondary" isDisabled={!split} onPress={applySplit}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="max-sm:h-11"
+                          isDisabled={!split}
+                          onPress={applySplit}
+                        >
                           <Icon icon="solar:pie-chart-2-linear" width={16} />
                           {t('splitByWeight')}
                         </Button>
                         <Button
                           size="sm"
                           variant="tertiary"
+                          className="max-sm:h-11"
                           isDisabled={Object.keys(amounts).length === 0}
                           onPress={clearAmounts}
                         >
@@ -309,11 +299,51 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
                     </div>
 
                     <p className="type-caption text-hint">{t('weightHint')}</p>
+                  </>
+                )}
+                <div className="sticky -top-[3px] z-10 -my-[3px] flex flex-col gap-2 bg-overlay py-[3px]">
+                  <dl className="grid grid-cols-3 gap-2 rounded-lg border border-divider p-3 type-body">
+                    <div className="flex flex-col">
+                      <dt className="type-caption text-hint">{t('potRemaining')}</dt>
+                      <dd className="font-medium tabular-nums text-foreground">{formatGold(pot.remaining)}</dd>
+                    </div>
+                    <div className="flex flex-col">
+                      <dt className="type-caption text-hint">{t('allocated')}</dt>
+                      <dd
+                        className={`font-medium tabular-nums ${allocation.isOverAllocated ? 'text-danger' : 'text-foreground'}`}
+                      >
+                        {formatGold(allocation.allocated)}
+                      </dd>
+                    </div>
+                    <div className="flex flex-col">
+                      <dt className="type-caption text-hint">{t('unallocated')}</dt>
+                      <dd
+                        className={`font-medium tabular-nums ${allocation.isOverAllocated ? 'text-danger' : 'text-foreground'}`}
+                      >
+                        {formatGold(allocation.unallocated)}
+                      </dd>
+                    </div>
+                  </dl>
+                  {(formError || submitError) && (
+                    <p role="alert" className="type-caption text-danger">
+                      {submitError ?? formError}
+                    </p>
+                  )}
+                  {step === 'edit' && (
                     <div aria-hidden className="flex justify-end gap-2 type-label text-soft">
                       <span className="w-20 text-right">{t('weightColumn')}</span>
                       <span className="w-32 text-right">{t('amountColumn')}</span>
                     </div>
-                    <ul aria-label={t('recipients')} className="-mt-2 flex flex-col divide-y divide-divider">
+                  )}
+                </div>
+
+                {step === 'edit' ? (
+                  <>
+                    <ul
+                      ref={recipientListRef}
+                      aria-label={t('recipients')}
+                      className="flex flex-col divide-y divide-divider"
+                    >
                       {eligible.map(member => (
                         <li key={member.userId} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2">
                           <UserAvatar name={userName(member.username)} src={member.avatar} className="size-8 shrink-0" />
@@ -353,7 +383,11 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
                             >
                               <Label className="sr-only">{t('amountFor', { name: userName(member.username) })}</Label>
                               <NumberField.Group>
-                                <NumberField.Input className="w-full min-w-0 text-right" placeholder="0.00" />
+                                <NumberField.Input
+                                  data-amount
+                                  className="w-full min-w-0 text-right"
+                                  placeholder="0.00"
+                                />
                               </NumberField.Group>
                             </NumberField>
                           </div>
@@ -387,28 +421,28 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
                   </>
                 )}
 
-                {(formError || submitError) && (
-                  <p role="alert" className="type-caption text-danger">
-                    {submitError ?? formError}
-                  </p>
-                )}
               </Modal.Body>
               <Modal.Footer>
                 {step === 'edit' ? (
                   <>
-                    <Button slot="close" variant="secondary">
+                    <Button slot="close" variant="secondary" className="max-sm:h-11">
                       {t('cancel')}
                     </Button>
-                    <Button variant="primary" onPress={goToReview}>
+                    <Button variant="primary" className="max-sm:h-11" onPress={goToReview}>
                       {t('review')}
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button variant="secondary" isDisabled={isSubmitting} onPress={() => setStep('edit')}>
+                    <Button
+                      variant="secondary"
+                      className="max-sm:h-11"
+                      isDisabled={isSubmitting}
+                      onPress={() => setStep('edit')}
+                    >
                       {t('back')}
                     </Button>
-                    <Button variant="primary" isPending={isSubmitting} onPress={submit}>
+                    <Button variant="primary" className="max-sm:h-11" isPending={isSubmitting} onPress={submit}>
                       {t('confirm')}
                     </Button>
                   </>
