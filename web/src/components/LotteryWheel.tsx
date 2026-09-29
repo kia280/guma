@@ -16,6 +16,7 @@ type LotteryWheelProps = {
   spinKey: number;
   isRevealed: boolean;
   onSpinEnd: () => void;
+  label: string;
   className?: string;
 };
 
@@ -30,7 +31,9 @@ const FULL_TURNS = 6;
 const SPIN_MS = 5200;
 const REDUCED_SPIN_MS = 800;
 const LABEL_MAX = 10;
-const MIN_LABEL_ANGLE = 6;
+const LABEL_RADIUS = RADIUS - 14;
+const LABEL_FONT_PX = 13;
+const LABEL_LINE_HEIGHT = 2;
 
 function pointAt(angle: number, radius: number) {
   const rad = ((angle - 90) * Math.PI) / 180;
@@ -60,8 +63,9 @@ function buildSlices(entries: WheelEntry[]): Slice[] {
   });
 }
 
-export function LotteryWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd, className }: LotteryWheelProps) {
+export function LotteryWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd, label, className }: LotteryWheelProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const [scale, setScale] = React.useState(1);
   const [rotation, setRotation] = React.useState(0);
   const [duration, setDuration] = React.useState(SPIN_MS);
   const [hover, setHover] = React.useState<HoverState | null>(null);
@@ -84,6 +88,19 @@ export function LotteryWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd
     return () => cancelAnimationFrame(frame);
   }, [spinKey]);
 
+  React.useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry.contentRect.width > 0) setScale(entry.contentRect.width / SIZE);
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  const labelFontSize = LABEL_FONT_PX / scale;
+  const minLabelAngle = ((labelFontSize * LABEL_LINE_HEIGHT) / LABEL_RADIUS) * (180 / Math.PI);
+
   const trackHover = (slice: Slice) => (event: React.PointerEvent) => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -96,7 +113,7 @@ export function LotteryWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd
       className={cn('relative mx-auto aspect-square w-full max-w-[440px]', className)}
       onPointerLeave={() => setHover(null)}
     >
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="size-full" role="img" aria-label={winner?.label}>
+      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="size-full" role="img" aria-label={label}>
         <g
           style={{
             transform: `rotate(${rotation}deg)`,
@@ -111,7 +128,7 @@ export function LotteryWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd
             const isWinner = isRevealed && slice.id === winnerId;
             const isHovered = hover?.slice.id === slice.id;
             const span = slice.end - slice.start;
-            const label = pointAt(slice.mid, RADIUS - 14);
+            const labelPoint = pointAt(slice.mid, LABEL_RADIUS);
             const isFlipped = slice.mid > 180;
             const fill = isWinner
               ? 'fill-accent'
@@ -127,14 +144,15 @@ export function LotteryWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd
                 ) : (
                   <path d={slicePath(slice.start, slice.end)} className={cn('stroke-surface transition-colors', fill)} strokeWidth={1.5} />
                 )}
-                {span >= MIN_LABEL_ANGLE && (
+                {(slices.length === 1 || span >= minLabelAngle) && (
                   <text
-                    x={label.x}
-                    y={label.y}
+                    x={labelPoint.x}
+                    y={labelPoint.y}
                     textAnchor={isFlipped ? 'start' : 'end'}
                     dominantBaseline="middle"
-                    transform={`rotate(${isFlipped ? slice.mid + 90 : slice.mid - 90} ${label.x} ${label.y})`}
-                    className={cn('type-caption font-medium pointer-events-none', isWinner ? 'fill-accent-foreground' : 'fill-foreground')}
+                    transform={`rotate(${isFlipped ? slice.mid + 90 : slice.mid - 90} ${labelPoint.x} ${labelPoint.y})`}
+                    style={{ fontSize: labelFontSize }}
+                    className={cn('font-medium pointer-events-none', isWinner ? 'fill-accent-foreground' : 'fill-foreground')}
                   >
                     {truncate(slice.label)}
                   </text>

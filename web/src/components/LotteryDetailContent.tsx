@@ -591,14 +591,21 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
 
         </div>
 
-        <section className="lg:col-start-1 lg:row-start-1 lg:row-span-2 flex flex-col items-center justify-center gap-4 rounded-xl border border-divider bg-surface-secondary p-4 sm:p-6">
-          <LotteryWheel
-            entries={entries}
-            winnerId={topWinner && winnerEntryId(topWinner)}
-            spinKey={spinKey}
-            isRevealed={phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended')}
-            onSpinEnd={finishSpin}
-          />
+        <section
+          className={`lg:col-start-1 lg:row-start-1 lg:row-span-2 flex flex-col items-center justify-center gap-4 rounded-xl border border-divider bg-surface-secondary p-4 sm:p-6 ${entries.length === 0 ? 'lg:self-start' : ''}`}
+        >
+          {entries.length > 0 ? (
+            <LotteryWheel
+              entries={entries}
+              winnerId={topWinner && winnerEntryId(topWinner)}
+              spinKey={spinKey}
+              isRevealed={phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended')}
+              onSpinEnd={finishSpin}
+              label={t('wheelLabel', { count: entries.length })}
+            />
+          ) : (
+            <Icon icon="solar:ticket-linear" width={40} className="text-hint" aria-hidden />
+          )}
           <p className="type-subheading text-foreground tabular-nums text-center" aria-live={phase === 'idle' ? 'off' : 'polite'}>
             {wheelCaption()}
           </p>

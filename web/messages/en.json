@@ -1320,7 +1320,8 @@
     "prizes": "Prizes",
     "prizeRank": "Rank {rank}",
     "showMore": "Show more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "wheelLabel": "Draw wheel with {count, plural, one {# entry} other {# entries}}. The participant list below shows every name and chance."
   },
   "createLotteryModal": {
     "title": "Create lottery",

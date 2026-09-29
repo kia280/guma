@@ -1320,7 +1320,8 @@
     "prizes": "獎品",
     "prizeRank": "第 {rank} 名",
     "showMore": "顯示更多",
-    "showLess": "收合"
+    "showLess": "收合",
+    "wheelLabel": "開獎輪盤，共 {count} 個區塊；下方參加者清單列出所有名稱與機率。"
   },
   "createLotteryModal": {
     "title": "建立抽獎",
