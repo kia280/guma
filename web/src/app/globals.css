@@ -596,6 +596,14 @@ html[data-font-size='x-large'] {
     font-size: inherit;
   }
 
+  @media (width < 40rem) {
+    .modal__close-trigger::after {
+      content: '';
+      position: absolute;
+      inset: -10px;
+    }
+  }
+
   .tabs__tab {
     white-space: nowrap;
   }
