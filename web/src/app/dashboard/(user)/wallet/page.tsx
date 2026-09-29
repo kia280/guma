@@ -349,6 +349,15 @@ export default function WalletPage() {
   const transferRecipientError = transferRecipient ? null : t('recipientRequired');
   const showTransferAmountError = Boolean(transferAmountError) && (showTransferErrors || transferAmount !== '');
   const showTransferRecipientError = Boolean(transferRecipientError) && showTransferErrors;
+  const depositAmountError = depositAmount !== '' && !(parseGold(depositAmount) > 0) ? t('amountMustBePositive') : null;
+  const withdrawAmountError =
+    withdrawAmount === ''
+      ? null
+      : !(withdrawAmountValue > 0)
+        ? t('amountMustBePositive')
+        : withdrawExceedsBalance
+          ? t('insufficientBalance')
+          : null;
   const canWithdraw = withdrawAmountValue > 0 && !withdrawExceedsBalance;
   const isActionPending = pendingAction !== null;
 
@@ -533,7 +542,7 @@ export default function WalletPage() {
                           <Modal.Heading>{t('depositMoney')}</Modal.Heading>
                         </Modal.Header>
                         <Modal.Body className="flex flex-col gap-3">
-                          <TextField>
+                          <TextField validationBehavior="aria" isInvalid={Boolean(depositAmountError)}>
                             <Label>{t('amountLabel')}</Label>
                             <Input
                               autoFocus
@@ -546,6 +555,7 @@ export default function WalletPage() {
                               variant="secondary"
                               onChange={e => setDepositAmount(e.target.value)}
                             />
+                            <FieldError>{depositAmountError}</FieldError>
                           </TextField>
                           <p className="type-caption text-hint px-1">
                             {t('currentBalanceLabel')} {formatGold(balance)}
@@ -662,7 +672,7 @@ export default function WalletPage() {
                           <Modal.Heading>{t('withdrawMoney')}</Modal.Heading>
                         </Modal.Header>
                         <Modal.Body className="flex flex-col gap-3">
-                          <TextField isInvalid={withdrawExceedsBalance}>
+                          <TextField validationBehavior="aria" isInvalid={Boolean(withdrawAmountError)}>
                             <Label>{t('amountLabel')}</Label>
                             <Input
                               autoFocus
@@ -676,7 +686,7 @@ export default function WalletPage() {
                               variant="secondary"
                               onChange={e => setWithdrawAmount(e.target.value)}
                             />
-                            <FieldError>{t('insufficientBalance')}</FieldError>
+                            <FieldError>{withdrawAmountError}</FieldError>
                           </TextField>
                           <p className="type-caption text-hint px-1">
                             {t('available')} {formatGold(balance)}
