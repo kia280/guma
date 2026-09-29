@@ -1112,7 +1112,10 @@
     "deleted": "競拍已刪除。",
     "cancelledBanner": "這場競拍已於 {date} 取消。",
     "cancelledBannerNoDate": "這場競拍已取消。",
-    "cancelledBannerDetail": "出價已退回、物品已歸還，無法再出價。"
+    "cancelledBannerDetail": "出價已退回、物品已歸還，無法再出價。",
+    "lastBidBeforeCancel": "取消前最後出價",
+    "lastBidder": "最後出價者",
+    "openingPrice": "起標價（尚無出價）"
   },
   "rollCallDetailPage": {
     "goldLoot": "金幣戰利品",

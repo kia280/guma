@@ -438,9 +438,15 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-subtle type-body">
-                    {isEnded ? t('finalPrice') : t('currentBid')}
+                    {isEnded
+                      ? t('finalPrice')
+                      : isCancelled
+                        ? t('lastBidBeforeCancel')
+                        : item.currentBidder
+                          ? t('currentBid')
+                          : t('openingPrice')}
                   </span>
-                  {isEnded && !item.currentBidder ? (
+                  {isClosed && !item.currentBidder ? (
                     <span className="type-body text-hint">{t('noBids')}</span>
                   ) : (
                     <span className="type-display text-foreground">
@@ -452,7 +458,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                 {item.currentBidder && (
                   <div className="flex items-center justify-between">
                     <span className="type-caption text-hint">
-                      {isEnded ? t('winner') : t('leadingBidder')}
+                      {isEnded ? t('winner') : isCancelled ? t('lastBidder') : t('leadingBidder')}
                     </span>
                     <div className="flex items-center gap-2">
                       <UserAvatar name={userName(item.currentBidder.username)} src={item.currentBidder.avatar} />

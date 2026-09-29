@@ -1112,7 +1112,10 @@
     "deleted": "Auction deleted.",
     "cancelledBanner": "This auction was cancelled on {date}.",
     "cancelledBannerNoDate": "This auction was cancelled.",
-    "cancelledBannerDetail": "Bids were refunded and the item was returned. Nobody can bid on it anymore."
+    "cancelledBannerDetail": "Bids were refunded and the item was returned. Nobody can bid on it anymore.",
+    "lastBidBeforeCancel": "Last bid before cancellation",
+    "lastBidder": "Last bidder",
+    "openingPrice": "Starting price (no bids yet)"
   },
   "rollCallDetailPage": {
     "goldLoot": "Gold loot",
