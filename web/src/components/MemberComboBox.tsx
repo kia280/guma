@@ -10,9 +10,12 @@ import {
   ListBox,
   ListLayout,
   Virtualizer,
+  buttonVariants,
   useFilter,
   type Key,
 } from '@heroui/react';
+import { Icon } from '@iconify/react';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 import { UserAvatar } from './UserAvatar';
 
@@ -51,6 +54,8 @@ export const MemberComboBox = React.memo(function MemberComboBox({
   errorMessage,
   className,
 }: MemberComboBoxProps) {
+  const t = useTranslations('memberComboBox');
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const { contains } = useFilter({ sensitivity: 'base' });
   const [inputValue, setInputValue] = React.useState(() => members.find(member => member.id === value)?.name ?? '');
   const [syncedValue, setSyncedValue] = React.useState(value);
@@ -90,6 +95,12 @@ export const MemberComboBox = React.memo(function MemberComboBox({
     commit(member.id);
   };
 
+  const clearSearch = () => {
+    setInputValue('');
+    commit('');
+    inputRef.current?.focus();
+  };
+
   return (
     <ComboBox
       fullWidth
@@ -107,13 +118,33 @@ export const MemberComboBox = React.memo(function MemberComboBox({
       onInputChange={handleInputChange}
     >
       <Label>{label}</Label>
-      <ComboBox.InputGroup>
-        <Input placeholder={placeholder} />
+      <ComboBox.InputGroup className={query ? '[&_[data-slot=input]]:pe-16' : undefined}>
+        <Input ref={inputRef} placeholder={placeholder} />
+        {query && (
+          <button
+            type="button"
+            aria-label={t('clearSearch')}
+            className={buttonVariants({
+              isIconOnly: true,
+              size: 'sm',
+              variant: 'ghost',
+              className: 'absolute end-7 top-1/2 -translate-y-1/2',
+            })}
+            onClick={clearSearch}
+          >
+            <Icon icon="solar:close-circle-linear" width={16} aria-hidden />
+          </button>
+        )}
         <ComboBox.Trigger />
       </ComboBox.InputGroup>
       <ComboBox.Popover className="w-(--trigger-width)">
         <Virtualizer layout={ListLayout} layoutOptions={{ rowHeight: OPTION_ROW_HEIGHT }}>
-          <ListBox className="max-h-72 overflow-y-auto" renderEmptyState={() => <EmptyState>{emptyMessage}</EmptyState>}>
+          <ListBox
+            className="max-h-72 overflow-y-auto"
+            renderEmptyState={() => (
+              <EmptyState>{members.length > 0 && query ? t('noMatches', { query }) : emptyMessage}</EmptyState>
+            )}
+          >
             {(member: MemberOption) => (
               <ListBox.Item id={member.id} textValue={member.name} className="min-h-12">
                 <div className="flex min-w-0 items-center gap-2">

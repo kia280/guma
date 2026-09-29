@@ -1789,5 +1789,9 @@
     "fundsUnavailable": "此成員的金幣已不足，已重新整理餘額。",
     "itemsUnavailable": "部分物品已無法移轉，已重新整理背包。",
     "transferFailed": "無法完成移轉，請再試一次。"
+  },
+  "memberComboBox": {
+    "noMatches": "沒有符合「{query}」的成員",
+    "clearSearch": "清除搜尋"
   }
 }

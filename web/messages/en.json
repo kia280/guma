@@ -1789,5 +1789,9 @@
     "fundsUnavailable": "The member no longer has enough gold. The balance has been refreshed.",
     "itemsUnavailable": "Some items can no longer be moved. The backpack has been refreshed.",
     "transferFailed": "Could not complete the move. Please try again."
+  },
+  "memberComboBox": {
+    "noMatches": "No members match “{query}”",
+    "clearSearch": "Clear search"
   }
 }
