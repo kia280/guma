@@ -72,8 +72,8 @@ function StatCard({
         <Icon icon={icon} width={18} className={iconClass} />
       </div>
       <div className="flex flex-col min-w-0">
-        <p className="type-caption text-hint truncate">{label}</p>
-        <p className="type-heading sm:type-title tabular-nums text-foreground mt-0.5 truncate">{value}</p>
+        <p className="type-caption text-hint">{label}</p>
+        <p className="type-heading sm:type-title tabular-nums text-foreground mt-0.5 wrap-anywhere">{value}</p>
       </div>
     </div>
   );
@@ -102,6 +102,11 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
   const goTo = (i: number) => setActive(SLIDES[Math.min(Math.max(i, 0), SLIDES.length - 1)]);
 
+  const slideProps = (slide: Slide) => ({
+    inert: slide !== active,
+    className: `min-w-full space-y-3 ${slide === active ? '' : 'max-h-0 overflow-hidden'}`,
+  });
+
   const handleTouchStart = (e: TouchEvent) => {
     const touch = e.touches[0];
     touchStart.current = { x: touch.clientX, y: touch.clientY };
@@ -123,13 +128,13 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
       <div className="overflow-hidden">
         {/* Slide track */}
         <div
-          className="flex transition-transform duration-300 ease-in-out"
+          className="flex items-start transition-transform duration-300 ease-in-out"
           style={{ transform: `translateX(-${idx * 100}%)` }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           {/* ── Slide 0: Personal Overview ── */}
-          <div className="min-w-full space-y-3">
+          <div {...slideProps('personal')}>
             <div className="flex items-center gap-2">
               <Icon icon="solar:user-linear" width={18} className="text-hint" />
               <h2 className="type-heading text-foreground">{t('personalOverview')}</h2>
@@ -182,7 +187,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
           </div>
 
           {/* ── Slide 1: Guild Overview ── */}
-          <div className="min-w-full space-y-3">
+          <div {...slideProps('guild')}>
             <div className="flex items-center gap-2">
               <Icon icon="solar:users-group-rounded-linear" width={18} className="text-hint" />
               <h2 className="type-heading text-foreground">{t('guildOverview')}</h2>
