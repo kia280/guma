@@ -574,7 +574,10 @@
     "gold": "金幣",
     "backpackItems": "物品",
     "assetsUnavailable": "無資料",
-    "assetsLoadError": "無法載入成員的金幣與物品。"
+    "assetsLoadError": "無法載入成員的金幣與物品。",
+    "searchMembers": "以名稱或 Discord 搜尋",
+    "memberCount": "顯示 {shown} / {total} 位成員",
+    "noMatchingMembers": "沒有符合搜尋的成員。"
   },
   "adminGuard": {
     "title": "管理區僅限管理人員",

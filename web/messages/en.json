@@ -574,7 +574,10 @@
     "gold": "GOLD",
     "backpackItems": "ITEMS",
     "assetsUnavailable": "Not available",
-    "assetsLoadError": "Couldn't load members' gold and items."
+    "assetsLoadError": "Couldn't load members' gold and items.",
+    "searchMembers": "Search by name or Discord",
+    "memberCount": "{shown, plural, other {# of {total} members}}",
+    "noMatchingMembers": "No members match your search."
   },
   "adminGuard": {
     "title": "Administration is for guild staff",

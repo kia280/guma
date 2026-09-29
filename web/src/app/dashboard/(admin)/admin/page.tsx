@@ -10,6 +10,7 @@ import {
   Separator,
   TextField,
   Label,
+  SearchField,
   Skeleton,
   Spinner,
   useOverlayState,
@@ -289,6 +290,7 @@ export default function AdminPage() {
 
   const refetchAssets = React.useCallback(() => setAssetsReloadKey(key => key + 1), []);
 
+  const [memberQuery, setMemberQuery] = React.useState('');
   const sortedMembers = React.useMemo(() => {
     if (!sortDescriptor?.column) return members;
     const column = sortDescriptor.column as MemberSortKey;
@@ -319,6 +321,13 @@ export default function AdminPage() {
       return cmp * direction;
     });
   }, [members, memberAssets, sortDescriptor, userName, locale]);
+  const filteredMembers = React.useMemo(() => {
+    const query = memberQuery.trim().toLocaleLowerCase(locale);
+    if (!query) return sortedMembers;
+    return sortedMembers.filter(user =>
+      [userName(user.username), user.discordUsername ?? ''].some(text => text.toLocaleLowerCase(locale).includes(query)),
+    );
+  }, [sortedMembers, memberQuery, locale, userName]);
 
   const openMemberAssets = (memberId: React.Key) => {
     const member = members.find(candidate => candidate.id === memberId);
@@ -522,6 +531,28 @@ export default function AdminPage() {
               {members.length === 0 ? (
                 <EmptyContent icon="solar:users-group-rounded-linear" title={t('noUsers')} />
               ) : (
+              <>
+              <div className="flex flex-col gap-2 border-b border-divider p-3 sm:flex-row sm:items-center sm:justify-between">
+                <SearchField
+                  aria-label={t('searchMembers')}
+                  value={memberQuery}
+                  onChange={setMemberQuery}
+                  variant="secondary"
+                  className="w-full sm:max-w-xs"
+                >
+                  <SearchField.Group>
+                    <SearchField.SearchIcon />
+                    <SearchField.Input placeholder={t('searchMembers')} />
+                    <SearchField.ClearButton />
+                  </SearchField.Group>
+                </SearchField>
+                <p role="status" className="type-caption text-hint tabular-nums">
+                  {t('memberCount', { shown: filteredMembers.length, total: members.length })}
+                </p>
+              </div>
+              {filteredMembers.length === 0 ? (
+                <EmptyContent icon="solar:magnifer-linear" title={t('noMatchingMembers')} />
+              ) : (
               <Table variant="secondary">
                 <Table.ScrollContainer>
                   <Table.Content
@@ -536,7 +567,7 @@ export default function AdminPage() {
                           <Table.SortableColumnHeader sortDirection={sortDirection}>{t('user')}</Table.SortableColumnHeader>
                         )}
                       </Table.Column>
-                      <Table.Column id="role" allowsSorting className={canManageAssets ? undefined : 'max-md:rounded-r-2xl'}>
+                      <Table.Column id="role" allowsSorting className={canManageAssets ? 'hidden sm:table-cell' : 'max-md:rounded-r-2xl'}>
                         {({ sortDirection }) => (
                           <Table.SortableColumnHeader sortDirection={sortDirection}>{t('role')}</Table.SortableColumnHeader>
                         )}
@@ -567,11 +598,11 @@ export default function AdminPage() {
                       </Table.Column>
                     </Table.Header>
                     <Table.Body>
-                      {sortedMembers.map(user => (
+                      {filteredMembers.map(user => (
                         <Table.Row key={user.id} id={user.id} className={canManageAssets ? 'cursor-pointer' : undefined}>
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
-                              <UserAvatar name={userName(user.username)} src={user.avatar} className="shrink-0" />
+                              <UserAvatar name={userName(user.username)} src={user.avatar} className="shrink-0 max-[359px]:hidden" />
                               <div className="min-w-0">
                                 <p className="type-body font-medium text-foreground truncate">
                                   {userName(user.username)}
@@ -583,17 +614,28 @@ export default function AdminPage() {
                                     <span className="truncate">{user.discordUsername}</span>
                                   </p>
                                 )}
+                                {canManageAssets && (
+                                  <Chip size="sm" color={roleChipColor(user.role)} variant="secondary" className="mt-1 capitalize whitespace-nowrap sm:hidden">
+                                    {user.role && ROLES.includes(user.role as (typeof ROLES)[number])
+                                      ? t(`roles.${user.role as (typeof ROLES)[number]}`)
+                                      : user.role}
+                                  </Chip>
+                                )}
                               </div>
                             </div>
                           </Table.Cell>
-                          <Table.Cell>
+                          <Table.Cell className={canManageAssets ? 'hidden sm:table-cell' : undefined}>
                             <Chip size="sm" color={roleChipColor(user.role)} variant="secondary" className="capitalize whitespace-nowrap">
                               {user.role && ROLES.includes(user.role as (typeof ROLES)[number])
                                 ? t(`roles.${user.role as (typeof ROLES)[number]}`)
                                 : user.role}
                             </Chip>
                           </Table.Cell>
-                          {canManageAssets && <Table.Cell>{assetCell(user.id, summary => formatGold(summary.balance))}</Table.Cell>}
+                          {canManageAssets && (
+                            <Table.Cell className="whitespace-nowrap tabular-nums">
+                              {assetCell(user.id, summary => formatGold(summary.balance))}
+                            </Table.Cell>
+                          )}
                           {canManageAssets && (
                             <Table.Cell className="hidden md:table-cell">
                               {assetCell(user.id, summary => formatCount(summary.itemCount))}
@@ -620,6 +662,8 @@ export default function AdminPage() {
                   </Table.Content>
                 </Table.ScrollContainer>
               </Table>
+              )}
+              </>
               )}
               </AsyncContent>
               {canManageAssets && assetsStatus === 'error' && members.length > 0 && (
