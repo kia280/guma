@@ -649,7 +649,8 @@
       "deleteLottery": "刪除已取消的抽獎",
       "manageMemberAssets": "查看並移轉成員的金幣與背包物品"
     },
-    "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。"
+    "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。",
+    "mobileLegend": "每個操作下方列出可執行的角色；未列出的角色則不可執行。"
   },
   "guildBankPage": {
     "typeRollCallGoldPayout": "點名金幣發放給出席成員",

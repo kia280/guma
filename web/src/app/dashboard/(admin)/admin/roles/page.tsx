@@ -16,6 +16,7 @@ export default function AdminRolesPage() {
   const t = useTranslations('adminRolesPage');
   const tRoles = useTranslations('adminPage.roles');
   const router = useRouter();
+  const actionNote = (key: string) => (key === 'leaveGuild' ? t('ownerLeaveNote') : null);
 
   return (
     <div className="space-y-5">
@@ -48,6 +49,8 @@ export default function AdminRolesPage() {
         ))}
       </ul>
 
+      <p className="type-caption text-hint sm:hidden">{t('mobileLegend')}</p>
+
       {SECTIONS.map(section => (
         <Card key={section.key} className="border border-divider shadow-none bg-surface">
           <Card.Header className="flex flex-row items-center gap-3 pb-2">
@@ -71,7 +74,12 @@ export default function AdminRolesPage() {
                   key={action.key}
                   className="flex flex-col gap-2 rounded-lg bg-surface-secondary px-3 py-2.5 type-body"
                 >
-                  <span className="text-foreground">{t(`actions.${action.key}`)}</span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-foreground">{t(`actions.${action.key}`)}</span>
+                    {actionNote(action.key) && (
+                      <span className="type-caption text-hint">{actionNote(action.key)}</span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
                     {(action.roles as readonly Role[]).map(role => (
                       <Chip key={role} size="sm" color={ROLE_COLORS[role]} variant="secondary">
@@ -103,6 +111,11 @@ export default function AdminRolesPage() {
                           <span className="type-body text-foreground">
                             {t(`actions.${action.key}`)}
                           </span>
+                          {actionNote(action.key) && (
+                            <span className="block type-caption text-hint">
+                              {actionNote(action.key)}
+                            </span>
+                          )}
                         </Table.Cell>
                         {ROLES.map(role => {
                           const allowed = (action.roles as readonly Role[]).includes(role);
@@ -113,7 +126,7 @@ export default function AdminRolesPage() {
                                   allowed ? 'solar:check-circle-bold' : 'solar:minus-circle-linear'
                                 }
                                 width={20}
-                                className={`inline-block ${allowed ? 'text-success' : 'text-disabled'}`}
+                                className={`inline-block ${allowed ? 'text-success' : 'text-hint'}`}
                                 aria-hidden
                               />
                               <span className="sr-only">
@@ -131,8 +144,6 @@ export default function AdminRolesPage() {
           </Card.Content>
         </Card>
       ))}
-
-      <p className="type-caption text-hint">{t('ownerLeaveNote')}</p>
     </div>
   );
 }

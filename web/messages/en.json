@@ -649,7 +649,8 @@
       "deleteLottery": "Delete cancelled lotteries",
       "manageMemberAssets": "View and move members' gold and backpack items"
     },
-    "ownerLeaveNote": "The owner must transfer ownership before leaving the guild."
+    "ownerLeaveNote": "The owner must transfer ownership before leaving the guild.",
+    "mobileLegend": "Each action lists the roles that can perform it. Roles not listed cannot."
   },
   "guildBankPage": {
     "typeRollCallGoldPayout": "Roll call gold paid to attendees",
