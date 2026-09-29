@@ -16,14 +16,14 @@
   },
   "loginPage": {
     "loginWithDiscord": "使用 Discord 登入",
-    "redirecting": "正在跳轉至登入頁面...",
-    "loginUnavailable": "Login is unavailable",
-    "loginUnavailableDescription": "The authentication service could not be reached. Check that it is running, then try again.",
-    "retry": "Try again",
+    "loginUnavailable": "目前無法登入",
+    "loginUnavailableDescription": "登入服務沒有回應，請稍後再試。若持續發生，請聯絡公會幹部。",
+    "retry": "再試一次",
     "welcomeBack": "歡迎回來",
     "title": "登入 Guma",
     "discordLoginFailed": "Discord 登入失敗",
-    "discordLoginFailedDescription": "無法使用 Discord 登入，請再試一次。"
+    "discordLoginFailedDescription": "無法使用 Discord 登入，請再試一次。",
+    "preparing": "正在準備登入…"
   },
   "sidebar": {
     "dashboard": "主頁",

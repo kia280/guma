@@ -10,12 +10,32 @@ import { kratos } from '@/lib/kratos';
 import { safeReturnPath } from '@/lib/safe-return-path';
 import { checkSession } from '@/lib/session';
 
+const DEFAULT_RETURN = '/dashboard';
+
 export default function LoginPage() {
   return (
     <React.Suspense>
       <Login />
     </React.Suspense>
   );
+}
+
+function loginPath(returnUrl: string, flowId?: string) {
+  const params = new URLSearchParams();
+  if (flowId) params.set('flow', flowId);
+  if (returnUrl !== DEFAULT_RETURN) params.set('return', returnUrl);
+  const query = params.toString();
+  return query ? `/login?${query}` : '/login';
+}
+
+async function createFlow(returnUrl: string) {
+  if (returnUrl === DEFAULT_RETURN) return kratos.createBrowserLoginFlow();
+  try {
+    return await kratos.createBrowserLoginFlow({ returnTo: new URL(returnUrl, window.location.origin).href });
+  } catch (error) {
+    if (isAxiosError(error) && error.response?.status === 400) return kratos.createBrowserLoginFlow();
+    throw error;
+  }
 }
 
 function Login() {
@@ -30,27 +50,26 @@ function Login() {
   const [discordError, setDiscordError] = React.useState(false);
   const hasRecreatedFlow = React.useRef(false);
   const flow = searchParams.get('flow');
-  const returnUrl = safeReturnPath(searchParams.get('return'), '/dashboard');
+  const returnUrl = safeReturnPath(searchParams.get('return'), DEFAULT_RETURN);
 
   const createLoginFlow = React.useCallback(
     async (signal?: AbortSignal) => {
       setLoginFlowError(false);
       setIsCreatingFlow(true);
-
-      if (await checkSession()) {
-        if (!signal?.aborted) router.replace(returnUrl);
-        return;
-      }
-
       try {
-        const { data } = await kratos.createBrowserLoginFlow();
-        if (!signal?.aborted) router.replace('/login?flow=' + data.id);
+        if (await checkSession()) {
+          if (!signal?.aborted) router.replace(returnUrl);
+          return;
+        }
+        const { data } = await createFlow(returnUrl);
+        if (!signal?.aborted) router.replace(loginPath(returnUrl, data.id));
       } catch (error) {
         if (!signal?.aborted) {
           console.error('Error creating login flow:', error);
           setLoginFlowError(true);
-          setIsCreatingFlow(false);
         }
+      } finally {
+        if (!signal?.aborted) setIsCreatingFlow(false);
       }
     },
     [returnUrl, router]
@@ -81,14 +100,14 @@ function Login() {
         const status = isAxiosError(error) ? error.response?.status : undefined;
         if ((status === 403 || status === 404 || status === 410) && !hasRecreatedFlow.current) {
           hasRecreatedFlow.current = true;
-          router.replace('/login');
+          router.replace(loginPath(returnUrl));
         } else {
           console.error('Error fetching login flow:', error);
           setLoginFlowError(true);
         }
       });
     return () => controller.abort();
-  }, [flow, router]);
+  }, [flow, returnUrl, router]);
 
   const loginWithDiscord = () => {
     if (!flow) return;
@@ -116,13 +135,20 @@ function Login() {
       });
   };
 
-  if (!flow || validatedFlow !== flow) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
-        <div className="rounded-xl bg-surface flex w-full max-w-lg flex-col gap-4 px-8 pt-6 pb-10">
-          {loginFlowError ? (
-            <div className="flex flex-col gap-4 py-8">
-              <Alert status="danger">
+  const isReady = Boolean(flow) && validatedFlow === flow;
+
+  return (
+    <main className="flex min-h-screen w-full items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md border border-divider shadow-none bg-surface py-6">
+        <Card.Header className="flex flex-col items-center gap-2 px-2 pt-2 pb-0 text-center sm:px-4">
+          <Image src="/assets/logo/sunbaby-96x96.png" alt="Guma" width={60} height={60} preload />
+          <h1 className="type-title text-foreground pt-2 text-balance">{t('title')}</h1>
+          {isReady && <Card.Description className="type-prose text-subtle">{t('welcomeBack')}</Card.Description>}
+        </Card.Header>
+        <Card.Content className="flex flex-col gap-4 px-2 pt-4 pb-0 sm:px-4">
+          {!isReady && loginFlowError ? (
+            <>
+              <Alert status="danger" role="alert">
                 <Alert.Indicator />
                 <Alert.Content>
                   <Alert.Title>{t('loginUnavailable')}</Alert.Title>
@@ -131,61 +157,51 @@ function Login() {
               </Alert>
               <Button
                 fullWidth
+                className="h-12"
                 isPending={isCreatingFlow}
                 variant="primary"
                 onPress={() => void createLoginFlow()}
               >
                 {t('retry')}
               </Button>
+            </>
+          ) : !isReady ? (
+            <div role="status" className="flex flex-col items-center justify-center py-6 gap-4">
+              <Spinner size="lg" />
+              <p className="type-body text-subtle">{t('preparing')}</p>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 gap-4">
-              <Spinner size="lg" />
-              <p className="type-body text-subtle">{t('redirecting')}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-lg border border-divider shadow-none bg-surface py-6">
-        <Card.Header className="flex flex-col items-center gap-2 px-4 pt-2 pb-0">
-          <Image src="/assets/logo/sunbaby-96x96.png" alt="Guma" width={60} height={60} preload />
-          <h1 className="type-title text-foreground pt-2">{t('title')}</h1>
-          <Card.Description className="type-prose text-subtle">{t('welcomeBack')}</Card.Description>
-        </Card.Header>
-        <Card.Content className="flex flex-col gap-4 px-4 pt-4 pb-0">
-          {(discordError || flowHasError) && (
-            <Alert status="danger">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Title>{t('discordLoginFailed')}</Alert.Title>
-                <Alert.Description>{t('discordLoginFailedDescription')}</Alert.Description>
-              </Alert.Content>
-            </Alert>
-          )}
-          <Button
-            variant="tertiary"
-            className="w-full h-12 text-soft"
-            isPending={isRedirecting}
-            onPress={loginWithDiscord}
-          >
-            {({ isPending }) => (
-              <>
-                {isPending ? (
-                  <Spinner color="current" size="sm" />
-                ) : (
-                  <Icon icon="logos:discord-icon" width={24} />
+            <>
+              {(discordError || flowHasError) && (
+                <Alert status="danger" role="alert">
+                  <Alert.Indicator />
+                  <Alert.Content>
+                    <Alert.Title>{t('discordLoginFailed')}</Alert.Title>
+                    <Alert.Description>{t('discordLoginFailedDescription')}</Alert.Description>
+                  </Alert.Content>
+                </Alert>
+              )}
+              <Button
+                variant="primary"
+                className="w-full h-12"
+                isPending={isRedirecting}
+                onPress={loginWithDiscord}
+              >
+                {({ isPending }) => (
+                  <>
+                    {isPending ? (
+                      <Spinner color="current" size="sm" />
+                    ) : (
+                      <Icon icon="ic:baseline-discord" width={22} />
+                    )}
+                    {t('loginWithDiscord')}
+                  </>
                 )}
-                {t('loginWithDiscord')}
-              </>
-            )}
-          </Button>
+              </Button>
+            </>
+          )}
         </Card.Content>
       </Card>
-    </div>
+    </main>
   );
 }

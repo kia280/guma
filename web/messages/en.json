@@ -16,14 +16,14 @@
   },
   "loginPage": {
     "loginWithDiscord": "Login with Discord",
-    "redirecting": "Redirecting to login...",
-    "loginUnavailable": "Login is unavailable",
-    "loginUnavailableDescription": "The authentication service could not be reached. Check that it is running, then try again.",
+    "loginUnavailable": "Sign-in is unavailable right now",
+    "loginUnavailableDescription": "The sign-in service did not respond. Try again in a moment. If this keeps happening, contact your guild officers.",
     "retry": "Try again",
     "welcomeBack": "Welcome back",
     "title": "Sign in to Guma",
     "discordLoginFailed": "Discord login failed",
-    "discordLoginFailedDescription": "We couldn't sign you in with Discord. Try again."
+    "discordLoginFailedDescription": "We couldn't sign you in with Discord. Try again.",
+    "preparing": "Preparing sign-in…"
   },
   "sidebar": {
     "dashboard": "Dashboard",
