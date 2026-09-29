@@ -4,7 +4,9 @@ import { FieldError, Input, Label, NumberField, TextArea, TextField } from '@her
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { DateTimePicker } from './DateTimePicker';
+import { FieldRow, LockedValue } from './FieldRow';
 
 export interface LotteryFormValues {
   title: string;
@@ -39,6 +41,7 @@ export function LotteryFormFields({
   validationBehavior?: 'aria' | 'native';
 }) {
   const t = useTranslations('createLotteryModal');
+  const formatGold = useFormatGold();
 
   return (
     <>
@@ -66,43 +69,50 @@ export function LotteryFormFields({
       {prizes}
 
       <div className="flex flex-col gap-2">
-        <div className="grid grid-cols-2 gap-3">
-          <NumberField
-            isRequired
-            isDisabled={ticketsLocked}
-            validationBehavior={validationBehavior}
-            isInvalid={!!errors.ticketPrice}
-            formatOptions={GOLD_FORMAT_OPTIONS}
-            minValue={GOLD_STEP}
-            value={values.ticketPrice}
-            onChange={value => onChange({ ticketPrice: Number.isFinite(value) ? value : 0 })}
-          >
-            <Label>{t('ticketPrice')}</Label>
-            <NumberField.Group>
-              <NumberField.DecrementButton />
-              <NumberField.Input className="w-full min-w-0" />
-              <NumberField.IncrementButton />
-            </NumberField.Group>
-            {errors.ticketPrice && <FieldError>{errors.ticketPrice}</FieldError>}
-          </NumberField>
-          <NumberField
-            isRequired
-            isDisabled={ticketsLocked}
-            validationBehavior={validationBehavior}
-            isInvalid={!!errors.maxTickets}
-            minValue={1}
-            value={values.maxTickets}
-            onChange={value => onChange({ maxTickets: Number.isFinite(value) ? value : 0 })}
-          >
-            <Label>{t('maxTickets')}</Label>
-            <NumberField.Group>
-              <NumberField.DecrementButton />
-              <NumberField.Input className="w-full min-w-0" />
-              <NumberField.IncrementButton />
-            </NumberField.Group>
-            {errors.maxTickets && <FieldError>{errors.maxTickets}</FieldError>}
-          </NumberField>
-        </div>
+        <FieldRow>
+          {ticketsLocked ? (
+            <>
+              <LockedValue label={t('ticketPrice')} value={formatGold(values.ticketPrice)} />
+              <LockedValue label={t('maxTickets')} value={String(values.maxTickets)} />
+            </>
+          ) : (
+            <>
+              <NumberField
+                isRequired
+                validationBehavior={validationBehavior}
+                isInvalid={!!errors.ticketPrice}
+                formatOptions={GOLD_FORMAT_OPTIONS}
+                minValue={GOLD_STEP}
+                value={values.ticketPrice}
+                onChange={value => onChange({ ticketPrice: Number.isFinite(value) ? value : 0 })}
+              >
+                <Label>{t('ticketPrice')}</Label>
+                <NumberField.Group>
+                  <NumberField.DecrementButton />
+                  <NumberField.Input className="w-full min-w-0" />
+                  <NumberField.IncrementButton />
+                </NumberField.Group>
+                {errors.ticketPrice && <FieldError>{errors.ticketPrice}</FieldError>}
+              </NumberField>
+              <NumberField
+                isRequired
+                validationBehavior={validationBehavior}
+                isInvalid={!!errors.maxTickets}
+                minValue={1}
+                value={values.maxTickets}
+                onChange={value => onChange({ maxTickets: Number.isFinite(value) ? value : 0 })}
+              >
+                <Label>{t('maxTickets')}</Label>
+                <NumberField.Group>
+                  <NumberField.DecrementButton />
+                  <NumberField.Input className="w-full min-w-0" />
+                  <NumberField.IncrementButton />
+                </NumberField.Group>
+                {errors.maxTickets && <FieldError>{errors.maxTickets}</FieldError>}
+              </NumberField>
+            </>
+          )}
+        </FieldRow>
         {ticketsHint}
       </div>
 

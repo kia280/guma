@@ -22,6 +22,7 @@ import type { GuildBankItem } from '@/types/guild-bank';
 import type { ItemSourceRef } from '@/types/item';
 import type { Lottery } from '@/types/lottery';
 import { BankItemPicker } from './BankItemPicker';
+import { FieldRow } from './FieldRow';
 import { LotteryFormFields } from './LotteryFormFields';
 
 export type LotteryPrizeItem = {
@@ -179,7 +180,7 @@ export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotter
                         </div>
                       )}
                       {!lockedPrize && !isFromBank && (
-                        <div className="grid grid-cols-2 gap-3">
+                        <FieldRow>
                           <TextField>
                             <Label>{t('prizeName')}</Label>
                             <Input
@@ -197,7 +198,7 @@ export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotter
                               <NumberField.IncrementButton />
                             </NumberField.Group>
                           </NumberField>
-                        </div>
+                        </FieldRow>
                       )}
                     </>
                   }

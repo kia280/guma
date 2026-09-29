@@ -3,7 +3,9 @@
 import { FieldError, Input, Label, ListBox, NumberField, Select, TextArea, TextField } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import { GOLD_FORMAT_OPTIONS, GOLD_STEP } from '@/lib/guma/money';
+import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { ItemCategory, ItemRarity } from '@/types/item';
+import { FieldRow, LockedValue } from './FieldRow';
 
 export interface AuctionItemValues {
   name: string;
@@ -106,10 +108,13 @@ function GoldField({
   error?: string | null;
   isDisabled?: boolean;
 }) {
+  const formatGold = useFormatGold();
+
+  if (isDisabled) return <LockedValue label={label} value={formatGold(value)} />;
+
   return (
     <NumberField
       isRequired
-      isDisabled={isDisabled}
       validationBehavior="aria"
       isInvalid={!!error}
       formatOptions={GOLD_FORMAT_OPTIONS}
@@ -142,7 +147,7 @@ export function AuctionPricingFields({
   const t = useTranslations('createAuctionModal');
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <FieldRow>
       <GoldField
         label={t('startingBid')}
         value={values.startingBid}
@@ -157,6 +162,6 @@ export function AuctionPricingFields({
         error={errors?.minBidIncrement}
         isDisabled={isDisabled}
       />
-    </div>
+    </FieldRow>
   );
 }
