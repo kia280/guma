@@ -72,7 +72,8 @@
       "terms": "服務條款",
       "contact": "聯絡我們"
     },
-    "adminInbox": "待辦"
+    "adminInbox": "待辦",
+    "accountMenu": "{name} 的帳號選單"
   },
   "dashboard": {
     "overview": "總覽",

@@ -72,7 +72,8 @@
       "terms": "Terms of service",
       "contact": "Contact us"
     },
-    "adminInbox": "Inbox"
+    "adminInbox": "Inbox",
+    "accountMenu": "Account menu for {name}"
   },
   "dashboard": {
     "overview": "Overview",

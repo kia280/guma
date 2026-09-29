@@ -83,7 +83,7 @@ function NavItemLink({
       onPress={onNavigate}
       className={({ isFocusVisible }) =>
         cn(
-          'group flex h-8 items-center gap-2.5 rounded-lg px-[11px] type-body font-medium outline-none transition-colors',
+          'group flex h-8 max-lg:h-11 items-center gap-2.5 rounded-lg px-[11px] type-body font-medium outline-none transition-colors',
           'w-full',
           isNested && !isCollapsed && 'pl-[39px]',
           isActive ? 'bg-default text-foreground' : 'text-subtle hover:bg-default/60 hover:text-foreground',
@@ -158,7 +158,7 @@ function NavGroupItem({
         aria-controls={panelId}
         onClick={() => setIsExpanded(value => !value)}
         className={cn(
-          'group flex h-8 w-full items-center gap-2.5 rounded-lg pl-[11px] pr-2 type-body font-medium outline-none transition-colors',
+          'group flex h-8 max-lg:h-11 w-full items-center gap-2.5 rounded-lg pl-[11px] pr-2 type-body font-medium outline-none transition-colors',
           'focus-visible:ring-2 focus-visible:ring-focus',
           isInside && !isExpanded ? 'bg-default text-foreground' : 'text-subtle hover:bg-default/60 hover:text-foreground',
         )}

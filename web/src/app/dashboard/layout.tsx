@@ -88,7 +88,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
   return (
     <>
       <div className="flex h-screen w-full bg-background">
-        <SidebarDrawer className="z-50" hideCloseButton isOpen={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <SidebarDrawer className="z-50" label={t('navigation')} isOpen={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
           <AppSidebar isCollapsed={showCollapsed} onNavigate={() => setIsDrawerOpen(false)} />
         </SidebarDrawer>
 
@@ -146,6 +146,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
                     <Button
                       isIconOnly
                       variant="ghost"
+                      aria-label={t('accountMenu', { name: displayName })}
                       className="size-11 min-w-11 rounded-full relative overflow-visible p-0 sm:size-7 sm:min-w-7"
                     >
                       <Badge.Anchor>
