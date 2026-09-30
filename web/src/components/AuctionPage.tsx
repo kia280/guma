@@ -216,7 +216,7 @@ const AuctionPage = () => {
           <Tabs.ListContainer className="min-w-0 flex-1">
             <Tabs.List aria-label={t('statusTabs')}>
               {AUCTION_TABS.map(tab => (
-                <Tabs.Tab key={tab} id={tab}>
+                <Tabs.Tab key={tab} id={tab} className="max-sm:h-9">
                   <div className="flex items-center gap-2">
                     <span>{t(tab)}</span>
                     <Chip size="sm" color={tab === 'all' ? undefined : auctionStatusColor[tab]} variant="secondary">

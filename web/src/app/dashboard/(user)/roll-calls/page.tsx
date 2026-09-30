@@ -370,7 +370,7 @@ export default function RollCallsPage() {
           <Tabs.ListContainer className="min-w-0 flex-1">
             <Tabs.List aria-label={t('rollCalls')}>
               {STATUS_TABS.map(tab => (
-                <Tabs.Tab key={tab.id} id={tab.id}>
+                <Tabs.Tab key={tab.id} id={tab.id} className="max-sm:h-9">
                   <div className="flex items-center gap-2">
                     <span>{tabLabels[tab.id]}</span>
                     <Chip
