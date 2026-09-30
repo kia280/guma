@@ -935,6 +935,102 @@ func (x *ListBankItemsResponse) GetTotalCount() int32 {
 	return 0
 }
 
+type DeleteBankItemRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	BankItemId    string                 `protobuf:"bytes,2,opt,name=bank_item_id,json=bankItemId,proto3" json:"bank_item_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteBankItemRequest) Reset() {
+	*x = DeleteBankItemRequest{}
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteBankItemRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteBankItemRequest) ProtoMessage() {}
+
+func (x *DeleteBankItemRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteBankItemRequest.ProtoReflect.Descriptor instead.
+func (*DeleteBankItemRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *DeleteBankItemRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *DeleteBankItemRequest) GetBankItemId() string {
+	if x != nil {
+		return x.BankItemId
+	}
+	return ""
+}
+
+type DeleteBankItemResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteBankItemResponse) Reset() {
+	*x = DeleteBankItemResponse{}
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteBankItemResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteBankItemResponse) ProtoMessage() {}
+
+func (x *DeleteBankItemResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteBankItemResponse.ProtoReflect.Descriptor instead.
+func (*DeleteBankItemResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *DeleteBankItemResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 type RequestItemRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
@@ -946,7 +1042,7 @@ type RequestItemRequest struct {
 
 func (x *RequestItemRequest) Reset() {
 	*x = RequestItemRequest{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -958,7 +1054,7 @@ func (x *RequestItemRequest) String() string {
 func (*RequestItemRequest) ProtoMessage() {}
 
 func (x *RequestItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -971,7 +1067,7 @@ func (x *RequestItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestItemRequest.ProtoReflect.Descriptor instead.
 func (*RequestItemRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{16}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *RequestItemRequest) GetGuildId() string {
@@ -1004,7 +1100,7 @@ type RequestItemResponse struct {
 
 func (x *RequestItemResponse) Reset() {
 	*x = RequestItemResponse{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1016,7 +1112,7 @@ func (x *RequestItemResponse) String() string {
 func (*RequestItemResponse) ProtoMessage() {}
 
 func (x *RequestItemResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1029,7 +1125,7 @@ func (x *RequestItemResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestItemResponse.ProtoReflect.Descriptor instead.
 func (*RequestItemResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{17}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *RequestItemResponse) GetItemRequest() *ItemRequest {
@@ -1051,7 +1147,7 @@ type ReviewItemRequestRequest struct {
 
 func (x *ReviewItemRequestRequest) Reset() {
 	*x = ReviewItemRequestRequest{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1063,7 +1159,7 @@ func (x *ReviewItemRequestRequest) String() string {
 func (*ReviewItemRequestRequest) ProtoMessage() {}
 
 func (x *ReviewItemRequestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1076,7 +1172,7 @@ func (x *ReviewItemRequestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReviewItemRequestRequest.ProtoReflect.Descriptor instead.
 func (*ReviewItemRequestRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{18}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ReviewItemRequestRequest) GetGuildId() string {
@@ -1116,7 +1212,7 @@ type ReviewItemRequestResponse struct {
 
 func (x *ReviewItemRequestResponse) Reset() {
 	*x = ReviewItemRequestResponse{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1128,7 +1224,7 @@ func (x *ReviewItemRequestResponse) String() string {
 func (*ReviewItemRequestResponse) ProtoMessage() {}
 
 func (x *ReviewItemRequestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1141,7 +1237,7 @@ func (x *ReviewItemRequestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReviewItemRequestResponse.ProtoReflect.Descriptor instead.
 func (*ReviewItemRequestResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{19}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ReviewItemRequestResponse) GetItemRequest() *ItemRequest {
@@ -1163,7 +1259,7 @@ type ListItemRequestsRequest struct {
 
 func (x *ListItemRequestsRequest) Reset() {
 	*x = ListItemRequestsRequest{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[20]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1175,7 +1271,7 @@ func (x *ListItemRequestsRequest) String() string {
 func (*ListItemRequestsRequest) ProtoMessage() {}
 
 func (x *ListItemRequestsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[20]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1188,7 +1284,7 @@ func (x *ListItemRequestsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListItemRequestsRequest.ProtoReflect.Descriptor instead.
 func (*ListItemRequestsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{20}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ListItemRequestsRequest) GetGuildId() string {
@@ -1230,7 +1326,7 @@ type ListItemRequestsResponse struct {
 
 func (x *ListItemRequestsResponse) Reset() {
 	*x = ListItemRequestsResponse{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[21]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1242,7 +1338,7 @@ func (x *ListItemRequestsResponse) String() string {
 func (*ListItemRequestsResponse) ProtoMessage() {}
 
 func (x *ListItemRequestsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[21]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1255,7 +1351,7 @@ func (x *ListItemRequestsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListItemRequestsResponse.ProtoReflect.Descriptor instead.
 func (*ListItemRequestsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{21}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ListItemRequestsResponse) GetRequests() []*ItemRequest {
@@ -1294,7 +1390,7 @@ type GuildBank struct {
 
 func (x *GuildBank) Reset() {
 	*x = GuildBank{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[22]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1306,7 +1402,7 @@ func (x *GuildBank) String() string {
 func (*GuildBank) ProtoMessage() {}
 
 func (x *GuildBank) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[22]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1319,7 +1415,7 @@ func (x *GuildBank) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GuildBank.ProtoReflect.Descriptor instead.
 func (*GuildBank) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{22}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *GuildBank) GetId() string {
@@ -1383,7 +1479,7 @@ type TopContributor struct {
 
 func (x *TopContributor) Reset() {
 	*x = TopContributor{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[23]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1395,7 +1491,7 @@ func (x *TopContributor) String() string {
 func (*TopContributor) ProtoMessage() {}
 
 func (x *TopContributor) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[23]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1408,7 +1504,7 @@ func (x *TopContributor) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TopContributor.ProtoReflect.Descriptor instead.
 func (*TopContributor) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{23}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *TopContributor) GetUserId() string {
@@ -1460,7 +1556,7 @@ type BankContribution struct {
 
 func (x *BankContribution) Reset() {
 	*x = BankContribution{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[24]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1472,7 +1568,7 @@ func (x *BankContribution) String() string {
 func (*BankContribution) ProtoMessage() {}
 
 func (x *BankContribution) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[24]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1485,7 +1581,7 @@ func (x *BankContribution) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BankContribution.ProtoReflect.Descriptor instead.
 func (*BankContribution) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{24}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *BankContribution) GetId() string {
@@ -1599,7 +1695,7 @@ type FundRequest struct {
 
 func (x *FundRequest) Reset() {
 	*x = FundRequest{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[25]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1611,7 +1707,7 @@ func (x *FundRequest) String() string {
 func (*FundRequest) ProtoMessage() {}
 
 func (x *FundRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[25]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1624,7 +1720,7 @@ func (x *FundRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FundRequest.ProtoReflect.Descriptor instead.
 func (*FundRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{25}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *FundRequest) GetId() string {
@@ -1732,7 +1828,7 @@ type BankItem struct {
 
 func (x *BankItem) Reset() {
 	*x = BankItem{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[26]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1744,7 +1840,7 @@ func (x *BankItem) String() string {
 func (*BankItem) ProtoMessage() {}
 
 func (x *BankItem) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[26]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1757,7 +1853,7 @@ func (x *BankItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BankItem.ProtoReflect.Descriptor instead.
 func (*BankItem) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{26}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *BankItem) GetId() string {
@@ -1872,7 +1968,7 @@ type ItemRequest struct {
 
 func (x *ItemRequest) Reset() {
 	*x = ItemRequest{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[27]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1884,7 +1980,7 @@ func (x *ItemRequest) String() string {
 func (*ItemRequest) ProtoMessage() {}
 
 func (x *ItemRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[27]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1897,7 +1993,7 @@ func (x *ItemRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ItemRequest.ProtoReflect.Descriptor instead.
 func (*ItemRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{27}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ItemRequest) GetId() string {
@@ -2001,7 +2097,7 @@ type GetItemHistoryRequest struct {
 
 func (x *GetItemHistoryRequest) Reset() {
 	*x = GetItemHistoryRequest{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[28]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2013,7 +2109,7 @@ func (x *GetItemHistoryRequest) String() string {
 func (*GetItemHistoryRequest) ProtoMessage() {}
 
 func (x *GetItemHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[28]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2026,7 +2122,7 @@ func (x *GetItemHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetItemHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetItemHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{28}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *GetItemHistoryRequest) GetGuildId() string {
@@ -2061,7 +2157,7 @@ type ItemHistoryEvent struct {
 
 func (x *ItemHistoryEvent) Reset() {
 	*x = ItemHistoryEvent{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[29]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2073,7 +2169,7 @@ func (x *ItemHistoryEvent) String() string {
 func (*ItemHistoryEvent) ProtoMessage() {}
 
 func (x *ItemHistoryEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[29]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2086,7 +2182,7 @@ func (x *ItemHistoryEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ItemHistoryEvent.ProtoReflect.Descriptor instead.
 func (*ItemHistoryEvent) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{29}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ItemHistoryEvent) GetId() string {
@@ -2168,7 +2264,7 @@ type GetItemHistoryResponse struct {
 
 func (x *GetItemHistoryResponse) Reset() {
 	*x = GetItemHistoryResponse{}
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[30]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2180,7 +2276,7 @@ func (x *GetItemHistoryResponse) String() string {
 func (*GetItemHistoryResponse) ProtoMessage() {}
 
 func (x *GetItemHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_bank_proto_msgTypes[30]
+	mi := &file_proto_guma_v1_bank_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2193,7 +2289,7 @@ func (x *GetItemHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetItemHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetItemHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{30}
+	return file_proto_guma_v1_bank_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *GetItemHistoryResponse) GetEvents() []*ItemHistoryEvent {
@@ -2273,7 +2369,13 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2\x11.guma.v1.BankItemR\x05items\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"i\n" +
+	"totalCount\"T\n" +
+	"\x15DeleteBankItemRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12 \n" +
+	"\fbank_item_id\x18\x02 \x01(\tR\n" +
+	"bankItemId\"2\n" +
+	"\x16DeleteBankItemResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"i\n" +
 	"\x12RequestItemRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12 \n" +
 	"\fbank_item_id\x18\x02 \x01(\tR\n" +
@@ -2409,7 +2511,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"K\n" +
 	"\x16GetItemHistoryResponse\x121\n" +
-	"\x06events\x18\x01 \x03(\v2\x19.guma.v1.ItemHistoryEventR\x06events2\xd8\f\n" +
+	"\x06events\x18\x01 \x03(\v2\x19.guma.v1.ItemHistoryEventR\x06events2\xe5\r\n" +
 	"\vBankService\x12`\n" +
 	"\aGetBank\x12\x17.guma.v1.GetBankRequest\x1a\x18.guma.v1.GetBankResponse\"\"\x82\xd3\xe4\x93\x02\x1c\x12\x1a/v1/guilds/{guild_id}/bank\x12\x86\x01\n" +
 	"\x0fContributeFunds\x12\x1f.guma.v1.ContributeFundsRequest\x1a .guma.v1.ContributeFundsResponse\"0\x82\xd3\xe4\x93\x02*:\x01*\"%/v1/guilds/{guild_id}/bank/contribute\x12\x80\x01\n" +
@@ -2419,7 +2521,8 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x11ListContributions\x12!.guma.v1.ListContributionsRequest\x1a\".guma.v1.ListContributionsResponse\"0\x82\xd3\xe4\x93\x02*\x12(/v1/guilds/{guild_id}/bank/contributions\x12r\n" +
 	"\n" +
 	"DonateItem\x12\x1a.guma.v1.DonateItemRequest\x1a\x1b.guma.v1.DonateItemResponse\"+\x82\xd3\xe4\x93\x02%:\x01*\" /v1/guilds/{guild_id}/bank/items\x12x\n" +
-	"\rListBankItems\x12\x1d.guma.v1.ListBankItemsRequest\x1a\x1e.guma.v1.ListBankItemsResponse\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/guilds/{guild_id}/bank/items\x12}\n" +
+	"\rListBankItems\x12\x1d.guma.v1.ListBankItemsRequest\x1a\x1e.guma.v1.ListBankItemsResponse\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/guilds/{guild_id}/bank/items\x12\x8a\x01\n" +
+	"\x0eDeleteBankItem\x12\x1e.guma.v1.DeleteBankItemRequest\x1a\x1f.guma.v1.DeleteBankItemResponse\"7\x82\xd3\xe4\x93\x021*//v1/guilds/{guild_id}/bank/items/{bank_item_id}\x12}\n" +
 	"\vRequestItem\x12\x1b.guma.v1.RequestItemRequest\x1a\x1c.guma.v1.RequestItemResponse\"3\x82\xd3\xe4\x93\x02-:\x01*\"(/v1/guilds/{guild_id}/bank/item-requests\x12\x9c\x01\n" +
 	"\x11ReviewItemRequest\x12!.guma.v1.ReviewItemRequestRequest\x1a\".guma.v1.ReviewItemRequestResponse\"@\x82\xd3\xe4\x93\x02::\x01*25/v1/guilds/{guild_id}/bank/item-requests/{request_id}\x12\x89\x01\n" +
 	"\x10ListItemRequests\x12 .guma.v1.ListItemRequestsRequest\x1a!.guma.v1.ListItemRequestsResponse\"0\x82\xd3\xe4\x93\x02*\x12(/v1/guilds/{guild_id}/bank/item-requests\x12\x88\x01\n" +
@@ -2437,7 +2540,7 @@ func file_proto_guma_v1_bank_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_bank_proto_rawDescData
 }
 
-var file_proto_guma_v1_bank_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
+var file_proto_guma_v1_bank_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
 var file_proto_guma_v1_bank_proto_goTypes = []any{
 	(*GetBankRequest)(nil),            // 0: guma.v1.GetBankRequest
 	(*GetBankResponse)(nil),           // 1: guma.v1.GetBankResponse
@@ -2455,53 +2558,55 @@ var file_proto_guma_v1_bank_proto_goTypes = []any{
 	(*DonateItemResponse)(nil),        // 13: guma.v1.DonateItemResponse
 	(*ListBankItemsRequest)(nil),      // 14: guma.v1.ListBankItemsRequest
 	(*ListBankItemsResponse)(nil),     // 15: guma.v1.ListBankItemsResponse
-	(*RequestItemRequest)(nil),        // 16: guma.v1.RequestItemRequest
-	(*RequestItemResponse)(nil),       // 17: guma.v1.RequestItemResponse
-	(*ReviewItemRequestRequest)(nil),  // 18: guma.v1.ReviewItemRequestRequest
-	(*ReviewItemRequestResponse)(nil), // 19: guma.v1.ReviewItemRequestResponse
-	(*ListItemRequestsRequest)(nil),   // 20: guma.v1.ListItemRequestsRequest
-	(*ListItemRequestsResponse)(nil),  // 21: guma.v1.ListItemRequestsResponse
-	(*GuildBank)(nil),                 // 22: guma.v1.GuildBank
-	(*TopContributor)(nil),            // 23: guma.v1.TopContributor
-	(*BankContribution)(nil),          // 24: guma.v1.BankContribution
-	(*FundRequest)(nil),               // 25: guma.v1.FundRequest
-	(*BankItem)(nil),                  // 26: guma.v1.BankItem
-	(*ItemRequest)(nil),               // 27: guma.v1.ItemRequest
-	(*GetItemHistoryRequest)(nil),     // 28: guma.v1.GetItemHistoryRequest
-	(*ItemHistoryEvent)(nil),          // 29: guma.v1.ItemHistoryEvent
-	(*GetItemHistoryResponse)(nil),    // 30: guma.v1.GetItemHistoryResponse
-	(*timestamppb.Timestamp)(nil),     // 31: google.protobuf.Timestamp
-	(*Item)(nil),                      // 32: guma.v1.Item
-	(*ItemLock)(nil),                  // 33: guma.v1.ItemLock
+	(*DeleteBankItemRequest)(nil),     // 16: guma.v1.DeleteBankItemRequest
+	(*DeleteBankItemResponse)(nil),    // 17: guma.v1.DeleteBankItemResponse
+	(*RequestItemRequest)(nil),        // 18: guma.v1.RequestItemRequest
+	(*RequestItemResponse)(nil),       // 19: guma.v1.RequestItemResponse
+	(*ReviewItemRequestRequest)(nil),  // 20: guma.v1.ReviewItemRequestRequest
+	(*ReviewItemRequestResponse)(nil), // 21: guma.v1.ReviewItemRequestResponse
+	(*ListItemRequestsRequest)(nil),   // 22: guma.v1.ListItemRequestsRequest
+	(*ListItemRequestsResponse)(nil),  // 23: guma.v1.ListItemRequestsResponse
+	(*GuildBank)(nil),                 // 24: guma.v1.GuildBank
+	(*TopContributor)(nil),            // 25: guma.v1.TopContributor
+	(*BankContribution)(nil),          // 26: guma.v1.BankContribution
+	(*FundRequest)(nil),               // 27: guma.v1.FundRequest
+	(*BankItem)(nil),                  // 28: guma.v1.BankItem
+	(*ItemRequest)(nil),               // 29: guma.v1.ItemRequest
+	(*GetItemHistoryRequest)(nil),     // 30: guma.v1.GetItemHistoryRequest
+	(*ItemHistoryEvent)(nil),          // 31: guma.v1.ItemHistoryEvent
+	(*GetItemHistoryResponse)(nil),    // 32: guma.v1.GetItemHistoryResponse
+	(*timestamppb.Timestamp)(nil),     // 33: google.protobuf.Timestamp
+	(*Item)(nil),                      // 34: guma.v1.Item
+	(*ItemLock)(nil),                  // 35: guma.v1.ItemLock
 }
 var file_proto_guma_v1_bank_proto_depIdxs = []int32{
-	22, // 0: guma.v1.GetBankResponse.bank:type_name -> guma.v1.GuildBank
-	24, // 1: guma.v1.ContributeFundsResponse.contribution:type_name -> guma.v1.BankContribution
-	22, // 2: guma.v1.ContributeFundsResponse.updated_bank:type_name -> guma.v1.GuildBank
-	25, // 3: guma.v1.RequestFundsResponse.fund_request:type_name -> guma.v1.FundRequest
-	25, // 4: guma.v1.ReviewFundRequestResponse.fund_request:type_name -> guma.v1.FundRequest
-	25, // 5: guma.v1.ListFundRequestsResponse.requests:type_name -> guma.v1.FundRequest
-	24, // 6: guma.v1.ListContributionsResponse.contributions:type_name -> guma.v1.BankContribution
-	26, // 7: guma.v1.DonateItemResponse.bank_item:type_name -> guma.v1.BankItem
-	26, // 8: guma.v1.ListBankItemsResponse.items:type_name -> guma.v1.BankItem
-	27, // 9: guma.v1.RequestItemResponse.item_request:type_name -> guma.v1.ItemRequest
-	27, // 10: guma.v1.ReviewItemRequestResponse.item_request:type_name -> guma.v1.ItemRequest
-	27, // 11: guma.v1.ListItemRequestsResponse.requests:type_name -> guma.v1.ItemRequest
-	23, // 12: guma.v1.GuildBank.top_contributors:type_name -> guma.v1.TopContributor
-	31, // 13: guma.v1.GuildBank.created_at:type_name -> google.protobuf.Timestamp
-	31, // 14: guma.v1.GuildBank.updated_at:type_name -> google.protobuf.Timestamp
-	31, // 15: guma.v1.BankContribution.created_at:type_name -> google.protobuf.Timestamp
-	32, // 16: guma.v1.BankContribution.items:type_name -> guma.v1.Item
-	31, // 17: guma.v1.FundRequest.created_at:type_name -> google.protobuf.Timestamp
-	31, // 18: guma.v1.FundRequest.reviewed_at:type_name -> google.protobuf.Timestamp
-	32, // 19: guma.v1.BankItem.item:type_name -> guma.v1.Item
-	31, // 20: guma.v1.BankItem.donated_at:type_name -> google.protobuf.Timestamp
-	33, // 21: guma.v1.BankItem.lock:type_name -> guma.v1.ItemLock
-	31, // 22: guma.v1.ItemRequest.created_at:type_name -> google.protobuf.Timestamp
-	31, // 23: guma.v1.ItemRequest.reviewed_at:type_name -> google.protobuf.Timestamp
-	32, // 24: guma.v1.ItemRequest.item:type_name -> guma.v1.Item
-	31, // 25: guma.v1.ItemHistoryEvent.created_at:type_name -> google.protobuf.Timestamp
-	29, // 26: guma.v1.GetItemHistoryResponse.events:type_name -> guma.v1.ItemHistoryEvent
+	24, // 0: guma.v1.GetBankResponse.bank:type_name -> guma.v1.GuildBank
+	26, // 1: guma.v1.ContributeFundsResponse.contribution:type_name -> guma.v1.BankContribution
+	24, // 2: guma.v1.ContributeFundsResponse.updated_bank:type_name -> guma.v1.GuildBank
+	27, // 3: guma.v1.RequestFundsResponse.fund_request:type_name -> guma.v1.FundRequest
+	27, // 4: guma.v1.ReviewFundRequestResponse.fund_request:type_name -> guma.v1.FundRequest
+	27, // 5: guma.v1.ListFundRequestsResponse.requests:type_name -> guma.v1.FundRequest
+	26, // 6: guma.v1.ListContributionsResponse.contributions:type_name -> guma.v1.BankContribution
+	28, // 7: guma.v1.DonateItemResponse.bank_item:type_name -> guma.v1.BankItem
+	28, // 8: guma.v1.ListBankItemsResponse.items:type_name -> guma.v1.BankItem
+	29, // 9: guma.v1.RequestItemResponse.item_request:type_name -> guma.v1.ItemRequest
+	29, // 10: guma.v1.ReviewItemRequestResponse.item_request:type_name -> guma.v1.ItemRequest
+	29, // 11: guma.v1.ListItemRequestsResponse.requests:type_name -> guma.v1.ItemRequest
+	25, // 12: guma.v1.GuildBank.top_contributors:type_name -> guma.v1.TopContributor
+	33, // 13: guma.v1.GuildBank.created_at:type_name -> google.protobuf.Timestamp
+	33, // 14: guma.v1.GuildBank.updated_at:type_name -> google.protobuf.Timestamp
+	33, // 15: guma.v1.BankContribution.created_at:type_name -> google.protobuf.Timestamp
+	34, // 16: guma.v1.BankContribution.items:type_name -> guma.v1.Item
+	33, // 17: guma.v1.FundRequest.created_at:type_name -> google.protobuf.Timestamp
+	33, // 18: guma.v1.FundRequest.reviewed_at:type_name -> google.protobuf.Timestamp
+	34, // 19: guma.v1.BankItem.item:type_name -> guma.v1.Item
+	33, // 20: guma.v1.BankItem.donated_at:type_name -> google.protobuf.Timestamp
+	35, // 21: guma.v1.BankItem.lock:type_name -> guma.v1.ItemLock
+	33, // 22: guma.v1.ItemRequest.created_at:type_name -> google.protobuf.Timestamp
+	33, // 23: guma.v1.ItemRequest.reviewed_at:type_name -> google.protobuf.Timestamp
+	34, // 24: guma.v1.ItemRequest.item:type_name -> guma.v1.Item
+	33, // 25: guma.v1.ItemHistoryEvent.created_at:type_name -> google.protobuf.Timestamp
+	31, // 26: guma.v1.GetItemHistoryResponse.events:type_name -> guma.v1.ItemHistoryEvent
 	0,  // 27: guma.v1.BankService.GetBank:input_type -> guma.v1.GetBankRequest
 	2,  // 28: guma.v1.BankService.ContributeFunds:input_type -> guma.v1.ContributeFundsRequest
 	4,  // 29: guma.v1.BankService.RequestFunds:input_type -> guma.v1.RequestFundsRequest
@@ -2510,24 +2615,26 @@ var file_proto_guma_v1_bank_proto_depIdxs = []int32{
 	10, // 32: guma.v1.BankService.ListContributions:input_type -> guma.v1.ListContributionsRequest
 	12, // 33: guma.v1.BankService.DonateItem:input_type -> guma.v1.DonateItemRequest
 	14, // 34: guma.v1.BankService.ListBankItems:input_type -> guma.v1.ListBankItemsRequest
-	16, // 35: guma.v1.BankService.RequestItem:input_type -> guma.v1.RequestItemRequest
-	18, // 36: guma.v1.BankService.ReviewItemRequest:input_type -> guma.v1.ReviewItemRequestRequest
-	20, // 37: guma.v1.BankService.ListItemRequests:input_type -> guma.v1.ListItemRequestsRequest
-	28, // 38: guma.v1.BankService.GetItemHistory:input_type -> guma.v1.GetItemHistoryRequest
-	1,  // 39: guma.v1.BankService.GetBank:output_type -> guma.v1.GetBankResponse
-	3,  // 40: guma.v1.BankService.ContributeFunds:output_type -> guma.v1.ContributeFundsResponse
-	5,  // 41: guma.v1.BankService.RequestFunds:output_type -> guma.v1.RequestFundsResponse
-	7,  // 42: guma.v1.BankService.ReviewFundRequest:output_type -> guma.v1.ReviewFundRequestResponse
-	9,  // 43: guma.v1.BankService.ListFundRequests:output_type -> guma.v1.ListFundRequestsResponse
-	11, // 44: guma.v1.BankService.ListContributions:output_type -> guma.v1.ListContributionsResponse
-	13, // 45: guma.v1.BankService.DonateItem:output_type -> guma.v1.DonateItemResponse
-	15, // 46: guma.v1.BankService.ListBankItems:output_type -> guma.v1.ListBankItemsResponse
-	17, // 47: guma.v1.BankService.RequestItem:output_type -> guma.v1.RequestItemResponse
-	19, // 48: guma.v1.BankService.ReviewItemRequest:output_type -> guma.v1.ReviewItemRequestResponse
-	21, // 49: guma.v1.BankService.ListItemRequests:output_type -> guma.v1.ListItemRequestsResponse
-	30, // 50: guma.v1.BankService.GetItemHistory:output_type -> guma.v1.GetItemHistoryResponse
-	39, // [39:51] is the sub-list for method output_type
-	27, // [27:39] is the sub-list for method input_type
+	16, // 35: guma.v1.BankService.DeleteBankItem:input_type -> guma.v1.DeleteBankItemRequest
+	18, // 36: guma.v1.BankService.RequestItem:input_type -> guma.v1.RequestItemRequest
+	20, // 37: guma.v1.BankService.ReviewItemRequest:input_type -> guma.v1.ReviewItemRequestRequest
+	22, // 38: guma.v1.BankService.ListItemRequests:input_type -> guma.v1.ListItemRequestsRequest
+	30, // 39: guma.v1.BankService.GetItemHistory:input_type -> guma.v1.GetItemHistoryRequest
+	1,  // 40: guma.v1.BankService.GetBank:output_type -> guma.v1.GetBankResponse
+	3,  // 41: guma.v1.BankService.ContributeFunds:output_type -> guma.v1.ContributeFundsResponse
+	5,  // 42: guma.v1.BankService.RequestFunds:output_type -> guma.v1.RequestFundsResponse
+	7,  // 43: guma.v1.BankService.ReviewFundRequest:output_type -> guma.v1.ReviewFundRequestResponse
+	9,  // 44: guma.v1.BankService.ListFundRequests:output_type -> guma.v1.ListFundRequestsResponse
+	11, // 45: guma.v1.BankService.ListContributions:output_type -> guma.v1.ListContributionsResponse
+	13, // 46: guma.v1.BankService.DonateItem:output_type -> guma.v1.DonateItemResponse
+	15, // 47: guma.v1.BankService.ListBankItems:output_type -> guma.v1.ListBankItemsResponse
+	17, // 48: guma.v1.BankService.DeleteBankItem:output_type -> guma.v1.DeleteBankItemResponse
+	19, // 49: guma.v1.BankService.RequestItem:output_type -> guma.v1.RequestItemResponse
+	21, // 50: guma.v1.BankService.ReviewItemRequest:output_type -> guma.v1.ReviewItemRequestResponse
+	23, // 51: guma.v1.BankService.ListItemRequests:output_type -> guma.v1.ListItemRequestsResponse
+	32, // 52: guma.v1.BankService.GetItemHistory:output_type -> guma.v1.GetItemHistoryResponse
+	40, // [40:53] is the sub-list for method output_type
+	27, // [27:40] is the sub-list for method input_type
 	27, // [27:27] is the sub-list for extension type_name
 	27, // [27:27] is the sub-list for extension extendee
 	0,  // [0:27] is the sub-list for field type_name
@@ -2545,7 +2652,7 @@ func file_proto_guma_v1_bank_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_bank_proto_rawDesc), len(file_proto_guma_v1_bank_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   31,
+			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

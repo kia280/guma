@@ -639,6 +639,7 @@
       "contribute": "捐獻資金與物品",
       "requestFromBank": "申請資金或物品",
       "reviewRequests": "核准或駁回資金與物品申請",
+      "deleteBankItem": "刪除公會倉庫物品",
       "createAuction": "建立拍賣",
       "placeBid": "出價",
       "cancelAuction": "取消拍賣",
@@ -731,7 +732,15 @@
     "alreadyRequested": "你已申請過這個物品",
     "itemActions": "物品操作",
     "history": "歷程",
-    "typeAdminTransfer": "管理員移入"
+    "typeAdminTransfer": "管理員移入",
+    "deleteItem": "刪除物品",
+    "deleteItemConfirmTitle": "要刪除「{item}」嗎？",
+    "deleteItemConfirmBody": "物品會從公會倉庫永久移除。{count, plural, =0 {} other {# 筆待審申請會被駁回。}}此操作無法復原。",
+    "deleteItemConfirm": "刪除物品",
+    "deleteItemSuccess": "已從公會倉庫刪除「{item}」。",
+    "deleteItemFailed": "無法刪除物品，請再試一次。",
+    "deleteItemLocked": "此物品正在拍賣或抽獎中，無法刪除。",
+    "deleteItemNotAllowed": "只有會長與管理員可以刪除倉庫物品。"
   },
   "notificationsCard": {
     "notifications": "通知",

@@ -1039,6 +1039,16 @@ const baseMockApiClient: ApiClient = {
   },
   listBankItems: async (_guildId, options) =>
     options?.rollCallId ? mockData.mockGuildItems.filter(item => item.rollCallId === options.rollCallId) : mockData.mockGuildItems,
+  deleteBankItem: async (_guildId, bankItemId) => {
+    const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
+    if (!bankItem) throw notFound();
+    if (bankItem.lock) throw failedPrecondition('item is in an auction or lottery');
+    const reviewedAt = new Date().toISOString();
+    store.itemRequests
+      .filter(r => r.bankItemId === bankItemId && r.status === 'pending')
+      .forEach(r => Object.assign(r, { status: 'rejected', reviewedAt }));
+    removeById(mockData.mockGuildItems, bankItemId);
+  },
   requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => {
     const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
     if (!bankItem) throw new Error('not found');

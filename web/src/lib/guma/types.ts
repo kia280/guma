@@ -188,6 +188,7 @@ export interface ApiClient {
   listContributions(guildId: string): Promise<GuildContribution[]>;
   donateItem(guildId: string, backpackItemId: string, note?: string): Promise<GuildBankItem>;
   listBankItems(guildId: string, options?: { rollCallId?: string }): Promise<GuildBankItem[]>;
+  deleteBankItem(guildId: string, bankItemId: string): Promise<void>;
   requestItem(guildId: string, bankItemId: string, reason: string): Promise<ItemRequest>;
   reviewItemRequest(
     guildId: string,
