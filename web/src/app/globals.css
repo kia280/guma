@@ -73,6 +73,7 @@
   --muted: oklch(70.50% 0.0000 103.46);
   --overlay: oklch(21.03% 0.0000 103.46);
   --overlay-foreground: oklch(99.11% 0.0000 103.46);
+  --overlay-shadow: 0 0 3px 0 var(--border);
   --scrollbar: oklch(70.50% 0.0000 103.46);
   --segment: oklch(39.64% 0.0000 103.46);
   --segment-foreground: oklch(99.11% 0.0000 103.46);

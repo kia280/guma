@@ -176,6 +176,7 @@ All cards must follow this pattern:
 - `shadow-edge` (`--shadow-edge` in `globals.css`) replaces the hard outline with a slightly feathered edge: a 3px blur in the `--border` color. The transparent border keeps the card's size and lets `hover:border-foreground/20` draw a crisp line on hover.
 - Card-like containers that sit directly on the page (stat tiles, detail page sections, the calendar grid) use the same three classes.
 - Elements nested inside a card (`bg-surface-secondary` tiles, list rows, inner sections) keep `border border-divider`.
+- Overlays (modals, popovers, dropdowns, tooltips, toasts) get the same edge in the dark theme through `--overlay-shadow`, so do not add `border border-divider` to them. In the light theme they keep HeroUI's elevation shadow; toasts use the edge in both themes.
 - The feather extends about 2px past the card. A parent that clips (`overflow-hidden`, `overflow-y-auto`) needs room for it: add `p-1` and cancel it with `-m-1`.
 
 ## Interactive Rows

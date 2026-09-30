@@ -511,7 +511,7 @@ export default function DashboardPage() {
       <Modal state={annModalState}>
       <Modal.Backdrop>
         <Modal.Container size="lg">
-          <Modal.Dialog className="bg-surface border border-divider max-w-2xl">
+          <Modal.Dialog className="bg-surface max-w-2xl">
             <Modal.CloseTrigger />
             <Modal.Header className="flex-row items-start gap-3 border-b border-divider pb-3 pr-10">
               {selectedAnn?.pinned && (
