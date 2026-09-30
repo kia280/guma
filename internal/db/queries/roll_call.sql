@@ -201,29 +201,39 @@ INSERT INTO roll_call_gold_pots (roll_call_id, guild_id, total)
 VALUES (sqlc.arg(roll_call_id), sqlc.arg(guild_id), sqlc.arg(total)::bigint);
 
 -- name: GetRollCallGoldPot :one
-SELECT roll_call_id, guild_id, total, distributed, retracted
-FROM roll_call_gold_pots
-WHERE roll_call_id = $1 AND guild_id = $2;
+SELECT p.roll_call_id, p.guild_id, p.total, p.distributed, p.retracted,
+       (c.completed_at IS NOT NULL)::bool AS is_completed
+FROM roll_call_gold_pots p
+JOIN roll_calls c ON c.id = p.roll_call_id
+WHERE p.roll_call_id = $1 AND p.guild_id = $2;
 
 -- name: ListRollCallGoldPots :many
-SELECT roll_call_id, total, distributed, retracted
-FROM roll_call_gold_pots
-WHERE guild_id = sqlc.arg(guild_id) AND roll_call_id = ANY(sqlc.arg(roll_call_ids)::uuid[]);
+SELECT p.roll_call_id, p.total, p.distributed, p.retracted,
+       (c.completed_at IS NOT NULL)::bool AS is_completed
+FROM roll_call_gold_pots p
+JOIN roll_calls c ON c.id = p.roll_call_id
+WHERE p.guild_id = sqlc.arg(guild_id) AND p.roll_call_id = ANY(sqlc.arg(roll_call_ids)::uuid[]);
 
 -- name: LockRollCallGoldPot :one
-SELECT roll_call_id, guild_id, total, distributed, retracted
-FROM roll_call_gold_pots
-WHERE roll_call_id = $1 AND guild_id = $2
-FOR UPDATE;
+SELECT p.roll_call_id, p.guild_id, p.total, p.distributed, p.retracted,
+       (c.completed_at IS NOT NULL)::bool AS is_completed
+FROM roll_call_gold_pots p
+JOIN roll_calls c ON c.id = p.roll_call_id
+WHERE p.roll_call_id = $1 AND p.guild_id = $2
+FOR UPDATE OF p;
 
 -- name: AddRollCallGoldPotDistributed :one
 UPDATE roll_call_gold_pots SET
     distributed = distributed + sqlc.arg(amount)::bigint,
     updated_at  = NOW()
-WHERE roll_call_id = sqlc.arg(roll_call_id) AND guild_id = sqlc.arg(guild_id)
-  AND retracted = 0
-  AND distributed + sqlc.arg(amount)::bigint <= total
-RETURNING roll_call_id, guild_id, total, distributed, retracted;
+WHERE roll_call_gold_pots.roll_call_id = sqlc.arg(roll_call_id) AND roll_call_gold_pots.guild_id = sqlc.arg(guild_id)
+  AND roll_call_gold_pots.retracted = 0
+  AND roll_call_gold_pots.distributed + sqlc.arg(amount)::bigint <= roll_call_gold_pots.total
+  AND NOT EXISTS (
+      SELECT 1 FROM roll_calls c WHERE c.id = roll_call_gold_pots.roll_call_id AND c.completed_at IS NOT NULL
+  )
+RETURNING roll_call_gold_pots.roll_call_id, roll_call_gold_pots.guild_id, roll_call_gold_pots.total,
+          roll_call_gold_pots.distributed, roll_call_gold_pots.retracted;
 
 -- name: RetractRollCallGoldPot :one
 UPDATE roll_call_gold_pots SET

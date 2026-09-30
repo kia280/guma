@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -38,6 +39,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 
 	// Create gRPC server with interceptors
 	grpcServer := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 		grpc.ChainUnaryInterceptor(
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),
@@ -62,7 +64,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	walletHandler := handlers.NewWalletService(db, logger)
 	auctionHandler := handlers.NewAuctionService(db, logger)
 	eventHandler := handlers.NewEventService(db, logger)
-	lotteryHandler := handlers.NewLotteryService(db, logger)
+	raffleHandler := handlers.NewRaffleService(db, logger)
 	bankHandler := handlers.NewBankService(db, logger)
 	notificationHandler := handlers.NewNotificationService(db, logger)
 	preferenceHandler := handlers.NewPreferenceService(db, logger)
@@ -83,7 +85,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	gumav1.RegisterWalletServiceServer(grpcServer, walletHandler)
 	gumav1.RegisterAuctionServiceServer(grpcServer, auctionHandler)
 	gumav1.RegisterEventServiceServer(grpcServer, eventHandler)
-	gumav1.RegisterLotteryServiceServer(grpcServer, lotteryHandler)
+	gumav1.RegisterRaffleServiceServer(grpcServer, raffleHandler)
 	gumav1.RegisterBankServiceServer(grpcServer, bankHandler)
 	gumav1.RegisterNotificationServiceServer(grpcServer, notificationHandler)
 	gumav1.RegisterPreferenceServiceServer(grpcServer, preferenceHandler)

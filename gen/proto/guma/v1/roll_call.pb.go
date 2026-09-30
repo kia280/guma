@@ -736,11 +736,12 @@ func (x *CancelRollCallResponse) GetRollCall() *RollCall {
 }
 
 type CompleteRollCallRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
-	RollCallId    string                 `protobuf:"bytes,2,opt,name=roll_call_id,json=rollCallId,proto3" json:"roll_call_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	GuildId             string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	RollCallId          string                 `protobuf:"bytes,2,opt,name=roll_call_id,json=rollCallId,proto3" json:"roll_call_id,omitempty"`
+	KeepLeftoversInBank bool                   `protobuf:"varint,3,opt,name=keep_leftovers_in_bank,json=keepLeftoversInBank,proto3" json:"keep_leftovers_in_bank,omitempty"` // Complete even when loot is undistributed; leftover items and gold stay in the guild bank
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *CompleteRollCallRequest) Reset() {
@@ -785,6 +786,13 @@ func (x *CompleteRollCallRequest) GetRollCallId() string {
 		return x.RollCallId
 	}
 	return ""
+}
+
+func (x *CompleteRollCallRequest) GetKeepLeftoversInBank() bool {
+	if x != nil {
+		return x.KeepLeftoversInBank
+	}
+	return false
 }
 
 type CompleteRollCallResponse struct {
@@ -1766,6 +1774,7 @@ type RollCallGoldPot struct {
 	Distributed   int64                  `protobuf:"varint,2,opt,name=distributed,proto3" json:"distributed,omitempty"`
 	Retracted     int64                  `protobuf:"varint,3,opt,name=retracted,proto3" json:"retracted,omitempty"`
 	Remaining     int64                  `protobuf:"varint,4,opt,name=remaining,proto3" json:"remaining,omitempty"`
+	Kept          int64                  `protobuf:"varint,5,opt,name=kept,proto3" json:"kept,omitempty"` // Undistributed gold that stayed in the guild bank because the roll call was completed
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1824,6 +1833,13 @@ func (x *RollCallGoldPot) GetRetracted() int64 {
 func (x *RollCallGoldPot) GetRemaining() int64 {
 	if x != nil {
 		return x.Remaining
+	}
+	return 0
+}
+
+func (x *RollCallGoldPot) GetKept() int64 {
+	if x != nil {
+		return x.Kept
 	}
 	return 0
 }
@@ -2035,11 +2051,12 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\froll_call_id\x18\x02 \x01(\tR\n" +
 	"rollCallId\"H\n" +
 	"\x16CancelRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"V\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x8b\x01\n" +
 	"\x17CompleteRollCallRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12 \n" +
 	"\froll_call_id\x18\x02 \x01(\tR\n" +
-	"rollCallId\"J\n" +
+	"rollCallId\x123\n" +
+	"\x16keep_leftovers_in_bank\x18\x03 \x01(\bR\x13keepLeftoversInBank\"J\n" +
 	"\x18CompleteRollCallResponse\x12.\n" +
 	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x84\x01\n" +
 	"\x19UpdateRollCallLootRequest\x12\x19\n" +
@@ -2125,12 +2142,13 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\x11RollCallLootEntry\x12\x12\n" +
 	"\x04kind\x18\x01 \x01(\tR\x04kind\x12!\n" +
 	"\x04item\x18\x02 \x01(\v2\r.guma.v1.ItemR\x04item\x12\x16\n" +
-	"\x06amount\x18\x03 \x01(\x03R\x06amount\"\x85\x01\n" +
+	"\x06amount\x18\x03 \x01(\x03R\x06amount\"\x99\x01\n" +
 	"\x0fRollCallGoldPot\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12 \n" +
 	"\vdistributed\x18\x02 \x01(\x03R\vdistributed\x12\x1c\n" +
 	"\tretracted\x18\x03 \x01(\x03R\tretracted\x12\x1c\n" +
-	"\tremaining\x18\x04 \x01(\x03R\tremaining\"E\n" +
+	"\tremaining\x18\x04 \x01(\x03R\tremaining\x12\x12\n" +
+	"\x04kept\x18\x05 \x01(\x03R\x04kept\"E\n" +
 	"\x12RollCallGoldPayout\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x16\n" +
 	"\x06amount\x18\x02 \x01(\x03R\x06amount\"\xf5\x01\n" +

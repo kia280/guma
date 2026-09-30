@@ -27,9 +27,6 @@
       "name": "ItemTemplateService"
     },
     {
-      "name": "LotteryService"
-    },
-    {
       "name": "MemberService"
     },
     {
@@ -37,6 +34,9 @@
     },
     {
       "name": "PreferenceService"
+    },
+    {
+      "name": "RaffleService"
     },
     {
       "name": "RollCallService"
@@ -2684,374 +2684,6 @@
         ]
       }
     },
-    "/v1/guilds/{guildId}/lotteries": {
-      "get": {
-        "operationId": "LotteryService_ListLotteries",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListLotteriesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "status",
-            "description": "\"active\" | \"upcoming\" | \"ended\" | \"cancelled\" | \"\" (all)",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LotteryService"
-        ]
-      },
-      "post": {
-        "operationId": "LotteryService_CreateLottery",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1CreateLotteryResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/LotteryServiceCreateLotteryBody"
-            }
-          }
-        ],
-        "tags": [
-          "LotteryService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/lotteries/{lotteryId}": {
-      "get": {
-        "operationId": "LotteryService_GetLottery",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetLotteryResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "lotteryId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LotteryService"
-        ]
-      },
-      "delete": {
-        "operationId": "LotteryService_DeleteLottery",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1DeleteLotteryResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "lotteryId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LotteryService"
-        ]
-      },
-      "patch": {
-        "summary": "Update a lottery that has not been drawn yet (admin action)",
-        "operationId": "LotteryService_UpdateLottery",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1UpdateLotteryResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "lotteryId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/LotteryServiceUpdateLotteryBody"
-            }
-          }
-        ],
-        "tags": [
-          "LotteryService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/lotteries/{lotteryId}/cancel": {
-      "post": {
-        "operationId": "LotteryService_CancelLottery",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1CancelLotteryResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "lotteryId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/LotteryServiceCancelLotteryBody"
-            }
-          }
-        ],
-        "tags": [
-          "LotteryService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/lotteries/{lotteryId}/draw": {
-      "post": {
-        "summary": "Draw the lottery manually (admin action)",
-        "operationId": "LotteryService_DrawLottery",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1DrawLotteryResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "lotteryId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/LotteryServiceDrawLotteryBody"
-            }
-          }
-        ],
-        "tags": [
-          "LotteryService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/lotteries/{lotteryId}/tickets": {
-      "post": {
-        "operationId": "LotteryService_PurchaseTickets",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1PurchaseTicketsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "lotteryId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/LotteryServicePurchaseTicketsBody"
-            }
-          }
-        ],
-        "tags": [
-          "LotteryService"
-        ]
-      }
-    },
-    "/v1/guilds/{guildId}/lotteries/{lotteryId}/winners": {
-      "get": {
-        "operationId": "LotteryService_GetLotteryWinners",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetLotteryWinnersResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "lotteryId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LotteryService"
-        ]
-      }
-    },
     "/v1/guilds/{guildId}/members": {
       "get": {
         "operationId": "MemberService_ListMembers",
@@ -3249,6 +2881,418 @@
         ],
         "tags": [
           "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/members/{userId}/role": {
+      "put": {
+        "operationId": "MemberService_UpdateMemberRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMemberRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MemberServiceUpdateMemberRoleBody"
+            }
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/raffles": {
+      "get": {
+        "operationId": "RaffleService_ListRaffles",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListRafflesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "description": "\"active\" | \"upcoming\" | \"ended\" | \"cancelled\" | \"\" (all)",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RaffleService"
+        ]
+      },
+      "post": {
+        "operationId": "RaffleService_CreateRaffle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CreateRaffleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RaffleServiceCreateRaffleBody"
+            }
+          }
+        ],
+        "tags": [
+          "RaffleService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/raffles/{raffleId}": {
+      "get": {
+        "operationId": "RaffleService_GetRaffle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetRaffleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "raffleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RaffleService"
+        ]
+      },
+      "delete": {
+        "operationId": "RaffleService_DeleteRaffle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRaffleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "raffleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RaffleService"
+        ]
+      },
+      "patch": {
+        "summary": "Update a raffle that has not been drawn yet (admin action)",
+        "operationId": "RaffleService_UpdateRaffle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateRaffleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "raffleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RaffleServiceUpdateRaffleBody"
+            }
+          }
+        ],
+        "tags": [
+          "RaffleService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/raffles/{raffleId}/cancel": {
+      "post": {
+        "operationId": "RaffleService_CancelRaffle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelRaffleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "raffleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RaffleServiceCancelRaffleBody"
+            }
+          }
+        ],
+        "tags": [
+          "RaffleService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/raffles/{raffleId}/draw": {
+      "post": {
+        "summary": "Draw the raffle manually (admin action)",
+        "operationId": "RaffleService_DrawRaffle",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DrawRaffleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "raffleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RaffleServiceDrawRaffleBody"
+            }
+          }
+        ],
+        "tags": [
+          "RaffleService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/raffles/{raffleId}/tickets": {
+      "post": {
+        "operationId": "RaffleService_PurchaseTickets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PurchaseTicketsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "raffleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RaffleServicePurchaseTicketsBody"
+            }
+          }
+        ],
+        "tags": [
+          "RaffleService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/raffles/{raffleId}/winners": {
+      "get": {
+        "operationId": "RaffleService_GetRaffleWinners",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetRaffleWinnersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "raffleId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RaffleService"
         ]
       }
     },
@@ -4281,6 +4325,192 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/wallet/withdrawals": {
+      "get": {
+        "operationId": "WalletService_ListMyWithdrawalRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyWithdrawalRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/wallet/withdrawals/{requestId}/cancel": {
+      "post": {
+        "operationId": "WalletService_CancelWithdrawalRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelWithdrawalRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceCancelWithdrawalRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/withdrawal-requests": {
+      "get": {
+        "operationId": "WalletService_ListWithdrawalRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListWithdrawalRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/withdrawal-requests/{requestId}": {
+      "patch": {
+        "operationId": "WalletService_ReviewWithdrawalRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReviewWithdrawalRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceReviewWithdrawalRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/v1/me": {
       "get": {
         "summary": "Get authenticated user's profile",
@@ -4363,51 +4593,6 @@
         },
         "tags": [
           "StreamService"
-        ]
-      }
-    },
-    "/v1/me/lottery-tickets": {
-      "get": {
-        "summary": "List tickets owned by the current user",
-        "operationId": "LotteryService_ListMyTickets",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListMyTicketsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "guildId",
-            "description": "Optional: filter by guild",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pageToken",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "LotteryService"
         ]
       }
     },
@@ -4597,6 +4782,51 @@
         ],
         "tags": [
           "PreferenceService"
+        ]
+      }
+    },
+    "/v1/me/raffle-tickets": {
+      "get": {
+        "summary": "List tickets owned by the current user",
+        "operationId": "RaffleService_ListMyTickets",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyTicketsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "description": "Optional: filter by guild",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RaffleService"
         ]
       }
     },
@@ -5106,84 +5336,6 @@
         }
       }
     },
-    "LotteryServiceCancelLotteryBody": {
-      "type": "object"
-    },
-    "LotteryServiceCreateLotteryBody": {
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "ticketPrice": {
-          "type": "string",
-          "format": "int64"
-        },
-        "maxTickets": {
-          "type": "integer",
-          "format": "int32",
-          "title": "0 = unlimited"
-        },
-        "maxTicketsPerUser": {
-          "type": "integer",
-          "format": "int32",
-          "title": "0 = unlimited"
-        },
-        "drawDate": {
-          "type": "string",
-          "title": "ISO 8601 datetime"
-        },
-        "prizes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1LotteryPrize"
-          }
-        }
-      }
-    },
-    "LotteryServiceDrawLotteryBody": {
-      "type": "object"
-    },
-    "LotteryServicePurchaseTicketsBody": {
-      "type": "object",
-      "properties": {
-        "quantity": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
-    "LotteryServiceUpdateLotteryBody": {
-      "type": "object",
-      "properties": {
-        "drawDate": {
-          "type": "string",
-          "title": "ISO 8601 datetime; must be in the future"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "ticketPrice": {
-          "type": "string",
-          "format": "int64"
-        },
-        "maxTickets": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "maxTicketsPerUser": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
     "MemberServiceGenerateInviteCodeBody": {
       "type": "object",
       "properties": {
@@ -5233,8 +5385,94 @@
         }
       }
     },
+    "MemberServiceUpdateMemberRoleBody": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        }
+      }
+    },
     "NotificationServiceMarkNotificationReadBody": {
       "type": "object"
+    },
+    "RaffleServiceCancelRaffleBody": {
+      "type": "object"
+    },
+    "RaffleServiceCreateRaffleBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ticketPrice": {
+          "type": "string",
+          "format": "int64"
+        },
+        "maxTickets": {
+          "type": "integer",
+          "format": "int32",
+          "title": "0 = unlimited"
+        },
+        "maxTicketsPerUser": {
+          "type": "integer",
+          "format": "int32",
+          "title": "0 = unlimited"
+        },
+        "drawDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime"
+        },
+        "prizes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RafflePrize"
+          }
+        }
+      }
+    },
+    "RaffleServiceDrawRaffleBody": {
+      "type": "object"
+    },
+    "RaffleServicePurchaseTicketsBody": {
+      "type": "object",
+      "properties": {
+        "quantity": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "RaffleServiceUpdateRaffleBody": {
+      "type": "object",
+      "properties": {
+        "drawDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime; must be in the future"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ticketPrice": {
+          "type": "string",
+          "format": "int64"
+        },
+        "maxTickets": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxTicketsPerUser": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
     },
     "RollCallServiceAssignLootBody": {
       "type": "object",
@@ -5256,7 +5494,13 @@
       }
     },
     "RollCallServiceCompleteRollCallBody": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "keepLeftoversInBank": {
+          "type": "boolean",
+          "title": "Complete even when loot is undistributed; leftover items and gold stay in the guild bank"
+        }
+      }
     },
     "RollCallServiceCreateRollCallBody": {
       "type": "object",
@@ -5433,6 +5677,9 @@
     "WalletServiceCancelBackpackWithdrawalBody": {
       "type": "object"
     },
+    "WalletServiceCancelWithdrawalRequestBody": {
+      "type": "object"
+    },
     "WalletServiceConfirmBackpackDeliveryBody": {
       "type": "object"
     },
@@ -5442,6 +5689,17 @@
         "amount": {
           "type": "string",
           "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "WalletServiceReviewWithdrawalRequestBody": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
         },
         "note": {
           "type": "string"
@@ -5769,7 +6027,7 @@
         },
         "sourceId": {
           "type": "string",
-          "title": "ID of the originating auction/lottery"
+          "title": "ID of the originating auction/raffle"
         },
         "note": {
           "type": "string"
@@ -5898,6 +6156,10 @@
         "requestedByMe": {
           "type": "boolean"
         },
+        "rollCallCompleted": {
+          "type": "boolean",
+          "title": "The source roll call was completed, so the item is regular guild bank stock"
+        },
         "lock": {
           "$ref": "#/definitions/v1ItemLock"
         }
@@ -5950,11 +6212,11 @@
         }
       }
     },
-    "v1CancelLotteryResponse": {
+    "v1CancelRaffleResponse": {
       "type": "object",
       "properties": {
-        "lottery": {
-          "$ref": "#/definitions/v1Lottery"
+        "raffle": {
+          "$ref": "#/definitions/v1Raffle"
         }
       }
     },
@@ -5963,6 +6225,17 @@
       "properties": {
         "rollCall": {
           "$ref": "#/definitions/v1RollCall"
+        }
+      }
+    },
+    "v1CancelWithdrawalRequestResponse": {
+      "type": "object",
+      "properties": {
+        "withdrawalRequest": {
+          "$ref": "#/definitions/v1WithdrawalRequest"
+        },
+        "updatedWallet": {
+          "$ref": "#/definitions/v1Wallet"
         }
       }
     },
@@ -6059,11 +6332,11 @@
         }
       }
     },
-    "v1CreateLotteryResponse": {
+    "v1CreateRaffleResponse": {
       "type": "object",
       "properties": {
-        "lottery": {
-          "$ref": "#/definitions/v1Lottery"
+        "raffle": {
+          "$ref": "#/definitions/v1Raffle"
         }
       }
     },
@@ -6156,7 +6429,7 @@
         }
       }
     },
-    "v1DeleteLotteryResponse": {
+    "v1DeleteRaffleResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -6209,17 +6482,17 @@
         }
       }
     },
-    "v1DrawLotteryResponse": {
+    "v1DrawRaffleResponse": {
       "type": "object",
       "properties": {
-        "lottery": {
-          "$ref": "#/definitions/v1Lottery"
+        "raffle": {
+          "$ref": "#/definitions/v1Raffle"
         },
         "winners": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1LotteryWinner"
+            "$ref": "#/definitions/v1RaffleWinner"
           }
         }
       }
@@ -6401,26 +6674,6 @@
         }
       }
     },
-    "v1GetLotteryResponse": {
-      "type": "object",
-      "properties": {
-        "lottery": {
-          "$ref": "#/definitions/v1Lottery"
-        }
-      }
-    },
-    "v1GetLotteryWinnersResponse": {
-      "type": "object",
-      "properties": {
-        "winners": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1LotteryWinner"
-          }
-        }
-      }
-    },
     "v1GetMeResponse": {
       "type": "object",
       "properties": {
@@ -6476,6 +6729,26 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/v1NavigationItem"
+          }
+        }
+      }
+    },
+    "v1GetRaffleResponse": {
+      "type": "object",
+      "properties": {
+        "raffle": {
+          "$ref": "#/definitions/v1Raffle"
+        }
+      }
+    },
+    "v1GetRaffleWinnersResponse": {
+      "type": "object",
+      "properties": {
+        "winners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RaffleWinner"
           }
         }
       }
@@ -6803,7 +7076,7 @@
           "type": "string"
         }
       },
-      "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, roll call loot, lotteries).\n\nItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC\nItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC"
+      "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, roll call loot, raffles).\n\nItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC\nItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC"
     },
     "v1ItemHistoryEvent": {
       "type": "object",
@@ -7236,25 +7509,6 @@
         }
       }
     },
-    "v1ListLotteriesResponse": {
-      "type": "object",
-      "properties": {
-        "lotteries": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1Lottery"
-          }
-        },
-        "nextPageToken": {
-          "type": "string"
-        },
-        "totalCount": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
     "v1ListMemberAssetsResponse": {
       "type": "object",
       "properties": {
@@ -7293,7 +7547,26 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1LotteryTicket"
+            "$ref": "#/definitions/v1RaffleTicket"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1ListMyWithdrawalRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WithdrawalRequest"
           }
         },
         "nextPageToken": {
@@ -7337,6 +7610,25 @@
             "type": "object",
             "$ref": "#/definitions/v1BackpackItem"
           }
+        }
+      }
+    },
+    "v1ListRafflesResponse": {
+      "type": "object",
+      "properties": {
+        "raffles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Raffle"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -7402,6 +7694,25 @@
         }
       }
     },
+    "v1ListWithdrawalRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WithdrawalRequest"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "v1LockedBid": {
       "type": "object",
       "properties": {
@@ -7418,155 +7729,6 @@
         "endTime": {
           "type": "string",
           "format": "date-time"
-        }
-      }
-    },
-    "v1Lottery": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "guildId": {
-          "type": "string"
-        },
-        "createdBy": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "ticketPrice": {
-          "type": "string",
-          "format": "int64"
-        },
-        "ticketsSold": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "maxTickets": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "maxTicketsPerUser": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "status": {
-          "type": "string"
-        },
-        "drawDate": {
-          "type": "string",
-          "title": "ISO 8601 datetime"
-        },
-        "prizes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1LotteryPrize"
-          }
-        },
-        "winners": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/v1LotteryWinner"
-          }
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "cancelledAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "v1LotteryPrize": {
-      "type": "object",
-      "properties": {
-        "rank": {
-          "type": "integer",
-          "format": "int32",
-          "title": "1st, 2nd, 3rd place"
-        },
-        "description": {
-          "type": "string"
-        },
-        "amount": {
-          "type": "string",
-          "format": "int64",
-          "title": "Currency prize; 0 if item prize"
-        },
-        "item": {
-          "$ref": "#/definitions/v1Item",
-          "title": "Item prize; unset if currency prize"
-        },
-        "source": {
-          "$ref": "#/definitions/v1ItemSourceRef"
-        }
-      }
-    },
-    "v1LotteryTicket": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "lotteryId": {
-          "type": "string"
-        },
-        "userId": {
-          "type": "string"
-        },
-        "ticketNumber": {
-          "type": "string"
-        },
-        "purchasedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
-      }
-    },
-    "v1LotteryWinner": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "lotteryId": {
-          "type": "string"
-        },
-        "userId": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "avatarUrl": {
-          "type": "string"
-        },
-        "rank": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "prizeAmount": {
-          "type": "string",
-          "format": "int64"
-        },
-        "prizeDescription": {
-          "type": "string"
-        },
-        "ticketNumber": {
-          "type": "string"
         }
       }
     },
@@ -7729,7 +7891,7 @@
         "auctionAlerts": {
           "type": "boolean"
         },
-        "lotteryAlerts": {
+        "raffleAlerts": {
           "type": "boolean"
         },
         "eventReminders": {
@@ -7749,7 +7911,7 @@
         "auctionAlerts": {
           "type": "boolean"
         },
-        "lotteryAlerts": {
+        "raffleAlerts": {
           "type": "boolean"
         },
         "eventReminders": {
@@ -7806,7 +7968,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1LotteryTicket"
+            "$ref": "#/definitions/v1RaffleTicket"
           }
         },
         "totalCost": {
@@ -7836,6 +7998,155 @@
             "type": "integer",
             "format": "int32"
           }
+        }
+      }
+    },
+    "v1Raffle": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ticketPrice": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ticketsSold": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxTickets": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maxTicketsPerUser": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "status": {
+          "type": "string"
+        },
+        "drawDate": {
+          "type": "string",
+          "title": "ISO 8601 datetime"
+        },
+        "prizes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RafflePrize"
+          }
+        },
+        "winners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RaffleWinner"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "cancelledAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1RafflePrize": {
+      "type": "object",
+      "properties": {
+        "rank": {
+          "type": "integer",
+          "format": "int32",
+          "title": "1st, 2nd, 3rd place"
+        },
+        "description": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64",
+          "title": "Currency prize; 0 if item prize"
+        },
+        "item": {
+          "$ref": "#/definitions/v1Item",
+          "title": "Item prize; unset if currency prize"
+        },
+        "source": {
+          "$ref": "#/definitions/v1ItemSourceRef"
+        }
+      }
+    },
+    "v1RaffleTicket": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "raffleId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "ticketNumber": {
+          "type": "string"
+        },
+        "purchasedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1RaffleWinner": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "raffleId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "avatarUrl": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "prizeAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "prizeDescription": {
+          "type": "string"
+        },
+        "ticketNumber": {
+          "type": "string"
         }
       }
     },
@@ -7929,6 +8240,14 @@
       "properties": {
         "itemRequest": {
           "$ref": "#/definitions/v1ItemRequest"
+        }
+      }
+    },
+    "v1ReviewWithdrawalRequestResponse": {
+      "type": "object",
+      "properties": {
+        "withdrawalRequest": {
+          "$ref": "#/definitions/v1WithdrawalRequest"
         }
       }
     },
@@ -8070,6 +8389,11 @@
         "remaining": {
           "type": "string",
           "format": "int64"
+        },
+        "kept": {
+          "type": "string",
+          "format": "int64",
+          "title": "Undistributed gold that stayed in the guild bank because the roll call was completed"
         }
       }
     },
@@ -8223,11 +8547,11 @@
         },
         "referenceId": {
           "type": "string",
-          "title": "Linked entity ID (auction_id, lottery_id, etc.)"
+          "title": "Linked entity ID (auction_id, raffle_id, etc.)"
         },
         "referenceType": {
           "type": "string",
-          "title": "\"auction\" | \"lottery\" | \"roll_call\" | \"manual\""
+          "title": "\"auction\" | \"raffle\" | \"roll_call\" | \"withdrawal\" | \"manual\""
         },
         "createdAt": {
           "type": "string",
@@ -8255,6 +8579,9 @@
         },
         "updatedWallet": {
           "$ref": "#/definitions/v1Wallet"
+        },
+        "withdrawalRequest": {
+          "$ref": "#/definitions/v1WithdrawalRequest"
         }
       }
     },
@@ -8322,14 +8649,6 @@
         }
       }
     },
-    "v1UpdateLotteryResponse": {
-      "type": "object",
-      "properties": {
-        "lottery": {
-          "$ref": "#/definitions/v1Lottery"
-        }
-      }
-    },
     "v1UpdateMeRequest": {
       "type": "object",
       "properties": {
@@ -8363,6 +8682,14 @@
         }
       }
     },
+    "v1UpdateMemberRoleResponse": {
+      "type": "object",
+      "properties": {
+        "member": {
+          "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
     "v1UpdateMyPreferencesRequest": {
       "type": "object",
       "properties": {
@@ -8380,6 +8707,14 @@
         "updatedAt": {
           "type": "string",
           "format": "date-time"
+        }
+      }
+    },
+    "v1UpdateRaffleResponse": {
+      "type": "object",
+      "properties": {
+        "raffle": {
+          "$ref": "#/definitions/v1Raffle"
         }
       }
     },
@@ -8531,7 +8866,7 @@
           "type": "integer",
           "format": "int32"
         },
-        "lotteriesWon": {
+        "rafflesWon": {
           "type": "integer",
           "format": "int32"
         },
@@ -8598,6 +8933,10 @@
             "type": "object",
             "$ref": "#/definitions/v1LockedBid"
           }
+        },
+        "pendingWithdrawals": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -8636,6 +8975,53 @@
       "properties": {
         "item": {
           "$ref": "#/definitions/v1BackpackItem"
+        }
+      }
+    },
+    "v1WithdrawalRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "requesterId": {
+          "type": "string"
+        },
+        "requesterName": {
+          "type": "string"
+        },
+        "requesterAvatarUrl": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "reviewerId": {
+          "type": "string"
+        },
+        "reviewerName": {
+          "type": "string"
+        },
+        "reviewNote": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     }

@@ -211,7 +211,7 @@ type NotificationPreferences struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	EmailNotifications bool                   `protobuf:"varint,1,opt,name=email_notifications,json=emailNotifications,proto3" json:"email_notifications,omitempty"`
 	AuctionAlerts      bool                   `protobuf:"varint,2,opt,name=auction_alerts,json=auctionAlerts,proto3" json:"auction_alerts,omitempty"`
-	LotteryAlerts      bool                   `protobuf:"varint,3,opt,name=lottery_alerts,json=lotteryAlerts,proto3" json:"lottery_alerts,omitempty"`
+	RaffleAlerts       bool                   `protobuf:"varint,3,opt,name=raffle_alerts,json=raffleAlerts,proto3" json:"raffle_alerts,omitempty"`
 	EventReminders     bool                   `protobuf:"varint,4,opt,name=event_reminders,json=eventReminders,proto3" json:"event_reminders,omitempty"`
 	RollCallReminders  bool                   `protobuf:"varint,5,opt,name=roll_call_reminders,json=rollCallReminders,proto3" json:"roll_call_reminders,omitempty"`
 	unknownFields      protoimpl.UnknownFields
@@ -262,9 +262,9 @@ func (x *NotificationPreferences) GetAuctionAlerts() bool {
 	return false
 }
 
-func (x *NotificationPreferences) GetLotteryAlerts() bool {
+func (x *NotificationPreferences) GetRaffleAlerts() bool {
 	if x != nil {
-		return x.LotteryAlerts
+		return x.RaffleAlerts
 	}
 	return false
 }
@@ -287,7 +287,7 @@ type NotificationPreferencesPatch struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	EmailNotifications *bool                  `protobuf:"varint,1,opt,name=email_notifications,json=emailNotifications,proto3,oneof" json:"email_notifications,omitempty"`
 	AuctionAlerts      *bool                  `protobuf:"varint,2,opt,name=auction_alerts,json=auctionAlerts,proto3,oneof" json:"auction_alerts,omitempty"`
-	LotteryAlerts      *bool                  `protobuf:"varint,3,opt,name=lottery_alerts,json=lotteryAlerts,proto3,oneof" json:"lottery_alerts,omitempty"`
+	RaffleAlerts       *bool                  `protobuf:"varint,3,opt,name=raffle_alerts,json=raffleAlerts,proto3,oneof" json:"raffle_alerts,omitempty"`
 	EventReminders     *bool                  `protobuf:"varint,4,opt,name=event_reminders,json=eventReminders,proto3,oneof" json:"event_reminders,omitempty"`
 	RollCallReminders  *bool                  `protobuf:"varint,5,opt,name=roll_call_reminders,json=rollCallReminders,proto3,oneof" json:"roll_call_reminders,omitempty"`
 	unknownFields      protoimpl.UnknownFields
@@ -338,9 +338,9 @@ func (x *NotificationPreferencesPatch) GetAuctionAlerts() bool {
 	return false
 }
 
-func (x *NotificationPreferencesPatch) GetLotteryAlerts() bool {
-	if x != nil && x.LotteryAlerts != nil {
-		return *x.LotteryAlerts
+func (x *NotificationPreferencesPatch) GetRaffleAlerts() bool {
+	if x != nil && x.RaffleAlerts != nil {
+		return *x.RaffleAlerts
 	}
 	return false
 }
@@ -374,22 +374,22 @@ const file_proto_guma_v1_preference_proto_rawDesc = "" +
 	"\x1bUpdateMyPreferencesResponse\x12F\n" +
 	"\rnotifications\x18\x01 \x01(\v2 .guma.v1.NotificationPreferencesR\rnotifications\x129\n" +
 	"\n" +
-	"updated_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xf1\x01\n" +
+	"updated_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xef\x01\n" +
 	"\x17NotificationPreferences\x12/\n" +
 	"\x13email_notifications\x18\x01 \x01(\bR\x12emailNotifications\x12%\n" +
-	"\x0eauction_alerts\x18\x02 \x01(\bR\rauctionAlerts\x12%\n" +
-	"\x0elottery_alerts\x18\x03 \x01(\bR\rlotteryAlerts\x12'\n" +
+	"\x0eauction_alerts\x18\x02 \x01(\bR\rauctionAlerts\x12#\n" +
+	"\rraffle_alerts\x18\x03 \x01(\bR\fraffleAlerts\x12'\n" +
 	"\x0fevent_reminders\x18\x04 \x01(\bR\x0eeventReminders\x12.\n" +
-	"\x13roll_call_reminders\x18\x05 \x01(\bR\x11rollCallReminders\"\xf9\x02\n" +
+	"\x13roll_call_reminders\x18\x05 \x01(\bR\x11rollCallReminders\"\xf6\x02\n" +
 	"\x1cNotificationPreferencesPatch\x124\n" +
 	"\x13email_notifications\x18\x01 \x01(\bH\x00R\x12emailNotifications\x88\x01\x01\x12*\n" +
-	"\x0eauction_alerts\x18\x02 \x01(\bH\x01R\rauctionAlerts\x88\x01\x01\x12*\n" +
-	"\x0elottery_alerts\x18\x03 \x01(\bH\x02R\rlotteryAlerts\x88\x01\x01\x12,\n" +
+	"\x0eauction_alerts\x18\x02 \x01(\bH\x01R\rauctionAlerts\x88\x01\x01\x12(\n" +
+	"\rraffle_alerts\x18\x03 \x01(\bH\x02R\fraffleAlerts\x88\x01\x01\x12,\n" +
 	"\x0fevent_reminders\x18\x04 \x01(\bH\x03R\x0eeventReminders\x88\x01\x01\x123\n" +
 	"\x13roll_call_reminders\x18\x05 \x01(\bH\x04R\x11rollCallReminders\x88\x01\x01B\x16\n" +
 	"\x14_email_notificationsB\x11\n" +
-	"\x0f_auction_alertsB\x11\n" +
-	"\x0f_lottery_alertsB\x12\n" +
+	"\x0f_auction_alertsB\x10\n" +
+	"\x0e_raffle_alertsB\x12\n" +
 	"\x10_event_remindersB\x16\n" +
 	"\x14_roll_call_reminders2\x89\x02\n" +
 	"\x11PreferenceService\x12s\n" +

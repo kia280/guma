@@ -6,29 +6,29 @@ const ZHT_TEXT: Record<string, string> = {
     '公會成員若遇到任何系統問題、功能錯誤或其他疑問，請直接私訊公會幹部。回報時請附上問題描述與截圖，以便快速處理。感謝大家的配合！',
   'Guild raid night every Friday at 21:00': '每週五 21:00 公會團戰夜',
   'All guild members are welcome to join our weekly raid night every Friday starting at 21:00 server time. Please ensure your gear is up to date and bring consumables. Loot will be distributed via the in-guild auction system. See you there!':
-    '歡迎所有公會成員參加每週五伺服器時間 21:00 開始的團戰夜。請確認裝備已更新並攜帶消耗品，戰利品將透過公會競拍系統分配。到時見！',
+    '歡迎所有公會成員參加每週五伺服器時間 21:00 開始的團戰夜。請確認裝備已更新並攜帶消耗品，戰利品將透過公會競標系統分配。到時見！',
   'Weekly Raid Night - Friday 8PM': '每週團戰夜 - 週五晚上 8 點',
   'This Friday we will be tackling the Ancient Dragon. All members level 50+ are encouraged to join.':
     '本週五我們將挑戰遠古巨龍，歡迎所有 50 級以上的成員參加。',
   'Guild Vault Update': '公會倉庫更新',
   'The guild vault has been updated. Auction proceeds for this month have been distributed.':
-    '公會倉庫已更新，本月的競拍收益已經分配完畢。',
+    '公會倉庫已更新，本月的競標收益已經分配完畢。',
   'Guild Hall Renovation': '公會大廳整修',
   'We are planning to renovate the guild hall next month.': '我們計劃在下個月整修公會大廳。',
 
   'Weekly Guild Roll Call': '每週公會點名',
   'Open — waiting for you to check in': '進行中 — 等待你簽到',
   'Open now': '進行中',
-  'Auction ending soon': '競拍即將結束',
-  'Active auction': '進行中的競拍',
+  'Auction ending soon': '競標即將結束',
+  'Active auction': '進行中的競標',
   'Recurring weekly event': '每週例行活動',
   'Guild Strategy Meeting': '公會戰略會議',
-  'Spring Giveaway Draw': '春季贈獎抽獎',
-  'Monthly Mega Draw': '每月大抽獎',
-  'Weekly Mini Draw': '每週小抽獎',
-  'Grand Guild Lottery': '公會大樂透',
-  'Legendary Item Raffle': '傳說物品抽獎',
-  'Flash Draw': '限時快速抽獎',
+  'Spring Giveaway Draw': '春季贈獎轉盤',
+  'Monthly Mega Draw': '每月大轉盤',
+  'Weekly Mini Draw': '每週小轉盤',
+  'Grand Guild Raffle': '公會轉盤盛典',
+  'Legendary Item Raffle': '傳說物品轉盤',
+  'Flash Draw': '限時快速轉盤',
 
   'Spider Queen': '蜘蛛女王',
   'Flame Dragon': '炎龍',
@@ -68,7 +68,7 @@ const ZHT_TEXT: Record<string, string> = {
   'High-quality crafting material used to forge superior weapons and armor.':
     '高品質的製作材料，可用來鍛造上等武器與防具。',
   'A mysterious cloak that conceals the wearer in darkness. Details hidden until auction ends.':
-    '能讓穿戴者隱身於黑暗的神秘斗篷，詳細資訊將在競拍結束後公開。',
+    '能讓穿戴者隱身於黑暗的神秘斗篷，詳細資訊將在競標結束後公開。',
   'A blade passed down through generations, still sharp as ever.': '代代相傳的利刃，至今依然鋒利。',
   'A small trinket said to bring good fortune in battle.': '據說能在戰鬥中帶來好運的小飾品。',
   'Standard issue protective gear for guild members.': '公會成員的標準防護裝備。',
@@ -83,8 +83,8 @@ const ZHT_TEXT: Record<string, string> = {
   'Withdrawal request': '提款申請',
   'Withdrawal to bank account': '提款至銀行帳戶',
   'Guild reward payout': '公會獎勵發放',
-  'Auction sale proceeds': '競拍售出收益',
-  'Lottery winnings': '抽獎獎金',
+  'Auction sale proceeds': '競標售出收益',
+  'Raffle winnings': '轉盤獎金',
 
   'Weekly contribution': '每週貢獻',
   'Potion supplies for raid': '團戰用藥水補給',
@@ -94,9 +94,9 @@ const ZHT_TEXT: Record<string, string> = {
 
   'placed a bid on Dragon Slayer Sword': '對屠龍劍出價',
   'checked in to the weekly guild roll call': '完成每週公會點名簽到',
-  'purchased 2 lottery tickets': '購買了 2 張彩券',
+  'purchased 2 raffle tickets': '購買了 2 張彩券',
   'joined the guild': '加入了公會',
-  'created auction for Mystic Shield': '建立了神秘守護之盾的競拍',
+  'created auction for Mystic Shield': '建立了神秘守護之盾的競標',
   'checked in to raid preparation': '完成團戰準備點名簽到',
 
   'just now': '剛剛',

@@ -41,7 +41,7 @@ const KIND_META: Record<
 > = {
   auction: { icon: 'solar:sledgehammer-linear', labelKey: 'kindAuction', color: 'warning', href: '/dashboard/auction' },
   rollCall: { icon: 'solar:check-circle-linear', labelKey: 'kindRollCall', color: 'success', href: '/dashboard/roll-calls' },
-  lottery: { icon: 'solar:ticket-linear', labelKey: 'kindLottery', color: 'accent', href: '/dashboard/lottery' },
+  raffle: { icon: 'solar:ticket-linear', labelKey: 'kindRaffle', color: 'accent', href: '/dashboard/raffle' },
   calendar: { icon: 'solar:calendar-linear', labelKey: 'kindCalendar', color: 'accent', href: '/dashboard/calendar' },
 };
 
@@ -235,8 +235,8 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                 icon="solar:ticket-linear"
                 iconClass="text-accent"
                 iconBg="bg-accent/10"
-                label={t('openLotteries')}
-                value={GUILD_STATS.openLotteries}
+                label={t('openRaffles')}
+                value={GUILD_STATS.openRaffles}
               />
             </div>
           </div>
@@ -292,7 +292,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const LIVE_DASHBOARD_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'rollCall', 'announcement'];
+const LIVE_DASHBOARD_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'raffle', 'rollCall', 'announcement'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
 export default function DashboardPage() {
@@ -364,7 +364,7 @@ export default function DashboardPage() {
   );
 
   const guildStats = dashboard?.guildStats ?? {
-    members: 0, activeEvents: 0, balance: 0, attendanceThisWeek: 0, activeAuctions: 0, openLotteries: 0,
+    members: 0, activeEvents: 0, balance: 0, attendanceThisWeek: 0, activeAuctions: 0, openRaffles: 0,
   };
   const fetchedPersonalStats = dashboard?.personalStats ?? {
     balance: 0, attendanceThisMonth: 0, activeAuctions: 0, activityPoints: 0,

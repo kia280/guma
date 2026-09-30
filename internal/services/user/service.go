@@ -66,7 +66,7 @@ type Stats struct {
 	GuildsJoined      int32
 	EventsAttended    int32
 	AuctionsWon       int32
-	LotteriesWon      int32
+	RafflesWon        int32
 	TotalEarned       int64
 	TotalSpent        int64
 	RollCallsAttended int32
@@ -489,9 +489,9 @@ func (s *Service) GetStats(ctx context.Context, userID string) (*Stats, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: query auctions won: %v", errs.ErrInternal, err)
 	}
-	lotteriesWon, err := s.q.CountUserLotteriesWon(ctx, id)
+	rafflesWon, err := s.q.CountUserRafflesWon(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("%w: query lotteries won: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: query raffles won: %v", errs.ErrInternal, err)
 	}
 	totals, err := s.q.SumUserEarnedSpent(ctx, id)
 	if err != nil {
@@ -503,7 +503,7 @@ func (s *Service) GetStats(ctx context.Context, userID string) (*Stats, error) {
 		RollCallsAttended: int32(attendance),
 		EventsAttended:    int32(events),
 		AuctionsWon:       int32(auctionsWon),
-		LotteriesWon:      int32(lotteriesWon),
+		RafflesWon:        int32(rafflesWon),
 		TotalEarned:       totals.TotalEarned,
 		TotalSpent:        totals.TotalSpent,
 	}, nil

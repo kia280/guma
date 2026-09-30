@@ -38,6 +38,7 @@ import { ItemHistoryModal } from './ItemHistoryModal';
 import { ItemLockChip } from './ItemLockChip';
 import { ItemThumbnail } from './ItemThumbnail';
 import { MemberComboBox, type MemberOption } from './MemberComboBox';
+import { MemberRoleField } from './MemberRoleField';
 import { UserAvatar } from './UserAvatar';
 
 const NOTE_MAX_LENGTH = 200;
@@ -53,9 +54,18 @@ type MemberAssetsModalProps = {
   member: MockUser | null;
   members: MockUser[];
   onTransferred: () => void;
+  onRoleChanged: (member: MockUser) => void;
+  onMembersStale: () => void;
 };
 
-export function MemberAssetsModal({ state, member, members, onTransferred }: MemberAssetsModalProps) {
+export function MemberAssetsModal({
+  state,
+  member,
+  members,
+  onTransferred,
+  onRoleChanged,
+  onMembersStale,
+}: MemberAssetsModalProps) {
   const t = useTranslations('memberAssets');
   const labels = useTranslations('createAuctionModal');
   const roleLabels = useTranslations('adminPage.roles');
@@ -230,6 +240,11 @@ export function MemberAssetsModal({ state, member, members, onTransferred }: Mem
                 </div>
               </Modal.Header>
               <Modal.Body className="flex flex-col gap-5">
+                {member && (
+                  <div className="flex flex-col gap-2">
+                    <MemberRoleField member={member} onChanged={onRoleChanged} onStale={onMembersStale} />
+                  </div>
+                )}
                 {status === 'loading' ? (
                   <div className="flex justify-center py-10">
                     <Spinner aria-label={t('loading')} />

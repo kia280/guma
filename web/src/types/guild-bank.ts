@@ -17,9 +17,10 @@ export interface GuildContribution {
     | 'item_distribute'
     | 'roll_call_loot'
     | 'auction_proceeds'
-    | 'lottery_revenue'
+    | 'raffle_revenue'
     | 'roll_call_gold_payout'
     | 'roll_call_gold_retracted'
+    | 'roll_call_gold_kept'
     | 'admin_transfer';
   amount?: number;
   itemName?: string;
@@ -43,6 +44,7 @@ export interface GuildBankItem {
   quantity: number;
   rollCallId?: string;
   rollCallTitle?: string;
+  rollCallCompleted?: boolean;
   pendingRequestCount: number;
   requestedByMe: boolean;
   lock?: ItemLock;
@@ -76,9 +78,10 @@ export type BankContributionKind =
   | 'gold'
   | 'roll_call_loot'
   | 'auction_proceeds'
-  | 'lottery_revenue'
+  | 'raffle_revenue'
   | 'roll_call_gold_payout'
   | 'roll_call_gold_retracted'
+  | 'roll_call_gold_kept'
   | 'admin_transfer';
 
 export type RequestStatus = 'pending' | 'approved' | 'rejected';

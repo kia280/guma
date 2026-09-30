@@ -20,8 +20,8 @@ import type {
 import type { GuildContribution, GuildBankItem } from '@/types/guild-bank';
 import { GuildEvent, CreateEventData, UpdateEventData } from '@/types/guild-events';
 import { ItemCategory, ItemRarity } from '@/types/item';
-import type { Lottery, LotteryParticipant } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
+import type { Raffle, RaffleParticipant } from '@/types/raffle';
 import { RollCallStatus, RollCall, ItemTemplate } from '@/types/roll-call';
 import type { MockUser, BalancePoint } from '@/types/user';
 import type { Transaction } from '@/types/wallet';
@@ -34,7 +34,7 @@ export type {
   AdminActivity,
   AdminAnnouncement,
   Transaction,
-  Lottery,
+  Raffle,
   GuildContribution,
   GuildBankItem,
 };
@@ -108,7 +108,7 @@ export const GUILD_STATS: GuildStats = {
   balance: 128_450,
   attendanceThisWeek: 31,
   activeAuctions: 3,
-  openLotteries: 2,
+  openRaffles: 2,
 };
 
 export const PERSONAL_STATS: PersonalStats = {
@@ -134,10 +134,10 @@ export const mockBalanceTrend = (days: number): BalancePoint[] => {
 export const INCOMING_EVENTS: FeedEvent[] = [
   { id: '1', kind: 'auction', title: 'Dragon Slayer Sword', subtitle: 'Auction ending soon', timeLabel: '6h remaining', urgency: 'high' },
   { id: '2', kind: 'rollCall', title: 'Weekly Guild Roll Call', subtitle: 'Open — waiting for you to check in', timeLabel: 'Open now', urgency: 'high' },
-  { id: '3', kind: 'lottery', title: 'Spring Giveaway Draw', subtitle: '2,500.00 prize pool', timeLabel: 'Draws in 2d 4h', urgency: 'medium' },
+  { id: '3', kind: 'raffle', title: 'Spring Giveaway Draw', subtitle: '2,500.00 prize pool', timeLabel: 'Draws in 2d 4h', urgency: 'medium' },
   { id: '4', kind: 'auction', title: 'Mystic Shield of Protection', subtitle: 'Active auction', timeLabel: '12h remaining', urgency: 'medium' },
   { id: '5', kind: 'calendar', title: 'Guild Strategy Meeting', subtitle: 'Recurring weekly event', timeLabel: 'Tomorrow 20:00', urgency: 'low' },
-  { id: '6', kind: 'lottery', title: 'Monthly Mega Draw', subtitle: 'You have 3 tickets', timeLabel: 'Draws in 5d', urgency: 'low' },
+  { id: '6', kind: 'raffle', title: 'Monthly Mega Draw', subtitle: 'You have 3 tickets', timeLabel: 'Draws in 5d', urgency: 'low' },
 ];
 
 export const ANNOUNCEMENTS: Announcement[] = [
@@ -164,7 +164,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
 export const mockActivity: AdminActivity[] = [
   { id: 'a1', actor: member(7).username, action: 'placed a bid on Dragon Slayer Sword', actionType: 'auction', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
   { id: 'a2', actor: member(12).username, action: 'checked in to the weekly guild roll call', actionType: 'rollCall', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
-  { id: 'a3', actor: member(23).username, action: 'purchased 2 lottery tickets', actionType: 'lottery', timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString() },
+  { id: 'a3', actor: member(23).username, action: 'purchased 2 raffle tickets', actionType: 'raffle', timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString() },
   { id: 'a4', actor: member(40).username, action: 'joined the guild', actionType: 'join', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
   { id: 'a5', actor: member(1).username, action: 'created auction for Mystic Shield', actionType: 'auction', timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() },
   { id: 'a6', actor: member(45).username, action: 'checked in to raid preparation', actionType: 'rollCall', timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
@@ -217,7 +217,7 @@ export const mockTransactions: Transaction[] = [
   { id: '7', type: 'withdraw', amount: -250.0, date: '2024-01-14T12:00:00Z', status: 'completed', description: 'Withdrawal to bank account' },
   { id: '8', type: 'deposit', amount: 300.0, date: '2024-01-13T12:00:00Z', status: 'completed', description: 'Auction sale proceeds' },
   { id: '9', type: 'transfer', amount: -50.0, recipient: member(31).username, date: '2024-01-12T12:00:00Z', status: 'failed', description: `Transfer to ${member(31).username}` },
-  { id: '10', type: 'deposit', amount: 150.0, date: '2024-01-11T12:00:00Z', status: 'completed', description: 'Lottery winnings' },
+  { id: '10', type: 'deposit', amount: 150.0, date: '2024-01-11T12:00:00Z', status: 'completed', description: 'Raffle winnings' },
   { id: '11', type: 'transfer', amount: -80.0, recipient: member(40).username, date: '2024-01-10T12:00:00Z', status: 'completed', description: `Transfer to ${member(40).username}` },
   { id: '12', type: 'withdraw', amount: -100.0, date: '2024-01-09T12:00:00Z', status: 'completed', description: 'Withdrawal to bank account' },
 ];
@@ -246,7 +246,7 @@ export const mockBackpackItems: BackpackItem[] = [
       category: ItemCategory.ACCESSORY,
       rarity: ItemRarity.UNCOMMON,
     },
-    acquiredFrom: 'lottery',
+    acquiredFrom: 'raffle',
     acquiredAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     ownerId: 'current-user',
     guildId: 'guild1',
@@ -348,8 +348,8 @@ function generateRollCalls(): RollCall[] {
         ? {
             goldLoot:
               status === RollCallStatus.COMPLETED
-                ? { total: 1000 + i * 50, distributed: 1000 + i * 50, retracted: 0, remaining: 0 }
-                : { total: 1000 + i * 50, distributed: 0, retracted: 0, remaining: 1000 + i * 50 },
+                ? { total: 1000 + i * 50, distributed: 1000 + i * 50, retracted: 0, kept: 0, remaining: 0 }
+                : { total: 1000 + i * 50, distributed: 0, retracted: 0, kept: 0, remaining: 1000 + i * 50 },
           }
         : {}),
       ...(status === RollCallStatus.COMPLETED ? { completedAt: new Date(start + 3 * HOUR).toISOString() } : {}),
@@ -483,12 +483,12 @@ export const mockAuctionItems: AuctionItem[] = [
 
 export const USER_BALANCE = 5000;
 
-// ─── Lottery ─────────────────────────────────────────────────────────────────
+// ─── Raffle ─────────────────────────────────────────────────────────────────
 
-const BASE_LOTTERIES: Lottery[] = [
+const BASE_RAFFLES: Raffle[] = [
   {
     id: 'l1',
-    title: 'Grand Guild Lottery',
+    title: 'Grand Guild Raffle',
     prizePool: 10000,
     ticketPrice: 50,
     drawDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -547,22 +547,22 @@ const BASE_LOTTERIES: Lottery[] = [
   },
 ];
 
-function generateParticipants(lottery: Lottery, seed: number): LotteryParticipant[] {
+function generateParticipants(raffle: Raffle, seed: number): RaffleParticipant[] {
   const random = seededRandom(seed);
-  const winnerNames = new Set(lottery.winners?.map(w => w.username));
+  const winnerNames = new Set(raffle.winners?.map(w => w.username));
   const others = mockUsers.filter(u => !winnerNames.has(u.username)).sort(() => random() - 0.5);
   const pool = [...mockUsers.filter(u => winnerNames.has(u.username)), ...others];
-  const count = Math.min(lottery.ticketsSold, Math.max(winnerNames.size, 8 + Math.floor(random() * 24)));
+  const count = Math.min(raffle.ticketsSold, Math.max(winnerNames.size, 8 + Math.floor(random() * 24)));
   const participants = pool.slice(0, count).map(user => ({ id: user.id, username: user.username, tickets: 1 }));
-  for (let left = lottery.ticketsSold - count; left > 0; left--) {
+  for (let left = raffle.ticketsSold - count; left > 0; left--) {
     participants[Math.floor(random() * participants.length)].tickets += 1;
   }
   return participants.sort((a, b) => b.tickets - a.tickets);
 }
 
-export const mockLotteries: Lottery[] = BASE_LOTTERIES.map((lottery, i) => ({
-  ...lottery,
-  participants: generateParticipants(lottery, 7000 + i),
+export const mockRaffles: Raffle[] = BASE_RAFFLES.map((raffle, i) => ({
+  ...raffle,
+  participants: generateParticipants(raffle, 7000 + i),
 }));
 
 // ─── Guild Bank ──────────────────────────────────────────────────────────────
@@ -769,13 +769,13 @@ export const mockNotifications: GuildNotification[] = [
   },
   {
     id: 'n4',
-    type: 'lotteryWon',
-    title: 'You won a lottery prize',
+    type: 'raffleWon',
+    title: 'You won a raffle prize',
     message: 'You placed #1 in Monthly Mega Draw and won Lucky Charm.',
-    params: { lottery: 'Monthly Mega Draw', rank: 1, prize: 'Lucky Charm', amount: 0, prizeType: 'item' },
+    params: { raffle: 'Monthly Mega Draw', rank: 1, prize: 'Lucky Charm', amount: 0, prizeType: 'item' },
     createdAt: new Date(Date.now() - 2 * 60 * MINUTE).toISOString(),
     isRead: true,
-    href: `/dashboard/lottery/${BASE_LOTTERIES[0].id}`,
+    href: `/dashboard/raffle/${BASE_RAFFLES[0].id}`,
   },
   {
     id: 'n5',

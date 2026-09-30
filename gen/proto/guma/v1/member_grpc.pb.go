@@ -22,6 +22,7 @@ const (
 	MemberService_InviteMember_FullMethodName       = "/guma.v1.MemberService/InviteMember"
 	MemberService_JoinGuild_FullMethodName          = "/guma.v1.MemberService/JoinGuild"
 	MemberService_UpdateMember_FullMethodName       = "/guma.v1.MemberService/UpdateMember"
+	MemberService_UpdateMemberRole_FullMethodName   = "/guma.v1.MemberService/UpdateMemberRole"
 	MemberService_RemoveMember_FullMethodName       = "/guma.v1.MemberService/RemoveMember"
 	MemberService_ListMembers_FullMethodName        = "/guma.v1.MemberService/ListMembers"
 	MemberService_GetMember_FullMethodName          = "/guma.v1.MemberService/GetMember"
@@ -38,6 +39,7 @@ type MemberServiceClient interface {
 	InviteMember(ctx context.Context, in *InviteMemberRequest, opts ...grpc.CallOption) (*InviteMemberResponse, error)
 	JoinGuild(ctx context.Context, in *JoinGuildRequest, opts ...grpc.CallOption) (*JoinGuildResponse, error)
 	UpdateMember(ctx context.Context, in *UpdateMemberRequest, opts ...grpc.CallOption) (*UpdateMemberResponse, error)
+	UpdateMemberRole(ctx context.Context, in *UpdateMemberRoleRequest, opts ...grpc.CallOption) (*UpdateMemberRoleResponse, error)
 	RemoveMember(ctx context.Context, in *RemoveMemberRequest, opts ...grpc.CallOption) (*RemoveMemberResponse, error)
 	ListMembers(ctx context.Context, in *ListMembersRequest, opts ...grpc.CallOption) (*ListMembersResponse, error)
 	GetMember(ctx context.Context, in *GetMemberRequest, opts ...grpc.CallOption) (*GetMemberResponse, error)
@@ -80,6 +82,16 @@ func (c *memberServiceClient) UpdateMember(ctx context.Context, in *UpdateMember
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateMemberResponse)
 	err := c.cc.Invoke(ctx, MemberService_UpdateMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *memberServiceClient) UpdateMemberRole(ctx context.Context, in *UpdateMemberRoleRequest, opts ...grpc.CallOption) (*UpdateMemberRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateMemberRoleResponse)
+	err := c.cc.Invoke(ctx, MemberService_UpdateMemberRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +175,7 @@ type MemberServiceServer interface {
 	InviteMember(context.Context, *InviteMemberRequest) (*InviteMemberResponse, error)
 	JoinGuild(context.Context, *JoinGuildRequest) (*JoinGuildResponse, error)
 	UpdateMember(context.Context, *UpdateMemberRequest) (*UpdateMemberResponse, error)
+	UpdateMemberRole(context.Context, *UpdateMemberRoleRequest) (*UpdateMemberRoleResponse, error)
 	RemoveMember(context.Context, *RemoveMemberRequest) (*RemoveMemberResponse, error)
 	ListMembers(context.Context, *ListMembersRequest) (*ListMembersResponse, error)
 	GetMember(context.Context, *GetMemberRequest) (*GetMemberResponse, error)
@@ -189,6 +202,9 @@ func (UnimplementedMemberServiceServer) JoinGuild(context.Context, *JoinGuildReq
 }
 func (UnimplementedMemberServiceServer) UpdateMember(context.Context, *UpdateMemberRequest) (*UpdateMemberResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateMember not implemented")
+}
+func (UnimplementedMemberServiceServer) UpdateMemberRole(context.Context, *UpdateMemberRoleRequest) (*UpdateMemberRoleResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateMemberRole not implemented")
 }
 func (UnimplementedMemberServiceServer) RemoveMember(context.Context, *RemoveMemberRequest) (*RemoveMemberResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RemoveMember not implemented")
@@ -282,6 +298,24 @@ func _MemberService_UpdateMember_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MemberServiceServer).UpdateMember(ctx, req.(*UpdateMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MemberService_UpdateMemberRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateMemberRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MemberServiceServer).UpdateMemberRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MemberService_UpdateMemberRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MemberServiceServer).UpdateMemberRole(ctx, req.(*UpdateMemberRoleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -430,6 +464,10 @@ var MemberService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateMember",
 			Handler:    _MemberService_UpdateMember_Handler,
+		},
+		{
+			MethodName: "UpdateMemberRole",
+			Handler:    _MemberService_UpdateMemberRole_Handler,
 		},
 		{
 			MethodName: "RemoveMember",

@@ -14,7 +14,7 @@ import (
 )
 
 const getNotificationPreferences = `-- name: GetNotificationPreferences :one
-SELECT email_notifications, auction_alerts, lottery_alerts, event_reminders, roll_call_reminders, updated_at
+SELECT email_notifications, auction_alerts, raffle_alerts, event_reminders, roll_call_reminders, updated_at
 FROM user_preferences
 WHERE user_id = $1
 `
@@ -22,7 +22,7 @@ WHERE user_id = $1
 type GetNotificationPreferencesRow struct {
 	EmailNotifications bool
 	AuctionAlerts      bool
-	LotteryAlerts      bool
+	RaffleAlerts       bool
 	EventReminders     bool
 	RollCallReminders  bool
 	UpdatedAt          time.Time
@@ -34,7 +34,7 @@ func (q *Queries) GetNotificationPreferences(ctx context.Context, userID uuid.UU
 	err := row.Scan(
 		&i.EmailNotifications,
 		&i.AuctionAlerts,
-		&i.LotteryAlerts,
+		&i.RaffleAlerts,
 		&i.EventReminders,
 		&i.RollCallReminders,
 		&i.UpdatedAt,
@@ -44,7 +44,7 @@ func (q *Queries) GetNotificationPreferences(ctx context.Context, userID uuid.UU
 
 const upsertNotificationPreferences = `-- name: UpsertNotificationPreferences :one
 INSERT INTO user_preferences (
-    user_id, email_notifications, auction_alerts, lottery_alerts, event_reminders, roll_call_reminders
+    user_id, email_notifications, auction_alerts, raffle_alerts, event_reminders, roll_call_reminders
 )
 VALUES (
     $1,
@@ -57,18 +57,18 @@ VALUES (
 ON CONFLICT (user_id) DO UPDATE SET
     email_notifications = COALESCE($2::bool, user_preferences.email_notifications),
     auction_alerts      = COALESCE($3::bool, user_preferences.auction_alerts),
-    lottery_alerts      = COALESCE($4::bool, user_preferences.lottery_alerts),
+    raffle_alerts      = COALESCE($4::bool, user_preferences.raffle_alerts),
     event_reminders     = COALESCE($5::bool, user_preferences.event_reminders),
     roll_call_reminders   = COALESCE($6::bool, user_preferences.roll_call_reminders),
     updated_at          = NOW()
-RETURNING email_notifications, auction_alerts, lottery_alerts, event_reminders, roll_call_reminders, updated_at
+RETURNING email_notifications, auction_alerts, raffle_alerts, event_reminders, roll_call_reminders, updated_at
 `
 
 type UpsertNotificationPreferencesParams struct {
 	UserID             uuid.UUID
 	EmailNotifications pgtype.Bool
 	AuctionAlerts      pgtype.Bool
-	LotteryAlerts      pgtype.Bool
+	RaffleAlerts       pgtype.Bool
 	EventReminders     pgtype.Bool
 	RollCallReminders  pgtype.Bool
 }
@@ -76,7 +76,7 @@ type UpsertNotificationPreferencesParams struct {
 type UpsertNotificationPreferencesRow struct {
 	EmailNotifications bool
 	AuctionAlerts      bool
-	LotteryAlerts      bool
+	RaffleAlerts       bool
 	EventReminders     bool
 	RollCallReminders  bool
 	UpdatedAt          time.Time
@@ -87,7 +87,7 @@ func (q *Queries) UpsertNotificationPreferences(ctx context.Context, arg UpsertN
 		arg.UserID,
 		arg.EmailNotifications,
 		arg.AuctionAlerts,
-		arg.LotteryAlerts,
+		arg.RaffleAlerts,
 		arg.EventReminders,
 		arg.RollCallReminders,
 	)
@@ -95,7 +95,7 @@ func (q *Queries) UpsertNotificationPreferences(ctx context.Context, arg UpsertN
 	err := row.Scan(
 		&i.EmailNotifications,
 		&i.AuctionAlerts,
-		&i.LotteryAlerts,
+		&i.RaffleAlerts,
 		&i.EventReminders,
 		&i.RollCallReminders,
 		&i.UpdatedAt,

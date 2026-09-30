@@ -18,9 +18,9 @@ import type {
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
 import { ItemCategory, ItemRarity, type ItemHistoryEvent, type ItemHistoryKind, type ItemLock } from '@/types/item';
-import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification, NotificationPage, NotificationParams } from '@/types/notification';
 import type { UserPreferences } from '@/types/preference';
+import type { Raffle, RaffleTicket, RaffleWinner } from '@/types/raffle';
 import { RollCallStatus } from '@/types/roll-call';
 import type {
   RollCall,
@@ -34,7 +34,7 @@ import type {
   LootItem,
 } from '@/types/roll-call';
 import type { LinkedAccount, MockUser, User } from '@/types/user';
-import type { AssetDestination, MemberAssets, MemberAssetSummary, Transaction, Wallet } from '@/types/wallet';
+import type { AssetDestination, MemberAssets, MemberAssetSummary, Transaction, Wallet, WithdrawalRequest } from '@/types/wallet';
 import { fromMinorUnits } from './money';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -42,7 +42,7 @@ import { fromMinorUnits } from './money';
 type ProtoItemLock = { type?: string; id?: string };
 
 const toItemLock = (raw: ProtoItemLock | undefined): ItemLock | undefined =>
-  raw?.id && (raw.type === 'auction' || raw.type === 'lottery') ? { type: raw.type, id: raw.id } : undefined;
+  raw?.id && (raw.type === 'auction' || raw.type === 'raffle') ? { type: raw.type, id: raw.id } : undefined;
 
 const ts = (v: unknown): string => {
   if (!v) return new Date().toISOString();
@@ -305,6 +305,7 @@ type ProtoRollCallGoldPot = {
   total?: number | string;
   distributed?: number | string;
   retracted?: number | string;
+  kept?: number | string;
   remaining?: number | string;
 };
 
@@ -317,6 +318,7 @@ const toRollCallGoldPot = (raw: ProtoRollCallGoldPot): RollCallGoldPot => ({
   total: fromMinorUnits(raw.total),
   distributed: fromMinorUnits(raw.distributed),
   retracted: fromMinorUnits(raw.retracted),
+  kept: fromMinorUnits(raw.kept),
   remaining: fromMinorUnits(raw.remaining),
 });
 
@@ -348,7 +350,7 @@ const toRollCallGoldLoot = (raw: ProtoRollCall): RollCallGoldPot | undefined => 
   const gold = raw.loot?.find(entry => entry.kind === 'gold');
   if (!gold) return undefined;
   const total = fromMinorUnits(gold.amount);
-  return { total, distributed: 0, retracted: 0, remaining: total };
+  return { total, distributed: 0, retracted: 0, kept: 0, remaining: total };
 };
 
 export const toRollCall = (raw: ProtoRollCall, attendees: Attendee[] = []): RollCall => {
@@ -448,11 +450,11 @@ export const toAttendee = (raw: ProtoAttendee): Attendee => ({
   ...(raw.notes ? { notes: raw.notes } : {}),
 });
 
-// ─── Lottery ────────────────────────────────────────────────────────────────
+// ─── Raffle ────────────────────────────────────────────────────────────────
 
 type ProtoPrize = { rank?: number; description?: string; amount?: number | string; item?: ProtoItem };
 
-type ProtoLottery = {
+type ProtoRaffle = {
   id: string;
   title?: string;
   description?: string;
@@ -463,10 +465,10 @@ type ProtoLottery = {
   status?: string;
   draw_date?: string;
   prizes?: ProtoPrize[];
-  winners?: ProtoLotteryWinner[];
+  winners?: ProtoRaffleWinner[];
 };
 
-type ProtoLotteryWinner = {
+type ProtoRaffleWinner = {
   id?: string;
   user_id?: string;
   username?: string;
@@ -476,10 +478,10 @@ type ProtoLotteryWinner = {
   prize_description?: string;
 };
 
-export const toLottery = (raw: ProtoLottery): Lottery => {
+export const toRaffle = (raw: ProtoRaffle): Raffle => {
   const prizePool = fromMinorUnits((raw.prizes ?? []).reduce((sum, p) => sum + Number(p.amount ?? 0), 0));
   const winners = raw.winners?.length
-    ? raw.winners.map(toLotteryWinner)
+    ? raw.winners.map(toRaffleWinner)
     : undefined;
   return {
     id: raw.id,
@@ -496,13 +498,13 @@ export const toLottery = (raw: ProtoLottery): Lottery => {
     drawDate: raw.draw_date ?? '',
     ticketsSold: raw.tickets_sold ?? 0,
     maxTickets: raw.max_tickets ?? 0,
-    status: (raw.status?.toLowerCase() as Lottery['status']) || 'active',
+    status: (raw.status?.toLowerCase() as Raffle['status']) || 'active',
     ...(raw.cancelled_at ? { cancelledAt: raw.cancelled_at } : {}),
     winners,
   };
 };
 
-export const toLotteryWinner = (raw: ProtoLotteryWinner): LotteryWinner => ({
+export const toRaffleWinner = (raw: ProtoRaffleWinner): RaffleWinner => ({
   id: raw.id ?? '',
   userId: raw.user_id || undefined,
   username: raw.username ?? '',
@@ -513,15 +515,15 @@ export const toLotteryWinner = (raw: ProtoLotteryWinner): LotteryWinner => ({
 
 type ProtoTicket = {
   id: string;
-  lottery_id?: string;
+  raffle_id?: string;
   user_id?: string;
   ticket_number?: string;
   purchased_at?: string;
 };
 
-export const toLotteryTicket = (raw: ProtoTicket): LotteryTicket => ({
+export const toRaffleTicket = (raw: ProtoTicket): RaffleTicket => ({
   id: raw.id,
-  lotteryId: raw.lottery_id ?? '',
+  raffleId: raw.raffle_id ?? '',
   userId: raw.user_id ?? '',
   ticketNumber: raw.ticket_number ?? '',
   purchasedAt: ts(raw.purchased_at),
@@ -559,6 +561,7 @@ type ProtoWallet = {
   updated_at?: string;
   locked_in_bids?: number | string;
   locked_bids?: ProtoLockedBid[];
+  pending_withdrawals?: number | string;
 };
 
 export const toWallet = (w: ProtoWallet): Wallet => ({
@@ -576,6 +579,37 @@ export const toWallet = (w: ProtoWallet): Wallet => ({
     amount: fromMinorUnits(b.amount),
     endTime: ts(b.end_time),
   })),
+  pendingWithdrawals: fromMinorUnits(w.pending_withdrawals),
+});
+
+type ProtoWithdrawalRequest = {
+  id: string;
+  guild_id?: string;
+  requester_id?: string;
+  requester_name?: string;
+  requester_avatar_url?: string;
+  amount?: number | string;
+  note?: string;
+  status?: string;
+  reviewer_name?: string;
+  review_note?: string;
+  created_at?: string;
+  reviewed_at?: string;
+};
+
+export const toWithdrawalRequest = (raw: ProtoWithdrawalRequest): WithdrawalRequest => ({
+  id: raw.id,
+  guildId: raw.guild_id ?? '',
+  requesterId: raw.requester_id ?? '',
+  requesterName: raw.requester_name ?? '',
+  requesterAvatarUrl: raw.requester_avatar_url || undefined,
+  amount: fromMinorUnits(raw.amount),
+  note: raw.note || undefined,
+  status: (raw.status?.toLowerCase() as WithdrawalRequest['status']) || 'pending',
+  reviewerName: raw.reviewer_name || undefined,
+  reviewNote: raw.review_note || undefined,
+  createdAt: ts(raw.created_at),
+  reviewedAt: raw.reviewed_at ? ts(raw.reviewed_at) : undefined,
 });
 
 export const toTransaction = (raw: ProtoTransaction): Transaction => {
@@ -617,7 +651,7 @@ type ProtoBackpackItem = {
 
 const BACKPACK_SOURCES: Record<string, BackpackItemSource> = {
   auction: 'auction',
-  lottery: 'lottery',
+  raffle: 'raffle',
   transfer: 'transfer',
   roll_call: 'rollCall',
   bank_item_request: 'bank',
@@ -710,21 +744,28 @@ const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = [
   'gold',
   'roll_call_loot',
   'auction_proceeds',
-  'lottery_revenue',
+  'raffle_revenue',
   'roll_call_gold_payout',
   'roll_call_gold_retracted',
+  'roll_call_gold_kept',
   'admin_transfer',
 ];
 
 const contributionReferenceHref = (b: BankContribution): string | undefined => {
   if (!b.referenceId) return undefined;
   if (b.referenceType === 'auction') return `/dashboard/auction/${b.referenceId}`;
-  if (b.referenceType === 'lottery') return `/dashboard/lottery/${b.referenceId}`;
+  if (b.referenceType === 'raffle') return `/dashboard/raffle/${b.referenceId}`;
   return undefined;
 };
 
 const rollCallHref = (b: BankContribution): string | undefined =>
   b.rollCallId ? `/dashboard/roll-calls/${b.rollCallId}` : undefined;
+
+const ROLL_CALL_GOLD_KINDS: readonly BankContributionKind[] = [
+  'roll_call_gold_payout',
+  'roll_call_gold_retracted',
+  'roll_call_gold_kept',
+];
 
 const contributionType = (kind: BankContributionKind): GuildContribution['type'] =>
   kind === 'gold' ? 'contribute' : kind;
@@ -784,6 +825,7 @@ type ProtoBankItem = {
   donated_at?: string;
   roll_call_id?: string;
   roll_call_title?: string;
+  roll_call_completed?: boolean;
   pending_request_count?: number;
   requested_by_me?: boolean;
   lock?: ProtoItemLock;
@@ -800,6 +842,7 @@ export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
   quantity: raw.quantity ?? 1,
   rollCallId: raw.roll_call_id || undefined,
   rollCallTitle: raw.roll_call_title || undefined,
+  rollCallCompleted: raw.roll_call_completed ?? false,
   pendingRequestCount: raw.pending_request_count ?? 0,
   requestedByMe: raw.requested_by_me ?? false,
   lock: toItemLock(raw.lock),
@@ -863,7 +906,7 @@ export const toGuildContributions = (
           type: contributionType(b.kind),
           amount: Math.abs(b.amount),
           rollCallId: b.rollCallId,
-          href: b.kind === 'roll_call_gold_payout' || b.kind === 'roll_call_gold_retracted' ? rollCallHref(b) : contributionReferenceHref(b),
+          href: ROLL_CALL_GOLD_KINDS.includes(b.kind) ? rollCallHref(b) : contributionReferenceHref(b),
           member: b.username,
           memberAvatar: b.avatarUrl,
           date: b.createdAt,
@@ -1056,7 +1099,7 @@ export const toAnnouncement = (raw: ProtoAnnouncement): Announcement => ({
 type ProtoNotificationPreferences = {
   email_notifications?: boolean;
   auction_alerts?: boolean;
-  lottery_alerts?: boolean;
+  raffle_alerts?: boolean;
   event_reminders?: boolean;
   roll_call_reminders?: boolean;
 };
@@ -1070,7 +1113,7 @@ export const toUserPreferences = (raw: ProtoUserPreferences): UserPreferences =>
   notifications: {
     emailNotifications: raw.notifications?.email_notifications ?? false,
     auctionAlerts: raw.notifications?.auction_alerts ?? false,
-    lotteryAlerts: raw.notifications?.lottery_alerts ?? false,
+    raffleAlerts: raw.notifications?.raffle_alerts ?? false,
     eventReminders: raw.notifications?.event_reminders ?? false,
     rollCallReminders: raw.notifications?.roll_call_reminders ?? false,
   },

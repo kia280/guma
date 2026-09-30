@@ -9,7 +9,7 @@ import type { ItemSourceRef } from '@/types/item';
 import type { LootEntry } from '@/types/roll-call';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toRollCall, toRollCallGoldDistribution, toRollCallGoldSummary, toRollCallTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toMemberAssets, toMemberAssetSummary, toNotification, toNotificationPage, toProtoDestination, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toRollCall, toRollCallGoldDistribution, toRollCallGoldSummary, toRollCallTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toRaffle, toRaffleTicket, toRaffleWinner, toMember, toMemberAssets, toMemberAssetSummary, toNotification, toNotificationPage, toProtoDestination, toTransaction, toUser, toUserPreferences, toWallet, toWithdrawalRequest } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -107,7 +107,7 @@ export const gumaApiClient: ApiClient = {
     ]);
     return {
       guildStats: data.guild_stats ?? {
-        members: 0, activeEvents: 0, balance: 0, attendanceThisWeek: 0, activeAuctions: 0, openLotteries: 0,
+        members: 0, activeEvents: 0, balance: 0, attendanceThisWeek: 0, activeAuctions: 0, openRaffles: 0,
       },
       personalStats: data.personal_stats ?? {
         balance: 0, attendanceThisMonth: 0, activeAuctions: 0, activityPoints: 0,
@@ -204,6 +204,10 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.get(`/v1/guilds/${guildId}/members`, { params: { page_size: 500 } });
     return (data.members ?? []).map(toMember);
   },
+  updateMemberRole: async (guildId, userId, role) => {
+    const { data } = await http.put(`/v1/guilds/${guildId}/members/${userId}/role`, { role });
+    return toMember(data.member);
+  },
   inviteMember: async (guildId, req) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/members/invite`, req);
     return data.invitation;
@@ -222,9 +226,32 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.post(`/v1/guilds/${guildId}/wallet/deposit`, { amount: toMinorUnits(amount) });
     return toTransaction(data.transaction);
   },
-  withdraw: async (guildId, amount) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/withdraw`, { amount: toMinorUnits(amount) });
-    return toTransaction(data.transaction);
+  withdraw: async (guildId, req) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/withdraw`, {
+      amount: toMinorUnits(req.amount),
+      note: req.note,
+    });
+    return toWithdrawalRequest(data.withdrawal_request);
+  },
+  listMyWithdrawalRequests: async (guildId, status) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/wallet/withdrawals`, {
+      params: { status, page_size: 100 },
+    });
+    return (data.requests ?? []).map(toWithdrawalRequest);
+  },
+  cancelWithdrawalRequest: async (guildId, requestId) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/withdrawals/${requestId}/cancel`);
+    return toWithdrawalRequest(data.withdrawal_request);
+  },
+  listWithdrawalRequests: async (guildId, status) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/withdrawal-requests`, {
+      params: { status, page_size: 100 },
+    });
+    return (data.requests ?? []).map(toWithdrawalRequest);
+  },
+  reviewWithdrawalRequest: async (guildId, requestId, status, note) => {
+    const { data } = await http.patch(`/v1/guilds/${guildId}/withdrawal-requests/${requestId}`, { status, note });
+    return toWithdrawalRequest(data.withdrawal_request);
   },
   transfer: async (guildId, req) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/wallet/transfer`, {
@@ -390,8 +417,10 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/cancel`, {});
     return toRollCall(data.roll_call);
   },
-  completeRollCall: async (guildId, id) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/complete`, {});
+  completeRollCall: async (guildId, id, options) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/complete`, {
+      keep_leftovers_in_bank: options?.keepLeftoversInBank ?? false,
+    });
     return toRollCall(data.roll_call);
   },
   updateRollCallLoot: async (guildId, id, lootList) => {
@@ -461,19 +490,19 @@ export const gumaApiClient: ApiClient = {
     return (data.attendees ?? []).map(toAttendee);
   },
 
-  // ── Lottery ──
-  listLotteries: async (guildId, status) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/lotteries`, {
+  // ── Raffle ──
+  listRaffles: async (guildId, status) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/raffles`, {
       params: status && status !== 'all' ? { status } : {},
     });
-    return (data.lotteries ?? []).map(toLottery);
+    return (data.raffles ?? []).map(toRaffle);
   },
-  getLottery: async (guildId, id) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/lotteries/${id}`);
-    return toLottery(data.lottery);
+  getRaffle: async (guildId, id) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/raffles/${id}`);
+    return toRaffle(data.raffle);
   },
-  createLottery: async (guildId, req) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/lotteries`, {
+  createRaffle: async (guildId, req) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/raffles`, {
       title: req.title,
       description: req.description,
       ticket_price: toMinorUnits(req.ticketPrice),
@@ -486,39 +515,39 @@ export const gumaApiClient: ApiClient = {
         source: toProtoSource(source),
       })),
     });
-    return toLottery(data.lottery);
+    return toRaffle(data.raffle);
   },
-  updateLottery: async (guildId, lotteryId, patch) => {
-    const { data } = await http.patch(`/v1/guilds/${guildId}/lotteries/${lotteryId}`, {
+  updateRaffle: async (guildId, raffleId, patch) => {
+    const { data } = await http.patch(`/v1/guilds/${guildId}/raffles/${raffleId}`, {
       title: patch.title,
       description: patch.description,
       draw_date: patch.drawDate,
       ticket_price: patch.ticketPrice === undefined ? undefined : toMinorUnits(patch.ticketPrice),
       max_tickets: patch.maxTickets,
     });
-    return toLottery(data.lottery);
+    return toRaffle(data.raffle);
   },
-  cancelLottery: async (guildId, lotteryId) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/lotteries/${lotteryId}/cancel`, {});
-    return toLottery(data.lottery);
+  cancelRaffle: async (guildId, raffleId) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/raffles/${raffleId}/cancel`, {});
+    return toRaffle(data.raffle);
   },
-  deleteLottery: async (guildId, lotteryId) => {
-    await http.delete(`/v1/guilds/${guildId}/lotteries/${lotteryId}`);
+  deleteRaffle: async (guildId, raffleId) => {
+    await http.delete(`/v1/guilds/${guildId}/raffles/${raffleId}`);
   },
-  purchaseTickets: async (guildId, lotteryId, quantity) => {
+  purchaseTickets: async (guildId, raffleId, quantity) => {
     const { data } = await http.post(
-      `/v1/guilds/${guildId}/lotteries/${lotteryId}/tickets`,
+      `/v1/guilds/${guildId}/raffles/${raffleId}/tickets`,
       { quantity },
     );
-    return (data.tickets ?? []).map(toLotteryTicket);
+    return (data.tickets ?? []).map(toRaffleTicket);
   },
-  getLotteryWinners: async (guildId, lotteryId) => {
-    const { data } = await http.get(`/v1/guilds/${guildId}/lotteries/${lotteryId}/winners`);
-    return (data.winners ?? []).map(toLotteryWinner);
+  getRaffleWinners: async (guildId, raffleId) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/raffles/${raffleId}/winners`);
+    return (data.winners ?? []).map(toRaffleWinner);
   },
   listMyTickets: async () => {
-    const { data } = await http.get('/v1/me/lottery-tickets');
-    return (data.tickets ?? []).map(toLotteryTicket);
+    const { data } = await http.get('/v1/me/raffle-tickets');
+    return (data.tickets ?? []).map(toRaffleTicket);
   },
 
   // ── Bank ──
@@ -655,7 +684,7 @@ export const gumaApiClient: ApiClient = {
       notifications: {
         email_notifications: patch.emailNotifications,
         auction_alerts: patch.auctionAlerts,
-        lottery_alerts: patch.lotteryAlerts,
+        raffle_alerts: patch.raffleAlerts,
         event_reminders: patch.eventReminders,
         roll_call_reminders: patch.rollCallReminders,
       },

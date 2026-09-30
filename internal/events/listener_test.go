@@ -61,7 +61,7 @@ func TestDispatchRoutesByChannelAndScope(t *testing.T) {
 	defer unsubBob()
 	now := time.Now()
 
-	dispatch(b, zerolog.Nop(), liveEventsChannel, `{"scope":"guild","target_id":"g1","guild_id":"g1","resource":"lottery","resource_id":"l1"}`, now)
+	dispatch(b, zerolog.Nop(), liveEventsChannel, `{"scope":"guild","target_id":"g1","guild_id":"g1","resource":"raffle","resource_id":"l1"}`, now)
 	assert.Len(t, alice, 1)
 	assert.Len(t, bob, 1)
 

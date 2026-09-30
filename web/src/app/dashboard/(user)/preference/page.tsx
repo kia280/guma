@@ -28,13 +28,13 @@ type NotificationStatus = 'loading' | 'ready' | 'error';
 
 const NOTIFICATION_ITEMS: ReadonlyArray<{
   key: NotificationPreferenceKey;
-  label: 'emailLabel' | 'auctionLabel' | 'lotteryLabel' | 'eventsLabel' | 'rollCallLabel';
-  description: 'emailDesc' | 'auctionDesc' | 'lotteryDesc' | 'eventsDesc' | 'rollCallDesc';
+  label: 'emailLabel' | 'auctionLabel' | 'raffleLabel' | 'eventsLabel' | 'rollCallLabel';
+  description: 'emailDesc' | 'auctionDesc' | 'raffleDesc' | 'eventsDesc' | 'rollCallDesc';
   icon: string;
 }> = [
   { key: 'emailNotifications', label: 'emailLabel', description: 'emailDesc', icon: 'solar:letter-linear' },
   { key: 'auctionAlerts', label: 'auctionLabel', description: 'auctionDesc', icon: 'solar:dollar-linear' },
-  { key: 'lotteryAlerts', label: 'lotteryLabel', description: 'lotteryDesc', icon: 'solar:ticket-linear' },
+  { key: 'raffleAlerts', label: 'raffleLabel', description: 'raffleDesc', icon: 'solar:ticket-linear' },
   { key: 'eventReminders', label: 'eventsLabel', description: 'eventsDesc', icon: 'solar:calendar-linear' },
   { key: 'rollCallReminders', label: 'rollCallLabel', description: 'rollCallDesc', icon: 'solar:clipboard-list-linear' },
 ];

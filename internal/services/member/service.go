@@ -52,6 +52,7 @@ type ListResult struct {
 }
 
 type Service struct {
+	pool   *database.Pool
 	q      *db.Queries
 	logger zerolog.Logger
 }
@@ -61,7 +62,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	if pool != nil {
 		q = db.New(pool.Pool)
 	}
-	return &Service{q: q, logger: logger.With().Str("service", "member").Logger()}
+	return &Service{pool: pool, q: q, logger: logger.With().Str("service", "member").Logger()}
 }
 
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {

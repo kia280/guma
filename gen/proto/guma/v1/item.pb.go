@@ -22,7 +22,7 @@ const (
 )
 
 // Item is the shared structure for any in-game item across all features
-// (auctions, backpack, bank, roll call loot, lotteries).
+// (auctions, backpack, bank, roll call loot, raffles).
 //
 // ItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC
 // ItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC

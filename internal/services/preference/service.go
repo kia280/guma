@@ -22,7 +22,7 @@ const foreignKeyViolation = "23503"
 type NotificationPreferences struct {
 	EmailNotifications bool
 	AuctionAlerts      bool
-	LotteryAlerts      bool
+	RaffleAlerts       bool
 	EventReminders     bool
 	RollCallReminders  bool
 }
@@ -35,7 +35,7 @@ type Preferences struct {
 type NotificationPatch struct {
 	EmailNotifications *bool
 	AuctionAlerts      *bool
-	LotteryAlerts      *bool
+	RaffleAlerts       *bool
 	EventReminders     *bool
 	RollCallReminders  *bool
 }
@@ -43,7 +43,7 @@ type NotificationPatch struct {
 func (p NotificationPatch) IsEmpty() bool {
 	return p.EmailNotifications == nil &&
 		p.AuctionAlerts == nil &&
-		p.LotteryAlerts == nil &&
+		p.RaffleAlerts == nil &&
 		p.EventReminders == nil &&
 		p.RollCallReminders == nil
 }
@@ -51,7 +51,7 @@ func (p NotificationPatch) IsEmpty() bool {
 var DefaultNotifications = NotificationPreferences{
 	EmailNotifications: true,
 	AuctionAlerts:      true,
-	LotteryAlerts:      true,
+	RaffleAlerts:       true,
 	EventReminders:     false,
 	RollCallReminders:  true,
 }
@@ -95,7 +95,7 @@ func (s *Service) Get(ctx context.Context, userIDStr string) (*Preferences, erro
 		Notifications: NotificationPreferences{
 			EmailNotifications: row.EmailNotifications,
 			AuctionAlerts:      row.AuctionAlerts,
-			LotteryAlerts:      row.LotteryAlerts,
+			RaffleAlerts:       row.RaffleAlerts,
 			EventReminders:     row.EventReminders,
 			RollCallReminders:  row.RollCallReminders,
 		},
@@ -116,7 +116,7 @@ func (s *Service) UpdateNotifications(ctx context.Context, userIDStr string, pat
 		UserID:             userID,
 		EmailNotifications: optionalBool(patch.EmailNotifications),
 		AuctionAlerts:      optionalBool(patch.AuctionAlerts),
-		LotteryAlerts:      optionalBool(patch.LotteryAlerts),
+		RaffleAlerts:       optionalBool(patch.RaffleAlerts),
 		EventReminders:     optionalBool(patch.EventReminders),
 		RollCallReminders:  optionalBool(patch.RollCallReminders),
 	})
@@ -131,7 +131,7 @@ func (s *Service) UpdateNotifications(ctx context.Context, userIDStr string, pat
 		Notifications: NotificationPreferences{
 			EmailNotifications: row.EmailNotifications,
 			AuctionAlerts:      row.AuctionAlerts,
-			LotteryAlerts:      row.LotteryAlerts,
+			RaffleAlerts:       row.RaffleAlerts,
 			EventReminders:     row.EventReminders,
 			RollCallReminders:  row.RollCallReminders,
 		},

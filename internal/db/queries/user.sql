@@ -98,8 +98,8 @@ SELECT COUNT(*) FROM guild_events WHERE sqlc.arg(user_id)::uuid = ANY(participan
 -- name: CountUserAuctionsWon :one
 SELECT COUNT(*) FROM auctions WHERE current_bidder_id = $1 AND status = 'ENDED';
 
--- name: CountUserLotteriesWon :one
-SELECT COUNT(*) FROM lottery_winners WHERE user_id = $1;
+-- name: CountUserRafflesWon :one
+SELECT COUNT(*) FROM raffle_winners WHERE user_id = $1;
 
 -- name: SumUserEarnedSpent :one
 SELECT

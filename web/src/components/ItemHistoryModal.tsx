@@ -21,16 +21,17 @@ const KIND_ICONS: Record<ItemHistoryKind, string> = {
   request_rejected: 'solar:close-circle-linear',
   received: 'solar:backpack-linear',
   auction_listed: 'solar:sledgehammer-linear',
-  lottery_listed: 'solar:ticket-linear',
+  raffle_listed: 'solar:ticket-linear',
   returned: 'solar:undo-left-linear',
   withdrawn: 'solar:arrow-up-linear',
   retracted: 'solar:trash-bin-minimalistic-linear',
   withdrawal_requested: 'solar:arrow-up-linear',
   withdrawal_cancelled: 'solar:undo-left-linear',
   delivered: 'solar:box-minimalistic-linear',
+  kept: 'solar:safe-2-linear',
 };
 
-const RECEIVED_SOURCES = ['auction', 'lottery', 'transfer', 'admin', 'roll_call', 'bank_item_request', 'bank'] as const;
+const RECEIVED_SOURCES = ['auction', 'raffle', 'transfer', 'admin', 'roll_call', 'bank_item_request', 'bank'] as const;
 
 const SOURCE_MESSAGE_KEYS: Partial<Record<string, string>> = { bank_item_request: 'bank', roll_call: 'rollCall' };
 
@@ -41,8 +42,8 @@ const referenceHref = (event: ItemHistoryEvent): string | undefined => {
   switch (event.source) {
     case 'auction':
       return `/dashboard/auction/${event.referenceId}`;
-    case 'lottery':
-      return `/dashboard/lottery/${event.referenceId}`;
+    case 'raffle':
+      return `/dashboard/raffle/${event.referenceId}`;
     case 'roll_call':
       return `/dashboard/roll-calls/${event.referenceId}`;
     default:

@@ -12,6 +12,24 @@ export interface Wallet {
   updatedAt: string;
   lockedInBids: number;
   lockedBids: LockedBid[];
+  pendingWithdrawals: number;
+}
+
+export type WithdrawalStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+
+export interface WithdrawalRequest {
+  id: string;
+  guildId: string;
+  requesterId: string;
+  requesterName: string;
+  requesterAvatarUrl?: string;
+  amount: number;
+  note?: string;
+  status: WithdrawalStatus;
+  reviewerName?: string;
+  reviewNote?: string;
+  createdAt: string;
+  reviewedAt?: string;
 }
 
 export interface LockedBid {
@@ -68,6 +86,7 @@ export interface DepositRequest {
 
 export interface WithdrawRequest {
   amount: number;
+  note?: string;
 }
 
 export interface TransferRequest {

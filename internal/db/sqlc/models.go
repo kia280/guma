@@ -236,7 +236,40 @@ type ItemTemplate struct {
 	UpdatedAt   time.Time
 }
 
-type Lottery struct {
+type Member struct {
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	GuildID     uuid.UUID
+	DisplayName string
+	Role        string
+	Profile     []byte
+	JoinedAt    time.Time
+	LastActive  time.Time
+}
+
+type MemberRoleChange struct {
+	ID        uuid.UUID
+	GuildID   uuid.UUID
+	UserID    uuid.UUID
+	ActorID   *uuid.UUID
+	OldRole   string
+	NewRole   string
+	CreatedAt time.Time
+}
+
+type Notification struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Title     string
+	Message   string
+	Type      string
+	Read      bool
+	ActionUrl pgtype.Text
+	CreatedAt time.Time
+	Params    []byte
+}
+
+type Raffle struct {
 	ID                uuid.UUID
 	GuildID           uuid.UUID
 	CreatedBy         uuid.UUID
@@ -254,45 +287,22 @@ type Lottery struct {
 	CancelledAt       pgtype.Timestamptz
 }
 
-type LotteryTicket struct {
+type RaffleTicket struct {
 	ID           uuid.UUID
-	LotteryID    uuid.UUID
+	RaffleID     uuid.UUID
 	UserID       uuid.UUID
 	TicketNumber string
 	PurchasedAt  time.Time
 }
 
-type LotteryWinner struct {
+type RaffleWinner struct {
 	ID               uuid.UUID
-	LotteryID        uuid.UUID
+	RaffleID         uuid.UUID
 	UserID           uuid.UUID
 	Rank             int32
 	PrizeAmount      int64
 	PrizeDescription pgtype.Text
 	TicketNumber     string
-}
-
-type Member struct {
-	ID          uuid.UUID
-	UserID      uuid.UUID
-	GuildID     uuid.UUID
-	DisplayName string
-	Role        string
-	Profile     []byte
-	JoinedAt    time.Time
-	LastActive  time.Time
-}
-
-type Notification struct {
-	ID        uuid.UUID
-	UserID    uuid.UUID
-	Title     string
-	Message   string
-	Type      string
-	Read      bool
-	ActionUrl pgtype.Text
-	CreatedAt time.Time
-	Params    []byte
 }
 
 type RollCall struct {
@@ -400,7 +410,7 @@ type UserPreference struct {
 	UpdatedAt          time.Time
 	EmailNotifications bool
 	AuctionAlerts      bool
-	LotteryAlerts      bool
+	RaffleAlerts       bool
 	EventReminders     bool
 	RollCallReminders  bool
 }
@@ -412,4 +422,18 @@ type Wallet struct {
 	Currency  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type WithdrawalRequest struct {
+	ID            uuid.UUID
+	GuildID       uuid.UUID
+	RequesterID   uuid.UUID
+	RequesterName string
+	Amount        int64
+	Note          pgtype.Text
+	Status        string
+	ReviewerID    *uuid.UUID
+	ReviewNote    pgtype.Text
+	CreatedAt     time.Time
+	ReviewedAt    pgtype.Timestamptz
 }

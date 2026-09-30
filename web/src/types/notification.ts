@@ -5,18 +5,23 @@ export type NotificationKind =
   | 'itemRequestRejected'
   | 'fundRequestSubmitted'
   | 'itemRequestSubmitted'
+  | 'withdrawalRequestSubmitted'
+  | 'withdrawalRequestApproved'
+  | 'withdrawalRequestRejected'
   | 'auctionOutbid'
   | 'auctionWon'
   | 'auctionSold'
   | 'auctionUnsold'
   | 'auctionCancelled'
   | 'itemReceived'
+  | 'goldReceived'
   | 'itemMovedByAdmin'
   | 'itemDelivered'
   | 'lootAssigned'
   | 'rollCallGoldReceived'
-  | 'lotteryWon'
-  | 'lotteryCancelled';
+  | 'raffleWon'
+  | 'raffleCancelled'
+  | 'memberRoleChanged';
 
 export type NotificationParams = Record<string, string | number>;
 

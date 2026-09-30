@@ -102,11 +102,12 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
   const { can } = useGuildPermissions();
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
   const [isCompleteConfirmOpen, setIsCompleteConfirmOpen] = useState(false);
+  const [hasKeptLeftovers, setHasKeptLeftovers] = useState(false);
   const editModal = useOverlayState();
   const lootEditModal = useOverlayState();
   const [lootInVault, setLootInVault] = useState<number | null>(null);
   const [lootVersion, setLootVersion] = useState(0);
-  const completeBlockedId = useId();
+  const completeLeftoversId = useId();
 
   if (isMissing) {
     return (
@@ -141,11 +142,8 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
   const canComplete = displayStatus === RollCallStatus.FINISHED && can('completeRollCall');
   const remainingLoot = entry.lootList.length === 0 ? 0 : lootInVault;
   const remainingGold = entry.goldLoot?.remaining ?? 0;
-  const isCompleteBlocked = remainingLoot !== 0 || remainingGold > 0;
-  const completeBlockers = [
-    ...(remainingLoot ? [t('completeBlocked', { count: remainingLoot })] : []),
-    ...(remainingGold > 0 ? [t('completeBlockedGold', { amount: formatGold(remainingGold) })] : []),
-  ];
+  const leftoverLoot = remainingLoot ?? 0;
+  const hasLeftovers = leftoverLoot > 0 || remainingGold > 0;
 
   const announceChange = () => {
     emitLiveEvent({ kind: 'resource', guildId, resource: 'rollCall', resourceId: id });
@@ -161,8 +159,12 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
   };
 
   const handleCompleteConfirm = async () => {
+    setHasKeptLeftovers(hasLeftovers);
     try {
-      await apiClient.completeRollCall(guildId, id);
+      await apiClient.completeRollCall(guildId, id, { keepLeftoversInBank: hasLeftovers });
+    } catch (err) {
+      setLootVersion(version => version + 1);
+      throw err;
     } finally {
       refetchEntry();
       announceChange();
@@ -273,8 +275,8 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
             <Button
               variant="primary"
               className="shrink-0 max-sm:h-11"
-              isDisabled={isCompleteBlocked}
-              aria-describedby={completeBlockers.length > 0 ? completeBlockedId : undefined}
+              isDisabled={remainingLoot === null}
+              aria-describedby={hasLeftovers ? completeLeftoversId : undefined}
               onPress={() => setIsCompleteConfirmOpen(true)}
             >
               <Icon icon="solar:check-read-linear" width={16} />
@@ -380,14 +382,35 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
 
       <ConfirmDialog
         heading={t('completeConfirmTitle')}
-        body={t('completeConfirmBody')}
-        confirmLabel={t('completeConfirm')}
+        body={hasLeftovers ? t('completeConfirmLeftoversBody') : t('completeConfirmBody')}
+        details={
+          hasLeftovers ? (
+            <dl className="flex flex-col gap-1 rounded-lg border border-divider p-3 type-body">
+              {leftoverLoot > 0 && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-subtle">{t('completeLeftoverItems')}</dt>
+                  <dd className="font-medium tabular-nums text-foreground">{leftoverLoot}</dd>
+                </div>
+              )}
+              {remainingGold > 0 && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-subtle">{t('completeLeftoverGold')}</dt>
+                  <dd className="font-medium tabular-nums text-foreground">{formatGold(remainingGold)}</dd>
+                </div>
+              )}
+            </dl>
+          ) : undefined
+        }
+        confirmLabel={hasLeftovers ? t('completeConfirmLeftovers') : t('completeConfirm')}
         failedMessage={t('completeFailed')}
         status="warning"
         isOpen={isCompleteConfirmOpen}
         onOpenChange={setIsCompleteConfirmOpen}
         onConfirm={handleCompleteConfirm}
-        success={{ title: t('completeSuccess'), detail: t('completeSuccessDetail') }}
+        success={{
+          title: t('completeSuccess'),
+          detail: hasKeptLeftovers ? t('completeSuccessLeftoversDetail') : t('completeSuccessDetail'),
+        }}
       />
 
       <ConfirmDialog
@@ -423,10 +446,10 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
             )}
           </div>
 
-          {canComplete && completeBlockers.length > 0 && (
-            <div id={completeBlockedId} className="type-caption text-warning flex items-start gap-1.5">
+          {canComplete && hasLeftovers && (
+            <div id={completeLeftoversId} className="type-caption text-hint flex items-start gap-1.5">
               <Icon icon="solar:info-circle-linear" width={14} className="mt-0.5 shrink-0" />
-              <span>{completeBlockers.join(' ')}</span>
+              <span>{t('completeLeftoversHint')}</span>
             </div>
           )}
 
@@ -448,6 +471,7 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
                   rollCallId={entry.id}
                   lootList={entry.lootList}
                   attendees={entry.attendanceList}
+                  isCompleted={entry.status === RollCallStatus.COMPLETED}
                   onVaultCountChange={setLootInVault}
                 />
               )}

@@ -108,6 +108,22 @@ readinessProbe:
   periodSeconds: 5
   failureThreshold: 3
 
+# OpenTelemetry metrics exported over OTLP. Disabled by default.
+metrics:
+  enabled: false
+  # host:port or full URL of the OTLP receiver; empty uses the OTEL_EXPORTER_OTLP_* defaults.
+  endpoint: ""
+  # grpc or http/protobuf
+  protocol: grpc
+  # Disable TLS to the OTLP receiver (plaintext).
+  insecure: false
+  # How often metrics are collected and exported.
+  exportInterval: 15s
+  # Optional secret holding export headers as "key=value,key2=value2".
+  headersSecret:
+    name: ""
+    key: headers
+
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
   enabled: false

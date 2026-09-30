@@ -43,10 +43,25 @@ type GoldPot struct {
 	Total       int64
 	Distributed int64
 	Retracted   int64
+	Completed   bool
 }
 
 // Remaining is the gold still available to distribute.
 func (p GoldPot) Remaining() int64 {
+	if p.Completed {
+		return 0
+	}
+	return p.undistributed()
+}
+
+func (p GoldPot) Kept() int64 {
+	if !p.Completed {
+		return 0
+	}
+	return p.undistributed()
+}
+
+func (p GoldPot) undistributed() int64 {
 	return p.Total - p.Distributed - p.Retracted
 }
 
@@ -215,6 +230,9 @@ func checkGoldPotCapacity(pot GoldPot, isCancelled bool, total int64) error {
 	if isCancelled || pot.Retracted > 0 {
 		return fmt.Errorf("%w: the roll call was cancelled, so its gold can no longer be distributed", errs.ErrFailedPrecondition)
 	}
+	if pot.Completed {
+		return fmt.Errorf("%w: the roll call was completed, so its remaining gold stays in the guild bank", errs.ErrFailedPrecondition)
+	}
 	if total > pot.Remaining() {
 		return fmt.Errorf("%w: only %d of the roll call gold is left to distribute", errs.ErrFailedPrecondition, pot.Remaining())
 	}
@@ -242,7 +260,7 @@ func (s *Service) GetGold(ctx context.Context, guildIDStr, rollCallIDStr string)
 		}
 		return nil, fmt.Errorf("%w: load gold pot: %v", errs.ErrInternal, err)
 	}
-	summary.Pot = &GoldPot{Total: pot.Total, Distributed: pot.Distributed, Retracted: pot.Retracted}
+	summary.Pot = &GoldPot{Total: pot.Total, Distributed: pot.Distributed, Retracted: pot.Retracted, Completed: pot.IsCompleted}
 	rows, err := s.q.ListRollCallGoldRecipients(ctx, db.ListRollCallGoldRecipientsParams{RollCallID: rollCallID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: list gold recipients: %v", errs.ErrInternal, err)
@@ -298,7 +316,7 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 		}
 		return nil, fmt.Errorf("%w: lock gold pot: %v", errs.ErrInternal, err)
 	}
-	pot := GoldPot{Total: locked.Total, Distributed: locked.Distributed, Retracted: locked.Retracted}
+	pot := GoldPot{Total: locked.Total, Distributed: locked.Distributed, Retracted: locked.Retracted, Completed: locked.IsCompleted}
 
 	previous, err := qtx.GetRollCallGoldDistributionByRequest(ctx, db.GetRollCallGoldDistributionByRequestParams{RollCallID: rollCallID, RequestID: requestID})
 	if err == nil {
@@ -418,7 +436,7 @@ func (s *Service) retractGoldLoot(ctx context.Context, qtx *db.Queries, guildID,
 		}
 		return nil, fmt.Errorf("%w: lock gold pot: %v", errs.ErrInternal, err)
 	}
-	pot := GoldPot{Total: locked.Total, Distributed: locked.Distributed, Retracted: locked.Retracted}
+	pot := GoldPot{Total: locked.Total, Distributed: locked.Distributed, Retracted: locked.Retracted, Completed: locked.IsCompleted}
 	remaining := pot.Remaining()
 	if remaining <= 0 {
 		return &pot, nil
@@ -451,7 +469,7 @@ func (s *Service) loadGoldPot(ctx context.Context, guildID, rollCallID uuid.UUID
 		}
 		return nil, fmt.Errorf("%w: load gold pot: %v", errs.ErrInternal, err)
 	}
-	return &GoldPot{Total: pot.Total, Distributed: pot.Distributed, Retracted: pot.Retracted}, nil
+	return &GoldPot{Total: pot.Total, Distributed: pot.Distributed, Retracted: pot.Retracted, Completed: pot.IsCompleted}, nil
 }
 
 func (s *Service) attachGoldPots(ctx context.Context, guildID uuid.UUID, rollCalls []*RollCall) error {
@@ -470,7 +488,7 @@ func (s *Service) attachGoldPots(ctx context.Context, guildID uuid.UUID, rollCal
 	}
 	pots := make(map[string]*GoldPot, len(rows))
 	for _, r := range rows {
-		pots[r.RollCallID.String()] = &GoldPot{Total: r.Total, Distributed: r.Distributed, Retracted: r.Retracted}
+		pots[r.RollCallID.String()] = &GoldPot{Total: r.Total, Distributed: r.Distributed, Retracted: r.Retracted, Completed: r.IsCompleted}
 	}
 	for _, c := range rollCalls {
 		c.GoldPot = pots[c.ID]

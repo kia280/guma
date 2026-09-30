@@ -33,13 +33,6 @@ import type {
   UpdateEventData,
 } from '@/types/guild-events';
 import type { ItemHistoryEvent } from '@/types/item';
-import type {
-  Lottery,
-  LotteryTicket,
-  LotteryWinner,
-  CreateLotteryRequest,
-  UpdateLotteryRequest,
-} from '@/types/lottery';
 import type { Invitation } from '@/types/member';
 import type {
   GuildNotification,
@@ -47,6 +40,13 @@ import type {
   NotificationPage,
 } from '@/types/notification';
 import type { NotificationPreferencesPatch, UserPreferences } from '@/types/preference';
+import type {
+  Raffle,
+  RaffleTicket,
+  RaffleWinner,
+  CreateRaffleRequest,
+  UpdateRaffleRequest,
+} from '@/types/raffle';
 import type {
   RollCall,
   RollCallGoldDistribution,
@@ -70,6 +70,9 @@ import type {
   Transaction,
   TransferRequest,
   Wallet,
+  WithdrawRequest,
+  WithdrawalRequest,
+  WithdrawalStatus,
 } from '@/types/wallet';
 
 export interface AuctionFilters {
@@ -106,13 +109,23 @@ export interface ApiClient {
 
   // ── Member ──
   listMembers(guildId: string): Promise<MockUser[]>;
+  updateMemberRole(guildId: string, userId: string, role: string): Promise<MockUser>;
   inviteMember(guildId: string, req: { email: string; role?: string }): Promise<Invitation>;
 
   // ── Wallet ──
   getWallet(guildId: string): Promise<Wallet>;
   listTransactions(guildId: string): Promise<Transaction[]>;
   deposit(guildId: string, amount: number): Promise<Transaction>;
-  withdraw(guildId: string, amount: number): Promise<Transaction>;
+  withdraw(guildId: string, req: WithdrawRequest): Promise<WithdrawalRequest>;
+  listMyWithdrawalRequests(guildId: string, status?: WithdrawalStatus): Promise<WithdrawalRequest[]>;
+  cancelWithdrawalRequest(guildId: string, requestId: string): Promise<WithdrawalRequest>;
+  listWithdrawalRequests(guildId: string, status?: WithdrawalStatus): Promise<WithdrawalRequest[]>;
+  reviewWithdrawalRequest(
+    guildId: string,
+    requestId: string,
+    status: ReviewDecision,
+    note?: string,
+  ): Promise<WithdrawalRequest>;
   transfer(guildId: string, req: TransferRequest): Promise<Transaction>;
   listBackpack(guildId: string): Promise<BackpackItem[]>;
   withdrawBackpackItem(guildId: string, itemId: string): Promise<void>;
@@ -142,7 +155,7 @@ export interface ApiClient {
   updateRollCall(guildId: string, id: string, patch: UpdateRollCallRequest): Promise<RollCall>;
   deleteRollCall(guildId: string, id: string): Promise<void>;
   cancelRollCall(guildId: string, id: string): Promise<RollCall>;
-  completeRollCall(guildId: string, id: string): Promise<RollCall>;
+  completeRollCall(guildId: string, id: string, options?: { keepLeftoversInBank?: boolean }): Promise<RollCall>;
   updateRollCallLoot(guildId: string, id: string, lootList: LootEntry[]): Promise<RollCall>;
   checkIn(guildId: string, rollCallId: string, notes?: string): Promise<Attendee>;
   listAttendees(guildId: string, rollCallId: string): Promise<Attendee[]>;
@@ -163,16 +176,16 @@ export interface ApiClient {
   updateItemTemplate(guildId: string, id: string, input: ItemTemplateInput): Promise<ItemTemplate>;
   deleteItemTemplate(guildId: string, id: string): Promise<void>;
 
-  // ── Lottery ──
-  listLotteries(guildId: string, status?: string): Promise<Lottery[]>;
-  getLottery(guildId: string, id: string): Promise<Lottery>;
-  createLottery(guildId: string, req: CreateLotteryRequest): Promise<Lottery>;
-  updateLottery(guildId: string, lotteryId: string, patch: UpdateLotteryRequest): Promise<Lottery>;
-  cancelLottery(guildId: string, lotteryId: string): Promise<Lottery>;
-  deleteLottery(guildId: string, lotteryId: string): Promise<void>;
-  purchaseTickets(guildId: string, lotteryId: string, quantity: number): Promise<LotteryTicket[]>;
-  getLotteryWinners(guildId: string, lotteryId: string): Promise<LotteryWinner[]>;
-  listMyTickets(): Promise<LotteryTicket[]>;
+  // ── Raffle ──
+  listRaffles(guildId: string, status?: string): Promise<Raffle[]>;
+  getRaffle(guildId: string, id: string): Promise<Raffle>;
+  createRaffle(guildId: string, req: CreateRaffleRequest): Promise<Raffle>;
+  updateRaffle(guildId: string, raffleId: string, patch: UpdateRaffleRequest): Promise<Raffle>;
+  cancelRaffle(guildId: string, raffleId: string): Promise<Raffle>;
+  deleteRaffle(guildId: string, raffleId: string): Promise<void>;
+  purchaseTickets(guildId: string, raffleId: string, quantity: number): Promise<RaffleTicket[]>;
+  getRaffleWinners(guildId: string, raffleId: string): Promise<RaffleWinner[]>;
+  listMyTickets(): Promise<RaffleTicket[]>;
 
   // ── Bank ──
   getGuildBank(guildId: string): Promise<GuildBank>;

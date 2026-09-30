@@ -8,6 +8,7 @@ import { ActionSuccess } from './ActionSuccess';
 export function ConfirmDialog({
   heading,
   body,
+  details,
   confirmLabel,
   failedMessage,
   status = 'danger',
@@ -18,6 +19,7 @@ export function ConfirmDialog({
 }: {
   heading: string;
   body: string;
+  details?: React.ReactNode;
   confirmLabel: string;
   failedMessage: string;
   status?: 'danger' | 'warning';
@@ -78,6 +80,7 @@ export function ConfirmDialog({
                 </AlertDialog.Header>
                 <AlertDialog.Body className="flex flex-col gap-2">
                   <p className="type-body text-subtle wrap-anywhere">{body}</p>
+                  {details}
                   {failed && (
                     <p role="alert" className="type-caption text-danger">
                       {failedMessage}

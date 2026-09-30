@@ -580,7 +580,7 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall
 	return c, nil
 }
 
-func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userIDStr string) (*RollCall, error) {
+func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userIDStr string, keepLeftovers bool) (*RollCall, error) {
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -619,7 +619,7 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userI
 	pot, err := qtx.LockRollCallGoldPot(ctx, db.LockRollCallGoldPotParams{RollCallID: rollCallID, GuildID: guildID})
 	switch {
 	case err == nil:
-		goldPot = &GoldPot{Total: pot.Total, Distributed: pot.Distributed, Retracted: pot.Retracted}
+		goldPot = &GoldPot{Total: pot.Total, Distributed: pot.Distributed, Retracted: pot.Retracted, Completed: pot.IsCompleted}
 	case !errors.Is(err, pgx.ErrNoRows):
 		return nil, fmt.Errorf("%w: load gold pot: %v", errs.ErrInternal, err)
 	}
@@ -627,7 +627,7 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userI
 	if goldPot != nil {
 		goldRemaining = goldPot.Remaining()
 	}
-	if err := checkCompletable(state.IsCancelled, state.IsCompleted, state.IsExpired, remaining, goldRemaining); err != nil {
+	if err := checkCompletable(state.IsCancelled, state.IsCompleted, state.IsExpired, remaining, goldRemaining, keepLeftovers); err != nil {
 		return nil, err
 	}
 	r, err := qtx.CompleteRollCall(ctx, db.CompleteRollCallParams{CompletedBy: &userID, ID: rollCallID, GuildID: guildID})
@@ -640,8 +640,12 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userI
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("roll_call_id", rollCallIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).Msg("roll call completed")
+	s.logger.Info().Str("roll_call_id", rollCallIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).
+		Int64("kept_loot", remaining).Int64("kept_gold", goldRemaining).Msg("roll call completed")
 	c := toRollCall(rollCallRow(r))
+	if goldPot != nil {
+		goldPot.Completed = true
+	}
 	c.GoldPot = goldPot
 	return c, nil
 }
@@ -779,6 +783,16 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, rollCallIDStr, ite
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
+	state, err := qtx.LockRollCallState(ctx, db.LockRollCallStateParams{ID: rollCallID, GuildID: guildID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", fmt.Errorf("%w: roll call", errs.ErrNotFound)
+		}
+		return "", fmt.Errorf("%w: load roll call: %v", errs.ErrInternal, err)
+	}
+	if state.IsCompleted {
+		return "", fmt.Errorf("%w: completed roll calls cannot assign loot", errs.ErrFailedPrecondition)
+	}
 	if _, err := qtx.RejectPendingRequestsForLootItem(ctx, db.RejectPendingRequestsForLootItemParams{
 		ReviewerID: &actorID, ReviewNote: fmt.Sprintf(assignedLootNote, recipientName), GuildID: guildID, BankItemID: &itemID,
 	}); err != nil {
@@ -830,7 +844,7 @@ func checkLootEditable(isCancelled, isCompleted bool) error {
 	return nil
 }
 
-func checkCompletable(isCancelled, isCompleted, isExpired bool, lootInVault, goldRemaining int64) error {
+func checkCompletable(isCancelled, isCompleted, isExpired bool, lootInVault, goldRemaining int64, keepLeftovers bool) error {
 	if isCancelled {
 		return fmt.Errorf("%w: cancelled roll calls cannot be completed", errs.ErrFailedPrecondition)
 	}
@@ -839,6 +853,9 @@ func checkCompletable(isCancelled, isCompleted, isExpired bool, lootInVault, gol
 	}
 	if !isExpired {
 		return fmt.Errorf("%w: roll call is still open", errs.ErrFailedPrecondition)
+	}
+	if keepLeftovers {
+		return nil
 	}
 	if lootInVault > 0 {
 		return fmt.Errorf("%w: %d loot items have not been distributed yet", errs.ErrFailedPrecondition, lootInVault)
@@ -914,7 +931,7 @@ func checkLootInVault(item models.Item, vault map[string]bool) error {
 		return fmt.Errorf("%w: loot item %q has already left the guild vault", errs.ErrFailedPrecondition, item.Name)
 	}
 	if locked {
-		return fmt.Errorf("%w: loot item %q is listed in an auction or lottery", errs.ErrFailedPrecondition, item.Name)
+		return fmt.Errorf("%w: loot item %q is listed in an auction or raffle", errs.ErrFailedPrecondition, item.Name)
 	}
 	return nil
 }

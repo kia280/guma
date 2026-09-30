@@ -121,4 +121,10 @@ func TestCheckGoldPotCapacity(t *testing.T) {
 	retracted := GoldPot{Total: 1000, Distributed: 400, Retracted: 600}
 	assert.Equal(t, int64(0), retracted.Remaining())
 	assert.ErrorIs(t, checkGoldPotCapacity(retracted, false, 1), errs.ErrFailedPrecondition)
+
+	kept := GoldPot{Total: 1000, Distributed: 400, Completed: true}
+	assert.Equal(t, int64(0), kept.Remaining())
+	assert.Equal(t, int64(600), kept.Kept())
+	assert.Equal(t, int64(0), pot.Kept())
+	assert.ErrorIs(t, checkGoldPotCapacity(kept, false, 1), errs.ErrFailedPrecondition)
 }

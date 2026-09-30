@@ -91,6 +91,7 @@ type BankItem struct {
 	DonatedAt           time.Time
 	RollCallID          string
 	RollCallTitle       string
+	RollCallCompleted   bool
 	PendingRequestCount int32
 	RequestedByMe       bool
 	Lock                *models.ItemLock
@@ -611,7 +612,7 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 		bi := &BankItem{
 			ID: r.ID.String(), GuildID: r.GuildID.String(), DonorID: r.DonorID.String(),
 			DonorName: r.DonorName, Quantity: r.Quantity,
-			Note: r.Note, DonatedAt: r.DonatedAt, RollCallTitle: r.RollCallTitle,
+			Note: r.Note, DonatedAt: r.DonatedAt, RollCallTitle: r.RollCallTitle, RollCallCompleted: r.RollCallCompleted,
 			PendingRequestCount: r.PendingRequestCount, RequestedByMe: r.RequestedByMe,
 			Lock: models.NewItemLock(r.LockedByType, r.LockedByID),
 		}
@@ -669,7 +670,7 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
 			if exists, _ := s.q.BankItemExists(ctx, db.BankItemExistsParams{ID: bankItemID, GuildID: guildID}); exists {
-				return nil, fmt.Errorf("%w: bank item is in an auction or lottery", errs.ErrFailedPrecondition)
+				return nil, fmt.Errorf("%w: bank item is in an auction or raffle", errs.ErrFailedPrecondition)
 			}
 			return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
 		case errors.As(err, &pgErr) && pgErr.Code == "23505":
@@ -794,7 +795,7 @@ func (s *Service) DeleteBankItem(ctx context.Context, guildIDStr, userIDStr, ban
 		return fmt.Errorf("%w: load bank item: %v", errs.ErrInternal, err)
 	}
 	if bankItem.LockedByType != "" {
-		return fmt.Errorf("%w: bank item is in an auction or lottery", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: bank item is in an auction or raffle", errs.ErrFailedPrecondition)
 	}
 
 	rejected, err := qtx.RejectPendingRequestsForBankItem(ctx, db.RejectPendingRequestsForBankItemParams{
