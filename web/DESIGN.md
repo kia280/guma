@@ -187,7 +187,7 @@ Every empty state that fills a card, a card section, or a modal body uses `<Empt
 <EmptyContent icon="solar:backpack-linear" title={t('noItems')} description={t('noItemsHint')} />
 ```
 
-- The pattern is a 40px `text-disabled` icon, a `type-subheading text-soft` title, an optional `type-body text-subtle` description, and `py-12` of vertical padding. The title is `text-soft`, not `text-foreground`, so an empty panel reads quieter than real content. Do not hand-roll smaller or larger variants.
+- The pattern is a `size-10 text-disabled` icon (40px at the default font size), a `type-subheading text-soft` title, an optional `type-body text-subtle` description, and `py-12` of vertical padding. The title is `text-soft`, not `text-foreground`, so an empty panel reads quieter than real content. The icon is sized in rem, not with a pixel `width`, so it grows with the title next to it when the font size preference changes. Do not hand-roll smaller or larger variants.
 - The title is a short phrase without a trailing period. Put any explanation of what will appear there in `description`, as a full sentence.
 - Pass `minHeight` instead of relying on the padding when the block replaces content with a fixed height (a chart), so the panel does not jump between states.
 - Pass an action as children (a `size="sm"` button); it renders below the text.

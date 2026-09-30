@@ -55,7 +55,7 @@ export function EmptyContent({
       className={`flex flex-col items-center justify-center text-center ${minHeight === undefined ? 'py-12' : ''}`}
       style={minHeight === undefined ? undefined : { minHeight }}
     >
-      <Icon icon={icon} width={40} className="mb-3 text-disabled" aria-hidden />
+      <Icon icon={icon} className="mb-3 size-10 text-disabled" aria-hidden />
       <p className="type-subheading text-soft">{title}</p>
       {description && <p className="type-body text-subtle mt-1">{description}</p>}
       {children && <div className="mt-4">{children}</div>}
