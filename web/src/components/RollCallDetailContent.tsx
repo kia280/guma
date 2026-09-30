@@ -21,7 +21,7 @@ import { rollCallStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import { RollCallStatus, type RollCall, type RollCallGoldPot } from '@/types/roll-call';
 import { ActionSuccess } from './ActionSuccess';
-import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { AsyncContent, DetailSkeleton, EmptyContent } from './AsyncContent';
 import { ConfirmDialog } from './ConfirmDialog';
 import { RollCallEditModal } from './RollCallEditModal';
 import { RollCallGoldLoot } from './RollCallGoldLoot';
@@ -431,7 +431,7 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
           )}
 
           {entry.lootList.length === 0 && !entry.goldLoot ? (
-            <p className="type-body text-subtle text-center py-4">{t('noLootItems')}</p>
+            <EmptyContent icon="solar:box-linear" title={t('noLootItems')} />
           ) : (
             <div className="space-y-2">
               {entry.goldLoot && (
@@ -543,7 +543,7 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
           </div>
 
           {entry.attendanceList.length === 0 ? (
-            <p className="type-body text-subtle text-center py-4">{t('noAttendeesYet')}</p>
+            <EmptyContent icon="solar:users-group-rounded-linear" title={t('noAttendeesYet')} />
           ) : (
             <div className="space-y-2">
               {entry.attendanceList.map((member, idx) => (

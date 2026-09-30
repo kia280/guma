@@ -4,7 +4,7 @@ import { Button, Card, Chip, Modal, Tabs, Label, Description, ListBox, Select, u
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
-import { AsyncContent, CardGridSkeleton } from '@/components/AsyncContent';
+import { AsyncContent, CardGridSkeleton, EmptyContent } from '@/components/AsyncContent';
 import { ItemTemplatePicker } from '@/components/ItemTemplatePicker';
 import { LootListEditor } from '@/components/LootListEditor';
 import { RollCallFormFields, hasRollCallFormErrors, useRollCallFormErrors, type RollCallFormValues } from '@/components/RollCallFormFields';
@@ -402,15 +402,13 @@ export default function RollCallsPage() {
               skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
             >
             {filtered.length === 0 ? (
-              <Card className="border border-transparent shadow-edge">
-                <Card.Content className="text-center py-12">
-                  <Icon
+              <Card className="border border-transparent shadow-edge bg-surface">
+                <Card.Content>
+                  <EmptyContent
                     icon="heroicons:clipboard-document-check"
-                    width={40}
-                    className="mx-auto mb-3 text-disabled"
+                    title={t('noRollCalls')}
+                    description={t('noRollCallsHint')}
                   />
-                  <h3 className="type-subheading mb-1 text-foreground">{t('noRollCalls')}</h3>
-                  <p className="type-body text-subtle">{t('noRollCallsHint')}</p>
                 </Card.Content>
               </Card>
             ) : (

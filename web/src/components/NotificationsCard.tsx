@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { EmptyContent } from '@/components/AsyncContent';
 import type { NotificationFilter, NotificationsStatus } from '@/hooks/useNotifications';
 import type { GuildNotification } from '@/types/notification';
 import { NotificationItem } from './NotificationItem';
@@ -67,12 +68,10 @@ export function NotificationsCard({
     );
   } else if (notifications.length === 0) {
     content = (
-      <div className="flex flex-col items-center justify-center gap-2 py-12">
-        <Icon className="text-disabled" icon="solar:bell-off-linear" width={32} aria-hidden />
-        <p className="type-body text-subtle">
-          {filter === 'unread' ? t('allCaughtUp') : t('noNotifications')}
-        </p>
-      </div>
+      <EmptyContent
+        icon="solar:bell-off-linear"
+        title={filter === 'unread' ? t('allCaughtUp') : t('noNotifications')}
+      />
     );
   } else {
     content = (

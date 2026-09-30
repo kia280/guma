@@ -1,9 +1,9 @@
 'use client';
 
 import { Alert, AlertDialog, Button, Card, Spinner } from '@heroui/react';
-import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { EmptyContent } from '@/components/AsyncContent';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 
 export const templateErrorKey = (err: unknown) => {
@@ -100,10 +100,8 @@ export function TemplateListState({
   if (isEmpty) {
     return (
       <Card className="border border-transparent shadow-edge bg-surface">
-        <Card.Content className="text-center py-12">
-          <Icon icon={emptyIcon} width={40} className="mx-auto mb-3 text-disabled" />
-          <h3 className="type-subheading mb-1 text-foreground">{emptyTitle}</h3>
-          <p className="type-body text-subtle">{emptyHint}</p>
+        <Card.Content>
+          <EmptyContent icon={emptyIcon} title={emptyTitle} description={emptyHint} />
         </Card.Content>
       </Card>
     );

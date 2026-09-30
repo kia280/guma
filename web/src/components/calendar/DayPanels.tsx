@@ -3,6 +3,7 @@
 import { Button, Card } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
+import { EmptyContent } from '@/components/AsyncContent';
 import type { CalendarFormat } from '@/hooks/useCalendarFormat';
 import { addDays, dayKey, isSameDay } from '@/lib/calendar';
 import type { EventOccurrence } from '@/lib/event-occurrences';
@@ -45,13 +46,12 @@ export function SelectedDayCard({ day, occurrences, format, onEventClick, onCrea
         {occurrences.length > 0 ? (
           <EventList occurrences={occurrences} day={day} format={format} onEventClick={onEventClick} />
         ) : (
-          <div className="flex flex-col items-center gap-3 px-3 py-5 text-center">
-            <p className="type-body text-subtle">{t('noEventsDay')}</p>
+          <EmptyContent icon="solar:calendar-linear" title={t('noEventsDay')}>
             <Button size="sm" variant="secondary" onPress={onCreate}>
               <Icon icon="solar:add-circle-linear" width={16} aria-hidden />
               {t('createEvent')}
             </Button>
-          </div>
+          </EmptyContent>
         )}
       </Card.Content>
     </Card>

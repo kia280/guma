@@ -4,6 +4,7 @@ import { Button, Link, Modal, Spinner, type UseOverlayStateReturn } from '@herou
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { EmptyContent } from '@/components/AsyncContent';
 import { useUserName } from '@/hooks/useUserName';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
@@ -126,7 +127,7 @@ export function ItemHistoryModal({ state, itemId, itemName }: ItemHistoryModalPr
                   </Button>
                 </div>
               ) : events.length === 0 ? (
-                <p className="type-body text-disabled py-8 text-center">{t('empty')}</p>
+                <EmptyContent icon="solar:history-linear" title={t('empty')} />
               ) : (
                 <ol className="relative flex flex-col gap-4 border-l border-divider pl-6 ml-3" aria-label={t('timeline')}>
                   {events.map(event => {

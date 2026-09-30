@@ -22,7 +22,7 @@ import { useGuildPermissions } from '@/lib/permissions';
 import { lotteryStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import type { Lottery, LotteryWinner } from '@/types/lottery';
-import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { AsyncContent, DetailSkeleton, EmptyContent } from './AsyncContent';
 import { ConfirmDialog } from './ConfirmDialog';
 import { LotteryEditModal } from './LotteryEditModal';
 import { LotteryWheel, type WheelEntry } from './LotteryWheel';
@@ -631,7 +631,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                 </ul>
               </ScrollShadow>
             ) : (
-              <p className={`type-body text-subtle ${onClose ? '' : 'px-4 pb-4'}`}>{t('noParticipants')}</p>
+              <EmptyContent icon="solar:users-group-rounded-linear" title={t('noParticipants')} />
             )}
           </section>
         </div>

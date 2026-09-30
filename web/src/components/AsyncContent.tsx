@@ -41,16 +41,24 @@ export function EmptyContent({
   icon,
   title,
   description,
+  minHeight,
+  children,
 }: {
   icon: string;
   title: string;
   description?: string;
+  minHeight?: number;
+  children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
+    <div
+      className={`flex flex-col items-center justify-center text-center ${minHeight === undefined ? 'py-12' : ''}`}
+      style={minHeight === undefined ? undefined : { minHeight }}
+    >
       <Icon icon={icon} width={40} className="mb-3 text-disabled" aria-hidden />
       <p className="type-subheading text-foreground">{title}</p>
       {description && <p className="type-body text-subtle mt-1">{description}</p>}
+      {children && <div className="mt-4">{children}</div>}
     </div>
   );
 }

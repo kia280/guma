@@ -179,6 +179,21 @@ All cards must follow this pattern:
 - Overlays (modals, popovers, dropdowns, tooltips, toasts) get the same edge in the dark theme through `--overlay-shadow`, so do not add `border border-divider` to them. In the light theme they keep HeroUI's elevation shadow; toasts use the edge in both themes.
 - The feather extends about 2px past the card. A parent that clips (`overflow-hidden`, `overflow-y-auto`) needs room for it: add `p-1` and cancel it with `-m-1`.
 
+## Empty States
+
+Every empty state that fills a card, a card section, or a modal body uses `<EmptyContent>` from `src/components/AsyncContent.tsx`, so they all share one size:
+
+```tsx
+<EmptyContent icon="solar:backpack-linear" title={t('noItems')} description={t('noItemsHint')} />
+```
+
+- The pattern is a 40px `text-disabled` icon, a `type-subheading` title, an optional `type-body text-subtle` description, and `py-12` of vertical padding. Do not hand-roll smaller or larger variants.
+- The title is a short phrase without a trailing period. Put any explanation of what will appear there in `description`, as a full sentence.
+- Pass `minHeight` instead of relying on the padding when the block replaces content with a fixed height (a chart), so the panel does not jump between states.
+- Pass an action as children (a `size="sm"` button); it renders below the text.
+- On list pages the block sits inside a standard card (`Card` + `Card.Content`), not directly on the page background.
+- This does not apply to `renderEmptyState` in list boxes and combo boxes, to not-found pages, to error states with a retry, or to a one-line placeholder that stands in for a single value inside a form or a small grid card.
+
 ## Interactive Rows
 
 Clickable rows in a list (announcements, events, navigation items) use inset, rounded rows instead of full-width rows with dividers:

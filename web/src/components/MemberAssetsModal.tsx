@@ -20,6 +20,7 @@ import {
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { EmptyContent } from '@/components/AsyncContent';
 import { useToast } from '@/hooks/useToast';
 import { useUserName } from '@/hooks/useUserName';
 import { useCurrentGuildId } from '@/lib/current-guild';
@@ -356,7 +357,7 @@ export function MemberAssetsModal({ state, member, members, onTransferred }: Mem
                         </Button>
                       </div>
                       {items.length === 0 ? (
-                        <p className="type-body text-disabled py-4 text-center">{t('noItems')}</p>
+                        <EmptyContent icon="solar:backpack-linear" title={t('noItems')} />
                       ) : (
                         <>
                           <Checkbox
