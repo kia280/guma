@@ -1725,6 +1725,7 @@ type BankItem struct {
 	RollCallTitle       string                 `protobuf:"bytes,10,opt,name=roll_call_title,json=rollCallTitle,proto3" json:"roll_call_title,omitempty"`
 	PendingRequestCount int32                  `protobuf:"varint,11,opt,name=pending_request_count,json=pendingRequestCount,proto3" json:"pending_request_count,omitempty"`
 	RequestedByMe       bool                   `protobuf:"varint,12,opt,name=requested_by_me,json=requestedByMe,proto3" json:"requested_by_me,omitempty"`
+	RollCallCompleted   bool                   `protobuf:"varint,13,opt,name=roll_call_completed,json=rollCallCompleted,proto3" json:"roll_call_completed,omitempty"` // The source roll call was completed, so the item is regular guild bank stock
 	Lock                *ItemLock              `protobuf:"bytes,20,opt,name=lock,proto3" json:"lock,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
@@ -1840,6 +1841,13 @@ func (x *BankItem) GetPendingRequestCount() int32 {
 func (x *BankItem) GetRequestedByMe() bool {
 	if x != nil {
 		return x.RequestedByMe
+	}
+	return false
+}
+
+func (x *BankItem) GetRollCallCompleted() bool {
+	if x != nil {
+		return x.RollCallCompleted
 	}
 	return false
 }
@@ -2351,7 +2359,7 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
 	"\vreviewed_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"reviewedAt\x120\n" +
-	"\x14requester_avatar_url\x18\f \x01(\tR\x12requesterAvatarUrl\"\xca\x03\n" +
+	"\x14requester_avatar_url\x18\f \x01(\tR\x12requesterAvatarUrl\"\xfa\x03\n" +
 	"\bBankItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x19\n" +
@@ -2368,7 +2376,8 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x0froll_call_title\x18\n" +
 	" \x01(\tR\rrollCallTitle\x122\n" +
 	"\x15pending_request_count\x18\v \x01(\x05R\x13pendingRequestCount\x12&\n" +
-	"\x0frequested_by_me\x18\f \x01(\bR\rrequestedByMe\x12%\n" +
+	"\x0frequested_by_me\x18\f \x01(\bR\rrequestedByMe\x12.\n" +
+	"\x13roll_call_completed\x18\r \x01(\bR\x11rollCallCompleted\x12%\n" +
 	"\x04lock\x18\x14 \x01(\v2\x11.guma.v1.ItemLockR\x04lock\"\xe3\x03\n" +
 	"\vItemRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +

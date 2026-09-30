@@ -136,7 +136,7 @@ func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.Comp
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	c, err := h.svc.Complete(ctx, req.GuildId, req.RollCallId, userID)
+	c, err := h.svc.Complete(ctx, req.GuildId, req.RollCallId, userID, req.KeepLeftoversInBank)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -356,6 +356,7 @@ func goldPotToProto(pot *rollcallsvc.GoldPot) *gumav1.RollCallGoldPot {
 		Distributed: pot.Distributed,
 		Retracted:   pot.Retracted,
 		Remaining:   pot.Remaining(),
+		Kept:        pot.Kept(),
 	}
 }
 

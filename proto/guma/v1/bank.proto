@@ -285,6 +285,7 @@ message BankItem {
   string roll_call_title = 10;
   int32 pending_request_count = 11;
   bool requested_by_me = 12;
+  bool roll_call_completed = 13; // The source roll call was completed, so the item is regular guild bank stock
   ItemLock lock = 20;
 }
 

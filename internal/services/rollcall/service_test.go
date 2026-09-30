@@ -156,12 +156,16 @@ func TestCheckLootEditable(t *testing.T) {
 }
 
 func TestCheckCompletable(t *testing.T) {
-	assert.NoError(t, checkCompletable(false, false, true, 0, 0))
-	assert.ErrorIs(t, checkCompletable(true, false, true, 0, 0), errs.ErrFailedPrecondition)
-	assert.ErrorIs(t, checkCompletable(false, true, true, 0, 0), errs.ErrFailedPrecondition)
-	assert.ErrorIs(t, checkCompletable(false, false, false, 0, 0), errs.ErrFailedPrecondition)
-	assert.ErrorIs(t, checkCompletable(false, false, true, 2, 0), errs.ErrFailedPrecondition)
-	assert.ErrorIs(t, checkCompletable(false, false, true, 0, 500), errs.ErrFailedPrecondition)
+	assert.NoError(t, checkCompletable(false, false, true, 0, 0, false))
+	assert.ErrorIs(t, checkCompletable(true, false, true, 0, 0, false), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkCompletable(false, true, true, 0, 0, false), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkCompletable(false, false, false, 0, 0, false), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkCompletable(false, false, true, 2, 0, false), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkCompletable(false, false, true, 0, 500, false), errs.ErrFailedPrecondition)
+	assert.NoError(t, checkCompletable(false, false, true, 2, 500, true))
+	assert.ErrorIs(t, checkCompletable(true, false, true, 2, 0, true), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkCompletable(false, true, true, 2, 0, true), errs.ErrFailedPrecondition)
+	assert.ErrorIs(t, checkCompletable(false, false, false, 0, 500, true), errs.ErrFailedPrecondition)
 }
 
 func TestPlanLootUpdate(t *testing.T) {
@@ -241,11 +245,11 @@ func TestUpdateLootAndCompleteRejectMalformedIDsBeforeQuerying(t *testing.T) {
 	_, err = s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: valid, RollCallID: valid, UpdatedBy: "bad"})
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 
-	_, err = s.Complete(context.Background(), "bad", valid, valid)
+	_, err = s.Complete(context.Background(), "bad", valid, valid, false)
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-	_, err = s.Complete(context.Background(), valid, "bad", valid)
+	_, err = s.Complete(context.Background(), valid, "bad", valid, false)
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-	_, err = s.Complete(context.Background(), valid, valid, "bad")
+	_, err = s.Complete(context.Background(), valid, valid, "bad", false)
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }
 

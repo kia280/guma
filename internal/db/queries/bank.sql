@@ -107,14 +107,28 @@ SELECT bc.id, bc.guild_id, bc.user_id,
        bc.created_at, bc.kind, bc.items, bc.roll_call_id,
        COALESCE(bc.reference_type, '') AS reference_type,
        bc.reference_id
-FROM bank_contributions bc
+FROM (
+    SELECT c.id, c.guild_id, c.user_id, c.username, c.amount, c.note, c.created_at, c.kind, c.items,
+           c.roll_call_id, c.reference_type, c.reference_id
+    FROM bank_contributions c
+    WHERE c.guild_id = $1
+    UNION ALL
+    SELECT p.roll_call_id, p.guild_id, COALESCE(rc.completed_by, rc.created_by), '',
+           p.total - p.distributed - p.retracted, rc.title, rc.completed_at, 'roll_call_gold_kept', '[]'::jsonb,
+           p.roll_call_id, NULL, NULL::uuid
+    FROM roll_call_gold_pots p
+    JOIN roll_calls rc ON rc.id = p.roll_call_id
+    WHERE p.guild_id = $1 AND rc.completed_at IS NOT NULL AND p.total - p.distributed - p.retracted > 0
+) bc
 LEFT JOIN users u ON u.id = bc.user_id
-WHERE bc.guild_id = $1
 ORDER BY bc.created_at DESC
 LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 
 -- name: CountBankContributions :one
-SELECT COUNT(*) FROM bank_contributions WHERE guild_id = $1;
+SELECT ((SELECT COUNT(*) FROM bank_contributions c WHERE c.guild_id = $1)
+      + (SELECT COUNT(*) FROM roll_call_gold_pots p
+         JOIN roll_calls rc ON rc.id = p.roll_call_id
+         WHERE p.guild_id = $1 AND rc.completed_at IS NOT NULL AND p.total - p.distributed - p.retracted > 0))::bigint AS count;
 
 -- name: DeleteBackpackItemReturningItem :one
 DELETE FROM backpack_items
@@ -137,6 +151,7 @@ SELECT bi.id, bi.guild_id, bi.donor_id,
        bi.donated_at,
        bi.roll_call_id,
        COALESCE(c.title, '') AS roll_call_title,
+       (c.completed_at IS NOT NULL)::bool AS roll_call_completed,
        (SELECT COUNT(*) FROM item_requests ir WHERE ir.bank_item_id = bi.id AND ir.status = 'pending')::int AS pending_request_count,
        EXISTS (
            SELECT 1 FROM item_requests ir
