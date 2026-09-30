@@ -128,7 +128,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
       return (
         <div className="grid h-full min-h-0 grid-cols-[minmax(0,1fr)_20rem] gap-4">
           {grid}
-          <div className="flex min-h-0 flex-col gap-4 overflow-y-auto">
+          <div className="-m-1 flex min-h-0 flex-col gap-4 overflow-y-auto p-1">
             {selectedDayCard}
             <UpcomingList
               days={upcomingDays}
@@ -154,7 +154,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   const renderAgenda = () => (
     <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
       <div className="flex flex-col gap-4">
-        <Card className="border border-divider shadow-none bg-surface">
+        <Card className="border border-transparent shadow-edge bg-surface">
           <Card.Content className="p-2">
             <MiniMonth
               days={visibleDays}

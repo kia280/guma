@@ -62,7 +62,7 @@ export default function ContactPage() {
       {/* Contact channels */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {contactChannels.map(channel => (
-          <Card key={channel.label} className="border border-divider shadow-none bg-surface">
+          <Card key={channel.label} className="border border-transparent shadow-edge bg-surface">
             <Card.Content className="flex flex-col gap-3 p-4">
               <div className="flex items-center gap-3">
                 <div
@@ -92,7 +92,7 @@ export default function ContactPage() {
       </div>
 
       {/* Contact form */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon

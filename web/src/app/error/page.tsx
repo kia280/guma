@@ -75,7 +75,7 @@ function ErrorPageContent() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border border-divider shadow-none bg-surface">
+      <Card className="w-full max-w-md border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-col items-center gap-2">
           <div className={`p-4 rounded-full`}>
             <Icon

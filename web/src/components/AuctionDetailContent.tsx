@@ -243,7 +243,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-divider bg-surface';
+  const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-transparent shadow-edge bg-surface';
   const sectionGap = onClose ? 'gap-6' : 'gap-4';
 
   return (
@@ -599,7 +599,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           </div>
 
           {/* Your balance */}
-          <div className={onClose ? undefined : 'p-4 rounded-xl border border-divider bg-surface'}>
+          <div className={onClose ? undefined : 'p-4 rounded-xl border border-transparent shadow-edge bg-surface'}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-subtle">
                 <Icon icon="solar:wallet-linear" width={16} />

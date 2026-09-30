@@ -100,7 +100,7 @@ export function ItemTemplateManager({ guildId }: { guildId: string }) {
         emptyTitle={t('emptyTitle')}
         emptyHint={t('emptyHint')}
       >
-        <Card className="border border-divider shadow-none bg-surface">
+        <Card className="border border-transparent shadow-edge bg-surface">
           <Card.Content className="p-1.5">
             <ul className="flex flex-col gap-0.5">
               {templates.map(template => (

@@ -222,7 +222,7 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
     }
   };
 
-  const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-divider bg-surface';
+  const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-transparent shadow-edge bg-surface';
   const sectionGap = onClose ? 'gap-6' : 'gap-4';
   const sectionStack = onClose ? 'space-y-6' : 'space-y-4';
 

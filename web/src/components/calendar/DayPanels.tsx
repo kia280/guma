@@ -32,7 +32,7 @@ export function SelectedDayCard({ day, occurrences, format, onEventClick, onCrea
   const headingId = `calendar-day-${dayKey(day)}`;
 
   return (
-    <Card aria-labelledby={headingId} className="border border-divider shadow-none bg-surface">
+    <Card aria-labelledby={headingId} className="border border-transparent shadow-edge bg-surface">
       <Card.Header className="flex flex-row flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 px-4 pb-0 pt-3">
         <h3 id={headingId} className="min-w-0 type-subheading text-foreground">
           {format.dayHeading(day)}
@@ -87,7 +87,7 @@ export function UpcomingList({ days, occurrencesByDay, format, onEventClick, max
             <h4 className="sticky top-0 z-10 bg-background px-1 py-2 type-label text-hint">
               {[format.dayHeading(day), relativeDay(day)].filter(Boolean).join(' · ')}
             </h4>
-            <Card className="border border-divider shadow-none bg-surface">
+            <Card className="border border-transparent shadow-edge bg-surface">
               <Card.Content className="p-1.5">
                 <EventList occurrences={occurrences} day={day} format={format} onEventClick={onEventClick} />
               </Card.Content>

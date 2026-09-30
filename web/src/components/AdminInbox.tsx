@@ -585,7 +585,7 @@ export function AdminInbox({ guildId }: { guildId: string }) {
         : { icon: 'solar:history-linear', title: t(`empty.history.${filters.status}`) };
 
   return (
-    <Card className="border border-divider shadow-none bg-surface">
+    <Card className="border border-transparent shadow-edge bg-surface">
       <Card.Header className="flex flex-col gap-3 border-b border-divider pb-4">
         <div className="flex items-end gap-2">
           <SearchField

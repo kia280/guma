@@ -34,7 +34,7 @@ export function MonthGrid({
   const today = new Date();
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-divider bg-surface">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-transparent shadow-edge bg-surface">
       <div aria-hidden className="grid grid-cols-7 border-b border-divider">
         {WEEKDAY_KEYS.map(key => (
           <div key={key} className="py-2 text-center type-label text-hint">

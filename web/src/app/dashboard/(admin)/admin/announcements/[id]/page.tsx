@@ -257,7 +257,7 @@ export default function AnnouncementEditorPage() {
     return (
       <div className="space-y-5">
         {backButton}
-        <Card className="border border-divider shadow-none bg-surface">
+        <Card className="border border-transparent shadow-edge bg-surface">
           <Card.Content className="p-6 text-center">
             <p className="type-subheading text-foreground">{t('draftNotFound')}</p>
             <p className="type-body text-subtle mt-1">{t('draftNotFoundHint')}</p>
@@ -306,7 +306,7 @@ export default function AnnouncementEditorPage() {
           : <Chip size="sm" variant="secondary" color="success">{t('published')}</Chip>}
       </PageHeader>
 
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Content className="p-4 sm:p-6 flex flex-col gap-4">
           <TextField
             value={values.title}

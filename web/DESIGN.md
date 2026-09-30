@@ -160,18 +160,23 @@ Color schemes are under evaluation: developers pick one in the dev tools panel's
 
 | Class | Usage |
 |-------|-------|
-| `border-divider` | Standard borders on cards, sections |
+| `border-divider` | Dividers, and borders on elements nested inside a card |
 | `border-separator` | Separator lines |
 
-`border-divider` is `--border` at 30% opacity, so card and section outlines stay soft and the fill carries the separation. HeroUI controls (inputs, tooltips) keep the full-strength `--border`.
+`border-divider` is `--border` at 50% opacity, so dividers and nested outlines stay soft. HeroUI controls (inputs, tooltips) keep the full-strength `--border`.
 
 ## Card Pattern
 
 All cards must follow this pattern:
 
 ```tsx
-<Card className="border border-divider shadow-none bg-surface">
+<Card className="border border-transparent shadow-edge bg-surface">
 ```
+
+- `shadow-edge` (`--shadow-edge` in `globals.css`) replaces the hard outline with a slightly feathered edge: a 3px blur in the `--border` color. The transparent border keeps the card's size and lets `hover:border-foreground/20` draw a crisp line on hover.
+- Card-like containers that sit directly on the page (stat tiles, detail page sections, the calendar grid) use the same three classes.
+- Elements nested inside a card (`bg-surface-secondary` tiles, list rows, inner sections) keep `border border-divider`.
+- The feather extends about 2px past the card. A parent that clips (`overflow-hidden`, `overflow-y-auto`) needs room for it: add `p-1` and cancel it with `-m-1`.
 
 ## Interactive Rows
 

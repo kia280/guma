@@ -60,7 +60,7 @@ export function RollCallCard({
 
   return (
     <Card
-      className={`border border-divider shadow-none bg-surface ${
+      className={`border border-transparent shadow-edge bg-surface ${
         !isDisabled
           ? 'group hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus'
           : 'opacity-50'

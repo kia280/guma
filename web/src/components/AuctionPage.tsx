@@ -242,7 +242,7 @@ const AuctionPage = () => {
               skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
             >
               {filteredItems.length === 0 ? (
-                <Card className="border border-divider shadow-none">
+                <Card className="border border-transparent shadow-edge">
                   <Card.Content className="text-center py-12">
                     <Icon icon="solar:clock-circle-linear" width={40} className="mx-auto mb-3 text-disabled" />
                     <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>

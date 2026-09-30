@@ -32,7 +32,7 @@ export default function AdminRolesPage() {
       <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {ROLES.map(role => (
           <li key={role}>
-            <Card className="h-full border border-divider shadow-none bg-surface">
+            <Card className="h-full border border-transparent shadow-edge bg-surface">
               <Card.Content className="gap-2 type-body">
                 <Chip
                   size="sm"
@@ -52,7 +52,7 @@ export default function AdminRolesPage() {
       <p className="type-caption text-hint sm:hidden">{t('mobileLegend')}</p>
 
       {SECTIONS.map(section => (
-        <Card key={section.key} className="border border-divider shadow-none bg-surface">
+        <Card key={section.key} className="border border-transparent shadow-edge bg-surface">
           <Card.Header className="flex flex-row items-center gap-3 pb-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
               <Icon className="text-accent" icon={section.icon} width={20} aria-hidden />

@@ -124,7 +124,7 @@ const AuctionItemCard = ({
   return (
     <>
       <div
-        className="relative flex h-full flex-col border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors rounded-lg"
+        className="relative flex h-full flex-col border border-transparent shadow-edge bg-surface hover:border-foreground/20 transition-colors rounded-lg"
       >
         <Card className="flex-1 border-0 shadow-none bg-transparent">
           <Card.Header className="pb-2">

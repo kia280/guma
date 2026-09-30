@@ -66,7 +66,7 @@ const LotteryCard = ({
   const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
 
   return (
-    <Card className="group row-span-6 grid grid-rows-subgrid gap-0 border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
+    <Card className="group row-span-6 grid grid-rows-subgrid gap-0 border border-transparent shadow-edge bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
       <Card.Header className="pb-5">
         <div className="flex justify-between items-start gap-3 w-full">
           <div className="min-w-0 type-caption">

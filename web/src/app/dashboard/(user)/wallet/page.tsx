@@ -485,7 +485,7 @@ export default function WalletPage() {
   return (
     <div className="space-y-5">
       {/* Balance + Backpack Section */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
             <Icon className="text-accent" icon="solar:wallet-money-bold-duotone" width={20} />
@@ -743,7 +743,7 @@ export default function WalletPage() {
       </Card>
 
       {/* Backpack Items */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
             <Icon className="text-accent" icon="solar:backpack-bold-duotone" width={20} />
@@ -823,7 +823,7 @@ export default function WalletPage() {
       </Card>
 
       {/* Transaction History */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-subtle" icon="solar:history-line-duotone" width={20} />

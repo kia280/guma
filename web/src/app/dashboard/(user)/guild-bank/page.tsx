@@ -357,7 +357,7 @@ export default function GuildBankPage() {
   return (
     <div className="space-y-5">
       {/* Guild Treasury */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 shrink-0">
             <Icon className="text-warning" icon="solar:safe-2-bold-duotone" width={20} />
@@ -530,7 +530,7 @@ export default function GuildBankPage() {
       </Card>
 
       {/* Guild Item Storage */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
             <Icon className="text-accent" icon="solar:box-bold-duotone" width={20} />
@@ -647,7 +647,7 @@ export default function GuildBankPage() {
       </Card>
 
       {/* Contribution History */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-subtle" icon="solar:history-line-duotone" width={20} />
