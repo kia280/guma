@@ -18,6 +18,7 @@ import (
 	"github.com/kia280/guma/internal/scheduler"
 	auctionsvc "github.com/kia280/guma/internal/services/auction"
 	lotterysvc "github.com/kia280/guma/internal/services/lottery"
+	"github.com/kia280/guma/internal/telemetry"
 )
 
 var serveCmd = &cobra.Command{
@@ -63,6 +64,15 @@ func runServe(cmd *cobra.Command, args []string) {
 	defer db.Close()
 
 	logger.Info().Msg("database connection established")
+
+	shutdownMetrics, err := telemetry.StartMetrics(ctx, cfg.Metrics, telemetry.ServiceInfo{
+		Version:     Version,
+		Environment: cfg.Server.Environment,
+	}, db.Pool, logger)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to start metrics")
+		return
+	}
 
 	broker := events.NewBroker()
 	go events.Listen(ctx, db, broker, logger)
@@ -150,6 +160,10 @@ func runServe(cmd *cobra.Command, args []string) {
 	// Shutdown gRPC server
 	if err := grpcServer.Stop(shutdownCtx); err != nil {
 		logger.Error().Err(err).Msg("gRPC server shutdown error")
+	}
+
+	if err := shutdownMetrics(shutdownCtx); err != nil {
+		logger.Error().Err(err).Msg("metrics shutdown error")
 	}
 
 	logger.Info().Msg("servers stopped")
