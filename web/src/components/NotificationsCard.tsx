@@ -69,6 +69,7 @@ export function NotificationsCard({
   } else if (notifications.length === 0) {
     content = (
       <EmptyContent
+        size="sm"
         icon="solar:bell-off-linear"
         title={filter === 'unread' ? t('allCaughtUp') : t('noNotifications')}
       />

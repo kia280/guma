@@ -45,12 +45,20 @@ const EMPTY_CONTENT_SIZES = {
     description: 'type-body mt-1',
   },
   sm: {
+    padding: 'py-10',
+    icon: 'mb-2.5 size-9',
+    title: 'type-body font-medium',
+    description: 'type-caption mt-0.5',
+  },
+  xs: {
     padding: 'py-8',
     icon: 'mb-2 size-8',
     title: 'type-label',
     description: 'type-caption mt-0.5',
   },
 };
+
+export type EmptyContentSize = keyof typeof EMPTY_CONTENT_SIZES;
 
 export function EmptyContent({
   icon,
@@ -63,7 +71,7 @@ export function EmptyContent({
   icon: string;
   title: string;
   description?: string;
-  size?: keyof typeof EMPTY_CONTENT_SIZES;
+  size?: EmptyContentSize;
   minHeight?: number;
   children?: ReactNode;
 }) {

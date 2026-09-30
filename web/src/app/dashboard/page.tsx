@@ -181,7 +181,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
                   status={balanceTrend.status}
                   onRetry={balanceTrend.retry}
                   height={240}
-                  emptySize="sm"
+                  emptySize="xs"
                 />
               </Card.Content>
             </Card>

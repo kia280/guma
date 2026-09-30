@@ -4,7 +4,7 @@ import { Alert, Button, Spinner } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { EmptyContent } from '@/components/AsyncContent';
+import { EmptyContent, type EmptyContentSize } from '@/components/AsyncContent';
 import type { BalanceTrendStatus } from '@/hooks/useBalanceTrend';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useFormatGold, useFormatGoldAxisTick } from '@/lib/guma/useFormatGold';
@@ -15,7 +15,7 @@ interface BalanceTrendChartProps {
   status: BalanceTrendStatus;
   onRetry: () => void;
   height?: number;
-  emptySize?: 'md' | 'sm';
+  emptySize?: EmptyContentSize;
 }
 
 const parseIsoDate = (date: string) => {
