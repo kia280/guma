@@ -8,6 +8,7 @@ import {
   Chip,
   Drawer,
   Label,
+  Link,
   ListBox,
   SearchField,
   Select,
@@ -16,7 +17,6 @@ import {
   cn,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
@@ -215,9 +215,6 @@ function IconTile({ icon, tone = 'default' }: { icon: string; tone?: 'default' |
   );
 }
 
-const rowLinkClass =
-  'shrink-0 rounded type-body text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
-
 interface InboxRowProps {
   entry: InboxEntry;
   now: number;
@@ -313,7 +310,7 @@ function InboxRow({ entry, now, showSelection, isSelected, isHighlighted, onSele
       );
       meta = t(`auctionReason.${reason}`);
       trailing = (
-        <Link href={`/dashboard/auction/${auction.id}`} className={rowLinkClass}>
+        <Link href={`/dashboard/auction/${auction.id}`} className="text-accent">
           {t('openAuction')}
         </Link>
       );
@@ -343,7 +340,7 @@ function InboxRow({ entry, now, showSelection, isSelected, isHighlighted, onSele
       );
       meta = t('lootWaiting', { time: relative(group.oldest) });
       trailing = (
-        <Link href={`/dashboard/roll-calls/${group.rollCallId}`} className={rowLinkClass}>
+        <Link href={`/dashboard/roll-calls/${group.rollCallId}`} className="text-accent">
           {t('openRollCall')}
         </Link>
       );
@@ -624,7 +621,11 @@ export function AdminInbox({ guildId }: { guildId: string }) {
         {hasFilters && (
           <div className="flex flex-wrap items-center gap-2 type-caption text-hint sm:hidden" aria-live="polite">
             <span>{t('filters.summary', { count: visible.length })}</span>
-            <button type="button" className={rowLinkClass} onClick={clearFilters}>
+            <button
+              type="button"
+              className="shrink-0 rounded type-body text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              onClick={clearFilters}
+            >
               {t('filters.clear')}
             </button>
           </div>

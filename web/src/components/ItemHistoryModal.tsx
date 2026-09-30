@@ -1,8 +1,7 @@
 'use client';
 
-import { Button, Modal, Spinner, type UseOverlayStateReturn } from '@heroui/react';
+import { Button, Link, Modal, Spinner, type UseOverlayStateReturn } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useUserName } from '@/hooks/useUserName';
@@ -143,10 +142,7 @@ export function ItemHistoryModal({ state, itemId, itemName }: ItemHistoryModalPr
                             {format.dateTime(new Date(event.createdAt), { dateStyle: 'medium', timeStyle: 'short' })}
                           </time>
                           {href && (
-                            <Link
-                              href={href}
-                              className="rounded text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                            >
+                            <Link href={href} className="text-accent">
                               {t(`view.${sourceMessageKey(event.source)}`)}
                             </Link>
                           )}
