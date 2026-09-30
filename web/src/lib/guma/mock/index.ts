@@ -221,10 +221,13 @@ const mockGuildSnapshot = (): Guild => ({
   ownerId: getDevMockRole() === 'owner' ? currentUser.id : defaultOwner.id,
 });
 
+const mockRoleOverrides = new Map<string, string>();
+
 const mockMembers = () =>
-  getDevMockRole() === 'owner'
+  (getDevMockRole() === 'owner'
     ? mockData.mockUsers.map(user => (user.id === defaultOwner.id ? { ...user, role: 'admin' } : user))
-    : mockData.mockUsers;
+    : mockData.mockUsers
+  ).map(user => (mockRoleOverrides.has(user.id) ? { ...user, role: mockRoleOverrides.get(user.id) } : user));
 
 const memberAssets = new Map<string, MemberAssets>();
 
@@ -323,6 +326,13 @@ const baseMockApiClient: ApiClient = {
 
   // ── Member ──
   listMembers: async () => mockMembers(),
+  updateMemberRole: async (guildId, userId, role) => {
+    const member = mockMembers().find(candidate => candidate.id === userId);
+    if (!member) throw new Error('member not found');
+    mockRoleOverrides.set(userId, role);
+    emitLiveEvent({ kind: 'resource', guildId, resource: 'member', resourceId: userId });
+    return { ...member, role };
+  },
   inviteMember: async (guildId, req) => ({
     id: `inv-${Date.now()}`,
     guildId,

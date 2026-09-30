@@ -106,6 +106,7 @@ export interface ApiClient {
 
   // ── Member ──
   listMembers(guildId: string): Promise<MockUser[]>;
+  updateMemberRole(guildId: string, userId: string, role: string): Promise<MockUser>;
   inviteMember(guildId: string, req: { email: string; role?: string }): Promise<Invitation>;
 
   // ── Wallet ──
