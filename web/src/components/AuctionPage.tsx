@@ -228,7 +228,7 @@ const AuctionPage = () => {
               ))}
             </Tabs.List>
           </Tabs.ListContainer>
-          <Button className="shrink-0 max-sm:size-11 max-sm:px-0" aria-label={t('createAuction')} onPress={createModalState.open}>
+          <Button className="shrink-0 md:h-10 max-sm:size-11 max-sm:px-0" aria-label={t('createAuction')} onPress={createModalState.open}>
             <Icon icon="solar:add-circle-linear" width={16} className="max-sm:hidden" />
             <Icon icon="solar:add-linear" width={20} className="sm:hidden" />
             <span className="max-sm:hidden">{t('createAuction')}</span>
