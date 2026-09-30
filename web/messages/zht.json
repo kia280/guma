@@ -1889,5 +1889,15 @@
   "memberComboBox": {
     "noMatches": "沒有符合「{query}」的成員",
     "clearSearch": "清除搜尋"
+  },
+  "demo": {
+    "badge": "示範",
+    "menuLabel": "示範模式選項",
+    "loginTitle": "體驗 Guma 示範版",
+    "loginDescription": "選擇一個角色來瀏覽範例公會。不同角色可使用不同功能，隨時都能切換。",
+    "rolesLabel": "示範角色",
+    "signInAs": "以{role}身分繼續",
+    "dataNote": "這裡的所有內容都是範例資料，所做的變更在重新整理頁面後就會還原。",
+    "switchRole": "切換角色"
   }
 }

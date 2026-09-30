@@ -22,6 +22,9 @@ serve-debug: ## Start backend with debugger (dlv headless)
 web-dev: ## Start frontend development server
 	@cd web && npm run dev
 
+web-demo: ## Build the static demo and serve it on 0.0.0.0
+	@cd web && npm run build:demo && npm run serve:demo -- -l tcp://0.0.0.0:$${PORT:-3000}
+
 build-backend: ## Build the application
 	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/guma .
 

@@ -2,6 +2,7 @@
 
 import { Button, Dropdown, Badge, Tooltip, Chip, Label } from '@heroui/react';
 import { Icon } from '@iconify/react';
+import dynamic from 'next/dynamic';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
@@ -10,17 +11,24 @@ import { useMediaQuery } from 'usehooks-ts';
 import { NotificationBell, SidebarDrawer } from '@/components';
 import { AppSidebar, ShortcutKeys } from '@/components/AppSidebar';
 import { DashboardBreadcrumbs } from '@/components/DashboardBreadcrumbs';
-import { DevImpersonationIndicator } from '@/components/dev/DevImpersonationIndicator';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useDashboardShortcuts } from '@/hooks/useDashboardShortcuts';
 import { useLiveBalance } from '@/hooks/useLiveBalance';
 import { CurrentGuildProvider } from '@/lib/current-guild';
-import { env } from '@/lib/env';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { isGuildRole } from '@/lib/permissions';
 import { clearSession } from '@/lib/session';
 import { useUserStore } from '@/lib/store';
 import { ownUserName } from '@/lib/user-name';
+
+const DemoGate =
+  process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? dynamic(() => import('@/components/demo/DemoGate'), { ssr: false }) : null;
+const DemoMenu =
+  process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? dynamic(() => import('@/components/demo/DemoMenu'), { ssr: false }) : null;
+const DevImpersonationIndicator =
+  process.env.NEXT_PUBLIC_DEMO_MODE !== 'true' && process.env.NEXT_PUBLIC_DEV_TOOLS === 'true'
+    ? dynamic(() => import('@/components/dev/DevImpersonationIndicator').then(module => module.DevImpersonationIndicator), { ssr: false })
+    : null;
 
 const COLLAPSED_STORAGE_KEY = 'guma-sidebar-collapsed';
 
@@ -85,7 +93,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
   const roleLabel = isGuildRole(me?.guildRole) ? roleLabels(me.guildRole) : '';
   const toggleLabel = isCompact ? t('openMenu') : showCollapsed ? t('expandSidebar') : t('collapseSidebar');
 
-  return (
+  const content = (
     <>
       <div className="flex h-screen w-full bg-background">
         <SidebarDrawer className="z-50" label={t('navigation')} isOpen={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
@@ -118,7 +126,8 @@ export default function DashboardLayout({ children, modal }: { children: React.R
               </React.Suspense>
 
               <div className="ml-auto flex items-center gap-2">
-                {env.devTools && <DevImpersonationIndicator />}
+                {DemoMenu && <DemoMenu />}
+                {DevImpersonationIndicator && <DevImpersonationIndicator />}
 
                 <Button
                   isIconOnly
@@ -246,4 +255,6 @@ export default function DashboardLayout({ children, modal }: { children: React.R
       <CurrentGuildProvider>{modal}</CurrentGuildProvider>
     </>
   );
+
+  return DemoGate ? <DemoGate>{content}</DemoGate> : content;
 }

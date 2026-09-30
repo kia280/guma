@@ -77,6 +77,9 @@ web/
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
+- `npm run dev:demo` - Start a development server in demo mode
+- `npm run build:demo` - Build the static demo into `out-demo`
+- `npm run serve:demo` - Serve the static demo from `out-demo`
 - `npm run lint` - Run ESLint
 - `npm run lint:fix` - Fix ESLint issues
 - `npm run format` - Format code with Prettier
@@ -86,6 +89,10 @@ web/
 - `npm run test:e2e:open` - Open Cypress test runner
 - `npm run storybook` - Start Storybook
 - `npm run build-storybook` - Build Storybook
+
+## 🎭 Demo Mode
+
+`npm run build:demo` builds a static, frontend-only demo that runs on the mock data, with a role picker instead of Discord login. See [`docs/demo.md`](../docs/demo.md) for how it works and how to deploy it.
 
 ## 🔧 Configuration
 

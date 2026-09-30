@@ -2,6 +2,7 @@
 import { Button, Card, Spinner, Alert } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { isAxiosError } from 'axios';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -12,7 +13,12 @@ import { checkSession } from '@/lib/session';
 
 const DEFAULT_RETURN = '/dashboard';
 
+const DemoLogin =
+  process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? dynamic(() => import('@/components/demo/DemoLogin'), { ssr: false }) : null;
+
 export default function LoginPage() {
+  if (DemoLogin) return <DemoLogin />;
+
   return (
     <React.Suspense>
       <Login />

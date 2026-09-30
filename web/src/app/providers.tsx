@@ -7,10 +7,12 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { type ReactNode } from 'react';
 import { SharedElementTransition } from 'react-aria-components';
 import { useMediaQuery } from 'usehooks-ts';
-import { env } from '@/lib/env';
 import '@/lib/store';
 
-const DevTools = env.devTools ? dynamic(() => import('@/components/dev/DevTools'), { ssr: false }) : null;
+const DevTools =
+  process.env.NEXT_PUBLIC_DEMO_MODE !== 'true' && process.env.NEXT_PUBLIC_DEV_TOOLS === 'true'
+    ? dynamic(() => import('@/components/dev/DevTools'), { ssr: false })
+    : null;
 
 export function Providers({ children }: { children: ReactNode }) {
   const router = useRouter();

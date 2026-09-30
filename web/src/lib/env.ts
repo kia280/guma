@@ -86,7 +86,7 @@ export function validateEnvironment() {
 }
 
 // Validate environment on module load (only in non-production)
-if (typeof window === 'undefined' && !env.isProduction) {
+if (typeof window === 'undefined' && !env.isProduction && process.env.NEXT_PUBLIC_DEMO_MODE !== 'true') {
   const validation = validateEnvironment();
   if (!validation.isValid) {
     console.warn('Some environment variables may not be set correctly');

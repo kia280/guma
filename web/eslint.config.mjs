@@ -5,7 +5,7 @@ import nextTs from 'eslint-config-next/typescript';
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts', '.heroui-docs/**']),
+  globalIgnores(['.next/**', 'out/**', 'out-demo/**', 'build/**', 'next-env.d.ts', '.heroui-docs/**']),
   {
     settings: {
       react: { version: '19.3' },

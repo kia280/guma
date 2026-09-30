@@ -1,4 +1,5 @@
 import type { Session } from '@ory/client';
+import { saveDemoRole } from '@/lib/demo/role';
 import { devLogout } from '@/lib/dev-auth';
 import { env } from '@/lib/env';
 import { kratos } from '@/lib/kratos';
@@ -24,6 +25,12 @@ export async function checkSession(): Promise<Session | null> {
 // the localStorage bearer-token fallback.
 export async function clearSession(): Promise<void> {
   if (typeof window === 'undefined') return;
+
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+    saveDemoRole(null);
+    window.location.replace(LOGIN_PATH);
+    return;
+  }
 
   localStorage.removeItem('auth_token');
 
