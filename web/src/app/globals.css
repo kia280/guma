@@ -73,6 +73,7 @@
   --muted: oklch(70.50% 0.0000 103.46);
   --overlay: oklch(21.03% 0.0000 103.46);
   --overlay-foreground: oklch(99.11% 0.0000 103.46);
+  --overlay-shadow: 0 0 3px 0 var(--border);
   --scrollbar: oklch(70.50% 0.0000 103.46);
   --segment: oklch(39.64% 0.0000 103.46);
   --segment-foreground: oklch(99.11% 0.0000 103.46);
@@ -498,7 +499,8 @@
 }
 
 @theme inline {
-  --color-divider: var(--border);
+  --color-divider: color-mix(in oklab, var(--border) 50%, transparent);
+  --shadow-edge: 0 0 3px 0 var(--border);
   --color-soft: var(--fg-soft);
   --color-subtle: var(--fg-subtle);
   --color-hint: var(--fg-hint);
@@ -605,8 +607,44 @@ html[data-font-size='x-large'] {
     }
   }
 
+  .modal__body--scroll-inside,
+  .modal__backdrop:has(.modal__container--scroll-outside) {
+    scrollbar-width: none;
+    scrollbar-gutter: auto;
+  }
+
+  .modal__body--scroll-inside::-webkit-scrollbar,
+  .modal__backdrop:has(.modal__container--scroll-outside)::-webkit-scrollbar {
+    display: none;
+  }
+
+  .toast {
+    @apply shadow-edge;
+  }
+
   .tabs__tab {
     white-space: nowrap;
+  }
+
+  .table-root--secondary .table__body .table__row {
+    &:is(:hover, [data-hovered='true'], :focus-visible, [data-focus-visible='true']) {
+      .table__cell:first-child {
+        border-start-start-radius: var(--radius-2xl);
+        border-end-start-radius: var(--radius-2xl);
+      }
+
+      .table__cell:last-child {
+        border-start-end-radius: var(--radius-2xl);
+        border-end-end-radius: var(--radius-2xl);
+      }
+    }
+
+    @media (hover: hover) {
+      &:is(:hover, [data-hovered='true']) .table__cell,
+      &:has(+ .table__row:is(:hover, [data-hovered='true'])) .table__cell {
+        border-bottom-color: transparent;
+      }
+    }
   }
 
   .action-success-badge {

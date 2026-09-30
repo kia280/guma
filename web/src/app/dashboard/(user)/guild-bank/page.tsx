@@ -11,7 +11,7 @@ import {
   TextArea,
   TextField,
   Label,
-  Tooltip,
+  Dropdown,
   Alert,
   FieldError,
   cn,
@@ -22,9 +22,10 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
+import { ItemCard, ItemCardAction } from '@/components/ItemCard';
 import { ItemHistoryModal } from '@/components/ItemHistoryModal';
 import { ItemLockChip } from '@/components/ItemLockChip';
-import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
+import { getCategoryIcon } from '@/components/ItemThumbnail';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -87,11 +88,12 @@ function ContributionAmount({
 }) {
   const t = useTranslations('guildBankPage');
   const formatGold = useFormatGold();
-  const alignClass = align === 'end' ? 'items-end' : 'items-start';
+  const alignClass =
+    align === 'end' ? 'flex-row-reverse flex-wrap items-baseline gap-x-1.5' : 'flex-col items-start';
 
   if (entry.status === 'pending') {
     return (
-      <span className={`flex flex-col ${alignClass}`}>
+      <span className={`flex ${alignClass}`}>
         <span className="type-body font-medium tabular-nums text-subtle">{formatGold(entry.amount)}</span>
         <span className="type-caption text-hint">{t('amountPending')}</span>
       </span>
@@ -357,14 +359,13 @@ export default function GuildBankPage() {
   return (
     <div className="space-y-5">
       {/* Guild Treasury */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 shrink-0">
             <Icon className="text-warning" icon="solar:safe-2-bold-duotone" width={20} />
           </div>
           <div className="flex flex-col">
             <p className="type-subheading text-foreground">{t('treasury')}</p>
-            <p className="type-caption text-hint">{t('treasuryDesc')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-6">
@@ -530,7 +531,7 @@ export default function GuildBankPage() {
       </Card>
 
       {/* Guild Item Storage */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
             <Icon className="text-accent" icon="solar:box-bold-duotone" width={20} />
@@ -542,7 +543,6 @@ export default function GuildBankPage() {
                 {t('items', { count: mockGuildItems.length })}
               </Chip>
             </div>
-            <p className="type-caption text-hint">{t('storageDesc')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
@@ -552,7 +552,7 @@ export default function GuildBankPage() {
             skeleton={
               <CardGridSkeleton
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
-                cardClassName="h-20 rounded-xl"
+                cardClassName="h-16 rounded-xl"
               />
             }
           >
@@ -561,23 +561,24 @@ export default function GuildBankPage() {
           ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {mockGuildItems.map(item => (
-              <Card
+              <ItemCard
                 key={item.id}
-                className="border border-divider shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors p-2.5 rounded-xl"
-              >
-                <Card.Content className="flex flex-row items-center gap-3 p-0">
-                  <ItemThumbnail category={item.category} rarity={item.rarity} />
-                  <div className="flex-1 min-w-0">
-                    <p className="type-body font-medium text-foreground truncate">
-                      {item.name}
-                      {item.quantity > 1 && (
-                        <span className="text-hint tabular-nums"> ×{item.quantity}</span>
-                      )}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-1 mt-0.5 type-caption">
-                      <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
-                        {labels(`rarities.${item.rarity}`)}
-                      </Chip>
+                name={item.name}
+                quantity={item.quantity}
+                category={item.category}
+                rarity={item.rarity}
+                source={
+                  item.rollCallId
+                    ? {
+                        icon: 'solar:clipboard-check-linear',
+                        text: t('fromRollCall', { title: item.rollCallTitle || t('untitledRollCall') }),
+                        href: `/dashboard/roll-calls/${item.rollCallId}`,
+                      }
+                    : undefined
+                }
+                chips={
+                  (item.lock || item.requestedByMe || item.pendingRequestCount > 0) && (
+                    <>
                       {item.lock && <ItemLockChip lock={item.lock} />}
                       {item.requestedByMe ? (
                         <Chip size="sm" color="accent" variant="secondary">
@@ -588,56 +589,48 @@ export default function GuildBankPage() {
                           {t('pendingRequestCount', { count: item.pendingRequestCount })}
                         </Chip>
                       )}
-                    </div>
-                    {item.requestedByMe && item.pendingRequestCount > 1 && (
-                      <p className="mt-1 type-caption text-hint">
-                        {t('otherPendingRequests', { count: item.pendingRequestCount - 1 })}
-                      </p>
-                    )}
-                    {item.rollCallId && (
-                      <Link
-                        href={`/dashboard/roll-calls/${item.rollCallId}`}
-                        className="mt-1 flex min-w-0 items-center gap-1 rounded type-caption text-hint hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                      >
-                        <Icon icon="solar:clipboard-check-linear" width={14} className="shrink-0" />
-                        <span className="truncate">{t('fromRollCall', { title: item.rollCallTitle || t('untitledRollCall') })}</span>
-                      </Link>
-                    )}
-                  </div>
-                  <div className="flex shrink-0 flex-col gap-1">
-                    <Tooltip delay={0}>
-                      <Button
-                        isIconOnly
-                        size="sm"
-                        variant="ghost"
-                        className="text-hint shrink-0 max-sm:size-11"
-                        aria-label={t('viewHistory', { item: item.name })}
-                        onPress={() => {
-                          setHistoryItem(item);
-                          historyModalState.open();
+                    </>
+                  )
+                }
+                actions={
+                  <Dropdown>
+                    <ItemCardAction aria-label={t('itemActions')}>
+                      <Icon icon="solar:menu-dots-bold" width={16} />
+                    </ItemCardAction>
+                    <Dropdown.Popover>
+                      <Dropdown.Menu
+                        aria-label={t('itemActions')}
+                        disabledKeys={item.requestedByMe || item.lock ? ['request'] : []}
+                        onAction={key => {
+                          if (key === 'request') openItemRequest(item);
+                          if (key === 'history') {
+                            setHistoryItem(item);
+                            historyModalState.open();
+                          }
                         }}
                       >
-                        <Icon icon="solar:history-linear" width={16} />
-                      </Button>
-                      <Tooltip.Content>{t('viewHistory', { item: item.name })}</Tooltip.Content>
-                    </Tooltip>
-                    <Tooltip delay={0}>
-                      <Button
-                        isIconOnly
-                        size="sm"
-                        variant="ghost"
-                        className="text-hint shrink-0 max-sm:size-11"
-                        aria-label={item.requestedByMe ? t('alreadyRequested') : t('requestItem')}
-                        isDisabled={item.requestedByMe || Boolean(item.lock)}
-                        onPress={() => openItemRequest(item)}
-                      >
-                        <Icon icon={item.requestedByMe ? 'solar:check-circle-linear' : 'solar:hand-shake-linear'} width={16} />
-                      </Button>
-                      <Tooltip.Content>{item.requestedByMe ? t('alreadyRequested') : t('requestItem')}</Tooltip.Content>
-                    </Tooltip>
-                  </div>
-                </Card.Content>
-              </Card>
+                        <Dropdown.Item
+                          id="request"
+                          textValue={item.requestedByMe ? t('alreadyRequested') : t('requestItem')}
+                        >
+                          <Icon icon={item.requestedByMe ? 'solar:check-circle-linear' : 'solar:hand-shake-linear'} width={16} />
+                          <span>{item.requestedByMe ? t('alreadyRequested') : t('requestItem')}</span>
+                        </Dropdown.Item>
+                        <Dropdown.Item id="history" textValue={t('history')}>
+                          <Icon icon="solar:history-linear" width={16} />
+                          <span>{t('history')}</span>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
+                }
+              >
+                {item.requestedByMe && item.pendingRequestCount > 1 && (
+                  <p className="mt-0.5 type-caption text-hint">
+                    {t('otherPendingRequests', { count: item.pendingRequestCount - 1 })}
+                  </p>
+                )}
+              </ItemCard>
             ))}
           </div>
           )}
@@ -647,7 +640,7 @@ export default function GuildBankPage() {
       </Card>
 
       {/* Contribution History */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-subtle" icon="solar:history-line-duotone" width={20} />
@@ -759,49 +752,53 @@ export default function GuildBankPage() {
                 data-highlighted={isHighlightedEntry(entry) || undefined}
                 className={cn('py-3 first:pt-0 last:pb-0', isHighlightedEntry(entry) && 'bg-accent/10 rounded-lg px-2')}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">
-                      <Icon
-                        className="text-subtle"
-                        icon={getContributionIcon(entry.type)}
-                        width={16}
-                      />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="type-body font-medium text-foreground truncate">
-                          {getContributionLabel(entry.type)}
-                        </p>
-                      </div>
-                      {entry.note && entry.href ? (
-                        <Link
-                          href={entry.href}
-                          className="self-start rounded type-caption text-hint hover:text-accent line-clamp-2 max-w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                        >
-                          {entry.note}
-                        </Link>
-                      ) : entry.note && (
-                        <p className="type-caption text-hint line-clamp-2 wrap-break-word">{entry.note}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap type-caption">
-                        <p className="text-hint">{userName(entry.member)}</p>
-                        <p className="text-hint">
-                          {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
-                        </p>
-                        <Chip size="sm" color={contributionStatusColor[entry.status]} variant="secondary">
-                          {t(entry.status)}
-                        </Chip>
-                      </div>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">
+                    <Icon
+                      className="text-subtle"
+                      icon={getContributionIcon(entry.type)}
+                      width={16}
+                    />
                   </div>
-                  <div className="text-right shrink-0 ml-3">
-                    {entry.amount !== undefined && (
-                      <ContributionAmount entry={{ ...entry, amount: entry.amount }} align="end" />
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="type-body font-medium text-foreground truncate shrink-0 max-w-[60%]">
+                        {getContributionLabel(entry.type)}
+                      </p>
+                      <div className="flex flex-col items-end min-w-0 text-right">
+                        {entry.amount !== undefined && (
+                          <ContributionAmount entry={{ ...entry, amount: entry.amount }} align="end" />
+                        )}
+                        {entry.itemName && (
+                          <p className="type-body text-subtle line-clamp-2 wrap-break-word">{entry.itemName}</p>
+                        )}
+                      </div>
+                    </div>
+                    {entry.note && entry.href ? (
+                      <Link
+                        href={entry.href}
+                        className="self-start rounded type-caption text-hint hover:text-accent line-clamp-2 max-w-full wrap-break-word focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      >
+                        {entry.note}
+                      </Link>
+                    ) : entry.note && (
+                      <p className="type-caption text-hint line-clamp-2 wrap-break-word">{entry.note}</p>
                     )}
-                    {entry.itemName && (
-                      <span className="type-caption text-subtle line-clamp-2 max-w-[140px] block">{entry.itemName}</span>
-                    )}
+                    <div className="flex items-center justify-between gap-2 mt-1 type-caption">
+                      <p className="text-hint truncate">
+                        {userName(entry.member)}
+                        <span aria-hidden="true"> · </span>
+                        {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
+                      </p>
+                      <Chip
+                        className="shrink-0"
+                        size="sm"
+                        color={contributionStatusColor[entry.status]}
+                        variant="secondary"
+                      >
+                        {t(entry.status)}
+                      </Chip>
+                    </div>
                   </div>
                 </div>
               </div>

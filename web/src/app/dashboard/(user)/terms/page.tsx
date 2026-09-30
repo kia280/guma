@@ -35,7 +35,7 @@ export default function TermsPage() {
       </Card>
 
       {/* Sections */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Content className="flex flex-col gap-5 p-6">
           {sections.map((section, idx) => (
             <div key={idx} className="flex flex-col gap-1.5">

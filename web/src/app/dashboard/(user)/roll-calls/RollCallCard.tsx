@@ -60,7 +60,7 @@ export function RollCallCard({
 
   return (
     <Card
-      className={`border border-divider shadow-none bg-surface ${
+      className={`border border-transparent shadow-edge bg-surface ${
         !isDisabled
           ? 'group hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus'
           : 'opacity-50'
@@ -68,22 +68,17 @@ export function RollCallCard({
     >
       <Card.Header className="pb-2">
         <div className="flex justify-between items-start gap-3 w-full">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2 rounded-lg bg-default shrink-0">
-              <Icon icon="heroicons:clipboard-document-check" width={20} className="text-subtle" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <h4 className="type-subheading text-foreground truncate">
-                {isDisabled ? (
-                  title
-                ) : (
-                  <Link href={href} className="outline-none after:absolute after:inset-0">
-                    {title}
-                  </Link>
-                )}
-              </h4>
-              <p className="type-caption text-hint">{formatEventDate(date, format)}</p>
-            </div>
+          <div className="flex flex-col min-w-0">
+            <h4 className="type-subheading text-foreground truncate">
+              {isDisabled ? (
+                title
+              ) : (
+                <Link href={href} className="outline-none after:absolute after:inset-0">
+                  {title}
+                </Link>
+              )}
+            </h4>
+            <p className="type-caption text-hint">{formatEventDate(date, format)}</p>
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0 type-caption">
             <Chip size="sm" color={rollCallStatusColor[status]} variant="secondary">

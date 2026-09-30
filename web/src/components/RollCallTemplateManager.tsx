@@ -107,7 +107,7 @@ export function RollCallTemplateManager({ guildId }: { guildId: string }) {
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {templates.map(template => (
             <li key={template.id}>
-              <Card className="h-full border border-divider shadow-none bg-surface">
+              <Card className="h-full border border-transparent shadow-edge bg-surface">
                 <Card.Header className="flex flex-row items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="type-subheading text-foreground truncate">{template.name}</h3>

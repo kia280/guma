@@ -139,7 +139,7 @@ function Login() {
 
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border border-divider shadow-none bg-surface py-6">
+      <Card className="w-full max-w-md border border-transparent shadow-edge bg-surface py-6">
         <Card.Header className="flex flex-col items-center gap-2 px-2 pt-2 pb-0 text-center sm:px-4">
           <Image src="/assets/logo/sunbaby-96x96.png" alt="Guma" width={60} height={60} preload />
           <h1 className="type-title text-foreground pt-2 text-balance">{t('title')}</h1>

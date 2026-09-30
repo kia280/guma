@@ -194,16 +194,6 @@ export default function AnnouncementEditorPage() {
     }
   };
 
-  const leave = async () => {
-    if (!isDraftRef.current && hasUnsavedChanges()) {
-      pendingHref.current = null;
-      setPendingConfirm('discard');
-      return;
-    }
-    if (!(await flush())) return;
-    router.push(ANNOUNCEMENTS_HREF);
-  };
-
   const discardAndLeave = () => {
     latest.current = null;
     router.push(pendingHref.current ?? ANNOUNCEMENTS_HREF);
@@ -246,18 +236,10 @@ export default function AnnouncementEditorPage() {
       minute: '2-digit',
     });
 
-  const backButton = (
-    <Button variant="ghost" size="sm" className="max-sm:h-11" onPress={leave}>
-      <Icon icon="solar:arrow-left-linear" width={16} />
-      {t('backToAnnouncements')}
-    </Button>
-  );
-
   if (isMissing) {
     return (
       <div className="space-y-5">
-        {backButton}
-        <Card className="border border-divider shadow-none bg-surface">
+        <Card className="border border-transparent shadow-edge bg-surface">
           <Card.Content className="p-6 text-center">
             <p className="type-subheading text-foreground">{t('draftNotFound')}</p>
             <p className="type-body text-subtle mt-1">{t('draftNotFoundHint')}</p>
@@ -270,7 +252,6 @@ export default function AnnouncementEditorPage() {
   if (!announcement) {
     return (
       <div className="space-y-5">
-        {backButton}
         <AsyncContent
           state={loadState.state}
           onRetry={reload}
@@ -298,15 +279,13 @@ export default function AnnouncementEditorPage() {
 
   return (
     <div className="space-y-5">
-      {backButton}
-
       <PageHeader title={t('editAnnouncement')} description={isDraft ? t('editAnnouncementHint') : t('editPublishedHint')}>
         {isDraft
           ? <Chip size="sm" variant="secondary" color="warning">{t('draft')}</Chip>
           : <Chip size="sm" variant="secondary" color="success">{t('published')}</Chip>}
       </PageHeader>
 
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Content className="p-4 sm:p-6 flex flex-col gap-4">
           <TextField
             value={values.title}

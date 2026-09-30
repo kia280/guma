@@ -521,7 +521,7 @@ export default function AdminPage() {
 
         {/* Users Panel */}
         <Tabs.Panel id="users" className="pt-4">
-          <Card className="border border-divider shadow-none bg-surface">
+          <Card className="border border-transparent shadow-edge bg-surface">
             <Card.Content className="p-0">
               <AsyncContent
                 state={usersState.state}
@@ -599,7 +599,7 @@ export default function AdminPage() {
                     </Table.Header>
                     <Table.Body>
                       {filteredMembers.map(user => (
-                        <Table.Row key={user.id} id={user.id} className={canManageAssets ? 'cursor-pointer' : undefined}>
+                        <Table.Row key={user.id} id={user.id} className={canManageAssets ? 'group cursor-pointer' : 'group'}>
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
                               <UserAvatar name={userName(user.username)} src={user.avatar} className="shrink-0 max-[359px]:hidden" />
@@ -624,7 +624,7 @@ export default function AdminPage() {
                               </div>
                             </div>
                           </Table.Cell>
-                          <Table.Cell className={canManageAssets ? 'hidden sm:table-cell' : undefined}>
+                          <Table.Cell className={canManageAssets ? 'hidden sm:table-cell' : 'max-md:group-hover:rounded-r-2xl'}>
                             <Chip size="sm" color={roleChipColor(user.role)} variant="secondary" className="capitalize whitespace-nowrap">
                               {user.role && ROLES.includes(user.role as (typeof ROLES)[number])
                                 ? t(`roles.${user.role as (typeof ROLES)[number]}`)
@@ -632,7 +632,7 @@ export default function AdminPage() {
                             </Chip>
                           </Table.Cell>
                           {canManageAssets && (
-                            <Table.Cell className="whitespace-nowrap tabular-nums">
+                            <Table.Cell className="whitespace-nowrap tabular-nums max-md:group-hover:rounded-r-2xl">
                               {assetCell(user.id, summary => formatGold(summary.balance))}
                             </Table.Cell>
                           )}
@@ -692,7 +692,7 @@ export default function AdminPage() {
           <div className="space-y-4">
             {/* Overview stats */}
             {statsStatus === 'error' ? (
-              <Card className="border border-divider shadow-none bg-surface">
+              <Card className="border border-transparent shadow-edge bg-surface">
                 <Card.Content className="p-4">
                   <div role="alert" className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -710,7 +710,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" aria-busy={statsStatus === 'loading'}>
                 {statsStatus === 'loading' && <span className="sr-only">{t('loadingStats')}</span>}
                 {statCards.map(stat => (
-                  <Card key={stat.key} className="border border-divider shadow-none bg-surface">
+                  <Card key={stat.key} className="border border-transparent shadow-edge bg-surface">
                     <Card.Content>
                       <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                         <div className={`${stat.bg} p-2 rounded-lg shrink-0`}>
@@ -733,7 +733,7 @@ export default function AdminPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
               {/* Guild Settings placeholder */}
-              <Card className="border border-divider shadow-none bg-surface">
+              <Card className="border border-transparent shadow-edge bg-surface">
                 <Card.Header>
                   <div className="flex items-center gap-2">
                     <Icon icon="solar:settings-linear" width={18} className="text-hint" />
@@ -848,7 +848,7 @@ export default function AdminPage() {
                 </Card.Content>
               </Card>
 
-              <Card className="border border-divider shadow-none bg-surface">
+              <Card className="border border-transparent shadow-edge bg-surface">
                 <Card.Header>
                   <div className="flex items-center gap-2">
                     <Icon icon="solar:history-linear" width={18} className="text-hint" aria-hidden />
@@ -912,7 +912,7 @@ export default function AdminPage() {
               {createDraftFailed && (
                 <p role="alert" className="type-caption text-danger">{t('createDraftFailed')}</p>
               )}
-              <Button variant="primary" size="sm" onPress={handlePostAnnouncement} isPending={isCreatingDraft}>
+              <Button variant="primary" className="md:h-10" onPress={handlePostAnnouncement} isPending={isCreatingDraft}>
                 <Icon icon="solar:add-circle-linear" width={16} />
                 {t('postAnnouncement')}
               </Button>
@@ -920,7 +920,7 @@ export default function AdminPage() {
 
             <AsyncContent state={announcementsState.state} onRetry={reload} skeleton={<ListSkeleton rows={3} />}>
             {announcements.length === 0 && (
-              <Card className="border border-divider shadow-none bg-surface">
+              <Card className="border border-transparent shadow-edge bg-surface">
                 <Card.Content className="p-6 text-center">
                   <p className="type-body text-disabled">{t('noAnnouncements')}</p>
                 </Card.Content>
@@ -971,7 +971,7 @@ export default function AdminPage() {
                   </Card.Content>
                 </Card>
               ) : (
-                <Card key={ann.id} className="border border-divider shadow-none bg-surface">
+                <Card key={ann.id} className="border border-transparent shadow-edge bg-surface">
                   <Card.Content className="p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1 min-w-0">

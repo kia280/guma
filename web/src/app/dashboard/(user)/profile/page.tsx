@@ -127,7 +127,7 @@ export default function ProfilePage() {
       <PageHeader title={t('title')} description={t('subtitle')} />
 
       {/* Avatar */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Content className="flex flex-row flex-wrap items-center gap-4 sm:flex-nowrap sm:gap-5 p-4 sm:p-5">
           <div className="relative shrink-0">
             <UserAvatar
@@ -169,7 +169,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Profile Details */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 shrink-0">
             <Icon className="text-accent" icon="solar:user-bold-duotone" width={20} />
@@ -242,7 +242,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Account Info */}
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Header className="flex flex-row items-center gap-3 pb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-default shrink-0">
             <Icon className="text-subtle" icon="solar:shield-user-bold-duotone" width={20} />

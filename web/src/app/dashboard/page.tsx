@@ -67,7 +67,7 @@ function StatCard({
   value: string | number;
 }) {
   return (
-    <div className="flex items-center min-w-0 gap-2.5 sm:gap-3 p-3 rounded-xl border border-divider bg-surface">
+    <div className="flex items-center min-w-0 gap-2.5 sm:gap-3 p-3 rounded-xl border border-transparent shadow-edge bg-surface">
       <div className={`${iconBg} p-2 sm:p-2.5 rounded-lg shrink-0`}>
         <Icon icon={icon} width={18} className={iconClass} />
       </div>
@@ -104,7 +104,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
   const slideProps = (slide: Slide) => ({
     inert: slide !== active,
-    className: `min-w-full space-y-3 ${slide === active ? '' : 'max-h-0 overflow-hidden'}`,
+    className: 'flex min-w-full flex-col gap-3 p-1',
   });
 
   const handleTouchStart = (e: TouchEvent) => {
@@ -125,10 +125,10 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
   return (
     <section>
-      <div className="overflow-hidden">
+      <div className="-m-1 overflow-hidden">
         {/* Slide track */}
         <div
-          className="flex items-start transition-transform duration-300 ease-in-out"
+          className="flex items-stretch transition-transform duration-300 ease-in-out"
           style={{ transform: `translateX(-${idx * 100}%)` }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -173,7 +173,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
             </div>
 
             {/* Wallet balance chart */}
-            <Card className="border border-divider shadow-none bg-surface">
+            <Card className="border border-transparent shadow-edge bg-surface">
               <Card.Content>
                 <p className="type-caption text-hint mb-2">{t('balanceLast30')}</p>
                 <BalanceTrendChart
@@ -194,7 +194,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
             </div>
 
             {/* Stat row */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid flex-1 auto-rows-fr grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               <StatCard
                 icon="solar:users-group-rounded-linear"
                 iconClass="text-accent"
@@ -412,7 +412,7 @@ export default function DashboardPage() {
             <Icon icon="solar:volume-loud-linear" width={18} className="text-hint" />
             <h2 className="type-heading text-foreground">{t('news')}</h2>
           </div>
-          <Card className="border border-divider shadow-none bg-surface">
+          <Card className="border border-transparent shadow-edge bg-surface">
             <Card.Content className="p-1.5">
               {announcements.length === 0 ? (
                 <EmptyContent icon="solar:volume-loud-linear" title={t('noAnnouncements')} />
@@ -453,7 +453,7 @@ export default function DashboardPage() {
             <Icon icon="solar:bell-linear" width={18} className="text-hint" />
             <h2 className="type-heading text-foreground">{t('upcomingEvents')}</h2>
           </div>
-          <Card className="border border-divider shadow-none bg-surface">
+          <Card className="border border-transparent shadow-edge bg-surface">
             <Card.Content className="p-1.5">
               {incomingEvents.length === 0 ? (
                 <EmptyContent icon="solar:bell-linear" title={t('noUpcomingEvents')} />
@@ -511,7 +511,7 @@ export default function DashboardPage() {
       <Modal state={annModalState}>
       <Modal.Backdrop>
         <Modal.Container size="lg">
-          <Modal.Dialog className="bg-surface border border-divider max-w-2xl">
+          <Modal.Dialog className="bg-surface max-w-2xl">
             <Modal.CloseTrigger />
             <Modal.Header className="flex-row items-start gap-3 border-b border-divider pb-3 pr-10">
               {selectedAnn?.pinned && (

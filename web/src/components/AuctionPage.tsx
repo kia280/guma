@@ -216,7 +216,7 @@ const AuctionPage = () => {
           <Tabs.ListContainer className="min-w-0 flex-1">
             <Tabs.List aria-label={t('statusTabs')}>
               {AUCTION_TABS.map(tab => (
-                <Tabs.Tab key={tab} id={tab}>
+                <Tabs.Tab key={tab} id={tab} className="max-sm:h-9">
                   <div className="flex items-center gap-2">
                     <span>{t(tab)}</span>
                     <Chip size="sm" color={tab === 'all' ? undefined : auctionStatusColor[tab]} variant="secondary">
@@ -228,7 +228,7 @@ const AuctionPage = () => {
               ))}
             </Tabs.List>
           </Tabs.ListContainer>
-          <Button className="shrink-0 max-sm:size-11 max-sm:px-0" aria-label={t('createAuction')} onPress={createModalState.open}>
+          <Button className="shrink-0 md:h-10 max-sm:size-11 max-sm:px-0" aria-label={t('createAuction')} onPress={createModalState.open}>
             <Icon icon="solar:add-circle-linear" width={16} className="max-sm:hidden" />
             <Icon icon="solar:add-linear" width={20} className="sm:hidden" />
             <span className="max-sm:hidden">{t('createAuction')}</span>
@@ -242,7 +242,7 @@ const AuctionPage = () => {
               skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
             >
               {filteredItems.length === 0 ? (
-                <Card className="border border-divider shadow-none">
+                <Card className="border border-transparent shadow-edge">
                   <Card.Content className="text-center py-12">
                     <Icon icon="solar:clock-circle-linear" width={40} className="mx-auto mb-3 text-disabled" />
                     <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>

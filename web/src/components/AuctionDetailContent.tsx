@@ -243,19 +243,11 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
 
-  const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-divider bg-surface';
+  const sectionClass = onClose ? '' : 'p-5 rounded-xl border border-transparent shadow-edge bg-surface';
   const sectionGap = onClose ? 'gap-6' : 'gap-4';
 
   return (
     <div className="space-y-5">
-      {/* Back button - only show in full page mode */}
-      {!onClose && (
-        <Button variant="secondary" size="sm" className="max-sm:h-11" onPress={() => router.push('/dashboard/auction')}>
-          <Icon icon="solar:arrow-left-linear" width={16} />
-          {t('backToAuctions')}
-        </Button>
-      )}
-
       {/* Item header */}
       <div className={`flex flex-col sm:flex-row items-start gap-4 ${onClose ? 'pr-8' : sectionClass}`}>
         <div className="p-4 rounded-xl bg-default shrink-0">
@@ -599,7 +591,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
           </div>
 
           {/* Your balance */}
-          <div className={onClose ? undefined : 'p-4 rounded-xl border border-divider bg-surface'}>
+          <div className={onClose ? undefined : 'p-4 rounded-xl border border-transparent shadow-edge bg-surface'}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-subtle">
                 <Icon icon="solar:wallet-linear" width={16} />

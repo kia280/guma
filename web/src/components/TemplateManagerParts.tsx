@@ -99,7 +99,7 @@ export function TemplateListState({
   }
   if (isEmpty) {
     return (
-      <Card className="border border-divider shadow-none bg-surface">
+      <Card className="border border-transparent shadow-edge bg-surface">
         <Card.Content className="text-center py-12">
           <Icon icon={emptyIcon} width={40} className="mx-auto mb-3 text-disabled" />
           <h3 className="type-subheading mb-1 text-foreground">{emptyTitle}</h3>

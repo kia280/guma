@@ -108,7 +108,7 @@ export default function LotteryPage() {
           <Tabs.ListContainer className="min-w-0 flex-1">
             <Tabs.List aria-label={t('statusTabs')}>
               {LOTTERY_TABS.map(tab => (
-                <Tabs.Tab key={tab} id={tab}>
+                <Tabs.Tab key={tab} id={tab} className="max-sm:h-9">
                   <div className="flex items-center gap-2">
                     <span>{t(tab)}</span>
                     <Chip size="sm" color={tab === 'all' ? undefined : lotteryStatusColor[tab]} variant="secondary">
@@ -121,7 +121,7 @@ export default function LotteryPage() {
             </Tabs.List>
           </Tabs.ListContainer>
           {can('createLottery') && (
-            <Button className="shrink-0 max-sm:size-11 max-sm:px-0" aria-label={t('createLottery')} onPress={createModalState.open}>
+            <Button className="shrink-0 md:h-10 max-sm:size-11 max-sm:px-0" aria-label={t('createLottery')} onPress={createModalState.open}>
               <Icon icon="solar:add-circle-linear" width={16} className="max-sm:hidden" />
               <Icon icon="solar:add-linear" width={20} className="sm:hidden" />
               <span className="max-sm:hidden">{t('createLottery')}</span>

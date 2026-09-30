@@ -370,7 +370,7 @@ export default function RollCallsPage() {
           <Tabs.ListContainer className="min-w-0 flex-1">
             <Tabs.List aria-label={t('rollCalls')}>
               {STATUS_TABS.map(tab => (
-                <Tabs.Tab key={tab.id} id={tab.id}>
+                <Tabs.Tab key={tab.id} id={tab.id} className="max-sm:h-9">
                   <div className="flex items-center gap-2">
                     <span>{tabLabels[tab.id]}</span>
                     <Chip
@@ -387,7 +387,7 @@ export default function RollCallsPage() {
             </Tabs.List>
           </Tabs.ListContainer>
           {can('createRollCall') && (
-            <Button className="shrink-0 max-sm:size-11 max-sm:px-0" aria-label={t('addRollCall')} onPress={openCreateModal}>
+            <Button className="shrink-0 md:h-10 max-sm:size-11 max-sm:px-0" aria-label={t('addRollCall')} onPress={openCreateModal}>
               <Icon icon="solar:add-circle-linear" width={16} className="max-sm:hidden" />
               <Icon icon="solar:add-linear" width={20} className="sm:hidden" />
               <span className="max-sm:hidden">{t('addRollCall')}</span>
@@ -402,7 +402,7 @@ export default function RollCallsPage() {
               skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
             >
             {filtered.length === 0 ? (
-              <Card className="border border-divider shadow-none">
+              <Card className="border border-transparent shadow-edge">
                 <Card.Content className="text-center py-12">
                   <Icon
                     icon="heroicons:clipboard-document-check"

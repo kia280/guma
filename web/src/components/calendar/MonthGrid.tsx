@@ -34,8 +34,8 @@ export function MonthGrid({
   const today = new Date();
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-divider bg-surface">
-      <div aria-hidden className="grid grid-cols-7 border-b border-divider">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border border-transparent shadow-edge bg-surface">
+      <div aria-hidden className="grid grid-cols-7">
         {WEEKDAY_KEYS.map(key => (
           <div key={key} className="py-2 text-center type-label text-hint">
             {t(key)}
@@ -44,17 +44,21 @@ export function MonthGrid({
       </div>
 
       <div
-        className="grid flex-1 grid-cols-7"
+        className="grid flex-1 grid-cols-7 gap-1 bg-divider p-1"
         style={{ gridTemplateRows: `repeat(${days.length / 7}, minmax(6.75rem, 1fr))` }}
       >
-        {days.map((day, index) => {
+        {days.map(day => {
           const occurrences = sortForDay(occurrencesByDay.get(dayKey(day)) ?? [], day);
           const isToday = isSameDay(day, today);
           const isSelected = isSameDay(day, currentDate);
           const isOutside = day.getMonth() !== currentDate.getMonth();
           const visible = occurrences.length > MAX_CHIPS ? occurrences.slice(0, MAX_CHIPS - 1) : occurrences;
           const hiddenCount = occurrences.length - visible.length;
-          const background = isSelected ? 'bg-accent/10' : isOutside ? 'bg-surface-secondary/60' : '';
+          const background = isSelected
+            ? 'bg-accent/10 hover:bg-accent/15'
+            : isOutside
+              ? 'bg-surface-secondary/60 hover:bg-surface-secondary'
+              : 'hover:bg-surface-secondary/60';
           const numberClass = isToday
             ? 'bg-accent text-accent-foreground'
             : isOutside
@@ -65,7 +69,7 @@ export function MonthGrid({
             <div
               key={dayKey(day)}
               data-cell
-              className={`relative flex min-w-0 flex-col gap-0.5 border-divider p-1 ${index % 7 ? 'border-l' : ''} ${index >= 7 ? 'border-t' : ''} ${background}`}
+              className="relative flex min-w-0 flex-col gap-0.5 rounded-lg bg-surface p-1"
             >
               <button
                 type="button"
@@ -73,7 +77,7 @@ export function MonthGrid({
                 aria-current={isToday ? 'date' : undefined}
                 aria-label={`${format.fullDate(day)}, ${t('eventCount', { count: occurrences.length })}`}
                 onClick={() => onSelectDate(day)}
-                className="absolute inset-0 cursor-pointer transition-colors hover:bg-surface-secondary/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+                className={`absolute inset-0 cursor-pointer rounded-lg transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus ${background}`}
               />
               <span
                 aria-hidden

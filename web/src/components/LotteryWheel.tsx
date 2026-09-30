@@ -174,7 +174,7 @@ export function LotteryWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd
       </svg>
       {hover && (
         <div
-          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-divider bg-overlay px-2.5 py-1.5 shadow-overlay whitespace-nowrap"
+          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg bg-overlay px-2.5 py-1.5 shadow-overlay whitespace-nowrap"
           style={{ left: hover.x, top: hover.y - 10 }}
         >
           <p className="type-label text-foreground">{hover.slice.label}</p>

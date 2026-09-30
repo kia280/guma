@@ -86,6 +86,7 @@ export function BalanceTrendChart({ points, status, onRetry, height = 200 }: Bal
           tickLine={false}
         />
         <YAxis
+          width="auto"
           tick={{ fontSize: 12, fill: 'var(--muted)' }}
           axisLine={false}
           tickLine={false}

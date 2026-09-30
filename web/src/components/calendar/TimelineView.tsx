@@ -155,7 +155,7 @@ export function TimelineView({ days, occurrencesByDay, format, onEventClick, onO
   const gutter = 'w-14 shrink-0';
 
   return (
-    <div className="flex h-full min-h-[480px] flex-col overflow-hidden rounded-xl border border-divider bg-surface">
+    <div className="flex h-full min-h-[480px] flex-col overflow-hidden rounded-xl border border-transparent shadow-edge bg-surface">
       {isWeek && (
         <div className="flex overflow-y-hidden border-b border-divider [scrollbar-gutter:stable]">
           <div className={gutter} />
