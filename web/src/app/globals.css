@@ -498,7 +498,7 @@
 }
 
 @theme inline {
-  --color-divider: color-mix(in oklab, var(--border) 50%, transparent);
+  --color-divider: color-mix(in oklab, var(--border) 30%, transparent);
   --color-soft: var(--fg-soft);
   --color-subtle: var(--fg-subtle);
   --color-hint: var(--fg-hint);
