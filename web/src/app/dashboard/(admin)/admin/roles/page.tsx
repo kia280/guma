@@ -1,8 +1,7 @@
 'use client';
 
-import { Button, Card, Chip, Table } from '@heroui/react';
+import { Card, Chip, Table } from '@heroui/react';
 import { Icon } from '@iconify/react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { PageHeader } from '@/components/PageHeader';
 import {
@@ -15,18 +14,10 @@ import {
 export default function AdminRolesPage() {
   const t = useTranslations('adminRolesPage');
   const tRoles = useTranslations('adminPage.roles');
-  const router = useRouter();
   const actionNote = (key: string) => (key === 'leaveGuild' ? t('ownerLeaveNote') : null);
 
   return (
     <div className="space-y-5">
-      <div className="flex">
-        <Button variant="secondary" onPress={() => router.push('/dashboard/admin')}>
-          <Icon icon="solar:arrow-left-line-duotone" width={16} />
-          {t('back')}
-        </Button>
-      </div>
-
       <PageHeader title={t('title')} description={t('subtitle')} />
 
       <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

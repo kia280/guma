@@ -228,14 +228,6 @@ export default function RollCallDetailContent({ id, onClose }: { id: string; onC
 
   return (
     <div className="space-y-5">
-      {/* Back button - only show if not in modal mode */}
-      {!onClose && (
-        <Button variant="secondary" size="sm" className="max-sm:h-11" onPress={() => router.push('/dashboard/roll-calls')}>
-          <Icon icon="solar:arrow-left-linear" width={16} />
-          {t('backToRollCalls')}
-        </Button>
-      )}
-
             {/* Header */}
       <div className={`flex flex-col sm:flex-row items-start gap-4 type-body ${onClose ? 'pr-8' : sectionClass}`}>
         <div className="flex-1 min-w-0">
