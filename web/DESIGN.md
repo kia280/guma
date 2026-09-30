@@ -163,6 +163,8 @@ Color schemes are under evaluation: developers pick one in the dev tools panel's
 | `border-divider` | Standard borders on cards, sections |
 | `border-separator` | Separator lines |
 
+`border-divider` is `--border` at 50% opacity, so card and section outlines stay soft and the fill carries the separation. HeroUI controls (inputs, tooltips) keep the full-strength `--border`.
+
 ## Card Pattern
 
 All cards must follow this pattern:
