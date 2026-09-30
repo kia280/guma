@@ -175,6 +175,37 @@ SELECT COUNT(*) FROM members
 WHERE guild_id = sqlc.arg(guild_id)
   AND (sqlc.arg(role_filter)::text = '' OR role = sqlc.arg(role_filter)::text);
 
+-- name: GetGuildMember :one
+SELECT m.id, m.user_id, m.guild_id,
+       m.display_name,
+       m.role, m.profile, m.joined_at, m.last_active,
+       COALESCE(u.discord_username, '')::text AS discord_username,
+       COALESCE(u.avatar_url, '') AS avatar_url
+FROM members m
+JOIN users u ON u.id = m.user_id
+WHERE m.guild_id = sqlc.arg(guild_id) AND m.user_id = sqlc.arg(user_id);
+
+-- name: LockGuildMemberRoles :many
+SELECT user_id, role FROM members
+WHERE guild_id = sqlc.arg(guild_id)
+  AND user_id = ANY(sqlc.arg(user_ids)::uuid[])
+ORDER BY user_id
+FOR UPDATE;
+
+-- name: UpdateGuildMemberRole :execrows
+UPDATE members SET role = sqlc.arg(role)::text
+WHERE guild_id = sqlc.arg(guild_id) AND user_id = sqlc.arg(user_id);
+
+-- name: InsertMemberRoleChange :exec
+INSERT INTO member_role_changes (guild_id, user_id, actor_id, old_role, new_role)
+VALUES (
+    sqlc.arg(guild_id),
+    sqlc.arg(user_id),
+    sqlc.arg(actor_id),
+    sqlc.arg(old_role)::text,
+    sqlc.arg(new_role)::text
+);
+
 -- name: UpsertGuildLogo :one
 WITH logo AS (
     INSERT INTO guild_logos (guild_id, content_type, data, updated_at)

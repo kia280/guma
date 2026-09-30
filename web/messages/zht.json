@@ -652,6 +652,7 @@
       "viewGuild": "查看公會資訊與設定",
       "viewMembers": "查看成員名單",
       "editGuild": "編輯公會資訊與設定",
+      "manageRoles": "變更成員的角色",
       "deleteGuild": "刪除公會",
       "leaveGuild": "退出公會",
       "checkIn": "查看點名並簽到",
@@ -661,6 +662,7 @@
       "contribute": "捐獻資金與物品",
       "requestFromBank": "申請資金或物品",
       "reviewRequests": "核准或駁回資金與物品申請",
+      "deleteBankItem": "刪除公會倉庫物品",
       "createAuction": "建立拍賣",
       "placeBid": "出價",
       "cancelAuction": "取消拍賣",
@@ -754,7 +756,15 @@
     "alreadyRequested": "你已申請過這個物品",
     "itemActions": "物品操作",
     "history": "歷程",
-    "typeAdminTransfer": "管理員移入"
+    "typeAdminTransfer": "管理員移入",
+    "deleteItem": "刪除物品",
+    "deleteItemConfirmTitle": "要刪除「{item}」嗎？",
+    "deleteItemConfirmBody": "物品會從公會倉庫永久移除。{count, plural, =0 {} other {# 筆待審申請會被駁回。}}此操作無法復原。",
+    "deleteItemConfirm": "刪除物品",
+    "deleteItemSuccess": "已從公會倉庫刪除「{item}」。",
+    "deleteItemFailed": "無法刪除物品，請再試一次。",
+    "deleteItemLocked": "此物品正在拍賣或抽獎中，無法刪除。",
+    "deleteItemNotAllowed": "只有會長與管理員可以刪除倉庫物品。"
   },
   "notificationsCard": {
     "notifications": "通知",
@@ -920,6 +930,7 @@
     "itemDelivered": "<b>{actor}</b> 已在遊戲中交付 <b>{item}</b>",
     "auctionCancelled": "<b>{item}</b> 已取消{refunded, select, yes {，你的出價 <b>{amount}</b> 已退回} other {}}",
     "lotteryCancelled": "<b>{lottery}</b> 已取消，你的 {tickets} 張彩券已退款（<b>{amount}</b>）",
+    "memberRoleChanged": "<b>{actor}</b> 將你的角色從 <b>{oldRole}</b> 變更為 <b>{newRole}</b>",
     "itemMovedByAdmin": "<b>{actor}</b> 將 <b>{item}</b> 從 <b>{from}</b> 移到你的背包"
   },
   "profilePage": {
@@ -1796,6 +1807,25 @@
   },
   "userName": {
     "unknown": "未知成員"
+  },
+  "memberRole": {
+    "label": "角色",
+    "saving": "正在儲存角色",
+    "hint": "變更會立即生效。",
+    "blocked": {
+      "self": "你無法變更自己的角色。",
+      "owner": "會長的角色無法變更。",
+      "adminTarget": "只有會長可以變更管理員的角色。"
+    },
+    "changed": "{name} 現在是{role}。",
+    "confirmPromoteTitle": "要將這位成員設為管理員嗎？",
+    "confirmPromoteBody": "{name} 將從{from}變更為{to}，並可編輯公會設定、移轉成員的金幣與物品，以及變更其他成員的角色。",
+    "confirmDemoteTitle": "要調降這位成員的角色嗎？",
+    "confirmDemoteBody": "{name} 將從{from}變更為{to}，並立即失去目前角色的權限。",
+    "confirm": "變更角色",
+    "failed": "無法變更角色，請再試一次。",
+    "denied": "你沒有權限變更這位成員的角色。",
+    "memberGone": "這位成員已不在公會中。"
   },
   "memberAssets": {
     "title": "{name} 的資產",

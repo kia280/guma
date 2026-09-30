@@ -204,6 +204,10 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.get(`/v1/guilds/${guildId}/members`, { params: { page_size: 500 } });
     return (data.members ?? []).map(toMember);
   },
+  updateMemberRole: async (guildId, userId, role) => {
+    const { data } = await http.put(`/v1/guilds/${guildId}/members/${userId}/role`, { role });
+    return toMember(data.member);
+  },
   inviteMember: async (guildId, req) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/members/invite`, req);
     return data.invitation;
@@ -594,6 +598,9 @@ export const gumaApiClient: ApiClient = {
       params: { page_size: 100, roll_call_id: options?.rollCallId },
     });
     return (data.items ?? []).map(toGuildBankItem);
+  },
+  deleteBankItem: async (guildId, bankItemId) => {
+    await http.delete(`/v1/guilds/${guildId}/bank/items/${bankItemId}`);
   },
   requestItem: async (guildId, bankItemId, reason) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/bank/item-requests`, {

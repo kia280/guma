@@ -222,10 +222,13 @@ const mockGuildSnapshot = (): Guild => ({
   ownerId: getDevMockRole() === 'owner' ? currentUser.id : defaultOwner.id,
 });
 
+const mockRoleOverrides = new Map<string, string>();
+
 const mockMembers = () =>
-  getDevMockRole() === 'owner'
+  (getDevMockRole() === 'owner'
     ? mockData.mockUsers.map(user => (user.id === defaultOwner.id ? { ...user, role: 'admin' } : user))
-    : mockData.mockUsers;
+    : mockData.mockUsers
+  ).map(user => (mockRoleOverrides.has(user.id) ? { ...user, role: mockRoleOverrides.get(user.id) } : user));
 
 const memberAssets = new Map<string, MemberAssets>();
 
@@ -356,6 +359,13 @@ const baseMockApiClient: ApiClient = {
 
   // ── Member ──
   listMembers: async () => mockMembers(),
+  updateMemberRole: async (guildId, userId, role) => {
+    const member = mockMembers().find(candidate => candidate.id === userId);
+    if (!member) throw new Error('member not found');
+    mockRoleOverrides.set(userId, role);
+    emitLiveEvent({ kind: 'resource', guildId, resource: 'member', resourceId: userId });
+    return { ...member, role };
+  },
   inviteMember: async (guildId, req) => ({
     id: `inv-${Date.now()}`,
     guildId,
@@ -1097,6 +1107,16 @@ const baseMockApiClient: ApiClient = {
   },
   listBankItems: async (_guildId, options) =>
     options?.rollCallId ? mockData.mockGuildItems.filter(item => item.rollCallId === options.rollCallId) : mockData.mockGuildItems,
+  deleteBankItem: async (_guildId, bankItemId) => {
+    const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
+    if (!bankItem) throw notFound();
+    if (bankItem.lock) throw failedPrecondition('item is in an auction or lottery');
+    const reviewedAt = new Date().toISOString();
+    store.itemRequests
+      .filter(r => r.bankItemId === bankItemId && r.status === 'pending')
+      .forEach(r => Object.assign(r, { status: 'rejected', reviewedAt }));
+    removeById(mockData.mockGuildItems, bankItemId);
+  },
   requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => {
     const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
     if (!bankItem) throw new Error('not found');

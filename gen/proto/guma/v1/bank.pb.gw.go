@@ -429,6 +429,61 @@ func local_request_BankService_ListBankItems_0(ctx context.Context, marshaler ru
 	return msg, metadata, err
 }
 
+func request_BankService_DeleteBankItem_0(ctx context.Context, marshaler runtime.Marshaler, client BankServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DeleteBankItemRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["guild_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "guild_id")
+	}
+	protoReq.GuildId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "guild_id", err)
+	}
+	val, ok = pathParams["bank_item_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "bank_item_id")
+	}
+	protoReq.BankItemId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "bank_item_id", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.DeleteBankItem(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_BankService_DeleteBankItem_0(ctx context.Context, marshaler runtime.Marshaler, server BankServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq DeleteBankItemRequest
+		metadata runtime.ServerMetadata
+		err      error
+	)
+	val, ok := pathParams["guild_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "guild_id")
+	}
+	protoReq.GuildId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "guild_id", err)
+	}
+	val, ok = pathParams["bank_item_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "bank_item_id")
+	}
+	protoReq.BankItemId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "bank_item_id", err)
+	}
+	msg, err := server.DeleteBankItem(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 func request_BankService_RequestItem_0(ctx context.Context, marshaler runtime.Marshaler, client BankServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
 		protoReq RequestItemRequest
@@ -809,6 +864,26 @@ func RegisterBankServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		}
 		forward_BankService_ListBankItems_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodDelete, pattern_BankService_DeleteBankItem_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/guma.v1.BankService/DeleteBankItem", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/bank/items/{bank_item_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_BankService_DeleteBankItem_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_BankService_DeleteBankItem_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodPost, pattern_BankService_RequestItem_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1065,6 +1140,23 @@ func RegisterBankServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		}
 		forward_BankService_ListBankItems_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodDelete, pattern_BankService_DeleteBankItem_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/guma.v1.BankService/DeleteBankItem", runtime.WithHTTPPathPattern("/v1/guilds/{guild_id}/bank/items/{bank_item_id}"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_BankService_DeleteBankItem_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_BankService_DeleteBankItem_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	mux.Handle(http.MethodPost, pattern_BankService_RequestItem_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1145,6 +1237,7 @@ var (
 	pattern_BankService_ListContributions_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4}, []string{"v1", "guilds", "guild_id", "bank", "contributions"}, ""))
 	pattern_BankService_DonateItem_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4}, []string{"v1", "guilds", "guild_id", "bank", "items"}, ""))
 	pattern_BankService_ListBankItems_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4}, []string{"v1", "guilds", "guild_id", "bank", "items"}, ""))
+	pattern_BankService_DeleteBankItem_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "guilds", "guild_id", "bank", "items", "bank_item_id"}, ""))
 	pattern_BankService_RequestItem_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4}, []string{"v1", "guilds", "guild_id", "bank", "item-requests"}, ""))
 	pattern_BankService_ReviewItemRequest_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"v1", "guilds", "guild_id", "bank", "item-requests", "request_id"}, ""))
 	pattern_BankService_ListItemRequests_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4}, []string{"v1", "guilds", "guild_id", "bank", "item-requests"}, ""))
@@ -1160,6 +1253,7 @@ var (
 	forward_BankService_ListContributions_0 = runtime.ForwardResponseMessage
 	forward_BankService_DonateItem_0        = runtime.ForwardResponseMessage
 	forward_BankService_ListBankItems_0     = runtime.ForwardResponseMessage
+	forward_BankService_DeleteBankItem_0    = runtime.ForwardResponseMessage
 	forward_BankService_RequestItem_0       = runtime.ForwardResponseMessage
 	forward_BankService_ReviewItemRequest_0 = runtime.ForwardResponseMessage
 	forward_BankService_ListItemRequests_0  = runtime.ForwardResponseMessage

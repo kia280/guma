@@ -27,6 +27,7 @@ export const PERMISSION_SECTIONS = [
       { key: 'viewGuild', roles: ALL },
       { key: 'viewMembers', roles: ALL },
       { key: 'editGuild', roles: OWNER_ADMIN },
+      { key: 'manageRoles', roles: OWNER_ADMIN },
       { key: 'deleteGuild', roles: ['owner'] as readonly GuildRole[] },
       { key: 'leaveGuild', roles: ['admin', 'moderator', 'member'] as readonly GuildRole[] },
     ],
@@ -51,6 +52,7 @@ export const PERMISSION_SECTIONS = [
       { key: 'contribute', roles: ALL },
       { key: 'requestFromBank', roles: ALL },
       { key: 'reviewRequests', roles: STAFF },
+      { key: 'deleteBankItem', roles: OWNER_ADMIN },
     ],
   },
   {
@@ -110,6 +112,29 @@ export const roleChipColor = (role: string | undefined | null): RoleChipColor =>
 
 export const roleCan = (role: string | undefined | null, action: GuildAction): boolean =>
   isGuildRole(role) && ACTION_ROLES[action].includes(role);
+
+export const ASSIGNABLE_ROLES = ['admin', 'moderator', 'member'] as const satisfies readonly GuildRole[];
+export type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
+
+export const isAssignableRole = (value: string | undefined | null): value is AssignableRole =>
+  (ASSIGNABLE_ROLES as readonly string[]).includes(value ?? '');
+
+export type RoleChangeBlock = 'notAllowed' | 'self' | 'owner' | 'adminTarget';
+
+export const roleChangeBlock = (
+  actorRole: string | undefined | null,
+  targetRole: string | undefined | null,
+  isSelf: boolean,
+): RoleChangeBlock | null => {
+  if (!roleCan(actorRole, 'manageRoles')) return 'notAllowed';
+  if (isSelf) return 'self';
+  if (targetRole === 'owner') return 'owner';
+  if (actorRole === 'admin' && targetRole === 'admin') return 'adminTarget';
+  return null;
+};
+
+export const roleChangeNeedsConfirmation = (currentRole: GuildRole, nextRole: AssignableRole): boolean =>
+  nextRole === 'admin' || GUILD_ROLES.indexOf(nextRole) > GUILD_ROLES.indexOf(currentRole);
 
 export interface GuildPermissions {
   role: GuildRole | null;

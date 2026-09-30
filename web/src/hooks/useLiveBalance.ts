@@ -19,6 +19,9 @@ export function useLiveBalance() {
     const unsubscribeLive = subscribeLiveEvents(event => {
       if (event.kind === 'open') void refreshMe();
       if (event.kind === 'wallet') applyWalletUpdate(event.guildId, event.balance);
+      if (event.kind === 'resource' && event.resource === 'member' && event.resourceId === useUserStore.getState().user?.id) {
+        void refreshMe();
+      }
     });
     const poll = window.setInterval(refreshIfVisible, FALLBACK_POLL_INTERVAL_MS);
     document.addEventListener('visibilitychange', refreshIfVisible);

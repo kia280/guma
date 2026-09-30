@@ -652,6 +652,7 @@
       "viewGuild": "View guild information and settings",
       "viewMembers": "View the member list",
       "editGuild": "Edit guild information and settings",
+      "manageRoles": "Change members' roles",
       "deleteGuild": "Delete the guild",
       "leaveGuild": "Leave the guild",
       "checkIn": "View roll calls and check in",
@@ -661,6 +662,7 @@
       "contribute": "Contribute funds and donate items",
       "requestFromBank": "Request funds or items",
       "reviewRequests": "Approve or reject fund and item requests",
+      "deleteBankItem": "Delete guild vault items",
       "createAuction": "Create auctions",
       "placeBid": "Place bids",
       "cancelAuction": "Cancel auctions",
@@ -754,7 +756,15 @@
     "alreadyRequested": "You already requested this item",
     "itemActions": "Item actions",
     "history": "History",
-    "typeAdminTransfer": "Moved in by an admin"
+    "typeAdminTransfer": "Moved in by an admin",
+    "deleteItem": "Delete item",
+    "deleteItemConfirmTitle": "Delete {item}?",
+    "deleteItemConfirmBody": "The item is removed from the guild vault permanently. {count, plural, =0 {} one {# pending request for it will be rejected. } other {# pending requests for it will be rejected. }}This cannot be undone.",
+    "deleteItemConfirm": "Delete item",
+    "deleteItemSuccess": "{item} was deleted from the guild vault.",
+    "deleteItemFailed": "Couldn't delete the item. Please try again.",
+    "deleteItemLocked": "This item is in an auction or lottery and cannot be deleted.",
+    "deleteItemNotAllowed": "Only the guild owner and admins can delete vault items."
   },
   "notificationsCard": {
     "notifications": "Notifications",
@@ -920,6 +930,7 @@
     "itemDelivered": "<b>{actor}</b> handed over <b>{item}</b> in game",
     "auctionCancelled": "<b>{item}</b> was cancelled{refunded, select, yes {. Your bid of <b>{amount}</b> was refunded} other {}}",
     "lotteryCancelled": "<b>{lottery}</b> was cancelled. Your {tickets, plural, one {# ticket was} other {# tickets were}} refunded (<b>{amount}</b>)",
+    "memberRoleChanged": "<b>{actor}</b> changed your role from <b>{oldRole}</b> to <b>{newRole}</b>",
     "itemMovedByAdmin": "<b>{actor}</b> moved <b>{item}</b> from <b>{from}</b> to your backpack"
   },
   "profilePage": {
@@ -1796,6 +1807,25 @@
   },
   "userName": {
     "unknown": "Unknown member"
+  },
+  "memberRole": {
+    "label": "Role",
+    "saving": "Saving role",
+    "hint": "Changes take effect immediately.",
+    "blocked": {
+      "self": "You can't change your own role.",
+      "owner": "The owner's role can't be changed.",
+      "adminTarget": "Only the owner can change an admin's role."
+    },
+    "changed": "{name} is now {role}.",
+    "confirmPromoteTitle": "Make this member an admin?",
+    "confirmPromoteBody": "{name} will change from {from} to {to} and will be able to edit guild settings, move members' gold and items, and change other members' roles.",
+    "confirmDemoteTitle": "Lower this member's role?",
+    "confirmDemoteBody": "{name} will change from {from} to {to} and will lose the permissions that come with the current role right away.",
+    "confirm": "Change role",
+    "failed": "Couldn't change the role. Please try again.",
+    "denied": "You're not allowed to change this member's role.",
+    "memberGone": "This member is no longer in the guild."
   },
   "memberAssets": {
     "title": "{name}'s assets",

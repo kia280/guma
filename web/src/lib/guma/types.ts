@@ -109,6 +109,7 @@ export interface ApiClient {
 
   // ── Member ──
   listMembers(guildId: string): Promise<MockUser[]>;
+  updateMemberRole(guildId: string, userId: string, role: string): Promise<MockUser>;
   inviteMember(guildId: string, req: { email: string; role?: string }): Promise<Invitation>;
 
   // ── Wallet ──
@@ -200,6 +201,7 @@ export interface ApiClient {
   listContributions(guildId: string): Promise<GuildContribution[]>;
   donateItem(guildId: string, backpackItemId: string, note?: string): Promise<GuildBankItem>;
   listBankItems(guildId: string, options?: { rollCallId?: string }): Promise<GuildBankItem[]>;
+  deleteBankItem(guildId: string, bankItemId: string): Promise<void>;
   requestItem(guildId: string, bankItemId: string, reason: string): Promise<ItemRequest>;
   reviewItemRequest(
     guildId: string,
