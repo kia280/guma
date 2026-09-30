@@ -66,8 +66,8 @@ const LotteryCard = ({
   const progressColor = soldPercent > 80 ? 'danger' : soldPercent > 50 ? 'warning' : 'success';
 
   return (
-    <Card className="group border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
-      <Card.Header className="pb-2">
+    <Card className="group row-span-6 grid grid-rows-subgrid gap-0 border border-divider shadow-none bg-surface hover:border-foreground/20 transition-colors has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-offset-2 has-[a:focus-visible]:outline-focus">
+      <Card.Header className="pb-5">
         <div className="flex justify-between items-start gap-3 w-full">
           <div className="min-w-0 type-caption">
             <Chip
@@ -88,96 +88,94 @@ const LotteryCard = ({
         </div>
       </Card.Header>
 
-      <Card.Content className="py-3">
-        <div className="space-y-4">
-          {/* Prize Pool */}
-          <div className="text-center py-2">
-            {itemPrizes && prizePool <= 0 ? (
-              <>
-                <p className="type-caption text-hint">{t('prize')}</p>
-                <p className="type-heading text-foreground mt-1 line-clamp-2 wrap-break-word">{itemPrizes}</p>
-              </>
-            ) : (
-              <>
-                <p className="type-caption text-hint">{t('prizePool')}</p>
-                <p className="type-display text-foreground mt-1">{formatGold(prizePool)}</p>
-                {itemPrizes && (
-                  <p className="type-body text-subtle mt-1 line-clamp-2 wrap-break-word">
-                    {t('plusItems', { items: itemPrizes })}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Details */}
-          <div className="space-y-2">
-            <div className="flex justify-between type-body">
-              <span className="text-subtle">{t('ticketPrice')}</span>
-              <span className="font-medium text-foreground">{formatGold(ticketPrice)}</span>
-            </div>
-            <div className="flex justify-between type-body">
-              <span className="text-subtle">{t('drawDate')}</span>
-              <span className="font-medium text-foreground">
-                {format.dateTime(new Date(drawDate), { dateStyle: 'medium' })}
-              </span>
-            </div>
-            {status === 'active' && (
-              <div className="flex justify-between type-body">
-                <span className="text-subtle">{t('timeLeft')}</span>
-                <span className="font-medium text-accent">
-                  {isDrawing ? t('drawingNow') : countdown('timeLeftValue')}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Tickets Progress */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between type-caption text-hint">
-              <span>{t('ticketsSold', { count: ticketsSold })}</span>
-              {hasCap && <span>{t('max', { count: maxTickets })}</span>}
-            </div>
-            {hasCap && (
-              <>
-                <ProgressBar
-                  aria-label={t('ticketsSoldProgress')}
-                  className="w-full"
-                  value={soldPercent}
-                  color={progressColor}
-                >
-                  <ProgressBar.Track>
-                    <ProgressBar.Fill />
-                  </ProgressBar.Track>
-                </ProgressBar>
-                <p className="type-caption text-hint text-right">
-                  {t('filled', { percent: soldPercent })}
+      <Card.Content className="row-span-4 grid grid-rows-subgrid gap-0">
+        {/* Prize Pool */}
+        <div className="text-center pt-5 pb-2">
+          {itemPrizes && prizePool <= 0 ? (
+            <>
+              <p className="type-caption text-hint">{t('prize')}</p>
+              <p className="type-heading text-foreground mt-1 line-clamp-2 wrap-break-word">{itemPrizes}</p>
+            </>
+          ) : (
+            <>
+              <p className="type-caption text-hint">{t('prizePool')}</p>
+              <p className="type-display text-foreground mt-1">{formatGold(prizePool)}</p>
+              {itemPrizes && (
+                <p className="type-body text-subtle mt-1 line-clamp-2 wrap-break-word">
+                  {t('plusItems', { items: itemPrizes })}
                 </p>
-              </>
-            )}
-          </div>
+              )}
+            </>
+          )}
+        </div>
 
-          {/* Winners section for ended lotteries */}
-          {status === 'ended' && winners && winners.length > 0 && (
-            <div className="space-y-2">
-              <p className="type-caption text-hint">{t('winners')}</p>
-              {winners.slice(0, 3).map(winner => (
-                <div key={winner.id} className="flex items-center gap-2">
-                  <UserAvatar name={userName(winner.username)} src={winner.avatar} />
-                  <div className="flex-1 min-w-0">
-                    <p className="type-label text-foreground truncate">
-                      {userName(winner.username)}
-                    </p>
-                    <p className="type-caption text-success tabular-nums">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</p>
-                  </div>
-                </div>
-              ))}
+        {/* Details */}
+        <div className="space-y-2 pt-4">
+          <div className="flex justify-between type-body">
+            <span className="text-subtle">{t('ticketPrice')}</span>
+            <span className="font-medium text-foreground">{formatGold(ticketPrice)}</span>
+          </div>
+          <div className="flex justify-between type-body">
+            <span className="text-subtle">{t('drawDate')}</span>
+            <span className="font-medium text-foreground">
+              {format.dateTime(new Date(drawDate), { dateStyle: 'medium' })}
+            </span>
+          </div>
+          {status === 'active' && (
+            <div className="flex justify-between type-body">
+              <span className="text-subtle">{t('timeLeft')}</span>
+              <span className="font-medium text-accent">
+                {isDrawing ? t('drawingNow') : countdown('timeLeftValue')}
+              </span>
             </div>
           )}
         </div>
+
+        {/* Tickets Progress */}
+        <div className="space-y-1.5 pt-4">
+          <div className="flex justify-between type-caption text-hint">
+            <span>{t('ticketsSold', { count: ticketsSold })}</span>
+            {hasCap && <span>{t('max', { count: maxTickets })}</span>}
+          </div>
+          {hasCap && (
+            <>
+              <ProgressBar
+                aria-label={t('ticketsSoldProgress')}
+                className="w-full"
+                value={soldPercent}
+                color={progressColor}
+              >
+                <ProgressBar.Track>
+                  <ProgressBar.Fill />
+                </ProgressBar.Track>
+              </ProgressBar>
+              <p className="type-caption text-hint text-right">
+                {t('filled', { percent: soldPercent })}
+              </p>
+            </>
+          )}
+        </div>
+
+        {/* Winners section for ended lotteries */}
+        {status === 'ended' && winners && winners.length > 0 && (
+          <div className="space-y-2 pt-4">
+            <p className="type-caption text-hint">{t('winners')}</p>
+            {winners.slice(0, 3).map(winner => (
+              <div key={winner.id} className="flex items-center gap-2">
+                <UserAvatar name={userName(winner.username)} src={winner.avatar} />
+                <div className="flex-1 min-w-0">
+                  <p className="type-label text-foreground truncate">
+                    {userName(winner.username)}
+                  </p>
+                  <p className="type-caption text-success tabular-nums">{formatPrize(winner.prize, winner.prizeAmount, formatGold)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card.Content>
 
-      <Card.Footer className="pt-0">
+      <Card.Footer className="pt-6">
         {isDrawing && (
           <CardLinkHint icon="solar:play-circle-linear" label={t('watchDraw')} tone="accent" />
         )}
