@@ -63,6 +63,8 @@ const getContributionIcon = (type: GuildContribution['type']) => {
       return 'solar:hand-money-linear';
     case 'roll_call_gold_retracted':
       return 'solar:undo-left-linear';
+    case 'roll_call_gold_kept':
+      return 'solar:safe-2-linear';
     case 'admin_transfer':
       return 'solar:shield-user-linear';
   }
@@ -75,6 +77,8 @@ const isInflowContribution = (type: GuildContribution['type']) =>
   type === 'roll_call_loot' ||
   type === 'admin_transfer';
 
+
+const isBalanceNeutralContribution = (type: GuildContribution['type']) => type === 'roll_call_gold_kept';
 
 const isSettledContribution = (status: GuildContribution['status']) =>
   status === 'completed' || status === 'approved';
@@ -105,6 +109,9 @@ function ContributionAmount({
         {formatGold(entry.amount)}
       </span>
     );
+  }
+  if (isBalanceNeutralContribution(entry.type)) {
+    return <span className="type-body font-medium tabular-nums text-subtle">{formatGold(entry.amount)}</span>;
   }
   return (
     <span
@@ -247,6 +254,8 @@ export default function GuildBankPage() {
         return t('typeRollCallGoldPayout');
       case 'roll_call_gold_retracted':
         return t('typeRollCallGoldRetracted');
+      case 'roll_call_gold_kept':
+        return t('typeRollCallGoldKept');
       case 'admin_transfer':
         return t('typeAdminTransfer');
     }

@@ -348,8 +348,8 @@ function generateRollCalls(): RollCall[] {
         ? {
             goldLoot:
               status === RollCallStatus.COMPLETED
-                ? { total: 1000 + i * 50, distributed: 1000 + i * 50, retracted: 0, remaining: 0 }
-                : { total: 1000 + i * 50, distributed: 0, retracted: 0, remaining: 1000 + i * 50 },
+                ? { total: 1000 + i * 50, distributed: 1000 + i * 50, retracted: 0, kept: 0, remaining: 0 }
+                : { total: 1000 + i * 50, distributed: 0, retracted: 0, kept: 0, remaining: 1000 + i * 50 },
           }
         : {}),
       ...(status === RollCallStatus.COMPLETED ? { completedAt: new Date(start + 3 * HOUR).toISOString() } : {}),

@@ -67,11 +67,14 @@ type MockRollCallGold = {
 const rollCallGoldState = (rollCallId: string): MockRollCallGold =>
   (store.rollCallGold[rollCallId] ??= { recipients: {}, requests: {} });
 
-const goldPot = (total: number, distributed: number, retracted: number): RollCallGoldPot => ({
+const goldPot = (total: number, distributed: number, retracted: number, kept = 0): RollCallGoldPot => ({
   total,
   distributed,
   retracted,
-  remaining: fromMinorUnits(toMinorUnits(total) - toMinorUnits(distributed) - toMinorUnits(retracted)),
+  kept,
+  remaining: fromMinorUnits(
+    toMinorUnits(total) - toMinorUnits(distributed) - toMinorUnits(retracted) - toMinorUnits(kept),
+  ),
 });
 
 const addGold = (a: number, b: number): number => fromMinorUnits(toMinorUnits(a) + toMinorUnits(b));
@@ -680,16 +683,37 @@ const baseMockApiClient: ApiClient = {
     }
     return entry;
   },
-  completeRollCall: async (_guildId, id) => {
+  completeRollCall: async (_guildId, id, options) => {
     const entry = store.rollCalls.find(c => c.id === id);
     if (!entry) throw notFound();
     const isExpired = !!entry.expireTime && new Date(entry.expireTime).getTime() <= Date.now();
     if (entry.status === RollCallStatus.CANCELLED || entry.status === RollCallStatus.COMPLETED || !isExpired) {
       throw failedPrecondition('roll call cannot be completed');
     }
-    if (mockData.mockGuildItems.some(item => item.rollCallId === id) || (entry.goldLoot?.remaining ?? 0) > 0) {
+    const pot = entry.goldLoot;
+    const hasLeftovers = mockData.mockGuildItems.some(item => item.rollCallId === id) || (pot?.remaining ?? 0) > 0;
+    if (hasLeftovers && !options?.keepLeftoversInBank) {
       throw failedPrecondition('loot has not been distributed yet');
     }
+    if (pot && pot.remaining > 0) {
+      mockData.mockContributions.unshift({
+        id: `c-keep-${entry.id}`,
+        type: 'roll_call_gold_kept',
+        amount: pot.remaining,
+        member: ownUserName(currentUser),
+        date: new Date().toISOString(),
+        status: 'completed',
+        note: entry.title,
+        rollCallId: entry.id,
+        href: `/dashboard/roll-calls/${entry.id}`,
+      });
+      entry.goldLoot = goldPot(pot.total, pot.distributed, pot.retracted, pot.remaining);
+    }
+    mockData.mockGuildItems
+      .filter(item => item.rollCallId === id)
+      .forEach(item => {
+        item.rollCallCompleted = true;
+      });
     entry.status = RollCallStatus.COMPLETED;
     entry.completedAt = new Date().toISOString();
     return entry;

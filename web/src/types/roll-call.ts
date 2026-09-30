@@ -34,6 +34,7 @@ export interface RollCallGoldPot {
   total: number;
   distributed: number;
   retracted: number;
+  kept: number;
   remaining: number;
 }
 

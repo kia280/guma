@@ -305,6 +305,7 @@ type ProtoRollCallGoldPot = {
   total?: number | string;
   distributed?: number | string;
   retracted?: number | string;
+  kept?: number | string;
   remaining?: number | string;
 };
 
@@ -317,6 +318,7 @@ const toRollCallGoldPot = (raw: ProtoRollCallGoldPot): RollCallGoldPot => ({
   total: fromMinorUnits(raw.total),
   distributed: fromMinorUnits(raw.distributed),
   retracted: fromMinorUnits(raw.retracted),
+  kept: fromMinorUnits(raw.kept),
   remaining: fromMinorUnits(raw.remaining),
 });
 
@@ -348,7 +350,7 @@ const toRollCallGoldLoot = (raw: ProtoRollCall): RollCallGoldPot | undefined => 
   const gold = raw.loot?.find(entry => entry.kind === 'gold');
   if (!gold) return undefined;
   const total = fromMinorUnits(gold.amount);
-  return { total, distributed: 0, retracted: 0, remaining: total };
+  return { total, distributed: 0, retracted: 0, kept: 0, remaining: total };
 };
 
 export const toRollCall = (raw: ProtoRollCall, attendees: Attendee[] = []): RollCall => {
@@ -713,6 +715,7 @@ const BANK_CONTRIBUTION_KINDS: readonly BankContributionKind[] = [
   'lottery_revenue',
   'roll_call_gold_payout',
   'roll_call_gold_retracted',
+  'roll_call_gold_kept',
   'admin_transfer',
 ];
 
@@ -725,6 +728,12 @@ const contributionReferenceHref = (b: BankContribution): string | undefined => {
 
 const rollCallHref = (b: BankContribution): string | undefined =>
   b.rollCallId ? `/dashboard/roll-calls/${b.rollCallId}` : undefined;
+
+const ROLL_CALL_GOLD_KINDS: readonly BankContributionKind[] = [
+  'roll_call_gold_payout',
+  'roll_call_gold_retracted',
+  'roll_call_gold_kept',
+];
 
 const contributionType = (kind: BankContributionKind): GuildContribution['type'] =>
   kind === 'gold' ? 'contribute' : kind;
@@ -784,6 +793,7 @@ type ProtoBankItem = {
   donated_at?: string;
   roll_call_id?: string;
   roll_call_title?: string;
+  roll_call_completed?: boolean;
   pending_request_count?: number;
   requested_by_me?: boolean;
   lock?: ProtoItemLock;
@@ -800,6 +810,7 @@ export const toGuildBankItem = (raw: ProtoBankItem): GuildBankItem => ({
   quantity: raw.quantity ?? 1,
   rollCallId: raw.roll_call_id || undefined,
   rollCallTitle: raw.roll_call_title || undefined,
+  rollCallCompleted: raw.roll_call_completed ?? false,
   pendingRequestCount: raw.pending_request_count ?? 0,
   requestedByMe: raw.requested_by_me ?? false,
   lock: toItemLock(raw.lock),
@@ -863,7 +874,7 @@ export const toGuildContributions = (
           type: contributionType(b.kind),
           amount: Math.abs(b.amount),
           rollCallId: b.rollCallId,
-          href: b.kind === 'roll_call_gold_payout' || b.kind === 'roll_call_gold_retracted' ? rollCallHref(b) : contributionReferenceHref(b),
+          href: ROLL_CALL_GOLD_KINDS.includes(b.kind) ? rollCallHref(b) : contributionReferenceHref(b),
           member: b.username,
           memberAvatar: b.avatarUrl,
           date: b.createdAt,

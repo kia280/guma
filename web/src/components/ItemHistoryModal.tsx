@@ -27,6 +27,7 @@ const KIND_ICONS: Record<ItemHistoryKind, string> = {
   withdrawal_requested: 'solar:arrow-up-linear',
   withdrawal_cancelled: 'solar:undo-left-linear',
   delivered: 'solar:box-minimalistic-linear',
+  kept: 'solar:safe-2-linear',
 };
 
 const RECEIVED_SOURCES = ['auction', 'lottery', 'transfer', 'admin', 'roll_call', 'bank_item_request', 'bank'] as const;
