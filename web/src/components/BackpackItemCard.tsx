@@ -74,103 +74,115 @@ const BackpackItemCard = ({
     <Card
       ref={cardRef}
       className={cn(
-        'border shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors p-2.5 rounded-xl',
+        'border shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors p-2 rounded-xl',
         isHighlighted ? 'border-accent ring-2 ring-accent/30' : 'border-divider',
       )}
     >
-      <Card.Content className="flex flex-row items-center gap-3 p-0">
+      <Card.Content className="flex flex-row items-center gap-2.5 p-0">
         <ItemThumbnail category={item.item.category} rarity={item.item.rarity} imageUrl={item.item.imageUrl} />
         <div className="flex-1 min-w-0">
-          <p className="type-body font-medium text-foreground truncate">{item.item.name}</p>
-          <div className="flex flex-wrap items-center gap-1 mt-0.5 type-caption">
-            <Chip size="sm" color={getRarityColor(item.item.rarity)} variant="secondary">
+          <div className="flex items-center gap-2 type-body">
+            <p className="flex-1 min-w-0 font-medium text-foreground truncate">{item.item.name}</p>
+            <Chip size="sm" color={getRarityColor(item.item.rarity)} variant="secondary" className="shrink-0">
               {labels(`rarities.${item.item.rarity}`)}
             </Chip>
-            {item.lock && <ItemLockChip lock={item.lock} />}
-            {isAwaitingDelivery && (
-              <Chip size="sm" color="warning" variant="secondary">
-                {t('awaitingDelivery')}
-              </Chip>
-            )}
           </div>
-          {href ? (
-            <Link
-              href={href}
-              className="mt-1 flex min-w-0 items-center gap-1 rounded type-caption text-hint hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            >
-              <Icon icon={SOURCE_ICONS[item.acquiredFrom]} width={14} className="shrink-0" aria-hidden />
-              <span className="truncate">{sourceText}</span>
-            </Link>
-          ) : (
-            <p className="mt-1 flex min-w-0 items-center gap-1 type-caption text-hint">
-              <Icon icon={SOURCE_ICONS[item.acquiredFrom]} width={14} className="shrink-0" aria-hidden />
-              <span className="truncate">{sourceText}</span>
-            </p>
-          )}
-        </div>
-        <Dropdown>
-          <Button isIconOnly variant="ghost" size="sm" className="text-hint shrink-0 max-sm:size-11" aria-label={t('actions')}>
-            <Icon icon="solar:menu-dots-bold" width={16} />
-          </Button>
-          <Dropdown.Popover>
-            <Dropdown.Menu
-              aria-label={t('actions')}
-              disabledKeys={item.lock ? ['auction', 'lottery', 'donate', 'transfer', 'withdraw'] : []}
-              onAction={key => {
-                if (key === 'auction') onPutToAuction?.(item);
-                if (key === 'lottery') onPutToLottery?.(item);
-                if (key === 'donate') onDonate?.(item);
-                if (key === 'transfer') onTransfer?.(item);
-                if (key === 'withdraw') onWithdraw?.(item);
-                if (key === 'history') onShowHistory?.(item);
-                if (key === 'cancelWithdrawal') onCancelWithdrawal?.(item);
-              }}
-            >
+          {(item.lock || isAwaitingDelivery) && (
+            <div className="flex flex-wrap items-center gap-1 mt-0.5 type-caption">
+              {item.lock && <ItemLockChip lock={item.lock} />}
               {isAwaitingDelivery && (
-                <Dropdown.Item id="cancelWithdrawal" textValue={t('cancelWithdrawal')}>
-                  <Icon icon="solar:undo-left-linear" width={16} />
-                  <span>{t('cancelWithdrawal')}</span>
-                </Dropdown.Item>
+                <Chip size="sm" color="warning" variant="secondary">
+                  {t('awaitingDelivery')}
+                </Chip>
               )}
-              {!isAwaitingDelivery && (
-                <Dropdown.Item id="auction" textValue={t('putToAuction')}>
-                  <Icon icon="solar:sledgehammer-linear" width={16} />
-                  <span>{t('putToAuction')}</span>
-                </Dropdown.Item>
-              )}
-              {!isAwaitingDelivery && onPutToLottery && (
-                <Dropdown.Item id="lottery" textValue={t('putToLottery')}>
-                  <Icon icon="solar:ticket-linear" width={16} />
-                  <span>{t('putToLottery')}</span>
-                </Dropdown.Item>
-              )}
-              {!isAwaitingDelivery && onDonate && (
-                <Dropdown.Item id="donate" textValue={t('donate')}>
-                  <Icon icon="solar:safe-2-linear" width={16} />
-                  <span>{t('donate')}</span>
-                </Dropdown.Item>
-              )}
-              {!isAwaitingDelivery && onTransfer && (
-                <Dropdown.Item id="transfer" textValue={t('transfer')}>
-                  <Icon icon="solar:arrow-right-linear" width={16} />
-                  <span>{t('transfer')}</span>
-                </Dropdown.Item>
-              )}
-              {onShowHistory && (
-                <Dropdown.Item id="history" textValue={t('history')}>
-                  <Icon icon="solar:history-linear" width={16} />
-                  <span>{t('history')}</span>
-                </Dropdown.Item>
-              )}
-              {!isAwaitingDelivery && (
-                <Dropdown.Item id="withdraw" variant="danger" textValue={t('withdraw')}>
-                  <Icon icon="solar:arrow-up-linear" width={16} />
-                  <span>{t('withdraw')}</span>
-                </Dropdown.Item>
-              )}
-            </Dropdown.Menu>
-          </Dropdown.Popover>
-        </Dropdown>
+            </div>
+          )}
+          <div className="mt-0.5 flex items-center gap-1">
+            {href ? (
+              <Link
+                href={href}
+                className="flex min-w-0 items-center gap-1 rounded type-caption text-hint hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                <Icon icon={SOURCE_ICONS[item.acquiredFrom]} width={14} className="shrink-0" aria-hidden />
+                <span className="truncate">{sourceText}</span>
+              </Link>
+            ) : (
+              <p className="flex min-w-0 items-center gap-1 type-caption text-hint">
+                <Icon icon={SOURCE_ICONS[item.acquiredFrom]} width={14} className="shrink-0" aria-hidden />
+                <span className="truncate">{sourceText}</span>
+              </p>
+            )}
+            <Dropdown>
+              <Button
+                isIconOnly
+                variant="ghost"
+                size="sm"
+                className="text-hint shrink-0 ml-auto -my-1 size-7 max-sm:-my-3 max-sm:size-11"
+                aria-label={t('actions')}
+              >
+                <Icon icon="solar:menu-dots-bold" width={16} />
+              </Button>
+              <Dropdown.Popover>
+                <Dropdown.Menu
+                  aria-label={t('actions')}
+                  disabledKeys={item.lock ? ['auction', 'lottery', 'donate', 'transfer', 'withdraw'] : []}
+                  onAction={key => {
+                    if (key === 'auction') onPutToAuction?.(item);
+                    if (key === 'lottery') onPutToLottery?.(item);
+                    if (key === 'donate') onDonate?.(item);
+                    if (key === 'transfer') onTransfer?.(item);
+                    if (key === 'withdraw') onWithdraw?.(item);
+                    if (key === 'history') onShowHistory?.(item);
+                    if (key === 'cancelWithdrawal') onCancelWithdrawal?.(item);
+                  }}
+                >
+                  {isAwaitingDelivery && (
+                    <Dropdown.Item id="cancelWithdrawal" textValue={t('cancelWithdrawal')}>
+                      <Icon icon="solar:undo-left-linear" width={16} />
+                      <span>{t('cancelWithdrawal')}</span>
+                    </Dropdown.Item>
+                  )}
+                  {!isAwaitingDelivery && (
+                    <Dropdown.Item id="auction" textValue={t('putToAuction')}>
+                      <Icon icon="solar:sledgehammer-linear" width={16} />
+                      <span>{t('putToAuction')}</span>
+                    </Dropdown.Item>
+                  )}
+                  {!isAwaitingDelivery && onPutToLottery && (
+                    <Dropdown.Item id="lottery" textValue={t('putToLottery')}>
+                      <Icon icon="solar:ticket-linear" width={16} />
+                      <span>{t('putToLottery')}</span>
+                    </Dropdown.Item>
+                  )}
+                  {!isAwaitingDelivery && onDonate && (
+                    <Dropdown.Item id="donate" textValue={t('donate')}>
+                      <Icon icon="solar:safe-2-linear" width={16} />
+                      <span>{t('donate')}</span>
+                    </Dropdown.Item>
+                  )}
+                  {!isAwaitingDelivery && onTransfer && (
+                    <Dropdown.Item id="transfer" textValue={t('transfer')}>
+                      <Icon icon="solar:arrow-right-linear" width={16} />
+                      <span>{t('transfer')}</span>
+                    </Dropdown.Item>
+                  )}
+                  {onShowHistory && (
+                    <Dropdown.Item id="history" textValue={t('history')}>
+                      <Icon icon="solar:history-linear" width={16} />
+                      <span>{t('history')}</span>
+                    </Dropdown.Item>
+                  )}
+                  {!isAwaitingDelivery && (
+                    <Dropdown.Item id="withdraw" variant="danger" textValue={t('withdraw')}>
+                      <Icon icon="solar:arrow-up-linear" width={16} />
+                      <span>{t('withdraw')}</span>
+                    </Dropdown.Item>
+                  )}
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
+          </div>
+        </div>
       </Card.Content>
     </Card>
   );
