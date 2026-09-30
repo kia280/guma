@@ -49,7 +49,7 @@ const store = {
   transactions: [...mockData.mockTransactions] as Transaction[],
   lotteries: mockData.mockLotteries.map(l => ({ ...l, participants: l.participants?.map(p => ({ ...p })) })) as Lottery[],
   events: [] as GuildEvent[],
-  announcements: [...mockData.mockAdminAnnouncements] as AdminAnnouncement[],
+  announcements: [...mockData.mockAdminAnnouncements] as MockAnnouncement[],
   notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
   notificationPreferences: { ...DEFAULT_NOTIFICATION_PREFERENCES } as NotificationPreferences,
   preferencesUpdatedAt: undefined as string | undefined,
@@ -151,7 +151,9 @@ const toMockItemTemplate = (id: string, input: ItemTemplateInput): ItemTemplate 
 
 const byName = <T extends { name: string }>(a: T, b: T) => a.name.localeCompare(b.name);
 
-const findMockAnnouncement = (id: string): AdminAnnouncement => {
+type MockAnnouncement = AdminAnnouncement & { pinnedAt?: string };
+
+const findMockAnnouncement = (id: string): MockAnnouncement => {
   const ann = store.announcements.find(a => a.id === id);
   if (!ann) throw new Error('announcement not found');
   return ann;
@@ -159,10 +161,13 @@ const findMockAnnouncement = (id: string): AdminAnnouncement => {
 
 const announcementSortTime = (a: AdminAnnouncement) => new Date(a.publishedAt ?? a.updatedAt).getTime();
 
-const sortAdminAnnouncements = (list: AdminAnnouncement[]) =>
+const announcementPinTime = (a: MockAnnouncement) =>
+  a.status === 'published' && a.pinned ? new Date(a.pinnedAt ?? a.publishedAt ?? a.updatedAt).getTime() : 0;
+
+const sortAdminAnnouncements = (list: MockAnnouncement[]) =>
   [...list].sort((a, b) =>
     Number(b.status === 'draft') - Number(a.status === 'draft')
-    || Number(b.status === 'published' && b.pinned) - Number(a.status === 'published' && a.pinned)
+    || announcementPinTime(b) - announcementPinTime(a)
     || announcementSortTime(b) - announcementSortTime(a));
 
 const publishedMockAnnouncements = (): Announcement[] => [
@@ -1210,7 +1215,9 @@ const baseMockApiClient: ApiClient = {
     if (ann.status === 'published' && (!input.title.trim() || !input.content.trim())) {
       throw new Error('published announcements require a title and content');
     }
-    Object.assign(ann, input, { updatedAt: new Date().toISOString() });
+    const now = new Date().toISOString();
+    const pinnedAt = input.pinned ? (ann.pinned ? ann.pinnedAt ?? ann.publishedAt ?? now : now) : undefined;
+    Object.assign(ann, input, { pinnedAt, updatedAt: now });
     return { ...ann };
   },
   publishAnnouncement: async (_guildId, id) => {
@@ -1218,7 +1225,7 @@ const baseMockApiClient: ApiClient = {
     if (ann.status !== 'draft') throw new Error('announcement is already published');
     if (!ann.title.trim() || !ann.content.trim()) throw new Error('title and content are required to publish');
     const now = new Date().toISOString();
-    Object.assign(ann, { status: 'published', publishedAt: now, updatedAt: now });
+    Object.assign(ann, { status: 'published', publishedAt: now, pinnedAt: ann.pinned ? now : undefined, updatedAt: now });
     return { ...ann };
   },
   unpublishAnnouncement: async (_guildId, id) => {
