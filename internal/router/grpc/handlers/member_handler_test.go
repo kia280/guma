@@ -622,3 +622,56 @@ func TestMemberService_RevokeInvite(t *testing.T) {
 		})
 	}
 }
+
+func TestMemberService_UpdateMemberRole(t *testing.T) {
+	service := NewMemberService(nil, zerolog.Nop())
+	const guildID = "00000000-0000-0000-0000-000000000001"
+	const actorID = "00000000-0000-0000-0000-000000000002"
+	const targetID = "00000000-0000-0000-0000-000000000003"
+	authed := session.WithUserID(context.Background(), actorID)
+
+	tests := []struct {
+		name     string
+		ctx      context.Context
+		req      *memberv1.UpdateMemberRoleRequest
+		wantCode codes.Code
+	}{
+		{name: "missing guild_id", ctx: authed, req: &memberv1.UpdateMemberRoleRequest{}, wantCode: codes.InvalidArgument},
+		{name: "missing user_id", ctx: authed, req: &memberv1.UpdateMemberRoleRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
+		{name: "missing role", ctx: authed, req: &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: targetID}, wantCode: codes.InvalidArgument},
+		{
+			name:     "missing user_id in context",
+			ctx:      context.Background(),
+			req:      &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: targetID, Role: "admin"},
+			wantCode: codes.Unauthenticated,
+		},
+		{
+			name:     "unknown role",
+			ctx:      authed,
+			req:      &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: targetID, Role: "king"},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name:     "malformed target",
+			ctx:      authed,
+			req:      &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: "nope", Role: "admin"},
+			wantCode: codes.NotFound,
+		},
+		{
+			name:     "own role",
+			ctx:      authed,
+			req:      &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: actorID, Role: "member"},
+			wantCode: codes.PermissionDenied,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := service.UpdateMemberRole(tt.ctx, tt.req)
+			require.Error(t, err)
+			st, ok := status.FromError(err)
+			require.True(t, ok)
+			assert.Equal(t, tt.wantCode, st.Code())
+		})
+	}
+}

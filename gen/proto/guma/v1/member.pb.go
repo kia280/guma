@@ -344,6 +344,110 @@ func (x *UpdateMemberResponse) GetMember() *Member {
 	return nil
 }
 
+type UpdateMemberRoleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateMemberRoleRequest) Reset() {
+	*x = UpdateMemberRoleRequest{}
+	mi := &file_proto_guma_v1_member_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateMemberRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateMemberRoleRequest) ProtoMessage() {}
+
+func (x *UpdateMemberRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_member_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateMemberRoleRequest.ProtoReflect.Descriptor instead.
+func (*UpdateMemberRoleRequest) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UpdateMemberRoleRequest) GetGuildId() string {
+	if x != nil {
+		return x.GuildId
+	}
+	return ""
+}
+
+func (x *UpdateMemberRoleRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *UpdateMemberRoleRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+type UpdateMemberRoleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Member        *Member                `protobuf:"bytes,1,opt,name=member,proto3" json:"member,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateMemberRoleResponse) Reset() {
+	*x = UpdateMemberRoleResponse{}
+	mi := &file_proto_guma_v1_member_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateMemberRoleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateMemberRoleResponse) ProtoMessage() {}
+
+func (x *UpdateMemberRoleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_guma_v1_member_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateMemberRoleResponse.ProtoReflect.Descriptor instead.
+func (*UpdateMemberRoleResponse) Descriptor() ([]byte, []int) {
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *UpdateMemberRoleResponse) GetMember() *Member {
+	if x != nil {
+		return x.Member
+	}
+	return nil
+}
+
 type RemoveMemberRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	GuildId       string                 `protobuf:"bytes,1,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
@@ -354,7 +458,7 @@ type RemoveMemberRequest struct {
 
 func (x *RemoveMemberRequest) Reset() {
 	*x = RemoveMemberRequest{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[6]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -366,7 +470,7 @@ func (x *RemoveMemberRequest) String() string {
 func (*RemoveMemberRequest) ProtoMessage() {}
 
 func (x *RemoveMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[6]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -379,7 +483,7 @@ func (x *RemoveMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMemberRequest.ProtoReflect.Descriptor instead.
 func (*RemoveMemberRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{6}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RemoveMemberRequest) GetGuildId() string {
@@ -405,7 +509,7 @@ type RemoveMemberResponse struct {
 
 func (x *RemoveMemberResponse) Reset() {
 	*x = RemoveMemberResponse{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[7]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -417,7 +521,7 @@ func (x *RemoveMemberResponse) String() string {
 func (*RemoveMemberResponse) ProtoMessage() {}
 
 func (x *RemoveMemberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[7]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -430,7 +534,7 @@ func (x *RemoveMemberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMemberResponse.ProtoReflect.Descriptor instead.
 func (*RemoveMemberResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{7}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *RemoveMemberResponse) GetSuccess() bool {
@@ -452,7 +556,7 @@ type ListMembersRequest struct {
 
 func (x *ListMembersRequest) Reset() {
 	*x = ListMembersRequest{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[8]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -464,7 +568,7 @@ func (x *ListMembersRequest) String() string {
 func (*ListMembersRequest) ProtoMessage() {}
 
 func (x *ListMembersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[8]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -477,7 +581,7 @@ func (x *ListMembersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMembersRequest.ProtoReflect.Descriptor instead.
 func (*ListMembersRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{8}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListMembersRequest) GetGuildId() string {
@@ -519,7 +623,7 @@ type ListMembersResponse struct {
 
 func (x *ListMembersResponse) Reset() {
 	*x = ListMembersResponse{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[9]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -531,7 +635,7 @@ func (x *ListMembersResponse) String() string {
 func (*ListMembersResponse) ProtoMessage() {}
 
 func (x *ListMembersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[9]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -544,7 +648,7 @@ func (x *ListMembersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMembersResponse.ProtoReflect.Descriptor instead.
 func (*ListMembersResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{9}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListMembersResponse) GetMembers() []*Member {
@@ -578,7 +682,7 @@ type GetMemberRequest struct {
 
 func (x *GetMemberRequest) Reset() {
 	*x = GetMemberRequest{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[10]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -590,7 +694,7 @@ func (x *GetMemberRequest) String() string {
 func (*GetMemberRequest) ProtoMessage() {}
 
 func (x *GetMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[10]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -603,7 +707,7 @@ func (x *GetMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMemberRequest.ProtoReflect.Descriptor instead.
 func (*GetMemberRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{10}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetMemberRequest) GetGuildId() string {
@@ -629,7 +733,7 @@ type GetMemberResponse struct {
 
 func (x *GetMemberResponse) Reset() {
 	*x = GetMemberResponse{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -641,7 +745,7 @@ func (x *GetMemberResponse) String() string {
 func (*GetMemberResponse) ProtoMessage() {}
 
 func (x *GetMemberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[11]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -654,7 +758,7 @@ func (x *GetMemberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMemberResponse.ProtoReflect.Descriptor instead.
 func (*GetMemberResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{11}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *GetMemberResponse) GetMember() *Member {
@@ -676,7 +780,7 @@ type GenerateInviteCodeRequest struct {
 
 func (x *GenerateInviteCodeRequest) Reset() {
 	*x = GenerateInviteCodeRequest{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -688,7 +792,7 @@ func (x *GenerateInviteCodeRequest) String() string {
 func (*GenerateInviteCodeRequest) ProtoMessage() {}
 
 func (x *GenerateInviteCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[12]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -701,7 +805,7 @@ func (x *GenerateInviteCodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateInviteCodeRequest.ProtoReflect.Descriptor instead.
 func (*GenerateInviteCodeRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{12}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *GenerateInviteCodeRequest) GetGuildId() string {
@@ -741,7 +845,7 @@ type GenerateInviteCodeResponse struct {
 
 func (x *GenerateInviteCodeResponse) Reset() {
 	*x = GenerateInviteCodeResponse{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[13]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -753,7 +857,7 @@ func (x *GenerateInviteCodeResponse) String() string {
 func (*GenerateInviteCodeResponse) ProtoMessage() {}
 
 func (x *GenerateInviteCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[13]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -766,7 +870,7 @@ func (x *GenerateInviteCodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateInviteCodeResponse.ProtoReflect.Descriptor instead.
 func (*GenerateInviteCodeResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{13}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GenerateInviteCodeResponse) GetInvitation() *Invitation {
@@ -785,7 +889,7 @@ type ValidateInviteCodeRequest struct {
 
 func (x *ValidateInviteCodeRequest) Reset() {
 	*x = ValidateInviteCodeRequest{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[14]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -797,7 +901,7 @@ func (x *ValidateInviteCodeRequest) String() string {
 func (*ValidateInviteCodeRequest) ProtoMessage() {}
 
 func (x *ValidateInviteCodeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[14]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -810,7 +914,7 @@ func (x *ValidateInviteCodeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateInviteCodeRequest.ProtoReflect.Descriptor instead.
 func (*ValidateInviteCodeRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{14}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ValidateInviteCodeRequest) GetCode() string {
@@ -831,7 +935,7 @@ type ValidateInviteCodeResponse struct {
 
 func (x *ValidateInviteCodeResponse) Reset() {
 	*x = ValidateInviteCodeResponse{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -843,7 +947,7 @@ func (x *ValidateInviteCodeResponse) String() string {
 func (*ValidateInviteCodeResponse) ProtoMessage() {}
 
 func (x *ValidateInviteCodeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[15]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -856,7 +960,7 @@ func (x *ValidateInviteCodeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateInviteCodeResponse.ProtoReflect.Descriptor instead.
 func (*ValidateInviteCodeResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{15}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ValidateInviteCodeResponse) GetValid() bool {
@@ -891,7 +995,7 @@ type ListInvitesRequest struct {
 
 func (x *ListInvitesRequest) Reset() {
 	*x = ListInvitesRequest{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -903,7 +1007,7 @@ func (x *ListInvitesRequest) String() string {
 func (*ListInvitesRequest) ProtoMessage() {}
 
 func (x *ListInvitesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[16]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -916,7 +1020,7 @@ func (x *ListInvitesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListInvitesRequest.ProtoReflect.Descriptor instead.
 func (*ListInvitesRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{16}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ListInvitesRequest) GetGuildId() string {
@@ -950,7 +1054,7 @@ type ListInvitesResponse struct {
 
 func (x *ListInvitesResponse) Reset() {
 	*x = ListInvitesResponse{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -962,7 +1066,7 @@ func (x *ListInvitesResponse) String() string {
 func (*ListInvitesResponse) ProtoMessage() {}
 
 func (x *ListInvitesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[17]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -975,7 +1079,7 @@ func (x *ListInvitesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListInvitesResponse.ProtoReflect.Descriptor instead.
 func (*ListInvitesResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{17}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListInvitesResponse) GetInvitations() []*Invitation {
@@ -1002,7 +1106,7 @@ type RevokeInviteRequest struct {
 
 func (x *RevokeInviteRequest) Reset() {
 	*x = RevokeInviteRequest{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1014,7 +1118,7 @@ func (x *RevokeInviteRequest) String() string {
 func (*RevokeInviteRequest) ProtoMessage() {}
 
 func (x *RevokeInviteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[18]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1027,7 +1131,7 @@ func (x *RevokeInviteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeInviteRequest.ProtoReflect.Descriptor instead.
 func (*RevokeInviteRequest) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{18}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *RevokeInviteRequest) GetGuildId() string {
@@ -1053,7 +1157,7 @@ type RevokeInviteResponse struct {
 
 func (x *RevokeInviteResponse) Reset() {
 	*x = RevokeInviteResponse{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1065,7 +1169,7 @@ func (x *RevokeInviteResponse) String() string {
 func (*RevokeInviteResponse) ProtoMessage() {}
 
 func (x *RevokeInviteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[19]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1078,7 +1182,7 @@ func (x *RevokeInviteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeInviteResponse.ProtoReflect.Descriptor instead.
 func (*RevokeInviteResponse) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{19}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *RevokeInviteResponse) GetSuccess() bool {
@@ -1108,7 +1212,7 @@ type Member struct {
 
 func (x *Member) Reset() {
 	*x = Member{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[20]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1120,7 +1224,7 @@ func (x *Member) String() string {
 func (*Member) ProtoMessage() {}
 
 func (x *Member) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[20]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1133,7 +1237,7 @@ func (x *Member) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Member.ProtoReflect.Descriptor instead.
 func (*Member) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{20}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *Member) GetId() string {
@@ -1231,7 +1335,7 @@ type Invitation struct {
 
 func (x *Invitation) Reset() {
 	*x = Invitation{}
-	mi := &file_proto_guma_v1_member_proto_msgTypes[21]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1243,7 +1347,7 @@ func (x *Invitation) String() string {
 func (*Invitation) ProtoMessage() {}
 
 func (x *Invitation) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_guma_v1_member_proto_msgTypes[21]
+	mi := &file_proto_guma_v1_member_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1256,7 +1360,7 @@ func (x *Invitation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Invitation.ProtoReflect.Descriptor instead.
 func (*Invitation) Descriptor() ([]byte, []int) {
-	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{21}
+	return file_proto_guma_v1_member_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *Invitation) GetId() string {
@@ -1358,6 +1462,12 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"?\n" +
 	"\x14UpdateMemberResponse\x12'\n" +
+	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"a\n" +
+	"\x17UpdateMemberRoleRequest\x12\x19\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\"C\n" +
+	"\x18UpdateMemberRoleResponse\x12'\n" +
 	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"M\n" +
 	"\x13RemoveMemberRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
@@ -1443,11 +1553,13 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\n" +
 	"expires_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x18\n" +
 	"\arevoked\x18\n" +
-	" \x01(\bR\arevoked2\xd7\t\n" +
+	" \x01(\bR\arevoked2\xea\n" +
+	"\n" +
 	"\rMemberService\x12|\n" +
 	"\fInviteMember\x12\x1c.guma.v1.InviteMemberRequest\x1a\x1d.guma.v1.InviteMemberResponse\"/\x82\xd3\xe4\x93\x02):\x01*\"$/v1/guilds/{guild_id}/members/invite\x12^\n" +
 	"\tJoinGuild\x12\x19.guma.v1.JoinGuildRequest\x1a\x1a.guma.v1.JoinGuildResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/v1/guilds/join\x12\x81\x01\n" +
-	"\fUpdateMember\x12\x1c.guma.v1.UpdateMemberRequest\x1a\x1d.guma.v1.UpdateMemberResponse\"4\x82\xd3\xe4\x93\x02.:\x01*\x1a)/v1/guilds/{guild_id}/members/{member_id}\x12~\n" +
+	"\fUpdateMember\x12\x1c.guma.v1.UpdateMemberRequest\x1a\x1d.guma.v1.UpdateMemberResponse\"4\x82\xd3\xe4\x93\x02.:\x01*\x1a)/v1/guilds/{guild_id}/members/{member_id}\x12\x90\x01\n" +
+	"\x10UpdateMemberRole\x12 .guma.v1.UpdateMemberRoleRequest\x1a!.guma.v1.UpdateMemberRoleResponse\"7\x82\xd3\xe4\x93\x021:\x01*\x1a,/v1/guilds/{guild_id}/members/{user_id}/role\x12~\n" +
 	"\fRemoveMember\x12\x1c.guma.v1.RemoveMemberRequest\x1a\x1d.guma.v1.RemoveMemberResponse\"1\x82\xd3\xe4\x93\x02+*)/v1/guilds/{guild_id}/members/{member_id}\x12o\n" +
 	"\vListMembers\x12\x1b.guma.v1.ListMembersRequest\x1a\x1c.guma.v1.ListMembersResponse\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/guilds/{guild_id}/members\x12u\n" +
 	"\tGetMember\x12\x19.guma.v1.GetMemberRequest\x1a\x1a.guma.v1.GetMemberResponse\"1\x82\xd3\xe4\x93\x02+\x12)/v1/guilds/{guild_id}/members/{member_id}\x12\x87\x01\n" +
@@ -1468,7 +1580,7 @@ func file_proto_guma_v1_member_proto_rawDescGZIP() []byte {
 	return file_proto_guma_v1_member_proto_rawDescData
 }
 
-var file_proto_guma_v1_member_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_proto_guma_v1_member_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_proto_guma_v1_member_proto_goTypes = []any{
 	(*InviteMemberRequest)(nil),        // 0: guma.v1.InviteMemberRequest
 	(*InviteMemberResponse)(nil),       // 1: guma.v1.InviteMemberResponse
@@ -1476,66 +1588,71 @@ var file_proto_guma_v1_member_proto_goTypes = []any{
 	(*JoinGuildResponse)(nil),          // 3: guma.v1.JoinGuildResponse
 	(*UpdateMemberRequest)(nil),        // 4: guma.v1.UpdateMemberRequest
 	(*UpdateMemberResponse)(nil),       // 5: guma.v1.UpdateMemberResponse
-	(*RemoveMemberRequest)(nil),        // 6: guma.v1.RemoveMemberRequest
-	(*RemoveMemberResponse)(nil),       // 7: guma.v1.RemoveMemberResponse
-	(*ListMembersRequest)(nil),         // 8: guma.v1.ListMembersRequest
-	(*ListMembersResponse)(nil),        // 9: guma.v1.ListMembersResponse
-	(*GetMemberRequest)(nil),           // 10: guma.v1.GetMemberRequest
-	(*GetMemberResponse)(nil),          // 11: guma.v1.GetMemberResponse
-	(*GenerateInviteCodeRequest)(nil),  // 12: guma.v1.GenerateInviteCodeRequest
-	(*GenerateInviteCodeResponse)(nil), // 13: guma.v1.GenerateInviteCodeResponse
-	(*ValidateInviteCodeRequest)(nil),  // 14: guma.v1.ValidateInviteCodeRequest
-	(*ValidateInviteCodeResponse)(nil), // 15: guma.v1.ValidateInviteCodeResponse
-	(*ListInvitesRequest)(nil),         // 16: guma.v1.ListInvitesRequest
-	(*ListInvitesResponse)(nil),        // 17: guma.v1.ListInvitesResponse
-	(*RevokeInviteRequest)(nil),        // 18: guma.v1.RevokeInviteRequest
-	(*RevokeInviteResponse)(nil),       // 19: guma.v1.RevokeInviteResponse
-	(*Member)(nil),                     // 20: guma.v1.Member
-	(*Invitation)(nil),                 // 21: guma.v1.Invitation
-	nil,                                // 22: guma.v1.UpdateMemberRequest.ProfileEntry
-	nil,                                // 23: guma.v1.Member.ProfileEntry
-	(*timestamppb.Timestamp)(nil),      // 24: google.protobuf.Timestamp
+	(*UpdateMemberRoleRequest)(nil),    // 6: guma.v1.UpdateMemberRoleRequest
+	(*UpdateMemberRoleResponse)(nil),   // 7: guma.v1.UpdateMemberRoleResponse
+	(*RemoveMemberRequest)(nil),        // 8: guma.v1.RemoveMemberRequest
+	(*RemoveMemberResponse)(nil),       // 9: guma.v1.RemoveMemberResponse
+	(*ListMembersRequest)(nil),         // 10: guma.v1.ListMembersRequest
+	(*ListMembersResponse)(nil),        // 11: guma.v1.ListMembersResponse
+	(*GetMemberRequest)(nil),           // 12: guma.v1.GetMemberRequest
+	(*GetMemberResponse)(nil),          // 13: guma.v1.GetMemberResponse
+	(*GenerateInviteCodeRequest)(nil),  // 14: guma.v1.GenerateInviteCodeRequest
+	(*GenerateInviteCodeResponse)(nil), // 15: guma.v1.GenerateInviteCodeResponse
+	(*ValidateInviteCodeRequest)(nil),  // 16: guma.v1.ValidateInviteCodeRequest
+	(*ValidateInviteCodeResponse)(nil), // 17: guma.v1.ValidateInviteCodeResponse
+	(*ListInvitesRequest)(nil),         // 18: guma.v1.ListInvitesRequest
+	(*ListInvitesResponse)(nil),        // 19: guma.v1.ListInvitesResponse
+	(*RevokeInviteRequest)(nil),        // 20: guma.v1.RevokeInviteRequest
+	(*RevokeInviteResponse)(nil),       // 21: guma.v1.RevokeInviteResponse
+	(*Member)(nil),                     // 22: guma.v1.Member
+	(*Invitation)(nil),                 // 23: guma.v1.Invitation
+	nil,                                // 24: guma.v1.UpdateMemberRequest.ProfileEntry
+	nil,                                // 25: guma.v1.Member.ProfileEntry
+	(*timestamppb.Timestamp)(nil),      // 26: google.protobuf.Timestamp
 }
 var file_proto_guma_v1_member_proto_depIdxs = []int32{
-	21, // 0: guma.v1.InviteMemberResponse.invitation:type_name -> guma.v1.Invitation
-	20, // 1: guma.v1.JoinGuildResponse.member:type_name -> guma.v1.Member
-	22, // 2: guma.v1.UpdateMemberRequest.profile:type_name -> guma.v1.UpdateMemberRequest.ProfileEntry
-	20, // 3: guma.v1.UpdateMemberResponse.member:type_name -> guma.v1.Member
-	20, // 4: guma.v1.ListMembersResponse.members:type_name -> guma.v1.Member
-	20, // 5: guma.v1.GetMemberResponse.member:type_name -> guma.v1.Member
-	24, // 6: guma.v1.GenerateInviteCodeRequest.expires_at:type_name -> google.protobuf.Timestamp
-	21, // 7: guma.v1.GenerateInviteCodeResponse.invitation:type_name -> guma.v1.Invitation
-	21, // 8: guma.v1.ListInvitesResponse.invitations:type_name -> guma.v1.Invitation
-	23, // 9: guma.v1.Member.profile:type_name -> guma.v1.Member.ProfileEntry
-	24, // 10: guma.v1.Member.joined_at:type_name -> google.protobuf.Timestamp
-	24, // 11: guma.v1.Member.last_active:type_name -> google.protobuf.Timestamp
-	24, // 12: guma.v1.Invitation.created_at:type_name -> google.protobuf.Timestamp
-	24, // 13: guma.v1.Invitation.expires_at:type_name -> google.protobuf.Timestamp
-	0,  // 14: guma.v1.MemberService.InviteMember:input_type -> guma.v1.InviteMemberRequest
-	2,  // 15: guma.v1.MemberService.JoinGuild:input_type -> guma.v1.JoinGuildRequest
-	4,  // 16: guma.v1.MemberService.UpdateMember:input_type -> guma.v1.UpdateMemberRequest
-	6,  // 17: guma.v1.MemberService.RemoveMember:input_type -> guma.v1.RemoveMemberRequest
-	8,  // 18: guma.v1.MemberService.ListMembers:input_type -> guma.v1.ListMembersRequest
-	10, // 19: guma.v1.MemberService.GetMember:input_type -> guma.v1.GetMemberRequest
-	12, // 20: guma.v1.MemberService.GenerateInviteCode:input_type -> guma.v1.GenerateInviteCodeRequest
-	14, // 21: guma.v1.MemberService.ValidateInviteCode:input_type -> guma.v1.ValidateInviteCodeRequest
-	16, // 22: guma.v1.MemberService.ListInvites:input_type -> guma.v1.ListInvitesRequest
-	18, // 23: guma.v1.MemberService.RevokeInvite:input_type -> guma.v1.RevokeInviteRequest
-	1,  // 24: guma.v1.MemberService.InviteMember:output_type -> guma.v1.InviteMemberResponse
-	3,  // 25: guma.v1.MemberService.JoinGuild:output_type -> guma.v1.JoinGuildResponse
-	5,  // 26: guma.v1.MemberService.UpdateMember:output_type -> guma.v1.UpdateMemberResponse
-	7,  // 27: guma.v1.MemberService.RemoveMember:output_type -> guma.v1.RemoveMemberResponse
-	9,  // 28: guma.v1.MemberService.ListMembers:output_type -> guma.v1.ListMembersResponse
-	11, // 29: guma.v1.MemberService.GetMember:output_type -> guma.v1.GetMemberResponse
-	13, // 30: guma.v1.MemberService.GenerateInviteCode:output_type -> guma.v1.GenerateInviteCodeResponse
-	15, // 31: guma.v1.MemberService.ValidateInviteCode:output_type -> guma.v1.ValidateInviteCodeResponse
-	17, // 32: guma.v1.MemberService.ListInvites:output_type -> guma.v1.ListInvitesResponse
-	19, // 33: guma.v1.MemberService.RevokeInvite:output_type -> guma.v1.RevokeInviteResponse
-	24, // [24:34] is the sub-list for method output_type
-	14, // [14:24] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	23, // 0: guma.v1.InviteMemberResponse.invitation:type_name -> guma.v1.Invitation
+	22, // 1: guma.v1.JoinGuildResponse.member:type_name -> guma.v1.Member
+	24, // 2: guma.v1.UpdateMemberRequest.profile:type_name -> guma.v1.UpdateMemberRequest.ProfileEntry
+	22, // 3: guma.v1.UpdateMemberResponse.member:type_name -> guma.v1.Member
+	22, // 4: guma.v1.UpdateMemberRoleResponse.member:type_name -> guma.v1.Member
+	22, // 5: guma.v1.ListMembersResponse.members:type_name -> guma.v1.Member
+	22, // 6: guma.v1.GetMemberResponse.member:type_name -> guma.v1.Member
+	26, // 7: guma.v1.GenerateInviteCodeRequest.expires_at:type_name -> google.protobuf.Timestamp
+	23, // 8: guma.v1.GenerateInviteCodeResponse.invitation:type_name -> guma.v1.Invitation
+	23, // 9: guma.v1.ListInvitesResponse.invitations:type_name -> guma.v1.Invitation
+	25, // 10: guma.v1.Member.profile:type_name -> guma.v1.Member.ProfileEntry
+	26, // 11: guma.v1.Member.joined_at:type_name -> google.protobuf.Timestamp
+	26, // 12: guma.v1.Member.last_active:type_name -> google.protobuf.Timestamp
+	26, // 13: guma.v1.Invitation.created_at:type_name -> google.protobuf.Timestamp
+	26, // 14: guma.v1.Invitation.expires_at:type_name -> google.protobuf.Timestamp
+	0,  // 15: guma.v1.MemberService.InviteMember:input_type -> guma.v1.InviteMemberRequest
+	2,  // 16: guma.v1.MemberService.JoinGuild:input_type -> guma.v1.JoinGuildRequest
+	4,  // 17: guma.v1.MemberService.UpdateMember:input_type -> guma.v1.UpdateMemberRequest
+	6,  // 18: guma.v1.MemberService.UpdateMemberRole:input_type -> guma.v1.UpdateMemberRoleRequest
+	8,  // 19: guma.v1.MemberService.RemoveMember:input_type -> guma.v1.RemoveMemberRequest
+	10, // 20: guma.v1.MemberService.ListMembers:input_type -> guma.v1.ListMembersRequest
+	12, // 21: guma.v1.MemberService.GetMember:input_type -> guma.v1.GetMemberRequest
+	14, // 22: guma.v1.MemberService.GenerateInviteCode:input_type -> guma.v1.GenerateInviteCodeRequest
+	16, // 23: guma.v1.MemberService.ValidateInviteCode:input_type -> guma.v1.ValidateInviteCodeRequest
+	18, // 24: guma.v1.MemberService.ListInvites:input_type -> guma.v1.ListInvitesRequest
+	20, // 25: guma.v1.MemberService.RevokeInvite:input_type -> guma.v1.RevokeInviteRequest
+	1,  // 26: guma.v1.MemberService.InviteMember:output_type -> guma.v1.InviteMemberResponse
+	3,  // 27: guma.v1.MemberService.JoinGuild:output_type -> guma.v1.JoinGuildResponse
+	5,  // 28: guma.v1.MemberService.UpdateMember:output_type -> guma.v1.UpdateMemberResponse
+	7,  // 29: guma.v1.MemberService.UpdateMemberRole:output_type -> guma.v1.UpdateMemberRoleResponse
+	9,  // 30: guma.v1.MemberService.RemoveMember:output_type -> guma.v1.RemoveMemberResponse
+	11, // 31: guma.v1.MemberService.ListMembers:output_type -> guma.v1.ListMembersResponse
+	13, // 32: guma.v1.MemberService.GetMember:output_type -> guma.v1.GetMemberResponse
+	15, // 33: guma.v1.MemberService.GenerateInviteCode:output_type -> guma.v1.GenerateInviteCodeResponse
+	17, // 34: guma.v1.MemberService.ValidateInviteCode:output_type -> guma.v1.ValidateInviteCodeResponse
+	19, // 35: guma.v1.MemberService.ListInvites:output_type -> guma.v1.ListInvitesResponse
+	21, // 36: guma.v1.MemberService.RevokeInvite:output_type -> guma.v1.RevokeInviteResponse
+	26, // [26:37] is the sub-list for method output_type
+	15, // [15:26] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_member_proto_init() }
@@ -1549,7 +1666,7 @@ func file_proto_guma_v1_member_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_member_proto_rawDesc), len(file_proto_guma_v1_member_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

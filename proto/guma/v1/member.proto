@@ -29,6 +29,13 @@ service MemberService {
     };
   }
 
+  rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (UpdateMemberRoleResponse) {
+    option (google.api.http) = {
+      put: "/v1/guilds/{guild_id}/members/{user_id}/role"
+      body: "*"
+    };
+  }
+
   rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse) {
     option (google.api.http) = {
       delete: "/v1/guilds/{guild_id}/members/{member_id}"
@@ -103,6 +110,16 @@ message UpdateMemberRequest {
 }
 
 message UpdateMemberResponse {
+  Member member = 1;
+}
+
+message UpdateMemberRoleRequest {
+  string guild_id = 1;
+  string user_id = 2;
+  string role = 3;
+}
+
+message UpdateMemberRoleResponse {
   Member member = 1;
 }
 

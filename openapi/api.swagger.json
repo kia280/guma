@@ -3252,6 +3252,50 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/members/{userId}/role": {
+      "put": {
+        "operationId": "MemberService_UpdateMemberRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMemberRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MemberServiceUpdateMemberRoleBody"
+            }
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/roll-call-templates": {
       "get": {
         "operationId": "RollCallTemplateService_ListRollCallTemplates",
@@ -5230,6 +5274,14 @@
           "additionalProperties": {
             "type": "string"
           }
+        }
+      }
+    },
+    "MemberServiceUpdateMemberRoleBody": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
         }
       }
     },
@@ -8356,6 +8408,14 @@
       }
     },
     "v1UpdateMemberResponse": {
+      "type": "object",
+      "properties": {
+        "member": {
+          "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
+    "v1UpdateMemberRoleResponse": {
       "type": "object",
       "properties": {
         "member": {
