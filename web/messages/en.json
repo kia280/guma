@@ -39,7 +39,7 @@
     "wallet": "Wallet",
     "guildBank": "Guild Vault",
     "auction": "Auction",
-    "lottery": "Lottery",
+    "raffle": "Raffle",
     "admin": "Admin",
     "calendar": "Calendar",
     "expandSidebar": "Expand sidebar",
@@ -95,10 +95,10 @@
     "totalSpent": "Total Spent",
     "attendancePerWeek": "Attendance / wk",
     "activeAuctions": "Active Auctions",
-    "openLotteries": "Open Lotteries",
+    "openRaffles": "Open Raffles",
     "kindAuction": "Auction",
     "kindRollCall": "Roll call",
-    "kindLottery": "Lottery",
+    "kindRaffle": "Raffle",
     "kindCalendar": "Event",
     "previousSlide": "Previous overview",
     "nextSlide": "Next overview",
@@ -229,12 +229,12 @@
       "auctionBid": "Auction bid placed",
       "auctionRefund": "Auction bid refund",
       "auctionWin": "Auction won",
-      "lotteryTicket": "Lottery ticket purchase",
-      "lotteryWin": "Lottery prize",
+      "raffleTicket": "Raffle ticket purchase",
+      "raffleWin": "Raffle prize",
       "bankContribution": "Guild vault contribution",
       "fundRequestApproved": "Fund request approved",
       "auctionSale": "Auction sale",
-      "lotteryRefund": "Lottery ticket refund",
+      "raffleRefund": "Raffle ticket refund",
       "adminTransferOut": "Moved to {member} by admin {admin}",
       "adminTransferToBank": "Moved to the guild vault by admin {admin}",
       "adminTransferIn": "Moved from {member} by admin {admin}",
@@ -287,19 +287,19 @@
     "withdrawalRequestCancelFailed": "Could not cancel the withdrawal. It may have been reviewed already.",
     "heldForWithdrawals": "{amount} held for withdrawals pending review"
   },
-  "lotteryPage": {
+  "rafflePage": {
     "all": "All",
     "active": "Active",
     "upcoming": "Upcoming",
     "ended": "Ended",
-    "noLotteries": "No lotteries in this category",
-    "createLottery": "Create lottery",
-    "statusTabs": "Lottery status",
+    "noRaffles": "No raffles in this category",
+    "createRaffle": "Create raffle",
+    "statusTabs": "Raffle status",
     "drawStarted": "{title} is drawing now",
     "watchDraw": "Watch draw",
     "cancelled": "Cancelled"
   },
-  "lotteryCard": {
+  "raffleCard": {
     "drawComplete": "Draw complete",
     "drawingNow": "Drawing now",
     "watchDraw": "Watch draw",
@@ -322,7 +322,7 @@
       "ended": "Ended",
       "cancelled": "Cancelled"
     },
-    "cancelledFooter": "Lottery cancelled",
+    "cancelledFooter": "Raffle cancelled",
     "prize": "Prize",
     "plusItems": "Plus {items}"
   },
@@ -385,7 +385,7 @@
   "backpackItemCard": {
     "editNote": "Edit Note",
     "putToAuction": "Put to Auction",
-    "putToLottery": "Put to Lottery",
+    "putToRaffle": "Put to Raffle",
     "transfer": "Transfer",
     "withdraw": "Withdraw",
     "acquired": "Acquired",
@@ -395,7 +395,7 @@
     "actions": "Item actions",
     "acquiredFrom": {
       "auction": "Auction",
-      "lottery": "Lottery",
+      "raffle": "Raffle",
       "transfer": "Transfer",
       "admin": "Admin",
       "bank": "Guild vault request",
@@ -404,7 +404,7 @@
     "donate": "Donate to guild vault",
     "sourceWithLabel": {
       "transfer": "From {label}",
-      "lottery": "Lottery: {label}",
+      "raffle": "Raffle: {label}",
       "rollCall": "Roll call: {label}",
       "bank": "Guild vault request",
       "auction": "Auction",
@@ -491,7 +491,7 @@
     "loadingActivity": "Loading activity",
     "activityLoadError": "Couldn't load recent activity.",
     "retry": "Retry",
-    "noActivity": "No guild activity yet. Auctions, roll calls, lotteries, and new members will appear here.",
+    "noActivity": "No guild activity yet. Auctions, roll calls, raffles, and new members will appear here.",
     "totalMembers": "Total Members",
     "guildBalance": "Guild Balance",
     "activeEvents": "Active Events",
@@ -618,9 +618,9 @@
     "notAllowed": "Not allowed",
     "roleSummaries": {
       "owner": "Created the guild. Has every admin permission and is the only role that can delete the guild.",
-      "admin": "Manages the guild: edits settings, runs lotteries, and cancels auctions.",
+      "admin": "Manages the guild: edits settings, runs raffles, and cancels auctions.",
       "moderator": "Helps run day-to-day activities: creates roll calls and reviews guild vault requests.",
-      "member": "Takes part in guild activities: roll calls, auctions, lotteries, and the guild vault."
+      "member": "Takes part in guild activities: roll calls, auctions, raffles, and the guild vault."
     },
     "sections": {
       "guild": {
@@ -639,9 +639,9 @@
         "title": "Auctions",
         "description": "Item auctions and bidding"
       },
-      "lottery": {
-        "title": "Lotteries",
-        "description": "Lotteries and prize draws"
+      "raffle": {
+        "title": "Raffles",
+        "description": "Raffles and prize draws"
       },
       "wallet": {
         "title": "Wallet and backpack",
@@ -666,9 +666,9 @@
       "createAuction": "Create auctions",
       "placeBid": "Place bids",
       "cancelAuction": "Cancel auctions",
-      "buyTickets": "Buy lottery tickets",
-      "createLottery": "Create lotteries",
-      "drawLottery": "Draw lottery winners",
+      "buyTickets": "Buy raffle tickets",
+      "createRaffle": "Create raffles",
+      "drawRaffle": "Draw raffle winners",
       "changeDrawDate": "Change the draw date",
       "manageWallet": "Manage their own wallet and backpack",
       "reviewWithdrawals": "Approve or reject gold withdrawal requests",
@@ -678,9 +678,9 @@
       "completeRollCall": "Mark roll calls completed",
       "editAuction": "Edit any open auction (sellers can edit their own)",
       "deleteAuction": "Delete cancelled auctions",
-      "editLottery": "Edit lotteries",
-      "cancelLottery": "Cancel lotteries and refund tickets",
-      "deleteLottery": "Delete cancelled lotteries",
+      "editRaffle": "Edit raffles",
+      "cancelRaffle": "Cancel raffles and refund tickets",
+      "deleteRaffle": "Delete cancelled raffles",
       "manageMemberAssets": "View and move members' gold and backpack items"
     },
     "ownerLeaveNote": "The owner must transfer ownership before leaving the guild.",
@@ -750,7 +750,7 @@
     "amountMustBePositive": "Enter an amount greater than 0",
     "reasonRequired": "Enter a reason for the request",
     "typeAuctionProceeds": "Auction proceeds",
-    "typeLotteryRevenue": "Lottery ticket revenue",
+    "typeRaffleRevenue": "Raffle ticket revenue",
     "requestedByMe": "You requested this",
     "pendingRequestCount": "{count, plural, one {# pending request} other {# pending requests}}",
     "otherPendingRequests": "{count, plural, one {# other member also asked for it} other {# other members also asked for it}}",
@@ -764,7 +764,7 @@
     "deleteItemConfirm": "Delete item",
     "deleteItemSuccess": "{item} was deleted from the guild vault.",
     "deleteItemFailed": "Couldn't delete the item. Please try again.",
-    "deleteItemLocked": "This item is in an auction or lottery and cannot be deleted.",
+    "deleteItemLocked": "This item is in an auction or raffle and cannot be deleted.",
     "deleteItemNotAllowed": "Only the guild owner and admins can delete vault items."
   },
   "notificationsCard": {
@@ -921,7 +921,7 @@
     "withdrawalRequestApproved": "<b>{actor}</b> approved your withdrawal of <b>{amount}</b>",
     "withdrawalRequestRejected": "<b>{actor}</b> rejected your withdrawal of <b>{amount}</b>; the amount is back in your wallet",
     "auctionOutbid": "<b>{actor}</b> outbid you on <b>{item}</b> with {amount}",
-    "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
+    "raffleWon": "You placed #{rank} in <b>{raffle}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
     "auctionWon": "You won <b>{item}</b> for <b>{amount}</b>. It's in your backpack now",
     "auctionSold": "<b>{actor}</b> won <b>{item}</b> for <b>{amount}</b>, paid to {destination, select, wallet {your wallet} other {the guild vault}}",
     "auctionUnsold": "<b>{item}</b> ended without bids",
@@ -930,7 +930,7 @@
     "lootAssigned": "You received <b>{item}</b> from <b>{rollCall}</b>",
     "itemDelivered": "<b>{actor}</b> handed over <b>{item}</b> in game",
     "auctionCancelled": "<b>{item}</b> was cancelled{refunded, select, yes {. Your bid of <b>{amount}</b> was refunded} other {}}",
-    "lotteryCancelled": "<b>{lottery}</b> was cancelled. Your {tickets, plural, one {# ticket was} other {# tickets were}} refunded (<b>{amount}</b>)",
+    "raffleCancelled": "<b>{raffle}</b> was cancelled. Your {tickets, plural, one {# ticket was} other {# tickets were}} refunded (<b>{amount}</b>)",
     "memberRoleChanged": "<b>{actor}</b> changed your role from <b>{oldRole}</b> to <b>{newRole}</b>",
     "itemMovedByAdmin": "<b>{actor}</b> moved <b>{item}</b> from <b>{from}</b> to your backpack"
   },
@@ -1001,8 +1001,8 @@
     "emailDesc": "Receive updates via email",
     "auctionLabel": "Auction alerts",
     "auctionDesc": "Outbid alerts and auction results",
-    "lotteryLabel": "Lottery alerts",
-    "lotteryDesc": "Lottery draw results and wins",
+    "raffleLabel": "Raffle alerts",
+    "raffleDesc": "Raffle draw results and wins",
     "eventsLabel": "Event reminders",
     "eventsDesc": "Reminders for upcoming guild events",
     "rollCallLabel": "Roll call reminders",
@@ -1028,8 +1028,8 @@
     "section3Content": "Guild membership is subject to approval by guild administrators. Members must adhere to their guild's rules and codes of conduct. Guma reserves the right to suspend accounts that violate community guidelines.",
     "section4Title": "4. Virtual Currency & Transactions",
     "section4Content": "In-platform currency is for use within the Guma ecosystem only and has no real-world monetary value unless explicitly stated. All virtual transactions are final. Guma is not responsible for losses resulting from user error during transactions.",
-    "section5Title": "5. Auctions & Lotteries",
-    "section5Content": "Auction and lottery features are entertainment tools managed by guild administrators. Guma does not guarantee outcomes and is not liable for disputes arising from auction or lottery results. Guild administrators are responsible for fair administration.",
+    "section5Title": "5. Auctions & Raffles",
+    "section5Content": "Auction and raffle features are entertainment tools managed by guild administrators. Guma does not guarantee outcomes and is not liable for disputes arising from auction or raffle results. Guild administrators are responsible for fair administration.",
     "section6Title": "6. Content and Conduct",
     "section6Content": "You are solely responsible for content you submit or post on Guma. You agree not to post content that is offensive, harmful, or violates any laws. Guma may remove content and suspend accounts at its discretion.",
     "section7Title": "7. Privacy",
@@ -1184,7 +1184,7 @@
     "cancelRollCall": "Cancel roll call",
     "editRollCall": "Edit",
     "cancelConfirmTitle": "Cancel this roll call?",
-    "cancelConfirmBody": "Members will no longer be able to check in. Existing attendance stays on record. Loot from this roll call that is still available in the guild vault is removed, and pending requests for it are rejected; loot already in an auction or lottery follows that listing. This cannot be undone.",
+    "cancelConfirmBody": "Members will no longer be able to check in. Existing attendance stays on record. Loot from this roll call that is still available in the guild vault is removed, and pending requests for it are rejected; loot already in an auction or raffle follows that listing. This cannot be undone.",
     "cancelConfirm": "Cancel roll call",
     "cancelSuccess": "Roll call cancelled",
     "cancelSuccessDetail": "Members can no longer check in. Existing attendance stays on record.",
@@ -1302,10 +1302,10 @@
       "member": "Member"
     }
   },
-  "lotteryDetail": {
-    "notFound": "Lottery not found.",
+  "raffleDetail": {
+    "notFound": "Raffle not found.",
     "goBack": "Go back",
-    "dialogLabel": "Lottery details",
+    "dialogLabel": "Raffle details",
     "prizePool": "Prize pool",
     "ticketPrice": "Ticket price",
     "drawDate": "Draw time",
@@ -1344,26 +1344,26 @@
     "noWinners": "No tickets were sold, so there is no winner.",
     "purchaseSuccess": "Tickets purchased.",
     "purchaseSoldOut": "{count, plural, =0 {The tickets sold out before your purchase went through.} one {Only # ticket is left.} other {Only # tickets are left.}}",
-    "purchaseClosed": "This lottery is no longer selling tickets.",
+    "purchaseClosed": "This raffle is no longer selling tickets.",
     "insufficientBalance": "Your balance is too low for this purchase.",
     "yourBalance": "Your balance: {amount}",
     "purchaseFailed": "Could not purchase tickets. Please try again.",
-    "editLottery": "Edit",
-    "cancelLottery": "Cancel lottery",
-    "deleteLottery": "Delete",
-    "cancelConfirmTitle": "Cancel this lottery?",
+    "editRaffle": "Edit",
+    "cancelRaffle": "Cancel raffle",
+    "deleteRaffle": "Delete",
+    "cancelConfirmTitle": "Cancel this raffle?",
     "cancelConfirmBody": "Ticket sales stop and no winners will be drawn. {sold, plural, =0 {No tickets have been sold yet.} one {The # ticket sold is refunded to its buyer's wallet.} other {All # tickets sold are refunded to their buyers' wallets.}} Prizes from the guild vault or a backpack are returned. This cannot be undone.",
-    "cancelConfirm": "Cancel lottery",
-    "cancelFailed": "Couldn't cancel the lottery. Please try again.",
-    "cancelSuccess": "Lottery cancelled",
+    "cancelConfirm": "Cancel raffle",
+    "cancelFailed": "Couldn't cancel the raffle. Please try again.",
+    "cancelSuccess": "Raffle cancelled",
     "cancelSuccessDetail": "Every ticket has been refunded.",
-    "deleteConfirmTitle": "Delete this lottery?",
-    "deleteConfirmBody": "The lottery and its tickets are removed permanently. Refunds and other wallet transactions stay in everyone's history. This cannot be undone.",
-    "deleteConfirm": "Delete lottery",
-    "deleteFailed": "Couldn't delete the lottery. Please try again.",
-    "deleted": "Lottery deleted.",
-    "cancelledBanner": "This lottery was cancelled on {date}.",
-    "cancelledBannerNoDate": "This lottery was cancelled.",
+    "deleteConfirmTitle": "Delete this raffle?",
+    "deleteConfirmBody": "The raffle and its tickets are removed permanently. Refunds and other wallet transactions stay in everyone's history. This cannot be undone.",
+    "deleteConfirm": "Delete raffle",
+    "deleteFailed": "Couldn't delete the raffle. Please try again.",
+    "deleted": "Raffle deleted.",
+    "cancelledBanner": "This raffle was cancelled on {date}.",
+    "cancelledBannerNoDate": "This raffle was cancelled.",
     "cancelledBannerDetail": "All tickets were refunded and no winners will be drawn.",
     "cancelledCaption": "Cancelled",
     "prize": "Prize",
@@ -1374,11 +1374,11 @@
     "showLess": "Show less",
     "wheelLabel": "Draw wheel with {count, plural, one {# entry} other {# entries}}. The participant list below shows every name and chance."
   },
-  "createLotteryModal": {
-    "title": "Create lottery",
+  "createRaffleModal": {
+    "title": "Create raffle",
     "subtitle": "Set up a prize draw for guild members",
-    "lotteryTitle": "Lottery name",
-    "lotteryTitlePlaceholder": "e.g. Weekend Mega Draw",
+    "raffleTitle": "Raffle name",
+    "raffleTitlePlaceholder": "e.g. Weekend Mega Draw",
     "titleFromItem": "{item} raffle",
     "description": "Description",
     "prizeName": "Prize",
@@ -1389,9 +1389,9 @@
     "drawDate": "Draw time",
     "drawDateInPast": "The draw time must be in the future.",
     "cancel": "Cancel",
-    "create": "Create lottery",
-    "createFailed": "Could not create the lottery. Please try again.",
-    "created": "Lottery created.",
+    "create": "Create raffle",
+    "createFailed": "Could not create the raffle. Please try again.",
+    "created": "Raffle created.",
     "prizeSource": "Prize source",
     "prizeSourceManual": "Prize money or custom prize",
     "prizeSourceBank": "From guild vault",
@@ -1491,7 +1491,7 @@
   },
   "itemLock": {
     "auction": "In auction",
-    "lottery": "Lottery prize"
+    "raffle": "Raffle prize"
   },
   "backpackItemMoveModal": {
     "donateTitle": "Donate to guild vault",
@@ -1574,7 +1574,7 @@
     "actionsFor": "Actions for {item}",
     "assign": "Give to an attendee",
     "auction": "Put up for auction",
-    "lottery": "Raffle it",
+    "raffle": "Raffle it",
     "noAttendees": "No attendees yet",
     "assignTitle": "Give {item}",
     "assignDescription": "The item leaves the guild vault and goes straight to the attendee’s backpack.",
@@ -1595,7 +1595,7 @@
     "nameFor": "Name of {item}",
     "nameRequired": "Enter an item name",
     "pendingRequests": "{count, plural, one {# pending request} other {# pending requests}}",
-    "frozenHint": "Items that were handed out or are in an auction or lottery can't be changed.",
+    "frozenHint": "Items that were handed out or are in an auction or raffle can't be changed.",
     "removeHint": "{count, plural, one {# item will be removed from the guild vault, and pending requests for it will be rejected.} other {# items will be removed from the guild vault, and pending requests for them will be rejected.}}",
     "addLoot": "Add loot",
     "addHint": "New items go to the guild vault and stay linked to this roll call.",
@@ -1748,7 +1748,7 @@
       "request_approved": "{actor} approved {subject}'s request",
       "request_rejected": "{actor} declined {subject}'s request",
       "auction_listed": "{actor} put it up for auction",
-      "lottery_listed": "{actor} offered it as a prize in {label}",
+      "raffle_listed": "{actor} offered it as a prize in {label}",
       "withdrawn": "{actor} withdrew it",
       "retracted": "Removed when roll call {label} was cancelled",
       "kept": "Left in the guild vault when roll call {label} was completed",
@@ -1758,7 +1758,7 @@
     },
     "received": {
       "auction": "{actor} won it at auction",
-      "lottery": "{actor} won it in {label}",
+      "raffle": "{actor} won it in {label}",
       "transfer": "{subject} gave it to {actor}",
       "rollCall": "{actor} received it as roll call loot",
       "bank": "{actor} received it from the guild vault",
@@ -1771,7 +1771,7 @@
     },
     "view": {
       "auction": "View auction",
-      "lottery": "View lottery",
+      "raffle": "View raffle",
       "rollCall": "View roll call"
     },
     "adminDonated": "{label} moved it from {actor}'s backpack to the guild vault"
@@ -1797,14 +1797,14 @@
     "endBeforeStart": "The auction must end after it starts",
     "endShortened": "Once there are bids, the end time can only be extended"
   },
-  "lotteryEditModal": {
-    "title": "Edit lottery",
+  "raffleEditModal": {
+    "title": "Edit raffle",
     "save": "Save changes",
     "cancel": "Cancel",
-    "success": "Lottery updated.",
-    "failed": "Couldn't save the lottery. Please try again.",
-    "closed": "This lottery has been drawn or cancelled, or its tickets just started selling. Review the latest details and try again.",
-    "forbidden": "Only guild owners and admins can edit lotteries.",
+    "success": "Raffle updated.",
+    "failed": "Couldn't save the raffle. Please try again.",
+    "closed": "This raffle has been drawn or cancelled, or its tickets just started selling. Review the latest details and try again.",
+    "forbidden": "Only guild owners and admins can edit raffles.",
     "invalid": "Some details were rejected. Check the fields and try again.",
     "titleRequired": "Enter a title",
     "ticketPriceRequired": "Enter a ticket price greater than 0",
@@ -1812,7 +1812,7 @@
     "ticketsLockedHint": "Ticket price and limit are locked because tickets have been sold.",
     "prizes": "Prizes",
     "noPrizes": "No prizes.",
-    "prizesLockedHint": "Prizes can't be changed after the lottery is created."
+    "prizesLockedHint": "Prizes can't be changed after the raffle is created."
   },
   "userName": {
     "unknown": "Unknown member"

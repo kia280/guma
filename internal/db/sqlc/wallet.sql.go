@@ -367,7 +367,7 @@ SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
            CASE bi.source
                WHEN 'transfer' THEN member_display_name(bi.guild_id, bi.source_id)
                WHEN 'admin'    THEN member_display_name(bi.guild_id, bi.source_id)
-               WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
+               WHEN 'raffle'  THEN (SELECT l.title FROM raffles l WHERE l.id = bi.source_id)
                WHEN 'roll_call'  THEN (SELECT c.title FROM roll_calls c WHERE c.id = bi.source_id)
            END,
            ''
@@ -442,7 +442,7 @@ SELECT bi.id, bi.owner_id, bi.guild_id, bi.item,
            CASE bi.source
                WHEN 'transfer' THEN member_display_name(bi.guild_id, bi.source_id)
                WHEN 'admin'    THEN member_display_name(bi.guild_id, bi.source_id)
-               WHEN 'lottery'  THEN (SELECT l.title FROM lotteries l WHERE l.id = bi.source_id)
+               WHEN 'raffle'  THEN (SELECT l.title FROM raffles l WHERE l.id = bi.source_id)
                WHEN 'roll_call'  THEN (SELECT c.title FROM roll_calls c WHERE c.id = bi.source_id)
            END,
            ''

@@ -19,13 +19,13 @@ import { GrpcCode, apiErrorCode, isNotFoundError } from '@/lib/guma/errors';
 import { type FormatGold, formatPrize, prizeItemNames, useFormatGold } from '@/lib/guma/useFormatGold';
 import { emitLiveEvent } from '@/lib/live-events';
 import { useGuildPermissions } from '@/lib/permissions';
-import { lotteryStatusColor } from '@/lib/status-colors';
+import { raffleStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
-import type { Lottery, LotteryWinner } from '@/types/lottery';
+import type { Raffle, RaffleWinner } from '@/types/raffle';
 import { AsyncContent, DetailSkeleton } from './AsyncContent';
 import { ConfirmDialog } from './ConfirmDialog';
-import { LotteryEditModal } from './LotteryEditModal';
-import { LotteryWheel, type WheelEntry } from './LotteryWheel';
+import { RaffleEditModal } from './RaffleEditModal';
+import { RaffleWheel, type WheelEntry } from './RaffleWheel';
 import { UserAvatar } from './UserAvatar';
 
 const DRAW_RETRY_MS = 3000;
@@ -40,16 +40,16 @@ function formatCountdown(ms: number, withDays: (days: number, clock: string) => 
   return days > 0 ? withDays(days, clock) : clock;
 }
 
-const winnerEntryId = (winner: LotteryWinner) => winner.userId ?? winner.id;
+const winnerEntryId = (winner: RaffleWinner) => winner.userId ?? winner.id;
 
 function wheelEntries(
-  lottery: Lottery,
-  winners: LotteryWinner[],
+  raffle: Raffle,
+  winners: RaffleWinner[],
   describe: (tickets: number, chance: string) => string,
   formatGold: FormatGold,
   userName: (name: string) => string
 ): WheelEntry[] {
-  const participants = lottery.participants ?? [];
+  const participants = raffle.participants ?? [];
   const total = participants.reduce((sum, p) => sum + p.tickets, 0) || 1;
   const entries = participants.map(p => ({
     id: p.id,
@@ -66,13 +66,13 @@ function wheelEntries(
   return entries;
 }
 
-type LotteryDetailContentProps = {
+type RaffleDetailContentProps = {
   id: string;
   onClose?: () => void;
 };
 
-export default function LotteryDetailContent({ id, onClose }: LotteryDetailContentProps) {
-  const t = useTranslations('lotteryDetail');
+export default function RaffleDetailContent({ id, onClose }: RaffleDetailContentProps) {
+  const t = useTranslations('raffleDetail');
   const tCountdown = useTranslations('countdown');
   const userName = useUserName();
   const formatGold = useFormatGold();
@@ -81,7 +81,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const router = useRouter();
   const guildId = useCurrentGuildId();
 
-  const [lottery, setLottery] = React.useState<Lottery | null>(null);
+  const [raffle, setRaffle] = React.useState<Raffle | null>(null);
   const [isMissing, setIsMissing] = React.useState(false);
   const loadState = useLoadState();
   const notify = useToast();
@@ -94,14 +94,14 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const [isBuying, setIsBuying] = React.useState(false);
   const [phase, setPhase] = React.useState<DrawPhase>('idle');
   const [spinKey, setSpinKey] = React.useState(0);
-  const [drawWinners, setDrawWinners] = React.useState<LotteryWinner[]>([]);
+  const [drawWinners, setDrawWinners] = React.useState<RaffleWinner[]>([]);
   const editModal = useOverlayState();
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = React.useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = React.useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false);
   const retryTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
   const changedDuringDraw = React.useRef(false);
-  const lotteryRef = React.useRef(lottery);
+  const raffleRef = React.useRef(raffle);
   const phaseRef = React.useRef(phase);
   const currentUserId = useUserStore(state => state.user?.id);
   const { can } = useGuildPermissions();
@@ -113,9 +113,9 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   const load = React.useCallback(
     () =>
       apiClient
-        .getLottery(guildId, id)
+        .getRaffle(guildId, id)
         .then(data => {
-          setLottery(data);
+          setRaffle(data);
           setIsMissing(false);
           loadState.ready();
           return data;
@@ -125,7 +125,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
             setIsMissing(true);
           } else {
             loadState.failed();
-            notify.loadFailed(reload, 'lottery-detail');
+            notify.loadFailed(reload, 'raffle-detail');
           }
           return null;
         }),
@@ -137,22 +137,22 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   }, [load, reloadKey]);
 
   React.useEffect(() => {
-    lotteryRef.current = lottery;
+    raffleRef.current = raffle;
     phaseRef.current = phase;
   });
 
-  const startSpin = React.useCallback((winners: LotteryWinner[]) => {
+  const startSpin = React.useCallback((winners: RaffleWinner[]) => {
     setDrawWinners(winners);
     setPhase('spinning');
     setSpinKey(key => key + 1);
   }, []);
 
   const refresh = React.useCallback(() => {
-    const previousStatus = lotteryRef.current?.status;
+    const previousStatus = raffleRef.current?.status;
     apiClient
-      .getLottery(guildId, id)
+      .getRaffle(guildId, id)
       .then(data => {
-        setLottery(data);
+        setRaffle(data);
         setIsMissing(false);
         const winners = data.winners ?? [];
         if (previousStatus === 'active' && data.status === 'ended' && winners.length > 0 && phaseRef.current === 'idle') {
@@ -161,12 +161,12 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
       })
       .catch(err => {
         if (isNotFoundError(err)) setIsMissing(true);
-        else notify.loadFailed(reload, 'lottery-detail');
+        else notify.loadFailed(reload, 'raffle-detail');
       });
   }, [guildId, id, startSpin, notify, reload]);
 
   useLiveResource(
-    ['lottery'],
+    ['raffle'],
     () => {
       if (phaseRef.current !== 'drawing') {
         refresh();
@@ -185,8 +185,8 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
 
   React.useEffect(() => () => clearTimeout(retryTimer.current), []);
 
-  const drawTime = lottery ? new Date(lottery.drawDate).getTime() : 0;
-  const isDue = !!lottery && lottery.status === 'active' && now >= drawTime;
+  const drawTime = raffle ? new Date(raffle.drawDate).getTime() : 0;
+  const isDue = !!raffle && raffle.status === 'active' && now >= drawTime;
 
   React.useEffect(() => {
     if (!isDue || phase !== 'idle') return;
@@ -201,7 +201,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
       }, delay);
     };
     apiClient
-      .getLotteryWinners(guildId, id)
+      .getRaffleWinners(guildId, id)
       .then(async winners => {
         if (winners.length > 0) {
           startSpin(winners);
@@ -215,8 +215,8 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
       .catch(retryLater);
   }, [isDue, phase, guildId, id, load, startSpin]);
 
-  const hasCap = (lottery?.maxTickets ?? 0) > 0;
-  const ticketsLeft = lottery && hasCap ? Math.max(0, lottery.maxTickets - lottery.ticketsSold) : 0;
+  const hasCap = (raffle?.maxTickets ?? 0) > 0;
+  const ticketsLeft = raffle && hasCap ? Math.max(0, raffle.maxTickets - raffle.ticketsSold) : 0;
   React.useEffect(() => {
     if (ticketsLeft > 0) setQuantity(current => Math.min(current, ticketsLeft));
   }, [ticketsLeft]);
@@ -233,7 +233,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     );
   }
 
-  if (!lottery) {
+  if (!raffle) {
     return (
       <AsyncContent state={loadState.state} onRetry={reload} skeleton={<DetailSkeleton />}>
         {null}
@@ -241,29 +241,29 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     );
   }
 
-  const winners = drawWinners.length > 0 ? drawWinners : (lottery.winners ?? []);
+  const winners = drawWinners.length > 0 ? drawWinners : (raffle.winners ?? []);
   const entries = wheelEntries(
-    lottery,
+    raffle,
     winners,
     (tickets, chance) => t('wheelDetail', { count: tickets, chance }),
     formatGold,
     userName
   );
   const topWinner = winners[0];
-  const participants = lottery.participants ?? [];
-  const totalTickets = participants.reduce((sum, p) => sum + p.tickets, 0) || lottery.ticketsSold;
+  const participants = raffle.participants ?? [];
+  const totalTickets = participants.reduce((sum, p) => sum + p.tickets, 0) || raffle.ticketsSold;
   const myTickets = participants.find(p => p.id === currentUserId)?.tickets ?? 0;
-  const isUndrawn = (lottery.status === 'active' || lottery.status === 'upcoming') && phase === 'idle' && !isDue;
-  const canEdit = can('editLottery') && isUndrawn;
-  const canCancel = can('cancelLottery') && isUndrawn;
-  const isCancelled = lottery.status === 'cancelled';
-  const canDelete = can('deleteLottery') && isCancelled;
-  const soldPercent = hasCap ? Math.round((lottery.ticketsSold / lottery.maxTickets) * 100) : 0;
-  const isOpen = lottery.status === 'active' && !isDue && phase === 'idle';
-  const isSettled = lottery.status === 'ended' && (phase === 'idle' || phase === 'revealed');
-  const showWinners = phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended');
+  const isUndrawn = (raffle.status === 'active' || raffle.status === 'upcoming') && phase === 'idle' && !isDue;
+  const canEdit = can('editRaffle') && isUndrawn;
+  const canCancel = can('cancelRaffle') && isUndrawn;
+  const isCancelled = raffle.status === 'cancelled';
+  const canDelete = can('deleteRaffle') && isCancelled;
+  const soldPercent = hasCap ? Math.round((raffle.ticketsSold / raffle.maxTickets) * 100) : 0;
+  const isOpen = raffle.status === 'active' && !isDue && phase === 'idle';
+  const isSettled = raffle.status === 'ended' && (phase === 'idle' || phase === 'revealed');
+  const showWinners = phase === 'revealed' || (phase === 'idle' && raffle.status === 'ended');
 
-  const purchaseTotal = quantity * lottery.ticketPrice;
+  const purchaseTotal = quantity * raffle.ticketPrice;
   const exceedsBalance = isBalanceLoaded && purchaseTotal > balance;
 
   const purchaseErrorMessage = async (err: unknown, requested: number) => {
@@ -306,11 +306,11 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   };
 
   const announceChange = () => {
-    emitLiveEvent({ kind: 'resource', guildId, resource: 'lottery', resourceId: id });
+    emitLiveEvent({ kind: 'resource', guildId, resource: 'raffle', resourceId: id });
   };
 
-  const handleEditSaved = (updated: Lottery) => {
-    setLottery(current => (current ? { ...updated, participants: current.participants } : updated));
+  const handleEditSaved = (updated: Raffle) => {
+    setRaffle(current => (current ? { ...updated, participants: current.participants } : updated));
     load();
     announceChange();
   };
@@ -322,7 +322,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
 
   const handleCancelConfirm = async () => {
     try {
-      await apiClient.cancelLottery(guildId, id);
+      await apiClient.cancelRaffle(guildId, id);
     } finally {
       load();
       refreshMe();
@@ -331,29 +331,29 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
   };
 
   const handleDeleteConfirm = async () => {
-    await apiClient.deleteLottery(guildId, id);
+    await apiClient.deleteRaffle(guildId, id);
     announceChange();
     notify.success(t('deleted'));
     if (onClose) onClose();
-    else router.push('/dashboard/lottery');
+    else router.push('/dashboard/raffle');
   };
 
   const wheelCaption = () => {
     if (phase === 'drawing') return t('drawing');
     if (phase === 'spinning') return t('spinning');
     if (showWinners && topWinner) return t('winnerIs', { name: userName(topWinner.username) });
-    if (lottery.status === 'ended') return t('noWinners');
+    if (raffle.status === 'ended') return t('noWinners');
     if (isCancelled) return t('cancelledCaption');
-    if (lottery.status === 'upcoming') return t('notStarted');
+    if (raffle.status === 'upcoming') return t('notStarted');
     return t('drawsIn', {
       time: formatCountdown(drawTime - now, (days, clock) => tCountdown('daysClock', { days, clock })),
     });
   };
 
-  const itemPrizes = format.list(prizeItemNames(lottery.prizes, formatGold));
-  const rankedPrizes = [...(lottery.prizes ?? [])].sort((a, b) => a.rank - b.rank);
+  const itemPrizes = format.list(prizeItemNames(raffle.prizes, formatGold));
+  const rankedPrizes = [...(raffle.prizes ?? [])].sort((a, b) => a.rank - b.rank);
   const showPrizeList = rankedPrizes.length > 1;
-  const isLongDescription = (lottery.description?.length ?? 0) > DESCRIPTION_PREVIEW_LENGTH;
+  const isLongDescription = (raffle.description?.length ?? 0) > DESCRIPTION_PREVIEW_LENGTH;
 
   const sectionClass = onClose ? '' : 'rounded-xl border border-divider p-4';
   const stackGap = onClose ? 'gap-y-6' : 'gap-y-4';
@@ -362,13 +362,13 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
     <div className="flex flex-col gap-5">
       <div className={`flex flex-wrap items-start justify-between gap-3 ${onClose ? 'pr-8' : ''}`}>
         <div className="min-w-0 type-body">
-          <Chip size="sm" color={lotteryStatusColor[lottery.status]} variant="secondary" className="mb-1">
-            {t(`status.${lottery.status}`)}
+          <Chip size="sm" color={raffleStatusColor[raffle.status]} variant="secondary" className="mb-1">
+            {t(`status.${raffle.status}`)}
           </Chip>
-          <h2 className="type-title text-foreground wrap-break-word">{lottery.title}</h2>
+          <h2 className="type-title text-foreground wrap-break-word">{raffle.title}</h2>
         </div>
         <div className="min-w-0 sm:text-right">
-          {itemPrizes && lottery.prizePool <= 0 ? (
+          {itemPrizes && raffle.prizePool <= 0 ? (
             <>
               <p className="type-caption text-hint">{t('prize')}</p>
               <p className="type-heading text-foreground wrap-break-word">{itemPrizes}</p>
@@ -376,18 +376,18 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           ) : (
             <>
               <p className="type-caption text-hint">{t('prizePool')}</p>
-              <p className="type-display text-foreground">{formatGold(lottery.prizePool)}</p>
+              <p className="type-display text-foreground">{formatGold(raffle.prizePool)}</p>
               {itemPrizes && <p className="type-body text-subtle wrap-break-word">{t('plusItems', { items: itemPrizes })}</p>}
             </>
           )}
         </div>
-        {lottery.description && (
+        {raffle.description && (
           <div className="w-full type-body">
             <p
               id={descriptionId}
               className={`text-subtle whitespace-pre-line wrap-break-word ${isLongDescription && !isDescriptionExpanded ? 'line-clamp-3' : ''}`}
             >
-              {lottery.description}
+              {raffle.description}
             </p>
             {isLongDescription && (
               <Button
@@ -410,19 +410,19 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           {canEdit && (
             <Button variant="secondary" className="max-sm:h-11" onPress={editModal.open}>
               <Icon icon="solar:pen-linear" width={16} />
-              {t('editLottery')}
+              {t('editRaffle')}
             </Button>
           )}
           {canCancel && (
             <Button variant="danger-soft" className="max-sm:h-11" onPress={() => setIsCancelConfirmOpen(true)}>
               <Icon icon="solar:forbidden-circle-linear" width={16} />
-              {t('cancelLottery')}
+              {t('cancelRaffle')}
             </Button>
           )}
           {canDelete && (
             <Button variant="danger-soft" className="max-sm:h-11" onPress={() => setIsDeleteConfirmOpen(true)}>
               <Icon icon="solar:trash-bin-trash-linear" width={16} />
-              {t('deleteLottery')}
+              {t('deleteRaffle')}
             </Button>
           )}
         </div>
@@ -433,9 +433,9 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           <Icon icon="solar:forbidden-circle-linear" width={20} className="text-subtle shrink-0 mt-0.5" aria-hidden />
           <div className="min-w-0">
             <p className="type-body font-medium text-foreground">
-              {lottery.cancelledAt
+              {raffle.cancelledAt
                 ? t('cancelledBanner', {
-                    date: format.dateTime(new Date(lottery.cancelledAt), { dateStyle: 'medium', timeStyle: 'short' }),
+                    date: format.dateTime(new Date(raffle.cancelledAt), { dateStyle: 'medium', timeStyle: 'short' }),
                   })
                 : t('cancelledBannerNoDate')}
             </p>
@@ -483,14 +483,14 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           <dl className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-divider p-3">
               <dt className="type-caption text-hint">{t('ticketPrice')}</dt>
-              <dd className="type-subheading text-foreground tabular-nums">{formatGold(lottery.ticketPrice)}</dd>
+              <dd className="type-subheading text-foreground tabular-nums">{formatGold(raffle.ticketPrice)}</dd>
             </div>
             <div className="flex items-start justify-between gap-2 rounded-xl border border-divider p-3">
               <div className="min-w-0">
                 <dt className="type-caption text-hint">{t('drawDate')}</dt>
                 <dd className="type-subheading text-foreground tabular-nums">
-                  {format.dateTime(new Date(lottery.drawDate), {
-                    year: new Date(lottery.drawDate).getFullYear() === new Date(now).getFullYear() ? undefined : 'numeric',
+                  {format.dateTime(new Date(raffle.drawDate), {
+                    year: new Date(raffle.drawDate).getFullYear() === new Date(now).getFullYear() ? undefined : 'numeric',
                     month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
@@ -515,7 +515,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
               {hasCap ? (
                 <>
                   <div className="flex justify-between type-caption text-hint">
-                    <span>{t('ticketsSold', { sold: lottery.ticketsSold, max: lottery.maxTickets })}</span>
+                    <span>{t('ticketsSold', { sold: raffle.ticketsSold, max: raffle.maxTickets })}</span>
                     <span className="tabular-nums">{soldPercent}%</span>
                   </div>
                   <ProgressBar aria-label={t('ticketsSoldLabel')} value={soldPercent} color="accent" className="w-full">
@@ -525,7 +525,7 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
                   </ProgressBar>
                 </>
               ) : (
-                <p className="type-caption text-hint">{t('ticketsSoldUncapped', { sold: lottery.ticketsSold })}</p>
+                <p className="type-caption text-hint">{t('ticketsSoldUncapped', { sold: raffle.ticketsSold })}</p>
               )}
             </div>
           </dl>
@@ -588,11 +588,11 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
           className={`lg:col-start-1 lg:row-start-1 lg:row-span-2 flex flex-col items-center justify-center gap-4 rounded-xl border border-divider bg-surface-secondary p-4 sm:p-6 ${entries.length === 0 ? 'lg:self-start' : ''}`}
         >
           {entries.length > 0 ? (
-            <LotteryWheel
+            <RaffleWheel
               entries={entries}
               winnerId={topWinner && winnerEntryId(topWinner)}
               spinKey={spinKey}
-              isRevealed={phase === 'revealed' || (phase === 'idle' && lottery.status === 'ended')}
+              isRevealed={phase === 'revealed' || (phase === 'idle' && raffle.status === 'ended')}
               onSpinEnd={finishSpin}
               label={t('wheelLabel', { count: entries.length })}
             />
@@ -638,12 +638,12 @@ export default function LotteryDetailContent({ id, onClose }: LotteryDetailConte
       </div>
 
       {canEdit && (
-        <LotteryEditModal lottery={lottery} state={editModal} onSaved={handleEditSaved} onRejected={handleEditRejected} />
+        <RaffleEditModal raffle={raffle} state={editModal} onSaved={handleEditSaved} onRejected={handleEditRejected} />
       )}
 
       <ConfirmDialog
         heading={t('cancelConfirmTitle')}
-        body={t('cancelConfirmBody', { sold: lottery.ticketsSold })}
+        body={t('cancelConfirmBody', { sold: raffle.ticketsSold })}
         confirmLabel={t('cancelConfirm')}
         failedMessage={t('cancelFailed')}
         isOpen={isCancelConfirmOpen}

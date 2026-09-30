@@ -38,7 +38,7 @@
     "rollCall": "點名",
     "wallet": "錢包",
     "auction": "競標",
-    "lottery": "抽獎",
+    "raffle": "轉盤",
     "admin": "管理",
     "calendar": "王表",
     "guildBank": "公會倉庫",
@@ -95,10 +95,10 @@
     "totalSpent": "總支出",
     "attendancePerWeek": "每週出席次數",
     "activeAuctions": "進行中競標",
-    "openLotteries": "進行中抽獎",
+    "openRaffles": "進行中轉盤",
     "kindAuction": "競標",
     "kindRollCall": "點名",
-    "kindLottery": "抽獎",
+    "kindRaffle": "轉盤",
     "kindCalendar": "活動",
     "previousSlide": "上一個總覽",
     "nextSlide": "下一個總覽",
@@ -229,12 +229,12 @@
       "auctionBid": "拍賣出價",
       "auctionRefund": "拍賣出價退款",
       "auctionWin": "拍賣得標",
-      "lotteryTicket": "購買彩券",
-      "lotteryWin": "彩券獎金",
+      "raffleTicket": "購買彩券",
+      "raffleWin": "彩券獎金",
       "bankContribution": "公會倉庫捐獻",
       "fundRequestApproved": "資金申請核准",
       "auctionSale": "拍賣售出",
-      "lotteryRefund": "彩券退款",
+      "raffleRefund": "彩券退款",
       "adminTransferOut": "管理員 {admin} 移轉給 {member}",
       "adminTransferToBank": "管理員 {admin} 移轉至公會倉庫",
       "adminTransferIn": "管理員 {admin} 從 {member} 移轉",
@@ -287,20 +287,20 @@
     "withdrawalRequestCancelFailed": "無法取消提款，申請可能已被審核。",
     "heldForWithdrawals": "{amount} 保留於待審核的提款"
   },
-  "lotteryPage": {
+  "rafflePage": {
     "all": "全部",
     "active": "進行中",
     "upcoming": "即將開始",
     "ended": "已結束",
-    "noLotteries": "此分類沒有抽獎活動",
-    "createLottery": "建立抽獎",
-    "statusTabs": "抽獎狀態",
+    "noRaffles": "此分類沒有轉盤活動",
+    "createRaffle": "建立轉盤",
+    "statusTabs": "轉盤狀態",
     "drawStarted": "{title}正在開獎",
     "watchDraw": "觀看開獎",
     "cancelled": "已取消"
   },
-  "lotteryCard": {
-    "drawComplete": "抽獎已結束",
+  "raffleCard": {
+    "drawComplete": "轉盤已結束",
     "drawingNow": "開獎中",
     "watchDraw": "觀看開獎",
     "prizePool": "獎金池",
@@ -322,7 +322,7 @@
       "ended": "已結束",
       "cancelled": "已取消"
     },
-    "cancelledFooter": "抽獎已取消",
+    "cancelledFooter": "轉盤已取消",
     "prize": "獎品",
     "plusItems": "另加 {items}"
   },
@@ -385,7 +385,7 @@
   "backpackItemCard": {
     "editNote": "編輯備注",
     "putToAuction": "放入競標",
-    "putToLottery": "放入抽獎",
+    "putToRaffle": "放入轉盤",
     "transfer": "轉讓",
     "withdraw": "提取",
     "acquired": "取得時間",
@@ -395,7 +395,7 @@
     "actions": "物品操作",
     "acquiredFrom": {
       "auction": "競標",
-      "lottery": "抽獎",
+      "raffle": "轉盤",
       "transfer": "轉讓",
       "admin": "管理員",
       "bank": "公會倉庫申請",
@@ -404,7 +404,7 @@
     "donate": "捐給公會倉庫",
     "sourceWithLabel": {
       "transfer": "來自 {label}",
-      "lottery": "抽獎：{label}",
+      "raffle": "轉盤：{label}",
       "rollCall": "點名：{label}",
       "bank": "公會倉庫申請",
       "auction": "拍賣",
@@ -491,7 +491,7 @@
     "loadingActivity": "正在載入動態",
     "activityLoadError": "無法載入近期動態。",
     "retry": "重試",
-    "noActivity": "目前還沒有公會動態。競標、點名、抽獎與新成員加入都會顯示在這裡。",
+    "noActivity": "目前還沒有公會動態。競標、點名、轉盤與新成員加入都會顯示在這裡。",
     "totalMembers": "總成員數",
     "guildBalance": "公會餘額",
     "activeEvents": "進行中活動",
@@ -618,9 +618,9 @@
     "notAllowed": "不允許",
     "roleSummaries": {
       "owner": "公會建立者，擁有管理員的所有權限，也是唯一可以刪除公會的角色。",
-      "admin": "管理公會：編輯設定、舉辦抽獎並取消拍賣。",
+      "admin": "管理公會：編輯設定、舉辦轉盤並取消拍賣。",
       "moderator": "協助日常運作：建立點名並審核公會倉庫申請。",
-      "member": "參與公會活動：點名簽到、拍賣、抽獎與公會倉庫。"
+      "member": "參與公會活動：點名簽到、拍賣、轉盤與公會倉庫。"
     },
     "sections": {
       "guild": {
@@ -639,9 +639,9 @@
         "title": "拍賣",
         "description": "物品拍賣與出價"
       },
-      "lottery": {
-        "title": "抽獎",
-        "description": "抽獎與開獎"
+      "raffle": {
+        "title": "轉盤",
+        "description": "轉盤與開獎"
       },
       "wallet": {
         "title": "錢包與背包",
@@ -666,9 +666,9 @@
       "createAuction": "建立拍賣",
       "placeBid": "出價",
       "cancelAuction": "取消拍賣",
-      "buyTickets": "購買抽獎券",
-      "createLottery": "建立抽獎",
-      "drawLottery": "開獎",
+      "buyTickets": "購買轉盤券",
+      "createRaffle": "建立轉盤",
+      "drawRaffle": "開獎",
       "changeDrawDate": "變更開獎日期",
       "manageWallet": "管理自己的錢包與背包",
       "reviewWithdrawals": "核准或駁回金幣提款申請",
@@ -678,9 +678,9 @@
       "completeRollCall": "將點名標記為完成",
       "editAuction": "編輯任何進行中的競標（賣家可編輯自己的）",
       "deleteAuction": "刪除已取消的競標",
-      "editLottery": "編輯抽獎",
-      "cancelLottery": "取消抽獎並退還彩券",
-      "deleteLottery": "刪除已取消的抽獎",
+      "editRaffle": "編輯轉盤",
+      "cancelRaffle": "取消轉盤並退還彩券",
+      "deleteRaffle": "刪除已取消的轉盤",
       "manageMemberAssets": "查看並移轉成員的金幣與背包物品"
     },
     "ownerLeaveNote": "會長必須先轉移會長身分才能退出公會。",
@@ -750,7 +750,7 @@
     "amountMustBePositive": "請輸入大於 0 的金額",
     "reasonRequired": "請輸入申請原因",
     "typeAuctionProceeds": "拍賣收入",
-    "typeLotteryRevenue": "彩券收入",
+    "typeRaffleRevenue": "彩券收入",
     "requestedByMe": "你已申請",
     "pendingRequestCount": "{count} 筆待審申請",
     "otherPendingRequests": "另有 {count} 位成員也在申請",
@@ -764,7 +764,7 @@
     "deleteItemConfirm": "刪除物品",
     "deleteItemSuccess": "已從公會倉庫刪除「{item}」。",
     "deleteItemFailed": "無法刪除物品，請再試一次。",
-    "deleteItemLocked": "此物品正在拍賣或抽獎中，無法刪除。",
+    "deleteItemLocked": "此物品正在拍賣或轉盤中，無法刪除。",
     "deleteItemNotAllowed": "只有會長與管理員可以刪除倉庫物品。"
   },
   "notificationsCard": {
@@ -921,7 +921,7 @@
     "withdrawalRequestApproved": "<b>{actor}</b> 核准了你 <b>{amount}</b> 的提款",
     "withdrawalRequestRejected": "<b>{actor}</b> 拒絕了你 <b>{amount}</b> 的提款，金額已退回錢包",
     "auctionOutbid": "<b>{actor}</b> 以 {amount} 超過你在 <b>{item}</b> 的出價",
-    "lotteryWon": "你在 <b>{lottery}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
+    "raffleWon": "你在 <b>{raffle}</b> 抽中第 {rank} 名，獲得 <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
     "auctionWon": "你以 <b>{amount}</b> 得標 <b>{item}</b>，物品已放入背包",
     "auctionSold": "<b>{actor}</b> 以 <b>{amount}</b> 得標 <b>{item}</b>，款項已存入{destination, select, wallet {你的錢包} other {公會倉庫}}",
     "auctionUnsold": "<b>{item}</b> 已結束，無人出價",
@@ -930,7 +930,7 @@
     "lootAssigned": "你從 <b>{rollCall}</b> 獲得 <b>{item}</b>",
     "itemDelivered": "<b>{actor}</b> 已在遊戲中交付 <b>{item}</b>",
     "auctionCancelled": "<b>{item}</b> 已取消{refunded, select, yes {，你的出價 <b>{amount}</b> 已退回} other {}}",
-    "lotteryCancelled": "<b>{lottery}</b> 已取消，你的 {tickets} 張彩券已退款（<b>{amount}</b>）",
+    "raffleCancelled": "<b>{raffle}</b> 已取消，你的 {tickets} 張彩券已退款（<b>{amount}</b>）",
     "memberRoleChanged": "<b>{actor}</b> 將你的角色從 <b>{oldRole}</b> 變更為 <b>{newRole}</b>",
     "itemMovedByAdmin": "<b>{actor}</b> 將 <b>{item}</b> 從 <b>{from}</b> 移到你的背包"
   },
@@ -1001,8 +1001,8 @@
     "emailDesc": "透過電子郵件接收更新",
     "auctionLabel": "競標提醒",
     "auctionDesc": "被超標提醒與競標結果",
-    "lotteryLabel": "抽獎提醒",
-    "lotteryDesc": "抽獎結果與中獎通知",
+    "raffleLabel": "轉盤提醒",
+    "raffleDesc": "轉盤結果與中獎通知",
     "eventsLabel": "活動提醒",
     "eventsDesc": "即將到來的公會活動提醒",
     "rollCallLabel": "點名提醒",
@@ -1028,8 +1028,8 @@
     "section3Content": "公會成員資格須經公會管理員審核批准。成員必須遵守其公會的規則和行為準則。Guma 保留暫停違反社群準則之帳號的權利。",
     "section4Title": "4. 虛擬貨幣與交易",
     "section4Content": "平台內貨幣僅供在 Guma 生態系統內使用，除非明確說明，否則不具任何現實貨幣價值。所有虛擬交易均為最終結果。Guma 對使用者在交易中因操作錯誤造成的損失概不負責。",
-    "section5Title": "5. 競標與抽獎",
-    "section5Content": "競標和抽獎功能是由公會管理員管理的娛樂工具。Guma 不保證結果，也不對因競標或抽獎結果引起的爭議負責。公會管理員負責公平管理。",
+    "section5Title": "5. 競標與轉盤",
+    "section5Content": "競標和轉盤功能是由公會管理員管理的娛樂工具。Guma 不保證結果，也不對因競標或轉盤結果引起的爭議負責。公會管理員負責公平管理。",
     "section6Title": "6. 內容與行為",
     "section6Content": "您對在 Guma 上提交或發布的內容負全部責任。您同意不發布任何冒犯性、有害性或違反任何法律的內容。Guma 可自行決定刪除內容並暫停帳號。",
     "section7Title": "7. 隱私權",
@@ -1184,7 +1184,7 @@
     "cancelRollCall": "取消點名",
     "editRollCall": "編輯",
     "cancelConfirmTitle": "確定要取消這次點名？",
-    "cancelConfirmBody": "成員將無法再簽到，已簽到的出席紀錄會保留。這次點名仍可在公會倉庫申請的戰利品會被移除，相關的待審申請也會被拒絕；已在競標或抽獎中的戰利品依該活動結果處理。此操作無法復原。",
+    "cancelConfirmBody": "成員將無法再簽到，已簽到的出席紀錄會保留。這次點名仍可在公會倉庫申請的戰利品會被移除，相關的待審申請也會被拒絕；已在競標或轉盤中的戰利品依該活動結果處理。此操作無法復原。",
     "cancelConfirm": "取消點名",
     "cancelSuccess": "點名已取消",
     "cancelSuccessDetail": "成員已無法再簽到，已簽到的出席紀錄會保留。",
@@ -1302,10 +1302,10 @@
       "member": "成員"
     }
   },
-  "lotteryDetail": {
-    "notFound": "找不到這個抽獎。",
+  "raffleDetail": {
+    "notFound": "找不到這個轉盤。",
     "goBack": "返回",
-    "dialogLabel": "抽獎詳情",
+    "dialogLabel": "轉盤詳情",
     "prizePool": "獎金池",
     "ticketPrice": "票價",
     "drawDate": "開獎時間",
@@ -1344,26 +1344,26 @@
     "noWinners": "沒有人購票，本次無得獎者。",
     "purchaseSuccess": "彩券購買完成。",
     "purchaseSoldOut": "{count, plural, =0 {彩券在購買完成前已售完。} other {只剩 # 張彩券。}}",
-    "purchaseClosed": "這個抽獎已停止販售彩券。",
+    "purchaseClosed": "這個轉盤已停止販售彩券。",
     "insufficientBalance": "餘額不足以支付這次購買。",
     "yourBalance": "你的餘額：{amount}",
     "purchaseFailed": "無法購買彩券，請再試一次。",
-    "editLottery": "編輯",
-    "cancelLottery": "取消抽獎",
-    "deleteLottery": "刪除",
-    "cancelConfirmTitle": "要取消這個抽獎嗎？",
+    "editRaffle": "編輯",
+    "cancelRaffle": "取消轉盤",
+    "deleteRaffle": "刪除",
+    "cancelConfirmTitle": "要取消這個轉盤嗎？",
     "cancelConfirmBody": "彩券會停止販售，也不會開獎。{sold, plural, =0 {目前還沒有售出任何彩券。} other {已售出的 # 張彩券會全額退回購買者的錢包。}}來自公會倉庫或背包的獎品會歸還。此操作無法復原。",
-    "cancelConfirm": "取消抽獎",
-    "cancelFailed": "無法取消抽獎，請再試一次。",
-    "cancelSuccess": "抽獎已取消",
+    "cancelConfirm": "取消轉盤",
+    "cancelFailed": "無法取消轉盤，請再試一次。",
+    "cancelSuccess": "轉盤已取消",
     "cancelSuccessDetail": "所有彩券都已退款。",
-    "deleteConfirmTitle": "要刪除這個抽獎嗎？",
-    "deleteConfirmBody": "抽獎與彩券紀錄會被永久刪除，退款等錢包交易紀錄仍會保留。此操作無法復原。",
-    "deleteConfirm": "刪除抽獎",
-    "deleteFailed": "無法刪除抽獎，請再試一次。",
-    "deleted": "抽獎已刪除。",
-    "cancelledBanner": "這個抽獎已於 {date} 取消。",
-    "cancelledBannerNoDate": "這個抽獎已取消。",
+    "deleteConfirmTitle": "要刪除這個轉盤嗎？",
+    "deleteConfirmBody": "轉盤與彩券紀錄會被永久刪除，退款等錢包交易紀錄仍會保留。此操作無法復原。",
+    "deleteConfirm": "刪除轉盤",
+    "deleteFailed": "無法刪除轉盤，請再試一次。",
+    "deleted": "轉盤已刪除。",
+    "cancelledBanner": "這個轉盤已於 {date} 取消。",
+    "cancelledBannerNoDate": "這個轉盤已取消。",
     "cancelledBannerDetail": "所有彩券皆已退款，不會開獎。",
     "cancelledCaption": "已取消",
     "prize": "獎品",
@@ -1374,12 +1374,12 @@
     "showLess": "收合",
     "wheelLabel": "開獎輪盤，共 {count} 個區塊；下方參加者清單列出所有名稱與機率。"
   },
-  "createLotteryModal": {
-    "title": "建立抽獎",
-    "subtitle": "為公會成員設定一場抽獎活動",
-    "lotteryTitle": "抽獎名稱",
-    "lotteryTitlePlaceholder": "例如：週末大抽獎",
-    "titleFromItem": "{item} 抽獎",
+  "createRaffleModal": {
+    "title": "建立轉盤",
+    "subtitle": "為公會成員設定一場轉盤活動",
+    "raffleTitle": "轉盤名稱",
+    "raffleTitlePlaceholder": "例如：週末大轉盤",
+    "titleFromItem": "{item} 轉盤",
     "description": "說明",
     "prizeName": "獎品",
     "prizeNamePlaceholder": "物品或獎勵名稱",
@@ -1389,9 +1389,9 @@
     "drawDate": "開獎時間",
     "drawDateInPast": "開獎時間必須在未來。",
     "cancel": "取消",
-    "create": "建立抽獎",
-    "createFailed": "無法建立抽獎，請再試一次。",
-    "created": "抽獎已建立。",
+    "create": "建立轉盤",
+    "createFailed": "無法建立轉盤，請再試一次。",
+    "created": "轉盤已建立。",
     "prizeSource": "獎品來源",
     "prizeSourceManual": "獎金或自訂獎品",
     "prizeSourceBank": "從公會倉庫",
@@ -1491,7 +1491,7 @@
   },
   "itemLock": {
     "auction": "競標中",
-    "lottery": "抽獎獎品"
+    "raffle": "轉盤獎品"
   },
   "backpackItemMoveModal": {
     "donateTitle": "捐給公會倉庫",
@@ -1574,7 +1574,7 @@
     "actionsFor": "{item} 的操作",
     "assign": "分配給出席成員",
     "auction": "放入競標",
-    "lottery": "放入抽獎",
+    "raffle": "放入轉盤",
     "noAttendees": "尚無出席成員",
     "assignTitle": "分配 {item}",
     "assignDescription": "物品會從公會倉庫移出，直接放入該成員的背包。",
@@ -1595,7 +1595,7 @@
     "nameFor": "{item} 的名稱",
     "nameRequired": "請輸入物品名稱",
     "pendingRequests": "{count} 筆待審申請",
-    "frozenHint": "已分配或正在競標、抽獎中的物品無法修改。",
+    "frozenHint": "已分配或正在競標、轉盤中的物品無法修改。",
     "removeHint": "{count} 件物品會從公會倉庫移除，相關的待審申請也會被拒絕。",
     "addLoot": "新增戰利品",
     "addHint": "新增的物品會放入公會倉庫，並與此點名關聯。",
@@ -1748,7 +1748,7 @@
       "request_approved": "{actor} 核准了 {subject} 的申請",
       "request_rejected": "{actor} 駁回了 {subject} 的申請",
       "auction_listed": "{actor} 放入競標",
-      "lottery_listed": "{actor} 作為「{label}」的抽獎獎品",
+      "raffle_listed": "{actor} 作為「{label}」的轉盤獎品",
       "withdrawn": "{actor} 已提取",
       "retracted": "點名「{label}」取消後移除",
       "kept": "點名「{label}」完成時留在公會倉庫",
@@ -1758,7 +1758,7 @@
     },
     "received": {
       "auction": "{actor} 在競標中得標",
-      "lottery": "{actor} 在「{label}」中抽中",
+      "raffle": "{actor} 在「{label}」中抽中",
       "transfer": "{subject} 轉讓給 {actor}",
       "rollCall": "{actor} 獲得點名戰利品",
       "bank": "{actor} 從公會倉庫取得",
@@ -1771,7 +1771,7 @@
     },
     "view": {
       "auction": "查看競標",
-      "lottery": "查看抽獎",
+      "raffle": "查看轉盤",
       "rollCall": "查看點名"
     },
     "adminDonated": "{label} 將物品從 {actor} 的背包移至公會倉庫"
@@ -1797,14 +1797,14 @@
     "endBeforeStart": "結束時間必須晚於開始時間",
     "endShortened": "已有出價時，結束時間只能延後"
   },
-  "lotteryEditModal": {
-    "title": "編輯抽獎",
+  "raffleEditModal": {
+    "title": "編輯轉盤",
     "save": "儲存變更",
     "cancel": "取消",
-    "success": "抽獎已更新。",
-    "failed": "無法儲存抽獎，請再試一次。",
-    "closed": "這個抽獎已開獎、已取消，或剛開始售出彩券。請確認最新內容後再試一次。",
-    "forbidden": "只有公會擁有者和管理員可以編輯抽獎。",
+    "success": "轉盤已更新。",
+    "failed": "無法儲存轉盤，請再試一次。",
+    "closed": "這個轉盤已開獎、已取消，或剛開始售出彩券。請確認最新內容後再試一次。",
+    "forbidden": "只有公會擁有者和管理員可以編輯轉盤。",
     "invalid": "部分資料未通過驗證，請檢查欄位後再試一次。",
     "titleRequired": "請輸入標題",
     "ticketPriceRequired": "請輸入大於 0 的票價",
@@ -1812,7 +1812,7 @@
     "ticketsLockedHint": "已售出彩券，票價與張數上限無法修改。",
     "prizes": "獎品",
     "noPrizes": "沒有獎品。",
-    "prizesLockedHint": "建立抽獎後就無法修改獎品。"
+    "prizesLockedHint": "建立轉盤後就無法修改獎品。"
   },
   "userName": {
     "unknown": "未知成員"

@@ -85,7 +85,7 @@ const getActivityIcon = (type: string) => {
       return 'solar:sledgehammer-linear';
     case 'rollCall':
       return 'solar:clipboard-check-linear';
-    case 'lottery':
+    case 'raffle':
       return 'solar:ticket-linear';
     case 'join':
       return 'solar:user-plus-linear';
@@ -100,7 +100,7 @@ const getActivityColor = (type: string) => {
       return 'text-warning';
     case 'rollCall':
       return 'text-success';
-    case 'lottery':
+    case 'raffle':
       return 'text-accent';
     case 'join':
       return 'text-subtle';

@@ -1,4 +1,4 @@
-package lottery
+package raffle
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ func isOpenStatus(status string) bool {
 
 func checkOpen(status string, drawDate, now time.Time) error {
 	if !isOpenStatus(status) {
-		return fmt.Errorf("%w: lottery is not open for ticket purchase", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: raffle is not open for ticket purchase", errs.ErrFailedPrecondition)
 	}
 	if !drawDate.After(now) {
 		return fmt.Errorf("%w: ticket sales have closed", errs.ErrFailedPrecondition)
@@ -33,11 +33,11 @@ func checkOpen(status string, drawDate, now time.Time) error {
 func checkEditable(status string, drawDate, now time.Time) error {
 	switch {
 	case status == statusCancelled:
-		return fmt.Errorf("%w: lottery is cancelled", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: raffle is cancelled", errs.ErrFailedPrecondition)
 	case status == statusEnded:
-		return fmt.Errorf("%w: lottery already drawn", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: raffle already drawn", errs.ErrFailedPrecondition)
 	case !drawDate.After(now):
-		return fmt.Errorf("%w: lottery is due to be drawn", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: raffle is due to be drawn", errs.ErrFailedPrecondition)
 	}
 	return nil
 }
@@ -45,18 +45,18 @@ func checkEditable(status string, drawDate, now time.Time) error {
 func checkCancellable(status string, drawDate, now time.Time) error {
 	switch {
 	case status == statusCancelled:
-		return fmt.Errorf("%w: lottery is already cancelled", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: raffle is already cancelled", errs.ErrFailedPrecondition)
 	case status == statusEnded:
-		return fmt.Errorf("%w: lottery already drawn", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: raffle already drawn", errs.ErrFailedPrecondition)
 	case !drawDate.After(now):
-		return fmt.Errorf("%w: lottery is due to be drawn", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: raffle is due to be drawn", errs.ErrFailedPrecondition)
 	}
 	return nil
 }
 
 func checkDeletable(status string) error {
 	if status != statusCancelled {
-		return fmt.Errorf("%w: only cancelled lotteries can be deleted", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: only cancelled raffles can be deleted", errs.ErrFailedPrecondition)
 	}
 	return nil
 }
@@ -90,8 +90,8 @@ func validateUpdate(p UpdateParams, now time.Time) error {
 	return nil
 }
 
-func applyUpdate(current db.LockLotteryRow, p UpdateParams) (db.UpdateLotteryParams, error) {
-	next := db.UpdateLotteryParams{
+func applyUpdate(current db.LockRaffleRow, p UpdateParams) (db.UpdateRaffleParams, error) {
+	next := db.UpdateRaffleParams{
 		Title:             current.Title,
 		TicketPrice:       current.TicketPrice,
 		MaxTickets:        current.MaxTickets,
@@ -108,7 +108,7 @@ func applyUpdate(current db.LockLotteryRow, p UpdateParams) (db.UpdateLotteryPar
 	if p.DrawDate != "" {
 		at, err := time.Parse(time.RFC3339, p.DrawDate)
 		if err != nil {
-			return db.UpdateLotteryParams{}, fmt.Errorf("%w: draw_date must be an ISO 8601 datetime", errs.ErrInvalidArgument)
+			return db.UpdateRaffleParams{}, fmt.Errorf("%w: draw_date must be an ISO 8601 datetime", errs.ErrInvalidArgument)
 		}
 		next.DrawDate = at.UTC()
 	}
@@ -119,19 +119,19 @@ func applyUpdate(current db.LockLotteryRow, p UpdateParams) (db.UpdateLotteryPar
 	}
 	if p.TicketPrice != nil && *p.TicketPrice != current.TicketPrice {
 		if sold {
-			return db.UpdateLotteryParams{}, locked("ticket price")
+			return db.UpdateRaffleParams{}, locked("ticket price")
 		}
 		next.TicketPrice = *p.TicketPrice
 	}
 	if p.MaxTickets != nil && *p.MaxTickets != current.MaxTickets {
 		if sold {
-			return db.UpdateLotteryParams{}, locked("ticket limit")
+			return db.UpdateRaffleParams{}, locked("ticket limit")
 		}
 		next.MaxTickets = *p.MaxTickets
 	}
 	if p.MaxTicketsPerUser != nil && *p.MaxTicketsPerUser != current.MaxTicketsPerUser {
 		if sold {
-			return db.UpdateLotteryParams{}, locked("per-member ticket limit")
+			return db.UpdateRaffleParams{}, locked("per-member ticket limit")
 		}
 		next.MaxTicketsPerUser = *p.MaxTicketsPerUser
 	}

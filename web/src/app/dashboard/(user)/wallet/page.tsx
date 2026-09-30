@@ -27,7 +27,7 @@ import BackpackItemCard from '@/components/BackpackItemCard';
 import { BackpackItemMoveModal, type BackpackMoveMode } from '@/components/BackpackItemMoveModal';
 import { BalanceTrendChart } from '@/components/BalanceTrendChart';
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
-import { CreateLotteryModal, type LotteryPrizeItem } from '@/components/CreateLotteryModal';
+import { CreateRaffleModal, type RafflePrizeItem } from '@/components/CreateRaffleModal';
 import { ItemHistoryModal } from '@/components/ItemHistoryModal';
 import { MemberComboBox, type MemberOption } from '@/components/MemberComboBox';
 import { UserAvatar } from '@/components/UserAvatar';
@@ -52,7 +52,7 @@ import type { MockUser } from '@/types/user';
 import type { Transaction, Wallet as WalletType, WithdrawalRequest } from '@/types/wallet';
 
 const LIVE_WITHDRAWAL_RESOURCES: readonly LiveResource[] = ['withdrawal'];
-const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'backpack'];
+const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'raffle', 'backpack'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
 const TRANSACTION_KIND_LABELS: Record<string, string> = {
@@ -64,8 +64,8 @@ const TRANSACTION_KIND_LABELS: Record<string, string> = {
   PENALTY: 'penalty',
   AUCTION_WIN: 'auctionWin',
   AUCTION_SALE: 'auctionSale',
-  LOTTERY_TICKET: 'lotteryTicket',
-  LOTTERY_WIN: 'lotteryWin',
+  RAFFLE_TICKET: 'raffleTicket',
+  RAFFLE_WIN: 'raffleWin',
   BANK_CONTRIBUTION: 'bankContribution',
   FUND_REQUEST_APPROVED: 'fundRequestApproved',
   ROLL_CALL_GOLD: 'rollCallGold',
@@ -103,8 +103,8 @@ const transactionLabelKey = (transaction: Transaction): string | undefined => {
   if (transaction.kind === 'AUCTION_BID') {
     return transaction.amount > 0 ? 'auctionRefund' : 'auctionBid';
   }
-  if (transaction.kind === 'LOTTERY_TICKET' && transaction.amount > 0) {
-    return 'lotteryRefund';
+  if (transaction.kind === 'RAFFLE_TICKET' && transaction.amount > 0) {
+    return 'raffleRefund';
   }
   if (transaction.kind === 'ADMIN_TRANSFER_OUT') {
     return transaction.referenceType === 'bank' ? 'adminTransferToBank' : 'adminTransferOut';
@@ -126,8 +126,8 @@ const transactionHref = (transaction: Transaction): string | undefined => {
   switch (transaction.referenceType) {
     case 'auction':
       return `/dashboard/auction/${transaction.referenceId}`;
-    case 'lottery':
-      return `/dashboard/lottery/${transaction.referenceId}`;
+    case 'raffle':
+      return `/dashboard/raffle/${transaction.referenceId}`;
     case 'fund_request':
       return `/dashboard/guild-bank?request=${transaction.referenceId}`;
     case 'roll_call':
@@ -176,8 +176,8 @@ const getTransactionIcon = (transaction: Transaction) => {
     case 'AUCTION_WIN':
     case 'AUCTION_SALE':
       return 'solar:sledgehammer-linear';
-    case 'LOTTERY_TICKET':
-    case 'LOTTERY_WIN':
+    case 'RAFFLE_TICKET':
+    case 'RAFFLE_WIN':
       return 'solar:ticket-linear';
     case 'BANK_CONTRIBUTION':
     case 'FUND_REQUEST_APPROVED':
@@ -227,14 +227,14 @@ export default function WalletPage() {
   const withdrawModalState = useOverlayState();
   const itemWithdrawModalState = useOverlayState();
   const auctionModalState = useOverlayState();
-  const lotteryModalState = useOverlayState();
+  const raffleModalState = useOverlayState();
   const moveModalState = useOverlayState();
   const historyModalState = useOverlayState();
   const [historyItem, setHistoryItem] = React.useState<BackpackItem | null>(null);
   const [moveMode, setMoveMode] = React.useState<BackpackMoveMode>('donate');
   const [moveItem, setMoveItem] = React.useState<BackpackItem | null>(null);
   const [auctionItem, setAuctionItem] = React.useState<AuctionDraftItem | null>(null);
-  const [lotteryPrize, setLotteryPrize] = React.useState<LotteryPrizeItem | null>(null);
+  const [rafflePrize, setRafflePrize] = React.useState<RafflePrizeItem | null>(null);
 
   const [transferAmount, setTransferAmount] = React.useState('');
   const [transferRecipient, setTransferRecipient] = React.useState('');
@@ -990,11 +990,11 @@ export default function WalletPage() {
                   });
                   auctionModalState.open();
                 }}
-                onPutToLottery={
-                  can('createLottery')
+                onPutToRaffle={
+                  can('createRaffle')
                     ? i => {
-                        setLotteryPrize({ name: i.item.name, source: { backpackItemId: i.id } });
-                        lotteryModalState.open();
+                        setRafflePrize({ name: i.item.name, source: { backpackItemId: i.id } });
+                        raffleModalState.open();
                       }
                     : undefined
                 }
@@ -1013,7 +1013,7 @@ export default function WalletPage() {
           )}
           </AsyncContent>
           <CreateAuctionModal state={auctionModalState} item={auctionItem} onCreated={refetchBackpack} />
-          <CreateLotteryModal state={lotteryModalState} prizeItem={lotteryPrize} onCreated={refetchBackpack} />
+          <CreateRaffleModal state={raffleModalState} prizeItem={rafflePrize} onCreated={refetchBackpack} />
           <BackpackItemMoveModal
             state={moveModalState}
             mode={moveMode}

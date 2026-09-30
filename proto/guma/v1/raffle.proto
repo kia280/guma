@@ -8,64 +8,64 @@ import "proto/guma/v1/item.proto";
 
 option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
 
-service LotteryService {
-  rpc ListLotteries(ListLotteriesRequest) returns (ListLotteriesResponse) {
+service RaffleService {
+  rpc ListRaffles(ListRafflesRequest) returns (ListRafflesResponse) {
     option (google.api.http) = {
-      get: "/v1/guilds/{guild_id}/lotteries"
+      get: "/v1/guilds/{guild_id}/raffles"
     };
   }
 
-  rpc GetLottery(GetLotteryRequest) returns (GetLotteryResponse) {
+  rpc GetRaffle(GetRaffleRequest) returns (GetRaffleResponse) {
     option (google.api.http) = {
-      get: "/v1/guilds/{guild_id}/lotteries/{lottery_id}"
+      get: "/v1/guilds/{guild_id}/raffles/{raffle_id}"
     };
   }
 
-  rpc CreateLottery(CreateLotteryRequest) returns (CreateLotteryResponse) {
+  rpc CreateRaffle(CreateRaffleRequest) returns (CreateRaffleResponse) {
     option (google.api.http) = {
-      post: "/v1/guilds/{guild_id}/lotteries"
+      post: "/v1/guilds/{guild_id}/raffles"
       body: "*"
     };
   }
 
   rpc PurchaseTickets(PurchaseTicketsRequest) returns (PurchaseTicketsResponse) {
     option (google.api.http) = {
-      post: "/v1/guilds/{guild_id}/lotteries/{lottery_id}/tickets"
+      post: "/v1/guilds/{guild_id}/raffles/{raffle_id}/tickets"
       body: "*"
     };
   }
 
-  rpc GetLotteryWinners(GetLotteryWinnersRequest) returns (GetLotteryWinnersResponse) {
+  rpc GetRaffleWinners(GetRaffleWinnersRequest) returns (GetRaffleWinnersResponse) {
     option (google.api.http) = {
-      get: "/v1/guilds/{guild_id}/lotteries/{lottery_id}/winners"
+      get: "/v1/guilds/{guild_id}/raffles/{raffle_id}/winners"
     };
   }
 
-  // Update a lottery that has not been drawn yet (admin action)
-  rpc UpdateLottery(UpdateLotteryRequest) returns (UpdateLotteryResponse) {
+  // Update a raffle that has not been drawn yet (admin action)
+  rpc UpdateRaffle(UpdateRaffleRequest) returns (UpdateRaffleResponse) {
     option (google.api.http) = {
-      patch: "/v1/guilds/{guild_id}/lotteries/{lottery_id}"
+      patch: "/v1/guilds/{guild_id}/raffles/{raffle_id}"
       body: "*"
     };
   }
 
-  rpc CancelLottery(CancelLotteryRequest) returns (CancelLotteryResponse) {
+  rpc CancelRaffle(CancelRaffleRequest) returns (CancelRaffleResponse) {
     option (google.api.http) = {
-      post: "/v1/guilds/{guild_id}/lotteries/{lottery_id}/cancel"
+      post: "/v1/guilds/{guild_id}/raffles/{raffle_id}/cancel"
       body: "*"
     };
   }
 
-  rpc DeleteLottery(DeleteLotteryRequest) returns (DeleteLotteryResponse) {
+  rpc DeleteRaffle(DeleteRaffleRequest) returns (DeleteRaffleResponse) {
     option (google.api.http) = {
-      delete: "/v1/guilds/{guild_id}/lotteries/{lottery_id}"
+      delete: "/v1/guilds/{guild_id}/raffles/{raffle_id}"
     };
   }
 
-  // Draw the lottery manually (admin action)
-  rpc DrawLottery(DrawLotteryRequest) returns (DrawLotteryResponse) {
+  // Draw the raffle manually (admin action)
+  rpc DrawRaffle(DrawRaffleRequest) returns (DrawRaffleResponse) {
     option (google.api.http) = {
-      post: "/v1/guilds/{guild_id}/lotteries/{lottery_id}/draw"
+      post: "/v1/guilds/{guild_id}/raffles/{raffle_id}/draw"
       body: "*"
     };
   }
@@ -73,36 +73,36 @@ service LotteryService {
   // List tickets owned by the current user
   rpc ListMyTickets(ListMyTicketsRequest) returns (ListMyTicketsResponse) {
     option (google.api.http) = {
-      get: "/v1/me/lottery-tickets"
+      get: "/v1/me/raffle-tickets"
     };
   }
 }
 
 // Request/Response messages
 
-message ListLotteriesRequest {
+message ListRafflesRequest {
   string guild_id = 1;
   string status = 2;     // "active" | "upcoming" | "ended" | "cancelled" | "" (all)
   int32 page_size = 3;
   string page_token = 4;
 }
 
-message ListLotteriesResponse {
-  repeated Lottery lotteries = 1;
+message ListRafflesResponse {
+  repeated Raffle raffles = 1;
   string next_page_token = 2;
   int32 total_count = 3;
 }
 
-message GetLotteryRequest {
+message GetRaffleRequest {
   string guild_id = 1;
-  string lottery_id = 2;
+  string raffle_id = 2;
 }
 
-message GetLotteryResponse {
-  Lottery lottery = 1;
+message GetRaffleResponse {
+  Raffle raffle = 1;
 }
 
-message CreateLotteryRequest {
+message CreateRaffleRequest {
   string guild_id = 1;
   string title = 2;
   string description = 3;
@@ -110,46 +110,46 @@ message CreateLotteryRequest {
   int32 max_tickets = 5;         // 0 = unlimited
   int32 max_tickets_per_user = 6; // 0 = unlimited
   string draw_date = 7;           // ISO 8601 datetime
-  repeated LotteryPrize prizes = 8;
+  repeated RafflePrize prizes = 8;
 }
 
-message CreateLotteryResponse {
-  Lottery lottery = 1;
+message CreateRaffleResponse {
+  Raffle raffle = 1;
 }
 
 message PurchaseTicketsRequest {
   string guild_id = 1;
-  string lottery_id = 2;
+  string raffle_id = 2;
   int32 quantity = 3;
 }
 
 message PurchaseTicketsResponse {
-  repeated LotteryTicket tickets = 1;
+  repeated RaffleTicket tickets = 1;
   int64 total_cost = 2;
 }
 
-message GetLotteryWinnersRequest {
+message GetRaffleWinnersRequest {
   string guild_id = 1;
-  string lottery_id = 2;
+  string raffle_id = 2;
 }
 
-message GetLotteryWinnersResponse {
-  repeated LotteryWinner winners = 1;
+message GetRaffleWinnersResponse {
+  repeated RaffleWinner winners = 1;
 }
 
-message DrawLotteryRequest {
+message DrawRaffleRequest {
   string guild_id = 1;
-  string lottery_id = 2;
+  string raffle_id = 2;
 }
 
-message DrawLotteryResponse {
-  Lottery lottery = 1;
-  repeated LotteryWinner winners = 2;
+message DrawRaffleResponse {
+  Raffle raffle = 1;
+  repeated RaffleWinner winners = 2;
 }
 
-message UpdateLotteryRequest {
+message UpdateRaffleRequest {
   string guild_id = 1;
-  string lottery_id = 2;
+  string raffle_id = 2;
   string draw_date = 3; // ISO 8601 datetime; must be in the future
   optional string title = 4;
   optional string description = 5;
@@ -158,25 +158,25 @@ message UpdateLotteryRequest {
   optional int32 max_tickets_per_user = 8;
 }
 
-message UpdateLotteryResponse {
-  Lottery lottery = 1;
+message UpdateRaffleResponse {
+  Raffle raffle = 1;
 }
 
-message CancelLotteryRequest {
+message CancelRaffleRequest {
   string guild_id = 1;
-  string lottery_id = 2;
+  string raffle_id = 2;
 }
 
-message CancelLotteryResponse {
-  Lottery lottery = 1;
+message CancelRaffleResponse {
+  Raffle raffle = 1;
 }
 
-message DeleteLotteryRequest {
+message DeleteRaffleRequest {
   string guild_id = 1;
-  string lottery_id = 2;
+  string raffle_id = 2;
 }
 
-message DeleteLotteryResponse {
+message DeleteRaffleResponse {
   bool success = 1;
 }
 
@@ -187,16 +187,16 @@ message ListMyTicketsRequest {
 }
 
 message ListMyTicketsResponse {
-  repeated LotteryTicket tickets = 1;
+  repeated RaffleTicket tickets = 1;
   string next_page_token = 2;
   int32 total_count = 3;
 }
 
 // Data structures
 
-// LotteryStatus values: upcoming, active, ended, cancelled
+// RaffleStatus values: upcoming, active, ended, cancelled
 
-message Lottery {
+message Raffle {
   string id = 1;
   string guild_id = 2;
   string created_by = 3;
@@ -208,14 +208,14 @@ message Lottery {
   int32 max_tickets_per_user = 9;
   string status = 10;
   string draw_date = 11;        // ISO 8601 datetime
-  repeated LotteryPrize prizes = 12;
-  repeated LotteryWinner winners = 13;
+  repeated RafflePrize prizes = 12;
+  repeated RaffleWinner winners = 13;
   google.protobuf.Timestamp created_at = 14;
   google.protobuf.Timestamp updated_at = 15;
   google.protobuf.Timestamp cancelled_at = 16;
 }
 
-message LotteryPrize {
+message RafflePrize {
   int32 rank = 1;          // 1st, 2nd, 3rd place
   string description = 2;
   int64 amount = 3;        // Currency prize; 0 if item prize
@@ -223,17 +223,17 @@ message LotteryPrize {
   ItemSourceRef source = 5;
 }
 
-message LotteryTicket {
+message RaffleTicket {
   string id = 1;
-  string lottery_id = 2;
+  string raffle_id = 2;
   string user_id = 3;
   string ticket_number = 4;
   google.protobuf.Timestamp purchased_at = 5;
 }
 
-message LotteryWinner {
+message RaffleWinner {
   string id = 1;
-  string lottery_id = 2;
+  string raffle_id = 2;
   string user_id = 3;
   string username = 4;
   string avatar_url = 5;

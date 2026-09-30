@@ -87,7 +87,7 @@ func TestGetReturnsStoredRow(t *testing.T) {
 	s := newService(&fakeStore{getRow: db.GetNotificationPreferencesRow{
 		EmailNotifications: false,
 		AuctionAlerts:      true,
-		LotteryAlerts:      false,
+		RaffleAlerts:       false,
 		EventReminders:     true,
 		RollCallReminders:  false,
 		UpdatedAt:          updated,
@@ -109,7 +109,7 @@ func TestUpdateNotificationsSendsOnlyProvidedFields(t *testing.T) {
 	store := &fakeStore{upsertRow: db.UpsertNotificationPreferencesRow{
 		EmailNotifications: true,
 		AuctionAlerts:      false,
-		LotteryAlerts:      true,
+		RaffleAlerts:       true,
 		EventReminders:     false,
 		RollCallReminders:  true,
 	}}
@@ -122,7 +122,7 @@ func TestUpdateNotificationsSendsOnlyProvidedFields(t *testing.T) {
 	assert.True(t, store.upsertArg.AuctionAlerts.Valid)
 	assert.False(t, store.upsertArg.AuctionAlerts.Bool)
 	assert.False(t, store.upsertArg.EmailNotifications.Valid)
-	assert.False(t, store.upsertArg.LotteryAlerts.Valid)
+	assert.False(t, store.upsertArg.RaffleAlerts.Valid)
 	assert.False(t, store.upsertArg.EventReminders.Valid)
 	assert.False(t, store.upsertArg.RollCallReminders.Valid)
 	assert.False(t, got.Notifications.AuctionAlerts)

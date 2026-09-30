@@ -1761,8 +1761,8 @@ type Transaction struct {
 	Amount           int64                  `protobuf:"varint,5,opt,name=amount,proto3" json:"amount,omitempty"`
 	BalanceAfter     int64                  `protobuf:"varint,6,opt,name=balance_after,json=balanceAfter,proto3" json:"balance_after,omitempty"`
 	Description      string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
-	ReferenceId      string                 `protobuf:"bytes,8,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`       // Linked entity ID (auction_id, lottery_id, etc.)
-	ReferenceType    string                 `protobuf:"bytes,9,opt,name=reference_type,json=referenceType,proto3" json:"reference_type,omitempty"` // "auction" | "lottery" | "roll_call" | "withdrawal" | "manual"
+	ReferenceId      string                 `protobuf:"bytes,8,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`       // Linked entity ID (auction_id, raffle_id, etc.)
+	ReferenceType    string                 `protobuf:"bytes,9,opt,name=reference_type,json=referenceType,proto3" json:"reference_type,omitempty"` // "auction" | "raffle" | "roll_call" | "withdrawal" | "manual"
 	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	ActorId          string                 `protobuf:"bytes,11,opt,name=actor_id,json=actorId,proto3" json:"actor_id,omitempty"`
 	ActorName        string                 `protobuf:"bytes,12,opt,name=actor_name,json=actorName,proto3" json:"actor_name,omitempty"`
@@ -1907,7 +1907,7 @@ type BackpackItem struct {
 	GuildId             string                 `protobuf:"bytes,3,opt,name=guild_id,json=guildId,proto3" json:"guild_id,omitempty"`
 	Item                *Item                  `protobuf:"bytes,4,opt,name=item,proto3" json:"item,omitempty"`
 	Source              string                 `protobuf:"bytes,5,opt,name=source,proto3" json:"source,omitempty"`                     // ItemSource
-	SourceId            string                 `protobuf:"bytes,6,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"` // ID of the originating auction/lottery
+	SourceId            string                 `protobuf:"bytes,6,opt,name=source_id,json=sourceId,proto3" json:"source_id,omitempty"` // ID of the originating auction/raffle
 	Note                string                 `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
 	AcquiredAt          *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=acquired_at,json=acquiredAt,proto3" json:"acquired_at,omitempty"`
 	SourceLabel         string                 `protobuf:"bytes,9,opt,name=source_label,json=sourceLabel,proto3" json:"source_label,omitempty"`

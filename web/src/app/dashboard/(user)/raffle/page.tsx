@@ -6,28 +6,28 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, CardGridSkeleton } from '@/components/AsyncContent';
-import { CreateLotteryModal } from '@/components/CreateLotteryModal';
-import LotteryCard from '@/components/LotteryCard';
+import { CreateRaffleModal } from '@/components/CreateRaffleModal';
+import RaffleCard from '@/components/RaffleCard';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
 import { useGuildPermissions } from '@/lib/permissions';
-import { lotteryStatusColor } from '@/lib/status-colors';
-import type { Lottery, LotteryStatus } from '@/types/lottery';
+import { raffleStatusColor } from '@/lib/status-colors';
+import type { Raffle, RaffleStatus } from '@/types/raffle';
 
-type LotteryTab = 'all' | LotteryStatus;
+type RaffleTab = 'all' | RaffleStatus;
 
-const LOTTERY_TABS: readonly LotteryTab[] = ['all', 'active', 'upcoming', 'ended', 'cancelled'];
+const RAFFLE_TABS: readonly RaffleTab[] = ['all', 'active', 'upcoming', 'ended', 'cancelled'];
 
-export default function LotteryPage() {
-  const t = useTranslations('lotteryPage');
+export default function RafflePage() {
+  const t = useTranslations('rafflePage');
   const nav = useTranslations('dashboardLayout');
   const guildId = useCurrentGuildId();
   const { can } = useGuildPermissions();
   const [activeTab, setActiveTab] = React.useState('all');
-  const [mockLotteries, setMockLotteries] = React.useState<Lottery[]>([]);
+  const [mockRaffles, setMockRaffles] = React.useState<Raffle[]>([]);
   const pathname = usePathname();
   const router = useRouter();
   const watchedSince = React.useRef(Date.now());
@@ -35,71 +35,71 @@ export default function LotteryPage() {
 
   const createModalState = useOverlayState();
   const [reloadKey, setReloadKey] = React.useState(0);
-  const lotteriesState = useLoadState();
+  const rafflesState = useLoadState();
   const notify = useToast();
   const reload = React.useCallback(() => {
-    lotteriesState.reset();
+    rafflesState.reset();
     setReloadKey(key => key + 1);
-  }, [lotteriesState.reset]);
+  }, [rafflesState.reset]);
 
   React.useEffect(() => {
     let cancelled = false;
     apiClient
-      .listLotteries(guildId)
+      .listRaffles(guildId)
       .then(d => {
         if (cancelled) return;
-        setMockLotteries(d);
-        lotteriesState.ready();
+        setMockRaffles(d);
+        rafflesState.ready();
       })
       .catch(() => {
         if (cancelled) return;
-        lotteriesState.failed();
-        notify.loadFailed(reload, 'lotteries');
+        rafflesState.failed();
+        notify.loadFailed(reload, 'raffles');
       });
     return () => { cancelled = true; };
-  }, [guildId, pathname, reloadKey, notify, reload, lotteriesState.ready, lotteriesState.failed]);
+  }, [guildId, pathname, reloadKey, notify, reload, rafflesState.ready, rafflesState.failed]);
 
-  useLiveResource(['lottery'], () => setReloadKey(key => key + 1), { guildId });
+  useLiveResource(['raffle'], () => setReloadKey(key => key + 1), { guildId });
 
   React.useEffect(() => {
-    if (pathname !== '/dashboard/lottery') return;
+    if (pathname !== '/dashboard/raffle') return;
     const timer = setInterval(() => {
       const now = Date.now();
-      const due = mockLotteries.find(lottery => {
-        const drawAt = new Date(lottery.drawDate).getTime();
+      const due = mockRaffles.find(raffle => {
+        const drawAt = new Date(raffle.drawDate).getTime();
         return (
-          lottery.status !== 'upcoming' &&
-          lottery.status !== 'cancelled' &&
+          raffle.status !== 'upcoming' &&
+          raffle.status !== 'cancelled' &&
           drawAt > watchedSince.current &&
           drawAt <= now &&
-          !announcedDraws.current.has(lottery.id)
+          !announcedDraws.current.has(raffle.id)
         );
       });
       if (!due) return;
       announcedDraws.current.add(due.id);
       notify.info(t('drawStarted', { title: due.title }), {
-        action: { label: t('watchDraw'), onPress: () => router.push(`/dashboard/lottery/${due.id}`) },
+        action: { label: t('watchDraw'), onPress: () => router.push(`/dashboard/raffle/${due.id}`) },
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [mockLotteries, pathname, router, notify, t]);
+  }, [mockRaffles, pathname, router, notify, t]);
 
   const filtered =
-    activeTab === 'all' ? mockLotteries : mockLotteries.filter(l => l.status === activeTab);
+    activeTab === 'all' ? mockRaffles : mockRaffles.filter(l => l.status === activeTab);
 
-  const counts: Record<LotteryTab, number> = {
-    all: mockLotteries.length,
-    active: mockLotteries.filter(l => l.status === 'active').length,
-    upcoming: mockLotteries.filter(l => l.status === 'upcoming').length,
-    ended: mockLotteries.filter(l => l.status === 'ended').length,
-    cancelled: mockLotteries.filter(l => l.status === 'cancelled').length,
+  const counts: Record<RaffleTab, number> = {
+    all: mockRaffles.length,
+    active: mockRaffles.filter(l => l.status === 'active').length,
+    upcoming: mockRaffles.filter(l => l.status === 'upcoming').length,
+    ended: mockRaffles.filter(l => l.status === 'ended').length,
+    cancelled: mockRaffles.filter(l => l.status === 'cancelled').length,
   };
 
   return (
     <div className="space-y-5">
-      <h1 className="sr-only">{nav('lottery')}</h1>
-      {can('createLottery') && (
-        <CreateLotteryModal state={createModalState} onCreated={() => setReloadKey(key => key + 1)} />
+      <h1 className="sr-only">{nav('raffle')}</h1>
+      {can('createRaffle') && (
+        <CreateRaffleModal state={createModalState} onCreated={() => setReloadKey(key => key + 1)} />
       )}
 
       {/* Status Tabs */}
@@ -107,11 +107,11 @@ export default function LotteryPage() {
         <div className="flex items-center gap-3">
           <Tabs.ListContainer className="min-w-0 flex-1">
             <Tabs.List aria-label={t('statusTabs')}>
-              {LOTTERY_TABS.map(tab => (
+              {RAFFLE_TABS.map(tab => (
                 <Tabs.Tab key={tab} id={tab} className="max-sm:h-9">
                   <div className="flex items-center gap-2">
                     <span>{t(tab)}</span>
-                    <Chip size="sm" color={tab === 'all' ? undefined : lotteryStatusColor[tab]} variant="secondary">
+                    <Chip size="sm" color={tab === 'all' ? undefined : raffleStatusColor[tab]} variant="secondary">
                       {counts[tab]}
                     </Chip>
                   </div>
@@ -120,30 +120,30 @@ export default function LotteryPage() {
               ))}
             </Tabs.List>
           </Tabs.ListContainer>
-          {can('createLottery') && (
-            <Button className="shrink-0 md:h-10 max-sm:size-11 max-sm:px-0" aria-label={t('createLottery')} onPress={createModalState.open}>
+          {can('createRaffle') && (
+            <Button className="shrink-0 md:h-10 max-sm:size-11 max-sm:px-0" aria-label={t('createRaffle')} onPress={createModalState.open}>
               <Icon icon="solar:add-circle-linear" width={16} className="max-sm:hidden" />
               <Icon icon="solar:add-linear" width={20} className="sm:hidden" />
-              <span className="max-sm:hidden">{t('createLottery')}</span>
+              <span className="max-sm:hidden">{t('createRaffle')}</span>
             </Button>
           )}
         </div>
-        {LOTTERY_TABS.map(tab => (
+        {RAFFLE_TABS.map(tab => (
           <Tabs.Panel key={tab} id={tab} className="pt-4">
             <AsyncContent
-              state={lotteriesState.state}
+              state={rafflesState.state}
               onRetry={reload}
               skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
             >
               {filtered.length === 0 ? (
                 <div className="text-center py-12 text-hint">
                   <Icon icon="solar:ticket-linear" width={40} className="mx-auto mb-3 text-disabled" />
-                  <p className="type-body">{t('noLotteries')}</p>
+                  <p className="type-body">{t('noRaffles')}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filtered.map(lottery => (
-                    <LotteryCard key={lottery.id} {...lottery} />
+                  {filtered.map(raffle => (
+                    <RaffleCard key={raffle.id} {...raffle} />
                   ))}
                 </div>
               )}

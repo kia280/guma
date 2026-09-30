@@ -596,7 +596,7 @@ type UserStats struct {
 	GuildsJoined      int32                  `protobuf:"varint,1,opt,name=guilds_joined,json=guildsJoined,proto3" json:"guilds_joined,omitempty"`
 	EventsAttended    int32                  `protobuf:"varint,2,opt,name=events_attended,json=eventsAttended,proto3" json:"events_attended,omitempty"`
 	AuctionsWon       int32                  `protobuf:"varint,3,opt,name=auctions_won,json=auctionsWon,proto3" json:"auctions_won,omitempty"`
-	LotteriesWon      int32                  `protobuf:"varint,4,opt,name=lotteries_won,json=lotteriesWon,proto3" json:"lotteries_won,omitempty"`
+	RafflesWon        int32                  `protobuf:"varint,4,opt,name=raffles_won,json=rafflesWon,proto3" json:"raffles_won,omitempty"`
 	TotalEarned       int64                  `protobuf:"varint,5,opt,name=total_earned,json=totalEarned,proto3" json:"total_earned,omitempty"`
 	TotalSpent        int64                  `protobuf:"varint,6,opt,name=total_spent,json=totalSpent,proto3" json:"total_spent,omitempty"`
 	RollCallsAttended int32                  `protobuf:"varint,7,opt,name=roll_calls_attended,json=rollCallsAttended,proto3" json:"roll_calls_attended,omitempty"`
@@ -655,9 +655,9 @@ func (x *UserStats) GetAuctionsWon() int32 {
 	return 0
 }
 
-func (x *UserStats) GetLotteriesWon() int32 {
+func (x *UserStats) GetRafflesWon() int32 {
 	if x != nil {
-		return x.LotteriesWon
+		return x.RafflesWon
 	}
 	return 0
 }
@@ -730,12 +730,13 @@ const file_proto_guma_v1_user_proto_rawDesc = "" +
 	"\rLinkedAccount\x12\x1a\n" +
 	"\bprovider\x18\x01 \x01(\tR\bprovider\x12\x18\n" +
 	"\asubject\x18\x02 \x01(\tR\asubject\x12\x1a\n" +
-	"\busername\x18\x03 \x01(\tR\busername\"\x95\x02\n" +
+	"\busername\x18\x03 \x01(\tR\busername\"\x91\x02\n" +
 	"\tUserStats\x12#\n" +
 	"\rguilds_joined\x18\x01 \x01(\x05R\fguildsJoined\x12'\n" +
 	"\x0fevents_attended\x18\x02 \x01(\x05R\x0eeventsAttended\x12!\n" +
-	"\fauctions_won\x18\x03 \x01(\x05R\vauctionsWon\x12#\n" +
-	"\rlotteries_won\x18\x04 \x01(\x05R\flotteriesWon\x12!\n" +
+	"\fauctions_won\x18\x03 \x01(\x05R\vauctionsWon\x12\x1f\n" +
+	"\vraffles_won\x18\x04 \x01(\x05R\n" +
+	"rafflesWon\x12!\n" +
 	"\ftotal_earned\x18\x05 \x01(\x03R\vtotalEarned\x12\x1f\n" +
 	"\vtotal_spent\x18\x06 \x01(\x03R\n" +
 	"totalSpent\x12.\n" +

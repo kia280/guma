@@ -3,15 +3,15 @@
 import { useTranslations } from 'next-intl';
 import { use } from 'react';
 import DetailRouteModal from '@/components/DetailRouteModal';
-import LotteryDetailContent from '@/components/LotteryDetailContent';
+import RaffleDetailContent from '@/components/RaffleDetailContent';
 
-export default function LotteryModalPage({ params }: { params: Promise<{ id: string }> }) {
+export default function RaffleModalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const t = useTranslations('lotteryDetail');
+  const t = useTranslations('raffleDetail');
 
   return (
     <DetailRouteModal label={t('dialogLabel')} className="max-w-7xl">
-      {(close) => <LotteryDetailContent id={id} onClose={close} />}
+      {(close) => <RaffleDetailContent id={id} onClose={close} />}
     </DetailRouteModal>
   );
 }

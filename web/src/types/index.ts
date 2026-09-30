@@ -10,7 +10,7 @@ export * from './item';
 export * from './auction';
 export * from './backpack';
 export * from './roll-call';
-export * from './lottery';
+export * from './raffle';
 export * from './guild-bank';
 export * from './guild-events';
 export * from './dashboard';

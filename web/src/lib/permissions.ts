@@ -68,15 +68,15 @@ export const PERMISSION_SECTIONS = [
     ],
   },
   {
-    key: 'lottery',
+    key: 'raffle',
     icon: 'solar:ticket-bold-duotone',
     actions: [
       { key: 'buyTickets', roles: ALL },
-      { key: 'createLottery', roles: OWNER_ADMIN },
-      { key: 'drawLottery', roles: OWNER_ADMIN },
-      { key: 'editLottery', roles: OWNER_ADMIN },
-      { key: 'cancelLottery', roles: OWNER_ADMIN },
-      { key: 'deleteLottery', roles: OWNER_ADMIN },
+      { key: 'createRaffle', roles: OWNER_ADMIN },
+      { key: 'drawRaffle', roles: OWNER_ADMIN },
+      { key: 'editRaffle', roles: OWNER_ADMIN },
+      { key: 'cancelRaffle', roles: OWNER_ADMIN },
+      { key: 'deleteRaffle', roles: OWNER_ADMIN },
     ],
   },
   {

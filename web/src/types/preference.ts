@@ -1,7 +1,7 @@
 export interface NotificationPreferences {
   emailNotifications: boolean;
   auctionAlerts: boolean;
-  lotteryAlerts: boolean;
+  raffleAlerts: boolean;
   eventReminders: boolean;
   rollCallReminders: boolean;
 }
@@ -18,7 +18,7 @@ export interface UserPreferences {
 export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   emailNotifications: true,
   auctionAlerts: true,
-  lotteryAlerts: true,
+  raffleAlerts: true,
   eventReminders: false,
   rollCallReminders: true,
 };

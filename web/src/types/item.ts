@@ -35,7 +35,7 @@ export interface ItemSourceRef {
 }
 
 export interface ItemLock {
-  type: 'auction' | 'lottery';
+  type: 'auction' | 'raffle';
   id: string;
 }
 
@@ -47,7 +47,7 @@ export type ItemHistoryKind =
   | 'request_rejected'
   | 'received'
   | 'auction_listed'
-  | 'lottery_listed'
+  | 'raffle_listed'
   | 'returned'
   | 'withdrawn'
   | 'retracted'

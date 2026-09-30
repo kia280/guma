@@ -20,22 +20,22 @@ import { GOLD_FORMAT_OPTIONS } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import type { GuildBankItem } from '@/types/guild-bank';
 import type { ItemSourceRef } from '@/types/item';
-import type { Lottery } from '@/types/lottery';
+import type { Raffle } from '@/types/raffle';
 import { BankItemPicker } from './BankItemPicker';
 import { FieldRow } from './FieldRow';
-import { LotteryFormFields } from './LotteryFormFields';
+import { RaffleFormFields } from './RaffleFormFields';
 
-export type LotteryPrizeItem = {
+export type RafflePrizeItem = {
   name: string;
   source: ItemSourceRef;
 };
 
 type PrizeMode = 'manual' | 'bank';
 
-type CreateLotteryModalProps = {
+type CreateRaffleModalProps = {
   state: UseOverlayStateReturn;
-  prizeItem?: LotteryPrizeItem | null;
-  onCreated?: (lottery: Lottery) => void;
+  prizeItem?: RafflePrizeItem | null;
+  onCreated?: (raffle: Raffle) => void;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -46,8 +46,8 @@ function defaultDrawDate() {
   return date.toISOString();
 }
 
-export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotteryModalProps) {
-  const t = useTranslations('createLotteryModal');
+export function CreateRaffleModal({ state, prizeItem, onCreated }: CreateRaffleModalProps) {
+  const t = useTranslations('createRaffleModal');
   const notify = useToast();
   const formatGold = useFormatGold();
   const guildId = useCurrentGuildId();
@@ -78,7 +78,7 @@ export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotter
   }, [state.isOpen, prizeItem, t]);
 
   const isFromBank = !prizeItem && prizeMode === 'bank';
-  const lockedPrize: LotteryPrizeItem | null = prizeItem
+  const lockedPrize: RafflePrizeItem | null = prizeItem
     ?? (isFromBank && bankItem ? { name: bankItem.name, source: { bankItemId: bankItem.id } } : null);
   const hasPrize = isFromBank ? !!lockedPrize : prizeName.trim() !== '' || prizeAmount > 0;
 
@@ -95,7 +95,7 @@ export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotter
     setIsSubmitting(true);
     setError('');
     try {
-      const lottery = await apiClient.createLottery(guildId, {
+      const raffle = await apiClient.createRaffle(guildId, {
         title: title.trim(),
         description: description.trim() || undefined,
         ticketPrice,
@@ -111,7 +111,7 @@ export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotter
               },
         ],
       });
-      onCreated?.(lottery);
+      onCreated?.(raffle);
       notify.success(t('created'));
       state.close();
     } catch {
@@ -139,7 +139,7 @@ export function CreateLotteryModal({ state, prizeItem, onCreated }: CreateLotter
                   submit();
                 }}
               >
-                <LotteryFormFields
+                <RaffleFormFields
                   values={{ title, description, ticketPrice, maxTickets, drawDate }}
                   errors={{ drawDate: isFuture ? null : t('drawDateInPast') }}
                   onChange={updates => {

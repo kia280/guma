@@ -19,7 +19,7 @@ const (
 	SourceBank     = "bank"
 
 	HolderAuction = "auction"
-	HolderLottery = "lottery"
+	HolderRaffle  = "raffle"
 )
 
 type Ref struct {

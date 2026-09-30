@@ -17,7 +17,7 @@ import (
 	"github.com/kia280/guma/internal/router/grpc"
 	"github.com/kia280/guma/internal/scheduler"
 	auctionsvc "github.com/kia280/guma/internal/services/auction"
-	lotterysvc "github.com/kia280/guma/internal/services/lottery"
+	rafflesvc "github.com/kia280/guma/internal/services/raffle"
 	"github.com/kia280/guma/internal/telemetry"
 )
 
@@ -117,13 +117,13 @@ func runServe(cmd *cobra.Command, args []string) {
 	go grpcServer.RunHealthChecks(ctx)
 	logger.Info().Msg("health service startup marked as complete")
 
-	lotteries := lotterysvc.New(db, logger)
+	raffles := rafflesvc.New(db, logger)
 	auctions := auctionsvc.New(db, logger)
 	jobs := scheduler.New(logger, scheduler.Job{
-		Name:     "lottery-draw",
-		Interval: cfg.Scheduler.LotteryDrawInterval,
+		Name:     "raffle-draw",
+		Interval: cfg.Scheduler.RaffleDrawInterval,
 		Run: func(ctx context.Context) error {
-			_, err := lotteries.DrawDueLotteries(ctx)
+			_, err := raffles.DrawDueRaffles(ctx)
 			return err
 		},
 	}, scheduler.Job{
