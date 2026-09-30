@@ -1,10 +1,10 @@
 'use client';
 
-import { Alert, Button, EmptyState, Spinner } from '@heroui/react';
-import { Icon } from '@iconify/react';
+import { Alert, Button, Spinner } from '@heroui/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { EmptyContent, type EmptyContentSize } from '@/components/AsyncContent';
 import type { BalanceTrendStatus } from '@/hooks/useBalanceTrend';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useFormatGold, useFormatGoldAxisTick } from '@/lib/guma/useFormatGold';
@@ -15,6 +15,7 @@ interface BalanceTrendChartProps {
   status: BalanceTrendStatus;
   onRetry: () => void;
   height?: number;
+  emptySize?: EmptyContentSize;
 }
 
 const parseIsoDate = (date: string) => {
@@ -22,7 +23,7 @@ const parseIsoDate = (date: string) => {
   return new Date(Date.UTC(year, month - 1, day));
 };
 
-export function BalanceTrendChart({ points, status, onRetry, height = 200 }: BalanceTrendChartProps) {
+export function BalanceTrendChart({ points, status, onRetry, height = 200, emptySize = 'md' }: BalanceTrendChartProps) {
   const t = useTranslations('balanceTrendChart');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
@@ -60,10 +61,13 @@ export function BalanceTrendChart({ points, status, onRetry, height = 200 }: Bal
 
   if (points.length === 0) {
     return (
-      <EmptyState className="flex w-full flex-col items-center justify-center gap-2 text-center" style={{ height }}>
-        <Icon className="size-6 text-disabled" icon="solar:chart-2-linear" />
-        <span className="type-caption text-hint">{t('empty')}</span>
-      </EmptyState>
+      <EmptyContent
+        icon="solar:chart-2-linear"
+        title={t('empty')}
+        description={t('emptyHint')}
+        size={emptySize}
+        minHeight={height}
+      />
     );
   }
 

@@ -5,7 +5,7 @@ import { Icon } from '@iconify/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
-import { AsyncContent, CardGridSkeleton } from '@/components/AsyncContent';
+import { AsyncContent, CardGridSkeleton, EmptyContent } from '@/components/AsyncContent';
 import { CreateRaffleModal } from '@/components/CreateRaffleModal';
 import RaffleCard from '@/components/RaffleCard';
 import { useLiveResource } from '@/hooks/useLiveResource';
@@ -136,10 +136,7 @@ export default function RafflePage() {
               skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
             >
               {filtered.length === 0 ? (
-                <div className="text-center py-12 text-hint">
-                  <Icon icon="solar:ticket-linear" width={40} className="mx-auto mb-3 text-disabled" />
-                  <p className="type-body">{t('noRaffles')}</p>
-                </div>
+                <EmptyContent icon="solar:ticket-linear" title={t('noRaffles')} />
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filtered.map(raffle => (

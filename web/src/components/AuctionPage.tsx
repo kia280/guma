@@ -1,10 +1,10 @@
 'use client';
 
-import { Button, Card, Select, Chip, Tabs, TextField, Label, InputGroup, ListBox, useOverlayState } from '@heroui/react';
+import { Button, Select, Chip, Tabs, TextField, Label, InputGroup, ListBox, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
-import { AsyncContent, CardGridSkeleton } from '@/components/AsyncContent';
+import { AsyncContent, CardGridSkeleton, EmptyContent } from '@/components/AsyncContent';
 import AuctionItemCard from '@/components/AuctionItemCard';
 import { CreateAuctionModal } from '@/components/CreateAuctionModal';
 import { useLiveResource } from '@/hooks/useLiveResource';
@@ -242,13 +242,11 @@ const AuctionPage = () => {
               skeleton={<CardGridSkeleton className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" cardClassName="h-64 rounded-xl" />}
             >
               {filteredItems.length === 0 ? (
-                <Card className="border border-transparent shadow-edge">
-                  <Card.Content className="text-center py-12">
-                    <Icon icon="solar:clock-circle-linear" width={40} className="mx-auto mb-3 text-disabled" />
-                    <h3 className="type-subheading mb-1 text-foreground">{t('noAuctions')}</h3>
-                    <p className="type-body text-subtle">{t('noAuctionsHint')}</p>
-                  </Card.Content>
-                </Card>
+                <EmptyContent
+                  icon="solar:clock-circle-linear"
+                  title={t('noAuctions')}
+                  description={t('noAuctionsHint')}
+                />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredItems.map(item => (

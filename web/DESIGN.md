@@ -179,6 +179,28 @@ All cards must follow this pattern:
 - Overlays (modals, popovers, dropdowns, tooltips, toasts) get the same edge in the dark theme through `--overlay-shadow`, so do not add `border border-divider` to them. In the light theme they keep HeroUI's elevation shadow; toasts use the edge in both themes.
 - The feather extends about 2px past the card. A parent that clips (`overflow-hidden`, `overflow-y-auto`) needs room for it: add `p-1` and cancel it with `-m-1`.
 
+## Empty States
+
+Every empty state that fills a card, a card section, or a modal body uses `<EmptyContent>` from `src/components/AsyncContent.tsx`, so they all share one size:
+
+```tsx
+<EmptyContent icon="solar:backpack-linear" title={t('noItems')} description={t('noItemsHint')} />
+```
+
+- The pattern is a `size-10 text-disabled` icon (40px at the default font size), a `type-subheading text-soft` title, an optional `type-body text-subtle` description, and `py-12` of vertical padding. The title is `text-soft`, not `text-foreground`, so an empty panel reads quieter than real content. The icon is sized in rem, not with a pixel `width`, so it grows with the title next to it when the font size preference changes. Do not hand-roll smaller or larger variants.
+- The empty-state title never exceeds the text directly above it: the heading of the card or section, or the tabs when the block sits right under a tab list. Pick the size from that text:
+
+  | Text above | `size` | Icon | Title | Description | Padding |
+  |---|---|---|---|---|---|
+  | `type-subheading` or larger, or nothing | `md` (default) | `size-10` | `type-subheading` | `type-body` | `py-12` |
+  | 14px, such as HeroUI tabs (notifications popover) | `sm` | `size-9` | `type-body font-medium` | `type-caption` | `py-10` |
+  | `type-caption` or `type-label` (dashboard balance chart, auction bid history) | `xs` | `size-8` | `type-label` | `type-caption` | `py-8` |
+- The title is a short phrase without a trailing period. Put any explanation of what will appear there in `description`, as a full sentence.
+- Pass `minHeight` instead of relying on the padding when the block replaces content with a fixed height (a chart), so the panel does not jump between states.
+- Pass an action as children (a `size="sm"` button); it renders below the text.
+- The block has no surface of its own. Inside a card it sits on the card; on the lottery and auction list pages it sits directly on the page background, without a wrapping card.
+- This does not apply to `renderEmptyState` in list boxes and combo boxes, to not-found pages, to error states with a retry, or to a one-line placeholder that stands in for a single value inside a form or a small grid card.
+
 ## Interactive Rows
 
 Clickable rows in a list (announcements, events, navigation items) use inset, rounded rows instead of full-width rows with dividers:

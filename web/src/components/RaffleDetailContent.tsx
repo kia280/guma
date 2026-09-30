@@ -22,7 +22,7 @@ import { useGuildPermissions } from '@/lib/permissions';
 import { raffleStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import type { Raffle, RaffleWinner } from '@/types/raffle';
-import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { AsyncContent, DetailSkeleton, EmptyContent } from './AsyncContent';
 import { ConfirmDialog } from './ConfirmDialog';
 import { RaffleEditModal } from './RaffleEditModal';
 import { RaffleWheel, type WheelEntry } from './RaffleWheel';
@@ -631,7 +631,7 @@ export default function RaffleDetailContent({ id, onClose }: RaffleDetailContent
                 </ul>
               </ScrollShadow>
             ) : (
-              <p className={`type-body text-subtle ${onClose ? '' : 'px-4 pb-4'}`}>{t('noParticipants')}</p>
+              <EmptyContent icon="solar:users-group-rounded-linear" title={t('noParticipants')} />
             )}
           </section>
         </div>

@@ -886,10 +886,11 @@ export default function AdminPage() {
                       </Button>
                     </div>
                   ) : recentActivity.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
-                      <Icon icon="solar:history-linear" width={32} className="text-disabled" aria-hidden />
-                      <p className="type-body text-subtle">{t('noActivity')}</p>
-                    </div>
+                    <EmptyContent
+                      icon="solar:history-linear"
+                      title={t('noActivity')}
+                      description={t('noActivityHint')}
+                    />
                   ) : (
                     <ul>
                       {recentActivity.map((item, i) => (
@@ -937,8 +938,8 @@ export default function AdminPage() {
             <AsyncContent state={announcementsState.state} onRetry={reload} skeleton={<ListSkeleton rows={3} />}>
             {announcements.length === 0 && (
               <Card className="border border-transparent shadow-edge bg-surface">
-                <Card.Content className="p-6 text-center">
-                  <p className="type-body text-disabled">{t('noAnnouncements')}</p>
+                <Card.Content>
+                  <EmptyContent icon="solar:volume-loud-linear" title={t('noAnnouncements')} />
                 </Card.Content>
               </Card>
             )}

@@ -36,7 +36,7 @@ import { auctionStatusColor } from '@/lib/status-colors';
 import { useUserStore } from '@/lib/store';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { ItemCategory } from '@/types/item';
-import { AsyncContent, DetailSkeleton } from './AsyncContent';
+import { AsyncContent, DetailSkeleton, EmptyContent } from './AsyncContent';
 import { AuctionEditModal } from './AuctionEditModal';
 import { BidAssist, bidCost, minimumBidFor } from './BidAssist';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -498,9 +498,12 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                     {t('bidHistoryTitle', { count: item.bidHistory.length })}
                   </h3>
                   {sortedHistory.length === 0 ? (
-                    <p className="type-body text-hint text-center py-4">
-                      {isClosed ? t('noBids') : t('noBidsYet')}
-                    </p>
+                    <EmptyContent
+                      size="xs"
+                      icon="solar:sledgehammer-linear"
+                      title={isClosed ? t('noBids') : t('noBidsYet')}
+                      description={isClosed ? undefined : t('noBidsYetHint')}
+                    />
                   ) : (
                     sortedHistory.map(bid => (
                       <div

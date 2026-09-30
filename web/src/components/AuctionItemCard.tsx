@@ -14,6 +14,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { EmptyContent } from '@/components/AsyncContent';
 import { getRarityColor } from '@/components/ItemThumbnail';
 import { useCountdown } from '@/hooks/useNow';
 import { useUserName } from '@/hooks/useUserName';
@@ -361,9 +362,11 @@ const AuctionItemCard = ({
               <Modal.Body>
                 <div className="space-y-2 overflow-y-auto max-h-[60vh]">
                   {item.bidHistory.length === 0 ? (
-                    <div className="text-center py-8 text-hint type-body">
-                      {isClosed ? t('noBids') : t('noBidsYet')}
-                    </div>
+                    <EmptyContent
+                      icon="solar:sledgehammer-linear"
+                      title={isClosed ? t('noBids') : t('noBidsYet')}
+                      description={isClosed ? undefined : t('noBidsYetHint')}
+                    />
                   ) : (
                     [...item.bidHistory]
                       .sort(

@@ -17,7 +17,7 @@ import { Icon } from '@iconify/react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
-import { AsyncContent } from '@/components/AsyncContent';
+import { AsyncContent, EmptyContent } from '@/components/AsyncContent';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DiscordMarkdown } from '@/components/DiscordMarkdown';
 import { PageHeader } from '@/components/PageHeader';
@@ -326,7 +326,7 @@ export default function AnnouncementEditorPage() {
                 {values.content.trim() ? (
                   <DiscordMarkdown content={values.content} className="type-prose text-foreground" />
                 ) : (
-                  <p className="type-body text-disabled">{t('nothingToPreview')}</p>
+                  <EmptyContent icon="solar:document-text-linear" title={t('nothingToPreview')} />
                 )}
               </div>
             </Tabs.Panel>
