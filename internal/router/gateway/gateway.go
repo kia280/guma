@@ -9,6 +9,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
@@ -132,6 +133,7 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 		return nil, fmt.Errorf("failed to create health client: %w", err)
 	}
 	handler = newProbeMux(healthpb.NewHealthClient(healthConn), handler)
+	handler = otelhttp.NewHandler(handler, "http-gateway")
 
 	// Create HTTP server
 	httpAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
