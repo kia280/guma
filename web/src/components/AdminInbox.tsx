@@ -40,6 +40,7 @@ import {
   entrySince,
   entryState,
   groupLoot,
+  isRequestEntry,
   isReviewable,
   matchesKinds,
   matchesQuery,
@@ -57,14 +58,14 @@ import {
 import { apiClient } from '@/lib/guma';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import type { LiveResource } from '@/lib/live-events';
-import { requestStatusColor } from '@/lib/status-colors';
+import { withdrawalStatusColor } from '@/lib/status-colors';
 import type { AuctionItem } from '@/types/auction';
 import type { BackpackItem } from '@/types/backpack';
 import type { ReviewDecision } from '@/types/guild-bank';
 
 type LoadStatus = 'loading' | 'ready' | 'error';
 
-type SourceKey = 'requests' | 'auctions' | 'deliveries' | 'loot';
+type SourceKey = 'requests' | 'withdrawals' | 'auctions' | 'deliveries' | 'loot';
 
 const INBOX_PAGE_SIZE = 100;
 const LIST_PAGE_SIZE = 20;
@@ -79,6 +80,16 @@ const loadRequests = async (guildId: string): Promise<ReviewableRequest[]> => {
   const merged = new Map<string, ReviewableRequest>();
   [...funds, ...pendingFunds].forEach(request => merged.set(`fund:${request.id}`, { kind: 'fund', request }));
   [...items, ...pendingItems].forEach(request => merged.set(`item:${request.id}`, { kind: 'item', request }));
+  return [...merged.values()];
+};
+
+const loadWithdrawals = async (guildId: string): Promise<ReviewableRequest[]> => {
+  const [pending, all] = await Promise.all([
+    apiClient.listWithdrawalRequests(guildId, 'pending'),
+    apiClient.listWithdrawalRequests(guildId),
+  ]);
+  const merged = new Map<string, ReviewableRequest>();
+  [...all, ...pending].forEach(request => merged.set(request.id, { kind: 'withdrawal', request }));
   return [...merged.values()];
 };
 
@@ -97,6 +108,7 @@ const loadLoot = async (guildId: string): Promise<LootGroup[]> =>
 
 const SOURCE_KINDS: Record<SourceKey, readonly InboxKind[]> = {
   requests: ['fund', 'item'],
+  withdrawals: ['withdrawal'],
   auctions: ['auction'],
   deliveries: ['delivery'],
   loot: ['loot'],
@@ -157,6 +169,7 @@ function useInboxSource<T>(
 const BANK_RESOURCES: readonly LiveResource[] = ['bank'];
 const AUCTION_RESOURCES: readonly LiveResource[] = ['auction'];
 const DELIVERY_RESOURCES: readonly LiveResource[] = ['delivery'];
+const WITHDRAWAL_RESOURCES: readonly LiveResource[] = ['withdrawal'];
 
 function FilterTags<K extends string>({
   label,
@@ -250,17 +263,19 @@ function InboxRow({ entry, now, showSelection, isSelected, isHighlighted, onSele
 
   switch (entry.kind) {
     case 'fund':
-    case 'item': {
+    case 'item':
+    case 'withdrawal': {
       const { request } = entry;
+      const reason = entry.kind === 'withdrawal' ? entry.request.note : entry.request.reason;
       subject = userName(request.requesterName);
       leading =
-        entry.kind === 'fund' ? (
-          <IconTile icon={INBOX_KIND_META.fund.icon} tone="warning" />
-        ) : (
+        entry.kind === 'item' ? (
           <ItemThumbnail category={entry.request.itemCategory} rarity={entry.request.itemRarity} />
+        ) : (
+          <IconTile icon={INBOX_KIND_META[entry.kind].icon} tone="warning" />
         );
       detail =
-        entry.kind === 'fund' ? (
+        entry.kind !== 'item' ? (
           <p className="type-body text-foreground tabular-nums">{formatGold(entry.request.amount)}</p>
         ) : (
           <div className="flex min-w-0 items-center gap-2 type-body">
@@ -276,7 +291,7 @@ function InboxRow({ entry, now, showSelection, isSelected, isHighlighted, onSele
           : format.dateTime(new Date(request.createdAt), { dateStyle: 'medium', timeStyle: 'short' });
       notes = (
         <>
-          {request.reason && <p className="type-body text-subtle break-words">{request.reason}</p>}
+          {reason && <p className="type-body text-subtle break-words">{reason}</p>}
           {request.reviewNote && (
             <p className="type-caption text-hint break-words">{t('reviewNote', { note: request.reviewNote })}</p>
           )}
@@ -293,7 +308,7 @@ function InboxRow({ entry, now, showSelection, isSelected, isHighlighted, onSele
             </Button>
           </>
         ) : (
-          <Chip size="sm" variant="secondary" color={requestStatusColor[request.status]}>
+          <Chip size="sm" variant="secondary" color={withdrawalStatusColor[request.status]}>
             {t(`statuses.${request.status}`)}
           </Chip>
         );
@@ -401,10 +416,11 @@ export function AdminInbox({ guildId }: { guildId: string }) {
   const focusId = searchParams.get('request');
 
   const requests = useInboxSource(guildId, loadRequests, BANK_RESOURCES);
+  const withdrawals = useInboxSource(guildId, loadWithdrawals, WITHDRAWAL_RESOURCES);
   const auctions = useInboxSource(guildId, loadAuctions, AUCTION_RESOURCES);
   const deliveries = useInboxSource(guildId, loadDeliveries, DELIVERY_RESOURCES);
   const loot = useInboxSource(guildId, loadLoot, BANK_RESOURCES);
-  const sources: Record<SourceKey, { status: LoadStatus; reload: () => void }> = { requests, auctions, deliveries, loot };
+  const sources: Record<SourceKey, { status: LoadStatus; reload: () => void }> = { requests, withdrawals, auctions, deliveries, loot };
 
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [reviewTarget, setReviewTarget] = React.useState<ReviewTarget | null>(null);
@@ -422,6 +438,7 @@ export function AdminInbox({ guildId }: { guildId: string }) {
   const entries = React.useMemo<InboxEntry[]>(
     () => [
       ...requests.data,
+      ...withdrawals.data,
       ...auctions.data.flatMap(auction => {
         const reason = auctionAttention(auction, now);
         return reason ? [{ kind: 'auction' as const, auction, reason }] : [];
@@ -429,7 +446,7 @@ export function AdminInbox({ guildId }: { guildId: string }) {
       ...deliveries.data.map(delivery => ({ kind: 'delivery' as const, delivery })),
       ...loot.data.map(group => ({ kind: 'loot' as const, group })),
     ],
-    [requests.data, auctions.data, deliveries.data, loot.data, now],
+    [requests.data, withdrawals.data, auctions.data, deliveries.data, loot.data, now],
   );
 
   const searchable = entries.filter(entry => matchesQuery(entry, filters.query));
@@ -464,23 +481,24 @@ export function AdminInbox({ guildId }: { guildId: string }) {
   const isLoading = relevantSources.some(key => sources[key].status === 'loading');
 
   React.useEffect(() => {
-    if (!focusId || focusHandled.current === focusId || requests.status !== 'ready') return;
+    if (!focusId || focusHandled.current === focusId) return;
+    if (requests.status !== 'ready' || withdrawals.status !== 'ready') return;
     focusHandled.current = focusId;
-    const entry = requests.data.find(candidate => candidate.request.id === focusId);
+    const entry = [...requests.data, ...withdrawals.data].find(candidate => candidate.request.id === focusId);
     if (!entry) return;
     const next = { ...filters };
     if (!matchesStatus(entry, next.status)) {
-      next.status = entryState(entry);
+      const state = entryState(entry);
+      next.status = state === 'closed' ? 'all' : state;
       next.sort = defaultSort(next.status);
     }
     if (!matchesKinds(entry, next.kinds)) next.kinds = [...next.kinds, entry.kind];
     if (!matchesQuery(entry, next.query)) next.query = '';
     if (next.status !== filters.status || next.kinds !== filters.kinds || next.query !== filters.query) setFilters(next);
-  }, [focusId, requests.status, requests.data, filters, setFilters]);
+  }, [focusId, requests.status, requests.data, withdrawals.status, withdrawals.data, filters, setFilters]);
 
   const signature = `${filters.kinds.join(',')}|${filters.status}|${filters.query}|${filters.sort}`;
-  const isFocused = (entry: InboxEntry) =>
-    !!focusId && (entry.kind === 'fund' || entry.kind === 'item') && entry.request.id === focusId;
+  const isFocused = (entry: InboxEntry) => !!focusId && isRequestEntry(entry) && entry.request.id === focusId;
   const focusIndex = visible.findIndex(isFocused);
   const limit = Math.max(page.signature === signature ? page.limit : LIST_PAGE_SIZE, focusIndex + 1);
   const shown = visible.slice(0, limit);
@@ -506,6 +524,7 @@ export function AdminInbox({ guildId }: { guildId: string }) {
   const handleReviewed = (keys: string[]) => {
     setSelected(current => new Set([...current].filter(key => !keys.includes(key))));
     requests.refresh();
+    withdrawals.refresh();
     loot.refresh();
   };
 

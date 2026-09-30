@@ -16,12 +16,18 @@ export interface ReviewTarget {
   requests: ReviewableRequest[];
 }
 
-const reviewErrorKey = (err: unknown) => {
+const APPROVE_HINTS = {
+  fund: 'approveFundHint',
+  item: 'approveItemHint',
+  withdrawal: 'approveWithdrawalHint',
+} as const;
+
+const reviewErrorKey = (err: unknown, kind: ReviewableRequest['kind']) => {
   switch (apiErrorCode(err)) {
     case GrpcCode.PermissionDenied:
       return 'errorForbidden';
     case GrpcCode.FailedPrecondition:
-      return 'errorConflict';
+      return kind === 'withdrawal' ? 'errorWithdrawalConflict' : 'errorConflict';
     case GrpcCode.NotFound:
       return 'errorNotFound';
     default:
@@ -29,10 +35,19 @@ const reviewErrorKey = (err: unknown) => {
   }
 };
 
-const submitReview = (guildId: string, entry: ReviewableRequest, decision: ReviewDecision, note?: string) =>
-  entry.kind === 'fund'
-    ? apiClient.reviewFundRequest(guildId, entry.request.id, decision, note)
-    : apiClient.reviewItemRequest(guildId, entry.request.id, decision, note);
+const submitReview = (guildId: string, entry: ReviewableRequest, decision: ReviewDecision, note?: string) => {
+  switch (entry.kind) {
+    case 'fund':
+      return apiClient.reviewFundRequest(guildId, entry.request.id, decision, note);
+    case 'item':
+      return apiClient.reviewItemRequest(guildId, entry.request.id, decision, note);
+    case 'withdrawal':
+      return apiClient.reviewWithdrawalRequest(guildId, entry.request.id, decision, note);
+  }
+};
+
+const requestReason = (entry: ReviewableRequest) =>
+  entry.kind === 'withdrawal' ? entry.request.note : entry.request.reason;
 
 interface RequestReviewDialogProps {
   guildId: string;
@@ -80,7 +95,7 @@ export function RequestReviewDialog({ guildId, target, onClose, onReviewed }: Re
     setIsSubmitting(false);
     onReviewed(reviewed);
     if (single && lastError) {
-      setError(t(reviewErrorKey(lastError)));
+      setError(t(reviewErrorKey(lastError, single.kind)));
       return;
     }
     onClose();
@@ -111,23 +126,23 @@ export function RequestReviewDialog({ guildId, target, onClose, onReviewed }: Re
               {single && (
                 <div className="flex flex-col gap-1 rounded-lg bg-surface-secondary p-3">
                   <p className="type-body font-medium text-foreground">
-                    {single.kind === 'fund'
-                      ? formatGold(single.request.amount)
-                      : single.request.itemName || t('unknownItem')}
+                    {single.kind === 'item'
+                      ? single.request.itemName || t('unknownItem')
+                      : formatGold(single.request.amount)}
                   </p>
                   <p className="type-caption text-hint">
                     {t('requestedBy', { name: userName(single.request.requesterName) })}
                   </p>
-                  {single.request.reason && (
-                    <p className="type-body text-subtle break-words">{single.request.reason}</p>
+                  {requestReason(single) && (
+                    <p className="type-body text-subtle break-words">{requestReason(single)}</p>
                   )}
                 </div>
               )}
               <p className="type-body text-soft">
                 {single
                   ? isApprove
-                    ? t(single.kind === 'fund' ? 'approveFundHint' : 'approveItemHint')
-                    : t('rejectHint')
+                    ? t(APPROVE_HINTS[single.kind])
+                    : t(single.kind === 'withdrawal' ? 'rejectWithdrawalHint' : 'rejectHint')
                   : t('batchHint', { decision })}
               </p>
               <TextField>

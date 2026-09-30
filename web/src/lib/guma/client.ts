@@ -9,7 +9,7 @@ import type { ItemSourceRef } from '@/types/item';
 import type { LootEntry } from '@/types/roll-call';
 import type { BalancePoint, UserStats } from '@/types/user';
 import { fromMinorUnits, toMinorUnits } from './money';
-import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toRollCall, toRollCallGoldDistribution, toRollCallGoldSummary, toRollCallTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toMemberAssets, toMemberAssetSummary, toNotification, toNotificationPage, toProtoDestination, toTransaction, toUser, toUserPreferences, toWallet } from './transforms';
+import { toAdminAnnouncement, toAdminGuildStats, toAnnouncement, toAuctionItem, toAttendee, toBackpackItem, toBankContribution, toBid, toRollCall, toRollCallGoldDistribution, toRollCallGoldSummary, toRollCallTemplate, toFundRequest, toGuild, toItemTemplate, toGuildBank, toGuildBankItem, toGuildContributions, toGuildEvent, toItemHistoryEvent, toItemRequest, toLottery, toLotteryTicket, toLotteryWinner, toMember, toMemberAssets, toMemberAssetSummary, toNotification, toNotificationPage, toProtoDestination, toTransaction, toUser, toUserPreferences, toWallet, toWithdrawalRequest } from './transforms';
 import type { ApiClient } from './types';
 
 const http: AxiosInstance = axios.create({
@@ -222,9 +222,32 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.post(`/v1/guilds/${guildId}/wallet/deposit`, { amount: toMinorUnits(amount) });
     return toTransaction(data.transaction);
   },
-  withdraw: async (guildId, amount) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/withdraw`, { amount: toMinorUnits(amount) });
-    return toTransaction(data.transaction);
+  withdraw: async (guildId, req) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/withdraw`, {
+      amount: toMinorUnits(req.amount),
+      note: req.note,
+    });
+    return toWithdrawalRequest(data.withdrawal_request);
+  },
+  listMyWithdrawalRequests: async (guildId, status) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/wallet/withdrawals`, {
+      params: { status, page_size: 100 },
+    });
+    return (data.requests ?? []).map(toWithdrawalRequest);
+  },
+  cancelWithdrawalRequest: async (guildId, requestId) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/wallet/withdrawals/${requestId}/cancel`);
+    return toWithdrawalRequest(data.withdrawal_request);
+  },
+  listWithdrawalRequests: async (guildId, status) => {
+    const { data } = await http.get(`/v1/guilds/${guildId}/withdrawal-requests`, {
+      params: { status, page_size: 100 },
+    });
+    return (data.requests ?? []).map(toWithdrawalRequest);
+  },
+  reviewWithdrawalRequest: async (guildId, requestId, status, note) => {
+    const { data } = await http.patch(`/v1/guilds/${guildId}/withdrawal-requests/${requestId}`, { status, note });
+    return toWithdrawalRequest(data.withdrawal_request);
   },
   transfer: async (guildId, req) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/wallet/transfer`, {

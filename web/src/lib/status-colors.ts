@@ -2,7 +2,7 @@ import { AuctionStatus } from '@/types/auction';
 import type { GuildContribution, RequestStatus } from '@/types/guild-bank';
 import type { LotteryStatus } from '@/types/lottery';
 import { RollCallStatus } from '@/types/roll-call';
-import type { Transaction } from '@/types/wallet';
+import type { Transaction, WithdrawalStatus } from '@/types/wallet';
 
 export type StatusColor = 'default' | 'accent' | 'success' | 'warning' | 'danger';
 
@@ -19,6 +19,11 @@ export const requestStatusColor: Record<RequestStatus, StatusColor> = {
   pending: 'warning',
   approved: 'success',
   rejected: 'danger',
+};
+
+export const withdrawalStatusColor: Record<WithdrawalStatus, StatusColor> = {
+  ...requestStatusColor,
+  cancelled: 'default',
 };
 
 export const transactionStatusColor: Record<Transaction['status'], StatusColor> = {

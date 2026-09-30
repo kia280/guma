@@ -82,6 +82,7 @@ export const PERMISSION_SECTIONS = [
     icon: 'solar:wallet-money-bold-duotone',
     actions: [
       { key: 'manageWallet', roles: ALL },
+      { key: 'reviewWithdrawals', roles: STAFF },
       { key: 'manageMemberAssets', roles: OWNER_ADMIN },
     ],
   },

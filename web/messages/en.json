@@ -210,7 +210,7 @@
     "depositMoney": "Deposit Money",
     "currentBalanceLabel": "Current balance:",
     "withdrawMoney": "Withdraw Money",
-    "withdrawNote": "Withdrawals may take 1–3 business days to process.",
+    "withdrawNote": "An officer reviews every withdrawal and hands the gold over in game. The amount is held from your balance until then, and you can cancel while it is pending.",
     "withdrawItem": "Withdraw Item",
     "withdrawItemConfirm": "Ask an officer to hand <strong>{name}</strong> over to you in game?",
     "withdrawItemNote": "The item stays in your backpack, locked, until an officer confirms the handover. You can cancel until then.",
@@ -237,7 +237,11 @@
       "lotteryRefund": "Lottery ticket refund",
       "adminTransferOut": "Moved to {member} by admin {admin}",
       "adminTransferToBank": "Moved to the guild vault by admin {admin}",
-      "adminTransferIn": "Moved from {member} by admin {admin}"
+      "adminTransferIn": "Moved from {member} by admin {admin}",
+      "withdrawalRequest": "Withdrawal requested",
+      "withdrawalApproved": "Withdrawal approved by {admin}",
+      "withdrawalRejected": "Withdrawal rejected by {admin}, amount returned",
+      "withdrawalCancelled": "Withdrawal cancelled, amount returned"
     },
     "depositSuccess": "Deposit completed",
     "depositSuccessDetail": "{amount} was added to your wallet.",
@@ -245,9 +249,9 @@
     "transferSuccess": "Transfer completed",
     "transferSuccessDetail": "{amount} was sent to {recipient}.",
     "transferFailed": "Could not complete the transfer. Please try again.",
-    "withdrawSuccess": "Withdrawal submitted",
-    "withdrawSuccessDetail": "{amount} is on its way. Withdrawals may take 1–3 business days to process.",
-    "withdrawFailed": "Could not complete the withdrawal. Please try again.",
+    "withdrawSuccess": "Withdrawal submitted for review",
+    "withdrawSuccessDetail": "{amount} is held from your balance until an officer reviews your request.",
+    "withdrawFailed": "Could not submit the withdrawal. Please try again.",
     "withdrawItemSuccess": "Withdrawal requested",
     "withdrawItemSuccessDetail": "{name} stays in your backpack until an officer hands it over in game.",
     "withdrawItemFailed": "Could not withdraw the item. Please try again.",
@@ -263,7 +267,25 @@
     "lockedBidsLabel": "Auctions holding your bids",
     "unnamedAuction": "Auction",
     "withdrawalCancelled": "Withdrawal of {name} cancelled.",
-    "withdrawalCancelFailed": "Could not cancel the withdrawal. Please try again."
+    "withdrawalCancelFailed": "Could not cancel the withdrawal. Please try again.",
+    "back": "Back",
+    "continue": "Continue",
+    "confirmTransfer": "Confirm Transfer",
+    "confirmTransferHint": "Check the details before sending. Transfers cannot be undone.",
+    "confirmTransferAction": "Confirm transfer",
+    "balanceAfterTransfer": "Balance after transfer",
+    "transferInsufficient": "Your balance is no longer enough for this transfer.",
+    "withdrawNoteLabel": "Note (optional)",
+    "withdrawNotePlaceholder": "Anything the officer should know…",
+    "submitWithdrawal": "Submit request",
+    "pendingWithdrawals": "Pending withdrawals",
+    "pendingReview": "Pending review",
+    "withdrawalRequestedOn": "Requested {date} · held from your balance",
+    "cancelWithdrawal": "Cancel request",
+    "cancelWithdrawalLabel": "Cancel withdrawal request for {amount}",
+    "withdrawalRequestCancelled": "Withdrawal cancelled. {amount} was returned to your balance.",
+    "withdrawalRequestCancelFailed": "Could not cancel the withdrawal. It may have been reviewed already.",
+    "heldForWithdrawals": "{amount} held for withdrawals pending review"
   },
   "lotteryPage": {
     "all": "All",
@@ -647,6 +669,7 @@
       "drawLottery": "Draw lottery winners",
       "changeDrawDate": "Change the draw date",
       "manageWallet": "Manage their own wallet and backpack",
+      "reviewWithdrawals": "Approve or reject gold withdrawal requests",
       "auctionBankItems": "Auction or raffle guild vault items",
       "distributeLoot": "Hand out roll call loot",
       "editRollCallLoot": "Edit roll call loot until the roll call is completed",
@@ -883,6 +906,9 @@
     "itemRequestRejected": "<b>{actor}</b> rejected your request for <b>{item}</b>",
     "fundRequestSubmitted": "<b>{actor}</b> requested <b>{amount}</b> from the guild vault",
     "itemRequestSubmitted": "<b>{actor}</b> requested <b>{item}</b> from the guild vault",
+    "withdrawalRequestSubmitted": "<b>{actor}</b> requested to withdraw <b>{amount}</b>",
+    "withdrawalRequestApproved": "<b>{actor}</b> approved your withdrawal of <b>{amount}</b>",
+    "withdrawalRequestRejected": "<b>{actor}</b> rejected your withdrawal of <b>{amount}</b>; the amount is back in your wallet",
     "auctionOutbid": "<b>{actor}</b> outbid you on <b>{item}</b> with {amount}",
     "lotteryWon": "You placed #{rank} in <b>{lottery}</b> and won <b>{prizeType, select, item {{prize}} other {{amount}}}</b>",
     "auctionWon": "You won <b>{item}</b> for <b>{amount}</b>. It's in your backpack now",
@@ -1563,6 +1589,7 @@
     "retry": "Retry",
     "loadFailed": {
       "requests": "Could not load fund and item requests.",
+      "withdrawals": "Could not load withdrawal requests.",
       "auctions": "Could not load auctions.",
       "deliveries": "Could not load item handovers.",
       "loot": "Could not load roll call loot."
@@ -1570,6 +1597,7 @@
     "kinds": {
       "fund": "Fund request",
       "item": "Item request",
+      "withdrawal": "Withdrawal",
       "auction": "Auction",
       "delivery": "Item handover",
       "loot": "Roll call loot"
@@ -1605,6 +1633,7 @@
       "open": {
         "fund": "No fund requests are waiting for review.",
         "item": "No item requests are waiting for review.",
+        "withdrawal": "No withdrawals are waiting for review.",
         "auction": "Every auction is running on schedule.",
         "delivery": "No members are waiting for an item handover.",
         "loot": "All roll call loot has been handed out."
@@ -1627,7 +1656,8 @@
     "statuses": {
       "pending": "Pending",
       "approved": "Approved",
-      "rejected": "Rejected"
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
     },
     "auctionReason": {
       "overdue": "Awaiting settlement",
@@ -1657,7 +1687,9 @@
     "requestedBy": "Requested by {name}",
     "approveFundHint": "The amount will be transferred from the guild vault to the member's wallet.",
     "approveItemHint": "The item will be moved to the member's backpack. Other pending requests for this item will be rejected.",
+    "approveWithdrawalHint": "Approve once the gold has been handed over in game. The held amount leaves the member's wallet for good.",
     "rejectHint": "The member will see this request as rejected.",
+    "rejectWithdrawalHint": "The held amount is returned to the member's wallet and they are notified.",
     "batchHint": "Each selected request is reviewed in turn. Requests that can no longer be {decision, select, approved {approved} other {rejected}} are skipped.",
     "noteLabel": "Review note (optional)",
     "notePlaceholder": "Add a note for the member…",
@@ -1668,6 +1700,7 @@
     "batchPartial": "{decision, select, approved {Approved} other {Rejected}} {succeeded}; {failed} could not be processed.",
     "errorForbidden": "You don't have permission to review this request.",
     "errorConflict": "This request can no longer be approved. It may have been reviewed already, or the guild vault lacks funds or the item.",
+    "errorWithdrawalConflict": "This withdrawal can no longer be reviewed. It may have been reviewed or cancelled already.",
     "errorNotFound": "This request no longer exists.",
     "errorGeneric": "Something went wrong. Please try again."
   },

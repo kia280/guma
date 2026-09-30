@@ -33,7 +33,7 @@ import type {
   LootItem,
 } from '@/types/roll-call';
 import type { User, UserStats } from '@/types/user';
-import type { MemberAssets, Transaction, Wallet } from '@/types/wallet';
+import type { MemberAssets, Transaction, Wallet, WithdrawalRequest } from '@/types/wallet';
 import { fromMinorUnits, roundGold, toMinorUnits } from '../money';
 import type { ApiClient } from '../types';
 import * as mockData from './data';
@@ -55,6 +55,7 @@ const store = {
   preferencesUpdatedAt: undefined as string | undefined,
   fundRequests: [] as FundRequest[],
   itemRequests: [] as ItemRequest[],
+  withdrawalRequests: [] as WithdrawalRequest[],
   bankBalance: 8750,
   rollCallGold: {} as Record<string, MockRollCallGold>,
 };
@@ -257,7 +258,39 @@ const mockWallet = (guildId: string): Wallet => ({
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...mockLockedBids(),
+  pendingWithdrawals: store.withdrawalRequests
+    .filter(r => r.requesterId === currentUser.id && r.status === 'pending')
+    .reduce((sum, r) => roundGold(sum + r.amount), 0),
 });
+
+const resolveMockWithdrawal = (
+  guildId: string,
+  requestId: string,
+  status: Exclude<WithdrawalRequest['status'], 'pending'>,
+  review: { reviewerName?: string; reviewNote?: string } = {},
+): WithdrawalRequest => {
+  const request = store.withdrawalRequests.find(r => r.id === requestId);
+  if (!request || request.status !== 'pending') throw failedPrecondition('withdrawal request is no longer pending');
+  Object.assign(request, { status, reviewedAt: new Date().toISOString(), ...review });
+  const refund = status === 'approved' ? 0 : request.amount;
+  if (request.requesterId === currentUser.id) {
+    currentUser.balance = roundGold(currentUser.balance + refund);
+    store.transactions.unshift({
+      id: `tx-${Date.now()}`,
+      type: 'withdraw',
+      kind: `WITHDRAWAL_${status.toUpperCase()}`,
+      amount: refund,
+      date: request.reviewedAt ?? new Date().toISOString(),
+      status: 'completed',
+      description: review.reviewNote,
+      referenceType: 'withdrawal',
+      referenceId: request.id,
+      actorName: review.reviewerName,
+    });
+    emitLiveEvent({ kind: 'wallet', guildId, balance: currentUser.balance });
+  }
+  return { ...request };
+};
 
 const mockGuildBankData = (guildId: string): GuildBank => ({
   id: `bank-${guildId}`,
@@ -348,18 +381,43 @@ const baseMockApiClient: ApiClient = {
     store.transactions.unshift(tx);
     return tx;
   },
-  withdraw: async (_guildId, amount) => {
-    const tx: Transaction = {
+  withdraw: async (guildId, req) => {
+    if (req.amount <= 0 || req.amount > currentUser.balance) throw failedPrecondition('insufficient funds');
+    const request: WithdrawalRequest = {
+      id: `wr-${Date.now()}`,
+      guildId,
+      requesterId: currentUser.id,
+      requesterName: ownUserName(currentUser),
+      amount: req.amount,
+      note: req.note,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+    store.withdrawalRequests.unshift(request);
+    currentUser.balance = roundGold(currentUser.balance - req.amount);
+    store.transactions.unshift({
       id: `tx-${Date.now()}`,
       type: 'withdraw',
-      amount: -Math.abs(amount),
-      date: new Date().toISOString(),
-      status: 'pending',
-      description: 'Withdrawal request',
-    };
-    store.transactions.unshift(tx);
-    return tx;
+      kind: 'WITHDRAWAL_REQUEST',
+      amount: -req.amount,
+      date: request.createdAt,
+      status: 'completed',
+      description: req.note,
+      referenceType: 'withdrawal',
+      referenceId: request.id,
+    });
+    emitLiveEvent({ kind: 'wallet', guildId, balance: currentUser.balance });
+    return { ...request };
   },
+  listMyWithdrawalRequests: async (_guildId, status) =>
+    store.withdrawalRequests
+      .filter(r => r.requesterId === currentUser.id && (!status || r.status === status))
+      .map(r => ({ ...r })),
+  cancelWithdrawalRequest: async (guildId, requestId) => resolveMockWithdrawal(guildId, requestId, 'cancelled'),
+  listWithdrawalRequests: async (_guildId, status) =>
+    store.withdrawalRequests.filter(r => !status || r.status === status).map(r => ({ ...r })),
+  reviewWithdrawalRequest: async (guildId, requestId, status, note) =>
+    resolveMockWithdrawal(guildId, requestId, status, { reviewerName: ownUserName(currentUser), reviewNote: note }),
   transfer: async (_guildId, req) => {
     const tx: Transaction = {
       id: `tx-${Date.now()}`,
