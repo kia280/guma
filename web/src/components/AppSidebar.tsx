@@ -96,7 +96,7 @@ function NavItemLink({
           icon={item.icon}
           width={18}
           aria-hidden
-          className={cn('shrink-0', isActive ? 'text-foreground' : 'text-soft group-hover:text-foreground')}
+          className="shrink-0"
         />
       )}
       <span
@@ -167,7 +167,7 @@ function NavGroupItem({
           icon={group.icon}
           width={18}
           aria-hidden
-          className={cn('shrink-0', isInside ? 'text-foreground' : 'text-soft group-hover:text-foreground')}
+          className="shrink-0"
         />
         <span className="flex-1 truncate text-left">{t(group.label)}</span>
         <Icon
