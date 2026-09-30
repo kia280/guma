@@ -61,6 +61,30 @@ func TestReviewRejectsUnknownDecision(t *testing.T) {
 	}
 }
 
+func TestDeleteBankItemValidatesIDs(t *testing.T) {
+	s := New(nil, zerolog.Nop())
+	tests := []struct {
+		name  string
+		guild string
+		user  string
+		item  string
+		want  error
+	}{
+		{name: "bad guild id", guild: "nope", user: testUser, item: uuid.NewString(), want: errs.ErrNotFound},
+		{name: "bad user id", guild: testGuild, user: "nope", item: uuid.NewString(), want: errs.ErrInvalidArgument},
+		{name: "bad item id", guild: testGuild, user: testUser, item: "nope", want: errs.ErrNotFound},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.ErrorIs(t, s.DeleteBankItem(context.Background(), tt.guild, tt.user, tt.item), tt.want)
+		})
+	}
+}
+
+func TestItemDeleterRolesExcludeModerators(t *testing.T) {
+	assert.ElementsMatch(t, []string{"owner", "admin"}, itemDeleterRoles)
+}
+
 func TestListRequestsRejectsUnknownStatusFilter(t *testing.T) {
 	s := New(nil, zerolog.Nop())
 	_, err := s.ListFundRequests(context.Background(), ListFundRequestsParams{GuildID: testGuild, UserID: testUser, Status: "done"})

@@ -1774,6 +1774,42 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/bank/items/{bankItemId}": {
+      "delete": {
+        "operationId": "BankService_DeleteBankItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteBankItemResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "bankItemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/bank/request-funds": {
       "post": {
         "summary": "Request withdrawal from guild bank (requires approval)",
@@ -3216,6 +3252,50 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/members/{userId}/role": {
+      "put": {
+        "operationId": "MemberService_UpdateMemberRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMemberRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/MemberServiceUpdateMemberRoleBody"
+            }
+          }
+        ],
+        "tags": [
+          "MemberService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/roll-call-templates": {
       "get": {
         "operationId": "RollCallTemplateService_ListRollCallTemplates",
@@ -4245,6 +4325,192 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/wallet/withdrawals": {
+      "get": {
+        "operationId": "WalletService_ListMyWithdrawalRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListMyWithdrawalRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/wallet/withdrawals/{requestId}/cancel": {
+      "post": {
+        "operationId": "WalletService_CancelWithdrawalRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelWithdrawalRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceCancelWithdrawalRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/withdrawal-requests": {
+      "get": {
+        "operationId": "WalletService_ListWithdrawalRequests",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListWithdrawalRequestsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/v1/guilds/{guildId}/withdrawal-requests/{requestId}": {
+      "patch": {
+        "operationId": "WalletService_ReviewWithdrawalRequest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ReviewWithdrawalRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WalletServiceReviewWithdrawalRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/v1/me": {
       "get": {
         "summary": "Get authenticated user's profile",
@@ -5197,6 +5463,14 @@
         }
       }
     },
+    "MemberServiceUpdateMemberRoleBody": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        }
+      }
+    },
     "NotificationServiceMarkNotificationReadBody": {
       "type": "object"
     },
@@ -5403,6 +5677,9 @@
     "WalletServiceCancelBackpackWithdrawalBody": {
       "type": "object"
     },
+    "WalletServiceCancelWithdrawalRequestBody": {
+      "type": "object"
+    },
     "WalletServiceConfirmBackpackDeliveryBody": {
       "type": "object"
     },
@@ -5412,6 +5689,17 @@
         "amount": {
           "type": "string",
           "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "WalletServiceReviewWithdrawalRequestBody": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
         },
         "note": {
           "type": "string"
@@ -5940,6 +6228,17 @@
         }
       }
     },
+    "v1CancelWithdrawalRequestResponse": {
+      "type": "object",
+      "properties": {
+        "withdrawalRequest": {
+          "$ref": "#/definitions/v1WithdrawalRequest"
+        },
+        "updatedWallet": {
+          "$ref": "#/definitions/v1Wallet"
+        }
+      }
+    },
     "v1CheckInResponse": {
       "type": "object",
       "properties": {
@@ -6083,6 +6382,14 @@
       "type": "object"
     },
     "v1DeleteAuctionResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteBankItemResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -7271,6 +7578,25 @@
         }
       }
     },
+    "v1ListMyWithdrawalRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WithdrawalRequest"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "v1ListNotificationsResponse": {
       "type": "object",
       "properties": {
@@ -7365,6 +7691,25 @@
             "type": "object",
             "$ref": "#/definitions/v1GuildEvent"
           }
+        }
+      }
+    },
+    "v1ListWithdrawalRequestsResponse": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WithdrawalRequest"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        },
+        "totalCount": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -7898,6 +8243,14 @@
         }
       }
     },
+    "v1ReviewWithdrawalRequestResponse": {
+      "type": "object",
+      "properties": {
+        "withdrawalRequest": {
+          "$ref": "#/definitions/v1WithdrawalRequest"
+        }
+      }
+    },
     "v1RevokeInviteResponse": {
       "type": "object",
       "properties": {
@@ -8198,7 +8551,7 @@
         },
         "referenceType": {
           "type": "string",
-          "title": "\"auction\" | \"lottery\" | \"roll_call\" | \"manual\""
+          "title": "\"auction\" | \"lottery\" | \"roll_call\" | \"withdrawal\" | \"manual\""
         },
         "createdAt": {
           "type": "string",
@@ -8226,6 +8579,9 @@
         },
         "updatedWallet": {
           "$ref": "#/definitions/v1Wallet"
+        },
+        "withdrawalRequest": {
+          "$ref": "#/definitions/v1WithdrawalRequest"
         }
       }
     },
@@ -8327,6 +8683,14 @@
       }
     },
     "v1UpdateMemberResponse": {
+      "type": "object",
+      "properties": {
+        "member": {
+          "$ref": "#/definitions/v1Member"
+        }
+      }
+    },
+    "v1UpdateMemberRoleResponse": {
       "type": "object",
       "properties": {
         "member": {
@@ -8569,6 +8933,10 @@
             "type": "object",
             "$ref": "#/definitions/v1LockedBid"
           }
+        },
+        "pendingWithdrawals": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -8607,6 +8975,53 @@
       "properties": {
         "item": {
           "$ref": "#/definitions/v1BackpackItem"
+        }
+      }
+    },
+    "v1WithdrawalRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "guildId": {
+          "type": "string"
+        },
+        "requesterId": {
+          "type": "string"
+        },
+        "requesterName": {
+          "type": "string"
+        },
+        "requesterAvatarUrl": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "note": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "reviewerId": {
+          "type": "string"
+        },
+        "reviewerName": {
+          "type": "string"
+        },
+        "reviewNote": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     }

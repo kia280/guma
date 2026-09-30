@@ -139,7 +139,11 @@ export default function AdminPage() {
   const [assetsStatus, setAssetsStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
   const [assetsReloadKey, setAssetsReloadKey] = React.useState(0);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor | undefined>(undefined);
-  const [assetsMember, setAssetsMember] = React.useState<MockUser | null>(null);
+  const [assetsMemberId, setAssetsMemberId] = React.useState<string | null>(null);
+  const assetsMember = React.useMemo(
+    () => members.find(candidate => candidate.id === assetsMemberId) ?? null,
+    [members, assetsMemberId],
+  );
   const assetsModalState = useOverlayState();
   const [recentActivity, setRecentActivity] = React.useState<AdminActivity[]>([]);
   const [activityStatus, setActivityStatus] = React.useState<'loading' | 'ready' | 'error'>('loading');
@@ -332,9 +336,19 @@ export default function AdminPage() {
   const openMemberAssets = (memberId: React.Key) => {
     const member = members.find(candidate => candidate.id === memberId);
     if (!member) return;
-    setAssetsMember(member);
+    setAssetsMemberId(member.id);
     assetsModalState.open();
   };
+
+  const applyRoleChange = React.useCallback((updated: MockUser) => {
+    setMembers(prev => prev.map(member => (member.id === updated.id ? { ...member, role: updated.role } : member)));
+  }, []);
+
+  const refetchMembers = React.useCallback(() => {
+    apiClient.listMembers(guildId).then(setMembers).catch(() => {});
+  }, [guildId]);
+
+  useLiveResource(['member'], refetchMembers, { guildId });
 
   const assetCell = (userId: string, render: (summary: MemberAssetSummary) => string) => {
     if (assetsStatus === 'loading') return <Skeleton className="h-5 w-16 rounded-lg" />;
@@ -683,6 +697,8 @@ export default function AdminPage() {
               member={assetsMember}
               members={members}
               onTransferred={refetchAssets}
+              onRoleChanged={applyRoleChange}
+              onMembersStale={refetchMembers}
             />
           )}
         </Tabs.Panel>

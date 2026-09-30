@@ -34,7 +34,7 @@ import type {
   LootItem,
 } from '@/types/roll-call';
 import type { LinkedAccount, MockUser, User } from '@/types/user';
-import type { AssetDestination, MemberAssets, MemberAssetSummary, Transaction, Wallet } from '@/types/wallet';
+import type { AssetDestination, MemberAssets, MemberAssetSummary, Transaction, Wallet, WithdrawalRequest } from '@/types/wallet';
 import { fromMinorUnits } from './money';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -561,6 +561,7 @@ type ProtoWallet = {
   updated_at?: string;
   locked_in_bids?: number | string;
   locked_bids?: ProtoLockedBid[];
+  pending_withdrawals?: number | string;
 };
 
 export const toWallet = (w: ProtoWallet): Wallet => ({
@@ -578,6 +579,37 @@ export const toWallet = (w: ProtoWallet): Wallet => ({
     amount: fromMinorUnits(b.amount),
     endTime: ts(b.end_time),
   })),
+  pendingWithdrawals: fromMinorUnits(w.pending_withdrawals),
+});
+
+type ProtoWithdrawalRequest = {
+  id: string;
+  guild_id?: string;
+  requester_id?: string;
+  requester_name?: string;
+  requester_avatar_url?: string;
+  amount?: number | string;
+  note?: string;
+  status?: string;
+  reviewer_name?: string;
+  review_note?: string;
+  created_at?: string;
+  reviewed_at?: string;
+};
+
+export const toWithdrawalRequest = (raw: ProtoWithdrawalRequest): WithdrawalRequest => ({
+  id: raw.id,
+  guildId: raw.guild_id ?? '',
+  requesterId: raw.requester_id ?? '',
+  requesterName: raw.requester_name ?? '',
+  requesterAvatarUrl: raw.requester_avatar_url || undefined,
+  amount: fromMinorUnits(raw.amount),
+  note: raw.note || undefined,
+  status: (raw.status?.toLowerCase() as WithdrawalRequest['status']) || 'pending',
+  reviewerName: raw.reviewer_name || undefined,
+  reviewNote: raw.review_note || undefined,
+  createdAt: ts(raw.created_at),
+  reviewedAt: raw.reviewed_at ? ts(raw.reviewed_at) : undefined,
 });
 
 export const toTransaction = (raw: ProtoTransaction): Transaction => {

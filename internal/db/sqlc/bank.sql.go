@@ -204,6 +204,29 @@ func (q *Queries) EnsureGuildBank(ctx context.Context, guildID uuid.UUID) error 
 	return err
 }
 
+const getBankItemForUpdate = `-- name: GetBankItemForUpdate :one
+SELECT item, COALESCE(locked_by_type, '') AS locked_by_type FROM bank_items
+WHERE id = $1 AND guild_id = $2
+FOR UPDATE
+`
+
+type GetBankItemForUpdateParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type GetBankItemForUpdateRow struct {
+	Item         []byte
+	LockedByType string
+}
+
+func (q *Queries) GetBankItemForUpdate(ctx context.Context, arg GetBankItemForUpdateParams) (GetBankItemForUpdateRow, error) {
+	row := q.db.QueryRow(ctx, getBankItemForUpdate, arg.ID, arg.GuildID)
+	var i GetBankItemForUpdateRow
+	err := row.Scan(&i.Item, &i.LockedByType)
+	return i, err
+}
+
 const getGuildBank = `-- name: GetGuildBank :one
 SELECT id, guild_id, balance, currency, created_at, updated_at
 FROM guild_bank WHERE guild_id = $1

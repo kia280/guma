@@ -22,6 +22,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ItemCard, ItemCardAction } from '@/components/ItemCard';
 import { ItemHistoryModal } from '@/components/ItemHistoryModal';
 import { ItemLockChip } from '@/components/ItemLockChip';
@@ -38,6 +39,7 @@ import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
+import { useGuildPermissions } from '@/lib/permissions';
 import { contributionStatusColor } from '@/lib/status-colors';
 import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-bank';
 
@@ -136,6 +138,10 @@ export default function GuildBankPage() {
   const requestFundsModalState = useOverlayState();
   const historyModalState = useOverlayState();
   const [historyItem, setHistoryItem] = React.useState<GuildBankItem | null>(null);
+  const canDeleteItems = useGuildPermissions().can('deleteBankItem');
+  const [itemToDelete, setItemToDelete] = React.useState<GuildBankItem | null>(null);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = React.useState(false);
+  const [deleteFailedCode, setDeleteFailedCode] = React.useState<string | undefined>(undefined);
 
   const [contributeAmount, setContributeAmount] = React.useState('');
   const [contributeNote, setContributeNote] = React.useState('');
@@ -363,6 +369,38 @@ export default function GuildBankPage() {
     setSelectedItem(item);
     setRequestError(null);
     requestItemModalState.open();
+  };
+
+  const openItemDelete = (item: GuildBankItem) => {
+    setItemToDelete(item);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteItem = async () => {
+    if (!itemToDelete) return;
+    try {
+      await apiClient.deleteBankItem(guildId, itemToDelete.id);
+    } catch (err) {
+      const code = apiErrorCode(err);
+      setDeleteFailedCode(code);
+      if (code === GrpcCode.NotFound || code === GrpcCode.FailedPrecondition) refetchBank();
+      throw err;
+    }
+    refetchBank();
+    notify.success(t('deleteItemSuccess', { item: itemToDelete.name }));
+  };
+
+  const deleteFailedMessage = () => {
+    switch (deleteFailedCode) {
+      case GrpcCode.FailedPrecondition:
+        return t('deleteItemLocked');
+      case GrpcCode.NotFound:
+        return t('errorItemUnavailable');
+      case GrpcCode.PermissionDenied:
+        return t('deleteItemNotAllowed');
+      default:
+        return t('deleteItemFailed');
+    }
   };
 
   return (
@@ -609,9 +647,13 @@ export default function GuildBankPage() {
                     <Dropdown.Popover>
                       <Dropdown.Menu
                         aria-label={t('itemActions')}
-                        disabledKeys={item.requestedByMe || item.lock ? ['request'] : []}
+                        disabledKeys={[
+                          ...(item.requestedByMe || item.lock ? ['request'] : []),
+                          ...(item.lock ? ['delete'] : []),
+                        ]}
                         onAction={key => {
                           if (key === 'request') openItemRequest(item);
+                          if (key === 'delete') openItemDelete(item);
                           if (key === 'history') {
                             setHistoryItem(item);
                             historyModalState.open();
@@ -629,6 +671,12 @@ export default function GuildBankPage() {
                           <Icon icon="solar:history-linear" width={16} />
                           <span>{t('history')}</span>
                         </Dropdown.Item>
+                        {canDeleteItems && (
+                          <Dropdown.Item id="delete" variant="danger" textValue={t('deleteItem')}>
+                            <Icon icon="solar:trash-bin-trash-linear" width={16} className="text-danger" />
+                            <Label>{t('deleteItem')}</Label>
+                          </Dropdown.Item>
+                        )}
                       </Dropdown.Menu>
                     </Dropdown.Popover>
                   </Dropdown>
@@ -645,6 +693,15 @@ export default function GuildBankPage() {
           )}
           </AsyncContent>
           <ItemHistoryModal state={historyModalState} itemId={historyItem?.id ?? null} itemName={historyItem?.name ?? ''} />
+          <ConfirmDialog
+            heading={t('deleteItemConfirmTitle', { item: itemToDelete?.name ?? '' })}
+            body={t('deleteItemConfirmBody', { count: itemToDelete?.pendingRequestCount ?? 0 })}
+            confirmLabel={t('deleteItemConfirm')}
+            failedMessage={deleteFailedMessage()}
+            isOpen={isDeleteConfirmOpen}
+            onOpenChange={setIsDeleteConfirmOpen}
+            onConfirm={handleDeleteItem}
+          />
         </Card.Content>
       </Card>
 

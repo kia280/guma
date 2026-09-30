@@ -70,6 +70,9 @@ import type {
   Transaction,
   TransferRequest,
   Wallet,
+  WithdrawRequest,
+  WithdrawalRequest,
+  WithdrawalStatus,
 } from '@/types/wallet';
 
 export interface AuctionFilters {
@@ -106,13 +109,23 @@ export interface ApiClient {
 
   // ── Member ──
   listMembers(guildId: string): Promise<MockUser[]>;
+  updateMemberRole(guildId: string, userId: string, role: string): Promise<MockUser>;
   inviteMember(guildId: string, req: { email: string; role?: string }): Promise<Invitation>;
 
   // ── Wallet ──
   getWallet(guildId: string): Promise<Wallet>;
   listTransactions(guildId: string): Promise<Transaction[]>;
   deposit(guildId: string, amount: number): Promise<Transaction>;
-  withdraw(guildId: string, amount: number): Promise<Transaction>;
+  withdraw(guildId: string, req: WithdrawRequest): Promise<WithdrawalRequest>;
+  listMyWithdrawalRequests(guildId: string, status?: WithdrawalStatus): Promise<WithdrawalRequest[]>;
+  cancelWithdrawalRequest(guildId: string, requestId: string): Promise<WithdrawalRequest>;
+  listWithdrawalRequests(guildId: string, status?: WithdrawalStatus): Promise<WithdrawalRequest[]>;
+  reviewWithdrawalRequest(
+    guildId: string,
+    requestId: string,
+    status: ReviewDecision,
+    note?: string,
+  ): Promise<WithdrawalRequest>;
   transfer(guildId: string, req: TransferRequest): Promise<Transaction>;
   listBackpack(guildId: string): Promise<BackpackItem[]>;
   withdrawBackpackItem(guildId: string, itemId: string): Promise<void>;
@@ -188,6 +201,7 @@ export interface ApiClient {
   listContributions(guildId: string): Promise<GuildContribution[]>;
   donateItem(guildId: string, backpackItemId: string, note?: string): Promise<GuildBankItem>;
   listBankItems(guildId: string, options?: { rollCallId?: string }): Promise<GuildBankItem[]>;
+  deleteBankItem(guildId: string, bankItemId: string): Promise<void>;
   requestItem(guildId: string, bankItemId: string, reason: string): Promise<ItemRequest>;
   reviewItemRequest(
     guildId: string,

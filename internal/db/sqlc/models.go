@@ -283,6 +283,16 @@ type Member struct {
 	LastActive  time.Time
 }
 
+type MemberRoleChange struct {
+	ID        uuid.UUID
+	GuildID   uuid.UUID
+	UserID    uuid.UUID
+	ActorID   *uuid.UUID
+	OldRole   string
+	NewRole   string
+	CreatedAt time.Time
+}
+
 type Notification struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
@@ -412,4 +422,18 @@ type Wallet struct {
 	Currency  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+type WithdrawalRequest struct {
+	ID            uuid.UUID
+	GuildID       uuid.UUID
+	RequesterID   uuid.UUID
+	RequesterName string
+	Amount        int64
+	Note          pgtype.Text
+	Status        string
+	ReviewerID    *uuid.UUID
+	ReviewNote    pgtype.Text
+	CreatedAt     time.Time
+	ReviewedAt    pgtype.Timestamptz
 }

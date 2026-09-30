@@ -222,6 +222,11 @@ LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
 SELECT COUNT(*) FROM item_requests WHERE guild_id = $1
   AND (sqlc.arg(status_filter)::text = '' OR status = sqlc.arg(status_filter)::text);
 
+-- name: GetBankItemForUpdate :one
+SELECT item, COALESCE(locked_by_type, '') AS locked_by_type FROM bank_items
+WHERE id = $1 AND guild_id = $2
+FOR UPDATE;
+
 -- name: DeleteBankItemReturningItem :one
 DELETE FROM bank_items WHERE id = $1 AND guild_id = $2 AND locked_by_type IS NULL
 RETURNING item;

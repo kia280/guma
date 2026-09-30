@@ -186,3 +186,52 @@ WHERE backpack_items.id = sqlc.arg(id)
   AND backpack_items.locked_by_type IS NULL
   AND backpack_items.delivery_requested_at IS NULL
 RETURNING backpack_items.id;
+
+-- name: InsertWithdrawalRequest :one
+INSERT INTO withdrawal_requests (guild_id, requester_id, requester_name, amount, note)
+VALUES ($1, $2, sqlc.arg(requester_name)::text, $3, NULLIF(sqlc.arg(note)::text, ''))
+RETURNING id;
+
+-- name: LockWithdrawalRequest :one
+SELECT amount, requester_id, status FROM withdrawal_requests
+WHERE id = $1 AND guild_id = $2
+FOR UPDATE;
+
+-- name: UpdateWithdrawalRequestStatus :execrows
+UPDATE withdrawal_requests SET
+    status = sqlc.arg(status)::text,
+    reviewer_id = sqlc.narg(reviewer_id)::uuid,
+    review_note = NULLIF(sqlc.arg(review_note)::text, ''),
+    reviewed_at = NOW()
+WHERE id = sqlc.arg(id) AND guild_id = sqlc.arg(guild_id) AND status = 'pending';
+
+-- name: ListWithdrawalRequests :many
+SELECT wr.id, wr.guild_id, wr.requester_id,
+       COALESCE(NULLIF(member_display_name(wr.guild_id, wr.requester_id), ''), wr.requester_name)::text AS requester_name,
+       COALESCE(u.avatar_url, '')    AS requester_avatar_url,
+       wr.amount,
+       COALESCE(wr.note, '')         AS note,
+       wr.status,
+       wr.reviewer_id,
+       COALESCE(member_display_name(wr.guild_id, wr.reviewer_id), '')::text AS reviewer_name,
+       COALESCE(wr.review_note, '')  AS review_note,
+       wr.created_at, wr.reviewed_at
+FROM withdrawal_requests wr
+LEFT JOIN users u ON u.id = wr.requester_id
+WHERE wr.guild_id = sqlc.arg(guild_id)
+  AND (sqlc.narg(requester_id)::uuid IS NULL OR wr.requester_id = sqlc.narg(requester_id)::uuid)
+  AND (sqlc.narg(request_id)::uuid IS NULL OR wr.id = sqlc.narg(request_id)::uuid)
+  AND (sqlc.arg(status_filter)::text = '' OR wr.status = sqlc.arg(status_filter)::text)
+ORDER BY wr.created_at DESC, wr.id
+LIMIT sqlc.arg(page_size)::int OFFSET sqlc.arg(page_offset)::int;
+
+-- name: CountWithdrawalRequests :one
+SELECT COUNT(*) FROM withdrawal_requests wr
+WHERE wr.guild_id = sqlc.arg(guild_id)
+  AND (sqlc.narg(requester_id)::uuid IS NULL OR wr.requester_id = sqlc.narg(requester_id)::uuid)
+  AND (sqlc.arg(status_filter)::text = '' OR wr.status = sqlc.arg(status_filter)::text);
+
+-- name: SumPendingWithdrawals :one
+SELECT COALESCE(SUM(amount), 0)::bigint AS amount
+FROM withdrawal_requests
+WHERE requester_id = $1 AND guild_id = $2 AND status = 'pending';

@@ -277,6 +277,53 @@ func (q *Queries) GetGuildLogo(ctx context.Context, guildID uuid.UUID) (GetGuild
 	return i, err
 }
 
+const getGuildMember = `-- name: GetGuildMember :one
+SELECT m.id, m.user_id, m.guild_id,
+       m.display_name,
+       m.role, m.profile, m.joined_at, m.last_active,
+       COALESCE(u.discord_username, '')::text AS discord_username,
+       COALESCE(u.avatar_url, '') AS avatar_url
+FROM members m
+JOIN users u ON u.id = m.user_id
+WHERE m.guild_id = $1 AND m.user_id = $2
+`
+
+type GetGuildMemberParams struct {
+	GuildID uuid.UUID
+	UserID  uuid.UUID
+}
+
+type GetGuildMemberRow struct {
+	ID              uuid.UUID
+	UserID          uuid.UUID
+	GuildID         uuid.UUID
+	DisplayName     string
+	Role            string
+	Profile         []byte
+	JoinedAt        time.Time
+	LastActive      time.Time
+	DiscordUsername string
+	AvatarUrl       string
+}
+
+func (q *Queries) GetGuildMember(ctx context.Context, arg GetGuildMemberParams) (GetGuildMemberRow, error) {
+	row := q.db.QueryRow(ctx, getGuildMember, arg.GuildID, arg.UserID)
+	var i GetGuildMemberRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.GuildID,
+		&i.DisplayName,
+		&i.Role,
+		&i.Profile,
+		&i.JoinedAt,
+		&i.LastActive,
+		&i.DiscordUsername,
+		&i.AvatarUrl,
+	)
+	return i, err
+}
+
 const getGuildMemberRole = `-- name: GetGuildMemberRole :one
 SELECT role FROM members WHERE guild_id = $1 AND user_id = $2
 `
@@ -473,6 +520,36 @@ type InsertGuildMemberParams struct {
 
 func (q *Queries) InsertGuildMember(ctx context.Context, arg InsertGuildMemberParams) error {
 	_, err := q.db.Exec(ctx, insertGuildMember, arg.UserID, arg.GuildID, arg.Role)
+	return err
+}
+
+const insertMemberRoleChange = `-- name: InsertMemberRoleChange :exec
+INSERT INTO member_role_changes (guild_id, user_id, actor_id, old_role, new_role)
+VALUES (
+    $1,
+    $2,
+    $3,
+    $4::text,
+    $5::text
+)
+`
+
+type InsertMemberRoleChangeParams struct {
+	GuildID uuid.UUID
+	UserID  uuid.UUID
+	ActorID *uuid.UUID
+	OldRole string
+	NewRole string
+}
+
+func (q *Queries) InsertMemberRoleChange(ctx context.Context, arg InsertMemberRoleChangeParams) error {
+	_, err := q.db.Exec(ctx, insertMemberRoleChange,
+		arg.GuildID,
+		arg.UserID,
+		arg.ActorID,
+		arg.OldRole,
+		arg.NewRole,
+	)
 	return err
 }
 
@@ -688,6 +765,44 @@ func (q *Queries) ListGuilds(ctx context.Context, arg ListGuildsParams) ([]ListG
 	return items, nil
 }
 
+const lockGuildMemberRoles = `-- name: LockGuildMemberRoles :many
+SELECT user_id, role FROM members
+WHERE guild_id = $1
+  AND user_id = ANY($2::uuid[])
+ORDER BY user_id
+FOR UPDATE
+`
+
+type LockGuildMemberRolesParams struct {
+	GuildID uuid.UUID
+	UserIds []uuid.UUID
+}
+
+type LockGuildMemberRolesRow struct {
+	UserID uuid.UUID
+	Role   string
+}
+
+func (q *Queries) LockGuildMemberRoles(ctx context.Context, arg LockGuildMemberRolesParams) ([]LockGuildMemberRolesRow, error) {
+	rows, err := q.db.Query(ctx, lockGuildMemberRoles, arg.GuildID, arg.UserIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []LockGuildMemberRolesRow{}
+	for rows.Next() {
+		var i LockGuildMemberRolesRow
+		if err := rows.Scan(&i.UserID, &i.Role); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateGuild = `-- name: UpdateGuild :one
 UPDATE guilds SET
     name        = CASE WHEN $1::text        != '' THEN $1::text        ELSE name        END,
@@ -755,6 +870,25 @@ func (q *Queries) UpdateGuild(ctx context.Context, arg UpdateGuildParams) (Updat
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const updateGuildMemberRole = `-- name: UpdateGuildMemberRole :execrows
+UPDATE members SET role = $1::text
+WHERE guild_id = $2 AND user_id = $3
+`
+
+type UpdateGuildMemberRoleParams struct {
+	Role    string
+	GuildID uuid.UUID
+	UserID  uuid.UUID
+}
+
+func (q *Queries) UpdateGuildMemberRole(ctx context.Context, arg UpdateGuildMemberRoleParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateGuildMemberRole, arg.Role, arg.GuildID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const updateGuildSettings = `-- name: UpdateGuildSettings :exec

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Alert,
   Card,
   Button,
   Chip,
@@ -13,6 +14,7 @@ import {
   TextField,
   Pagination,
   Spinner,
+  TextArea,
 } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
@@ -28,6 +30,7 @@ import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAu
 import { CreateLotteryModal, type LotteryPrizeItem } from '@/components/CreateLotteryModal';
 import { ItemHistoryModal } from '@/components/ItemHistoryModal';
 import { MemberComboBox, type MemberOption } from '@/components/MemberComboBox';
+import { UserAvatar } from '@/components/UserAvatar';
 import { useBalanceTrend } from '@/hooks/useBalanceTrend';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -37,15 +40,18 @@ import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
 import { apiClient } from '@/lib/guma';
+import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { GOLD_STEP, parseGold } from '@/lib/guma/money';
 import { type FormatGold, useFormatGold } from '@/lib/guma/useFormatGold';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { isGuildRole, useGuildPermissions } from '@/lib/permissions';
 import { transactionStatusColor } from '@/lib/status-colors';
+import { useUserStore } from '@/lib/store';
 import { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
-import type { Transaction, Wallet as WalletType } from '@/types/wallet';
+import type { Transaction, Wallet as WalletType, WithdrawalRequest } from '@/types/wallet';
 
+const LIVE_WITHDRAWAL_RESOURCES: readonly LiveResource[] = ['withdrawal'];
 const LIVE_BACKPACK_RESOURCES: readonly LiveResource[] = ['bank', 'auction', 'lottery', 'backpack'];
 const LIVE_REFETCH_DEBOUNCE_MS = 250;
 
@@ -63,7 +69,14 @@ const TRANSACTION_KIND_LABELS: Record<string, string> = {
   BANK_CONTRIBUTION: 'bankContribution',
   FUND_REQUEST_APPROVED: 'fundRequestApproved',
   ROLL_CALL_GOLD: 'rollCallGold',
+  WITHDRAWAL_REQUEST: 'withdrawalRequest',
+  WITHDRAWAL_APPROVED: 'withdrawalApproved',
+  WITHDRAWAL_REJECTED: 'withdrawalRejected',
+  WITHDRAWAL_CANCELLED: 'withdrawalCancelled',
 };
+
+const WITHDRAWAL_REQUEST_KIND = 'WITHDRAWAL_REQUEST';
+const WITHDRAWAL_NOTE_MAX_LENGTH = 200;
 
 const USER_NOTE_KINDS = new Set([
   'DEPOSIT',
@@ -75,11 +88,16 @@ const USER_NOTE_KINDS = new Set([
   'ROLL_CALL_GOLD',
   'ADMIN_TRANSFER_OUT',
   'ADMIN_TRANSFER_IN',
+  'WITHDRAWAL_REQUEST',
+  'WITHDRAWAL_APPROVED',
+  'WITHDRAWAL_REJECTED',
 ]);
 
 const DEFAULT_TRANSFER_NOTE = 'Transfer';
 
 type WalletAction = 'deposit' | 'transfer' | 'withdraw' | 'withdrawItem';
+
+type TransferStep = 'form' | 'confirm';
 
 const transactionLabelKey = (transaction: Transaction): string | undefined => {
   if (transaction.kind === 'AUCTION_BID') {
@@ -143,7 +161,12 @@ const getTransactionIcon = (transaction: Transaction) => {
     case 'TRANSFER_IN':
       return 'solar:arrow-down-linear';
     case 'WITHDRAWAL':
+    case 'WITHDRAWAL_REQUEST':
+    case 'WITHDRAWAL_APPROVED':
       return 'solar:arrow-up-linear';
+    case 'WITHDRAWAL_REJECTED':
+    case 'WITHDRAWAL_CANCELLED':
+      return 'solar:undo-left-linear';
     case 'TRANSFER_OUT':
     case 'ADMIN_TRANSFER_OUT':
       return transaction.referenceType === 'bank' ? 'solar:safe-2-linear' : 'solar:arrow-right-linear';
@@ -216,7 +239,10 @@ export default function WalletPage() {
   const [transferAmount, setTransferAmount] = React.useState('');
   const [transferRecipient, setTransferRecipient] = React.useState('');
   const [showTransferErrors, setShowTransferErrors] = React.useState(false);
+  const [transferStep, setTransferStep] = React.useState<TransferStep>('form');
+  const [transferError, setTransferError] = React.useState<string | null>(null);
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
+  const [withdrawNote, setWithdrawNote] = React.useState('');
   const [depositAmount, setDepositAmount] = React.useState('');
   const [selectedItem, setSelectedItem] = React.useState<BackpackItem | null>(null);
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -226,6 +252,8 @@ export default function WalletPage() {
   const [wallet, setWallet] = React.useState<WalletType | null>(null);
   const [transactions, setTransactions] = React.useState<Transaction[]>([]);
   const [backpackItems, setBackpackItems] = React.useState<BackpackItem[]>([]);
+  const [pendingWithdrawals, setPendingWithdrawals] = React.useState<WithdrawalRequest[]>([]);
+  const [cancellingWithdrawalId, setCancellingWithdrawalId] = React.useState<string | null>(null);
   const [members, setMembers] = React.useState<MockUser[]>([]);
   const [pendingAction, setPendingAction] = React.useState<WalletAction | null>(null);
   const [completedAction, setCompletedAction] = React.useState<{ action: WalletAction; detail: string } | null>(null);
@@ -233,15 +261,18 @@ export default function WalletPage() {
   const transactionsState = useLoadState();
   const backpackState = useLoadState();
   const notify = useToast();
+  const currentUserId = useUserStore(state => state.user?.id);
   const recipientOptions = React.useMemo<MemberOption[]>(
     () =>
-      members.map(user => ({
-        id: user.id,
-        name: userName(user.username),
-        avatar: user.avatar,
-        description: isGuildRole(user.role) ? roleLabels(user.role) : undefined,
-      })),
-    [members, userName, roleLabels],
+      members
+        .filter(user => user.id !== currentUserId)
+        .map(user => ({
+          id: user.id,
+          name: userName(user.username),
+          avatar: user.avatar,
+          description: isGuildRole(user.role) ? roleLabels(user.role) : undefined,
+        })),
+    [members, currentUserId, userName, roleLabels],
   );
   const [reloadKey, setReloadKey] = React.useState(0);
 
@@ -274,6 +305,10 @@ export default function WalletPage() {
         transactionsState.failed();
         notify.loadFailed(reload, 'wallet');
       });
+    apiClient
+      .listMyWithdrawalRequests(guildId, 'pending')
+      .then(setPendingWithdrawals)
+      .catch(() => notify.loadFailed(reload, 'wallet'));
     refetchTrend();
   }, [guildId, refetchTrend, notify, reload, walletState.ready, walletState.failed, transactionsState.ready, transactionsState.failed]);
 
@@ -327,6 +362,7 @@ export default function WalletPage() {
   }, [guildId, refetchBalance]);
 
   useLiveResource(LIVE_BACKPACK_RESOURCES, refetchBackpack, { guildId });
+  useLiveResource(LIVE_WITHDRAWAL_RESOURCES, refetchBalance, { guildId });
 
   const balance = wallet?.balance ?? 0;
   const totalPages = Math.max(1, Math.ceil(transactions.length / rowsPerPage));
@@ -359,6 +395,17 @@ export default function WalletPage() {
           ? t('insufficientBalance')
           : null;
   const canWithdraw = withdrawAmountValue > 0 && !withdrawExceedsBalance;
+  const transferRecipientOption = recipientOptions.find(option => option.id === transferRecipient);
+  const heldForWithdrawals = wallet?.pendingWithdrawals ?? 0;
+  const pendingWithdrawalIds = new Set(pendingWithdrawals.map(request => request.id));
+  const isPendingReview = (transaction: Transaction) =>
+    transaction.kind === WITHDRAWAL_REQUEST_KIND &&
+    Boolean(transaction.referenceId) &&
+    pendingWithdrawalIds.has(transaction.referenceId ?? '');
+  const transactionStatus = (transaction: Transaction): Transaction['status'] =>
+    isPendingReview(transaction) ? 'pending' : transaction.status;
+  const transactionStatusLabel = (transaction: Transaction) =>
+    isPendingReview(transaction) ? t('pendingReview') : t(transaction.status);
   const isActionPending = pendingAction !== null;
 
   const runAction = async (
@@ -366,6 +413,7 @@ export default function WalletPage() {
     request: () => Promise<unknown>,
     detail: string,
     onSuccess?: () => void,
+    onError?: (err: unknown) => void,
   ) => {
     setPendingAction(action);
     try {
@@ -373,8 +421,9 @@ export default function WalletPage() {
       refetchWallet();
       onSuccess?.();
       setCompletedAction({ action, detail });
-    } catch {
-      notify.error(t(`${action}Failed`));
+    } catch (err) {
+      if (onError) onError(err);
+      else notify.error(t(`${action}Failed`));
     } finally {
       setPendingAction(null);
     }
@@ -387,17 +436,26 @@ export default function WalletPage() {
 
   const openTransfer = () => {
     setShowTransferErrors(false);
+    setTransferStep('form');
+    setTransferError(null);
     openActionModal(transferModalState);
   };
 
-  const handleTransfer = (trigger: Element) => {
+  const reviewTransfer = (trigger: Element) => {
     if (transferAmountError || transferRecipientError) {
       setShowTransferErrors(true);
       focusFirstInvalidField(trigger);
       return;
     }
+    setTransferError(null);
+    setTransferStep('confirm');
+  };
+
+  const confirmTransfer = () => {
+    if (transferAmountError || transferRecipientError) return;
     const amount = transferAmountValue;
     const recipient = userName(members.find(user => user.id === transferRecipient)?.username);
+    setTransferError(null);
     return runAction(
       'transfer',
       () => apiClient.transfer(guildId, { recipientId: transferRecipient, amount }),
@@ -405,6 +463,13 @@ export default function WalletPage() {
       () => {
         setTransferAmount('');
         setTransferRecipient('');
+        setTransferStep('form');
+      },
+      err => {
+        refetchBalance();
+        setTransferError(
+          t(apiErrorCode(err) === GrpcCode.FailedPrecondition ? 'transferInsufficient' : 'transferFailed'),
+        );
       },
     );
   };
@@ -413,10 +478,29 @@ export default function WalletPage() {
     if (!canWithdraw) return;
     return runAction(
       'withdraw',
-      () => apiClient.withdraw(guildId, withdrawAmountValue),
+      () => apiClient.withdraw(guildId, { amount: withdrawAmountValue, note: withdrawNote.trim() || undefined }),
       t('withdrawSuccessDetail', { amount: formatGold(withdrawAmountValue) }),
-      () => setWithdrawAmount(''),
+      () => {
+        setWithdrawAmount('');
+        setWithdrawNote('');
+      },
+      err => {
+        refetchBalance();
+        notify.error(t(apiErrorCode(err) === GrpcCode.FailedPrecondition ? 'insufficientBalance' : 'withdrawFailed'));
+      },
     );
+  };
+
+  const cancelWithdrawalRequest = (request: WithdrawalRequest) => {
+    setCancellingWithdrawalId(request.id);
+    return apiClient
+      .cancelWithdrawalRequest(guildId, request.id)
+      .then(() => notify.success(t('withdrawalRequestCancelled', { amount: formatGold(request.amount) })))
+      .catch(() => notify.error(t('withdrawalRequestCancelFailed')))
+      .finally(() => {
+        setCancellingWithdrawalId(null);
+        refetchBalance();
+      });
   };
 
   const handleDeposit = () => {
@@ -501,6 +585,11 @@ export default function WalletPage() {
               <p className="type-caption text-hint">{t('availableBalance')}</p>
               <AsyncValue state={walletState.state}>
                 <p className="type-display text-foreground">{formatGold(balance)}</p>
+                {heldForWithdrawals > 0 && (
+                  <p className="mt-2 type-caption text-subtle">
+                    {t('heldForWithdrawals', { amount: formatGold(heldForWithdrawals) })}
+                  </p>
+                )}
                 {lockedBids.length > 0 && (
                   <div className="mt-2 flex flex-col gap-1">
                     <p className="type-caption text-subtle">
@@ -596,8 +685,73 @@ export default function WalletPage() {
                     <Modal.CloseTrigger isDisabled={isActionPending} />
                     {completedAction?.action === 'transfer' ? (
                       <ActionSuccess title={t('transferSuccess')} detail={completedAction.detail} />
+                    ) : transferStep === 'confirm' ? (
+                      <React.Fragment key="confirm">
+                        <Modal.Header>
+                          <Modal.Heading>{t('confirmTransfer')}</Modal.Heading>
+                        </Modal.Header>
+                        <Modal.Body className="flex flex-col gap-3">
+                          <p className="type-body text-soft">{t('confirmTransferHint')}</p>
+                          <div className="flex items-center gap-3 rounded-lg bg-surface-secondary p-3">
+                            <UserAvatar
+                              name={transferRecipientOption?.name ?? ''}
+                              src={transferRecipientOption?.avatar}
+                              size="md"
+                            />
+                            <div className="flex min-w-0 flex-col">
+                              <p className="type-caption text-hint">{t('recipient')}</p>
+                              <p className="type-body font-medium text-foreground truncate">
+                                {transferRecipientOption?.name}
+                              </p>
+                            </div>
+                          </div>
+                          <dl className="flex flex-col gap-2 rounded-lg bg-surface-secondary p-3 type-body">
+                            <div className="flex items-baseline justify-between gap-3">
+                              <dt className="text-subtle">{t('amountLabel')}</dt>
+                              <dd className="font-medium tabular-nums text-foreground">{formatGold(transferAmountValue)}</dd>
+                            </div>
+                            <div className="flex items-baseline justify-between gap-3">
+                              <dt className="text-subtle">{t('balanceAfterTransfer')}</dt>
+                              <dd className="tabular-nums text-foreground">
+                                {formatGold(Math.max(0, balance - transferAmountValue))}
+                              </dd>
+                            </div>
+                          </dl>
+                          {(transferError || transferExceedsBalance) && (
+                            <Alert status="danger">
+                              <Alert.Indicator />
+                              <Alert.Content>
+                                <Alert.Title>{transferError ?? t('transferInsufficient')}</Alert.Title>
+                              </Alert.Content>
+                            </Alert>
+                          )}
+                        </Modal.Body>
+                        <Modal.Footer>
+                          <Button
+                            autoFocus
+                            variant="secondary"
+                            isDisabled={isActionPending}
+                            onPress={() => setTransferStep('form')}
+                          >
+                            {t('back')}
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onPress={confirmTransfer}
+                            isPending={pendingAction === 'transfer'}
+                            isDisabled={transferExceedsBalance}
+                          >
+                            {({ isPending }) => (
+                              <>
+                                {isPending && <Spinner color="current" size="sm" />}
+                                {t('confirmTransferAction')}
+                              </>
+                            )}
+                          </Button>
+                        </Modal.Footer>
+                      </React.Fragment>
                     ) : (
-                      <>
+                      <React.Fragment key="form">
                         <Modal.Header>
                           <Modal.Heading>{t('transferMoney')}</Modal.Heading>
                         </Modal.Header>
@@ -633,23 +787,14 @@ export default function WalletPage() {
                           </p>
                         </Modal.Body>
                         <Modal.Footer>
-                          <Button slot="close" variant="secondary" isDisabled={isActionPending}>
+                          <Button slot="close" variant="secondary">
                             {t('cancel')}
                           </Button>
-                          <Button
-                            variant="primary"
-                            onPress={e => handleTransfer(e.target)}
-                            isPending={pendingAction === 'transfer'}
-                          >
-                            {({ isPending }) => (
-                              <>
-                                {isPending && <Spinner color="current" size="sm" />}
-                                {t('transfer')}
-                              </>
-                            )}
+                          <Button variant="primary" onPress={e => reviewTransfer(e.target)}>
+                            {t('continue')}
                           </Button>
                         </Modal.Footer>
-                      </>
+                      </React.Fragment>
                     )}
                   </Modal.Dialog>
                 </Modal.Container>
@@ -691,6 +836,17 @@ export default function WalletPage() {
                           <p className="type-caption text-hint px-1">
                             {t('available')} {formatGold(balance)}
                           </p>
+                          <TextField>
+                            <Label>{t('withdrawNoteLabel')}</Label>
+                            <TextArea
+                              variant="secondary"
+                              rows={2}
+                              maxLength={WITHDRAWAL_NOTE_MAX_LENGTH}
+                              placeholder={t('withdrawNotePlaceholder')}
+                              value={withdrawNote}
+                              onChange={e => setWithdrawNote(e.target.value)}
+                            />
+                          </TextField>
                           <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
                             <div className="flex items-start gap-2">
                               <Icon
@@ -715,7 +871,7 @@ export default function WalletPage() {
                             {({ isPending }) => (
                               <>
                                 {isPending && <Spinner color="current" size="sm" />}
-                                {t('withdraw')}
+                                {t('submitWithdrawal')}
                               </>
                             )}
                           </Button>
@@ -728,6 +884,53 @@ export default function WalletPage() {
               </Modal>
             </div>
           </div>
+
+          {pendingWithdrawals.length > 0 && (
+            <section aria-labelledby="pending-withdrawals-heading" className="flex flex-col gap-2">
+              <h3 id="pending-withdrawals-heading" className="type-label text-soft">
+                {t('pendingWithdrawals')}
+              </h3>
+              <ul className="flex flex-col gap-2">
+                {pendingWithdrawals.map(request => (
+                  <li
+                    key={request.id}
+                    className="flex flex-col gap-3 rounded-lg bg-surface-secondary px-3 py-3 sm:flex-row sm:items-center"
+                  >
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <div className="flex items-center gap-2 type-body">
+                        <p className="font-medium tabular-nums text-foreground">{formatGold(request.amount)}</p>
+                        <Chip size="sm" variant="secondary" color="warning">
+                          {t('pendingReview')}
+                        </Chip>
+                      </div>
+                      <p className="type-caption text-hint">
+                        {t('withdrawalRequestedOn', {
+                          date: format.dateTime(new Date(request.createdAt), { dateStyle: 'medium', timeStyle: 'short' }),
+                        })}
+                      </p>
+                      {request.note && <p className="type-caption text-subtle break-words">{request.note}</p>}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="self-end sm:self-center"
+                      aria-label={t('cancelWithdrawalLabel', { amount: formatGold(request.amount) })}
+                      isPending={cancellingWithdrawalId === request.id}
+                      isDisabled={cancellingWithdrawalId !== null && cancellingWithdrawalId !== request.id}
+                      onPress={() => cancelWithdrawalRequest(request)}
+                    >
+                      {({ isPending }) => (
+                        <>
+                          {isPending && <Spinner color="current" size="sm" />}
+                          {t('cancelWithdrawal')}
+                        </>
+                      )}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {/* Balance Chart */}
           <div>
@@ -896,11 +1099,11 @@ export default function WalletPage() {
                         <Table.Cell>
                           <Chip
                             className="capitalize"
-                            color={transactionStatusColor[transaction.status]}
+                            color={transactionStatusColor[transactionStatus(transaction)]}
                             size="sm"
                             variant="secondary"
                           >
-                            {t(transaction.status)}
+                            {transactionStatusLabel(transaction)}
                           </Chip>
                         </Table.Cell>
                       </Table.Row>
@@ -939,11 +1142,11 @@ export default function WalletPage() {
                         </p>
                         <Chip
                           className="capitalize"
-                          color={transactionStatusColor[transaction.status]}
+                          color={transactionStatusColor[transactionStatus(transaction)]}
                           size="sm"
                           variant="tertiary"
                         >
-                          {t(transaction.status)}
+                          {transactionStatusLabel(transaction)}
                         </Chip>
                       </div>
                     </div>

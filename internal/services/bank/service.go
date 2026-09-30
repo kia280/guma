@@ -122,6 +122,13 @@ const (
 
 var reviewerRoles = []string{"owner", "admin", "moderator"}
 
+var itemDeleterRoles = []string{"owner", "admin"}
+
+const (
+	itemEventDeleted = "deleted"
+	deletedItemNote  = "The item was removed from the guild bank."
+)
+
 // ListFundRequestsParams holds inputs for ListFundRequests.
 type ListFundRequestsParams struct {
 	GuildID  string
@@ -754,6 +761,67 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 	}
 	s.logger.Info().Str("item_request_id", requestIDStr).Str("reviewer_id", reviewerIDStr).Str("status", status).Msg("item request reviewed")
 	return toItemRequest(db.ListItemRequestsRow(r)), nil
+}
+
+func (s *Service) DeleteBankItem(ctx context.Context, guildIDStr, userIDStr, bankItemIDStr string) error {
+	guildID, err := uuid.Parse(guildIDStr)
+	if err != nil {
+		return fmt.Errorf("%w: bank item", errs.ErrNotFound)
+	}
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	bankItemID, err := uuid.Parse(bankItemIDStr)
+	if err != nil {
+		return fmt.Errorf("%w: bank item", errs.ErrNotFound)
+	}
+	if err := s.requireRole(ctx, guildID, userID, itemDeleterRoles...); err != nil {
+		return err
+	}
+
+	pgtx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
+	}
+	defer pgtx.Rollback(ctx) //nolint:errcheck
+	qtx := s.q.WithTx(pgtx)
+
+	bankItem, err := qtx.GetBankItemForUpdate(ctx, db.GetBankItemForUpdateParams{ID: bankItemID, GuildID: guildID})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return fmt.Errorf("%w: bank item", errs.ErrNotFound)
+		}
+		return fmt.Errorf("%w: load bank item: %v", errs.ErrInternal, err)
+	}
+	if bankItem.LockedByType != "" {
+		return fmt.Errorf("%w: bank item is in an auction or lottery", errs.ErrFailedPrecondition)
+	}
+
+	rejected, err := qtx.RejectPendingRequestsForBankItem(ctx, db.RejectPendingRequestsForBankItemParams{
+		ReviewerID: &userID, ReviewNote: deletedItemNote, BankItemID: &bankItemID, GuildID: guildID,
+	})
+	if err != nil {
+		return fmt.Errorf("%w: reject pending requests: %v", errs.ErrInternal, err)
+	}
+
+	if err := qtx.InsertItemEvent(ctx, db.InsertItemEventParams{
+		GuildID: guildID, ItemID: bankItemID, Kind: itemEventDeleted, ActorID: &userID,
+	}); err != nil {
+		return fmt.Errorf("%w: log item deletion: %v", errs.ErrInternal, err)
+	}
+
+	if _, err := qtx.DeleteBankItemReturningItem(ctx, db.DeleteBankItemReturningItemParams{
+		ID: bankItemID, GuildID: guildID,
+	}); err != nil {
+		return fmt.Errorf("%w: remove bank item: %v", errs.ErrInternal, err)
+	}
+
+	if err := pgtx.Commit(ctx); err != nil {
+		return fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	s.logger.Info().Str("bank_item_id", bankItemIDStr).Str("deleted_by", userIDStr).Int64("rejected_requests", rejected).Msg("bank item deleted")
+	return nil
 }
 
 func (s *Service) ListItemRequests(ctx context.Context, p ListItemRequestsParams) (*ListItemRequestsResult, error) {

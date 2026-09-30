@@ -1,15 +1,16 @@
 import { AuctionStatus, type AuctionItem } from '@/types/auction';
 import type { BackpackItem } from '@/types/backpack';
 import type { FundRequest, GuildBankItem, ItemRequest } from '@/types/guild-bank';
+import type { WithdrawalRequest } from '@/types/wallet';
 
-export const INBOX_KINDS = ['fund', 'item', 'auction', 'delivery', 'loot'] as const;
+export const INBOX_KINDS = ['fund', 'item', 'withdrawal', 'auction', 'delivery', 'loot'] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 
 export const REQUEST_KINDS: readonly InboxKind[] = ['fund', 'item'];
 
 export const INBOX_STATUSES = ['open', 'approved', 'rejected', 'all'] as const;
 export type InboxStatusFilter = (typeof INBOX_STATUSES)[number];
-export type InboxEntryState = Exclude<InboxStatusFilter, 'all'>;
+export type InboxEntryState = Exclude<InboxStatusFilter, 'all'> | 'closed';
 
 export const INBOX_SORTS = ['oldest', 'newest'] as const;
 export type InboxSort = (typeof INBOX_SORTS)[number];
@@ -21,13 +22,17 @@ export type LootGroup = { rollCallId: string; title: string; items: GuildBankIte
 export type InboxEntry =
   | { kind: 'fund'; request: FundRequest }
   | { kind: 'item'; request: ItemRequest }
+  | { kind: 'withdrawal'; request: WithdrawalRequest }
   | { kind: 'auction'; auction: AuctionItem; reason: AuctionAttention }
   | { kind: 'delivery'; delivery: BackpackItem }
   | { kind: 'loot'; group: LootGroup };
 
 export type InboxEntryOf<K extends InboxKind> = Extract<InboxEntry, { kind: K }>;
 
-export type ReviewableRequest = InboxEntryOf<'fund' | 'item'>;
+export type ReviewableRequest = InboxEntryOf<'fund' | 'item' | 'withdrawal'>;
+
+export const isRequestEntry = (entry: InboxEntry): entry is ReviewableRequest =>
+  entry.kind === 'fund' || entry.kind === 'item' || entry.kind === 'withdrawal';
 
 interface InboxKindMeta<K extends InboxKind> {
   icon: string;
@@ -51,6 +56,14 @@ export const INBOX_KIND_META: { [K in InboxKind]: InboxKindMeta<K> } = {
     since: entry => entry.request.createdAt,
     state: entry => (entry.request.status === 'pending' ? 'open' : entry.request.status),
     searchText: entry => [entry.request.requesterName, entry.request.itemName, entry.request.reason],
+  },
+  withdrawal: {
+    icon: 'solar:arrow-up-linear',
+    id: entry => entry.request.id,
+    since: entry => entry.request.createdAt,
+    state: entry =>
+      entry.request.status === 'pending' ? 'open' : entry.request.status === 'cancelled' ? 'closed' : entry.request.status,
+    searchText: entry => [entry.request.requesterName, entry.request.note],
   },
   auction: {
     icon: 'solar:sledgehammer-linear',
@@ -82,7 +95,7 @@ export const entrySince = (entry: InboxEntry) => metaOf(entry).since(entry);
 export const entryState = (entry: InboxEntry) => metaOf(entry).state(entry);
 
 export const isReviewable = (entry: InboxEntry): entry is ReviewableRequest =>
-  (entry.kind === 'fund' || entry.kind === 'item') && entry.request.status === 'pending';
+  isRequestEntry(entry) && entry.request.status === 'pending';
 
 export const matchesQuery = (entry: InboxEntry, query: string) => {
   const needle = query.trim().toLocaleLowerCase();

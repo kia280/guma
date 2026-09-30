@@ -204,6 +204,21 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 	}, nil
 }
 
+func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBankItemRequest) (*gumav1.DeleteBankItemResponse, error) {
+	if req.GuildId == "" || req.BankItemId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and bank_item_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	if err := h.svc.DeleteBankItem(ctx, req.GuildId, userID, req.BankItemId); err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.DeleteBankItemResponse{Success: true}, nil
+}
+
 func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRequest) (*gumav1.RequestItemResponse, error) {
 	if req.GuildId == "" || req.BankItemId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and bank_item_id are required")

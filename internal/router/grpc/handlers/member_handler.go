@@ -150,6 +150,37 @@ func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMe
 	}, nil
 }
 
+func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.UpdateMemberRoleRequest) (*memberv1.UpdateMemberRoleResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+
+	if req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "user_id is required")
+	}
+
+	if req.Role == "" {
+		return nil, status.Error(codes.InvalidArgument, "role is required")
+	}
+
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	member, err := s.svc.UpdateRole(ctx, membersvc.UpdateRoleParams{
+		GuildID: req.GuildId,
+		ActorID: userID,
+		UserID:  req.UserId,
+		Role:    req.Role,
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+
+	return &memberv1.UpdateMemberRoleResponse{Member: toMemberProto(member)}, nil
+}
+
 // RemoveMember removes a member from a guild
 func (s *MemberService) RemoveMember(ctx context.Context, req *memberv1.RemoveMemberRequest) (*memberv1.RemoveMemberResponse, error) {
 	if req.GuildId == "" {
