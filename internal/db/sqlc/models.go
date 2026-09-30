@@ -33,6 +33,7 @@ type Announcement struct {
 	PublishedAt pgtype.Timestamptz
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	PinnedAt    pgtype.Timestamptz
 }
 
 type Auction struct {

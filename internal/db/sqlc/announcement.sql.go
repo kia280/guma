@@ -105,7 +105,7 @@ JOIN users u ON u.id = a.author_id
 WHERE a.guild_id = $1
   AND ($2::bool OR a.status = 'published')
 ORDER BY (a.status = 'draft') DESC,
-         CASE WHEN a.status = 'published' THEN a.pinned ELSE FALSE END DESC,
+         CASE WHEN a.status = 'published' THEN a.pinned_at END DESC NULLS LAST,
          COALESCE(a.published_at, a.updated_at) DESC,
          a.id DESC
 LIMIT $3::int
@@ -165,7 +165,9 @@ func (q *Queries) ListGuildAnnouncements(ctx context.Context, arg ListGuildAnnou
 
 const publishAnnouncement = `-- name: PublishAnnouncement :execrows
 UPDATE announcements
-SET status = 'published', published_at = NOW(), updated_at = NOW()
+SET status = 'published', published_at = NOW(),
+    pinned_at = CASE WHEN pinned THEN NOW() END,
+    updated_at = NOW()
 WHERE id = $1 AND guild_id = $2 AND status = 'draft'
   AND btrim(title) <> '' AND btrim(content) <> ''
 `
@@ -204,7 +206,9 @@ func (q *Queries) UnpublishAnnouncement(ctx context.Context, arg UnpublishAnnoun
 
 const updateAnnouncement = `-- name: UpdateAnnouncement :execrows
 UPDATE announcements
-SET title = $3, content = $4, pinned = $5, updated_at = NOW()
+SET title = $3, content = $4, pinned = $5,
+    pinned_at = CASE WHEN $5 THEN COALESCE(pinned_at, NOW()) END,
+    updated_at = NOW()
 WHERE id = $1 AND guild_id = $2
   AND (status = 'draft' OR (btrim($3) <> '' AND btrim($4) <> ''))
 `
