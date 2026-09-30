@@ -359,9 +359,9 @@ function InboxRow({ entry, now, showSelection, isSelected, isHighlighted, onSele
         isHighlighted && 'ring-2 ring-accent',
       )}
     >
-      <div className="flex min-w-0 flex-1 items-start gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         {showSelection && (
-          <div className="flex w-5 shrink-0 justify-center pt-2.5">
+          <div className="flex w-5 shrink-0 justify-center">
             {isReviewable(entry) && (
               <Checkbox
                 aria-label={t('selectRequest', { name: subject, kind: kindLabel })}
