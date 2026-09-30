@@ -499,6 +499,7 @@ export default function AuctionDetailContent({ id, onClose }: AuctionDetailConte
                   </h3>
                   {sortedHistory.length === 0 ? (
                     <EmptyContent
+                      size="sm"
                       icon="solar:sledgehammer-linear"
                       title={isClosed ? t('noBids') : t('noBidsYet')}
                       description={isClosed ? undefined : t('noBidsYetHint')}

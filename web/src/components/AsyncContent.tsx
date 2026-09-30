@@ -37,27 +37,45 @@ export function AsyncContent({
   return <>{children}</>;
 }
 
+const EMPTY_CONTENT_SIZES = {
+  md: {
+    padding: 'py-12',
+    icon: 'mb-3 size-10',
+    title: 'type-subheading',
+    description: 'type-body mt-1',
+  },
+  sm: {
+    padding: 'py-8',
+    icon: 'mb-2 size-8',
+    title: 'type-label',
+    description: 'type-caption mt-0.5',
+  },
+};
+
 export function EmptyContent({
   icon,
   title,
   description,
+  size = 'md',
   minHeight,
   children,
 }: {
   icon: string;
   title: string;
   description?: string;
+  size?: keyof typeof EMPTY_CONTENT_SIZES;
   minHeight?: number;
   children?: ReactNode;
 }) {
+  const classes = EMPTY_CONTENT_SIZES[size];
   return (
     <div
-      className={`flex flex-col items-center justify-center text-center ${minHeight === undefined ? 'py-12' : ''}`}
+      className={`flex flex-col items-center justify-center text-center ${minHeight === undefined ? classes.padding : ''}`}
       style={minHeight === undefined ? undefined : { minHeight }}
     >
-      <Icon icon={icon} className="mb-3 size-10 text-disabled" aria-hidden />
-      <p className="type-subheading text-soft">{title}</p>
-      {description && <p className="type-body text-subtle mt-1">{description}</p>}
+      <Icon icon={icon} className={`${classes.icon} text-disabled`} aria-hidden />
+      <p className={`${classes.title} text-soft`}>{title}</p>
+      {description && <p className={`${classes.description} text-subtle`}>{description}</p>}
       {children && <div className="mt-4">{children}</div>}
     </div>
   );

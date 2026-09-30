@@ -15,6 +15,7 @@ interface BalanceTrendChartProps {
   status: BalanceTrendStatus;
   onRetry: () => void;
   height?: number;
+  emptySize?: 'md' | 'sm';
 }
 
 const parseIsoDate = (date: string) => {
@@ -22,7 +23,7 @@ const parseIsoDate = (date: string) => {
   return new Date(Date.UTC(year, month - 1, day));
 };
 
-export function BalanceTrendChart({ points, status, onRetry, height = 200 }: BalanceTrendChartProps) {
+export function BalanceTrendChart({ points, status, onRetry, height = 200, emptySize = 'md' }: BalanceTrendChartProps) {
   const t = useTranslations('balanceTrendChart');
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
@@ -64,6 +65,7 @@ export function BalanceTrendChart({ points, status, onRetry, height = 200 }: Bal
         icon="solar:chart-2-linear"
         title={t('empty')}
         description={t('emptyHint')}
+        size={emptySize}
         minHeight={height}
       />
     );

@@ -188,6 +188,7 @@ Every empty state that fills a card, a card section, or a modal body uses `<Empt
 ```
 
 - The pattern is a `size-10 text-disabled` icon (40px at the default font size), a `type-subheading text-soft` title, an optional `type-body text-subtle` description, and `py-12` of vertical padding. The title is `text-soft`, not `text-foreground`, so an empty panel reads quieter than real content. The icon is sized in rem, not with a pixel `width`, so it grows with the title next to it when the font size preference changes. Do not hand-roll smaller or larger variants.
+- The empty-state title never exceeds the heading of the card or section it sits in. Under a `type-subheading` (or larger) heading, and where there is no heading, use the default `size="md"`. Under a smaller heading (`type-caption` or `type-label`, such as the dashboard balance chart or the auction bid history) use `size="sm"`: a `size-8` icon, a `type-label` title, a `type-caption` description, and `py-8`.
 - The title is a short phrase without a trailing period. Put any explanation of what will appear there in `description`, as a full sentence.
 - Pass `minHeight` instead of relying on the padding when the block replaces content with a fixed height (a chart), so the panel does not jump between states.
 - Pass an action as children (a `size="sm"` button); it renders below the text.
