@@ -71,12 +71,12 @@ Text uses a hierarchy of theme-aware tokens defined in `globals.css`. Each level
 |-------|-------|-------|------|
 | `text-foreground` | Primary text (headings, body, values) | 100% | 100% |
 | `text-foreground/90` | Near-primary emphasis | 90% | 90% |
-| `text-soft` | Labels and text with medium emphasis | 80% | 60% |
-| `text-subtle` | Secondary text, descriptions, icons | 70% | 50% |
-| `text-hint` | Captions, placeholders, hints, timestamps | 62% | 40% |
+| `text-soft` | Labels and text with medium emphasis | 80% | 64% |
+| `text-subtle` | Secondary text, descriptions, icons | 70% | 56% |
+| `text-hint` | Captions, placeholders, hints, timestamps | 62% | 48% |
 | `text-disabled` | Disabled / very low emphasis (empty states) | 45% | 30% |
 
-Do not use `text-foreground/60`, `/50`, `/40`, or `/30` directly; use the tokens above.
+Do not use `text-foreground/60`, `/50`, `/40`, or `/30` directly; use the tokens above. `text-hint` meets WCAG AA (4.5:1) on `bg-surface` in both themes and every color scheme.
 
 ### Semantic Text Colors
 
@@ -102,10 +102,12 @@ Backgrounds follow a layered hierarchy to ensure visual separation between compo
 | `bg-surface-tertiary` | `--surface-tertiary` | `oklch(93.73%)` | Deeper nested elements |
 | `bg-overlay` | `--overlay` | `oklch(100%)` white | Modals, popovers, tooltips |
 | `bg-default` | `--default` | `oklch(94%)` | Icon backgrounds, selected sidebar items |
-| `bg-accent` | `--accent` | `oklch(62%)` | Accent-colored backgrounds |
-| `bg-danger` | `--danger` | `oklch(65.32%)` | Danger backgrounds (badges, alerts) |
-| `bg-success` | `--success` | `oklch(73.29%)` | Success backgrounds |
-| `bg-warning` | `--warning` | `oklch(78.19%)` | Warning backgrounds |
+| `bg-accent` | `--accent` | `oklch(53.5%)` | Accent-colored backgrounds |
+| `bg-danger` | `--danger` | `oklch(54%)` | Danger backgrounds (badges, alerts) |
+| `bg-success` | `--success` | `oklch(51%)` | Success backgrounds |
+| `bg-warning` | `--warning` | `oklch(54%)` | Warning backgrounds |
+
+Light values are for the default Guild Gold scheme; see Color Schemes below.
 
 ### Background Hierarchy (for visual depth)
 
@@ -126,6 +128,33 @@ Use semantic colors with opacity for subtle tinted backgrounds:
 | `bg-success/10` | Success icon background |
 | `bg-warning/10` | Warning icon background |
 | `bg-danger/10` | Danger icon / alert background |
+
+## Color Schemes
+
+Color schemes are under evaluation: developers pick one in the dev tools panel's Palette tab (`NEXT_PUBLIC_DEV_TOOLS=true`), independently of the light, dark, or system theme. Users always get the default scheme. Every scheme defines its own light and dark variant, so components never need to know which scheme is active: they use the semantic tokens above and the scheme changes their values.
+
+| Id | Name | Character |
+|----|------|-----------|
+| `classic` | Guild Gold (default) | Neutral grays, antique gold accent |
+| `pine` | Pine | Cool mist neutrals, deep teal accent |
+| `frost` | Frost | Blue-gray neutrals, steel blue accent |
+| `arcane` | Arcane | Violet-tinted neutrals, amethyst accent |
+| `garnet` | Garnet | Rose-tinted neutrals, garnet accent |
+| `ink` | Ink | Near-neutral paper, ink-black accent (bone white in dark) |
+
+### How it works
+
+- `classic` is the base `:root` / `.dark` tokens in `src/app/globals.css`. Every other scheme is a `[data-palette="<id>"]` block for light and a `.dark[data-palette="<id>"], .dark [data-palette="<id>"]` block for dark, each overriding the full set of neutral, accent, focus, and status tokens.
+- The choice is stored in `localStorage` (`guma-palette`) and applied to `<html data-palette>` by an inline script in `src/app/layout.tsx` before first paint, so there is no flash. The script is only rendered when dev tools are enabled. `src/lib/dev-palette.ts` holds the list, `getPalette`, and `setPalette`.
+- `data-palette` also works on any element, which is how the dev panel previews each scheme in the current theme. Only raw tokens (`--accent`, `--surface`, `--muted`, ...) follow a nested `data-palette`; derived tokens such as `--fg-hint` or HeroUI's `--accent-hover` resolve on `<html>`.
+
+### Rules for a scheme
+
+- Neutrals share one hue and change only lightness; chroma stays low (about 0.003 to 0.011) so the tint is felt rather than seen. Surfaces keep the elevation steps of the default scheme.
+- Light variants use a deep accent (L about 50%) with near-white `--accent-foreground`; dark variants use a bright accent (L about 75%) with a near-black foreground tinted with the accent hue. Ink pushes this to near-black and near-white. Status colors follow the same rule.
+- Every pair must meet WCAG AA (4.5:1): text and text tokens on `background`, `surface`, and `surface-secondary`; `accent`, `success`, `warning`, and `danger` as text on `surface` and on their `/10` tint; each `*-foreground` on its color; each `*-soft-foreground` on its soft background. `--focus` must reach 3:1 against `--background`.
+- Keep the accent clearly apart from the status hues (danger near 25, warning near 55 to 70, success near 140 to 152). When an accent sits near one of them, shift that status hue for the scheme instead of weakening the accent, as Pine does with success and Garnet with danger.
+- Add a new scheme's id to `PALETTES` in `src/lib/dev-palette.ts` and its name and description to `devTools.palettes` in both message catalogs.
 
 ## Border Colors
 

@@ -5,6 +5,8 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getLocale} from 'next-intl/server';
 import {BrowserTimeZoneProvider} from "@/i18n/BrowserTimeZoneProvider";
 import {HTML_LANG, isLocale, DEFAULT_LOCALE} from "@/i18n/locales";
+import {paletteInitScript} from "@/lib/dev-palette";
+import {env} from "@/lib/env";
 import {fontSizeInitScript} from "@/lib/font-size";
 import {Providers} from "./providers";
 import "./globals.css";
@@ -38,6 +40,7 @@ export default async function RootLayout({
         <Script id="font-size-init" strategy="beforeInteractive">
           {fontSizeInitScript}
         </Script>
+        {env.devTools && <script dangerouslySetInnerHTML={{ __html: paletteInitScript }} />}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Guma" />

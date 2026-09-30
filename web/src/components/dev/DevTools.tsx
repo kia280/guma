@@ -6,11 +6,10 @@ import { useEffect } from 'react';
 import { onDevIdentityChange } from '@/lib/dev-auth';
 import { DevAuthPanel } from './DevAuthPanel';
 import { DevFontPanel, useApplyDevFont } from './DevFontPanel';
-import { DevPalettePanel, useApplyDevPalette } from './DevPalettePanel';
+import { DevPalettePanel } from './DevPalettePanel';
 
 export default function DevTools() {
   const t = useTranslations('devTools');
-  useApplyDevPalette();
   useApplyDevFont();
 
   useEffect(() => onDevIdentityChange(() => window.location.reload()), []);

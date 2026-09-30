@@ -1185,28 +1185,31 @@
     "mockRole": "Mock role",
     "mockRoleDescription": "Guild role of the mock user. Owner and admin unlock the admin pages and management actions. The page reloads when changed.",
     "paletteTab": "Palette",
-    "paletteDescription": "Preview candidate light-theme color palettes. Only this browser is affected, and the choice is kept across reloads.",
-    "paletteLightOnly": "Palettes only change the light theme. Switch to the light theme to see them.",
+    "paletteDescription": "Preview color schemes. Each has its own light and dark variant, so switch the theme to compare both. Only this browser is affected, and the choice is kept across reloads.",
     "palettes": {
-      "current": {
-        "name": "Current",
-        "description": "The palette in globals.css"
+      "classic": {
+        "name": "Guild Gold",
+        "description": "Default. Neutral grays with an antique gold accent"
       },
-      "sun-gold": {
-        "name": "Sun Gold",
-        "description": "Bright logo gold with dark text, warm neutrals, readable status colors"
+      "pine": {
+        "name": "Pine",
+        "description": "Cool mist neutrals with a deep teal accent"
       },
-      "amber-gold": {
-        "name": "Amber Gold",
-        "description": "Coin-like amber that stays distinct from the green success color, with dark text, warm neutrals, and readable status colors"
+      "frost": {
+        "name": "Frost",
+        "description": "Blue-gray neutrals with a steel blue accent"
       },
-      "ink-gold": {
-        "name": "Ink & Gold",
-        "description": "Near-black buttons, gold focus ring, warm neutrals"
+      "arcane": {
+        "name": "Arcane",
+        "description": "Violet-tinted neutrals with an amethyst accent"
       },
-      "indigo": {
-        "name": "Indigo",
-        "description": "Neutral blue accent with cool greys"
+      "garnet": {
+        "name": "Garnet",
+        "description": "Rose-tinted neutrals with a garnet accent"
+      },
+      "ink": {
+        "name": "Ink",
+        "description": "Near-neutral paper with an ink-black accent, bone white in dark"
       }
     },
     "fontSample": "Aa 公會出席 123",

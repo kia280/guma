@@ -1,121 +1,48 @@
-export type PaletteTokens = Record<`--${string}`, string>;
+export const PALETTES = ['classic', 'pine', 'frost', 'arcane', 'garnet', 'ink'] as const;
 
-export interface DevPalette {
-  id: string;
-  tokens: PaletteTokens;
+export type Palette = (typeof PALETTES)[number];
+
+export const DEFAULT_PALETTE: Palette = 'classic';
+
+const STORAGE_KEY = 'guma-palette';
+
+function isPalette(value: unknown): value is Palette {
+  return PALETTES.includes(value as Palette);
 }
 
-const warmNeutrals: PaletteTokens = {
-  '--background': 'oklch(97.5% 0.004 85)',
-  '--surface': 'oklch(100% 0 0)',
-  '--surface-secondary': 'oklch(95.5% 0.005 85)',
-  '--surface-tertiary': 'oklch(93.5% 0.006 85)',
-  '--default': 'oklch(94% 0.006 85)',
-  '--border': 'oklch(90% 0.006 85)',
-  '--separator': 'oklch(92% 0.005 85)',
-  '--scrollbar': 'oklch(87% 0.006 85)',
-};
+const listeners = new Set<() => void>();
 
-const coolNeutrals: PaletteTokens = {
-  '--background': 'oklch(97.5% 0.004 265)',
-  '--surface': 'oklch(100% 0 0)',
-  '--surface-secondary': 'oklch(95.5% 0.006 265)',
-  '--surface-tertiary': 'oklch(93.5% 0.007 265)',
-  '--default': 'oklch(94% 0.007 265)',
-  '--border': 'oklch(90% 0.007 265)',
-  '--separator': 'oklch(92% 0.006 265)',
-  '--scrollbar': 'oklch(87% 0.007 265)',
-};
+export function subscribePalette(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
 
-const readableStatus: PaletteTokens = {
-  '--success': 'oklch(53% 0.15 145)',
-  '--success-foreground': 'oklch(99% 0 0)',
-  '--warning': 'oklch(57% 0.16 55)',
-  '--warning-foreground': 'oklch(99% 0 0)',
-  '--danger': 'oklch(57% 0.21 18)',
-  '--danger-foreground': 'oklch(99% 0 0)',
-};
+const storedPalettes = PALETTES.filter(palette => palette !== DEFAULT_PALETTE);
 
-export const DEFAULT_PALETTE_ID = 'current';
+export const paletteInitScript = `try{var p=localStorage.getItem('${STORAGE_KEY}');if(${JSON.stringify(storedPalettes)}.indexOf(p)>=0)document.documentElement.dataset.palette=p}catch(e){}`;
 
-export const DEV_PALETTES: DevPalette[] = [
-  { id: DEFAULT_PALETTE_ID, tokens: {} },
-  {
-    id: 'sun-gold',
-    tokens: {
-      ...warmNeutrals,
-      ...readableStatus,
-      '--accent': 'oklch(84% 0.165 88)',
-      '--accent-foreground': 'oklch(21% 0.02 85)',
-      '--focus': 'oklch(62% 0.14 75)',
-    },
-  },
-  {
-    id: 'amber-gold',
-    tokens: {
-      ...warmNeutrals,
-      ...readableStatus,
-      '--accent': 'oklch(75% 0.15 75)',
-      '--accent-foreground': 'oklch(21% 0.02 75)',
-      '--focus': 'oklch(55% 0.12 65)',
-    },
-  },
-  {
-    id: 'ink-gold',
-    tokens: {
-      ...warmNeutrals,
-      ...readableStatus,
-      '--accent': 'oklch(24% 0.01 85)',
-      '--accent-foreground': 'oklch(99% 0 0)',
-      '--focus': 'oklch(78% 0.16 85)',
-    },
-  },
-  {
-    id: 'indigo',
-    tokens: {
-      ...coolNeutrals,
-      ...readableStatus,
-      '--accent': 'oklch(52% 0.19 275)',
-      '--accent-foreground': 'oklch(99% 0 0)',
-      '--focus': 'oklch(52% 0.19 275)',
-    },
-  },
-];
+export function getPalette(): Palette {
+  const current = document.documentElement.dataset.palette;
+  return isPalette(current) ? current : DEFAULT_PALETTE;
+}
 
-const STORAGE_KEY = 'guma-dev-palette';
-
-const ALL_TOKEN_NAMES = [...new Set(DEV_PALETTES.flatMap((p) => Object.keys(p.tokens)))];
-
-export function getDevPaletteId(): string {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return DEV_PALETTES.some((p) => p.id === stored) ? stored! : DEFAULT_PALETTE_ID;
-  } catch {
-    return DEFAULT_PALETTE_ID;
+export function setPalette(palette: Palette): void {
+  const root = document.documentElement;
+  if (palette === DEFAULT_PALETTE) {
+    delete root.dataset.palette;
+  } else {
+    root.dataset.palette = palette;
   }
-}
-
-export function saveDevPaletteId(id: string): void {
+  listeners.forEach(listener => listener());
   try {
-    if (id === DEFAULT_PALETTE_ID) {
+    if (palette === DEFAULT_PALETTE) {
       localStorage.removeItem(STORAGE_KEY);
     } else {
-      localStorage.setItem(STORAGE_KEY, id);
+      localStorage.setItem(STORAGE_KEY, palette);
     }
   } catch {
     return;
-  }
-}
-
-export function applyDevPalette(id: string, isLight: boolean): void {
-  const palette = DEV_PALETTES.find((p) => p.id === id);
-  const style = document.documentElement.style;
-  for (const name of ALL_TOKEN_NAMES) {
-    style.removeProperty(name);
-  }
-  if (isLight) {
-    for (const [name, value] of Object.entries(palette?.tokens ?? {})) {
-      style.setProperty(name, value);
-    }
   }
 }

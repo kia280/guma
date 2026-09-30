@@ -1185,28 +1185,31 @@
     "mockRole": "模擬角色",
     "mockRoleDescription": "模擬使用者在公會中的角色。擁有者與管理員可使用管理頁面與管理操作。切換後頁面會重新載入。",
     "paletteTab": "配色",
-    "paletteDescription": "預覽淺色主題的候選配色。只影響這個瀏覽器,重新整理後仍會保留。",
-    "paletteLightOnly": "配色只會改變淺色主題,請切換到淺色主題查看。",
+    "paletteDescription": "預覽配色。每種配色都有各自的淺色與深色版本，可切換主題比較。只影響這個瀏覽器，重新整理後仍會保留。",
     "palettes": {
-      "current": {
-        "name": "目前",
-        "description": "globals.css 中的配色"
+      "classic": {
+        "name": "公會金",
+        "description": "預設。中性灰搭配古金色強調色"
       },
-      "sun-gold": {
-        "name": "太陽金",
-        "description": "Logo 的亮金色搭配深色文字、暖灰色與易讀的狀態色"
+      "pine": {
+        "name": "松林",
+        "description": "冷調霧色底搭配深青綠強調色"
       },
-      "amber-gold": {
-        "name": "琥珀金",
-        "description": "偏橘的金幣色，與成功狀態的綠色明顯區隔；深色文字、暖灰色與易讀的狀態色"
+      "frost": {
+        "name": "霜藍",
+        "description": "藍灰色底搭配鋼藍強調色"
       },
-      "ink-gold": {
-        "name": "墨黑與金",
-        "description": "近黑色按鈕、金色焦點框、暖灰色"
+      "arcane": {
+        "name": "奧術",
+        "description": "淡紫色底搭配紫水晶強調色"
       },
-      "indigo": {
-        "name": "靛藍",
-        "description": "中性的藍色主色搭配冷灰色"
+      "garnet": {
+        "name": "石榴紅",
+        "description": "淡玫瑰色底搭配石榴紅強調色"
+      },
+      "ink": {
+        "name": "水墨",
+        "description": "近中性的紙色搭配墨黑強調色，深色模式為骨白"
       }
     },
     "fontSample": "Aa 公會出席 123",
