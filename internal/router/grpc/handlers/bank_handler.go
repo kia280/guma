@@ -363,6 +363,7 @@ func bankItemToProto(bi *banksvc.BankItem) *gumav1.BankItem {
 		DonatedAt:           timestamppb.New(bi.DonatedAt),
 		RollCallId:          bi.RollCallID,
 		RollCallTitle:       bi.RollCallTitle,
+		RollCallCompleted:   bi.RollCallCompleted,
 		PendingRequestCount: bi.PendingRequestCount,
 		RequestedByMe:       bi.RequestedByMe,
 		Lock:                itemLockToProto(bi.Lock),

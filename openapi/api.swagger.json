@@ -5494,7 +5494,13 @@
       }
     },
     "RollCallServiceCompleteRollCallBody": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "keepLeftoversInBank": {
+          "type": "boolean",
+          "title": "Complete even when loot is undistributed; leftover items and gold stay in the guild bank"
+        }
+      }
     },
     "RollCallServiceCreateRollCallBody": {
       "type": "object",
@@ -6149,6 +6155,10 @@
         },
         "requestedByMe": {
           "type": "boolean"
+        },
+        "rollCallCompleted": {
+          "type": "boolean",
+          "title": "The source roll call was completed, so the item is regular guild bank stock"
         },
         "lock": {
           "$ref": "#/definitions/v1ItemLock"
@@ -8379,6 +8389,11 @@
         "remaining": {
           "type": "string",
           "format": "int64"
+        },
+        "kept": {
+          "type": "string",
+          "format": "int64",
+          "title": "Undistributed gold that stayed in the guild bank because the roll call was completed"
         }
       }
     },

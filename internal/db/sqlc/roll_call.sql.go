@@ -17,10 +17,14 @@ const addRollCallGoldPotDistributed = `-- name: AddRollCallGoldPotDistributed :o
 UPDATE roll_call_gold_pots SET
     distributed = distributed + $1::bigint,
     updated_at  = NOW()
-WHERE roll_call_id = $2 AND guild_id = $3
-  AND retracted = 0
-  AND distributed + $1::bigint <= total
-RETURNING roll_call_id, guild_id, total, distributed, retracted
+WHERE roll_call_gold_pots.roll_call_id = $2 AND roll_call_gold_pots.guild_id = $3
+  AND roll_call_gold_pots.retracted = 0
+  AND roll_call_gold_pots.distributed + $1::bigint <= roll_call_gold_pots.total
+  AND NOT EXISTS (
+      SELECT 1 FROM roll_calls c WHERE c.id = roll_call_gold_pots.roll_call_id AND c.completed_at IS NOT NULL
+  )
+RETURNING roll_call_gold_pots.roll_call_id, roll_call_gold_pots.guild_id, roll_call_gold_pots.total,
+          roll_call_gold_pots.distributed, roll_call_gold_pots.retracted
 `
 
 type AddRollCallGoldPotDistributedParams struct {
@@ -461,9 +465,11 @@ func (q *Queries) GetRollCallGoldDistributionByRequest(ctx context.Context, arg 
 }
 
 const getRollCallGoldPot = `-- name: GetRollCallGoldPot :one
-SELECT roll_call_id, guild_id, total, distributed, retracted
-FROM roll_call_gold_pots
-WHERE roll_call_id = $1 AND guild_id = $2
+SELECT p.roll_call_id, p.guild_id, p.total, p.distributed, p.retracted,
+       (c.completed_at IS NOT NULL)::bool AS is_completed
+FROM roll_call_gold_pots p
+JOIN roll_calls c ON c.id = p.roll_call_id
+WHERE p.roll_call_id = $1 AND p.guild_id = $2
 `
 
 type GetRollCallGoldPotParams struct {
@@ -477,6 +483,7 @@ type GetRollCallGoldPotRow struct {
 	Total       int64
 	Distributed int64
 	Retracted   int64
+	IsCompleted bool
 }
 
 func (q *Queries) GetRollCallGoldPot(ctx context.Context, arg GetRollCallGoldPotParams) (GetRollCallGoldPotRow, error) {
@@ -488,6 +495,7 @@ func (q *Queries) GetRollCallGoldPot(ctx context.Context, arg GetRollCallGoldPot
 		&i.Total,
 		&i.Distributed,
 		&i.Retracted,
+		&i.IsCompleted,
 	)
 	return i, err
 }
@@ -818,9 +826,11 @@ func (q *Queries) ListRollCallGoldDistributionPayouts(ctx context.Context, distr
 }
 
 const listRollCallGoldPots = `-- name: ListRollCallGoldPots :many
-SELECT roll_call_id, total, distributed, retracted
-FROM roll_call_gold_pots
-WHERE guild_id = $1 AND roll_call_id = ANY($2::uuid[])
+SELECT p.roll_call_id, p.total, p.distributed, p.retracted,
+       (c.completed_at IS NOT NULL)::bool AS is_completed
+FROM roll_call_gold_pots p
+JOIN roll_calls c ON c.id = p.roll_call_id
+WHERE p.guild_id = $1 AND p.roll_call_id = ANY($2::uuid[])
 `
 
 type ListRollCallGoldPotsParams struct {
@@ -833,6 +843,7 @@ type ListRollCallGoldPotsRow struct {
 	Total       int64
 	Distributed int64
 	Retracted   int64
+	IsCompleted bool
 }
 
 func (q *Queries) ListRollCallGoldPots(ctx context.Context, arg ListRollCallGoldPotsParams) ([]ListRollCallGoldPotsRow, error) {
@@ -849,6 +860,7 @@ func (q *Queries) ListRollCallGoldPots(ctx context.Context, arg ListRollCallGold
 			&i.Total,
 			&i.Distributed,
 			&i.Retracted,
+			&i.IsCompleted,
 		); err != nil {
 			return nil, err
 		}
@@ -1031,10 +1043,12 @@ func (q *Queries) LockRollCallBankItems(ctx context.Context, arg LockRollCallBan
 }
 
 const lockRollCallGoldPot = `-- name: LockRollCallGoldPot :one
-SELECT roll_call_id, guild_id, total, distributed, retracted
-FROM roll_call_gold_pots
-WHERE roll_call_id = $1 AND guild_id = $2
-FOR UPDATE
+SELECT p.roll_call_id, p.guild_id, p.total, p.distributed, p.retracted,
+       (c.completed_at IS NOT NULL)::bool AS is_completed
+FROM roll_call_gold_pots p
+JOIN roll_calls c ON c.id = p.roll_call_id
+WHERE p.roll_call_id = $1 AND p.guild_id = $2
+FOR UPDATE OF p
 `
 
 type LockRollCallGoldPotParams struct {
@@ -1048,6 +1062,7 @@ type LockRollCallGoldPotRow struct {
 	Total       int64
 	Distributed int64
 	Retracted   int64
+	IsCompleted bool
 }
 
 func (q *Queries) LockRollCallGoldPot(ctx context.Context, arg LockRollCallGoldPotParams) (LockRollCallGoldPotRow, error) {
@@ -1059,6 +1074,7 @@ func (q *Queries) LockRollCallGoldPot(ctx context.Context, arg LockRollCallGoldP
 		&i.Total,
 		&i.Distributed,
 		&i.Retracted,
+		&i.IsCompleted,
 	)
 	return i, err
 }

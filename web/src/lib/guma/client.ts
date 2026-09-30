@@ -417,8 +417,10 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/cancel`, {});
     return toRollCall(data.roll_call);
   },
-  completeRollCall: async (guildId, id) => {
-    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/complete`, {});
+  completeRollCall: async (guildId, id, options) => {
+    const { data } = await http.post(`/v1/guilds/${guildId}/roll-calls/${id}/complete`, {
+      keep_leftovers_in_bank: options?.keepLeftoversInBank ?? false,
+    });
     return toRollCall(data.roll_call);
   },
   updateRollCallLoot: async (guildId, id, lootList) => {

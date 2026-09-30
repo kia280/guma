@@ -155,7 +155,7 @@ export interface ApiClient {
   updateRollCall(guildId: string, id: string, patch: UpdateRollCallRequest): Promise<RollCall>;
   deleteRollCall(guildId: string, id: string): Promise<void>;
   cancelRollCall(guildId: string, id: string): Promise<RollCall>;
-  completeRollCall(guildId: string, id: string): Promise<RollCall>;
+  completeRollCall(guildId: string, id: string, options?: { keepLeftoversInBank?: boolean }): Promise<RollCall>;
   updateRollCallLoot(guildId: string, id: string, lootList: LootEntry[]): Promise<RollCall>;
   checkIn(guildId: string, rollCallId: string, notes?: string): Promise<Attendee>;
   listAttendees(guildId: string, rollCallId: string): Promise<Attendee[]>;

@@ -24,10 +24,17 @@ type RollCallLootDistributionProps = {
   rollCallId: string;
   lootList: LootItem[];
   attendees: Attendee[];
+  isCompleted?: boolean;
   onVaultCountChange?: (count: number) => void;
 };
 
-export function RollCallLootDistribution({ rollCallId, lootList, attendees, onVaultCountChange }: RollCallLootDistributionProps) {
+export function RollCallLootDistribution({
+  rollCallId,
+  lootList,
+  attendees,
+  isCompleted = false,
+  onVaultCountChange,
+}: RollCallLootDistributionProps) {
   const t = useTranslations('rollCallLoot');
   const labels = useTranslations('createAuctionModal');
   const userName = useUserName();
@@ -65,7 +72,7 @@ export function RollCallLootDistribution({ rollCallId, lootList, attendees, onVa
 
   useLiveResource(['bank'], load, { guildId });
 
-  const canDistribute = can('distributeLoot');
+  const canDistribute = can('distributeLoot') && !isCompleted;
   const canAuction = can('auctionBankItems');
   const canRaffle = can('createLottery');
   const recipientOptions = React.useMemo<MemberOption[]>(
@@ -143,7 +150,9 @@ export function RollCallLootDistribution({ rollCallId, lootList, attendees, onVa
       <Chip size="sm" variant="secondary" color={bankItem.pendingRequestCount > 0 ? 'warning' : 'default'}>
         {bankItem.pendingRequestCount > 0
           ? t('inBankWithRequests', { count: bankItem.pendingRequestCount })
-          : t('inBank')}
+          : isCompleted
+            ? t('keptInBank')
+            : t('inBank')}
       </Chip>
     );
   };

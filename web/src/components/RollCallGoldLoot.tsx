@@ -86,6 +86,7 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
   const eligible = attendees.filter((member): member is Attendee & { userId: string } => !!member.userId);
   const nameOf = (userId: string) => userName(eligible.find(member => member.userId === userId)?.username);
   const isRetracted = pot.retracted > 0;
+  const isKept = pot.kept > 0;
   const canDistribute = can('distributeLoot') && !isRetracted && pot.remaining > 0 && eligible.length > 0;
 
   const allocation = summarizeAllocation(pot.remaining, amounts);
@@ -187,7 +188,9 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
   const progress = pot.total > 0 ? Math.round((pot.distributed / pot.total) * 100) : 0;
   const summaryLine = isRetracted
     ? t('retractedSummary', { distributed: formatGold(pot.distributed), retracted: formatGold(pot.retracted) })
-    : t('potSummary', { distributed: formatGold(pot.distributed), remaining: formatGold(pot.remaining) });
+    : isKept
+      ? t('keptSummary', { distributed: formatGold(pot.distributed), kept: formatGold(pot.kept) })
+      : t('potSummary', { distributed: formatGold(pot.distributed), remaining: formatGold(pot.remaining) });
 
   return (
     <>
@@ -204,7 +207,7 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
           </div>
           <div className="flex items-center gap-2 shrink-0 type-body">
             {status === 'loading' && <Spinner size="sm" aria-label={t('loading')} />}
-            {!isRetracted && pot.remaining <= 0 && (
+            {!isRetracted && !isKept && pot.remaining <= 0 && (
               <Chip size="sm" variant="secondary" color="success">
                 {t('fullyDistributed')}
               </Chip>
@@ -212,6 +215,11 @@ export function RollCallGoldLoot({ rollCallId, pot, attendees, onPotChange }: Ro
             {isRetracted && (
               <Chip size="sm" variant="secondary">
                 {t('retracted')}
+              </Chip>
+            )}
+            {isKept && (
+              <Chip size="sm" variant="secondary">
+                {t('kept')}
               </Chip>
             )}
             {canDistribute && (

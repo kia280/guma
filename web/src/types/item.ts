@@ -53,7 +53,8 @@ export type ItemHistoryKind =
   | 'retracted'
   | 'withdrawal_requested'
   | 'withdrawal_cancelled'
-  | 'delivered';
+  | 'delivered'
+  | 'kept';
 
 export interface ItemHistoryEvent {
   id: string;

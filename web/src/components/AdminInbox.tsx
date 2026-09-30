@@ -104,7 +104,7 @@ const loadAuctions = async (guildId: string): Promise<AuctionItem[]> => {
 const loadDeliveries = (guildId: string): Promise<BackpackItem[]> => apiClient.listPendingDeliveries(guildId);
 
 const loadLoot = async (guildId: string): Promise<LootGroup[]> =>
-  groupLoot((await apiClient.listBankItems(guildId)).filter(item => item.rollCallId && !item.lock));
+  groupLoot((await apiClient.listBankItems(guildId)).filter(item => item.rollCallId && !item.rollCallCompleted && !item.lock));
 
 const SOURCE_KINDS: Record<SourceKey, readonly InboxKind[]> = {
   requests: ['fund', 'item'],
