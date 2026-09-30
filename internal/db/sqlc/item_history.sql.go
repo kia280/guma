@@ -86,7 +86,7 @@ FROM (
       AND NOT EXISTS (
           SELECT 1 FROM item_events gone
           WHERE gone.guild_id = looted.guild_id AND gone.item_id = looted.item_id
-            AND gone.kind IN ('received', 'retracted') AND gone.created_at <= rc.completed_at
+            AND gone.kind IN ('received', 'retracted', 'deleted') AND gone.created_at <= rc.completed_at
       )
 ) e
 ORDER BY e.position, e.is_derived
