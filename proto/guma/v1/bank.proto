@@ -66,6 +66,12 @@ service BankService {
     };
   }
 
+  rpc DeleteBankItem(DeleteBankItemRequest) returns (DeleteBankItemResponse) {
+    option (google.api.http) = {
+      delete: "/v1/guilds/{guild_id}/bank/items/{bank_item_id}"
+    };
+  }
+
   // Request an item from guild bank (requires approval)
   rpc RequestItem(RequestItemRequest) returns (RequestItemResponse) {
     option (google.api.http) = {
@@ -184,6 +190,15 @@ message ListBankItemsResponse {
   repeated BankItem items = 1;
   string next_page_token = 2;
   int32 total_count = 3;
+}
+
+message DeleteBankItemRequest {
+  string guild_id = 1;
+  string bank_item_id = 2;
+}
+
+message DeleteBankItemResponse {
+  bool success = 1;
 }
 
 message RequestItemRequest {

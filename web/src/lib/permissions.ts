@@ -51,6 +51,7 @@ export const PERMISSION_SECTIONS = [
       { key: 'contribute', roles: ALL },
       { key: 'requestFromBank', roles: ALL },
       { key: 'reviewRequests', roles: STAFF },
+      { key: 'deleteBankItem', roles: OWNER_ADMIN },
     ],
   },
   {

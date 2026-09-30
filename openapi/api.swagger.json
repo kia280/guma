@@ -1774,6 +1774,42 @@
         ]
       }
     },
+    "/v1/guilds/{guildId}/bank/items/{bankItemId}": {
+      "delete": {
+        "operationId": "BankService_DeleteBankItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteBankItemResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "guildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "bankItemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BankService"
+        ]
+      }
+    },
     "/v1/guilds/{guildId}/bank/request-funds": {
       "post": {
         "summary": "Request withdrawal from guild bank (requires approval)",
@@ -6073,6 +6109,14 @@
       "type": "object"
     },
     "v1DeleteAuctionResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteBankItemResponse": {
       "type": "object",
       "properties": {
         "success": {

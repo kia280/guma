@@ -572,6 +572,9 @@ export const gumaApiClient: ApiClient = {
     });
     return (data.items ?? []).map(toGuildBankItem);
   },
+  deleteBankItem: async (guildId, bankItemId) => {
+    await http.delete(`/v1/guilds/${guildId}/bank/items/${bankItemId}`);
+  },
   requestItem: async (guildId, bankItemId, reason) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/bank/item-requests`, {
       bank_item_id: bankItemId,

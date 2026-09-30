@@ -27,6 +27,7 @@ const (
 	BankService_ListContributions_FullMethodName = "/guma.v1.BankService/ListContributions"
 	BankService_DonateItem_FullMethodName        = "/guma.v1.BankService/DonateItem"
 	BankService_ListBankItems_FullMethodName     = "/guma.v1.BankService/ListBankItems"
+	BankService_DeleteBankItem_FullMethodName    = "/guma.v1.BankService/DeleteBankItem"
 	BankService_RequestItem_FullMethodName       = "/guma.v1.BankService/RequestItem"
 	BankService_ReviewItemRequest_FullMethodName = "/guma.v1.BankService/ReviewItemRequest"
 	BankService_ListItemRequests_FullMethodName  = "/guma.v1.BankService/ListItemRequests"
@@ -50,6 +51,7 @@ type BankServiceClient interface {
 	// Donate an item from personal backpack to guild bank
 	DonateItem(ctx context.Context, in *DonateItemRequest, opts ...grpc.CallOption) (*DonateItemResponse, error)
 	ListBankItems(ctx context.Context, in *ListBankItemsRequest, opts ...grpc.CallOption) (*ListBankItemsResponse, error)
+	DeleteBankItem(ctx context.Context, in *DeleteBankItemRequest, opts ...grpc.CallOption) (*DeleteBankItemResponse, error)
 	// Request an item from guild bank (requires approval)
 	RequestItem(ctx context.Context, in *RequestItemRequest, opts ...grpc.CallOption) (*RequestItemResponse, error)
 	ReviewItemRequest(ctx context.Context, in *ReviewItemRequestRequest, opts ...grpc.CallOption) (*ReviewItemRequestResponse, error)
@@ -145,6 +147,16 @@ func (c *bankServiceClient) ListBankItems(ctx context.Context, in *ListBankItems
 	return out, nil
 }
 
+func (c *bankServiceClient) DeleteBankItem(ctx context.Context, in *DeleteBankItemRequest, opts ...grpc.CallOption) (*DeleteBankItemResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteBankItemResponse)
+	err := c.cc.Invoke(ctx, BankService_DeleteBankItem_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *bankServiceClient) RequestItem(ctx context.Context, in *RequestItemRequest, opts ...grpc.CallOption) (*RequestItemResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RequestItemResponse)
@@ -202,6 +214,7 @@ type BankServiceServer interface {
 	// Donate an item from personal backpack to guild bank
 	DonateItem(context.Context, *DonateItemRequest) (*DonateItemResponse, error)
 	ListBankItems(context.Context, *ListBankItemsRequest) (*ListBankItemsResponse, error)
+	DeleteBankItem(context.Context, *DeleteBankItemRequest) (*DeleteBankItemResponse, error)
 	// Request an item from guild bank (requires approval)
 	RequestItem(context.Context, *RequestItemRequest) (*RequestItemResponse, error)
 	ReviewItemRequest(context.Context, *ReviewItemRequestRequest) (*ReviewItemRequestResponse, error)
@@ -240,6 +253,9 @@ func (UnimplementedBankServiceServer) DonateItem(context.Context, *DonateItemReq
 }
 func (UnimplementedBankServiceServer) ListBankItems(context.Context, *ListBankItemsRequest) (*ListBankItemsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListBankItems not implemented")
+}
+func (UnimplementedBankServiceServer) DeleteBankItem(context.Context, *DeleteBankItemRequest) (*DeleteBankItemResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteBankItem not implemented")
 }
 func (UnimplementedBankServiceServer) RequestItem(context.Context, *RequestItemRequest) (*RequestItemResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RequestItem not implemented")
@@ -418,6 +434,24 @@ func _BankService_ListBankItems_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BankService_DeleteBankItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteBankItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BankServiceServer).DeleteBankItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BankService_DeleteBankItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BankServiceServer).DeleteBankItem(ctx, req.(*DeleteBankItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _BankService_RequestItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RequestItemRequest)
 	if err := dec(in); err != nil {
@@ -528,6 +562,10 @@ var BankService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListBankItems",
 			Handler:    _BankService_ListBankItems_Handler,
+		},
+		{
+			MethodName: "DeleteBankItem",
+			Handler:    _BankService_DeleteBankItem_Handler,
 		},
 		{
 			MethodName: "RequestItem",
