@@ -56,7 +56,7 @@ export function EmptyContent({
       style={minHeight === undefined ? undefined : { minHeight }}
     >
       <Icon icon={icon} width={40} className="mb-3 text-disabled" aria-hidden />
-      <p className="type-subheading text-foreground">{title}</p>
+      <p className="type-subheading text-soft">{title}</p>
       {description && <p className="type-body text-subtle mt-1">{description}</p>}
       {children && <div className="mt-4">{children}</div>}
     </div>
