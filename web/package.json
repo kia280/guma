@@ -65,5 +65,5 @@
   "main": "eslint.config.mjs",
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "Elastic-2.0"
 }

@@ -262,16 +262,15 @@ CMD ["npm", "start"]
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run linting and tests
-6. Submit a pull request
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for the development workflow, conventions, checks, and the terms under which contributions are accepted.
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+Copyright (C) 2026 K1a
+
+This project is licensed under the Elastic License 2.0 (Elastic-2.0). See the [LICENSE](../LICENSE) file for the full text.
+
+The license does not allow providing the software to third parties as a hosted or managed service that gives them access to a substantial set of its features.
 
 ## 🔗 Links
 
