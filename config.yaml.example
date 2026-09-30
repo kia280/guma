@@ -63,3 +63,15 @@ metrics:
   insecure: false  # plaintext connection to the collector
   headers: ""  # key=value,key2=value2 (e.g. auth tokens)
   export_interval: 15s  # how often metrics are collected and exported
+
+# Distributed tracing (OpenTelemetry, OTLP export). Disabled by default.
+tracing:
+  enabled: false
+  # host:port, or a full URL such as http://otel-collector:4318.
+  # Empty uses the OTLP default (localhost:4317 for grpc, localhost:4318 for http/protobuf)
+  # and honors the standard OTEL_EXPORTER_OTLP_* environment variables.
+  endpoint: ""
+  protocol: grpc  # grpc, http/protobuf
+  insecure: false  # disable TLS towards the collector
+  headers: ""  # comma-separated key=value pairs, e.g. authorization=Bearer token
+  sample_rate: 1.0  # 0.0-1.0 ratio of new traces to sample; parent decisions are respected

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 )
@@ -21,6 +22,7 @@ type Config struct {
 	MaxOpenConns int32
 	MaxIdleConns int32
 	Logger       zerolog.Logger
+	Tracer       pgx.QueryTracer
 }
 
 // NewPool creates a new database connection pool
@@ -39,6 +41,7 @@ func NewPool(ctx context.Context, cfg Config) (*Pool, error) {
 
 	// Set connection timeouts
 	config.ConnConfig.ConnectTimeout = 10 * time.Second
+	config.ConnConfig.Tracer = cfg.Tracer
 
 	// Create connection pool
 	logger.Info().

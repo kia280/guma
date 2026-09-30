@@ -179,6 +179,27 @@ make clean
 - ✅ Environment-based configuration
 - ✅ Build and deployment scripts
 
+## Distributed Tracing
+
+The backend can export OpenTelemetry traces over OTLP. Tracing is disabled by
+default, so local development and tests need no collector. When enabled, spans
+cover HTTP gateway requests, the gRPC calls they make, and the PostgreSQL
+queries issued while handling them. Context propagates with W3C `traceparent`
+and `baggage` headers, and gRPC request logs include a `trace_id` field.
+
+| Setting (`config.yaml`) | Environment variable | Default | Description |
+| --- | --- | --- | --- |
+| `tracing.enabled` | `TRACING_ENABLED` | `false` | Turn tracing on |
+| `tracing.endpoint` | `TRACING_ENDPOINT` | OTLP default | `host:port` or URL such as `http://otel-collector:4318` |
+| `tracing.protocol` | `TRACING_PROTOCOL` | `grpc` | `grpc` or `http/protobuf` |
+| `tracing.insecure` | `TRACING_INSECURE` | `false` | Disable TLS towards the collector |
+| `tracing.headers` | `TRACING_HEADERS` | empty | Comma-separated `key=value` export headers |
+| `tracing.sample_rate` | `TRACING_SAMPLE_RATE` | `1.0` | Ratio (0.0-1.0) of new traces to sample; parent decisions are respected |
+
+`GUMA_TRACING_*` variables and the standard `OTEL_EXPORTER_OTLP_*` and
+`OTEL_RESOURCE_ATTRIBUTES` variables are honored as well. The Helm chart
+exposes the same settings under `tracing` in `deploy/guma/values.yaml`.
+
 ## Plugin System (Planned)
 
 The plugin architecture is designed to support:

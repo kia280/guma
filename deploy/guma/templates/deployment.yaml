@@ -47,10 +47,9 @@ spec:
             - name: grpc
               containerPort: {{ .Values.grpcPort }}
               protocol: TCP
-          {{- with include "guma.metricsEnv" . }}
           env:
-            {{- . | trim | nindent 12 }}
-          {{- end }}
+            {{- include "guma.metricsEnv" . | trim | nindent 12 }}
+            {{- include "guma.tracingEnv" . | trim | nindent 12 }}
           {{- with .Values.startupProbe }}
           startupProbe:
             {{- toYaml . | nindent 12 }}

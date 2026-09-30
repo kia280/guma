@@ -50,12 +50,22 @@ func runServe(cmd *cobra.Command, args []string) {
 	logger := initLogger(cfg)
 	logger.Info().Msg("starting Guma server")
 
+	shutdownTracing, err := telemetry.StartTracing(ctx, cfg.Tracing, telemetry.ServiceInfo{
+		Version:     Version,
+		Environment: cfg.Server.Environment,
+	}, logger)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to start tracing")
+		return
+	}
+
 	// Initialize database
 	db, err := database.NewPool(ctx, database.Config{
 		URL:          cfg.Database.URL,
 		MaxOpenConns: int32(cfg.Database.MaxOpenConns),
 		MaxIdleConns: int32(cfg.Database.MaxIdleConns),
 		Logger:       logger,
+		Tracer:       telemetry.PgxTracer(cfg.Tracing),
 	})
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to connect to database")
@@ -164,6 +174,10 @@ func runServe(cmd *cobra.Command, args []string) {
 
 	if err := shutdownMetrics(shutdownCtx); err != nil {
 		logger.Error().Err(err).Msg("metrics shutdown error")
+	}
+
+	if err := shutdownTracing(shutdownCtx); err != nil {
+		logger.Error().Err(err).Msg("tracing shutdown error")
 	}
 
 	logger.Info().Msg("servers stopped")
