@@ -912,7 +912,7 @@ export default function AdminPage() {
               {createDraftFailed && (
                 <p role="alert" className="type-caption text-danger">{t('createDraftFailed')}</p>
               )}
-              <Button variant="primary" size="sm" onPress={handlePostAnnouncement} isPending={isCreatingDraft}>
+              <Button variant="primary" className="md:h-10" onPress={handlePostAnnouncement} isPending={isCreatingDraft}>
                 <Icon icon="solar:add-circle-linear" width={16} />
                 {t('postAnnouncement')}
               </Button>
