@@ -9,6 +9,7 @@ import { useUserName } from '@/hooks/useUserName';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
+import { isGuildRole } from '@/lib/permissions';
 import type { GuildNotification, NotificationKind } from '@/types/notification';
 
 const KIND_META: Record<NotificationKind, { icon: string; tint: string }> = {
@@ -30,6 +31,7 @@ const KIND_META: Record<NotificationKind, { icon: string; tint: string }> = {
   rollCallGoldReceived: { icon: 'solar:hand-money-linear', tint: 'bg-success/10 text-success' },
   lotteryWon: { icon: 'solar:ticket-linear', tint: 'bg-warning/10 text-warning' },
   lotteryCancelled: { icon: 'solar:forbidden-circle-linear', tint: 'bg-default text-subtle' },
+  memberRoleChanged: { icon: 'solar:shield-user-linear', tint: 'bg-accent/10 text-accent' },
 };
 
 const FALLBACK_META = { icon: 'solar:bell-linear', tint: 'bg-default text-subtle' };
@@ -46,6 +48,7 @@ export type NotificationItemProps = {
 
 export function NotificationItem({ notification, onOpen }: NotificationItemProps) {
   const t = useTranslations('notificationItem');
+  const roleLabels = useTranslations('adminPage.roles');
   const userName = useUserName();
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
@@ -56,6 +59,10 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
   const note = textParam(params.note);
   const reason = textParam(params.reason);
   const amount = typeof params.amount === 'number' ? formatGold(params.amount) : params.amount;
+  const roleParam = (value: string | number | undefined) => {
+    const role = textParam(value);
+    return isGuildRole(role) ? roleLabels(role) : role;
+  };
 
   const body = (
     <>
@@ -70,6 +77,8 @@ export function NotificationItem({ notification, onOpen }: NotificationItemProps
               actor: userName(textParam(params.actor)),
               from: userName(textParam(params.from)),
               amount,
+              oldRole: roleParam(params.oldRole),
+              newRole: roleParam(params.newRole),
               b: chunks => <span className="font-medium text-foreground">{chunks}</span>,
             })}
           </p>

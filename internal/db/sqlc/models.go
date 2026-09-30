@@ -283,6 +283,16 @@ type Member struct {
 	LastActive  time.Time
 }
 
+type MemberRoleChange struct {
+	ID        uuid.UUID
+	GuildID   uuid.UUID
+	UserID    uuid.UUID
+	ActorID   *uuid.UUID
+	OldRole   string
+	NewRole   string
+	CreatedAt time.Time
+}
+
 type Notification struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID

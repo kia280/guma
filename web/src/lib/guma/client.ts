@@ -204,6 +204,10 @@ export const gumaApiClient: ApiClient = {
     const { data } = await http.get(`/v1/guilds/${guildId}/members`, { params: { page_size: 500 } });
     return (data.members ?? []).map(toMember);
   },
+  updateMemberRole: async (guildId, userId, role) => {
+    const { data } = await http.put(`/v1/guilds/${guildId}/members/${userId}/role`, { role });
+    return toMember(data.member);
+  },
   inviteMember: async (guildId, req) => {
     const { data } = await http.post(`/v1/guilds/${guildId}/members/invite`, req);
     return data.invitation;
