@@ -104,7 +104,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
 
   const slideProps = (slide: Slide) => ({
     inert: slide !== active,
-    className: `min-w-full space-y-3 px-1 ${slide === active ? 'py-1' : 'max-h-0 overflow-hidden'}`,
+    className: 'flex min-w-full flex-col gap-3 p-1',
   });
 
   const handleTouchStart = (e: TouchEvent) => {
@@ -128,7 +128,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
       <div className="-m-1 overflow-hidden">
         {/* Slide track */}
         <div
-          className="flex items-start transition-transform duration-300 ease-in-out"
+          className="flex items-stretch transition-transform duration-300 ease-in-out"
           style={{ transform: `translateX(-${idx * 100}%)` }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -194,7 +194,7 @@ function OverviewCarousel({ guildStats, personalStats, balanceTrend }: OverviewC
             </div>
 
             {/* Stat row */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid flex-1 auto-rows-fr grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
               <StatCard
                 icon="solar:users-group-rounded-linear"
                 iconClass="text-accent"
