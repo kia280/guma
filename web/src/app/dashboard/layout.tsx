@@ -93,7 +93,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
         </SidebarDrawer>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="shrink-0 bg-background px-3 pt-3">
+          <header className="shrink-0 bg-background px-3 py-2">
             <div className="flex h-11 items-center gap-2 px-1.5 sm:h-10">
               <Tooltip delay={300}>
                 <Button
@@ -238,7 +238,7 @@ export default function DashboardLayout({ children, modal }: { children: React.R
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto p-4.5">
+          <main className="flex-1 overflow-auto px-4.5 pb-4.5">
             <CurrentGuildProvider>{children}</CurrentGuildProvider>
           </main>
         </div>

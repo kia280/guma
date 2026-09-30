@@ -215,7 +215,7 @@ export function AppSidebar({ isCollapsed, onNavigate }: AppSidebarProps) {
   return (
     <div
       className={cn(
-        'flex h-full flex-col bg-surface px-2 py-3 transition-[width] duration-200',
+        'flex h-full flex-col bg-surface p-2 transition-[width] duration-200',
         isCollapsed ? 'w-14' : 'w-60',
       )}
     >
