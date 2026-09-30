@@ -191,7 +191,7 @@ Every empty state that fills a card, a card section, or a modal body uses `<Empt
 - The title is a short phrase without a trailing period. Put any explanation of what will appear there in `description`, as a full sentence.
 - Pass `minHeight` instead of relying on the padding when the block replaces content with a fixed height (a chart), so the panel does not jump between states.
 - Pass an action as children (a `size="sm"` button); it renders below the text.
-- On list pages the block sits inside a standard card (`Card` + `Card.Content`), not directly on the page background.
+- The block has no surface of its own. Inside a card it sits on the card; on the lottery and auction list pages it sits directly on the page background, without a wrapping card.
 - This does not apply to `renderEmptyState` in list boxes and combo boxes, to not-found pages, to error states with a retry, or to a one-line placeholder that stands in for a single value inside a form or a small grid card.
 
 ## Interactive Rows

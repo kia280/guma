@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Tabs, Chip, useOverlayState } from '@heroui/react';
+import { Button, Tabs, Chip, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -136,11 +136,7 @@ export default function LotteryPage() {
               skeleton={<CardGridSkeleton className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" />}
             >
               {filtered.length === 0 ? (
-                <Card className="border border-transparent shadow-edge bg-surface">
-                  <Card.Content>
-                    <EmptyContent icon="solar:ticket-linear" title={t('noLotteries')} />
-                  </Card.Content>
-                </Card>
+                <EmptyContent icon="solar:ticket-linear" title={t('noLotteries')} />
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filtered.map(lottery => (
