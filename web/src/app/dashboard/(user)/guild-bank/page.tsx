@@ -22,9 +22,10 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { AsyncContent, AsyncValue, CardGridSkeleton, EmptyContent, ListSkeleton } from '@/components/AsyncContent';
+import { ItemCard, ItemCardAction } from '@/components/ItemCard';
 import { ItemHistoryModal } from '@/components/ItemHistoryModal';
 import { ItemLockChip } from '@/components/ItemLockChip';
-import { ItemThumbnail, getCategoryIcon, getRarityColor } from '@/components/ItemThumbnail';
+import { getCategoryIcon } from '@/components/ItemThumbnail';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useLiveResource } from '@/hooks/useLiveResource';
 import { useLoadState } from '@/hooks/useLoadState';
@@ -552,7 +553,7 @@ export default function GuildBankPage() {
             skeleton={
               <CardGridSkeleton
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
-                cardClassName="h-20 rounded-xl"
+                cardClassName="h-16 rounded-xl"
               />
             }
           >
@@ -561,23 +562,24 @@ export default function GuildBankPage() {
           ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {mockGuildItems.map(item => (
-              <Card
+              <ItemCard
                 key={item.id}
-                className="border border-divider shadow-none bg-surface-secondary hover:border-foreground/20 transition-colors p-2.5 rounded-xl"
-              >
-                <Card.Content className="flex flex-row items-center gap-3 p-0">
-                  <ItemThumbnail category={item.category} rarity={item.rarity} />
-                  <div className="flex-1 min-w-0">
-                    <p className="type-body font-medium text-foreground truncate">
-                      {item.name}
-                      {item.quantity > 1 && (
-                        <span className="text-hint tabular-nums"> ×{item.quantity}</span>
-                      )}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-1 mt-0.5 type-caption">
-                      <Chip size="sm" color={getRarityColor(item.rarity)} variant="secondary">
-                        {labels(`rarities.${item.rarity}`)}
-                      </Chip>
+                name={item.name}
+                quantity={item.quantity}
+                category={item.category}
+                rarity={item.rarity}
+                source={
+                  item.rollCallId
+                    ? {
+                        icon: 'solar:clipboard-check-linear',
+                        text: t('fromRollCall', { title: item.rollCallTitle || t('untitledRollCall') }),
+                        href: `/dashboard/roll-calls/${item.rollCallId}`,
+                      }
+                    : undefined
+                }
+                chips={
+                  (item.lock || item.requestedByMe || item.pendingRequestCount > 0) && (
+                    <>
                       {item.lock && <ItemLockChip lock={item.lock} />}
                       {item.requestedByMe ? (
                         <Chip size="sm" color="accent" variant="secondary">
@@ -588,29 +590,13 @@ export default function GuildBankPage() {
                           {t('pendingRequestCount', { count: item.pendingRequestCount })}
                         </Chip>
                       )}
-                    </div>
-                    {item.requestedByMe && item.pendingRequestCount > 1 && (
-                      <p className="mt-1 type-caption text-hint">
-                        {t('otherPendingRequests', { count: item.pendingRequestCount - 1 })}
-                      </p>
-                    )}
-                    {item.rollCallId && (
-                      <Link
-                        href={`/dashboard/roll-calls/${item.rollCallId}`}
-                        className="mt-1 flex min-w-0 items-center gap-1 rounded type-caption text-hint hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                      >
-                        <Icon icon="solar:clipboard-check-linear" width={14} className="shrink-0" />
-                        <span className="truncate">{t('fromRollCall', { title: item.rollCallTitle || t('untitledRollCall') })}</span>
-                      </Link>
-                    )}
-                  </div>
-                  <div className="flex shrink-0 flex-col gap-1">
+                    </>
+                  )
+                }
+                actions={
+                  <>
                     <Tooltip delay={0}>
-                      <Button
-                        isIconOnly
-                        size="sm"
-                        variant="ghost"
-                        className="text-hint shrink-0 max-sm:size-11"
+                      <ItemCardAction
                         aria-label={t('viewHistory', { item: item.name })}
                         onPress={() => {
                           setHistoryItem(item);
@@ -618,26 +604,28 @@ export default function GuildBankPage() {
                         }}
                       >
                         <Icon icon="solar:history-linear" width={16} />
-                      </Button>
+                      </ItemCardAction>
                       <Tooltip.Content>{t('viewHistory', { item: item.name })}</Tooltip.Content>
                     </Tooltip>
                     <Tooltip delay={0}>
-                      <Button
-                        isIconOnly
-                        size="sm"
-                        variant="ghost"
-                        className="text-hint shrink-0 max-sm:size-11"
+                      <ItemCardAction
                         aria-label={item.requestedByMe ? t('alreadyRequested') : t('requestItem')}
                         isDisabled={item.requestedByMe || Boolean(item.lock)}
                         onPress={() => openItemRequest(item)}
                       >
                         <Icon icon={item.requestedByMe ? 'solar:check-circle-linear' : 'solar:hand-shake-linear'} width={16} />
-                      </Button>
+                      </ItemCardAction>
                       <Tooltip.Content>{item.requestedByMe ? t('alreadyRequested') : t('requestItem')}</Tooltip.Content>
                     </Tooltip>
-                  </div>
-                </Card.Content>
-              </Card>
+                  </>
+                }
+              >
+                {item.requestedByMe && item.pendingRequestCount > 1 && (
+                  <p className="mt-0.5 type-caption text-hint">
+                    {t('otherPendingRequests', { count: item.pendingRequestCount - 1 })}
+                  </p>
+                )}
+              </ItemCard>
             ))}
           </div>
           )}
