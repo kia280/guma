@@ -88,11 +88,12 @@ function ContributionAmount({
 }) {
   const t = useTranslations('guildBankPage');
   const formatGold = useFormatGold();
-  const alignClass = align === 'end' ? 'items-end' : 'items-start';
+  const alignClass =
+    align === 'end' ? 'flex-row-reverse flex-wrap items-baseline gap-x-1.5' : 'flex-col items-start';
 
   if (entry.status === 'pending') {
     return (
-      <span className={`flex flex-col ${alignClass}`}>
+      <span className={`flex ${alignClass}`}>
         <span className="type-body font-medium tabular-nums text-subtle">{formatGold(entry.amount)}</span>
         <span className="type-caption text-hint">{t('amountPending')}</span>
       </span>
@@ -751,49 +752,53 @@ export default function GuildBankPage() {
                 data-highlighted={isHighlightedEntry(entry) || undefined}
                 className={cn('py-3 first:pt-0 last:pb-0', isHighlightedEntry(entry) && 'bg-accent/10 rounded-lg px-2')}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">
-                      <Icon
-                        className="text-subtle"
-                        icon={getContributionIcon(entry.type)}
-                        width={16}
-                      />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="type-body font-medium text-foreground truncate">
-                          {getContributionLabel(entry.type)}
-                        </p>
-                      </div>
-                      {entry.note && entry.href ? (
-                        <Link
-                          href={entry.href}
-                          className="self-start rounded type-caption text-hint hover:text-accent line-clamp-2 max-w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                        >
-                          {entry.note}
-                        </Link>
-                      ) : entry.note && (
-                        <p className="type-caption text-hint line-clamp-2 wrap-break-word">{entry.note}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap type-caption">
-                        <p className="text-hint">{userName(entry.member)}</p>
-                        <p className="text-hint">
-                          {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
-                        </p>
-                        <Chip size="sm" color={contributionStatusColor[entry.status]} variant="secondary">
-                          {t(entry.status)}
-                        </Chip>
-                      </div>
-                    </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-default shrink-0">
+                    <Icon
+                      className="text-subtle"
+                      icon={getContributionIcon(entry.type)}
+                      width={16}
+                    />
                   </div>
-                  <div className="text-right shrink-0 ml-3">
-                    {entry.amount !== undefined && (
-                      <ContributionAmount entry={{ ...entry, amount: entry.amount }} align="end" />
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="type-body font-medium text-foreground truncate shrink-0 max-w-[60%]">
+                        {getContributionLabel(entry.type)}
+                      </p>
+                      <div className="flex flex-col items-end min-w-0 text-right">
+                        {entry.amount !== undefined && (
+                          <ContributionAmount entry={{ ...entry, amount: entry.amount }} align="end" />
+                        )}
+                        {entry.itemName && (
+                          <p className="type-body text-subtle line-clamp-2 wrap-break-word">{entry.itemName}</p>
+                        )}
+                      </div>
+                    </div>
+                    {entry.note && entry.href ? (
+                      <Link
+                        href={entry.href}
+                        className="self-start rounded type-caption text-hint hover:text-accent line-clamp-2 max-w-full wrap-break-word focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      >
+                        {entry.note}
+                      </Link>
+                    ) : entry.note && (
+                      <p className="type-caption text-hint line-clamp-2 wrap-break-word">{entry.note}</p>
                     )}
-                    {entry.itemName && (
-                      <span className="type-caption text-subtle line-clamp-2 max-w-[140px] block">{entry.itemName}</span>
-                    )}
+                    <div className="flex items-center justify-between gap-2 mt-1 type-caption">
+                      <p className="text-hint truncate">
+                        {userName(entry.member)}
+                        <span aria-hidden="true"> · </span>
+                        {format.dateTime(new Date(entry.date), { dateStyle: 'medium' })}
+                      </p>
+                      <Chip
+                        className="shrink-0"
+                        size="sm"
+                        color={contributionStatusColor[entry.status]}
+                        variant="secondary"
+                      >
+                        {t(entry.status)}
+                      </Chip>
+                    </div>
                   </div>
                 </div>
               </div>
