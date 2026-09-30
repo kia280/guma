@@ -731,7 +731,8 @@
     "pendingRequestCount": "{count} 筆待審申請",
     "otherPendingRequests": "另有 {count} 位成員也在申請",
     "alreadyRequested": "你已申請過這個物品",
-    "viewHistory": "查看 {item} 的歷程",
+    "itemActions": "物品操作",
+    "history": "歷程",
     "typeAdminTransfer": "管理員移入"
   },
   "notificationsCard": {

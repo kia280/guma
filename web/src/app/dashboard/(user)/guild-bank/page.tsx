@@ -11,7 +11,7 @@ import {
   TextArea,
   TextField,
   Label,
-  Tooltip,
+  Dropdown,
   Alert,
   FieldError,
   cn,
@@ -594,30 +594,36 @@ export default function GuildBankPage() {
                   )
                 }
                 actions={
-                  <>
-                    <Tooltip delay={0}>
-                      <ItemCardAction
-                        aria-label={t('viewHistory', { item: item.name })}
-                        onPress={() => {
-                          setHistoryItem(item);
-                          historyModalState.open();
+                  <Dropdown>
+                    <ItemCardAction aria-label={t('itemActions')}>
+                      <Icon icon="solar:menu-dots-bold" width={16} />
+                    </ItemCardAction>
+                    <Dropdown.Popover>
+                      <Dropdown.Menu
+                        aria-label={t('itemActions')}
+                        disabledKeys={item.requestedByMe || item.lock ? ['request'] : []}
+                        onAction={key => {
+                          if (key === 'request') openItemRequest(item);
+                          if (key === 'history') {
+                            setHistoryItem(item);
+                            historyModalState.open();
+                          }
                         }}
                       >
-                        <Icon icon="solar:history-linear" width={16} />
-                      </ItemCardAction>
-                      <Tooltip.Content>{t('viewHistory', { item: item.name })}</Tooltip.Content>
-                    </Tooltip>
-                    <Tooltip delay={0}>
-                      <ItemCardAction
-                        aria-label={item.requestedByMe ? t('alreadyRequested') : t('requestItem')}
-                        isDisabled={item.requestedByMe || Boolean(item.lock)}
-                        onPress={() => openItemRequest(item)}
-                      >
-                        <Icon icon={item.requestedByMe ? 'solar:check-circle-linear' : 'solar:hand-shake-linear'} width={16} />
-                      </ItemCardAction>
-                      <Tooltip.Content>{item.requestedByMe ? t('alreadyRequested') : t('requestItem')}</Tooltip.Content>
-                    </Tooltip>
-                  </>
+                        <Dropdown.Item
+                          id="request"
+                          textValue={item.requestedByMe ? t('alreadyRequested') : t('requestItem')}
+                        >
+                          <Icon icon={item.requestedByMe ? 'solar:check-circle-linear' : 'solar:hand-shake-linear'} width={16} />
+                          <span>{item.requestedByMe ? t('alreadyRequested') : t('requestItem')}</span>
+                        </Dropdown.Item>
+                        <Dropdown.Item id="history" textValue={t('history')}>
+                          <Icon icon="solar:history-linear" width={16} />
+                          <span>{t('history')}</span>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown.Popover>
+                  </Dropdown>
                 }
               >
                 {item.requestedByMe && item.pendingRequestCount > 1 && (
