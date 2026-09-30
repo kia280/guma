@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, Separator, ToggleButton, ToggleButtonGroup } from '@heroui/react';
+import { Button, Card, Separator, Tabs } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React, { useMemo, useRef } from 'react';
@@ -177,29 +177,22 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
   );
 
   const viewSwitcher = (
-    <ToggleButtonGroup
-      aria-label={t('viewLabel')}
-      selectionMode="single"
-      disallowEmptySelection
-      selectedKeys={new Set([view])}
-      onSelectionChange={keys => {
-        const [next] = keys;
-        if (next) onViewChange(next as CalendarView);
-      }}
-      size="sm"
-      fullWidth={isPhone}
-    >
-      {VIEWS_BY_DEVICE[device].map((option, index) => (
-        <ToggleButton key={option} id={option} className="max-sm:h-11">
-          {index > 0 && <ToggleButtonGroup.Separator />}
-          {t(`views.${option}`)}
-        </ToggleButton>
-      ))}
-    </ToggleButtonGroup>
+    <Tabs selectedKey={view} onSelectionChange={key => onViewChange(key as CalendarView)}>
+      <Tabs.ListContainer>
+        <Tabs.List aria-label={t('viewLabel')}>
+          {VIEWS_BY_DEVICE[device].map(option => (
+            <Tabs.Tab key={option} id={option} className="max-sm:h-9">
+              {t(`views.${option}`)}
+              <Tabs.Indicator />
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+      </Tabs.ListContainer>
+    </Tabs>
   );
 
   const todayButton = (
-    <Button size="sm" variant="secondary" className="max-sm:h-11" onPress={() => onDateChange(new Date())}>
+    <Button variant="secondary" className="max-sm:h-11 md:h-10" onPress={() => onDateChange(new Date())}>
       {t('today')}
     </Button>
   );
@@ -244,7 +237,7 @@ export const GuildCalendar: React.FC<GuildCalendarProps> = ({
             {todayButton}
             {viewSwitcher}
             <Separator orientation="vertical" className="h-6" />
-            <Button size="sm" variant="primary" onPress={onCreate}>
+            <Button variant="primary" className="md:h-10" onPress={onCreate}>
               <Icon icon="solar:add-circle-linear" width={16} aria-hidden />
               {t('createEvent')}
             </Button>
