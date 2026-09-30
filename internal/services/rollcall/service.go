@@ -931,7 +931,7 @@ func checkLootInVault(item models.Item, vault map[string]bool) error {
 		return fmt.Errorf("%w: loot item %q has already left the guild vault", errs.ErrFailedPrecondition, item.Name)
 	}
 	if locked {
-		return fmt.Errorf("%w: loot item %q is listed in an auction or lottery", errs.ErrFailedPrecondition, item.Name)
+		return fmt.Errorf("%w: loot item %q is listed in an auction or raffle", errs.ErrFailedPrecondition, item.Name)
 	}
 	return nil
 }

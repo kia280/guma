@@ -63,7 +63,7 @@ type DevConfig struct {
 
 // SchedulerConfig holds background job scheduling configuration
 type SchedulerConfig struct {
-	LotteryDrawInterval   time.Duration `mapstructure:"lottery_draw_interval"`
+	RaffleDrawInterval    time.Duration `mapstructure:"raffle_draw_interval"`
 	AuctionSettleInterval time.Duration `mapstructure:"auction_settle_interval"`
 }
 
@@ -113,7 +113,7 @@ func Load() (*Config, error) {
 	v.BindEnv("rate_limit.requests_per_minute", "RATE_LIMIT_REQUESTS_PER_MINUTE")
 	v.BindEnv("rate_limit.burst", "RATE_LIMIT_BURST")
 	v.BindEnv("dev.auth_enabled", "DEV_AUTH_ENABLED")
-	v.BindEnv("scheduler.lottery_draw_interval", "SCHEDULER_LOTTERY_DRAW_INTERVAL")
+	v.BindEnv("scheduler.raffle_draw_interval", "SCHEDULER_RAFFLE_DRAW_INTERVAL")
 	v.BindEnv("scheduler.auction_settle_interval", "SCHEDULER_AUCTION_SETTLE_INTERVAL")
 
 	// Try to read config file
@@ -168,7 +168,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("rate_limit.requests_per_minute", 60)
 	v.SetDefault("rate_limit.burst", 10)
 
-	v.SetDefault("scheduler.lottery_draw_interval", "15s")
+	v.SetDefault("scheduler.raffle_draw_interval", "15s")
 	v.SetDefault("scheduler.auction_settle_interval", "15s")
 }
 

@@ -56,12 +56,12 @@ func (q *Queries) CountUserGuilds(ctx context.Context, userID uuid.UUID) (int64,
 	return count, err
 }
 
-const countUserLotteriesWon = `-- name: CountUserLotteriesWon :one
-SELECT COUNT(*) FROM lottery_winners WHERE user_id = $1
+const countUserRafflesWon = `-- name: CountUserRafflesWon :one
+SELECT COUNT(*) FROM raffle_winners WHERE user_id = $1
 `
 
-func (q *Queries) CountUserLotteriesWon(ctx context.Context, userID uuid.UUID) (int64, error) {
-	row := q.db.QueryRow(ctx, countUserLotteriesWon, userID)
+func (q *Queries) CountUserRafflesWon(ctx context.Context, userID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserRafflesWon, userID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

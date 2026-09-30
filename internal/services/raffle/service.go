@@ -1,4 +1,4 @@
-package lottery
+package raffle
 
 import (
 	"context"
@@ -22,8 +22,8 @@ import (
 	"github.com/kia280/guma/internal/services/inventory"
 )
 
-// LotteryPrize is a prize tier in a lottery.
-type LotteryPrize struct {
+// RafflePrize is a prize tier in a raffle.
+type RafflePrize struct {
 	Rank         int32
 	Description  string
 	Amount       int64
@@ -33,8 +33,8 @@ type LotteryPrize struct {
 	SourceItemID *uuid.UUID    `json:",omitempty"`
 }
 
-// Lottery is the domain model for a lottery.
-type Lottery struct {
+// Raffle is the domain model for a raffle.
+type Raffle struct {
 	ID                string
 	GuildID           string
 	CreatedBy         string
@@ -46,26 +46,26 @@ type Lottery struct {
 	MaxTicketsPerUser int32
 	Status            string
 	DrawDate          string
-	Prizes            []LotteryPrize
-	Winners           []*LotteryWinner
+	Prizes            []RafflePrize
+	Winners           []*RaffleWinner
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 	CancelledAt       *time.Time
 }
 
-// LotteryTicket is the domain model for a lottery ticket.
-type LotteryTicket struct {
+// RaffleTicket is the domain model for a raffle ticket.
+type RaffleTicket struct {
 	ID           string
-	LotteryID    string
+	RaffleID     string
 	UserID       string
 	TicketNumber string
 	PurchasedAt  time.Time
 }
 
-// LotteryWinner is the domain model for a lottery winner.
-type LotteryWinner struct {
+// RaffleWinner is the domain model for a raffle winner.
+type RaffleWinner struct {
 	ID               string
-	LotteryID        string
+	RaffleID         string
 	UserID           string
 	Username         string
 	AvatarURL        string
@@ -85,7 +85,7 @@ type ListParams struct {
 
 // ListResult is returned by List.
 type ListResult struct {
-	Lotteries  []*Lottery
+	Raffles    []*Raffle
 	TotalCount int32
 	NextOffset int
 }
@@ -100,12 +100,12 @@ type CreateParams struct {
 	MaxTickets        int32
 	MaxTicketsPerUser int32
 	DrawDate          string
-	Prizes            []LotteryPrize
+	Prizes            []RafflePrize
 }
 
 type UpdateParams struct {
 	GuildID           string
-	LotteryID         string
+	RaffleID          string
 	UpdatedBy         string
 	Title             *string
 	Description       *string
@@ -117,13 +117,13 @@ type UpdateParams struct {
 
 // ListTicketsResult is returned by ListMyTickets.
 type ListTicketsResult struct {
-	Tickets    []*LotteryTicket
+	Tickets    []*RaffleTicket
 	TotalCount int32
 	NextOffset int
 }
 
-// lotteryRow is the common subset of fields from lottery queries.
-type lotteryRow struct {
+// raffleRow is the common subset of fields from raffle queries.
+type raffleRow struct {
 	ID                uuid.UUID
 	GuildID           uuid.UUID
 	CreatedBy         uuid.UUID
@@ -141,14 +141,14 @@ type lotteryRow struct {
 	CancelledAt       pgtype.Timestamptz
 }
 
-// Service handles lottery business logic.
+// Service handles raffle business logic.
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
 	logger zerolog.Logger
 }
 
-// New creates a new lottery Service.
+// New creates a new raffle Service.
 func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
@@ -157,11 +157,11 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	return &Service{
 		pool:   pool,
 		q:      q,
-		logger: logger.With().Str("service", "lottery").Logger(),
+		logger: logger.With().Str("service", "raffle").Logger(),
 	}
 }
 
-// List returns paginated lotteries for a guild.
+// List returns paginated raffles for a guild.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	pageSize := p.PageSize
 	if pageSize <= 0 || pageSize > 100 {
@@ -172,61 +172,61 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
 	}
 
-	rows, err := s.q.ListLotteries(ctx, db.ListLotteriesParams{
+	rows, err := s.q.ListRaffles(ctx, db.ListRafflesParams{
 		GuildID: guildID, StatusFilter: p.Status,
 		PageSize: int32(pageSize), PageOffset: int32(p.Offset),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("%w: list lotteries: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: list raffles: %v", errs.ErrInternal, err)
 	}
 
-	lotteries := make([]*Lottery, 0, len(rows))
+	raffles := make([]*Raffle, 0, len(rows))
 	for _, r := range rows {
-		l := toLottery(lotteryRow(r))
+		l := toRaffle(raffleRow(r))
 		if s.drawIfDue(ctx, guildID, r.ID, r.Status, r.DrawDate) {
-			if fresh, err := s.q.GetLottery(ctx, db.GetLotteryParams{ID: r.ID, GuildID: guildID}); err == nil {
-				l = toLottery(lotteryRow(fresh))
+			if fresh, err := s.q.GetRaffle(ctx, db.GetRaffleParams{ID: r.ID, GuildID: guildID}); err == nil {
+				l = toRaffle(raffleRow(fresh))
 			}
 		}
 		l.Winners, _ = s.getWinners(ctx, r.ID)
-		lotteries = append(lotteries, l)
+		raffles = append(raffles, l)
 	}
 
-	total, _ := s.q.CountLotteries(ctx, db.CountLotteriesParams{GuildID: guildID, StatusFilter: p.Status})
+	total, _ := s.q.CountRaffles(ctx, db.CountRafflesParams{GuildID: guildID, StatusFilter: p.Status})
 
 	nextOffset := 0
-	if len(lotteries) == pageSize {
+	if len(raffles) == pageSize {
 		nextOffset = p.Offset + pageSize
 	}
-	return &ListResult{Lotteries: lotteries, TotalCount: int32(total), NextOffset: nextOffset}, nil
+	return &ListResult{Raffles: raffles, TotalCount: int32(total), NextOffset: nextOffset}, nil
 }
 
-// Get fetches a single lottery by ID.
-func (s *Service) Get(ctx context.Context, guildIDStr, lotteryIDStr string) (*Lottery, error) {
+// Get fetches a single raffle by ID.
+func (s *Service) Get(ctx context.Context, guildIDStr, raffleIDStr string) (*Raffle, error) {
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
-	lotteryID, err := uuid.Parse(lotteryIDStr)
+	raffleID, err := uuid.Parse(raffleIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
-	r, err := s.q.GetLottery(ctx, db.GetLotteryParams{ID: lotteryID, GuildID: guildID})
+	r, err := s.q.GetRaffle(ctx, db.GetRaffleParams{ID: raffleID, GuildID: guildID})
 	if err != nil {
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
-	if s.drawIfDue(ctx, guildID, lotteryID, r.Status, r.DrawDate) {
-		if r, err = s.q.GetLottery(ctx, db.GetLotteryParams{ID: lotteryID, GuildID: guildID}); err != nil {
-			return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+	if s.drawIfDue(ctx, guildID, raffleID, r.Status, r.DrawDate) {
+		if r, err = s.q.GetRaffle(ctx, db.GetRaffleParams{ID: raffleID, GuildID: guildID}); err != nil {
+			return nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 		}
 	}
-	l := toLottery(lotteryRow(r))
-	l.Winners, _ = s.getWinners(ctx, lotteryID)
+	l := toRaffle(raffleRow(r))
+	l.Winners, _ = s.getWinners(ctx, raffleID)
 	return l, nil
 }
 
-// Create inserts a new lottery. Requires admin role.
-func (s *Service) Create(ctx context.Context, p CreateParams) (*Lottery, error) {
+// Create inserts a new raffle. Requires admin role.
+func (s *Service) Create(ctx context.Context, p CreateParams) (*Raffle, error) {
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -246,10 +246,10 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Lottery, error) 
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	lotteryID := uuid.New()
+	raffleID := uuid.New()
 	for i := range p.Prizes {
 		prize := &p.Prizes[i]
-		locked, err := inventory.Lock(ctx, qtx, guildID, createdBy, prize.Source, lotteryHolder(lotteryID), "Offered as a lottery prize")
+		locked, err := inventory.Lock(ctx, qtx, guildID, createdBy, prize.Source, raffleHolder(raffleID), "Offered as a raffle prize")
 		if err != nil {
 			return nil, err
 		}
@@ -271,35 +271,35 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Lottery, error) 
 		return nil, fmt.Errorf("%w: encode prizes: %v", errs.ErrInternal, err)
 	}
 
-	r, err := qtx.CreateLottery(ctx, db.CreateLotteryParams{
-		ID: lotteryID, GuildID: guildID, CreatedBy: createdBy,
+	r, err := qtx.CreateRaffle(ctx, db.CreateRaffleParams{
+		ID: raffleID, GuildID: guildID, CreatedBy: createdBy,
 		Title: p.Title, Description: p.Description,
 		TicketPrice: p.TicketPrice, MaxTickets: p.MaxTickets, MaxTicketsPerUser: p.MaxTicketsPerUser,
 		DrawDate: p.DrawDate, Prizes: prizesJSON,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("%w: create lottery: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: create raffle: %v", errs.ErrInternal, err)
 	}
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	l := toLottery(lotteryRow(r))
-	s.logger.Info().Str("lottery_id", l.ID).Str("guild_id", p.GuildID).Msg("lottery created")
+	l := toRaffle(raffleRow(r))
+	s.logger.Info().Str("raffle_id", l.ID).Str("guild_id", p.GuildID).Msg("raffle created")
 	return l, nil
 }
 
 // PurchaseTickets deducts cost from wallet and issues tickets.
-func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, lotteryIDStr, userIDStr string, quantity int32) ([]*LotteryTicket, int64, error) {
+func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, raffleIDStr, userIDStr string, quantity int32) ([]*RaffleTicket, int64, error) {
 	if quantity <= 0 {
 		return nil, 0, fmt.Errorf("%w: quantity must be positive", errs.ErrFailedPrecondition)
 	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
-		return nil, 0, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, 0, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
-	lotteryID, err := uuid.Parse(lotteryIDStr)
+	raffleID, err := uuid.Parse(raffleIDStr)
 	if err != nil {
-		return nil, 0, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, 0, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
@@ -313,12 +313,12 @@ func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, lotteryIDStr,
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	info, err := qtx.LockLotteryForPurchase(ctx, db.LockLotteryForPurchaseParams{ID: lotteryID, GuildID: guildID})
+	info, err := qtx.LockRaffleForPurchase(ctx, db.LockRaffleForPurchaseParams{ID: raffleID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, 0, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+			return nil, 0, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 		}
-		return nil, 0, fmt.Errorf("%w: load lottery: %v", errs.ErrInternal, err)
+		return nil, 0, fmt.Errorf("%w: load raffle: %v", errs.ErrInternal, err)
 	}
 	if err := checkOpen(info.Status, info.DrawDate, time.Now()); err != nil {
 		return nil, 0, err
@@ -328,7 +328,7 @@ func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, lotteryIDStr,
 	}
 
 	if info.MaxTicketsPerUser > 0 {
-		n, err := qtx.CountUserTicketsForLottery(ctx, db.CountUserTicketsForLotteryParams{LotteryID: lotteryID, UserID: userID})
+		n, err := qtx.CountUserTicketsForRaffle(ctx, db.CountUserTicketsForRaffleParams{RaffleID: raffleID, UserID: userID})
 		if err != nil {
 			return nil, 0, fmt.Errorf("%w: count tickets: %v", errs.ErrInternal, err)
 		}
@@ -354,29 +354,29 @@ func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, lotteryIDStr,
 		return nil, 0, fmt.Errorf("%w: deduct: %v", errs.ErrInternal, err)
 	}
 	if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
-		UserID: userID, GuildID: guildID, Type: "LOTTERY_TICKET",
+		UserID: userID, GuildID: guildID, Type: "RAFFLE_TICKET",
 		Amount: -totalCost, BalanceAfter: newBalance,
-		Description: "Lottery ticket purchase", ReferenceID: lotteryIDStr, ReferenceType: "lottery",
+		Description: "Raffle ticket purchase", ReferenceID: raffleIDStr, ReferenceType: "raffle",
 	}); err != nil {
 		return nil, 0, fmt.Errorf("%w: record transaction: %v", errs.ErrInternal, err)
 	}
 
-	tickets := make([]*LotteryTicket, 0, quantity)
+	tickets := make([]*RaffleTicket, 0, quantity)
 	for i := int32(0); i < quantity; i++ {
-		ticketNum := fmt.Sprintf("%s-%06d", lotteryIDStr[:8], rand.Intn(1000000))
-		tr, err := qtx.InsertLotteryTicket(ctx, db.InsertLotteryTicketParams{
-			LotteryID: lotteryID, UserID: userID, TicketNumber: ticketNum,
+		ticketNum := fmt.Sprintf("%s-%06d", raffleIDStr[:8], rand.Intn(1000000))
+		tr, err := qtx.InsertRaffleTicket(ctx, db.InsertRaffleTicketParams{
+			RaffleID: raffleID, UserID: userID, TicketNumber: ticketNum,
 		})
 		if err != nil {
 			return nil, 0, fmt.Errorf("%w: insert ticket: %v", errs.ErrInternal, err)
 		}
-		tickets = append(tickets, &LotteryTicket{
-			ID: tr.ID.String(), LotteryID: lotteryIDStr, UserID: userIDStr,
+		tickets = append(tickets, &RaffleTicket{
+			ID: tr.ID.String(), RaffleID: raffleIDStr, UserID: userIDStr,
 			TicketNumber: ticketNum, PurchasedAt: tr.PurchasedAt,
 		})
 	}
 
-	if err := qtx.IncrementTicketsSold(ctx, db.IncrementTicketsSoldParams{N: quantity, ID: lotteryID}); err != nil {
+	if err := qtx.IncrementTicketsSold(ctx, db.IncrementTicketsSoldParams{N: quantity, ID: raffleID}); err != nil {
 		return nil, 0, fmt.Errorf("%w: update tickets_sold: %v", errs.ErrInternal, err)
 	}
 
@@ -386,21 +386,21 @@ func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, lotteryIDStr,
 	return tickets, totalCost, nil
 }
 
-// GetWinners returns the winners for a lottery.
-func (s *Service) GetWinners(ctx context.Context, guildIDStr, lotteryIDStr string) ([]*LotteryWinner, error) {
+// GetWinners returns the winners for a raffle.
+func (s *Service) GetWinners(ctx context.Context, guildIDStr, raffleIDStr string) ([]*RaffleWinner, error) {
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
-	lotteryID, err := uuid.Parse(lotteryIDStr)
+	raffleID, err := uuid.Parse(raffleIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
-	exists, err := s.q.LotteryExists(ctx, db.LotteryExistsParams{ID: lotteryID, GuildID: guildID})
+	exists, err := s.q.RaffleExists(ctx, db.RaffleExistsParams{ID: raffleID, GuildID: guildID})
 	if err != nil || !exists {
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
-	l, err := s.Get(ctx, guildIDStr, lotteryIDStr)
+	l, err := s.Get(ctx, guildIDStr, raffleIDStr)
 	if err != nil {
 		return nil, err
 	}
@@ -408,14 +408,14 @@ func (s *Service) GetWinners(ctx context.Context, guildIDStr, lotteryIDStr strin
 }
 
 // Draw randomly selects winners and distributes prizes.
-func (s *Service) Draw(ctx context.Context, guildIDStr, lotteryIDStr, callerIDStr string) (*Lottery, []*LotteryWinner, error) {
+func (s *Service) Draw(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr string) (*Raffle, []*RaffleWinner, error) {
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
-	lotteryID, err := uuid.Parse(lotteryIDStr)
+	raffleID, err := uuid.Parse(raffleIDStr)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
 	callerID, err := uuid.Parse(callerIDStr)
 	if err != nil {
@@ -425,21 +425,21 @@ func (s *Service) Draw(ctx context.Context, guildIDStr, lotteryIDStr, callerIDSt
 		return nil, nil, err
 	}
 
-	winners, err := s.draw(ctx, guildID, lotteryID, false)
+	winners, err := s.draw(ctx, guildID, raffleID, false)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	l, err := s.Get(ctx, guildIDStr, lotteryIDStr)
+	l, err := s.Get(ctx, guildIDStr, raffleIDStr)
 	if err != nil {
 		return nil, nil, err
 	}
-	s.logger.Info().Str("lottery_id", lotteryIDStr).Int("winners", len(winners)).Msg("lottery drawn")
+	s.logger.Info().Str("raffle_id", raffleIDStr).Int("winners", len(winners)).Msg("raffle drawn")
 	return l, winners, nil
 }
 
-func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowEmpty bool) ([]*LotteryWinner, error) {
-	lotteryIDStr := lotteryID.String()
+func (s *Service) draw(ctx context.Context, guildID, raffleID uuid.UUID, allowEmpty bool) ([]*RaffleWinner, error) {
+	raffleIDStr := raffleID.String()
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -448,23 +448,23 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	info, err := qtx.GetLotteryForDraw(ctx, db.GetLotteryForDrawParams{ID: lotteryID, GuildID: guildID})
+	info, err := qtx.GetRaffleForDraw(ctx, db.GetRaffleForDrawParams{ID: raffleID, GuildID: guildID})
 	if err != nil {
-		return nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
 	switch info.Status {
 	case statusEnded:
-		return nil, fmt.Errorf("%w: lottery already drawn", errs.ErrFailedPrecondition)
+		return nil, fmt.Errorf("%w: raffle already drawn", errs.ErrFailedPrecondition)
 	case statusCancelled:
-		return nil, fmt.Errorf("%w: lottery is cancelled", errs.ErrFailedPrecondition)
+		return nil, fmt.Errorf("%w: raffle is cancelled", errs.ErrFailedPrecondition)
 	}
 
-	var prizeList []LotteryPrize
+	var prizeList []RafflePrize
 	if len(info.Prizes) > 0 {
 		_ = json.Unmarshal(info.Prizes, &prizeList)
 	}
 
-	allTickets, err := qtx.ListAllLotteryTickets(ctx, lotteryID)
+	allTickets, err := qtx.ListAllRaffleTickets(ctx, raffleID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: fetch tickets: %v", errs.ErrInternal, err)
 	}
@@ -472,11 +472,11 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 		if !allowEmpty {
 			return nil, fmt.Errorf("%w: no tickets sold", errs.ErrFailedPrecondition)
 		}
-		if err := releaseUnawardedPrizes(ctx, qtx, lotteryID, prizeList, 0); err != nil {
+		if err := releaseUnawardedPrizes(ctx, qtx, raffleID, prizeList, 0); err != nil {
 			return nil, err
 		}
-		if err := qtx.EndLottery(ctx, lotteryID); err != nil {
-			return nil, fmt.Errorf("%w: end lottery: %v", errs.ErrInternal, err)
+		if err := qtx.EndRaffle(ctx, raffleID); err != nil {
+			return nil, fmt.Errorf("%w: end raffle: %v", errs.ErrInternal, err)
 		}
 		if err := pgtx.Commit(ctx); err != nil {
 			return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
@@ -491,7 +491,7 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 		numPrizes = 1
 	}
 
-	var winners []*LotteryWinner
+	var winners []*RaffleWinner
 	usedUsers := map[uuid.UUID]bool{}
 	prizeIdx := 0
 
@@ -504,15 +504,15 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 		}
 		usedUsers[t.UserID] = true
 
-		prize := LotteryPrize{}
+		prize := RafflePrize{}
 		if prizeIdx < len(prizeList) {
 			prize = prizeList[prizeIdx]
 		}
 
 		winnerInfo, _ := qtx.GetUserUsernameAndAvatar(ctx, db.GetUserUsernameAndAvatarParams{GuildID: guildID, UserID: t.UserID})
 
-		winnerID, err := qtx.InsertLotteryWinner(ctx, db.InsertLotteryWinnerParams{
-			LotteryID: lotteryID, UserID: t.UserID,
+		winnerID, err := qtx.InsertRaffleWinner(ctx, db.InsertRaffleWinnerParams{
+			RaffleID: raffleID, UserID: t.UserID,
 			Rank: int32(prizeIdx + 1), PrizeAmount: prize.Amount,
 			PrizeDescription: prize.Description, TicketNumber: t.TicketNumber,
 		})
@@ -520,12 +520,12 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 			return nil, fmt.Errorf("%w: insert winner: %v", errs.ErrInternal, err)
 		}
 
-		if err := awardPrize(ctx, qtx, guildID, lotteryID, t.UserID, prize); err != nil {
+		if err := awardPrize(ctx, qtx, guildID, raffleID, t.UserID, prize); err != nil {
 			return nil, err
 		}
 
-		winners = append(winners, &LotteryWinner{
-			ID: winnerID.String(), LotteryID: lotteryIDStr, UserID: t.UserID.String(),
+		winners = append(winners, &RaffleWinner{
+			ID: winnerID.String(), RaffleID: raffleIDStr, UserID: t.UserID.String(),
 			Username: winnerInfo.Username, AvatarURL: winnerInfo.AvatarUrl,
 			Rank: int32(prizeIdx + 1), PrizeAmount: prize.Amount,
 			PrizeDescription: prize.Description, TicketNumber: t.TicketNumber,
@@ -533,15 +533,15 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 		prizeIdx++
 	}
 
-	if err := releaseUnawardedPrizes(ctx, qtx, lotteryID, prizeList, prizeIdx); err != nil {
+	if err := releaseUnawardedPrizes(ctx, qtx, raffleID, prizeList, prizeIdx); err != nil {
 		return nil, err
 	}
-	if err := creditTicketRevenue(ctx, qtx, guildID, lotteryID, info, int64(len(allTickets))); err != nil {
+	if err := creditTicketRevenue(ctx, qtx, guildID, raffleID, info, int64(len(allTickets))); err != nil {
 		return nil, err
 	}
 
-	if err := qtx.EndLottery(ctx, lotteryID); err != nil {
-		return nil, fmt.Errorf("%w: end lottery: %v", errs.ErrInternal, err)
+	if err := qtx.EndRaffle(ctx, raffleID); err != nil {
+		return nil, fmt.Errorf("%w: end raffle: %v", errs.ErrInternal, err)
 	}
 
 	if err := pgtx.Commit(ctx); err != nil {
@@ -550,7 +550,7 @@ func (s *Service) draw(ctx context.Context, guildID, lotteryID uuid.UUID, allowE
 	return winners, nil
 }
 
-func awardPrize(ctx context.Context, qtx *db.Queries, guildID, lotteryID, winnerID uuid.UUID, prize LotteryPrize) error {
+func awardPrize(ctx context.Context, qtx *db.Queries, guildID, raffleID, winnerID uuid.UUID, prize RafflePrize) error {
 	if prize.Amount > 0 {
 		if err := qtx.EnsureWalletDefault(ctx, db.EnsureWalletDefaultParams{UserID: winnerID, GuildID: guildID}); err != nil {
 			return fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
@@ -560,15 +560,15 @@ func awardPrize(ctx context.Context, qtx *db.Queries, guildID, lotteryID, winner
 			return fmt.Errorf("%w: credit prize: %v", errs.ErrInternal, err)
 		}
 		if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
-			UserID: winnerID, GuildID: guildID, Type: "LOTTERY_WIN",
+			UserID: winnerID, GuildID: guildID, Type: "RAFFLE_WIN",
 			Amount: prize.Amount, BalanceAfter: balance,
-			Description: "Lottery prize", ReferenceID: lotteryID.String(), ReferenceType: "lottery",
+			Description: "Raffle prize", ReferenceID: raffleID.String(), ReferenceType: "raffle",
 		}); err != nil {
 			return fmt.Errorf("%w: record prize: %v", errs.ErrInternal, err)
 		}
 	}
 
-	itemJSON, err := inventory.Consume(ctx, qtx, prize.SourceType, prize.SourceItemID, lotteryHolder(lotteryID))
+	itemJSON, err := inventory.Consume(ctx, qtx, prize.SourceType, prize.SourceItemID, raffleHolder(raffleID))
 	if err != nil {
 		return err
 	}
@@ -585,14 +585,14 @@ func awardPrize(ctx context.Context, qtx *db.Queries, guildID, lotteryID, winner
 	}
 	if _, err := qtx.InsertBackpackItem(ctx, db.InsertBackpackItemParams{
 		ID: itemID, OwnerID: winnerID, GuildID: guildID, Item: itemJSON,
-		Source: "lottery", SourceID: &lotteryID,
+		Source: "raffle", SourceID: &raffleID,
 	}); err != nil {
 		return fmt.Errorf("%w: deliver prize item: %v", errs.ErrInternal, err)
 	}
 	return nil
 }
 
-func prizeItem(prize LotteryPrize) (models.Item, bool) {
+func prizeItem(prize RafflePrize) (models.Item, bool) {
 	if prize.Item != nil && prize.Item.Name != "" {
 		return *prize.Item, true
 	}
@@ -602,7 +602,7 @@ func prizeItem(prize LotteryPrize) (models.Item, bool) {
 	return models.Item{}, false
 }
 
-func creditTicketRevenue(ctx context.Context, qtx *db.Queries, guildID, lotteryID uuid.UUID, info db.GetLotteryForDrawRow, tickets int64) error {
+func creditTicketRevenue(ctx context.Context, qtx *db.Queries, guildID, raffleID uuid.UUID, info db.GetRaffleForDrawRow, tickets int64) error {
 	revenue := info.TicketPrice * tickets
 	if revenue <= 0 {
 		return nil
@@ -616,40 +616,40 @@ func creditTicketRevenue(ctx context.Context, qtx *db.Queries, guildID, lotteryI
 	creatorName, _ := qtx.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: info.CreatedBy})
 	if err := qtx.InsertBankProceeds(ctx, db.InsertBankProceedsParams{
 		GuildID: guildID, UserID: info.CreatedBy, Username: creatorName,
-		Amount: revenue, Note: info.Title, Kind: "lottery_revenue",
-		ReferenceType: "lottery", ReferenceID: lotteryID,
+		Amount: revenue, Note: info.Title, Kind: "raffle_revenue",
+		ReferenceType: "raffle", ReferenceID: raffleID,
 	}); err != nil {
 		return fmt.Errorf("%w: record ticket revenue: %v", errs.ErrInternal, err)
 	}
 	return nil
 }
 
-func releaseUnawardedPrizes(ctx context.Context, qtx *db.Queries, lotteryID uuid.UUID, prizes []LotteryPrize, awarded int) error {
+func releaseUnawardedPrizes(ctx context.Context, qtx *db.Queries, raffleID uuid.UUID, prizes []RafflePrize, awarded int) error {
 	for i := awarded; i < len(prizes); i++ {
-		if err := inventory.Release(ctx, qtx, prizes[i].SourceType, prizes[i].SourceItemID, lotteryHolder(lotteryID)); err != nil {
+		if err := inventory.Release(ctx, qtx, prizes[i].SourceType, prizes[i].SourceItemID, raffleHolder(raffleID)); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func lotteryHolder(id uuid.UUID) inventory.Holder {
-	return inventory.Holder{Type: inventory.HolderLottery, ID: id}
+func raffleHolder(id uuid.UUID) inventory.Holder {
+	return inventory.Holder{Type: inventory.HolderRaffle, ID: id}
 }
 
-func (s *Service) drawIfDue(ctx context.Context, guildID, lotteryID uuid.UUID, status, drawDate string) bool {
+func (s *Service) drawIfDue(ctx context.Context, guildID, raffleID uuid.UUID, status, drawDate string) bool {
 	if !isOpenStatus(status) || !isDue(drawDate, time.Now()) {
 		return false
 	}
-	return s.drawScheduled(ctx, guildID, lotteryID)
+	return s.drawScheduled(ctx, guildID, raffleID)
 }
 
-const dueLotteryBatchSize = 100
+const dueRaffleBatchSize = 100
 
-func (s *Service) DrawDueLotteries(ctx context.Context) (int, error) {
-	rows, err := s.q.ListDueLotteries(ctx, dueLotteryBatchSize)
+func (s *Service) DrawDueRaffles(ctx context.Context) (int, error) {
+	rows, err := s.q.ListDueRaffles(ctx, dueRaffleBatchSize)
 	if err != nil {
-		return 0, fmt.Errorf("list due lotteries: %w", err)
+		return 0, fmt.Errorf("list due raffles: %w", err)
 	}
 	drawn := 0
 	for _, r := range rows {
@@ -663,16 +663,16 @@ func (s *Service) DrawDueLotteries(ctx context.Context) (int, error) {
 	return drawn, nil
 }
 
-func (s *Service) drawScheduled(ctx context.Context, guildID, lotteryID uuid.UUID) bool {
-	winners, err := s.draw(ctx, guildID, lotteryID, true)
+func (s *Service) drawScheduled(ctx context.Context, guildID, raffleID uuid.UUID) bool {
+	winners, err := s.draw(ctx, guildID, raffleID, true)
 	if errors.Is(err, errs.ErrFailedPrecondition) {
 		return true
 	}
 	if err != nil {
-		s.logger.Error().Err(err).Str("lottery_id", lotteryID.String()).Msg("scheduled lottery draw failed")
+		s.logger.Error().Err(err).Str("raffle_id", raffleID.String()).Msg("scheduled raffle draw failed")
 		return false
 	}
-	s.logger.Info().Str("lottery_id", lotteryID.String()).Int("winners", len(winners)).Msg("scheduled lottery drawn")
+	s.logger.Info().Str("raffle_id", raffleID.String()).Int("winners", len(winners)).Msg("scheduled raffle drawn")
 	return true
 }
 
@@ -681,12 +681,12 @@ func isDue(drawDate string, now time.Time) bool {
 	return err == nil && !now.Before(at)
 }
 
-func (s *Service) Update(ctx context.Context, p UpdateParams) (*Lottery, error) {
+func (s *Service) Update(ctx context.Context, p UpdateParams) (*Raffle, error) {
 	now := time.Now()
 	if err := validateUpdate(p, now); err != nil {
 		return nil, err
 	}
-	guildID, lotteryID, callerID, err := parseIDs(p.GuildID, p.LotteryID, p.UpdatedBy)
+	guildID, raffleID, callerID, err := parseIDs(p.GuildID, p.RaffleID, p.UpdatedBy)
 	if err != nil {
 		return nil, err
 	}
@@ -701,7 +701,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Lottery, error) 
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	current, err := lockLottery(ctx, qtx, guildID, lotteryID)
+	current, err := lockRaffle(ctx, qtx, guildID, raffleID)
 	if err != nil {
 		return nil, err
 	}
@@ -712,28 +712,28 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Lottery, error) 
 	if err != nil {
 		return nil, err
 	}
-	params.ID, params.GuildID = lotteryID, guildID
+	params.ID, params.GuildID = raffleID, guildID
 
-	r, err := qtx.UpdateLottery(ctx, params)
+	r, err := qtx.UpdateRaffle(ctx, params)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("%w: lottery is no longer open", errs.ErrFailedPrecondition)
+			return nil, fmt.Errorf("%w: raffle is no longer open", errs.ErrFailedPrecondition)
 		}
-		return nil, fmt.Errorf("%w: update lottery: %v", errs.ErrInternal, err)
+		return nil, fmt.Errorf("%w: update raffle: %v", errs.ErrInternal, err)
 	}
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	l := toLottery(lotteryRow(r))
-	l.Winners = []*LotteryWinner{}
-	s.logger.Info().Str("lottery_id", l.ID).Str("guild_id", l.GuildID).Str("user_id", p.UpdatedBy).Msg("lottery updated")
+	l := toRaffle(raffleRow(r))
+	l.Winners = []*RaffleWinner{}
+	s.logger.Info().Str("raffle_id", l.ID).Str("guild_id", l.GuildID).Str("user_id", p.UpdatedBy).Msg("raffle updated")
 	return l, nil
 }
 
-// Cancel cancels an undrawn lottery, refunds every ticket to its buyer and
+// Cancel cancels an undrawn raffle, refunds every ticket to its buyer and
 // returns item prizes to where they came from.
-func (s *Service) Cancel(ctx context.Context, guildIDStr, lotteryIDStr, callerIDStr string) (*Lottery, error) {
-	guildID, lotteryID, callerID, err := parseIDs(guildIDStr, lotteryIDStr, callerIDStr)
+func (s *Service) Cancel(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr string) (*Raffle, error) {
+	guildID, raffleID, callerID, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
 	if err != nil {
 		return nil, err
 	}
@@ -748,7 +748,7 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, lotteryIDStr, callerID
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	current, err := lockLottery(ctx, qtx, guildID, lotteryID)
+	current, err := lockRaffle(ctx, qtx, guildID, raffleID)
 	if err != nil {
 		return nil, err
 	}
@@ -756,42 +756,42 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, lotteryIDStr, callerID
 		return nil, err
 	}
 
-	holders, err := qtx.ListLotteryTicketHolders(ctx, lotteryID)
+	holders, err := qtx.ListRaffleTicketHolders(ctx, raffleID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: list ticket holders: %v", errs.ErrInternal, err)
 	}
 	var refunded int64
 	for _, h := range holders {
 		amount := current.TicketPrice * int64(h.Tickets)
-		if err := refundTickets(ctx, qtx, guildID, lotteryID, h.UserID, amount); err != nil {
+		if err := refundTickets(ctx, qtx, guildID, raffleID, h.UserID, amount); err != nil {
 			return nil, err
 		}
 		refunded += amount
 	}
 
-	var prizes []LotteryPrize
+	var prizes []RafflePrize
 	if len(current.Prizes) > 0 {
 		if err := json.Unmarshal(current.Prizes, &prizes); err != nil {
 			return nil, fmt.Errorf("%w: decode prizes: %v", errs.ErrInternal, err)
 		}
 	}
-	if err := releaseUnawardedPrizes(ctx, qtx, lotteryID, prizes, 0); err != nil {
+	if err := releaseUnawardedPrizes(ctx, qtx, raffleID, prizes, 0); err != nil {
 		return nil, err
 	}
-	if err := qtx.MarkLotteryCancelled(ctx, lotteryID); err != nil {
-		return nil, fmt.Errorf("%w: cancel lottery: %v", errs.ErrInternal, err)
+	if err := qtx.MarkRaffleCancelled(ctx, raffleID); err != nil {
+		return nil, fmt.Errorf("%w: cancel raffle: %v", errs.ErrInternal, err)
 	}
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("lottery_id", lotteryIDStr).Str("guild_id", guildIDStr).Str("user_id", callerIDStr).
-		Int("ticket_holders", len(holders)).Int64("refunded", refunded).Msg("lottery cancelled")
-	return s.Get(ctx, guildIDStr, lotteryIDStr)
+	s.logger.Info().Str("raffle_id", raffleIDStr).Str("guild_id", guildIDStr).Str("user_id", callerIDStr).
+		Int("ticket_holders", len(holders)).Int64("refunded", refunded).Msg("raffle cancelled")
+	return s.Get(ctx, guildIDStr, raffleIDStr)
 }
 
-// Delete permanently removes a cancelled lottery together with its tickets.
-func (s *Service) Delete(ctx context.Context, guildIDStr, lotteryIDStr, callerIDStr string) error {
-	guildID, lotteryID, callerID, err := parseIDs(guildIDStr, lotteryIDStr, callerIDStr)
+// Delete permanently removes a cancelled raffle together with its tickets.
+func (s *Service) Delete(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr string) error {
+	guildID, raffleID, callerID, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
 	if err != nil {
 		return err
 	}
@@ -806,28 +806,28 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, lotteryIDStr, callerID
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	current, err := lockLottery(ctx, qtx, guildID, lotteryID)
+	current, err := lockRaffle(ctx, qtx, guildID, raffleID)
 	if err != nil {
 		return err
 	}
 	if err := checkDeletable(current.Status); err != nil {
 		return err
 	}
-	n, err := qtx.DeleteCancelledLottery(ctx, db.DeleteCancelledLotteryParams{ID: lotteryID, GuildID: guildID})
+	n, err := qtx.DeleteCancelledRaffle(ctx, db.DeleteCancelledRaffleParams{ID: raffleID, GuildID: guildID})
 	if err != nil {
-		return fmt.Errorf("%w: delete lottery: %v", errs.ErrInternal, err)
+		return fmt.Errorf("%w: delete raffle: %v", errs.ErrInternal, err)
 	}
 	if n == 0 {
-		return fmt.Errorf("%w: only cancelled lotteries can be deleted", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: only cancelled raffles can be deleted", errs.ErrFailedPrecondition)
 	}
 	if err := pgtx.Commit(ctx); err != nil {
 		return fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("lottery_id", lotteryIDStr).Str("guild_id", guildIDStr).Str("user_id", callerIDStr).Msg("lottery deleted")
+	s.logger.Info().Str("raffle_id", raffleIDStr).Str("guild_id", guildIDStr).Str("user_id", callerIDStr).Msg("raffle deleted")
 	return nil
 }
 
-func refundTickets(ctx context.Context, qtx *db.Queries, guildID, lotteryID, userID uuid.UUID, amount int64) error {
+func refundTickets(ctx context.Context, qtx *db.Queries, guildID, raffleID, userID uuid.UUID, amount int64) error {
 	if amount <= 0 {
 		return nil
 	}
@@ -839,40 +839,40 @@ func refundTickets(ctx context.Context, qtx *db.Queries, guildID, lotteryID, use
 		return fmt.Errorf("%w: refund tickets: %v", errs.ErrInternal, err)
 	}
 	if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
-		UserID: userID, GuildID: guildID, Type: "LOTTERY_TICKET",
+		UserID: userID, GuildID: guildID, Type: "RAFFLE_TICKET",
 		Amount: amount, BalanceAfter: balance,
-		Description: "Lottery cancelled refund", ReferenceID: lotteryID.String(), ReferenceType: "lottery",
+		Description: "Raffle cancelled refund", ReferenceID: raffleID.String(), ReferenceType: "raffle",
 	}); err != nil {
 		return fmt.Errorf("%w: record refund: %v", errs.ErrInternal, err)
 	}
 	return nil
 }
 
-func lockLottery(ctx context.Context, qtx *db.Queries, guildID, lotteryID uuid.UUID) (db.LockLotteryRow, error) {
-	l, err := qtx.LockLottery(ctx, db.LockLotteryParams{ID: lotteryID, GuildID: guildID})
+func lockRaffle(ctx context.Context, qtx *db.Queries, guildID, raffleID uuid.UUID) (db.LockRaffleRow, error) {
+	l, err := qtx.LockRaffle(ctx, db.LockRaffleParams{ID: raffleID, GuildID: guildID})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return db.LockLotteryRow{}, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+			return db.LockRaffleRow{}, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 		}
-		return db.LockLotteryRow{}, fmt.Errorf("%w: load lottery: %v", errs.ErrInternal, err)
+		return db.LockRaffleRow{}, fmt.Errorf("%w: load raffle: %v", errs.ErrInternal, err)
 	}
 	return l, nil
 }
 
-func parseIDs(guildIDStr, lotteryIDStr, userIDStr string) (uuid.UUID, uuid.UUID, uuid.UUID, error) {
+func parseIDs(guildIDStr, raffleIDStr, userIDStr string) (uuid.UUID, uuid.UUID, uuid.UUID, error) {
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
-		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
-	lotteryID, err := uuid.Parse(lotteryIDStr)
+	raffleID, err := uuid.Parse(raffleIDStr)
 	if err != nil {
-		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: lottery", errs.ErrNotFound)
+		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
 	}
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	return guildID, lotteryID, userID, nil
+	return guildID, raffleID, userID, nil
 }
 
 // ListMyTickets returns tickets owned by a user across all guilds (or filtered by guild).
@@ -893,10 +893,10 @@ func (s *Service) ListMyTickets(ctx context.Context, userIDStr, guildIDStr strin
 		return nil, fmt.Errorf("%w: list tickets: %v", errs.ErrInternal, err)
 	}
 
-	tickets := make([]*LotteryTicket, 0, len(rows))
+	tickets := make([]*RaffleTicket, 0, len(rows))
 	for _, r := range rows {
-		tickets = append(tickets, &LotteryTicket{
-			ID: r.ID.String(), LotteryID: r.LotteryID.String(), UserID: r.UserID.String(),
+		tickets = append(tickets, &RaffleTicket{
+			ID: r.ID.String(), RaffleID: r.RaffleID.String(), UserID: r.UserID.String(),
 			TicketNumber: r.TicketNumber, PurchasedAt: r.PurchasedAt,
 		})
 	}
@@ -912,15 +912,15 @@ func (s *Service) ListMyTickets(ctx context.Context, userIDStr, guildIDStr strin
 
 // --- helpers ---
 
-func toLottery(r lotteryRow) *Lottery {
-	l := &Lottery{
+func toRaffle(r raffleRow) *Raffle {
+	l := &Raffle{
 		ID: r.ID.String(), GuildID: r.GuildID.String(), CreatedBy: r.CreatedBy.String(),
 		Title: r.Title, Description: r.Description,
 		TicketPrice: r.TicketPrice, TicketsSold: r.TicketsSold,
 		MaxTickets: r.MaxTickets, MaxTicketsPerUser: r.MaxTicketsPerUser,
 		Status: r.Status, DrawDate: r.DrawDate,
 		CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
-		Prizes: []LotteryPrize{},
+		Prizes: []RafflePrize{},
 	}
 	if r.CancelledAt.Valid {
 		cancelledAt := r.CancelledAt.Time
@@ -930,20 +930,20 @@ func toLottery(r lotteryRow) *Lottery {
 		_ = json.Unmarshal(r.Prizes, &l.Prizes)
 	}
 	if l.Prizes == nil {
-		l.Prizes = []LotteryPrize{}
+		l.Prizes = []RafflePrize{}
 	}
 	return l
 }
 
-func (s *Service) getWinners(ctx context.Context, lotteryID uuid.UUID) ([]*LotteryWinner, error) {
-	rows, err := s.q.ListLotteryWinners(ctx, lotteryID)
+func (s *Service) getWinners(ctx context.Context, raffleID uuid.UUID) ([]*RaffleWinner, error) {
+	rows, err := s.q.ListRaffleWinners(ctx, raffleID)
 	if err != nil {
 		return nil, err
 	}
-	winners := make([]*LotteryWinner, 0, len(rows))
+	winners := make([]*RaffleWinner, 0, len(rows))
 	for _, r := range rows {
-		winners = append(winners, &LotteryWinner{
-			ID: r.ID.String(), LotteryID: r.LotteryID.String(), UserID: r.UserID.String(),
+		winners = append(winners, &RaffleWinner{
+			ID: r.ID.String(), RaffleID: r.RaffleID.String(), UserID: r.UserID.String(),
 			Username: r.Username, AvatarURL: r.AvatarUrl,
 			Rank: r.Rank, PrizeAmount: r.PrizeAmount,
 			PrizeDescription: r.PrizeDescription, TicketNumber: r.TicketNumber,

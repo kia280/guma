@@ -55,7 +55,7 @@ func (h *PreferenceHandler) UpdateMyPreferences(ctx context.Context, req *gumav1
 	p, err := h.svc.UpdateNotifications(ctx, userID, preferencesvc.NotificationPatch{
 		EmailNotifications: req.Notifications.EmailNotifications,
 		AuctionAlerts:      req.Notifications.AuctionAlerts,
-		LotteryAlerts:      req.Notifications.LotteryAlerts,
+		RaffleAlerts:       req.Notifications.RaffleAlerts,
 		EventReminders:     req.Notifications.EventReminders,
 		RollCallReminders:  req.Notifications.RollCallReminders,
 	})
@@ -72,7 +72,7 @@ func notificationPreferencesToProto(n preferencesvc.NotificationPreferences) *gu
 	return &gumav1.NotificationPreferences{
 		EmailNotifications: n.EmailNotifications,
 		AuctionAlerts:      n.AuctionAlerts,
-		LotteryAlerts:      n.LotteryAlerts,
+		RaffleAlerts:       n.RaffleAlerts,
 		EventReminders:     n.EventReminders,
 		RollCallReminders:  n.RollCallReminders,
 	}

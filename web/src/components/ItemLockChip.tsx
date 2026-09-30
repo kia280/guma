@@ -7,7 +7,7 @@ import type { ItemLock } from '@/types/item';
 
 const LOCK_META: Record<ItemLock['type'], { icon: string; href: (id: string) => string }> = {
   auction: { icon: 'solar:sledgehammer-linear', href: id => `/dashboard/auction/${id}` },
-  lottery: { icon: 'solar:ticket-linear', href: id => `/dashboard/lottery/${id}` },
+  raffle: { icon: 'solar:ticket-linear', href: id => `/dashboard/raffle/${id}` },
 };
 
 export function ItemLockChip({ lock }: { lock: ItemLock }) {

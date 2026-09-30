@@ -17,9 +17,9 @@ import type {
 } from '@/types/guild-bank';
 import type { GuildEvent } from '@/types/guild-events';
 import { ItemCategory, ItemRarity, type ItemHistoryEvent, type ItemLock, type ItemSourceRef } from '@/types/item';
-import type { Lottery, LotteryTicket, LotteryWinner } from '@/types/lottery';
 import type { GuildNotification } from '@/types/notification';
 import { DEFAULT_NOTIFICATION_PREFERENCES, type NotificationPreferences } from '@/types/preference';
+import type { Raffle, RaffleTicket, RaffleWinner } from '@/types/raffle';
 import { RollCallStatus } from '@/types/roll-call';
 import type {
   Attendee,
@@ -47,7 +47,7 @@ const store = {
   rollCallTemplates: mockData.mockRollCallTemplates.map(t => ({ ...t, itemTemplateIds: [...t.itemTemplateIds] })),
   auctions: [...mockData.mockAuctionItems] as AuctionItem[],
   transactions: [...mockData.mockTransactions] as Transaction[],
-  lotteries: mockData.mockLotteries.map(l => ({ ...l, participants: l.participants?.map(p => ({ ...p })) })) as Lottery[],
+  raffles: mockData.mockRaffles.map(l => ({ ...l, participants: l.participants?.map(p => ({ ...p })) })) as Raffle[],
   events: [] as GuildEvent[],
   announcements: [...mockData.mockAdminAnnouncements] as MockAnnouncement[],
   notifications: mockData.mockNotifications.map(n => ({ ...n })) as GuildNotification[],
@@ -115,7 +115,7 @@ const lockMockSource = (source: ItemSourceRef | undefined, lock: ItemLock) => {
     ? mockData.mockBackpackItems.find(entry => entry.id === source.backpackItemId)
     : mockData.mockGuildItems.find(entry => entry.id === source.bankItemId);
   if (!target) throw Object.assign(new Error('item not found'), { isAxiosError: true, response: { status: 404, data: { code: 'NotFound' } } });
-  if (target.lock) throw failedPrecondition('item is already in an auction or lottery');
+  if (target.lock) throw failedPrecondition('item is already in an auction or raffle');
   target.lock = lock;
 };
 
@@ -467,7 +467,7 @@ const baseMockApiClient: ApiClient = {
   transferBackpackItem: async (_guildId, itemId, req) => {
     const item = mockData.mockBackpackItems.find(i => i.id === itemId);
     if (!item) throw new Error('not found');
-    if (item.lock) throw failedPrecondition('item is in an auction or lottery');
+    if (item.lock) throw failedPrecondition('item is in an auction or raffle');
     removeById(mockData.mockBackpackItems, itemId);
     return { ...item, ownerId: req.recipientId, acquiredFrom: 'transfer', note: req.note };
   },
@@ -857,7 +857,7 @@ const baseMockApiClient: ApiClient = {
     return attendee;
   },
   assignLoot: async (_guildId, _rollCallId, itemId) => {
-    if (mockData.mockGuildItems.find(i => i.id === itemId)?.lock) throw failedPrecondition('loot is in an auction or lottery');
+    if (mockData.mockGuildItems.find(i => i.id === itemId)?.lock) throw failedPrecondition('loot is in an auction or raffle');
     removeById(mockData.mockGuildItems, itemId);
   },
   listAttendees: async (_guildId, rollCallId) => {
@@ -961,21 +961,21 @@ const baseMockApiClient: ApiClient = {
     store.itemTemplates = store.itemTemplates.filter(t => t.id !== id);
   },
 
-  // ── Lottery ──
-  listLotteries: async (_guildId, status) => {
-    if (!status || status === 'all') return store.lotteries;
-    return store.lotteries.filter(l => l.status === status);
+  // ── Raffle ──
+  listRaffles: async (_guildId, status) => {
+    if (!status || status === 'all') return store.raffles;
+    return store.raffles.filter(l => l.status === status);
   },
-  getLottery: async (_guildId, id) => {
-    const l = store.lotteries.find(x => x.id === id);
-    if (!l) throw new Error(`lottery ${id} not found`);
+  getRaffle: async (_guildId, id) => {
+    const l = store.raffles.find(x => x.id === id);
+    if (!l) throw new Error(`raffle ${id} not found`);
     return l;
   },
-  createLottery: async (_guildId, req) => {
-    const lotteryId = `lottery-${Date.now()}`;
-    req.prizes?.forEach(prize => lockMockSource(prize.source, { type: 'lottery', id: lotteryId }));
-    const lottery: Lottery = {
-      id: lotteryId,
+  createRaffle: async (_guildId, req) => {
+    const raffleId = `raffle-${Date.now()}`;
+    req.prizes?.forEach(prize => lockMockSource(prize.source, { type: 'raffle', id: raffleId }));
+    const raffle: Raffle = {
+      id: raffleId,
       title: req.title,
       description: req.description ?? '',
       prizes: req.prizes?.map(prize => ({ rank: prize.rank, description: prize.description, amount: prize.amount })),
@@ -987,89 +987,89 @@ const baseMockApiClient: ApiClient = {
       status: 'active',
       participants: [],
     };
-    store.lotteries = [lottery, ...store.lotteries];
-    return lottery;
+    store.raffles = [raffle, ...store.raffles];
+    return raffle;
   },
-  updateLottery: async (_guildId, lotteryId, patch) => {
-    const lottery = store.lotteries.find(x => x.id === lotteryId);
-    if (!lottery) throw notFound();
-    if (lottery.status === 'ended' || lottery.status === 'cancelled') throw failedPrecondition('lottery is no longer open');
+  updateRaffle: async (_guildId, raffleId, patch) => {
+    const raffle = store.raffles.find(x => x.id === raffleId);
+    if (!raffle) throw notFound();
+    if (raffle.status === 'ended' || raffle.status === 'cancelled') throw failedPrecondition('raffle is no longer open');
     if (patch.drawDate && new Date(patch.drawDate).getTime() <= Date.now()) throw failedPrecondition('draw date must be in the future');
     const pricingChanged =
-      (patch.ticketPrice !== undefined && patch.ticketPrice !== lottery.ticketPrice) ||
-      (patch.maxTickets !== undefined && patch.maxTickets !== lottery.maxTickets);
-    if (lottery.ticketsSold > 0 && pricingChanged) throw failedPrecondition('ticket settings are locked after the first sale');
-    Object.assign(lottery, {
+      (patch.ticketPrice !== undefined && patch.ticketPrice !== raffle.ticketPrice) ||
+      (patch.maxTickets !== undefined && patch.maxTickets !== raffle.maxTickets);
+    if (raffle.ticketsSold > 0 && pricingChanged) throw failedPrecondition('ticket settings are locked after the first sale');
+    Object.assign(raffle, {
       ...(patch.title !== undefined ? { title: patch.title } : {}),
       ...(patch.description !== undefined ? { description: patch.description } : {}),
       ...(patch.drawDate ? { drawDate: patch.drawDate } : {}),
       ...(patch.ticketPrice !== undefined ? { ticketPrice: patch.ticketPrice } : {}),
       ...(patch.maxTickets !== undefined ? { maxTickets: patch.maxTickets } : {}),
     });
-    return lottery;
+    return raffle;
   },
-  cancelLottery: async (guildId, lotteryId) => {
-    const lottery = store.lotteries.find(x => x.id === lotteryId);
-    if (!lottery) throw notFound();
-    if (lottery.status === 'ended' || lottery.status === 'cancelled') throw failedPrecondition('lottery is no longer open');
-    const mine = lottery.participants?.find(p => p.id === currentUser.id)?.tickets ?? 0;
+  cancelRaffle: async (guildId, raffleId) => {
+    const raffle = store.raffles.find(x => x.id === raffleId);
+    if (!raffle) throw notFound();
+    if (raffle.status === 'ended' || raffle.status === 'cancelled') throw failedPrecondition('raffle is no longer open');
+    const mine = raffle.participants?.find(p => p.id === currentUser.id)?.tickets ?? 0;
     if (mine > 0) {
-      currentUser.balance = Math.round((currentUser.balance + mine * lottery.ticketPrice) * 100) / 100;
+      currentUser.balance = Math.round((currentUser.balance + mine * raffle.ticketPrice) * 100) / 100;
       emitLiveEvent({ kind: 'wallet', guildId, balance: currentUser.balance });
     }
-    releaseMockLocks({ type: 'lottery', id: lotteryId });
-    Object.assign(lottery, { status: 'cancelled', cancelledAt: new Date().toISOString() });
-    return lottery;
+    releaseMockLocks({ type: 'raffle', id: raffleId });
+    Object.assign(raffle, { status: 'cancelled', cancelledAt: new Date().toISOString() });
+    return raffle;
   },
-  deleteLottery: async (_guildId, lotteryId) => {
-    const lottery = store.lotteries.find(x => x.id === lotteryId);
-    if (!lottery) throw notFound();
-    if (lottery.status !== 'cancelled') throw failedPrecondition('only cancelled lotteries can be deleted');
-    store.lotteries = store.lotteries.filter(x => x.id !== lotteryId);
+  deleteRaffle: async (_guildId, raffleId) => {
+    const raffle = store.raffles.find(x => x.id === raffleId);
+    if (!raffle) throw notFound();
+    if (raffle.status !== 'cancelled') throw failedPrecondition('only cancelled raffles can be deleted');
+    store.raffles = store.raffles.filter(x => x.id !== raffleId);
   },
-  purchaseTickets: async (guildId, lotteryId, quantity): Promise<LotteryTicket[]> => {
-    const lottery = store.lotteries.find(x => x.id === lotteryId);
-    if (!lottery) throw new Error('not found');
-    if (lottery.status === 'ended' || lottery.status === 'cancelled') throw failedPrecondition('lottery is not open for ticket purchase');
-    if (lottery.maxTickets > 0 && lottery.ticketsSold + quantity > lottery.maxTickets) {
+  purchaseTickets: async (guildId, raffleId, quantity): Promise<RaffleTicket[]> => {
+    const raffle = store.raffles.find(x => x.id === raffleId);
+    if (!raffle) throw new Error('not found');
+    if (raffle.status === 'ended' || raffle.status === 'cancelled') throw failedPrecondition('raffle is not open for ticket purchase');
+    if (raffle.maxTickets > 0 && raffle.ticketsSold + quantity > raffle.maxTickets) {
       throw failedPrecondition('not enough tickets available');
     }
-    const cost = quantity * lottery.ticketPrice;
+    const cost = quantity * raffle.ticketPrice;
     if (cost > currentUser.balance) throw failedPrecondition('insufficient funds');
     currentUser.balance = Math.round((currentUser.balance - cost) * 100) / 100;
     emitLiveEvent({ kind: 'wallet', guildId, balance: currentUser.balance });
-    const participants = [...(lottery.participants ?? [])];
+    const participants = [...(raffle.participants ?? [])];
     const mine = participants.find(p => p.id === currentUser.id);
     if (mine) mine.tickets += quantity;
     else participants.unshift({ id: currentUser.id, username: ownUserName(currentUser), tickets: quantity });
-    Object.assign(lottery, {
-      ticketsSold: lottery.ticketsSold + quantity,
+    Object.assign(raffle, {
+      ticketsSold: raffle.ticketsSold + quantity,
       participants: participants.sort((a, b) => b.tickets - a.tickets),
     });
     return Array.from({ length: quantity }, (_, i) => ({
       id: `ticket-${Date.now()}-${i}`,
-      lotteryId,
+      raffleId,
       userId: currentUser.id,
       ticketNumber: `T-${Date.now()}-${i}`,
       purchasedAt: new Date().toISOString(),
     }));
   },
-  getLotteryWinners: async (_guildId, id): Promise<LotteryWinner[]> => {
-    const lottery = store.lotteries.find(x => x.id === id);
-    if (!lottery) return [];
-    if (lottery.status === 'active' && new Date(lottery.drawDate).getTime() <= Date.now()) {
-      const participants = lottery.participants ?? [];
+  getRaffleWinners: async (_guildId, id): Promise<RaffleWinner[]> => {
+    const raffle = store.raffles.find(x => x.id === id);
+    if (!raffle) return [];
+    if (raffle.status === 'active' && new Date(raffle.drawDate).getTime() <= Date.now()) {
+      const participants = raffle.participants ?? [];
       const total = participants.reduce((sum, p) => sum + p.tickets, 0);
       let roll = Math.random() * total;
       const winner = participants.find(p => (roll -= p.tickets) < 0) ?? participants[0];
-      Object.assign(lottery, {
+      Object.assign(raffle, {
         status: 'ended',
         winners: winner
-          ? [{ id: `w-${Date.now()}`, userId: winner.id, username: winner.username, prize: '', prizeAmount: lottery.prizePool }]
+          ? [{ id: `w-${Date.now()}`, userId: winner.id, username: winner.username, prize: '', prizeAmount: raffle.prizePool }]
           : [],
       });
     }
-    return lottery.winners ?? [];
+    return raffle.winners ?? [];
   },
   listMyTickets: async () => [],
 
@@ -1112,7 +1112,7 @@ const baseMockApiClient: ApiClient = {
   donateItem: async (_guildId, backpackItemId): Promise<GuildBankItem> => {
     const bp = mockData.mockBackpackItems.find(i => i.id === backpackItemId);
     if (!bp) throw new Error('not found');
-    if (bp.lock) throw failedPrecondition('item is in an auction or lottery');
+    if (bp.lock) throw failedPrecondition('item is in an auction or raffle');
     removeById(mockData.mockBackpackItems, backpackItemId);
     const donated: GuildBankItem = {
       id: `gi-${Date.now()}`,
@@ -1134,7 +1134,7 @@ const baseMockApiClient: ApiClient = {
   deleteBankItem: async (_guildId, bankItemId) => {
     const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
     if (!bankItem) throw notFound();
-    if (bankItem.lock) throw failedPrecondition('item is in an auction or lottery');
+    if (bankItem.lock) throw failedPrecondition('item is in an auction or raffle');
     const reviewedAt = new Date().toISOString();
     store.itemRequests
       .filter(r => r.bankItemId === bankItemId && r.status === 'pending')
@@ -1144,7 +1144,7 @@ const baseMockApiClient: ApiClient = {
   requestItem: async (guildId, bankItemId, reason): Promise<ItemRequest> => {
     const bankItem = mockData.mockGuildItems.find(i => i.id === bankItemId);
     if (!bankItem) throw new Error('not found');
-    if (bankItem.lock) throw failedPrecondition('item is in an auction or lottery');
+    if (bankItem.lock) throw failedPrecondition('item is in an auction or raffle');
     if (bankItem.requestedByMe) throw conflict();
     bankItem.requestedByMe = true;
     bankItem.pendingRequestCount += 1;

@@ -43,7 +43,7 @@ message UpdateMyPreferencesResponse {
 message NotificationPreferences {
   bool email_notifications = 1;
   bool auction_alerts = 2;
-  bool lottery_alerts = 3;
+  bool raffle_alerts = 3;
   bool event_reminders = 4;
   bool roll_call_reminders = 5;
 }
@@ -51,7 +51,7 @@ message NotificationPreferences {
 message NotificationPreferencesPatch {
   optional bool email_notifications = 1;
   optional bool auction_alerts = 2;
-  optional bool lottery_alerts = 3;
+  optional bool raffle_alerts = 3;
   optional bool event_reminders = 4;
   optional bool roll_call_reminders = 5;
 }

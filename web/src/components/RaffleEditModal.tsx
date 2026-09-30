@@ -11,17 +11,17 @@ import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
 import { apiClient } from '@/lib/guma';
 import { GrpcCode, apiErrorCode } from '@/lib/guma/errors';
 import { formatPrize, useFormatGold } from '@/lib/guma/useFormatGold';
-import type { Lottery, UpdateLotteryRequest } from '@/types/lottery';
-import { LotteryFormFields, type LotteryFormErrors, type LotteryFormValues } from './LotteryFormFields';
+import type { Raffle, UpdateRaffleRequest } from '@/types/raffle';
+import { RaffleFormFields, type RaffleFormErrors, type RaffleFormValues } from './RaffleFormFields';
 
 type SaveError = 'closed' | 'forbidden' | 'invalid' | 'failed';
 
-const toFormValues = (lottery: Lottery): LotteryFormValues => ({
-  title: lottery.title,
-  description: lottery.description ?? '',
-  ticketPrice: lottery.ticketPrice,
-  maxTickets: lottery.maxTickets,
-  drawDate: lottery.drawDate,
+const toFormValues = (raffle: Raffle): RaffleFormValues => ({
+  title: raffle.title,
+  description: raffle.description ?? '',
+  ticketPrice: raffle.ticketPrice,
+  maxTickets: raffle.maxTickets,
+  drawDate: raffle.drawDate,
 });
 
 const toSaveError = (err: unknown): SaveError => {
@@ -46,24 +46,24 @@ function LockedHint({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function LotteryEditModal({
-  lottery,
+export function RaffleEditModal({
+  raffle,
   state,
   onSaved,
   onRejected,
 }: {
-  lottery: Lottery;
+  raffle: Raffle;
   state: UseOverlayStateReturn;
-  onSaved: (updated: Lottery) => void;
+  onSaved: (updated: Raffle) => void;
   onRejected: () => void;
 }) {
-  const t = useTranslations('lotteryEditModal');
-  const create = useTranslations('createLotteryModal');
+  const t = useTranslations('raffleEditModal');
+  const create = useTranslations('createRaffleModal');
   const guildId = useCurrentGuildId();
   const notify = useToast();
   const formatGold = useFormatGold();
   const now = useNow(30_000);
-  const [values, setValues] = React.useState<LotteryFormValues>(() => toFormValues(lottery));
+  const [values, setValues] = React.useState<RaffleFormValues>(() => toFormValues(raffle));
   const [showErrors, setShowErrors] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<SaveError | null>(null);
@@ -72,24 +72,24 @@ export function LotteryEditModal({
   if (state.isOpen !== wasOpen) {
     setWasOpen(state.isOpen);
     if (state.isOpen) {
-      setValues(toFormValues(lottery));
+      setValues(toFormValues(raffle));
       setShowErrors(false);
       setSaveError(null);
     }
   }
 
-  const ticketsLocked = lottery.ticketsSold > 0;
+  const ticketsLocked = raffle.ticketsSold > 0;
   const drawInPast = new Date(values.drawDate).getTime() <= now;
-  const errors: LotteryFormErrors = {
+  const errors: RaffleFormErrors = {
     title: values.title.trim() ? null : t('titleRequired'),
     ticketPrice: !ticketsLocked && !(values.ticketPrice > 0) ? t('ticketPriceRequired') : null,
     maxTickets: !ticketsLocked && !(values.maxTickets >= 1) ? t('maxTicketsRequired') : null,
     drawDate: drawInPast ? create('drawDateInPast') : null,
   };
   const hasErrors = Object.values(errors).some(Boolean);
-  const visibleErrors: LotteryFormErrors = showErrors ? errors : { drawDate: errors.drawDate };
+  const visibleErrors: RaffleFormErrors = showErrors ? errors : { drawDate: errors.drawDate };
 
-  const updateValues = (updates: Partial<LotteryFormValues>) => {
+  const updateValues = (updates: Partial<RaffleFormValues>) => {
     setValues(current => ({ ...current, ...updates }));
     setSaveError(null);
   };
@@ -100,7 +100,7 @@ export function LotteryEditModal({
       focusFirstInvalidField(trigger);
       return;
     }
-    const patch: UpdateLotteryRequest = {
+    const patch: UpdateRaffleRequest = {
       title: values.title.trim(),
       description: values.description.trim(),
       drawDate: values.drawDate,
@@ -112,7 +112,7 @@ export function LotteryEditModal({
     setIsSaving(true);
     setSaveError(null);
     try {
-      const updated = await apiClient.updateLottery(guildId, lottery.id, patch);
+      const updated = await apiClient.updateRaffle(guildId, raffle.id, patch);
       onSaved(updated);
       notify.success(t('success'));
       state.close();
@@ -131,7 +131,7 @@ export function LotteryEditModal({
     invalid: t('invalid'),
     failed: t('failed'),
   };
-  const prizes = lottery.prizes ?? [];
+  const prizes = raffle.prizes ?? [];
 
   return (
     <Modal state={state}>
@@ -145,7 +145,7 @@ export function LotteryEditModal({
             </Modal.Header>
             <Modal.Body>
               <form className="flex flex-col gap-4" onSubmit={event => event.preventDefault()}>
-                <LotteryFormFields
+                <RaffleFormFields
                   values={values}
                   errors={visibleErrors}
                   onChange={updateValues}

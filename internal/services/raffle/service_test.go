@@ -1,4 +1,4 @@
-package lottery
+package raffle
 
 import (
 	"testing"

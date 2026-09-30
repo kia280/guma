@@ -8,7 +8,7 @@ import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { DateTimePicker } from './DateTimePicker';
 import { FieldRow, LockedValue } from './FieldRow';
 
-export interface LotteryFormValues {
+export interface RaffleFormValues {
   title: string;
   description: string;
   ticketPrice: number;
@@ -16,14 +16,14 @@ export interface LotteryFormValues {
   drawDate: string;
 }
 
-export interface LotteryFormErrors {
+export interface RaffleFormErrors {
   title?: string | null;
   ticketPrice?: string | null;
   maxTickets?: string | null;
   drawDate?: string | null;
 }
 
-export function LotteryFormFields({
+export function RaffleFormFields({
   values,
   errors,
   onChange,
@@ -32,24 +32,24 @@ export function LotteryFormFields({
   ticketsHint,
   validationBehavior,
 }: {
-  values: LotteryFormValues;
-  errors: LotteryFormErrors;
-  onChange: (updates: Partial<LotteryFormValues>) => void;
+  values: RaffleFormValues;
+  errors: RaffleFormErrors;
+  onChange: (updates: Partial<RaffleFormValues>) => void;
   prizes?: React.ReactNode;
   ticketsLocked?: boolean;
   ticketsHint?: React.ReactNode;
   validationBehavior?: 'aria' | 'native';
 }) {
-  const t = useTranslations('createLotteryModal');
+  const t = useTranslations('createRaffleModal');
   const formatGold = useFormatGold();
 
   return (
     <>
       <TextField isRequired validationBehavior={validationBehavior} isInvalid={!!errors.title}>
-        <Label>{t('lotteryTitle')}</Label>
+        <Label>{t('raffleTitle')}</Label>
         <Input
           variant="secondary"
-          placeholder={t('lotteryTitlePlaceholder')}
+          placeholder={t('raffleTitlePlaceholder')}
           value={values.title}
           onChange={event => onChange({ title: event.target.value })}
           autoFocus

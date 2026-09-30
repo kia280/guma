@@ -59,7 +59,7 @@ const getContributionIcon = (type: GuildContribution['type']) => {
       return 'solar:clipboard-check-linear';
     case 'auction_proceeds':
       return 'solar:sledgehammer-linear';
-    case 'lottery_revenue':
+    case 'raffle_revenue':
       return 'solar:ticket-linear';
     case 'roll_call_gold_payout':
       return 'solar:hand-money-linear';
@@ -75,7 +75,7 @@ const getContributionIcon = (type: GuildContribution['type']) => {
 const isInflowContribution = (type: GuildContribution['type']) =>
   type === 'contribute' ||
   type === 'auction_proceeds' ||
-  type === 'lottery_revenue' ||
+  type === 'raffle_revenue' ||
   type === 'roll_call_loot' ||
   type === 'admin_transfer';
 
@@ -254,8 +254,8 @@ export default function GuildBankPage() {
         return t('typeRollCallLoot');
       case 'auction_proceeds':
         return t('typeAuctionProceeds');
-      case 'lottery_revenue':
-        return t('typeLotteryRevenue');
+      case 'raffle_revenue':
+        return t('typeRaffleRevenue');
       case 'roll_call_gold_payout':
         return t('typeRollCallGoldPayout');
       case 'roll_call_gold_retracted':

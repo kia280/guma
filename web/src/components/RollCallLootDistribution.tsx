@@ -14,7 +14,7 @@ import { useGuildPermissions } from '@/lib/permissions';
 import type { GuildBankItem } from '@/types/guild-bank';
 import type { Attendee, LootItem } from '@/types/roll-call';
 import { CreateAuctionModal, type AuctionDraftItem } from './CreateAuctionModal';
-import { CreateLotteryModal, type LotteryPrizeItem } from './CreateLotteryModal';
+import { CreateRaffleModal, type RafflePrizeItem } from './CreateRaffleModal';
 import { ItemLockChip } from './ItemLockChip';
 import { MemberComboBox, type MemberOption } from './MemberComboBox';
 
@@ -43,7 +43,7 @@ export function RollCallLootDistribution({
   const { can } = useGuildPermissions();
   const assignModal = useOverlayState();
   const auctionModal = useOverlayState();
-  const lotteryModal = useOverlayState();
+  const raffleModal = useOverlayState();
 
   const [bankItems, setBankItems] = React.useState<GuildBankItem[]>([]);
   const [status, setStatus] = React.useState<LoadStatus>('loading');
@@ -53,7 +53,7 @@ export function RollCallLootDistribution({
   const [isAssigning, setIsAssigning] = React.useState(false);
   const [assignError, setAssignError] = React.useState<string | null>(null);
   const [auctionItem, setAuctionItem] = React.useState<AuctionDraftItem | null>(null);
-  const [lotteryPrize, setLotteryPrize] = React.useState<LotteryPrizeItem | null>(null);
+  const [rafflePrize, setRafflePrize] = React.useState<RafflePrizeItem | null>(null);
 
   const load = React.useCallback(() => {
     apiClient
@@ -74,7 +74,7 @@ export function RollCallLootDistribution({
 
   const canDistribute = can('distributeLoot') && !isCompleted;
   const canAuction = can('auctionBankItems');
-  const canRaffle = can('createLottery');
+  const canRaffle = can('createRaffle');
   const recipientOptions = React.useMemo<MemberOption[]>(
     () =>
       attendees.flatMap(member =>
@@ -128,9 +128,9 @@ export function RollCallLootDistribution({
       });
       auctionModal.open();
     }
-    if (key === 'lottery') {
-      setLotteryPrize({ name: item.name, source: { bankItemId: item.id } });
-      lotteryModal.open();
+    if (key === 'raffle') {
+      setRafflePrize({ name: item.name, source: { bankItemId: item.id } });
+      raffleModal.open();
     }
   };
 
@@ -224,9 +224,9 @@ export function RollCallLootDistribution({
                         </Dropdown.Item>
                       )}
                       {canRaffle && (
-                        <Dropdown.Item id="lottery" textValue={t('lottery')}>
+                        <Dropdown.Item id="raffle" textValue={t('raffle')}>
                           <Icon icon="solar:ticket-linear" width={16} />
-                          <span>{t('lottery')}</span>
+                          <span>{t('raffle')}</span>
                         </Dropdown.Item>
                       )}
                     </Dropdown.Menu>
@@ -287,7 +287,7 @@ export function RollCallLootDistribution({
         </Modal.Backdrop>
       </Modal>
       <CreateAuctionModal state={auctionModal} item={auctionItem} onCreated={load} />
-      <CreateLotteryModal state={lotteryModal} prizeItem={lotteryPrize} onCreated={load} />
+      <CreateRaffleModal state={raffleModal} prizeItem={rafflePrize} onCreated={load} />
     </>
   );
 }

@@ -19,8 +19,8 @@ export type NotificationKind =
   | 'itemDelivered'
   | 'lootAssigned'
   | 'rollCallGoldReceived'
-  | 'lotteryWon'
-  | 'lotteryCancelled'
+  | 'raffleWon'
+  | 'raffleCancelled'
   | 'memberRoleChanged';
 
 export type NotificationParams = Record<string, string | number>;

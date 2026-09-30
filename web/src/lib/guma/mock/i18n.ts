@@ -26,7 +26,7 @@ const ZHT_TEXT: Record<string, string> = {
   'Spring Giveaway Draw': '春季贈獎轉盤',
   'Monthly Mega Draw': '每月大轉盤',
   'Weekly Mini Draw': '每週小轉盤',
-  'Grand Guild Lottery': '公會轉盤盛典',
+  'Grand Guild Raffle': '公會轉盤盛典',
   'Legendary Item Raffle': '傳說物品轉盤',
   'Flash Draw': '限時快速轉盤',
 
@@ -84,7 +84,7 @@ const ZHT_TEXT: Record<string, string> = {
   'Withdrawal to bank account': '提款至銀行帳戶',
   'Guild reward payout': '公會獎勵發放',
   'Auction sale proceeds': '競標售出收益',
-  'Lottery winnings': '轉盤獎金',
+  'Raffle winnings': '轉盤獎金',
 
   'Weekly contribution': '每週貢獻',
   'Potion supplies for raid': '團戰用藥水補給',
@@ -94,7 +94,7 @@ const ZHT_TEXT: Record<string, string> = {
 
   'placed a bid on Dragon Slayer Sword': '對屠龍劍出價',
   'checked in to the weekly guild roll call': '完成每週公會點名簽到',
-  'purchased 2 lottery tickets': '購買了 2 張彩券',
+  'purchased 2 raffle tickets': '購買了 2 張彩券',
   'joined the guild': '加入了公會',
   'created auction for Mystic Shield': '建立了神秘守護之盾的競標',
   'checked in to raid preparation': '完成團戰準備點名簽到',

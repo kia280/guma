@@ -5,7 +5,7 @@ export type NavLabelKey =
   | 'rollCall'
   | 'calendar'
   | 'auction'
-  | 'lottery'
+  | 'raffle'
   | 'wallet'
   | 'guildBank'
   | 'admin'
@@ -62,7 +62,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { key: 'roll-calls', href: '/dashboard/roll-calls', icon: 'solar:clipboard-check-linear', label: 'rollCall', shortcut: 'r' },
       { key: 'calendar', href: '/dashboard/calendar', icon: 'solar:calendar-linear', label: 'calendar', shortcut: 'c' },
       { key: 'auction', href: '/dashboard/auction', icon: 'solar:sledgehammer-linear', label: 'auction', shortcut: 'u' },
-      { key: 'lottery', href: '/dashboard/lottery', icon: 'solar:ticket-linear', label: 'lottery', shortcut: 'l' },
+      { key: 'raffle', href: '/dashboard/raffle', icon: 'solar:ticket-linear', label: 'raffle', shortcut: 'l' },
     ],
   },
   {
@@ -132,7 +132,7 @@ const SECTION_PAGES: Record<string, NavLabelKey> = {
   'roll-calls': 'rollCall',
   calendar: 'calendar',
   auction: 'auction',
-  lottery: 'lottery',
+  raffle: 'raffle',
   wallet: 'wallet',
   'guild-bank': 'guildBank',
 };

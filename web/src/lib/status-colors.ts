@@ -1,6 +1,6 @@
 import { AuctionStatus } from '@/types/auction';
 import type { GuildContribution, RequestStatus } from '@/types/guild-bank';
-import type { LotteryStatus } from '@/types/lottery';
+import type { RaffleStatus } from '@/types/raffle';
 import { RollCallStatus } from '@/types/roll-call';
 import type { Transaction, WithdrawalStatus } from '@/types/wallet';
 
@@ -38,7 +38,7 @@ export const userStatusColor: Record<UserStatus, StatusColor> = {
   banned: 'danger',
 };
 
-export const lotteryStatusColor: Record<LotteryStatus, StatusColor> = {
+export const raffleStatusColor: Record<RaffleStatus, StatusColor> = {
   active: 'success',
   upcoming: 'warning',
   ended: 'default',

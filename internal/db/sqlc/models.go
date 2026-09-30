@@ -236,42 +236,6 @@ type ItemTemplate struct {
 	UpdatedAt   time.Time
 }
 
-type Lottery struct {
-	ID                uuid.UUID
-	GuildID           uuid.UUID
-	CreatedBy         uuid.UUID
-	Title             string
-	Description       pgtype.Text
-	TicketPrice       int64
-	TicketsSold       int32
-	MaxTickets        int32
-	MaxTicketsPerUser int32
-	Status            string
-	DrawDate          time.Time
-	Prizes            []byte
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
-	CancelledAt       pgtype.Timestamptz
-}
-
-type LotteryTicket struct {
-	ID           uuid.UUID
-	LotteryID    uuid.UUID
-	UserID       uuid.UUID
-	TicketNumber string
-	PurchasedAt  time.Time
-}
-
-type LotteryWinner struct {
-	ID               uuid.UUID
-	LotteryID        uuid.UUID
-	UserID           uuid.UUID
-	Rank             int32
-	PrizeAmount      int64
-	PrizeDescription pgtype.Text
-	TicketNumber     string
-}
-
 type Member struct {
 	ID          uuid.UUID
 	UserID      uuid.UUID
@@ -303,6 +267,42 @@ type Notification struct {
 	ActionUrl pgtype.Text
 	CreatedAt time.Time
 	Params    []byte
+}
+
+type Raffle struct {
+	ID                uuid.UUID
+	GuildID           uuid.UUID
+	CreatedBy         uuid.UUID
+	Title             string
+	Description       pgtype.Text
+	TicketPrice       int64
+	TicketsSold       int32
+	MaxTickets        int32
+	MaxTicketsPerUser int32
+	Status            string
+	DrawDate          time.Time
+	Prizes            []byte
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+	CancelledAt       pgtype.Timestamptz
+}
+
+type RaffleTicket struct {
+	ID           uuid.UUID
+	RaffleID     uuid.UUID
+	UserID       uuid.UUID
+	TicketNumber string
+	PurchasedAt  time.Time
+}
+
+type RaffleWinner struct {
+	ID               uuid.UUID
+	RaffleID         uuid.UUID
+	UserID           uuid.UUID
+	Rank             int32
+	PrizeAmount      int64
+	PrizeDescription pgtype.Text
+	TicketNumber     string
 }
 
 type RollCall struct {
@@ -410,7 +410,7 @@ type UserPreference struct {
 	UpdatedAt          time.Time
 	EmailNotifications bool
 	AuctionAlerts      bool
-	LotteryAlerts      bool
+	RaffleAlerts       bool
 	EventReminders     bool
 	RollCallReminders  bool
 }

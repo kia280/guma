@@ -1,10 +1,10 @@
-// Lottery types
+// Raffle types
 
 import type { ItemSourceRef } from './item';
 
-export type LotteryStatus = 'active' | 'upcoming' | 'ended' | 'cancelled';
+export type RaffleStatus = 'active' | 'upcoming' | 'ended' | 'cancelled';
 
-export interface LotteryWinner {
+export interface RaffleWinner {
   id: string;
   userId?: string;
   username: string;
@@ -13,45 +13,45 @@ export interface LotteryWinner {
   prizeAmount?: number;
 }
 
-export interface LotteryParticipant {
+export interface RaffleParticipant {
   id: string;
   username: string;
   avatar?: string;
   tickets: number;
 }
 
-export interface LotteryPrize {
+export interface RafflePrize {
   rank: number;
   description: string;
   amount?: number;
   itemName?: string;
 }
 
-export interface Lottery {
+export interface Raffle {
   id: string;
   title: string;
   description?: string;
   prizePool: number;
-  prizes?: LotteryPrize[];
+  prizes?: RafflePrize[];
   ticketPrice: number;
   drawDate: string;
   ticketsSold: number;
   maxTickets: number;
-  status: LotteryStatus;
+  status: RaffleStatus;
   cancelledAt?: string;
-  winners?: LotteryWinner[];
-  participants?: LotteryParticipant[];
+  winners?: RaffleWinner[];
+  participants?: RaffleParticipant[];
 }
 
-export interface LotteryTicket {
+export interface RaffleTicket {
   id: string;
-  lotteryId: string;
+  raffleId: string;
   userId: string;
   ticketNumber: string;
   purchasedAt: string;
 }
 
-export interface CreateLotteryRequest {
+export interface CreateRaffleRequest {
   title: string;
   description?: string;
   ticketPrice: number;
@@ -61,7 +61,7 @@ export interface CreateLotteryRequest {
   prizes?: Array<{ rank: number; description: string; amount?: number; source?: ItemSourceRef }>;
 }
 
-export interface UpdateLotteryRequest {
+export interface UpdateRaffleRequest {
   title?: string;
   description?: string;
   drawDate?: string;

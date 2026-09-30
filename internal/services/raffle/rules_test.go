@@ -1,4 +1,4 @@
-package lottery
+package raffle
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ import (
 
 func ptr[T any](v T) *T { return &v }
 
-func TestLotteryStateChecks(t *testing.T) {
+func TestRaffleStateChecks(t *testing.T) {
 	now := time.Date(2026, 9, 28, 12, 0, 0, 0, time.UTC)
 	future, past := now.Add(time.Hour), now.Add(-time.Minute)
 
@@ -50,7 +50,7 @@ func TestLotteryStateChecks(t *testing.T) {
 	assert.False(t, isOpenStatus(statusCancelled))
 }
 
-func TestValidateLotteryUpdate(t *testing.T) {
+func TestValidateRaffleUpdate(t *testing.T) {
 	now := time.Date(2026, 9, 28, 12, 0, 0, 0, time.UTC)
 	tests := []struct {
 		name string
@@ -80,9 +80,9 @@ func TestValidateLotteryUpdate(t *testing.T) {
 	}
 }
 
-func TestApplyLotteryUpdate(t *testing.T) {
+func TestApplyRaffleUpdate(t *testing.T) {
 	drawDate := time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC)
-	current := db.LockLotteryRow{
+	current := db.LockRaffleRow{
 		Title: "Raffle", TicketPrice: 1000, MaxTickets: 100, MaxTicketsPerUser: 5, DrawDate: drawDate,
 	}
 
@@ -91,7 +91,7 @@ func TestApplyLotteryUpdate(t *testing.T) {
 		TicketPrice: ptr(int64(2000)), MaxTickets: ptr(int32(0)), MaxTicketsPerUser: ptr(int32(1)),
 	})
 	require.NoError(t, err)
-	assert.Equal(t, db.UpdateLotteryParams{
+	assert.Equal(t, db.UpdateRaffleParams{
 		Title: "New", SetDescription: true, Description: "",
 		TicketPrice: 2000, MaxTickets: 0, MaxTicketsPerUser: 1,
 		DrawDate: time.Date(2026, 10, 2, 0, 0, 0, 0, time.UTC),
@@ -104,8 +104,8 @@ func TestApplyLotteryUpdate(t *testing.T) {
 	assert.Equal(t, int64(1000), kept.TicketPrice)
 }
 
-func TestApplyLotteryUpdateFreezesTicketsAfterSale(t *testing.T) {
-	current := db.LockLotteryRow{Title: "Raffle", TicketPrice: 1000, MaxTickets: 100, MaxTicketsPerUser: 5, TicketsSold: 1}
+func TestApplyRaffleUpdateFreezesTicketsAfterSale(t *testing.T) {
+	current := db.LockRaffleRow{Title: "Raffle", TicketPrice: 1000, MaxTickets: 100, MaxTicketsPerUser: 5, TicketsSold: 1}
 
 	for name, p := range map[string]UpdateParams{
 		"price":    {TicketPrice: ptr(int64(500))},

@@ -37,19 +37,19 @@ func TestLoad_SchedulerAndCORSDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	if cfg.Scheduler.LotteryDrawInterval != 15*time.Second {
-		t.Fatalf("expected default lottery draw interval 15s, got %s", cfg.Scheduler.LotteryDrawInterval)
+	if cfg.Scheduler.RaffleDrawInterval != 15*time.Second {
+		t.Fatalf("expected default raffle draw interval 15s, got %s", cfg.Scheduler.RaffleDrawInterval)
 	}
 	if !slices.Contains(cfg.CORS.AllowedMethods, "PATCH") {
 		t.Fatalf("expected PATCH in default CORS methods, got %v", cfg.CORS.AllowedMethods)
 	}
 
-	t.Setenv("SCHEDULER_LOTTERY_DRAW_INTERVAL", "1m")
+	t.Setenv("SCHEDULER_RAFFLE_DRAW_INTERVAL", "1m")
 	cfg, err = Load()
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	if cfg.Scheduler.LotteryDrawInterval != time.Minute {
-		t.Fatalf("expected env override 1m, got %s", cfg.Scheduler.LotteryDrawInterval)
+	if cfg.Scheduler.RaffleDrawInterval != time.Minute {
+		t.Fatalf("expected env override 1m, got %s", cfg.Scheduler.RaffleDrawInterval)
 	}
 }

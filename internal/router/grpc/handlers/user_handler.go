@@ -91,7 +91,7 @@ func (h *UserHandler) GetUserStats(ctx context.Context, _ *gumav1.GetUserStatsRe
 			GuildsJoined:      st.GuildsJoined,
 			EventsAttended:    st.EventsAttended,
 			AuctionsWon:       st.AuctionsWon,
-			LotteriesWon:      st.LotteriesWon,
+			RafflesWon:        st.RafflesWon,
 			TotalEarned:       st.TotalEarned,
 			TotalSpent:        st.TotalSpent,
 			RollCallsAttended: st.RollCallsAttended,

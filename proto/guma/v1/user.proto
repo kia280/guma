@@ -103,7 +103,7 @@ message UserStats {
   int32 guilds_joined = 1;
   int32 events_attended = 2;
   int32 auctions_won = 3;
-  int32 lotteries_won = 4;
+  int32 raffles_won = 4;
   int64 total_earned = 5;
   int64 total_spent = 6;
   int32 roll_calls_attended = 7;

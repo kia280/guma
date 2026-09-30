@@ -9,13 +9,13 @@ import { useUserName } from '@/hooks/useUserName';
 import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { formatPrize, prizeItemNames, useFormatGold } from '@/lib/guma/useFormatGold';
-import { lotteryStatusColor } from '@/lib/status-colors';
-import type { LotteryPrize, LotteryStatus } from '@/types/lottery';
+import { raffleStatusColor } from '@/lib/status-colors';
+import type { RafflePrize, RaffleStatus } from '@/types/raffle';
 import { CardFooterStatus } from './CardFooterStatus';
 import { CardLinkHint } from './CardLinkHint';
 import { UserAvatar } from './UserAvatar';
 
-interface LotteryWinner {
+interface RaffleWinner {
   id: string;
   username: string;
   avatar?: string;
@@ -23,20 +23,20 @@ interface LotteryWinner {
   prizeAmount?: number;
 }
 
-interface LotteryCardProps {
+interface RaffleCardProps {
   id: string;
   title: string;
   prizePool: number;
-  prizes?: LotteryPrize[];
+  prizes?: RafflePrize[];
   ticketPrice: number;
   drawDate: string;
   ticketsSold: number;
   maxTickets: number;
-  status: LotteryStatus;
-  winners?: LotteryWinner[];
+  status: RaffleStatus;
+  winners?: RaffleWinner[];
 }
 
-const LotteryCard = ({
+const RaffleCard = ({
   id,
   title,
   prizePool,
@@ -47,12 +47,12 @@ const LotteryCard = ({
   maxTickets,
   status,
   winners,
-}: LotteryCardProps) => {
-  const t = useTranslations('lotteryCard');
+}: RaffleCardProps) => {
+  const t = useTranslations('raffleCard');
   const userName = useUserName();
   const format = useIntlFormatter();
   const formatGold = useFormatGold();
-  const href = `/dashboard/lottery/${id}`;
+  const href = `/dashboard/raffle/${id}`;
   const hasCap = maxTickets > 0;
   const soldPercent = hasCap ? Math.round((ticketsSold / maxTickets) * 100) : 0;
 
@@ -72,7 +72,7 @@ const LotteryCard = ({
           <div className="min-w-0 type-caption">
             <Chip
               size="sm"
-              color={isDrawing ? 'accent' : lotteryStatusColor[status]}
+              color={isDrawing ? 'accent' : raffleStatusColor[status]}
               variant="secondary"
               className="mb-1"
             >
@@ -156,7 +156,7 @@ const LotteryCard = ({
           )}
         </div>
 
-        {/* Winners section for ended lotteries */}
+        {/* Winners section for ended raffles */}
         {status === 'ended' && winners && winners.length > 0 && (
           <div className="space-y-2 pt-4">
             <p className="type-caption text-hint">{t('winners')}</p>
@@ -196,4 +196,4 @@ const LotteryCard = ({
   );
 };
 
-export default LotteryCard;
+export default RaffleCard;

@@ -10,7 +10,7 @@ import { ItemLockChip } from './ItemLockChip';
 
 const SOURCE_ICONS: Record<BackpackItem['acquiredFrom'], string> = {
   auction: 'solar:sledgehammer-linear',
-  lottery: 'solar:ticket-linear',
+  raffle: 'solar:ticket-linear',
   transfer: 'solar:users-group-rounded-linear',
   bank: 'solar:safe-2-linear',
   rollCall: 'solar:clipboard-check-linear',
@@ -22,8 +22,8 @@ const sourceHref = (item: BackpackItem): string | undefined => {
   switch (item.acquiredFrom) {
     case 'auction':
       return `/dashboard/auction/${item.sourceId}`;
-    case 'lottery':
-      return `/dashboard/lottery/${item.sourceId}`;
+    case 'raffle':
+      return `/dashboard/raffle/${item.sourceId}`;
     case 'rollCall':
       return `/dashboard/roll-calls/${item.sourceId}`;
     case 'bank':
@@ -36,7 +36,7 @@ const sourceHref = (item: BackpackItem): string | undefined => {
 interface BackpackItemCardProps {
   item: BackpackItem;
   onPutToAuction?: (item: BackpackItem) => void;
-  onPutToLottery?: (item: BackpackItem) => void;
+  onPutToRaffle?: (item: BackpackItem) => void;
   onDonate?: (item: BackpackItem) => void;
   onTransfer?: (item: BackpackItem) => void;
   onWithdraw?: (item: BackpackItem) => void;
@@ -48,7 +48,7 @@ interface BackpackItemCardProps {
 const BackpackItemCard = ({
   item,
   onPutToAuction,
-  onPutToLottery,
+  onPutToRaffle,
   onDonate,
   onTransfer,
   onWithdraw,
@@ -96,10 +96,10 @@ const BackpackItemCard = ({
           <Dropdown.Popover>
             <Dropdown.Menu
               aria-label={t('actions')}
-              disabledKeys={item.lock ? ['auction', 'lottery', 'donate', 'transfer', 'withdraw'] : []}
+              disabledKeys={item.lock ? ['auction', 'raffle', 'donate', 'transfer', 'withdraw'] : []}
               onAction={key => {
                 if (key === 'auction') onPutToAuction?.(item);
-                if (key === 'lottery') onPutToLottery?.(item);
+                if (key === 'raffle') onPutToRaffle?.(item);
                 if (key === 'donate') onDonate?.(item);
                 if (key === 'transfer') onTransfer?.(item);
                 if (key === 'withdraw') onWithdraw?.(item);
@@ -119,10 +119,10 @@ const BackpackItemCard = ({
                   <span>{t('putToAuction')}</span>
                 </Dropdown.Item>
               )}
-              {!isAwaitingDelivery && onPutToLottery && (
-                <Dropdown.Item id="lottery" textValue={t('putToLottery')}>
+              {!isAwaitingDelivery && onPutToRaffle && (
+                <Dropdown.Item id="raffle" textValue={t('putToRaffle')}>
                   <Icon icon="solar:ticket-linear" width={16} />
-                  <span>{t('putToLottery')}</span>
+                  <span>{t('putToRaffle')}</span>
                 </Dropdown.Item>
               )}
               {!isAwaitingDelivery && onDonate && (

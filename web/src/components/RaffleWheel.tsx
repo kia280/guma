@@ -10,7 +10,7 @@ export type WheelEntry = {
   detail?: string;
 };
 
-type LotteryWheelProps = {
+type RaffleWheelProps = {
   entries: WheelEntry[];
   winnerId?: string;
   spinKey: number;
@@ -63,7 +63,7 @@ function buildSlices(entries: WheelEntry[]): Slice[] {
   });
 }
 
-export function LotteryWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd, label, className }: LotteryWheelProps) {
+export function RaffleWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd, label, className }: RaffleWheelProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [scale, setScale] = React.useState(1);
   const [rotation, setRotation] = React.useState(0);

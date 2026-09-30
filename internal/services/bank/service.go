@@ -670,7 +670,7 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 		switch {
 		case errors.Is(err, pgx.ErrNoRows):
 			if exists, _ := s.q.BankItemExists(ctx, db.BankItemExistsParams{ID: bankItemID, GuildID: guildID}); exists {
-				return nil, fmt.Errorf("%w: bank item is in an auction or lottery", errs.ErrFailedPrecondition)
+				return nil, fmt.Errorf("%w: bank item is in an auction or raffle", errs.ErrFailedPrecondition)
 			}
 			return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
 		case errors.As(err, &pgErr) && pgErr.Code == "23505":
@@ -795,7 +795,7 @@ func (s *Service) DeleteBankItem(ctx context.Context, guildIDStr, userIDStr, ban
 		return fmt.Errorf("%w: load bank item: %v", errs.ErrInternal, err)
 	}
 	if bankItem.LockedByType != "" {
-		return fmt.Errorf("%w: bank item is in an auction or lottery", errs.ErrFailedPrecondition)
+		return fmt.Errorf("%w: bank item is in an auction or raffle", errs.ErrFailedPrecondition)
 	}
 
 	rejected, err := qtx.RejectPendingRequestsForBankItem(ctx, db.RejectPendingRequestsForBankItemParams{
