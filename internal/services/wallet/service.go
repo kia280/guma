@@ -21,14 +21,15 @@ import (
 
 // Wallet is the domain model for a user's guild wallet.
 type Wallet struct {
-	UserID       string
-	GuildID      string
-	Balance      int64
-	Currency     string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	LockedInBids int64
-	LockedBids   []LockedBid
+	UserID             string
+	GuildID            string
+	Balance            int64
+	Currency           string
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	LockedInBids       int64
+	LockedBids         []LockedBid
+	PendingWithdrawals int64
 }
 
 type LockedBid struct {
@@ -142,14 +143,19 @@ func (s *Service) GetWallet(ctx context.Context, userIDStr, guildIDStr string) (
 	if err != nil {
 		return nil, fmt.Errorf("%w: list leading bids: %v", errs.ErrInternal, err)
 	}
+	pendingWithdrawals, err := s.q.SumPendingWithdrawals(ctx, db.SumPendingWithdrawalsParams{RequesterID: userID, GuildID: guildID})
+	if err != nil {
+		return nil, fmt.Errorf("%w: sum pending withdrawals: %v", errs.ErrInternal, err)
+	}
 	wallet := &Wallet{
-		UserID:     w.UserID.String(),
-		GuildID:    w.GuildID.String(),
-		Balance:    w.Balance,
-		Currency:   w.Currency,
-		CreatedAt:  w.CreatedAt,
-		UpdatedAt:  w.UpdatedAt,
-		LockedBids: make([]LockedBid, 0, len(bids)),
+		UserID:             w.UserID.String(),
+		GuildID:            w.GuildID.String(),
+		Balance:            w.Balance,
+		Currency:           w.Currency,
+		CreatedAt:          w.CreatedAt,
+		UpdatedAt:          w.UpdatedAt,
+		LockedBids:         make([]LockedBid, 0, len(bids)),
+		PendingWithdrawals: pendingWithdrawals,
 	}
 	for _, b := range bids {
 		wallet.LockedInBids += b.CurrentBid
@@ -188,52 +194,6 @@ func (s *Service) Deposit(ctx context.Context, userIDStr, guildIDStr string, amo
 	w.Balance = newBalance
 	w.UpdatedAt = time.Now().UTC()
 	return tx, w, nil
-}
-
-// Withdraw removes funds from a wallet.
-func (s *Service) Withdraw(ctx context.Context, userIDStr, guildIDStr string, amount int64, note string) (*Transaction, *Wallet, error) {
-	if amount <= 0 {
-		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrFailedPrecondition)
-	}
-	userID, guildID, err := parseIDs(userIDStr, guildIDStr)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	pgtx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
-	}
-	defer pgtx.Rollback(ctx) //nolint:errcheck
-	qtx := s.q.WithTx(pgtx)
-
-	balance, err := qtx.GetWalletBalanceForUpdate(ctx, db.GetWalletBalanceForUpdateParams{UserID: userID, GuildID: guildID})
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: wallet", errs.ErrNotFound)
-	}
-	if balance < amount {
-		return nil, nil, fmt.Errorf("%w: insufficient funds", errs.ErrFailedPrecondition)
-	}
-
-	newBalance := balance - amount
-	if err := qtx.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{
-		Balance: newBalance, UserID: userID, GuildID: guildID,
-	}); err != nil {
-		return nil, nil, fmt.Errorf("%w: withdraw: %v", errs.ErrInternal, err)
-	}
-
-	t, err := s.insertTransaction(ctx, qtx, userID, guildID, "WITHDRAWAL", -amount, newBalance, note, "", "")
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if err := pgtx.Commit(ctx); err != nil {
-		return nil, nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
-	}
-
-	return t, &Wallet{
-		UserID: userIDStr, GuildID: guildIDStr, Balance: newBalance, Currency: "gold", UpdatedAt: time.Now().UTC(),
-	}, nil
 }
 
 // Transfer moves funds atomically between two users in the same guild.

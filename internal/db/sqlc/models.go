@@ -413,3 +413,17 @@ type Wallet struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+type WithdrawalRequest struct {
+	ID            uuid.UUID
+	GuildID       uuid.UUID
+	RequesterID   uuid.UUID
+	RequesterName string
+	Amount        int64
+	Note          pgtype.Text
+	Status        string
+	ReviewerID    *uuid.UUID
+	ReviewNote    pgtype.Text
+	CreatedAt     time.Time
+	ReviewedAt    pgtype.Timestamptz
+}

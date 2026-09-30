@@ -9,7 +9,8 @@ import "proto/guma/v1/item.proto";
 option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
 
 // TransactionType values: DEPOSIT, WITHDRAWAL, TRANSFER_IN, TRANSFER_OUT,
-//   REWARD, PENALTY, AUCTION_BID, AUCTION_WIN, LOTTERY_TICKET, LOTTERY_WIN
+//   REWARD, PENALTY, AUCTION_BID, AUCTION_WIN, LOTTERY_TICKET, LOTTERY_WIN,
+//   WITHDRAWAL_REQUEST, WITHDRAWAL_APPROVED, WITHDRAWAL_REJECTED, WITHDRAWAL_CANCELLED
 // ItemSource values: auction, lottery, transfer, admin
 
 service WalletService {
@@ -30,6 +31,32 @@ service WalletService {
   rpc WithdrawFunds(WithdrawFundsRequest) returns (TransactionResponse) {
     option (google.api.http) = {
       post: "/v1/guilds/{guild_id}/wallet/withdraw"
+      body: "*"
+    };
+  }
+
+  rpc ListMyWithdrawalRequests(ListMyWithdrawalRequestsRequest) returns (ListMyWithdrawalRequestsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/wallet/withdrawals"
+    };
+  }
+
+  rpc CancelWithdrawalRequest(CancelWithdrawalRequestRequest) returns (CancelWithdrawalRequestResponse) {
+    option (google.api.http) = {
+      post: "/v1/guilds/{guild_id}/wallet/withdrawals/{request_id}/cancel"
+      body: "*"
+    };
+  }
+
+  rpc ListWithdrawalRequests(ListWithdrawalRequestsRequest) returns (ListWithdrawalRequestsResponse) {
+    option (google.api.http) = {
+      get: "/v1/guilds/{guild_id}/withdrawal-requests"
+    };
+  }
+
+  rpc ReviewWithdrawalRequest(ReviewWithdrawalRequestRequest) returns (ReviewWithdrawalRequestResponse) {
+    option (google.api.http) = {
+      patch: "/v1/guilds/{guild_id}/withdrawal-requests/{request_id}"
       body: "*"
     };
   }
@@ -154,6 +181,54 @@ message TransferFundsRequest {
 message TransactionResponse {
   Transaction transaction = 1;
   Wallet updated_wallet = 2;
+  WithdrawalRequest withdrawal_request = 3;
+}
+
+message ListMyWithdrawalRequestsRequest {
+  string guild_id = 1;
+  string status = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListMyWithdrawalRequestsResponse {
+  repeated WithdrawalRequest requests = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message CancelWithdrawalRequestRequest {
+  string guild_id = 1;
+  string request_id = 2;
+}
+
+message CancelWithdrawalRequestResponse {
+  WithdrawalRequest withdrawal_request = 1;
+  Wallet updated_wallet = 2;
+}
+
+message ListWithdrawalRequestsRequest {
+  string guild_id = 1;
+  string status = 2;
+  int32 page_size = 3;
+  string page_token = 4;
+}
+
+message ListWithdrawalRequestsResponse {
+  repeated WithdrawalRequest requests = 1;
+  string next_page_token = 2;
+  int32 total_count = 3;
+}
+
+message ReviewWithdrawalRequestRequest {
+  string guild_id = 1;
+  string request_id = 2;
+  string status = 3;
+  string note = 4;
+}
+
+message ReviewWithdrawalRequestResponse {
+  WithdrawalRequest withdrawal_request = 1;
 }
 
 message ListTransactionsRequest {
@@ -222,6 +297,23 @@ message Wallet {
   google.protobuf.Timestamp updated_at = 6;
   int64 locked_in_bids = 7;
   repeated LockedBid locked_bids = 8;
+  int64 pending_withdrawals = 9;
+}
+
+message WithdrawalRequest {
+  string id = 1;
+  string guild_id = 2;
+  string requester_id = 3;
+  string requester_name = 4;
+  string requester_avatar_url = 5;
+  int64 amount = 6;
+  string note = 7;
+  string status = 8;
+  string reviewer_id = 9;
+  string reviewer_name = 10;
+  string review_note = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp reviewed_at = 13;
 }
 
 message LockedBid {
@@ -245,7 +337,7 @@ message Transaction {
   int64 balance_after = 6;
   string description = 7;
   string reference_id = 8;    // Linked entity ID (auction_id, lottery_id, etc.)
-  string reference_type = 9;  // "auction" | "lottery" | "roll_call" | "manual"
+  string reference_type = 9;  // "auction" | "lottery" | "roll_call" | "withdrawal" | "manual"
   google.protobuf.Timestamp created_at = 10;
   string actor_id = 11;
   string actor_name = 12;

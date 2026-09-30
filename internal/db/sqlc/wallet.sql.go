@@ -126,6 +126,26 @@ func (q *Queries) CountWalletTransactions(ctx context.Context, arg CountWalletTr
 	return count, err
 }
 
+const countWithdrawalRequests = `-- name: CountWithdrawalRequests :one
+SELECT COUNT(*) FROM withdrawal_requests wr
+WHERE wr.guild_id = $1
+  AND ($2::uuid IS NULL OR wr.requester_id = $2::uuid)
+  AND ($3::text = '' OR wr.status = $3::text)
+`
+
+type CountWithdrawalRequestsParams struct {
+	GuildID      uuid.UUID
+	RequesterID  *uuid.UUID
+	StatusFilter string
+}
+
+func (q *Queries) CountWithdrawalRequests(ctx context.Context, arg CountWithdrawalRequestsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countWithdrawalRequests, arg.GuildID, arg.RequesterID, arg.StatusFilter)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const deleteDeliveredItem = `-- name: DeleteDeliveredItem :exec
 DELETE FROM backpack_items WHERE id = $1 AND guild_id = $2 AND delivery_requested_at IS NOT NULL
 `
@@ -264,6 +284,33 @@ func (q *Queries) InsertTransactionSimple(ctx context.Context, arg InsertTransac
 		arg.Description,
 	)
 	return err
+}
+
+const insertWithdrawalRequest = `-- name: InsertWithdrawalRequest :one
+INSERT INTO withdrawal_requests (guild_id, requester_id, requester_name, amount, note)
+VALUES ($1, $2, $4::text, $3, NULLIF($5::text, ''))
+RETURNING id
+`
+
+type InsertWithdrawalRequestParams struct {
+	GuildID       uuid.UUID
+	RequesterID   uuid.UUID
+	Amount        int64
+	RequesterName string
+	Note          string
+}
+
+func (q *Queries) InsertWithdrawalRequest(ctx context.Context, arg InsertWithdrawalRequestParams) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, insertWithdrawalRequest,
+		arg.GuildID,
+		arg.RequesterID,
+		arg.Amount,
+		arg.RequesterName,
+		arg.Note,
+	)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const listActiveLeadingBids = `-- name: ListActiveLeadingBids :many
@@ -679,6 +726,93 @@ func (q *Queries) ListWalletTransactions(ctx context.Context, arg ListWalletTran
 	return items, nil
 }
 
+const listWithdrawalRequests = `-- name: ListWithdrawalRequests :many
+SELECT wr.id, wr.guild_id, wr.requester_id,
+       COALESCE(NULLIF(member_display_name(wr.guild_id, wr.requester_id), ''), wr.requester_name)::text AS requester_name,
+       COALESCE(u.avatar_url, '')    AS requester_avatar_url,
+       wr.amount,
+       COALESCE(wr.note, '')         AS note,
+       wr.status,
+       wr.reviewer_id,
+       COALESCE(member_display_name(wr.guild_id, wr.reviewer_id), '')::text AS reviewer_name,
+       COALESCE(wr.review_note, '')  AS review_note,
+       wr.created_at, wr.reviewed_at
+FROM withdrawal_requests wr
+LEFT JOIN users u ON u.id = wr.requester_id
+WHERE wr.guild_id = $1
+  AND ($2::uuid IS NULL OR wr.requester_id = $2::uuid)
+  AND ($3::uuid IS NULL OR wr.id = $3::uuid)
+  AND ($4::text = '' OR wr.status = $4::text)
+ORDER BY wr.created_at DESC, wr.id
+LIMIT $6::int OFFSET $5::int
+`
+
+type ListWithdrawalRequestsParams struct {
+	GuildID      uuid.UUID
+	RequesterID  *uuid.UUID
+	RequestID    *uuid.UUID
+	StatusFilter string
+	PageOffset   int32
+	PageSize     int32
+}
+
+type ListWithdrawalRequestsRow struct {
+	ID                 uuid.UUID
+	GuildID            uuid.UUID
+	RequesterID        uuid.UUID
+	RequesterName      string
+	RequesterAvatarUrl string
+	Amount             int64
+	Note               string
+	Status             string
+	ReviewerID         *uuid.UUID
+	ReviewerName       string
+	ReviewNote         string
+	CreatedAt          time.Time
+	ReviewedAt         pgtype.Timestamptz
+}
+
+func (q *Queries) ListWithdrawalRequests(ctx context.Context, arg ListWithdrawalRequestsParams) ([]ListWithdrawalRequestsRow, error) {
+	rows, err := q.db.Query(ctx, listWithdrawalRequests,
+		arg.GuildID,
+		arg.RequesterID,
+		arg.RequestID,
+		arg.StatusFilter,
+		arg.PageOffset,
+		arg.PageSize,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListWithdrawalRequestsRow{}
+	for rows.Next() {
+		var i ListWithdrawalRequestsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.GuildID,
+			&i.RequesterID,
+			&i.RequesterName,
+			&i.RequesterAvatarUrl,
+			&i.Amount,
+			&i.Note,
+			&i.Status,
+			&i.ReviewerID,
+			&i.ReviewerName,
+			&i.ReviewNote,
+			&i.CreatedAt,
+			&i.ReviewedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const lockPendingDelivery = `-- name: LockPendingDelivery :one
 SELECT id, owner_id, guild_id, item, source, source_id,
        COALESCE(note, '') AS note, acquired_at, delivery_requested_at
@@ -718,6 +852,30 @@ func (q *Queries) LockPendingDelivery(ctx context.Context, arg LockPendingDelive
 		&i.AcquiredAt,
 		&i.DeliveryRequestedAt,
 	)
+	return i, err
+}
+
+const lockWithdrawalRequest = `-- name: LockWithdrawalRequest :one
+SELECT amount, requester_id, status FROM withdrawal_requests
+WHERE id = $1 AND guild_id = $2
+FOR UPDATE
+`
+
+type LockWithdrawalRequestParams struct {
+	ID      uuid.UUID
+	GuildID uuid.UUID
+}
+
+type LockWithdrawalRequestRow struct {
+	Amount      int64
+	RequesterID uuid.UUID
+	Status      string
+}
+
+func (q *Queries) LockWithdrawalRequest(ctx context.Context, arg LockWithdrawalRequestParams) (LockWithdrawalRequestRow, error) {
+	row := q.db.QueryRow(ctx, lockWithdrawalRequest, arg.ID, arg.GuildID)
+	var i LockWithdrawalRequestRow
+	err := row.Scan(&i.Amount, &i.RequesterID, &i.Status)
 	return i, err
 }
 
@@ -770,6 +928,24 @@ SELECT set_config('guma.acting_admin_id', $1::text, true)
 func (q *Queries) SetActingAdmin(ctx context.Context, adminID string) error {
 	_, err := q.db.Exec(ctx, setActingAdmin, adminID)
 	return err
+}
+
+const sumPendingWithdrawals = `-- name: SumPendingWithdrawals :one
+SELECT COALESCE(SUM(amount), 0)::bigint AS amount
+FROM withdrawal_requests
+WHERE requester_id = $1 AND guild_id = $2 AND status = 'pending'
+`
+
+type SumPendingWithdrawalsParams struct {
+	RequesterID uuid.UUID
+	GuildID     uuid.UUID
+}
+
+func (q *Queries) SumPendingWithdrawals(ctx context.Context, arg SumPendingWithdrawalsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, sumPendingWithdrawals, arg.RequesterID, arg.GuildID)
+	var amount int64
+	err := row.Scan(&amount)
+	return amount, err
 }
 
 const sumWalletTransactionsBefore = `-- name: SumWalletTransactionsBefore :one
@@ -863,4 +1039,35 @@ type UpdateWalletBalanceParams struct {
 func (q *Queries) UpdateWalletBalance(ctx context.Context, arg UpdateWalletBalanceParams) error {
 	_, err := q.db.Exec(ctx, updateWalletBalance, arg.Balance, arg.UserID, arg.GuildID)
 	return err
+}
+
+const updateWithdrawalRequestStatus = `-- name: UpdateWithdrawalRequestStatus :execrows
+UPDATE withdrawal_requests SET
+    status = $1::text,
+    reviewer_id = $2::uuid,
+    review_note = NULLIF($3::text, ''),
+    reviewed_at = NOW()
+WHERE id = $4 AND guild_id = $5 AND status = 'pending'
+`
+
+type UpdateWithdrawalRequestStatusParams struct {
+	Status     string
+	ReviewerID *uuid.UUID
+	ReviewNote string
+	ID         uuid.UUID
+	GuildID    uuid.UUID
+}
+
+func (q *Queries) UpdateWithdrawalRequestStatus(ctx context.Context, arg UpdateWithdrawalRequestStatusParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateWithdrawalRequestStatus,
+		arg.Status,
+		arg.ReviewerID,
+		arg.ReviewNote,
+		arg.ID,
+		arg.GuildID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
