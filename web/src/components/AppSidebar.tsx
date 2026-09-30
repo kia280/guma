@@ -86,7 +86,7 @@ function NavItemLink({
           'group flex h-8 max-lg:h-11 items-center gap-2.5 rounded-lg px-[11px] type-body font-medium outline-none transition-colors',
           'w-full',
           isNested && !isCollapsed && 'pl-[39px]',
-          isActive ? 'bg-default text-foreground' : 'text-subtle hover:bg-default/60 hover:text-foreground',
+          isActive ? 'bg-default text-foreground' : 'text-foreground/90 hover:bg-default/60 hover:text-foreground',
           isFocusVisible && 'ring-2 ring-focus',
         ) ?? ''
       }
@@ -96,7 +96,7 @@ function NavItemLink({
           icon={item.icon}
           width={18}
           aria-hidden
-          className={cn('shrink-0', isActive ? 'text-foreground' : 'text-hint group-hover:text-subtle')}
+          className={cn('shrink-0', isActive ? 'text-foreground' : 'text-soft group-hover:text-foreground')}
         />
       )}
       <span
@@ -160,21 +160,21 @@ function NavGroupItem({
         className={cn(
           'group flex h-8 max-lg:h-11 w-full items-center gap-2.5 rounded-lg pl-[11px] pr-2 type-body font-medium outline-none transition-colors',
           'focus-visible:ring-2 focus-visible:ring-focus',
-          isInside && !isExpanded ? 'bg-default text-foreground' : 'text-subtle hover:bg-default/60 hover:text-foreground',
+          isInside && !isExpanded ? 'bg-default text-foreground' : 'text-foreground/90 hover:bg-default/60 hover:text-foreground',
         )}
       >
         <Icon
           icon={group.icon}
           width={18}
           aria-hidden
-          className={cn('shrink-0', isInside ? 'text-foreground' : 'text-hint group-hover:text-subtle')}
+          className={cn('shrink-0', isInside ? 'text-foreground' : 'text-soft group-hover:text-foreground')}
         />
         <span className="flex-1 truncate text-left">{t(group.label)}</span>
         <Icon
           icon="solar:alt-arrow-right-linear"
           width={14}
           aria-hidden
-          className={cn('shrink-0 text-hint transition-transform', isExpanded && 'rotate-90')}
+          className={cn('shrink-0 text-subtle transition-transform', isExpanded && 'rotate-90')}
         />
       </button>
       <div
@@ -235,7 +235,7 @@ export function AppSidebar({ isCollapsed, onNavigate }: AppSidebarProps) {
                 <div className="overflow-hidden">
                   <div className={cn(index > 0 && 'pt-3.5')}>
                     {section.label && (
-                      <p className="type-label truncate px-[11px] pb-1 text-hint">{t(`sections.${section.label}`)}</p>
+                      <p className="type-label truncate px-[11px] pb-1 text-subtle">{t(`sections.${section.label}`)}</p>
                     )}
                   </div>
                 </div>
