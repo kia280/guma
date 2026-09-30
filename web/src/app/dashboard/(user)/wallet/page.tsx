@@ -46,6 +46,7 @@ import { type FormatGold, useFormatGold } from '@/lib/guma/useFormatGold';
 import { subscribeLiveEvents, type LiveResource } from '@/lib/live-events';
 import { isGuildRole, useGuildPermissions } from '@/lib/permissions';
 import { transactionStatusColor } from '@/lib/status-colors';
+import { useUserStore } from '@/lib/store';
 import { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
 import type { Transaction, Wallet as WalletType, WithdrawalRequest } from '@/types/wallet';
@@ -260,15 +261,18 @@ export default function WalletPage() {
   const transactionsState = useLoadState();
   const backpackState = useLoadState();
   const notify = useToast();
+  const currentUserId = useUserStore(state => state.user?.id);
   const recipientOptions = React.useMemo<MemberOption[]>(
     () =>
-      members.map(user => ({
-        id: user.id,
-        name: userName(user.username),
-        avatar: user.avatar,
-        description: isGuildRole(user.role) ? roleLabels(user.role) : undefined,
-      })),
-    [members, userName, roleLabels],
+      members
+        .filter(user => user.id !== currentUserId)
+        .map(user => ({
+          id: user.id,
+          name: userName(user.username),
+          avatar: user.avatar,
+          description: isGuildRole(user.role) ? roleLabels(user.role) : undefined,
+        })),
+    [members, currentUserId, userName, roleLabels],
   );
   const [reloadKey, setReloadKey] = React.useState(0);
 

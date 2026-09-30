@@ -915,6 +915,7 @@
     "auctionSold": "<b>{actor}</b> won <b>{item}</b> for <b>{amount}</b>, paid to {destination, select, wallet {your wallet} other {the guild vault}}",
     "auctionUnsold": "<b>{item}</b> ended without bids",
     "itemReceived": "<b>{actor}</b> sent you <b>{item}</b>",
+    "goldReceived": "<b>{actor}</b> sent you <b>{amount}</b>",
     "lootAssigned": "You received <b>{item}</b> from <b>{rollCall}</b>",
     "itemDelivered": "<b>{actor}</b> handed over <b>{item}</b> in game",
     "auctionCancelled": "<b>{item}</b> was cancelled{refunded, select, yes {. Your bid of <b>{amount}</b> was refunded} other {}}",

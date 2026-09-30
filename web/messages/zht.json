@@ -915,6 +915,7 @@
     "auctionSold": "<b>{actor}</b> 以 <b>{amount}</b> 得標 <b>{item}</b>，款項已存入{destination, select, wallet {你的錢包} other {公會倉庫}}",
     "auctionUnsold": "<b>{item}</b> 已結束，無人出價",
     "itemReceived": "<b>{actor}</b> 送給你 <b>{item}</b>",
+    "goldReceived": "<b>{actor}</b> 轉給你 <b>{amount}</b>",
     "lootAssigned": "你從 <b>{rollCall}</b> 獲得 <b>{item}</b>",
     "itemDelivered": "<b>{actor}</b> 已在遊戲中交付 <b>{item}</b>",
     "auctionCancelled": "<b>{item}</b> 已取消{refunded, select, yes {，你的出價 <b>{amount}</b> 已退回} other {}}",

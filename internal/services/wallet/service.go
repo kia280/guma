@@ -213,6 +213,9 @@ func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guil
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
 	}
+	if toUserID == fromUserID {
+		return nil, nil, fmt.Errorf("%w: cannot transfer to yourself", errs.ErrInvalidArgument)
+	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -254,11 +257,24 @@ func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guil
 		desc = "Transfer"
 	}
 
-	outTx, err := s.insertTransaction(ctx, qtx, fromUserID, guildID, "TRANSFER_OUT", -amount, newFromBalance, desc, "", "")
+	outID, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
+		UserID: fromUserID, GuildID: guildID, Type: "TRANSFER_OUT", Amount: -amount, BalanceAfter: newFromBalance,
+		Description: desc, ActorID: &fromUserID, CounterpartyID: &toUserID,
+	})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("%w: record transaction: %v", errs.ErrInternal, err)
 	}
-	_, _ = s.insertTransaction(ctx, qtx, toUserID, guildID, "TRANSFER_IN", amount, newToBalance, desc, "", "")
+	if _, err := qtx.InsertTransaction(ctx, db.InsertTransactionParams{
+		UserID: toUserID, GuildID: guildID, Type: "TRANSFER_IN", Amount: amount, BalanceAfter: newToBalance,
+		Description: desc, ActorID: &fromUserID, CounterpartyID: &fromUserID,
+	}); err != nil {
+		return nil, nil, fmt.Errorf("%w: record transaction: %v", errs.ErrInternal, err)
+	}
+	outTx := &Transaction{
+		ID: outID.String(), UserID: fromUserIDStr, GuildID: guildIDStr, Type: "TRANSFER_OUT",
+		Amount: -amount, BalanceAfter: newFromBalance, Description: desc, CreatedAt: time.Now().UTC(),
+		ActorID: fromUserIDStr, CounterpartyID: toUserIDStr,
+	}
 
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
