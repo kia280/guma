@@ -33,6 +33,8 @@ type Config struct {
 
 	// Background job scheduling configuration
 	Scheduler SchedulerConfig `mapstructure:"scheduler"`
+
+	Metrics MetricsConfig `mapstructure:"metrics"`
 }
 
 // ServerConfig holds server-specific configuration
@@ -66,6 +68,20 @@ type SchedulerConfig struct {
 	RaffleDrawInterval    time.Duration `mapstructure:"raffle_draw_interval"`
 	AuctionSettleInterval time.Duration `mapstructure:"auction_settle_interval"`
 }
+
+type MetricsConfig struct {
+	Enabled        bool          `mapstructure:"enabled"`
+	Endpoint       string        `mapstructure:"endpoint"`
+	Protocol       string        `mapstructure:"protocol"`
+	Insecure       bool          `mapstructure:"insecure"`
+	Headers        string        `mapstructure:"headers"`
+	ExportInterval time.Duration `mapstructure:"export_interval"`
+}
+
+const (
+	MetricsProtocolGRPC         = "grpc"
+	MetricsProtocolHTTPProtobuf = "http/protobuf"
+)
 
 // LoggingConfig holds logging configuration
 type LoggingConfig struct {
@@ -115,6 +131,12 @@ func Load() (*Config, error) {
 	v.BindEnv("dev.auth_enabled", "DEV_AUTH_ENABLED")
 	v.BindEnv("scheduler.raffle_draw_interval", "SCHEDULER_RAFFLE_DRAW_INTERVAL")
 	v.BindEnv("scheduler.auction_settle_interval", "SCHEDULER_AUCTION_SETTLE_INTERVAL")
+	v.BindEnv("metrics.enabled", "METRICS_ENABLED")
+	v.BindEnv("metrics.endpoint", "METRICS_ENDPOINT")
+	v.BindEnv("metrics.protocol", "METRICS_PROTOCOL")
+	v.BindEnv("metrics.insecure", "METRICS_INSECURE")
+	v.BindEnv("metrics.headers", "METRICS_HEADERS")
+	v.BindEnv("metrics.export_interval", "METRICS_EXPORT_INTERVAL")
 
 	// Try to read config file
 	v.SetConfigName("config")
@@ -170,6 +192,13 @@ func setDefaults(v *viper.Viper) {
 
 	v.SetDefault("scheduler.raffle_draw_interval", "15s")
 	v.SetDefault("scheduler.auction_settle_interval", "15s")
+
+	v.SetDefault("metrics.enabled", false)
+	v.SetDefault("metrics.endpoint", "")
+	v.SetDefault("metrics.protocol", MetricsProtocolGRPC)
+	v.SetDefault("metrics.insecure", false)
+	v.SetDefault("metrics.headers", "")
+	v.SetDefault("metrics.export_interval", "15s")
 }
 
 // Validate validates the configuration
@@ -188,6 +217,24 @@ func (c *Config) Validate() error {
 
 	if c.Dev.AuthEnabled && !c.IsDevelopment() {
 		return fmt.Errorf("dev auth can only be enabled when server.env is development, got %q", c.Server.Environment)
+	}
+
+	return c.Metrics.Validate()
+}
+
+func (m MetricsConfig) Validate() error {
+	if !m.Enabled {
+		return nil
+	}
+
+	switch m.Protocol {
+	case MetricsProtocolGRPC, MetricsProtocolHTTPProtobuf:
+	default:
+		return fmt.Errorf("invalid metrics protocol %q: must be %q or %q", m.Protocol, MetricsProtocolGRPC, MetricsProtocolHTTPProtobuf)
+	}
+
+	if m.ExportInterval <= 0 {
+		return fmt.Errorf("metrics export interval must be positive, got %s", m.ExportInterval)
 	}
 
 	return nil

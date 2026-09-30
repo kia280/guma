@@ -53,3 +53,69 @@ func TestLoad_SchedulerAndCORSDefaults(t *testing.T) {
 		t.Fatalf("expected env override 1m, got %s", cfg.Scheduler.RaffleDrawInterval)
 	}
 }
+
+func TestLoad_MetricsDefaultsAndEnv(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://localhost/guma")
+	t.Setenv("ENV", "development")
+	t.Chdir(t.TempDir())
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if cfg.Metrics.Enabled {
+		t.Fatal("expected metrics to be disabled by default")
+	}
+	if cfg.Metrics.Protocol != MetricsProtocolGRPC {
+		t.Fatalf("expected default metrics protocol grpc, got %q", cfg.Metrics.Protocol)
+	}
+	if cfg.Metrics.ExportInterval != 15*time.Second {
+		t.Fatalf("expected default metrics export interval 15s, got %s", cfg.Metrics.ExportInterval)
+	}
+
+	t.Setenv("METRICS_ENABLED", "true")
+	t.Setenv("METRICS_ENDPOINT", "otel-collector:4318")
+	t.Setenv("METRICS_PROTOCOL", "http/protobuf")
+	t.Setenv("METRICS_INSECURE", "true")
+	t.Setenv("METRICS_HEADERS", "api-key=secret")
+	t.Setenv("METRICS_EXPORT_INTERVAL", "30s")
+	cfg, err = Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	want := MetricsConfig{
+		Enabled:        true,
+		Endpoint:       "otel-collector:4318",
+		Protocol:       MetricsProtocolHTTPProtobuf,
+		Insecure:       true,
+		Headers:        "api-key=secret",
+		ExportInterval: 30 * time.Second,
+	}
+	if cfg.Metrics != want {
+		t.Fatalf("expected metrics config %+v, got %+v", want, cfg.Metrics)
+	}
+}
+
+func TestValidate_Metrics(t *testing.T) {
+	valid := MetricsConfig{Enabled: true, Protocol: MetricsProtocolGRPC, ExportInterval: 15 * time.Second}
+	if err := valid.Validate(); err != nil {
+		t.Fatalf("expected valid metrics config: %v", err)
+	}
+
+	badProtocol := valid
+	badProtocol.Protocol = "http/json"
+	if err := badProtocol.Validate(); err == nil {
+		t.Fatal("expected error for unsupported protocol")
+	}
+
+	badInterval := valid
+	badInterval.ExportInterval = 0
+	if err := badInterval.Validate(); err == nil {
+		t.Fatal("expected error for non-positive export interval")
+	}
+
+	disabled := MetricsConfig{Protocol: "bogus"}
+	if err := disabled.Validate(); err != nil {
+		t.Fatalf("expected disabled metrics to skip validation: %v", err)
+	}
+}

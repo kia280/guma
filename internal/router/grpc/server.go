@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -38,6 +39,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 
 	// Create gRPC server with interceptors
 	grpcServer := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 		grpc.ChainUnaryInterceptor(
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),

@@ -51,3 +51,15 @@ rate_limit:
 scheduler:
   raffle_draw_interval: 15s  # set to 0 to disable
   auction_settle_interval: 15s  # set to 0 to disable
+
+# OpenTelemetry metrics (OTLP export). Disabled by default; no collector needed for local dev.
+# Env overrides: METRICS_ENABLED, METRICS_ENDPOINT, METRICS_PROTOCOL, METRICS_INSECURE,
+# METRICS_HEADERS, METRICS_EXPORT_INTERVAL. Standard OTEL_EXPORTER_OTLP_* and
+# OTEL_RESOURCE_ATTRIBUTES variables are also honored.
+metrics:
+  enabled: false
+  endpoint: ""  # host:port or URL (e.g. localhost:4317, https://otlp.example.com/v1/metrics); empty uses OTLP defaults
+  protocol: grpc  # grpc, http/protobuf
+  insecure: false  # plaintext connection to the collector
+  headers: ""  # key=value,key2=value2 (e.g. auth tokens)
+  export_interval: 15s  # how often metrics are collected and exported
