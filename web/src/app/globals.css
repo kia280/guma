@@ -610,6 +610,27 @@ html[data-font-size='x-large'] {
     white-space: nowrap;
   }
 
+  .table-root--secondary .table__body .table__row {
+    &:is(:hover, [data-hovered='true'], :focus-visible, [data-focus-visible='true']) {
+      .table__cell:first-child {
+        border-start-start-radius: var(--radius-2xl);
+        border-end-start-radius: var(--radius-2xl);
+      }
+
+      .table__cell:last-child {
+        border-start-end-radius: var(--radius-2xl);
+        border-end-end-radius: var(--radius-2xl);
+      }
+    }
+
+    @media (hover: hover) {
+      &:is(:hover, [data-hovered='true']) .table__cell,
+      &:has(+ .table__row:is(:hover, [data-hovered='true'])) .table__cell {
+        border-bottom-color: transparent;
+      }
+    }
+  }
+
   .action-success-badge {
     animation: action-success-pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }

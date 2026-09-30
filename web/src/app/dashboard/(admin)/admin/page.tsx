@@ -599,7 +599,7 @@ export default function AdminPage() {
                     </Table.Header>
                     <Table.Body>
                       {filteredMembers.map(user => (
-                        <Table.Row key={user.id} id={user.id} className={canManageAssets ? 'cursor-pointer' : undefined}>
+                        <Table.Row key={user.id} id={user.id} className={canManageAssets ? 'group cursor-pointer' : 'group'}>
                           <Table.Cell>
                             <div className="flex items-center gap-3 min-w-0">
                               <UserAvatar name={userName(user.username)} src={user.avatar} className="shrink-0 max-[359px]:hidden" />
@@ -624,7 +624,7 @@ export default function AdminPage() {
                               </div>
                             </div>
                           </Table.Cell>
-                          <Table.Cell className={canManageAssets ? 'hidden sm:table-cell' : undefined}>
+                          <Table.Cell className={canManageAssets ? 'hidden sm:table-cell' : 'max-md:group-hover:rounded-r-2xl'}>
                             <Chip size="sm" color={roleChipColor(user.role)} variant="secondary" className="capitalize whitespace-nowrap">
                               {user.role && ROLES.includes(user.role as (typeof ROLES)[number])
                                 ? t(`roles.${user.role as (typeof ROLES)[number]}`)
@@ -632,7 +632,7 @@ export default function AdminPage() {
                             </Chip>
                           </Table.Cell>
                           {canManageAssets && (
-                            <Table.Cell className="whitespace-nowrap tabular-nums">
+                            <Table.Cell className="whitespace-nowrap tabular-nums max-md:group-hover:rounded-r-2xl">
                               {assetCell(user.id, summary => formatGold(summary.balance))}
                             </Table.Cell>
                           )}
