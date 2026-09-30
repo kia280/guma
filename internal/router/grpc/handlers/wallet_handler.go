@@ -70,11 +70,102 @@ func (h *WalletHandler) WithdrawFunds(ctx context.Context, req *gumav1.WithdrawF
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	tx, _, err := h.svc.Withdraw(ctx, userID, req.GuildId, req.Amount, req.Note)
+	request, tx, w, err := h.svc.RequestWithdrawal(ctx, userID, req.GuildId, req.Amount, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	return &gumav1.TransactionResponse{Transaction: transactionToProto(tx)}, nil
+	return &gumav1.TransactionResponse{
+		Transaction:       transactionToProto(tx),
+		UpdatedWallet:     walletToProto(w),
+		WithdrawalRequest: withdrawalRequestToProto(request),
+	}, nil
+}
+
+func (h *WalletHandler) ListMyWithdrawalRequests(ctx context.Context, req *gumav1.ListMyWithdrawalRequestsRequest) (*gumav1.ListMyWithdrawalRequestsResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	result, err := h.svc.ListMyWithdrawalRequests(ctx, walletsvc.ListWithdrawalRequestsParams{
+		ViewerID: userID,
+		GuildID:  req.GuildId,
+		Status:   req.Status,
+		PageSize: int(req.PageSize),
+		Offset:   walletsvc.ParsePageToken(req.PageToken),
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.ListMyWithdrawalRequestsResponse{
+		Requests:      withdrawalRequestsToProto(result.Requests),
+		NextPageToken: walletsvc.NextPageToken(result.NextOffset),
+		TotalCount:    result.TotalCount,
+	}, nil
+}
+
+func (h *WalletHandler) CancelWithdrawalRequest(ctx context.Context, req *gumav1.CancelWithdrawalRequestRequest) (*gumav1.CancelWithdrawalRequestResponse, error) {
+	if req.GuildId == "" || req.RequestId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and request_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	request, w, err := h.svc.CancelWithdrawalRequest(ctx, userID, req.GuildId, req.RequestId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.CancelWithdrawalRequestResponse{
+		WithdrawalRequest: withdrawalRequestToProto(request),
+		UpdatedWallet:     walletToProto(w),
+	}, nil
+}
+
+func (h *WalletHandler) ListWithdrawalRequests(ctx context.Context, req *gumav1.ListWithdrawalRequestsRequest) (*gumav1.ListWithdrawalRequestsResponse, error) {
+	if req.GuildId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	result, err := h.svc.ListWithdrawalRequests(ctx, walletsvc.ListWithdrawalRequestsParams{
+		ViewerID: userID,
+		GuildID:  req.GuildId,
+		Status:   req.Status,
+		PageSize: int(req.PageSize),
+		Offset:   walletsvc.ParsePageToken(req.PageToken),
+	})
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.ListWithdrawalRequestsResponse{
+		Requests:      withdrawalRequestsToProto(result.Requests),
+		NextPageToken: walletsvc.NextPageToken(result.NextOffset),
+		TotalCount:    result.TotalCount,
+	}, nil
+}
+
+func (h *WalletHandler) ReviewWithdrawalRequest(ctx context.Context, req *gumav1.ReviewWithdrawalRequestRequest) (*gumav1.ReviewWithdrawalRequestResponse, error) {
+	if req.GuildId == "" || req.RequestId == "" {
+		return nil, status.Error(codes.InvalidArgument, "guild_id and request_id are required")
+	}
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+
+	request, err := h.svc.ReviewWithdrawalRequest(ctx, userID, req.GuildId, req.RequestId, req.Status, req.Note)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &gumav1.ReviewWithdrawalRequestResponse{WithdrawalRequest: withdrawalRequestToProto(request)}, nil
 }
 
 func (h *WalletHandler) TransferFunds(ctx context.Context, req *gumav1.TransferFundsRequest) (*gumav1.TransactionResponse, error) {
@@ -220,15 +311,45 @@ func walletToProto(w *walletsvc.Wallet) *gumav1.Wallet {
 		}
 	}
 	return &gumav1.Wallet{
-		UserId:       w.UserID,
-		GuildId:      w.GuildID,
-		Balance:      w.Balance,
-		Currency:     w.Currency,
-		CreatedAt:    timestamppb.New(w.CreatedAt),
-		UpdatedAt:    timestamppb.New(w.UpdatedAt),
-		LockedInBids: w.LockedInBids,
-		LockedBids:   lockedBids,
+		UserId:             w.UserID,
+		GuildId:            w.GuildID,
+		Balance:            w.Balance,
+		Currency:           w.Currency,
+		CreatedAt:          timestamppb.New(w.CreatedAt),
+		UpdatedAt:          timestamppb.New(w.UpdatedAt),
+		LockedInBids:       w.LockedInBids,
+		LockedBids:         lockedBids,
+		PendingWithdrawals: w.PendingWithdrawals,
 	}
+}
+
+func withdrawalRequestToProto(r *walletsvc.WithdrawalRequest) *gumav1.WithdrawalRequest {
+	p := &gumav1.WithdrawalRequest{
+		Id:                 r.ID,
+		GuildId:            r.GuildID,
+		RequesterId:        r.RequesterID,
+		RequesterName:      r.RequesterName,
+		RequesterAvatarUrl: r.RequesterAvatarURL,
+		Amount:             r.Amount,
+		Note:               r.Note,
+		Status:             r.Status,
+		ReviewerId:         r.ReviewerID,
+		ReviewerName:       r.ReviewerName,
+		ReviewNote:         r.ReviewNote,
+		CreatedAt:          timestamppb.New(r.CreatedAt),
+	}
+	if r.ReviewedAt != nil {
+		p.ReviewedAt = timestamppb.New(*r.ReviewedAt)
+	}
+	return p
+}
+
+func withdrawalRequestsToProto(requests []*walletsvc.WithdrawalRequest) []*gumav1.WithdrawalRequest {
+	protos := make([]*gumav1.WithdrawalRequest, len(requests))
+	for i, r := range requests {
+		protos[i] = withdrawalRequestToProto(r)
+	}
+	return protos
 }
 
 func transactionToProto(t *walletsvc.Transaction) *gumav1.Transaction {
