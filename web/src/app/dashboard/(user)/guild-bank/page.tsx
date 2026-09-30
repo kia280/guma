@@ -365,7 +365,6 @@ export default function GuildBankPage() {
           </div>
           <div className="flex flex-col">
             <p className="type-subheading text-foreground">{t('treasury')}</p>
-            <p className="type-caption text-hint">{t('treasuryDesc')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0 flex flex-col gap-6">
@@ -543,7 +542,6 @@ export default function GuildBankPage() {
                 {t('items', { count: mockGuildItems.length })}
               </Chip>
             </div>
-            <p className="type-caption text-hint">{t('storageDesc')}</p>
           </div>
         </Card.Header>
         <Card.Content className="pt-0">
