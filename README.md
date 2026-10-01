@@ -1,52 +1,104 @@
 # Guma
 
-Guma is a guild management app for online game guilds. Officers open roll calls
-for boss fights, members check in, and the loot and gold from each fight flow
-into a shared guild vault, member wallets, auctions, and raffles, with every
-movement recorded. Members sign in with Discord, and the app is available in
-English and Traditional Chinese.
+Guma is a guild management app for MMORPG guilds: roll calls, loot
+distribution, auctions, raffles, a guild currency economy, a boss calendar, and
+announcements.
 
 ![Guma demo on desktop and phone: roll call check-in, gold distribution, calendar, bidding, the wallet, and the admin inbox](docs/demo.webp)
 
-<p align="center"><sub>Also available as a <a href="docs/demo.mp4">1080p video (MP4)</a>.</sub></p>
+**[Live demo](https://kia280.github.io/guma/)**
 
-To try Guma without a backend, run `make web-demo` for a static demo on mock
-data with a role picker instead of Discord login. See [docs/demo.md](docs/demo.md).
+## Background
+
+Guma started as a tool for running a guild in a Korean MMORPG. Officers had to
+track who joined each boss fight, split the loot and gold fairly, run auctions
+and raffles, and keep the schedule and announcements in one place. Guma brings
+those everyday guild operations into a single app.
+
+It is also my practice project for building a web-based cloud service end to
+end: a Go gRPC backend, a Next.js frontend, PostgreSQL, Discord login through
+Ory Kratos, live updates, observability, and a Helm chart for deployment. I also
+use it to practice working with coding agents: agents do much of the
+implementation, and I review every change before it is merged.
+
+Many TODOs remain, and every guild runs things differently, so feel free to
+fork Guma and adapt it to your guild.
 
 ## Features
 
-- **Roll calls**: officers open a roll call for a boss or event, members check
-  in, and the loot and gold pot are distributed to attendees.
+- **Roll calls**: officers open a roll call for a boss or event and members check in.
+- **Loot and gold distribution**: split the loot and gold pot among attendees.
 - **Boss calendar**: month, week, and day views with recurring events.
-- **Auctions and raffles**: members bid with their wallet balance or buy raffle
-  tickets for a spinning draw.
-- **Wallet, backpack, and guild vault**: balances, transfers, withdrawals,
-  items, and shared guild funds, each with a full history.
-- **Administration**: one inbox for requests and approvals, member roles,
-  templates, announcements, and guild settings.
-- **Across the app**: live updates over server-sent events, notifications,
-  light and dark themes, keyboard shortcuts, and a mobile layout.
-
-| Roll call gold distribution | Admin inbox |
-| --- | --- |
-| ![Distributing roll call gold by weight](docs/screenshots/roll-call-gold.webp) | ![Admin inbox](docs/screenshots/admin-inbox.webp) |
+- **Auctions**: members bid on items with their wallet balance.
+- **Raffles**: ticketed prize draws with a spinning wheel.
+- **Wallet and backpack**: each member's gold, items, and transaction history.
+- **Guild vault**: shared guild funds and items with requests and contributions.
+- **Admin inbox**: one queue to approve or reject requests and withdrawals.
+- **Members and roles**: owner, admin, moderator, and member permissions.
+- **Announcements**: Markdown announcements with drafts and pinning.
+- **Live updates**: balances and events refresh over SSE.
+- **Multiple languages**: English and Traditional Chinese, and more can be added.
+- **Observability**: OpenTelemetry metrics and traces exported over OTLP.
 
 ## Architecture
 
+```mermaid
+flowchart LR
+  browser([Browser])
+
+  subgraph edge[Edge]
+    nginx[nginx]
+  end
+
+  subgraph frontend[Frontend]
+    web["Next.js 16<br/>React 19 + HeroUI v3<br/>:3000"]
+  end
+
+  subgraph backend["Go backend (guma serve)"]
+    direction TB
+    gateway["grpc-gateway<br/>HTTP/JSON + SSE<br/>:8080"]
+    grpc["gRPC server<br/>interceptors + handlers<br/>:50051"]
+    services["Services<br/>business rules"]
+    events["Live event listener"]
+    gateway --> grpc --> services
+    events -->|SSE stream| gateway
+  end
+
+  subgraph data[Data]
+    postgres[(PostgreSQL)]
+  end
+
+  subgraph auth[Auth]
+    kratos["Ory Kratos"]
+    discord([Discord OAuth])
+  end
+
+  otel([OTLP collector])
+
+  browser --> nginx
+  nginx -->|"/"| web
+  nginx -->|"/v1/"| gateway
+  nginx -->|"/self-service/"| kratos
+  services -->|pgx + sqlc| postgres
+  postgres -.->|LISTEN / NOTIFY| events
+  grpc -->|validate session| kratos
+  kratos --> discord
+  kratos --> postgres
+  backend -.->|metrics + traces| otel
+```
+
 - **Frontend** (`web/`): Next.js 16, React 19, HeroUI v3, Tailwind CSS v4, and
-  `next-intl`, on `:3000`.
-- **Backend**: a single Go binary (`guma serve`) with gRPC on `:50051` and an
-  HTTP/JSON gateway on `:8080`.
-- **Data and auth**: PostgreSQL through `pgx` and `sqlc`; Ory Kratos for Discord
-  login.
+  `next-intl`.
+- **Backend**: one Go binary (`guma serve`). gRPC handlers handle transport,
+  services hold business rules, and `sqlc` queries handle data access. The API
+  is defined in `proto/guma/v1/`.
+- **Auth**: Ory Kratos with Discord OAuth.
 
-[AGENTS.md](AGENTS.md) has the repository map, conventions, and commands.
+## Development
 
-## Getting started
-
-Requirements: Docker and the
-[Dev Container CLI](https://github.com/devcontainers/cli), plus a Discord OAuth
-application for real sign-in (frontend-only work can use mock mode, see
+Requirements: Docker, the
+[Dev Container CLI](https://github.com/devcontainers/cli), and a Discord OAuth
+application. Frontend-only work can use mock mode instead (see
 [web/README.md](web/README.md)).
 
 ```bash
@@ -56,11 +108,8 @@ cp config.yaml.example config.yaml
 make devcontainer
 ```
 
-Open <http://localhost:8081>. nginx serves the frontend, the API, and the
-Kratos flows from one origin. Never commit `config.yaml`, `kratos.yaml`, or
-`.env` files.
-
-Common commands:
+Open <http://localhost:8081>. [docs/configuration.md](docs/configuration.md)
+covers backend and frontend settings and observability.
 
 ```bash
 go test ./...                       # backend tests
@@ -70,15 +119,9 @@ make proto                          # after editing proto/guma/v1/*.proto
 make sqlc                           # after editing internal/db/queries/*.sql
 ```
 
-Migrations, devcontainer logs, and the full command list are in
-[AGENTS.md](AGENTS.md).
-
-## Deployment
-
-The backend image is built from the root [dockerfile](dockerfile), and
-[deploy/guma](deploy/guma) contains a Helm chart; review its `values.yaml`
-before deploying. OpenTelemetry metrics and tracing are off by default; see the
-`metrics` and `tracing` sections of [config.yaml.example](config.yaml.example).
+[AGENTS.md](AGENTS.md) has the repository map, conventions, migrations, and the
+full command list. Deployment uses the root [dockerfile](dockerfile) and the
+Helm chart in [deploy/guma](deploy/guma).
 
 ## Contributing
 
