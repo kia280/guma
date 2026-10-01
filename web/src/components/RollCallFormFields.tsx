@@ -8,6 +8,19 @@ import { useNow } from '@/hooks/useNow';
 
 export const ROLL_CALL_TITLE_MAX_LENGTH = 200;
 export const ROLL_CALL_DESCRIPTION_MAX_LENGTH = 2000;
+export const ROLL_CALL_IMAGE_URL_MAX_LENGTH = 2048;
+
+export const isValidRollCallImageUrl = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  if (trimmed.length > ROLL_CALL_IMAGE_URL_MAX_LENGTH || !/^https:\/\/[^/]/i.test(trimmed)) return false;
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === 'https:' && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+};
 
 export interface RollCallFormValues {
   title: string;
@@ -20,6 +33,7 @@ export interface RollCallFormValues {
 export interface RollCallFormErrors {
   title: string | null;
   datetime: string | null;
+  imageUrl: string | null;
   expireTime: string | null;
   isExpireOrderInvalid: boolean;
 }
@@ -37,6 +51,7 @@ export function useRollCallFormErrors(
   return {
     title: values.title.trim() ? null : t('titleRequired'),
     datetime: values.datetime ? null : t('eventDateTimeRequired'),
+    imageUrl: isValidRollCallImageUrl(values.imageUrl) ? null : t('imageUrlInvalid'),
     expireTime: !values.expireTime
       ? t('expireTimeRequired')
       : expireBeforeStart
@@ -49,7 +64,7 @@ export function useRollCallFormErrors(
 }
 
 export const hasRollCallFormErrors = (errors: RollCallFormErrors) =>
-  Boolean(errors.title || errors.datetime || errors.expireTime);
+  Boolean(errors.title || errors.datetime || errors.expireTime || errors.imageUrl);
 
 function DateTimeField({
   label,
@@ -142,6 +157,7 @@ export function RollCallFormFields({
   const t = useTranslations('rollCall');
   const showTitleError = Boolean(errors.title) && showErrors;
   const showDatetimeError = Boolean(errors.datetime) && showErrors;
+  const showImageUrlError = Boolean(errors.imageUrl) && showErrors;
   const showExpireTimeError = Boolean(errors.expireTime) && (showErrors || errors.isExpireOrderInvalid);
 
   return (
@@ -186,14 +202,17 @@ export function RollCallFormFields({
         description={t('expirePlaceholder')}
       />
       {loot}
-      <TextField>
+      <TextField validationBehavior="aria" isInvalid={showImageUrlError}>
         <Label>{t('imageUrlPlaceholder')}</Label>
         <Input
+          type="url"
           placeholder="https://..."
           value={values.imageUrl}
           onChange={e => onChange({ imageUrl: e.target.value })}
+          maxLength={ROLL_CALL_IMAGE_URL_MAX_LENGTH}
           variant="secondary"
         />
+        {showImageUrlError && <FieldError>{errors.imageUrl}</FieldError>}
       </TextField>
       {footer}
     </form>

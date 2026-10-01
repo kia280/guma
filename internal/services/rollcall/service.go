@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +32,7 @@ const (
 	maxLootNameLength    = 100
 	maxLootDescLength    = 500
 	maxLootTagLength     = 50
+	maxImageURLLength    = 2048
 )
 
 // RollCall is the domain model for a roll call event.
@@ -229,6 +231,10 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 	if err := checkLootCount(len(p.Loot)); err != nil {
 		return nil, err
 	}
+	imageURL, err := normalizeImageURL(p.ImageURL)
+	if err != nil {
+		return nil, err
+	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -266,7 +272,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 	r, err := qtx.CreateRollCall(ctx, db.CreateRollCallParams{
 		GuildID: guildID, CreatedBy: createdBy, Title: p.Title,
 		Description: p.Description, Datetime: p.Datetime, ExpireTime: p.ExpireTime,
-		ImageUrl: p.ImageURL, LootList: lootJSON,
+		ImageUrl: imageURL, LootList: lootJSON,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: create roll call: %v", errs.ErrInternal, err)
@@ -320,6 +326,14 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 	if len(p.Loot) > 0 {
 		return nil, fmt.Errorf("%w: loot list cannot be changed after publishing", errs.ErrInvalidArgument)
 	}
+	var imageURL *string
+	if p.ImageURL != nil {
+		normalized, err := normalizeImageURL(*p.ImageURL)
+		if err != nil {
+			return nil, err
+		}
+		imageURL = &normalized
+	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -352,9 +366,9 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 		params.SetDescription = true
 		params.Description = strings.TrimSpace(*p.Description)
 	}
-	if p.ImageURL != nil {
+	if imageURL != nil {
 		params.SetImageUrl = true
-		params.ImageUrl = strings.TrimSpace(*p.ImageURL)
+		params.ImageUrl = *imageURL
 	}
 
 	r, err := s.q.UpdateRollCall(ctx, params)
@@ -1095,6 +1109,21 @@ func checkLength(field, value string, maxLength int) error {
 		return fmt.Errorf("%w: %s must be at most %d characters", errs.ErrInvalidArgument, field, maxLength)
 	}
 	return nil
+}
+
+func normalizeImageURL(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "", nil
+	}
+	if err := checkLength("image_url", raw, maxImageURLLength); err != nil {
+		return "", err
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u.Scheme != "https" || u.Host == "" {
+		return "", fmt.Errorf("%w: image_url must be an absolute https URL", errs.ErrInvalidArgument)
+	}
+	return raw, nil
 }
 
 func checkLootCount(n int) error {
