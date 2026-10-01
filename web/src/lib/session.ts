@@ -1,10 +1,11 @@
 import type { Session } from '@ory/client';
+import { withBasePath } from '@/lib/base-path';
 import { saveDemoRole } from '@/lib/demo/role';
 import { devLogout } from '@/lib/dev-auth';
 import { env } from '@/lib/env';
 import { kratos } from '@/lib/kratos';
 
-const LOGIN_PATH = '/login';
+const LOGIN_PATH = withBasePath('/login');
 
 // checkSession validates the current Kratos session. Returns the session
 // object if authenticated, or null for any failure (no cookie, expired,
