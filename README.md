@@ -1,248 +1,93 @@
-# Guma - Guild Management Application
+# Guma
 
-A comprehensive web application for managing gaming guilds with a modular plugin architecture.
+Guma is a guild management app for online game guilds. Officers open roll calls
+for boss fights, members check in, and the loot and gold from each fight flow
+into a shared guild vault, member wallets, auctions, and raffles, with every
+movement recorded. Members sign in with Discord, and the app is available in
+English and Traditional Chinese.
+
+![Guma demo on desktop and phone: roll call check-in, gold distribution, calendar, bidding, the wallet, and the admin inbox](docs/demo.webp)
+
+<p align="center"><sub>Also available as a <a href="docs/demo.mp4">1080p video (MP4)</a>.</sub></p>
+
+To try Guma without a backend, run `make web-demo` for a static demo on mock
+data with a role picker instead of Discord login. See [docs/demo.md](docs/demo.md).
+
+## Features
+
+- **Roll calls**: officers open a roll call for a boss or event, members check
+  in, and the loot and gold pot are distributed to attendees.
+- **Boss calendar**: month, week, and day views with recurring events.
+- **Auctions and raffles**: members bid with their wallet balance or buy raffle
+  tickets for a spinning draw.
+- **Wallet, backpack, and guild vault**: balances, transfers, withdrawals,
+  items, and shared guild funds, each with a full history.
+- **Administration**: one inbox for requests and approvals, member roles,
+  templates, announcements, and guild settings.
+- **Across the app**: live updates over server-sent events, notifications,
+  light and dark themes, keyboard shortcuts, and a mobile layout.
+
+| Roll call gold distribution | Admin inbox |
+| --- | --- |
+| ![Distributing roll call gold by weight](docs/screenshots/roll-call-gold.webp) | ![Admin inbox](docs/screenshots/admin-inbox.webp) |
 
 ## Architecture
 
-- **Backend**: Go with ConnectRPC and Protocol Buffers
-- **Frontend**: Next.js with React, HeroUI, and Tailwind CSS
-- **Database**: PostgreSQL
-- **Cache**: Redis
-- **Containerization**: Docker
+- **Frontend** (`web/`): Next.js 16, React 19, HeroUI v3, Tailwind CSS v4, and
+  `next-intl`, on `:3000`.
+- **Backend**: a single Go binary (`guma serve`) with gRPC on `:50051` and an
+  HTTP/JSON gateway on `:8080`.
+- **Data and auth**: PostgreSQL through `pgx` and `sqlc`; Ory Kratos for Discord
+  login.
 
-## Project Structure
+[AGENTS.md](AGENTS.md) has the repository map, conventions, and commands.
 
-```text
-guma/
-├── cmd/                    # Application entry points
-│   └── server/            # Main server
-├── internal/              # Private application code
-│   ├── config/           # Configuration management
-│   ├── database/         # Database connection and migrations
-│   ├── middleware/       # HTTP middleware
-│   ├── models/           # Data models
-│   ├── services/         # Business logic
-│   └── handlers/         # HTTP handlers
-├── pkg/                   # Public library code
-│   └── proto/            # Protocol buffer definitions
-├── web/                   # Frontend Next.js application
-├── migrations/            # Database migrations
-├── docker/               # Docker configurations
-└── plugins/              # Plugin system
-```
+## Getting started
 
-## Quick Start
-
-### Prerequisites
-
-- Go 1.23+
-- Node.js 18+
-- PostgreSQL 15+
-- Redis 7+
-- Docker & Docker Compose
-
-### Development Setup
-
-1. **Clone and setup**
+Requirements: Docker and the
+[Dev Container CLI](https://github.com/devcontainers/cli), plus a Discord OAuth
+application for real sign-in (frontend-only work can use mock mode, see
+[web/README.md](web/README.md)).
 
 ```bash
-git clone https://github.com/guma-org/guma.git
-cd guma
-make setup
+cp .devcontainer/config/kratos/kratos.yaml.example .devcontainer/config/kratos/kratos.yaml
+cp config.yaml.example config.yaml
+# add your Discord client ID and secret to kratos.yaml, then:
+make devcontainer
 ```
 
-2. **Start development environment**
+Open <http://localhost:8081>. nginx serves the frontend, the API, and the
+Kratos flows from one origin. Never commit `config.yaml`, `kratos.yaml`, or
+`.env` files.
+
+Common commands:
 
 ```bash
-# Start all services
-make dev
-
-# In separate terminals:
-make serve    # Start backend on :8080
-make web-dev  # Start frontend on :3000
+go test ./...                       # backend tests
+cd web && npm run lint              # frontend lint
+cd web && npx next build --webpack  # frontend production build
+make proto                          # after editing proto/guma/v1/*.proto
+make sqlc                           # after editing internal/db/queries/*.sql
 ```
 
-3. **Access the application**
+Migrations, devcontainer logs, and the full command list are in
+[AGENTS.md](AGENTS.md).
 
-- Frontend: <http://localhost:3000>
-- Backend: <http://localhost:8080>
-- Liveness probe: <http://localhost:8080/livez>
-- Readiness probe: <http://localhost:8080/readyz>
-- gRPC health (`grpc.health.v1`): `localhost:50051`, services `liveness` and `readiness`
+## Deployment
 
-### Manual Setup
-
-If you prefer manual setup:
-
-```bash
-# Copy environment file
-cp .env.example .env
-
-# Start dependencies
-docker-compose -f docker/docker-compose.dev.yml up -d
-
-# Run database migrations
-go run cmd/migrate/main.go -direction=up
-
-# Start backend
-go run cmd/server/main.go
-
-# Start frontend (in new terminal)
-cd web && npm install && npm run dev
-```
-
-## API Services
-
-The backend exposes ConnectRPC services:
-
-- **Guild Service**: Guild management operations
-- **Member Service**: Member and invitation management  
-- **Event Service**: Event scheduling and RSVP management
-
-### Example API Usage
-
-```bash
-# Create a guild
-curl -X POST http://localhost:8080/guma.v1.GuildService/CreateGuild \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Test Guild",
-    "description": "A test guild", 
-    "settings": {
-      "public": true,
-      "max_members": 100,
-      "timezone": "UTC",
-      "tags": ["gaming", "mmo"]
-    }
-  }'
-
-# Health checks
-curl http://localhost:8080/livez
-curl http://localhost:8080/readyz
-go run main.go healthcheck --service readiness
-```
-
-## Development Commands
-
-```bash
-# Setup development environment
-make setup
-
-# Start services
-make dev
-make serve      # Backend only
-make web-dev    # Frontend only
-
-# Database operations  
-make migrate-up
-make migrate-down
-make migrate-reset
-
-# Docker services
-make docker-up
-make docker-down
-make docker-logs
-
-# Code quality
-make test
-make fmt
-make vet
-make check
-
-# Build
-make build
-make clean
-```
-
-## Core Features Implemented
-
-### Backend (Go + ConnectRPC)
-
-- ✅ Guild management with settings and metadata
-- ✅ Member management with role-based permissions
-- ✅ Event scheduling with RSVP tracking
-- ✅ Database migrations and connection pooling
-- ✅ CORS middleware and configuration management
-- ✅ Protocol buffer definitions for all services
-
-### Frontend (Next.js + React)
-
-- ✅ Responsive design with HeroUI components
-- ✅ Guild listing and management interface
-- ✅ TypeScript definitions for API types
-- ✅ Modern React patterns with hooks
-
-### Infrastructure
-
-- ✅ Docker Compose for development dependencies
-- ✅ Database schema with proper indexing
-- ✅ Environment-based configuration
-- ✅ Build and deployment scripts
-
-## Distributed Tracing
-
-The backend can export OpenTelemetry traces over OTLP. Tracing is disabled by
-default, so local development and tests need no collector. When enabled, spans
-cover HTTP gateway requests, the gRPC calls they make, and the PostgreSQL
-queries issued while handling them. Context propagates with W3C `traceparent`
-and `baggage` headers, and gRPC request logs include a `trace_id` field.
-
-| Setting (`config.yaml`) | Environment variable | Default | Description |
-| --- | --- | --- | --- |
-| `tracing.enabled` | `TRACING_ENABLED` | `false` | Turn tracing on |
-| `tracing.endpoint` | `TRACING_ENDPOINT` | OTLP default | `host:port` or URL such as `http://otel-collector:4318` |
-| `tracing.protocol` | `TRACING_PROTOCOL` | `grpc` | `grpc` or `http/protobuf` |
-| `tracing.insecure` | `TRACING_INSECURE` | `false` | Disable TLS towards the collector |
-| `tracing.headers` | `TRACING_HEADERS` | empty | Comma-separated `key=value` export headers |
-| `tracing.sample_rate` | `TRACING_SAMPLE_RATE` | `1.0` | Ratio (0.0-1.0) of new traces to sample; parent decisions are respected |
-
-`GUMA_TRACING_*` variables and the standard `OTEL_EXPORTER_OTLP_*` and
-`OTEL_RESOURCE_ATTRIBUTES` variables are honored as well. The Helm chart
-exposes the same settings under `tracing` in `deploy/guma/values.yaml`.
-
-## Plugin System (Planned)
-
-The plugin architecture is designed to support:
-
-- Hot-loading of plugins without server restart
-- Sandboxed execution environment
-- Database integration with migrations
-- Frontend component integration
-- API access control and permissions
-
-## Database Schema
-
-Core tables implemented:
-
-- `users` - User accounts and profiles
-- `guilds` - Guild information and settings  
-- `members` - Guild membership and roles
-- `invitations` - Guild invitation system
-- `events` - Event scheduling and details
-- `event_rsvps` - RSVP responses and tracking
-
-See `migrations/` for complete schema definitions.
+The backend image is built from the root [dockerfile](dockerfile), and
+[deploy/guma](deploy/guma) contains a Helm chart; review its `values.yaml`
+before deploying. OpenTelemetry metrics and tracing are off by default; see the
+`metrics` and `tracing` sections of [config.yaml.example](config.yaml.example).
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, conventions, checks, and the terms under which contributions are accepted.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
 Copyright (C) 2026 K1a
 
-This project is licensed under the Elastic License 2.0 (Elastic-2.0). See the [LICENSE](LICENSE) file for the full text.
-
-The license does not allow providing the software to third parties as a hosted or managed service that gives them access to a substantial set of its features.
-
-### Why the Elastic License 2.0
-
-Guma is built for gaming guilds. The goal is for any guild to be able to read the source, run its own instance, and adapt it to how the guild works, without paying for it. At the same time, the project should not be taken as-is and turned into someone else's commercial product.
-
-The Elastic License 2.0 fits that balance:
-
-- Guilds may use, self-host, and modify Guma for free.
-- No one may offer Guma to others as a hosted or managed service, such as a paid guild-management platform built on this code.
-- Copyright and license notices must be kept, so the project's origin stays visible.
-
-If you want to use Guma in a way the license does not allow, such as running it as a hosted service, contact the project owner to discuss a separate license.
+Guma is licensed under the [Elastic License 2.0](LICENSE) (Elastic-2.0), a
+source-available license. Guilds may use, self-host, and modify it for free,
+but it may not be offered to third parties as a hosted or managed service.
