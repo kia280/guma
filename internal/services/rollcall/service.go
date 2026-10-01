@@ -22,9 +22,15 @@ import (
 )
 
 const (
-	defaultLootCategory = "misc"
-	defaultLootRarity   = "common"
-	maxCheckInNotes     = 500
+	defaultLootCategory  = "misc"
+	defaultLootRarity    = "common"
+	maxCheckInNotes      = 500
+	maxTitleLength       = 200
+	maxDescriptionLength = 2000
+	maxLootEntries       = 100
+	maxLootNameLength    = 100
+	maxLootDescLength    = 500
+	maxLootTagLength     = 50
 )
 
 // RollCall is the domain model for a roll call event.
@@ -217,7 +223,10 @@ func (s *Service) Get(ctx context.Context, guildIDStr, rollCallIDStr string) (*R
 
 // Create inserts a new roll call. Requires admin or moderator role.
 func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error) {
-	if err := validateRollCallFields(p.Title, p.Datetime, p.ExpireTime); err != nil {
+	if err := validateRollCallFields(p.Title, p.Description, p.Datetime, p.ExpireTime); err != nil {
+		return nil, err
+	}
+	if err := checkLootCount(len(p.Loot)); err != nil {
 		return nil, err
 	}
 	guildID, err := uuid.Parse(p.GuildID)
@@ -298,7 +307,11 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 
 // Update modifies an existing roll call.
 func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error) {
-	if err := validateRollCallFields(p.Title, p.Datetime, p.ExpireTime); err != nil {
+	description := ""
+	if p.Description != nil {
+		description = *p.Description
+	}
+	if err := validateRollCallFields(p.Title, description, p.Datetime, p.ExpireTime); err != nil {
 		return nil, err
 	}
 	if err := checkExpireTimeInFuture(p.ExpireTime, time.Now().UTC()); err != nil {
@@ -456,6 +469,9 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 }
 
 func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall, error) {
+	if err := checkLootCount(len(p.LootList)); err != nil {
+		return nil, err
+	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -1034,12 +1050,31 @@ func normalizeLootItem(item models.Item) (models.Item, error) {
 	if item.Rarity == "" {
 		item.Rarity = defaultLootRarity
 	}
+	for _, c := range []struct {
+		field, value string
+		max          int
+	}{
+		{"loot item name", item.Name, maxLootNameLength},
+		{"loot item description", item.Description, maxLootDescLength},
+		{"loot item category", item.Category, maxLootTagLength},
+		{"loot item rarity", item.Rarity, maxLootTagLength},
+	} {
+		if err := checkLength(c.field, c.value, c.max); err != nil {
+			return item, err
+		}
+	}
 	return item, nil
 }
 
-func validateRollCallFields(title, datetime, expireTime string) error {
+func validateRollCallFields(title, description, datetime, expireTime string) error {
 	if strings.TrimSpace(title) == "" {
 		return fmt.Errorf("%w: title is required", errs.ErrInvalidArgument)
+	}
+	if err := checkLength("title", title, maxTitleLength); err != nil {
+		return err
+	}
+	if err := checkLength("description", description, maxDescriptionLength); err != nil {
+		return err
 	}
 	eventAt, err := time.Parse(time.RFC3339, datetime)
 	if err != nil {
@@ -1051,6 +1086,20 @@ func validateRollCallFields(title, datetime, expireTime string) error {
 	}
 	if !expiresAt.After(eventAt) {
 		return fmt.Errorf("%w: expire_time must be after datetime", errs.ErrInvalidArgument)
+	}
+	return nil
+}
+
+func checkLength(field, value string, maxLength int) error {
+	if utf8.RuneCountInString(value) > maxLength {
+		return fmt.Errorf("%w: %s must be at most %d characters", errs.ErrInvalidArgument, field, maxLength)
+	}
+	return nil
+}
+
+func checkLootCount(n int) error {
+	if n > maxLootEntries {
+		return fmt.Errorf("%w: loot list must have at most %d entries", errs.ErrInvalidArgument, maxLootEntries)
 	}
 	return nil
 }

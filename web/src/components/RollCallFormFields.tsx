@@ -6,6 +6,9 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { useNow } from '@/hooks/useNow';
 
+export const ROLL_CALL_TITLE_MAX_LENGTH = 200;
+export const ROLL_CALL_DESCRIPTION_MAX_LENGTH = 2000;
+
 export interface RollCallFormValues {
   title: string;
   description: string;
@@ -150,6 +153,7 @@ export function RollCallFormFields({
           placeholder={t('titlePlaceholder')}
           value={values.title}
           onChange={e => onChange({ title: e.target.value })}
+          maxLength={ROLL_CALL_TITLE_MAX_LENGTH}
           variant="secondary"
           autoFocus
         />
@@ -161,6 +165,7 @@ export function RollCallFormFields({
           placeholder={t('descriptionPlaceholder')}
           value={values.description}
           onChange={e => onChange({ description: e.target.value })}
+          maxLength={ROLL_CALL_DESCRIPTION_MAX_LENGTH}
           variant="secondary"
           rows={2}
         />

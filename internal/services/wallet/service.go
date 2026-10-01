@@ -172,6 +172,10 @@ func (s *Service) Deposit(ctx context.Context, userIDStr, guildIDStr string, amo
 	if amount <= 0 {
 		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrFailedPrecondition)
 	}
+	note, err := normalizeNote(note)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	w, err := s.GetWallet(ctx, userIDStr, guildIDStr)
 	if err != nil {
@@ -216,6 +220,10 @@ func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guil
 	}
 	if toUserID == fromUserID {
 		return nil, nil, fmt.Errorf("%w: cannot transfer to yourself", errs.ErrInvalidArgument)
+	}
+	note, err = normalizeNote(note)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	pgtx, err := s.pool.Begin(ctx)

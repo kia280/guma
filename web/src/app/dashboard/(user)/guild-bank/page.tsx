@@ -45,6 +45,9 @@ import type { GuildBank, GuildContribution, GuildBankItem } from '@/types/guild-
 
 
 
+const NOTE_MAX_LENGTH = 200;
+const REASON_MAX_LENGTH = 500;
+
 const getContributionIcon = (type: GuildContribution['type']) => {
   switch (type) {
     case 'contribute':
@@ -463,6 +466,7 @@ export default function GuildBankPage() {
                             placeholder={t('notePlaceholder')}
                             value={contributeNote}
                             variant="secondary"
+                            maxLength={NOTE_MAX_LENGTH}
                             rows={2}
                             onChange={e => setContributeNote(e.target.value)}
                           />
@@ -532,6 +536,7 @@ export default function GuildBankPage() {
                             placeholder={t('reasonPlaceholder')}
                             value={requestReason}
                             variant="secondary"
+                            maxLength={REASON_MAX_LENGTH}
                             rows={3}
                             onChange={e => setRequestReason(e.target.value)}
                           />
@@ -914,6 +919,7 @@ export default function GuildBankPage() {
                       placeholder={t('itemReasonPlaceholder')}
                       value={requestItemReason}
                       variant="secondary"
+                      maxLength={REASON_MAX_LENGTH}
                       rows={3}
                       onChange={e => setRequestItemReason(e.target.value)}
                     />

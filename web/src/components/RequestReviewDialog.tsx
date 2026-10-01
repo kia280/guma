@@ -22,6 +22,8 @@ const APPROVE_HINTS = {
   withdrawal: 'approveWithdrawalHint',
 } as const;
 
+const NOTE_MAX_LENGTH = 200;
+
 const reviewErrorKey = (err: unknown, kind: ReviewableRequest['kind']) => {
   switch (apiErrorCode(err)) {
     case GrpcCode.PermissionDenied:
@@ -150,6 +152,7 @@ export function RequestReviewDialog({ guildId, target, onClose, onReviewed }: Re
                 <TextArea
                   variant="secondary"
                   rows={2}
+                  maxLength={NOTE_MAX_LENGTH}
                   placeholder={single ? t('notePlaceholder') : t('batchNotePlaceholder')}
                   value={note}
                   onChange={event => setNote(event.target.value)}

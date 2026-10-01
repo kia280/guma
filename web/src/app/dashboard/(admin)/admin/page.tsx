@@ -70,6 +70,8 @@ const RELATIVE_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
   ['minute', 60],
 ];
 
+const GUILD_NAME_MAX_LENGTH = 100;
+
 const formatRelative = (date: Date, intlLocale: string) => {
   const seconds = Math.round((date.getTime() - Date.now()) / 1000);
   const rtf = new Intl.RelativeTimeFormat(intlLocale, { numeric: 'auto' });
@@ -828,6 +830,7 @@ export default function AdminPage() {
                             <Input
                               variant="secondary"
                               value={guildNameDraft}
+                              maxLength={GUILD_NAME_MAX_LENGTH}
                               onChange={event => setGuildNameDraft(event.target.value)}
                               autoFocus
                             />

@@ -62,6 +62,10 @@ interface FormData {
   recurringSeconds: number;
 }
 
+const TITLE_MAX_LENGTH = 200;
+const DESCRIPTION_MAX_LENGTH = 2000;
+const LOCATION_MAX_LENGTH = 200;
+
 const pad2 = (value: number) => String(value).padStart(2, '0');
 
 const toLocalDateInput = (date: Date) =>
@@ -266,7 +270,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 render={({ field }) => (
                   <TextField isRequired isInvalid={!!errors.title}>
                     <Label>{t('title')}</Label>
-                    <Input {...field} variant="secondary" placeholder={t('titlePlaceholder')} />
+                    <Input {...field} variant="secondary" maxLength={TITLE_MAX_LENGTH} placeholder={t('titlePlaceholder')} />
                     <FieldError>{errors.title?.message}</FieldError>
                   </TextField>
                 )}
@@ -279,7 +283,13 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 render={({ field }) => (
                   <TextField>
                     <Label>{t('description')}</Label>
-                    <TextArea {...field} variant="secondary" placeholder={t('descriptionPlaceholder')} rows={3} />
+                    <TextArea
+                      {...field}
+                      variant="secondary"
+                      maxLength={DESCRIPTION_MAX_LENGTH}
+                      placeholder={t('descriptionPlaceholder')}
+                      rows={3}
+                    />
                   </TextField>
                 )}
               />
@@ -483,7 +493,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                 render={({ field }) => (
                   <TextField>
                     <Label>{t('location')}</Label>
-                    <Input {...field} variant="secondary" placeholder={t('locationPlaceholder')} />
+                    <Input {...field} variant="secondary" maxLength={LOCATION_MAX_LENGTH} placeholder={t('locationPlaceholder')} />
                   </TextField>
                 )}
               />

@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import React from 'react';
 import { ItemTemplatePicker } from '@/components/ItemTemplatePicker';
 import { getCategoryIcon } from '@/components/ItemThumbnail';
-import { LootListEditor } from '@/components/LootListEditor';
+import { LOOT_NAME_MAX_LENGTH, LootListEditor } from '@/components/LootListEditor';
 import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { focusFirstInvalidField } from '@/lib/focus-invalid-field';
@@ -238,6 +238,7 @@ export function RollCallLootEditModal({
                                     <Input
                                       value={name}
                                       onChange={e => renameRow(item.id, e.target.value)}
+                                      maxLength={LOOT_NAME_MAX_LENGTH}
                                       variant="primary"
                                     />
                                     {isInvalid && <FieldError>{t('nameRequired')}</FieldError>}
