@@ -13,6 +13,7 @@ import {
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
 import React from 'react';
+import { useCountdown } from '@/hooks/useNow';
 import { useToast } from '@/hooks/useToast';
 import { useCurrentGuildId } from '@/lib/current-guild';
 import { apiClient } from '@/lib/guma';
@@ -63,26 +64,33 @@ export function CreateRaffleModal({ state, prizeItem, onCreated }: CreateRaffleM
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState('');
 
-  React.useEffect(() => {
-    if (!state.isOpen) return;
-    setTitle(prizeItem ? t('titleFromItem', { item: prizeItem.name }) : '');
-    setDescription('');
-    setTicketPrice(10);
-    setMaxTickets(100);
-    setPrizeName(prizeItem?.name ?? '');
-    setPrizeAmount(prizeItem ? 0 : 1000);
-    setPrizeMode('manual');
-    setBankItem(null);
-    setDrawDate(defaultDrawDate());
-    setError('');
-  }, [state.isOpen, prizeItem, t]);
+  const [resetFor, setResetFor] = React.useState<{
+    isOpen: boolean;
+    prizeItem: CreateRaffleModalProps['prizeItem'];
+    t: typeof t;
+  } | null>(null);
+  if (resetFor === null || resetFor.isOpen !== state.isOpen || resetFor.prizeItem !== prizeItem || resetFor.t !== t) {
+    setResetFor({ isOpen: state.isOpen, prizeItem, t });
+    if (state.isOpen) {
+      setTitle(prizeItem ? t('titleFromItem', { item: prizeItem.name }) : '');
+      setDescription('');
+      setTicketPrice(10);
+      setMaxTickets(100);
+      setPrizeName(prizeItem?.name ?? '');
+      setPrizeAmount(prizeItem ? 0 : 1000);
+      setPrizeMode('manual');
+      setBankItem(null);
+      setDrawDate(defaultDrawDate());
+      setError('');
+    }
+  }
 
   const isFromBank = !prizeItem && prizeMode === 'bank';
   const lockedPrize: RafflePrizeItem | null = prizeItem
     ?? (isFromBank && bankItem ? { name: bankItem.name, source: { bankItemId: bankItem.id } } : null);
   const hasPrize = isFromBank ? !!lockedPrize : prizeName.trim() !== '' || prizeAmount > 0;
 
-  const isFuture = new Date(drawDate).getTime() > Date.now();
+  const isFuture = useCountdown(drawDate).remainingMs > 0;
   const canSubmit = title.trim() !== '' && ticketPrice > 0 && maxTickets > 0 && isFuture && hasPrize;
 
   const selectBankItem = (item: GuildBankItem | null) => {

@@ -188,9 +188,10 @@ export default function RaffleDetailContent({ id, onClose }: RaffleDetailContent
   const drawTime = raffle ? new Date(raffle.drawDate).getTime() : 0;
   const isDue = !!raffle && raffle.status === 'active' && now >= drawTime;
 
+  if (isDue && phase === 'idle') setPhase('drawing');
+
   React.useEffect(() => {
-    if (!isDue || phase !== 'idle') return;
-    setPhase('drawing');
+    if (phase !== 'drawing') return;
     changedDuringDraw.current = false;
     const retryLater = () => {
       const delay = changedDuringDraw.current ? 0 : DRAW_RETRY_MS;
@@ -213,13 +214,11 @@ export default function RaffleDetailContent({ id, onClose }: RaffleDetailContent
         else setPhase('revealed');
       })
       .catch(retryLater);
-  }, [isDue, phase, guildId, id, load, startSpin]);
+  }, [phase, guildId, id, load, startSpin]);
 
   const hasCap = (raffle?.maxTickets ?? 0) > 0;
   const ticketsLeft = raffle && hasCap ? Math.max(0, raffle.maxTickets - raffle.ticketsSold) : 0;
-  React.useEffect(() => {
-    if (ticketsLeft > 0) setQuantity(current => Math.min(current, ticketsLeft));
-  }, [ticketsLeft]);
+  if (ticketsLeft > 0 && quantity > ticketsLeft) setQuantity(ticketsLeft);
 
   if (isMissing) {
     return (

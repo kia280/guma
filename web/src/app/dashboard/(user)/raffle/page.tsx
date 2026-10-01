@@ -30,7 +30,7 @@ export default function RafflePage() {
   const [mockRaffles, setMockRaffles] = React.useState<Raffle[]>([]);
   const pathname = usePathname();
   const router = useRouter();
-  const watchedSince = React.useRef(Date.now());
+  const [watchedSince] = React.useState(() => Date.now());
   const announcedDraws = React.useRef(new Set<string>());
 
   const createModalState = useOverlayState();
@@ -70,7 +70,7 @@ export default function RafflePage() {
         return (
           raffle.status !== 'upcoming' &&
           raffle.status !== 'cancelled' &&
-          drawAt > watchedSince.current &&
+          drawAt > watchedSince &&
           drawAt <= now &&
           !announcedDraws.current.has(raffle.id)
         );
@@ -82,7 +82,7 @@ export default function RafflePage() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [mockRaffles, pathname, router, notify, t]);
+  }, [mockRaffles, pathname, router, notify, t, watchedSince]);
 
   const filtered =
     activeTab === 'all' ? mockRaffles : mockRaffles.filter(l => l.status === activeTab);

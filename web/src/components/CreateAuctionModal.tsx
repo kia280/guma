@@ -70,16 +70,19 @@ export function CreateAuctionModal({ state, item, onCreated }: CreateAuctionModa
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState('');
 
-  React.useEffect(() => {
-    if (!state.isOpen) return;
-    setDraft(item ?? EMPTY_ITEM);
-    setMode('manual');
-    setBankItem(null);
-    setStartingBid(100);
-    setMinBidIncrement(10);
-    setDuration(24);
-    setError('');
-  }, [state.isOpen, item]);
+  const [resetFor, setResetFor] = React.useState<{ isOpen: boolean; item: CreateAuctionModalProps['item'] } | null>(null);
+  if (resetFor === null || resetFor.isOpen !== state.isOpen || resetFor.item !== item) {
+    setResetFor({ isOpen: state.isOpen, item });
+    if (state.isOpen) {
+      setDraft(item ?? EMPTY_ITEM);
+      setMode('manual');
+      setBankItem(null);
+      setStartingBid(100);
+      setMinBidIncrement(10);
+      setDuration(24);
+      setError('');
+    }
+  }
 
   const isFromBackpack = !!item;
   const canPickBankItem = !isFromBackpack && can('auctionBankItems');

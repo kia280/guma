@@ -22,6 +22,8 @@ const fontSizePreviewClass: Record<FontSize, string> = {
   'x-large': 'text-lg',
 };
 
+const subscribeToNothing = () => () => {};
+
 const LOCALE_COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
 
 type NotificationStatus = 'loading' | 'ready' | 'error';
@@ -62,20 +64,18 @@ export default function PreferencePage() {
   const [notificationReload, setNotificationReload] = React.useState(0);
   const confirmedPrefsRef = React.useRef<NotificationPreferences>(DEFAULT_NOTIFICATION_PREFERENCES);
   const saveRequestRef = React.useRef<Partial<Record<NotificationPreferenceKey, number>>>({});
-  const [fontSize, setFontSizeState] = React.useState<FontSize>('default');
+  const storedFontSize = React.useSyncExternalStore<FontSize>(subscribeToNothing, getFontSize, () => 'default');
+  const [fontSizeOverride, setFontSizeOverride] = React.useState<FontSize | null>(null);
+  const fontSize = fontSizeOverride ?? storedFontSize;
   const fontSizeLabels: Record<FontSize, string> = {
     default: t('fontSizeDefault'),
     large: t('fontSizeLarge'),
     'x-large': t('fontSizeXLarge'),
   };
 
-  React.useEffect(() => {
-    setFontSizeState(getFontSize());
-  }, []);
-
   const handleFontSizeChange = (size: FontSize) => {
     setFontSize(size);
-    setFontSizeState(size);
+    setFontSizeOverride(size);
   };
 
   React.useEffect(() => {

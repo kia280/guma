@@ -30,23 +30,36 @@ export function useTemplateList<T extends { id: string; name: string }>(load: ()
   const [loadFailed, setLoadFailed] = React.useState(false);
   const latestLoad = React.useRef(0);
 
-  const reload = React.useCallback(async () => {
+  const fetchItems = React.useCallback(() => {
     const loadId = ++latestLoad.current;
-    setIsLoading(true);
-    setLoadFailed(false);
-    try {
-      const list = await load();
-      if (loadId === latestLoad.current) setItems(list);
-    } catch {
-      if (loadId === latestLoad.current) setLoadFailed(true);
-    } finally {
-      if (loadId === latestLoad.current) setIsLoading(false);
-    }
+    return load()
+      .then(list => {
+        if (loadId === latestLoad.current) setItems(list);
+      })
+      .catch(() => {
+        if (loadId === latestLoad.current) setLoadFailed(true);
+      })
+      .finally(() => {
+        if (loadId === latestLoad.current) setIsLoading(false);
+      });
   }, [load]);
 
+  const reload = React.useCallback(async () => {
+    setIsLoading(true);
+    setLoadFailed(false);
+    await fetchItems();
+  }, [fetchItems]);
+
+  const [loadingFor, setLoadingFor] = React.useState(() => load);
+  if (loadingFor !== load) {
+    setLoadingFor(() => load);
+    setIsLoading(true);
+    setLoadFailed(false);
+  }
+
   React.useEffect(() => {
-    reload();
-  }, [reload]);
+    fetchItems();
+  }, [fetchItems]);
 
   const upsert = (item: T) =>
     setItems(prev => sortByName(prev.some(i => i.id === item.id) ? prev.map(i => (i.id === item.id ? item : i)) : [...prev, item]));

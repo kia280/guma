@@ -40,6 +40,8 @@ const readCollapsed = () => {
   }
 };
 
+const subscribeToNothing = () => () => {};
+
 const saveCollapsed = (value: boolean) => {
   try {
     localStorage.setItem(COLLAPSED_STORAGE_KEY, value ? '1' : '0');
@@ -57,32 +59,29 @@ export default function DashboardLayout({ children, modal }: { children: React.R
   const pathname = usePathname();
 
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const storedCollapsed = React.useSyncExternalStore(subscribeToNothing, readCollapsed, () => false);
+  const [collapsedOverride, setCollapsedOverride] = React.useState<boolean | null>(null);
+  const isCollapsed = collapsedOverride ?? storedCollapsed;
   const isCompact = useMediaQuery('(max-width: 1023px)', { initializeWithValue: false });
   const showCollapsed = isCollapsed && !isCompact;
 
-  React.useEffect(() => {
-    setIsCollapsed(readCollapsed());
-  }, []);
-
-  React.useEffect(() => {
-    setIsDrawerOpen(false);
-  }, [pathname]);
-
-  React.useEffect(() => {
-    if (!isCompact) setIsDrawerOpen(false);
-  }, [isCompact]);
+  const [drawerResetFor, setDrawerResetFor] = React.useState({ pathname, isCompact });
+  if (drawerResetFor.pathname !== pathname || drawerResetFor.isCompact !== isCompact) {
+    setDrawerResetFor({ pathname, isCompact });
+    if (drawerResetFor.pathname !== pathname || !isCompact) setIsDrawerOpen(false);
+  }
 
   const toggleSidebar = React.useCallback(() => {
     if (isCompact) {
       setIsDrawerOpen(open => !open);
       return;
     }
-    setIsCollapsed(collapsed => {
-      saveCollapsed(!collapsed);
-      return !collapsed;
+    setCollapsedOverride(collapsed => {
+      const next = !(collapsed ?? storedCollapsed);
+      saveCollapsed(next);
+      return next;
     });
-  }, [isCompact]);
+  }, [isCompact, storedCollapsed]);
 
   useDashboardShortcuts({ onToggleSidebar: toggleSidebar, onNavigate: href => router.push(href) });
 

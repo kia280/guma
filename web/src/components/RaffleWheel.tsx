@@ -72,17 +72,20 @@ export function RaffleWheel({ entries, winnerId, spinKey, isRevealed, onSpinEnd,
   const slices = React.useMemo(() => buildSlices(entries), [entries]);
   const winner = slices.find(slice => slice.id === winnerId);
 
-  React.useEffect(() => {
-    if (spinKey === 0 && isRevealed && winner) setRotation(360 - winner.mid);
-  }, [spinKey, isRevealed, winner?.mid]);
+  const winnerMid = winner?.mid;
+  const [restingFor, setRestingFor] = React.useState<{ spinKey: number; isRevealed: boolean; winnerMid?: number } | null>(null);
+  if (restingFor === null || restingFor.spinKey !== spinKey || restingFor.isRevealed !== isRevealed || restingFor.winnerMid !== winnerMid) {
+    setRestingFor({ spinKey, isRevealed, winnerMid });
+    if (spinKey === 0 && isRevealed && winnerMid !== undefined) setRotation(360 - winnerMid);
+  }
 
   React.useEffect(() => {
     if (spinKey === 0 || !winner) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setDuration(reduced ? REDUCED_SPIN_MS : SPIN_MS);
     const jitter = (Math.random() - 0.5) * (winner.end - winner.start) * 0.6;
     const target = 360 - winner.mid + jitter;
     const frame = requestAnimationFrame(() => {
+      setDuration(reduced ? REDUCED_SPIN_MS : SPIN_MS);
       setRotation(current => current - (current % 360) + FULL_TURNS * 360 + target);
     });
     return () => cancelAnimationFrame(frame);
