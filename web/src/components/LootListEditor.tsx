@@ -10,6 +10,8 @@ import { useFormatGold } from '@/lib/guma/useFormatGold';
 import type { LootEntry } from '@/types/roll-call';
 
 export const GOLD_LOOT_ICON = 'solar:wad-of-money-linear';
+export const LOOT_NAME_MAX_LENGTH = 100;
+export const LOOT_MAX_ENTRIES = 100;
 
 interface LootListEditorProps {
   items: LootEntry[];
@@ -27,16 +29,17 @@ export function LootListEditor({ items, inputValue, onChange, label, allowGold =
   const labelId = React.useId();
   const [goldInput, setGoldInput] = React.useState<number>(Number.NaN);
   const hasGold = items.some(item => item.kind === 'gold');
+  const isFull = items.length >= LOOT_MAX_ENTRIES;
   const goldAmount = Number.isFinite(goldInput) ? roundGold(goldInput) : 0;
 
   const handleAdd = () => {
     const name = inputValue.trim();
-    if (!name) return;
+    if (!name || isFull) return;
     onChange([...items, { name }], '');
   };
 
   const handleAddGold = () => {
-    if (goldAmount <= 0 || hasGold) return;
+    if (goldAmount <= 0 || hasGold || isFull) return;
     onChange([...items, { kind: 'gold', name: '', amount: goldAmount }], inputValue);
     setGoldInput(Number.NaN);
   };
@@ -51,6 +54,7 @@ export function LootListEditor({ items, inputValue, onChange, label, allowGold =
           placeholder={t('itemNamePlaceholder')}
           value={inputValue}
           onChange={e => onChange(items, e.target.value)}
+          maxLength={LOOT_NAME_MAX_LENGTH}
           variant="secondary"
           onKeyDown={e => {
             if (e.key === 'Enter') {
@@ -66,7 +70,7 @@ export function LootListEditor({ items, inputValue, onChange, label, allowGold =
           isIconOnly
           aria-label={t('addLootItem')}
           onPress={handleAdd}
-          isDisabled={!inputValue.trim()}
+          isDisabled={!inputValue.trim() || isFull}
         >
           <Icon icon="solar:add-circle-linear" width={16} />
         </Button>

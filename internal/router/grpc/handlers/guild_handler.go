@@ -173,10 +173,14 @@ func (h *GuildHandler) ListGuilds(ctx context.Context, req *guildv1.ListGuildsRe
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
+	offset, err := guildsvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.List(ctx, guildsvc.ListParams{
 		Search:   req.Search,
 		PageSize: int(req.PageSize),
-		Offset:   guildsvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)

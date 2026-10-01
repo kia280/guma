@@ -105,12 +105,16 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
+	offset, err := banksvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.ListFundRequests(ctx, banksvc.ListFundRequestsParams{
 		GuildID:  req.GuildId,
 		UserID:   userID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
-		Offset:   banksvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -135,10 +139,14 @@ func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListCon
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
+	offset, err := banksvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.ListContributions(ctx, banksvc.ListContributionsParams{
 		GuildID:  req.GuildId,
 		PageSize: int(req.PageSize),
-		Offset:   banksvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -180,6 +188,10 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
+	offset, err := banksvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.ListBankItems(ctx, banksvc.ListBankItemsParams{
 		GuildID:    req.GuildId,
 		ViewerID:   userID,
@@ -187,7 +199,7 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 		Category:   req.Category,
 		Rarity:     req.Rarity,
 		PageSize:   int(req.PageSize),
-		Offset:     banksvc.ParsePageToken(req.PageToken),
+		Offset:     offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -260,12 +272,16 @@ func (h *BankHandler) ListItemRequests(ctx context.Context, req *gumav1.ListItem
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
+	offset, err := banksvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.ListItemRequests(ctx, banksvc.ListItemRequestsParams{
 		GuildID:  req.GuildId,
 		UserID:   userID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
-		Offset:   banksvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)

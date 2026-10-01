@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -2840,103 +2841,115 @@ var File_proto_guma_v1_wallet_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/wallet.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"-\n" +
-	"\x10GetWalletRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\"<\n" +
+	"\x1aproto/guma/v1/wallet.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"6\n" +
+	"\x10GetWalletRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"<\n" +
 	"\x11GetWalletResponse\x12'\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x0f.guma.v1.WalletR\x06wallet\"\\\n" +
-	"\x13DepositFundsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x12\n" +
-	"\x04note\x18\x03 \x01(\tR\x04note\"]\n" +
-	"\x14WithdrawFundsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x12\n" +
-	"\x04note\x18\x03 \x01(\tR\x04note\"{\n" +
-	"\x14TransferFundsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1c\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x0f.guma.v1.WalletR\x06wallet\"\x80\x01\n" +
+	"\x13DepositFundsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12'\n" +
+	"\x06amount\x18\x02 \x01(\x03B\x0f\xbaH\f\"\n" +
+	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12\x1c\n" +
+	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"\x81\x01\n" +
+	"\x14WithdrawFundsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12'\n" +
+	"\x06amount\x18\x02 \x01(\x03B\x0f\xbaH\f\"\n" +
+	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12\x1c\n" +
+	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"\xa8\x01\n" +
+	"\x14TransferFundsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12%\n" +
 	"\n" +
-	"to_user_id\x18\x02 \x01(\tR\btoUserId\x12\x16\n" +
-	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12\x12\n" +
-	"\x04note\x18\x04 \x01(\tR\x04note\"\xd0\x01\n" +
+	"to_user_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\btoUserId\x12'\n" +
+	"\x06amount\x18\x03 \x01(\x03B\x0f\xbaH\f\"\n" +
+	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12\x1c\n" +
+	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"\xd0\x01\n" +
 	"\x13TransactionResponse\x126\n" +
 	"\vtransaction\x18\x01 \x01(\v2\x14.guma.v1.TransactionR\vtransaction\x126\n" +
 	"\x0eupdated_wallet\x18\x02 \x01(\v2\x0f.guma.v1.WalletR\rupdatedWallet\x12I\n" +
-	"\x12withdrawal_request\x18\x03 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\"\x90\x01\n" +
-	"\x1fListMyWithdrawalRequestsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\x12withdrawal_request\x18\x03 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\"\xc1\x01\n" +
+	"\x1fListMyWithdrawalRequestsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1f\n" +
+	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tR\tpageToken\"\xa3\x01\n" +
+	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
+	"2\b^[0-9]*$R\tpageToken\"\xa3\x01\n" +
 	" ListMyWithdrawalRequestsResponse\x126\n" +
 	"\brequests\x18\x01 \x03(\v2\x1a.guma.v1.WithdrawalRequestR\brequests\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"Z\n" +
-	"\x1eCancelWithdrawalRequestRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
+	"totalCount\"l\n" +
+	"\x1eCancelWithdrawalRequestRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12&\n" +
 	"\n" +
-	"request_id\x18\x02 \x01(\tR\trequestId\"\xa4\x01\n" +
+	"request_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\trequestId\"\xa4\x01\n" +
 	"\x1fCancelWithdrawalRequestResponse\x12I\n" +
 	"\x12withdrawal_request\x18\x01 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\x126\n" +
-	"\x0eupdated_wallet\x18\x02 \x01(\v2\x0f.guma.v1.WalletR\rupdatedWallet\"\x8e\x01\n" +
-	"\x1dListWithdrawalRequestsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\x0eupdated_wallet\x18\x02 \x01(\v2\x0f.guma.v1.WalletR\rupdatedWallet\"\xbf\x01\n" +
+	"\x1dListWithdrawalRequestsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1f\n" +
+	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tR\tpageToken\"\xa1\x01\n" +
+	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
+	"2\b^[0-9]*$R\tpageToken\"\xa1\x01\n" +
 	"\x1eListWithdrawalRequestsResponse\x126\n" +
 	"\brequests\x18\x01 \x03(\v2\x1a.guma.v1.WithdrawalRequestR\brequests\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\x86\x01\n" +
-	"\x1eReviewWithdrawalRequestRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
+	"totalCount\"\xbd\x01\n" +
+	"\x1eReviewWithdrawalRequestRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12&\n" +
 	"\n" +
-	"request_id\x18\x02 \x01(\tR\trequestId\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\x12\x12\n" +
-	"\x04note\x18\x04 \x01(\tR\x04note\"l\n" +
+	"request_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\trequestId\x121\n" +
+	"\x06status\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bapprovedR\brejectedR\x06status\x12\x1c\n" +
+	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"l\n" +
 	"\x1fReviewWithdrawalRequestResponse\x12I\n" +
-	"\x12withdrawal_request\x18\x01 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\"\x84\x01\n" +
-	"\x17ListTransactionsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x12\n" +
-	"\x04type\x18\x02 \x01(\tR\x04type\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\x12withdrawal_request\x18\x01 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\"\xb5\x01\n" +
+	"\x17ListTransactionsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1b\n" +
+	"\x04type\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04type\x12'\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tR\tpageToken\"\x9d\x01\n" +
+	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
+	"2\b^[0-9]*$R\tpageToken\"\x9d\x01\n" +
 	"\x18ListTransactionsResponse\x128\n" +
 	"\ftransactions\x18\x01 \x03(\v2\x14.guma.v1.TransactionR\ftransactions\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"q\n" +
-	"\x18ListBackpackItemsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"totalCount\"\x99\x01\n" +
+	"\x18ListBackpackItemsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12'\n" +
+	"\tpage_size\x18\x02 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tR\tpageToken\"\x91\x01\n" +
+	"page_token\x18\x03 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
+	"2\b^[0-9]*$R\tpageToken\"\x91\x01\n" +
 	"\x19ListBackpackItemsResponse\x12+\n" +
 	"\x05items\x18\x01 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"Q\n" +
-	"\x1bWithdrawBackpackItemRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
-	"\aitem_id\x18\x02 \x01(\tR\x06itemId\"I\n" +
+	"totalCount\"c\n" +
+	"\x1bWithdrawBackpackItemRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12 \n" +
+	"\aitem_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x06itemId\"I\n" +
 	"\x1cWithdrawBackpackItemResponse\x12)\n" +
-	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"\x83\x01\n" +
-	"\x1bTransferBackpackItemRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
-	"\aitem_id\x18\x02 \x01(\tR\x06itemId\x12\x1c\n" +
+	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"\xa8\x01\n" +
+	"\x1bTransferBackpackItemRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12 \n" +
+	"\aitem_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x06itemId\x12%\n" +
 	"\n" +
-	"to_user_id\x18\x03 \x01(\tR\btoUserId\x12\x12\n" +
-	"\x04note\x18\x04 \x01(\tR\x04note\"I\n" +
+	"to_user_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18@R\btoUserId\x12\x1c\n" +
+	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"I\n" +
 	"\x1cTransferBackpackItemResponse\x12)\n" +
-	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"G\n" +
-	"\x16GetBalanceTrendRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x12\n" +
-	"\x04days\x18\x02 \x01(\x05R\x04days\"H\n" +
+	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"\\\n" +
+	"\x16GetBalanceTrendRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1e\n" +
+	"\x04days\x18\x02 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\xed\x02(\x00R\x04days\"H\n" +
 	"\x17GetBalanceTrendResponse\x12-\n" +
 	"\x06points\x18\x01 \x03(\v2\x15.guma.v1.BalancePointR\x06points\"\xf4\x02\n" +
 	"\x06Wallet\x12\x17\n" +
@@ -3013,56 +3026,57 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\x13deliveryRequestedAt\x12\x1d\n" +
 	"\n" +
 	"owner_name\x18\v \x01(\tR\townerName\x12%\n" +
-	"\x04lock\x18\x14 \x01(\v2\x11.guma.v1.ItemLockR\x04lock\"U\n" +
-	"\x1fCancelBackpackWithdrawalRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
-	"\aitem_id\x18\x02 \x01(\tR\x06itemId\"M\n" +
+	"\x04lock\x18\x14 \x01(\v2\x11.guma.v1.ItemLockR\x04lock\"g\n" +
+	"\x1fCancelBackpackWithdrawalRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12 \n" +
+	"\aitem_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x06itemId\"M\n" +
 	" CancelBackpackWithdrawalResponse\x12)\n" +
-	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"9\n" +
-	"\x1cListPendingDeliveriesRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\"L\n" +
+	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"B\n" +
+	"\x1cListPendingDeliveriesRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"L\n" +
 	"\x1dListPendingDeliveriesResponse\x12+\n" +
-	"\x05items\x18\x01 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\"T\n" +
-	"\x1eConfirmBackpackDeliveryRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
-	"\aitem_id\x18\x02 \x01(\tR\x06itemId\"L\n" +
+	"\x05items\x18\x01 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\"f\n" +
+	"\x1eConfirmBackpackDeliveryRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12 \n" +
+	"\aitem_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x06itemId\"L\n" +
 	"\x1fConfirmBackpackDeliveryResponse\x12)\n" +
-	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"4\n" +
-	"\x17ListMemberAssetsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\"f\n" +
+	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"=\n" +
+	"\x17ListMemberAssetsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"f\n" +
 	"\x12MemberAssetSummary\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x18\n" +
 	"\abalance\x18\x02 \x01(\x03R\abalance\x12\x1d\n" +
 	"\n" +
 	"item_count\x18\x03 \x01(\x05R\titemCount\"Q\n" +
 	"\x18ListMemberAssetsResponse\x125\n" +
-	"\amembers\x18\x01 \x03(\v2\x1b.guma.v1.MemberAssetSummaryR\amembers\"L\n" +
-	"\x16GetMemberAssetsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"y\n" +
+	"\amembers\x18\x01 \x03(\v2\x1b.guma.v1.MemberAssetSummaryR\amembers\"^\n" +
+	"\x16GetMemberAssetsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12 \n" +
+	"\auser_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x06userId\"y\n" +
 	"\x17GetMemberAssetsResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x18\n" +
 	"\abalance\x18\x02 \x01(\x03R\abalance\x12+\n" +
-	"\x05items\x18\x03 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\"\xbd\x01\n" +
-	"\x19AdminTransferFundsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1c\n" +
+	"\x05items\x18\x03 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\"\xf3\x01\n" +
+	"\x19AdminTransferFundsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12 \n" +
+	"\auser_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x06userId\x12%\n" +
 	"\n" +
-	"to_user_id\x18\x03 \x01(\tR\btoUserId\x12\"\n" +
-	"\rto_guild_bank\x18\x04 \x01(\bR\vtoGuildBank\x12\x16\n" +
-	"\x06amount\x18\x05 \x01(\x03R\x06amount\x12\x12\n" +
-	"\x04note\x18\x06 \x01(\tR\x04note\"n\n" +
+	"to_user_id\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18@R\btoUserId\x12\"\n" +
+	"\rto_guild_bank\x18\x04 \x01(\bR\vtoGuildBank\x12'\n" +
+	"\x06amount\x18\x05 \x01(\x03B\x0f\xbaH\f\"\n" +
+	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12\x1c\n" +
+	"\x04note\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"n\n" +
 	"\x1aAdminTransferFundsResponse\x126\n" +
 	"\vtransaction\x18\x01 \x01(\v2\x14.guma.v1.TransactionR\vtransaction\x12\x18\n" +
-	"\abalance\x18\x02 \x01(\x03R\abalance\"\xc8\x01\n" +
-	"!AdminTransferBackpackItemsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
-	"\bitem_ids\x18\x03 \x03(\tR\aitemIds\x12\x1c\n" +
+	"\abalance\x18\x02 \x01(\x03R\abalance\"\xf7\x01\n" +
+	"!AdminTransferBackpackItemsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12 \n" +
+	"\auser_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x06userId\x12#\n" +
+	"\bitem_ids\x18\x03 \x03(\tB\b\xbaH\x05\x92\x01\x02\x10dR\aitemIds\x12%\n" +
 	"\n" +
-	"to_user_id\x18\x04 \x01(\tR\btoUserId\x12\"\n" +
-	"\rto_guild_bank\x18\x05 \x01(\bR\vtoGuildBank\x12\x12\n" +
-	"\x04note\x18\x06 \x01(\tR\x04note\"?\n" +
+	"to_user_id\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18@R\btoUserId\x12\"\n" +
+	"\rto_guild_bank\x18\x05 \x01(\bR\vtoGuildBank\x12\x1c\n" +
+	"\x04note\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"?\n" +
 	"\"AdminTransferBackpackItemsResponse\x12\x19\n" +
 	"\bitem_ids\x18\x01 \x03(\tR\aitemIds2\x97\x18\n" +
 	"\rWalletService\x12h\n" +

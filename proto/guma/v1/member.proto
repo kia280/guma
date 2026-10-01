@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -83,10 +84,10 @@ service MemberService {
 
 // Request/Response messages
 message InviteMemberRequest {
-  string guild_id = 1;
-  string email = 2;
-  string role = 3;
-  string message = 4;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string email = 2 [(buf.validate.field).string.max_len = 254];
+  string role = 3 [(buf.validate.field).string.max_len = 32];
+  string message = 4 [(buf.validate.field).string.max_len = 500];
 }
 
 message InviteMemberResponse {
@@ -94,7 +95,7 @@ message InviteMemberResponse {
 }
 
 message JoinGuildRequest {
-  string invite_code = 1;
+  string invite_code = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message JoinGuildResponse {
@@ -102,11 +103,11 @@ message JoinGuildResponse {
 }
 
 message UpdateMemberRequest {
-  string guild_id = 1;
-  string member_id = 2;
-  string display_name = 3;
-  string role = 4;
-  map<string, string> profile = 5;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string member_id = 2 [(buf.validate.field).string.max_len = 64];
+  string display_name = 3 [(buf.validate.field).string.max_len = 32];
+  string role = 4 [(buf.validate.field).string.max_len = 32];
+  map<string, string> profile = 5 [(buf.validate.field).map = {max_pairs: 50, keys: {string: {max_len: 100}}, values: {string: {max_len: 2000}}}];
 }
 
 message UpdateMemberResponse {
@@ -114,9 +115,9 @@ message UpdateMemberResponse {
 }
 
 message UpdateMemberRoleRequest {
-  string guild_id = 1;
-  string user_id = 2;
-  string role = 3;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string user_id = 2 [(buf.validate.field).string.max_len = 64];
+  string role = 3 [(buf.validate.field).string = {in: ["owner", "admin", "moderator", "member"]}];
 }
 
 message UpdateMemberRoleResponse {
@@ -124,8 +125,8 @@ message UpdateMemberRoleResponse {
 }
 
 message RemoveMemberRequest {
-  string guild_id = 1;
-  string member_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string member_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message RemoveMemberResponse {
@@ -133,10 +134,10 @@ message RemoveMemberResponse {
 }
 
 message ListMembersRequest {
-  string guild_id = 1;
-  int32 page_size = 2;
-  string page_token = 3;
-  string role = 4;  // Filter by role
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  int32 page_size = 2 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 3 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
+  string role = 4 [(buf.validate.field).string.max_len = 32];  // Filter by role
 }
 
 message ListMembersResponse {
@@ -146,8 +147,8 @@ message ListMembersResponse {
 }
 
 message GetMemberRequest {
-  string guild_id = 1;
-  string member_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string member_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetMemberResponse {
@@ -155,10 +156,10 @@ message GetMemberResponse {
 }
 
 message GenerateInviteCodeRequest {
-  string guild_id = 1;
-  int32 max_uses = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  int32 max_uses = 2 [(buf.validate.field).int32 = {gte: 0, lte: 10000}];
   google.protobuf.Timestamp expires_at = 3;
-  string role = 4;  // Role assigned to invited members
+  string role = 4 [(buf.validate.field).string.max_len = 32];  // Role assigned to invited members
 }
 
 message GenerateInviteCodeResponse {
@@ -166,7 +167,7 @@ message GenerateInviteCodeResponse {
 }
 
 message ValidateInviteCodeRequest {
-  string code = 1;
+  string code = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message ValidateInviteCodeResponse {
@@ -176,9 +177,9 @@ message ValidateInviteCodeResponse {
 }
 
 message ListInvitesRequest {
-  string guild_id = 1;
-  int32 page_size = 2;
-  string page_token = 3;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  int32 page_size = 2 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 3 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListInvitesResponse {
@@ -187,8 +188,8 @@ message ListInvitesResponse {
 }
 
 message RevokeInviteRequest {
-  string guild_id = 1;
-  string invite_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string invite_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message RevokeInviteResponse {

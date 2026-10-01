@@ -166,6 +166,7 @@
     "noLoot": "No loot items.",
     "lootEditHint": "Edit the loot from the roll call's Loot section.",
     "titleRequired": "Enter a title",
+    "imageUrlInvalid": "Enter a full image URL starting with https://",
     "eventDateTimeRequired": "Choose when the event starts",
     "expireTimeRequired": "Choose when roll call closes",
     "expireBeforeStart": "Roll call must close after the event starts"

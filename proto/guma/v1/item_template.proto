@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -36,7 +37,7 @@ service ItemTemplateService {
 }
 
 message ListItemTemplatesRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message ListItemTemplatesResponse {
@@ -44,11 +45,11 @@ message ListItemTemplatesResponse {
 }
 
 message CreateItemTemplateRequest {
-  string guild_id = 1;
-  string name = 2;
-  string description = 3;
-  string category = 4;
-  string rarity = 5;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string name = 2 [(buf.validate.field).string.max_len = 100];
+  string description = 3 [(buf.validate.field).string.max_len = 500];
+  string category = 4 [(buf.validate.field).string.max_len = 32];
+  string rarity = 5 [(buf.validate.field).string.max_len = 32];
 }
 
 message CreateItemTemplateResponse {
@@ -56,12 +57,12 @@ message CreateItemTemplateResponse {
 }
 
 message UpdateItemTemplateRequest {
-  string guild_id = 1;
-  string template_id = 2;
-  string name = 3;
-  string description = 4;
-  string category = 5;
-  string rarity = 6;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string template_id = 2 [(buf.validate.field).string.max_len = 64];
+  string name = 3 [(buf.validate.field).string.max_len = 100];
+  string description = 4 [(buf.validate.field).string.max_len = 500];
+  string category = 5 [(buf.validate.field).string.max_len = 32];
+  string rarity = 6 [(buf.validate.field).string.max_len = 32];
 }
 
 message UpdateItemTemplateResponse {
@@ -69,8 +70,8 @@ message UpdateItemTemplateResponse {
 }
 
 message DeleteItemTemplateRequest {
-  string guild_id = 1;
-  string template_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string template_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message DeleteItemTemplateResponse {

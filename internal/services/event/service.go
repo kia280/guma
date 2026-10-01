@@ -186,12 +186,14 @@ func (s *Service) Get(ctx context.Context, guildIDStr, eventIDStr string) (*Guil
 
 // Create inserts a new guild event.
 func (s *Service) Create(ctx context.Context, p CreateParams) (*GuildEvent, error) {
-	if p.Priority == "" {
-		p.Priority = "medium"
+	f, err := normalizeFields(eventFields{
+		Title: p.Title, Description: p.Description, Type: p.Type,
+		Location: p.Location, Priority: p.Priority, RecurringPattern: p.RecurringPattern,
+	})
+	if err != nil {
+		return nil, err
 	}
-	if p.Type == "" {
-		p.Type = "other"
-	}
+	p.Title, p.Type, p.Priority = f.Title, f.Type, f.Priority
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -223,6 +225,14 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*GuildEvent, erro
 
 // Update modifies an existing event.
 func (s *Service) Update(ctx context.Context, p UpdateParams) (*GuildEvent, error) {
+	f, err := normalizeFields(eventFields{
+		Title: p.Title, Description: p.Description, Type: p.Type,
+		Location: p.Location, Priority: p.Priority, RecurringPattern: p.RecurringPattern,
+	})
+	if err != nil {
+		return nil, err
+	}
+	p.Title, p.Type, p.Priority = f.Title, f.Type, f.Priority
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: event", errs.ErrNotFound)
@@ -348,10 +358,13 @@ func NextPageToken(offset int) string {
 }
 
 // ParsePageToken decodes a page token string to an offset.
-func ParsePageToken(token string) int {
+func ParsePageToken(token string) (int, error) {
 	if token == "" {
-		return 0
+		return 0, nil
 	}
-	n, _ := strconv.Atoi(token)
-	return n
+	n, err := strconv.ParseInt(token, 10, 32)
+	if err != nil || n < 0 {
+		return 0, fmt.Errorf("%w: invalid page_token", errs.ErrInvalidArgument)
+	}
+	return int(n), nil
 }

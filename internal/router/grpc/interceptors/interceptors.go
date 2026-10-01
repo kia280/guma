@@ -2,9 +2,11 @@ package interceptors
 
 import (
 	"context"
+	"errors"
 	"runtime/debug"
 	"time"
 
+	"buf.build/go/protovalidate"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel/trace"
@@ -12,6 +14,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 )
 
 // LoggingInterceptor logs gRPC requests and responses
@@ -132,6 +135,15 @@ func ValidationInterceptor() grpc.UnaryServerInterceptor {
 		if v, ok := req.(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
 				return nil, status.Error(codes.InvalidArgument, err.Error())
+			}
+		}
+		if msg, ok := req.(proto.Message); ok {
+			if err := protovalidate.Validate(msg); err != nil {
+				var validationErr *protovalidate.ValidationError
+				if errors.As(err, &validationErr) {
+					return nil, status.Error(codes.InvalidArgument, validationErr.Error())
+				}
+				return nil, status.Errorf(codes.Internal, "validate request: %v", err)
 			}
 		}
 

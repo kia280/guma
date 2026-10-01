@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -171,6 +172,10 @@ func (s *Service) Deposit(ctx context.Context, userIDStr, guildIDStr string, amo
 	if amount <= 0 {
 		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrFailedPrecondition)
 	}
+	note, err := normalizeNote(note)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	w, err := s.GetWallet(ctx, userIDStr, guildIDStr)
 	if err != nil {
@@ -216,6 +221,10 @@ func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guil
 	if toUserID == fromUserID {
 		return nil, nil, fmt.Errorf("%w: cannot transfer to yourself", errs.ErrInvalidArgument)
 	}
+	note, err = normalizeNote(note)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -224,22 +233,23 @@ func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guil
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	for _, uid := range []uuid.UUID{fromUserID, toUserID} {
+	wallets := []uuid.UUID{fromUserID, toUserID}
+	slices.SortFunc(wallets, func(a, b uuid.UUID) int { return strings.Compare(a.String(), b.String()) })
+	balances := make(map[uuid.UUID]int64, len(wallets))
+	for _, uid := range wallets {
 		if err := qtx.EnsureWallet(ctx, db.EnsureWalletParams{UserID: uid, GuildID: guildID}); err != nil {
 			return nil, nil, fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
 		}
+		balance, err := qtx.GetWalletBalanceForUpdate(ctx, db.GetWalletBalanceForUpdateParams{UserID: uid, GuildID: guildID})
+		if err != nil {
+			return nil, nil, fmt.Errorf("%w: wallet", errs.ErrNotFound)
+		}
+		balances[uid] = balance
 	}
 
-	fromBalance, err := qtx.GetWalletBalanceForUpdate(ctx, db.GetWalletBalanceForUpdateParams{UserID: fromUserID, GuildID: guildID})
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: sender wallet", errs.ErrNotFound)
-	}
+	fromBalance, toBalance := balances[fromUserID], balances[toUserID]
 	if fromBalance < amount {
 		return nil, nil, fmt.Errorf("%w: insufficient funds", errs.ErrFailedPrecondition)
-	}
-	toBalance, err := qtx.GetWalletBalanceForUpdate(ctx, db.GetWalletBalanceForUpdateParams{UserID: toUserID, GuildID: guildID})
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: recipient wallet", errs.ErrNotFound)
 	}
 
 	newFromBalance := fromBalance - amount
@@ -473,10 +483,13 @@ func NextPageToken(offset int) string {
 }
 
 // ParsePageToken decodes a page token string to an offset.
-func ParsePageToken(token string) int {
+func ParsePageToken(token string) (int, error) {
 	if token == "" {
-		return 0
+		return 0, nil
 	}
-	n, _ := strconv.Atoi(token)
-	return n
+	n, err := strconv.ParseInt(token, 10, 32)
+	if err != nil || n < 0 {
+		return 0, fmt.Errorf("%w: invalid page_token", errs.ErrInvalidArgument)
+	}
+	return int(n), nil
 }

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -249,6 +250,9 @@ func (s *Service) ContributeFunds(ctx context.Context, guildIDStr, userIDStr str
 	if amount <= 0 {
 		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
 	}
+	if err := checkLength("note", note, maxNoteLength); err != nil {
+		return nil, nil, err
+	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -323,6 +327,9 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 	if reason == "" {
 		return nil, fmt.Errorf("%w: reason is required", errs.ErrInvalidArgument)
 	}
+	if err := checkLength("reason", reason, maxReasonLength); err != nil {
+		return nil, err
+	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -358,6 +365,9 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 // ReviewFundRequest approves or rejects a fund request.
 func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDStr, reviewerIDStr, status, note string) (*FundRequest, error) {
 	if err := validateDecision(status); err != nil {
+		return nil, err
+	}
+	if err := checkLength("note", note, maxNoteLength); err != nil {
 		return nil, err
 	}
 	guildID, err := uuid.Parse(guildIDStr)
@@ -529,6 +539,9 @@ func (s *Service) ListContributions(ctx context.Context, p ListContributionsPara
 
 // DonateItem moves a backpack item to the guild bank.
 func (s *Service) DonateItem(ctx context.Context, guildIDStr, userIDStr, backpackItemIDStr, note string) (*BankItem, error) {
+	if err := checkLength("note", note, maxNoteLength); err != nil {
+		return nil, err
+	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -643,6 +656,9 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 	if reason == "" {
 		return nil, fmt.Errorf("%w: reason is required", errs.ErrInvalidArgument)
 	}
+	if err := checkLength("reason", reason, maxReasonLength); err != nil {
+		return nil, err
+	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
@@ -684,6 +700,9 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 // ReviewItemRequest approves or rejects an item request.
 func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDStr, reviewerIDStr, status, note string) (*ItemRequest, error) {
 	if err := validateDecision(status); err != nil {
+		return nil, err
+	}
+	if err := checkLength("note", note, maxNoteLength); err != nil {
 		return nil, err
 	}
 	guildID, err := uuid.Parse(guildIDStr)
@@ -908,6 +927,18 @@ func toItemRequest(r db.ListItemRequestsRow) *ItemRequest {
 	return ir
 }
 
+const (
+	maxNoteLength   = 200
+	maxReasonLength = 500
+)
+
+func checkLength(field, value string, maxLength int) error {
+	if utf8.RuneCountInString(value) > maxLength {
+		return fmt.Errorf("%w: %s must be at most %d characters", errs.ErrInvalidArgument, field, maxLength)
+	}
+	return nil
+}
+
 func validateDecision(status string) error {
 	if status != StatusApproved && status != StatusRejected {
 		return fmt.Errorf("%w: status must be '%s' or '%s'", errs.ErrInvalidArgument, StatusApproved, StatusRejected)
@@ -958,10 +989,13 @@ func NextPageToken(offset int) string {
 }
 
 // ParsePageToken decodes a page token string to an offset.
-func ParsePageToken(token string) int {
+func ParsePageToken(token string) (int, error) {
 	if token == "" {
-		return 0
+		return 0, nil
 	}
-	n, _ := strconv.Atoi(token)
-	return n
+	n, err := strconv.ParseInt(token, 10, 32)
+	if err != nil || n < 0 {
+		return 0, fmt.Errorf("%w: invalid page_token", errs.ErrInvalidArgument)
+	}
+	return int(n), nil
 }

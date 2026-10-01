@@ -58,6 +58,7 @@ type UpdateParams struct {
 const (
 	MaxDisplayNameLength = 32
 	MaxBioLength         = 500
+	MaxAvatarURLLength   = 2048
 	uniqueViolation      = "23505"
 )
 
@@ -438,6 +439,8 @@ func validateUpdateParams(p UpdateParams) (UpdateParams, error) {
 		return p, fmt.Errorf("%w: display_name must be at most %d characters", errs.ErrInvalidArgument, MaxDisplayNameLength)
 	case utf8.RuneCountInString(p.Bio) > MaxBioLength:
 		return p, fmt.Errorf("%w: bio must be at most %d characters", errs.ErrInvalidArgument, MaxBioLength)
+	case utf8.RuneCountInString(p.AvatarURL) > MaxAvatarURLLength:
+		return p, fmt.Errorf("%w: avatar_url must be at most %d characters", errs.ErrInvalidArgument, MaxAvatarURLLength)
 	}
 	return p, nil
 }

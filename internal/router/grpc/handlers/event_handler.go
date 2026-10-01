@@ -10,8 +10,8 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	"github.com/kia280/guma/internal/session"
 	eventsvc "github.com/kia280/guma/internal/services/event"
+	"github.com/kia280/guma/internal/session"
 )
 
 // EventHandler is a thin gRPC adapter over the event service.
@@ -33,12 +33,16 @@ func (h *EventHandler) ListEvents(ctx context.Context, req *gumav1.ListEventsReq
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
+	offset, err := eventsvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.List(ctx, eventsvc.ListParams{
 		GuildID:  req.GuildId,
 		View:     req.View,
 		Date:     req.Date,
 		PageSize: int(req.PageSize),
-		Offset:   eventsvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)

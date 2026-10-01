@@ -166,6 +166,7 @@
     "noLoot": "沒有戰利品。",
     "lootEditHint": "請在點名的「戰利品」區塊編輯戰利品。",
     "titleRequired": "請輸入標題",
+    "imageUrlInvalid": "請輸入以 https:// 開頭的完整圖片網址",
     "eventDateTimeRequired": "請選擇活動開始時間",
     "expireTimeRequired": "請選擇點名截止時間",
     "expireBeforeStart": "點名截止時間必須晚於活動開始時間"

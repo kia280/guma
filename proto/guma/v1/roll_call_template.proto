@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "proto/guma/v1/item.proto";
@@ -37,7 +38,7 @@ service RollCallTemplateService {
 }
 
 message ListRollCallTemplatesRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message ListRollCallTemplatesResponse {
@@ -45,10 +46,10 @@ message ListRollCallTemplatesResponse {
 }
 
 message CreateRollCallTemplateRequest {
-  string guild_id = 1;
-  string name = 2;
-  string title = 3;
-  repeated string item_template_ids = 4;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string name = 2 [(buf.validate.field).string.max_len = 100];
+  string title = 3 [(buf.validate.field).string.max_len = 200];
+  repeated string item_template_ids = 4 [(buf.validate.field).repeated.max_items = 100];
 }
 
 message CreateRollCallTemplateResponse {
@@ -56,11 +57,11 @@ message CreateRollCallTemplateResponse {
 }
 
 message UpdateRollCallTemplateRequest {
-  string guild_id = 1;
-  string template_id = 2;
-  string name = 3;
-  string title = 4;
-  repeated string item_template_ids = 5;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string template_id = 2 [(buf.validate.field).string.max_len = 64];
+  string name = 3 [(buf.validate.field).string.max_len = 100];
+  string title = 4 [(buf.validate.field).string.max_len = 200];
+  repeated string item_template_ids = 5 [(buf.validate.field).repeated.max_items = 100];
 }
 
 message UpdateRollCallTemplateResponse {
@@ -68,8 +69,8 @@ message UpdateRollCallTemplateResponse {
 }
 
 message DeleteRollCallTemplateRequest {
-  string guild_id = 1;
-  string template_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string template_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message DeleteRollCallTemplateResponse {

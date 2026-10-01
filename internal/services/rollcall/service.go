@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -22,9 +23,16 @@ import (
 )
 
 const (
-	defaultLootCategory = "misc"
-	defaultLootRarity   = "common"
-	maxCheckInNotes     = 500
+	defaultLootCategory  = "misc"
+	defaultLootRarity    = "common"
+	maxCheckInNotes      = 500
+	maxTitleLength       = 200
+	maxDescriptionLength = 2000
+	maxLootEntries       = 100
+	maxLootNameLength    = 100
+	maxLootDescLength    = 500
+	maxLootTagLength     = 50
+	maxImageURLLength    = 2048
 )
 
 // RollCall is the domain model for a roll call event.
@@ -217,7 +225,14 @@ func (s *Service) Get(ctx context.Context, guildIDStr, rollCallIDStr string) (*R
 
 // Create inserts a new roll call. Requires admin or moderator role.
 func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error) {
-	if err := validateRollCallFields(p.Title, p.Datetime, p.ExpireTime); err != nil {
+	if err := validateRollCallFields(p.Title, p.Description, p.Datetime, p.ExpireTime); err != nil {
+		return nil, err
+	}
+	if err := checkLootCount(len(p.Loot)); err != nil {
+		return nil, err
+	}
+	imageURL, err := normalizeImageURL(p.ImageURL)
+	if err != nil {
 		return nil, err
 	}
 	guildID, err := uuid.Parse(p.GuildID)
@@ -257,7 +272,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 	r, err := qtx.CreateRollCall(ctx, db.CreateRollCallParams{
 		GuildID: guildID, CreatedBy: createdBy, Title: p.Title,
 		Description: p.Description, Datetime: p.Datetime, ExpireTime: p.ExpireTime,
-		ImageUrl: p.ImageURL, LootList: lootJSON,
+		ImageUrl: imageURL, LootList: lootJSON,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: create roll call: %v", errs.ErrInternal, err)
@@ -298,7 +313,11 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 
 // Update modifies an existing roll call.
 func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error) {
-	if err := validateRollCallFields(p.Title, p.Datetime, p.ExpireTime); err != nil {
+	description := ""
+	if p.Description != nil {
+		description = *p.Description
+	}
+	if err := validateRollCallFields(p.Title, description, p.Datetime, p.ExpireTime); err != nil {
 		return nil, err
 	}
 	if err := checkExpireTimeInFuture(p.ExpireTime, time.Now().UTC()); err != nil {
@@ -306,6 +325,14 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 	}
 	if len(p.Loot) > 0 {
 		return nil, fmt.Errorf("%w: loot list cannot be changed after publishing", errs.ErrInvalidArgument)
+	}
+	var imageURL *string
+	if p.ImageURL != nil {
+		normalized, err := normalizeImageURL(*p.ImageURL)
+		if err != nil {
+			return nil, err
+		}
+		imageURL = &normalized
 	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
@@ -339,9 +366,9 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 		params.SetDescription = true
 		params.Description = strings.TrimSpace(*p.Description)
 	}
-	if p.ImageURL != nil {
+	if imageURL != nil {
 		params.SetImageUrl = true
-		params.ImageUrl = strings.TrimSpace(*p.ImageURL)
+		params.ImageUrl = *imageURL
 	}
 
 	r, err := s.q.UpdateRollCall(ctx, params)
@@ -456,6 +483,9 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 }
 
 func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall, error) {
+	if err := checkLootCount(len(p.LootList)); err != nil {
+		return nil, err
+	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -1034,12 +1064,31 @@ func normalizeLootItem(item models.Item) (models.Item, error) {
 	if item.Rarity == "" {
 		item.Rarity = defaultLootRarity
 	}
+	for _, c := range []struct {
+		field, value string
+		max          int
+	}{
+		{"loot item name", item.Name, maxLootNameLength},
+		{"loot item description", item.Description, maxLootDescLength},
+		{"loot item category", item.Category, maxLootTagLength},
+		{"loot item rarity", item.Rarity, maxLootTagLength},
+	} {
+		if err := checkLength(c.field, c.value, c.max); err != nil {
+			return item, err
+		}
+	}
 	return item, nil
 }
 
-func validateRollCallFields(title, datetime, expireTime string) error {
+func validateRollCallFields(title, description, datetime, expireTime string) error {
 	if strings.TrimSpace(title) == "" {
 		return fmt.Errorf("%w: title is required", errs.ErrInvalidArgument)
+	}
+	if err := checkLength("title", title, maxTitleLength); err != nil {
+		return err
+	}
+	if err := checkLength("description", description, maxDescriptionLength); err != nil {
+		return err
 	}
 	eventAt, err := time.Parse(time.RFC3339, datetime)
 	if err != nil {
@@ -1051,6 +1100,35 @@ func validateRollCallFields(title, datetime, expireTime string) error {
 	}
 	if !expiresAt.After(eventAt) {
 		return fmt.Errorf("%w: expire_time must be after datetime", errs.ErrInvalidArgument)
+	}
+	return nil
+}
+
+func checkLength(field, value string, maxLength int) error {
+	if utf8.RuneCountInString(value) > maxLength {
+		return fmt.Errorf("%w: %s must be at most %d characters", errs.ErrInvalidArgument, field, maxLength)
+	}
+	return nil
+}
+
+func normalizeImageURL(raw string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "", nil
+	}
+	if err := checkLength("image_url", raw, maxImageURLLength); err != nil {
+		return "", err
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u.Scheme != "https" || u.Host == "" {
+		return "", fmt.Errorf("%w: image_url must be an absolute https URL", errs.ErrInvalidArgument)
+	}
+	return raw, nil
+}
+
+func checkLootCount(n int) error {
+	if n > maxLootEntries {
+		return fmt.Errorf("%w: loot list must have at most %d entries", errs.ErrInvalidArgument, maxLootEntries)
 	}
 	return nil
 }
@@ -1080,10 +1158,13 @@ func NextPageToken(offset int) string {
 }
 
 // ParsePageToken decodes a page token string to an offset.
-func ParsePageToken(token string) int {
+func ParsePageToken(token string) (int, error) {
 	if token == "" {
-		return 0
+		return 0, nil
 	}
-	n, _ := strconv.Atoi(token)
-	return n
+	n, err := strconv.ParseInt(token, 10, 32)
+	if err != nil || n < 0 {
+		return 0, fmt.Errorf("%w: invalid page_token", errs.ErrInvalidArgument)
+	}
+	return int(n), nil
 }
