@@ -475,10 +475,13 @@ func NextPageToken(offset int) string {
 }
 
 // ParsePageToken decodes a page token string to an offset.
-func ParsePageToken(token string) int {
+func ParsePageToken(token string) (int, error) {
 	if token == "" {
-		return 0
+		return 0, nil
 	}
-	n, _ := strconv.Atoi(token)
-	return n
+	n, err := strconv.ParseInt(token, 10, 32)
+	if err != nil || n < 0 {
+		return 0, fmt.Errorf("%w: invalid page_token", errs.ErrInvalidArgument)
+	}
+	return int(n), nil
 }

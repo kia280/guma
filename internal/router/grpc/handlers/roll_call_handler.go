@@ -34,11 +34,15 @@ func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRol
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
+	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.List(ctx, rollcallsvc.ListParams{
 		GuildID:  req.GuildId,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
-		Offset:   rollcallsvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -277,7 +281,11 @@ func (h *RollCallHandler) ListAttendees(ctx context.Context, req *gumav1.ListAtt
 	if req.GuildId == "" || req.RollCallId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
-	result, err := h.svc.ListAttendees(ctx, req.GuildId, req.RollCallId, int(req.PageSize), rollcallsvc.ParsePageToken(req.PageToken))
+	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	result, err := h.svc.ListAttendees(ctx, req.GuildId, req.RollCallId, int(req.PageSize), offset)
 	if err != nil {
 		return nil, toStatus(err)
 	}

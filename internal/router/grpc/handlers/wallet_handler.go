@@ -90,12 +90,16 @@ func (h *WalletHandler) ListMyWithdrawalRequests(ctx context.Context, req *gumav
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
+	offset, err := walletsvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.ListMyWithdrawalRequests(ctx, walletsvc.ListWithdrawalRequestsParams{
 		ViewerID: userID,
 		GuildID:  req.GuildId,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
-		Offset:   walletsvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -135,12 +139,16 @@ func (h *WalletHandler) ListWithdrawalRequests(ctx context.Context, req *gumav1.
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
+	offset, err := walletsvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.ListWithdrawalRequests(ctx, walletsvc.ListWithdrawalRequestsParams{
 		ViewerID: userID,
 		GuildID:  req.GuildId,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
-		Offset:   walletsvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -193,12 +201,16 @@ func (h *WalletHandler) ListTransactions(ctx context.Context, req *gumav1.ListTr
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
+	offset, err := walletsvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.ListTransactions(ctx, walletsvc.ListTransactionsParams{
 		UserID:   userID,
 		GuildID:  req.GuildId,
 		Type:     req.Type,
 		PageSize: int(req.PageSize),
-		Offset:   walletsvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -245,11 +257,15 @@ func (h *WalletHandler) ListBackpackItems(ctx context.Context, req *gumav1.ListB
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
+	offset, err := walletsvc.ParsePageToken(req.PageToken)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.ListBackpackItems(ctx, walletsvc.ListBackpackParams{
 		OwnerID:  userID,
 		GuildID:  req.GuildId,
 		PageSize: int(req.PageSize),
-		Offset:   walletsvc.ParsePageToken(req.PageToken),
+		Offset:   offset,
 	})
 	if err != nil {
 		return nil, toStatus(err)
