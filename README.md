@@ -5,7 +5,7 @@ day-to-day guild operations. It schedules boss fights and events, takes roll
 calls, distributes the loot, runs auctions and raffles on a shared guild
 currency, and provides announcements to keep everyone informed.
 
-![Guma demo on desktop and phone: roll call check-in, gold distribution, calendar, bidding, the wallet, and the admin inbox](docs/demo.webp)
+![Guma demo on desktop and phone: roll call check-in, gold distribution, calendar, bidding, and the admin inbox](docs/demo.webp)
 
 **[Live demo](https://kia280.github.io/guma/)** (mock data, no backend)
 
