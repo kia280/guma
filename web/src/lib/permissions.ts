@@ -40,6 +40,7 @@ export const PERMISSION_SECTIONS = [
       { key: 'createRollCall', roles: STAFF },
       { key: 'editRollCall', roles: STAFF },
       { key: 'cancelRollCall', roles: OWNER_ADMIN },
+      { key: 'deleteRollCall', roles: OWNER_ADMIN },
       { key: 'distributeLoot', roles: STAFF },
       { key: 'editRollCallLoot', roles: STAFF },
       { key: 'completeRollCall', roles: STAFF },

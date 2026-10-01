@@ -662,6 +662,7 @@
       "createRollCall": "建立點名",
       "editRollCall": "編輯進行中的點名",
       "cancelRollCall": "取消點名",
+      "deleteRollCall": "刪除點名",
       "contribute": "捐獻資金與物品",
       "requestFromBank": "申請資金或物品",
       "reviewRequests": "核准或駁回資金與物品申請",
