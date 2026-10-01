@@ -55,6 +55,39 @@ func LoggingInterceptor(logger zerolog.Logger) grpc.UnaryServerInterceptor {
 	}
 }
 
+func ErrorSanitizerInterceptor() grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		resp, err := handler(ctx, req)
+		return resp, sanitizeError(err)
+	}
+}
+
+func StreamErrorSanitizerInterceptor(logger zerolog.Logger) grpc.StreamServerInterceptor {
+	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		err := handler(srv, ss)
+		sanitized := sanitizeError(err)
+		if sanitized != err {
+			logger.Error().
+				Err(err).
+				Str("method", info.FullMethod).
+				Msg("gRPC stream failed")
+		}
+		return sanitized
+	}
+}
+
+func sanitizeError(err error) error {
+	if err == nil {
+		return nil
+	}
+	switch code := status.Code(err); code {
+	case codes.Internal, codes.Unknown:
+		return status.Error(code, "internal server error")
+	default:
+		return err
+	}
+}
+
 // RecoveryInterceptor recovers from panics and returns proper gRPC errors
 func RecoveryInterceptor(logger zerolog.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
