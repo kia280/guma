@@ -2,10 +2,12 @@ package raffle
 
 import (
 	"context"
+	cryptorand "crypto/rand"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"strconv"
 	"strings"
 	"time"
@@ -21,6 +23,16 @@ import (
 	"github.com/kia280/guma/internal/services/errs"
 	"github.com/kia280/guma/internal/services/inventory"
 )
+
+type cryptoSource struct{}
+
+func (cryptoSource) Uint64() uint64 {
+	var b [8]byte
+	_, _ = cryptorand.Read(b[:])
+	return binary.LittleEndian.Uint64(b[:])
+}
+
+var secureRand = rand.New(cryptoSource{})
 
 // RafflePrize is a prize tier in a raffle.
 type RafflePrize struct {
@@ -363,7 +375,7 @@ func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, raffleIDStr, 
 
 	tickets := make([]*RaffleTicket, 0, quantity)
 	for i := int32(0); i < quantity; i++ {
-		ticketNum := fmt.Sprintf("%s-%06d", raffleIDStr[:8], rand.Intn(1000000))
+		ticketNum := fmt.Sprintf("%s-%06d", raffleIDStr[:8], secureRand.IntN(1000000))
 		tr, err := qtx.InsertRaffleTicket(ctx, db.InsertRaffleTicketParams{
 			RaffleID: raffleID, UserID: userID, TicketNumber: ticketNum,
 		})
@@ -484,7 +496,7 @@ func (s *Service) draw(ctx context.Context, guildID, raffleID uuid.UUID, allowEm
 		return nil, nil
 	}
 
-	rand.Shuffle(len(allTickets), func(i, j int) { allTickets[i], allTickets[j] = allTickets[j], allTickets[i] })
+	secureRand.Shuffle(len(allTickets), func(i, j int) { allTickets[i], allTickets[j] = allTickets[j], allTickets[i] })
 
 	numPrizes := len(prizeList)
 	if numPrizes == 0 {
