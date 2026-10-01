@@ -1,6 +1,6 @@
 'use client';
 
-import { Drawer, Button } from '@heroui/react';
+import { Drawer } from '@heroui/react';
 import { cn } from '@heroui/react';
 import React from 'react';
 
@@ -35,7 +35,10 @@ const SidebarDrawer = React.forwardRef<HTMLDivElement, SidebarDrawerProps>(
             <Drawer.Content placement={sidebarPlacement}>
               <Drawer.Dialog
                 aria-label={label}
-                className="h-full max-h-full w-60 sm:w-60 max-w-[85vw] rounded-none m-0 p-0"
+                className={cn(
+                  'h-full max-h-full w-60 sm:w-60 max-w-[85vw] overflow-hidden m-0 p-0',
+                  sidebarPlacement === 'right' ? 'rounded-l-lg' : 'rounded-r-lg'
+                )}
               >
                 {!hideCloseButton && <Drawer.CloseTrigger />}
                 <Drawer.Body className="m-0 p-0">{children}</Drawer.Body>
@@ -43,7 +46,7 @@ const SidebarDrawer = React.forwardRef<HTMLDivElement, SidebarDrawerProps>(
             </Drawer.Content>
           </Drawer.Backdrop>
         </Drawer>
-        <div ref={ref} className={cn('hidden h-full overflow-x-hidden lg:flex', className)}>
+        <div ref={ref} className={cn('hidden h-full overflow-hidden rounded-r-lg lg:flex', className)}>
           {children}
         </div>
       </>
