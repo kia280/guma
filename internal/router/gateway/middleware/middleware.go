@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -31,6 +32,16 @@ func CORSMiddleware(allowedOrigins, allowedMethods, allowedHeaders []string) fun
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func CrossOriginProtectionMiddleware(trustedOrigins []string) (func(http.Handler) http.Handler, error) {
+	protection := http.NewCrossOriginProtection()
+	for _, origin := range trustedOrigins {
+		if err := protection.AddTrustedOrigin(origin); err != nil {
+			return nil, fmt.Errorf("invalid trusted origin %q: %w", origin, err)
+		}
+	}
+	return protection.Handler, nil
 }
 
 // SecurityHeadersMiddleware adds security headers to HTTP responses

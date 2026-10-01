@@ -84,6 +84,11 @@ log:
   format: text
   leak_sensitive_values: true
 
+session:
+  cookie:
+    name: guma_sess
+    same_site: Lax
+
 secrets:
   cookie:
     - PLEASE-CHANGE-ME-I-AM-VERY-INSECURE
