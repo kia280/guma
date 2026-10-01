@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -1437,7 +1438,7 @@ var File_proto_guma_v1_member_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"t\n" +
+	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"t\n" +
 	"\x13InviteMemberRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x12\n" +
@@ -1462,11 +1463,11 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"?\n" +
 	"\x14UpdateMemberResponse\x12'\n" +
-	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"a\n" +
+	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\x89\x01\n" +
 	"\x17UpdateMemberRoleRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
-	"\x04role\x18\x03 \x01(\tR\x04role\"C\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12:\n" +
+	"\x04role\x18\x03 \x01(\tB&\xbaH#r!R\x05ownerR\x05adminR\tmoderatorR\x06memberR\x04role\"C\n" +
 	"\x18UpdateMemberRoleResponse\x12'\n" +
 	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"M\n" +
 	"\x13RemoveMemberRequest\x12\x19\n" +

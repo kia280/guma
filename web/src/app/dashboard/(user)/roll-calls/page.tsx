@@ -226,7 +226,7 @@ export default function RollCallsPage() {
         description: draft.description || undefined,
         datetime: draft.datetime,
         expireTime: draft.expireTime,
-        imageUrl: draft.imageUrl || undefined,
+        imageUrl: draft.imageUrl.trim() || undefined,
         lootList: draft.lootList,
       });
       refetchRollCalls();

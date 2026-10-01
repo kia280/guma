@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	httpbody "google.golang.org/genproto/googleapis/api/httpbody"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -1682,11 +1683,11 @@ var File_proto_guma_v1_guild_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/guma/v1/guild.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/api/httpbody.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xda\x01\n" +
-	"\x12CreateGuildRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12E\n" +
-	"\bsettings\x18\x03 \x03(\v2).guma.v1.CreateGuildRequest.SettingsEntryR\bsettings\x1a;\n" +
+	"\x19proto/guma/v1/guild.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/api/httpbody.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x84\x02\n" +
+	"\x12CreateGuildRequest\x12\x1b\n" +
+	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18dR\x04name\x12*\n" +
+	"\vdescription\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12\\\n" +
+	"\bsettings\x18\x03 \x03(\v2).guma.v1.CreateGuildRequest.SettingsEntryB\x15\xbaH\x12\x9a\x01\x0f\x102\"\x04r\x02\x18d*\x05r\x03\x18\xd0\x0fR\bsettings\x1a;\n" +
 	"\rSettingsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01J\x04\b\x04\x10\x05R\x04tags\";\n" +
@@ -1695,14 +1696,14 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\x0fGetGuildRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\"8\n" +
 	"\x10GetGuildResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"\xab\x01\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"\xd2\x01\n" +
 	"\x12UpdateGuildRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x19\n" +
-	"\bicon_url\x18\x05 \x01(\tR\aiconUrl\x12\x1d\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
+	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18dR\x04name\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12#\n" +
+	"\bicon_url\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x10R\aiconUrl\x12'\n" +
 	"\n" +
-	"banner_url\x18\x06 \x01(\tR\tbannerUrlJ\x04\b\x04\x10\x05R\x04tags\";\n" +
+	"banner_url\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x10R\tbannerUrlJ\x04\b\x04\x10\x05R\x04tags\";\n" +
 	"\x13UpdateGuildResponse\x12$\n" +
 	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"j\n" +
 	"\x16UploadGuildLogoRequest\x12\x19\n" +
@@ -1785,13 +1786,13 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x03 \x01(\tR\aversion\x12\x16\n" +
 	"\x06author\x18\x04 \x01(\tR\x06author\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\"\x9c\x02\n" +
-	"\rGuildSettings\x12\x1a\n" +
-	"\btimezone\x18\x01 \x01(\tR\btimezone\x12\x1a\n" +
-	"\blanguage\x18\x02 \x01(\tR\blanguage\x12\x16\n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\"\xc5\x02\n" +
+	"\rGuildSettings\x12#\n" +
+	"\btimezone\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\btimezone\x12#\n" +
+	"\blanguage\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\blanguage\x12\x16\n" +
 	"\x06public\x18\x03 \x01(\bR\x06public\x12#\n" +
-	"\rallow_invites\x18\x04 \x01(\bR\fallowInvites\x12S\n" +
-	"\x0fcustom_settings\x18\x05 \x03(\v2*.guma.v1.GuildSettings.CustomSettingsEntryR\x0ecustomSettings\x1aA\n" +
+	"\rallow_invites\x18\x04 \x01(\bR\fallowInvites\x12j\n" +
+	"\x0fcustom_settings\x18\x05 \x03(\v2*.guma.v1.GuildSettings.CustomSettingsEntryB\x15\xbaH\x12\x9a\x01\x0f\x102\"\x04r\x02\x18d*\x05r\x03\x18\xd0\x0fR\x0ecustomSettings\x1aA\n" +
 	"\x13CustomSettingsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xba\f\n" +

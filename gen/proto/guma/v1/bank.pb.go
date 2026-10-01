@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -2311,30 +2312,30 @@ var File_proto_guma_v1_bank_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/guma/v1/bank.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"+\n" +
+	"\x18proto/guma/v1/bank.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"+\n" +
 	"\x0eGetBankRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\"9\n" +
 	"\x0fGetBankResponse\x12&\n" +
-	"\x04bank\x18\x01 \x01(\v2\x12.guma.v1.GuildBankR\x04bank\"_\n" +
+	"\x04bank\x18\x01 \x01(\v2\x12.guma.v1.GuildBankR\x04bank\"i\n" +
 	"\x16ContributeFundsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x12\n" +
-	"\x04note\x18\x03 \x01(\tR\x04note\"\x8f\x01\n" +
+	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x1c\n" +
+	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"\x8f\x01\n" +
 	"\x17ContributeFundsResponse\x12=\n" +
 	"\fcontribution\x18\x01 \x01(\v2\x19.guma.v1.BankContributionR\fcontribution\x125\n" +
-	"\fupdated_bank\x18\x02 \x01(\v2\x12.guma.v1.GuildBankR\vupdatedBank\"`\n" +
+	"\fupdated_bank\x18\x02 \x01(\v2\x12.guma.v1.GuildBankR\vupdatedBank\"j\n" +
 	"\x13RequestFundsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x16\n" +
-	"\x06reason\x18\x03 \x01(\tR\x06reason\"O\n" +
+	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12 \n" +
+	"\x06reason\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x06reason\"O\n" +
 	"\x14RequestFundsResponse\x127\n" +
-	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\x80\x01\n" +
+	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\xa5\x01\n" +
 	"\x18ReviewFundRequestRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
 	"\n" +
-	"request_id\x18\x02 \x01(\tR\trequestId\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\x12\x12\n" +
-	"\x04note\x18\x04 \x01(\tR\x04note\"T\n" +
+	"request_id\x18\x02 \x01(\tR\trequestId\x121\n" +
+	"\x06status\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bapprovedR\brejectedR\x06status\x12\x1c\n" +
+	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"T\n" +
 	"\x19ReviewFundRequestResponse\x127\n" +
 	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\x88\x01\n" +
 	"\x17ListFundRequestsRequest\x12\x19\n" +
@@ -2357,11 +2358,11 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\rcontributions\x18\x01 \x03(\v2\x19.guma.v1.BankContributionR\rcontributions\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"l\n" +
+	"totalCount\"v\n" +
 	"\x11DonateItemRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12(\n" +
-	"\x10backpack_item_id\x18\x02 \x01(\tR\x0ebackpackItemId\x12\x12\n" +
-	"\x04note\x18\x03 \x01(\tR\x04note\"D\n" +
+	"\x10backpack_item_id\x18\x02 \x01(\tR\x0ebackpackItemId\x12\x1c\n" +
+	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"D\n" +
 	"\x12DonateItemResponse\x12.\n" +
 	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\xc3\x01\n" +
 	"\x14ListBankItemsRequest\x12\x19\n" +
@@ -2383,20 +2384,20 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\fbank_item_id\x18\x02 \x01(\tR\n" +
 	"bankItemId\"2\n" +
 	"\x16DeleteBankItemResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"i\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"s\n" +
 	"\x12RequestItemRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12 \n" +
 	"\fbank_item_id\x18\x02 \x01(\tR\n" +
-	"bankItemId\x12\x16\n" +
-	"\x06reason\x18\x03 \x01(\tR\x06reason\"N\n" +
+	"bankItemId\x12 \n" +
+	"\x06reason\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x06reason\"N\n" +
 	"\x13RequestItemResponse\x127\n" +
-	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\x80\x01\n" +
+	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\xa5\x01\n" +
 	"\x18ReviewItemRequestRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
 	"\n" +
-	"request_id\x18\x02 \x01(\tR\trequestId\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\x12\x12\n" +
-	"\x04note\x18\x04 \x01(\tR\x04note\"T\n" +
+	"request_id\x18\x02 \x01(\tR\trequestId\x121\n" +
+	"\x06status\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bapprovedR\brejectedR\x06status\x12\x1c\n" +
+	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"T\n" +
 	"\x19ReviewItemRequestResponse\x127\n" +
 	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\x88\x01\n" +
 	"\x17ListItemRequestsRequest\x12\x19\n" +

@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -1992,7 +1993,7 @@ var File_proto_guma_v1_roll_call_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\n" +
-	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"\x85\x01\n" +
+	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"\x85\x01\n" +
 	"\x14ListRollCallsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x1b\n" +
@@ -2010,31 +2011,33 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\froll_call_id\x18\x02 \x01(\tR\n" +
 	"rollCallId\"E\n" +
 	"\x13GetRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xa0\x02\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x89\x04\n" +
 	"\x15CreateRollCallRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
+	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1e\n" +
+	"\x05title\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05title\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12\x1a\n" +
 	"\bdatetime\x18\x04 \x01(\tR\bdatetime\x12\x1f\n" +
 	"\vexpire_time\x18\x05 \x01(\tR\n" +
-	"expireTime\x12\x1b\n" +
-	"\timage_url\x18\x06 \x01(\tR\bimageUrl\x12*\n" +
-	"\tloot_list\x18\a \x03(\v2\r.guma.v1.ItemR\blootList\x12.\n" +
-	"\x04loot\x18\b \x03(\v2\x1a.guma.v1.RollCallLootEntryR\x04loot\"H\n" +
+	"expireTime\x12\xdb\x01\n" +
+	"\timage_url\x18\x06 \x01(\tB\xbd\x01\xbaH\xb9\x01\xba\x01\xb5\x01\n" +
+	"\x0fimage_url.https\x12Kimage_url must be empty or an absolute https URL of at most 2048 characters\x1aUthis == '' || (size(this) <= 2048 && this.matches('^https://[^/?#]') && this.isUri())R\bimageUrl\x124\n" +
+	"\tloot_list\x18\a \x03(\v2\r.guma.v1.ItemB\b\xbaH\x05\x92\x01\x02\x10dR\blootList\x128\n" +
+	"\x04loot\x18\b \x03(\v2\x1a.guma.v1.RollCallLootEntryB\b\xbaH\x05\x92\x01\x02\x10dR\x04loot\"H\n" +
 	"\x16CreateRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xea\x02\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xd3\x04\n" +
 	"\x15UpdateRollCallRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12 \n" +
 	"\froll_call_id\x18\x02 \x01(\tR\n" +
-	"rollCallId\x12\x14\n" +
-	"\x05title\x18\x03 \x01(\tR\x05title\x12%\n" +
-	"\vdescription\x18\x04 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1a\n" +
+	"rollCallId\x12\x1e\n" +
+	"\x05title\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05title\x12/\n" +
+	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fH\x00R\vdescription\x88\x01\x01\x12\x1a\n" +
 	"\bdatetime\x18\x05 \x01(\tR\bdatetime\x12\x1f\n" +
 	"\vexpire_time\x18\x06 \x01(\tR\n" +
-	"expireTime\x12 \n" +
-	"\timage_url\x18\a \x01(\tH\x01R\bimageUrl\x88\x01\x01\x12*\n" +
-	"\tloot_list\x18\b \x03(\v2\r.guma.v1.ItemR\blootList\x12.\n" +
-	"\x04loot\x18\t \x03(\v2\x1a.guma.v1.RollCallLootEntryR\x04lootB\x0e\n" +
+	"expireTime\x12\xe0\x01\n" +
+	"\timage_url\x18\a \x01(\tB\xbd\x01\xbaH\xb9\x01\xba\x01\xb5\x01\n" +
+	"\x0fimage_url.https\x12Kimage_url must be empty or an absolute https URL of at most 2048 characters\x1aUthis == '' || (size(this) <= 2048 && this.matches('^https://[^/?#]') && this.isUri())H\x01R\bimageUrl\x88\x01\x01\x124\n" +
+	"\tloot_list\x18\b \x03(\v2\r.guma.v1.ItemB\b\xbaH\x05\x92\x01\x02\x10dR\blootList\x128\n" +
+	"\x04loot\x18\t \x03(\v2\x1a.guma.v1.RollCallLootEntryB\b\xbaH\x05\x92\x01\x02\x10dR\x04lootB\x0e\n" +
 	"\f_descriptionB\f\n" +
 	"\n" +
 	"_image_url\"H\n" +
@@ -2058,12 +2061,12 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"rollCallId\x123\n" +
 	"\x16keep_leftovers_in_bank\x18\x03 \x01(\bR\x13keepLeftoversInBank\"J\n" +
 	"\x18CompleteRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x84\x01\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x8e\x01\n" +
 	"\x19UpdateRollCallLootRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12 \n" +
 	"\froll_call_id\x18\x02 \x01(\tR\n" +
-	"rollCallId\x12*\n" +
-	"\tloot_list\x18\x03 \x03(\v2\r.guma.v1.ItemR\blootList\"L\n" +
+	"rollCallId\x124\n" +
+	"\tloot_list\x18\x03 \x03(\v2\r.guma.v1.ItemB\b\xbaH\x05\x92\x01\x02\x10dR\blootList\"L\n" +
 	"\x1aUpdateRollCallLootResponse\x12.\n" +
 	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x82\x01\n" +
 	"\x11AssignLootRequest\x12\x19\n" +
@@ -2094,12 +2097,12 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\x0fdistribution_id\x18\x01 \x01(\tR\x0edistributionId\x12*\n" +
 	"\x03pot\x18\x02 \x01(\v2\x18.guma.v1.RollCallGoldPotR\x03pot\x125\n" +
 	"\apayouts\x18\x03 \x03(\v2\x1b.guma.v1.RollCallGoldPayoutR\apayouts\x12\x1a\n" +
-	"\breplayed\x18\x04 \x01(\bR\breplayed\"c\n" +
+	"\breplayed\x18\x04 \x01(\bR\breplayed\"m\n" +
 	"\x0eCheckInRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12 \n" +
 	"\froll_call_id\x18\x02 \x01(\tR\n" +
-	"rollCallId\x12\x14\n" +
-	"\x05notes\x18\x03 \x01(\tR\x05notes\"H\n" +
+	"rollCallId\x12\x1e\n" +
+	"\x05notes\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x05notes\"H\n" +
 	"\x0fCheckInResponse\x125\n" +
 	"\battendee\x18\x01 \x01(\v2\x19.guma.v1.RollCallAttendeeR\battendee\"\x8f\x01\n" +
 	"\x14ListAttendeesRequest\x12\x19\n" +

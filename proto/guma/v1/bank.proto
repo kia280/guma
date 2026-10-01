@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "proto/guma/v1/item.proto";
@@ -113,7 +114,7 @@ message GetBankResponse {
 message ContributeFundsRequest {
   string guild_id = 1;
   int64 amount = 2;
-  string note = 3;
+  string note = 3 [(buf.validate.field).string.max_len = 200];
 }
 
 message ContributeFundsResponse {
@@ -124,7 +125,7 @@ message ContributeFundsResponse {
 message RequestFundsRequest {
   string guild_id = 1;
   int64 amount = 2;
-  string reason = 3;
+  string reason = 3 [(buf.validate.field).string.max_len = 500];
 }
 
 message RequestFundsResponse {
@@ -134,8 +135,8 @@ message RequestFundsResponse {
 message ReviewFundRequestRequest {
   string guild_id = 1;
   string request_id = 2;
-  string status = 3;  // "approved" | "rejected"
-  string note = 4;
+  string status = 3 [(buf.validate.field).string = {in: ["approved", "rejected"]}];  // "approved" | "rejected"
+  string note = 4 [(buf.validate.field).string.max_len = 200];
 }
 
 message ReviewFundRequestResponse {
@@ -170,7 +171,7 @@ message ListContributionsResponse {
 message DonateItemRequest {
   string guild_id = 1;
   string backpack_item_id = 2; // Item from user's backpack
-  string note = 3;
+  string note = 3 [(buf.validate.field).string.max_len = 200];
 }
 
 message DonateItemResponse {
@@ -204,7 +205,7 @@ message DeleteBankItemResponse {
 message RequestItemRequest {
   string guild_id = 1;
   string bank_item_id = 2;
-  string reason = 3;
+  string reason = 3 [(buf.validate.field).string.max_len = 500];
 }
 
 message RequestItemResponse {
@@ -214,8 +215,8 @@ message RequestItemResponse {
 message ReviewItemRequestRequest {
   string guild_id = 1;
   string request_id = 2;
-  string status = 3; // "approved" | "rejected"
-  string note = 4;
+  string status = 3 [(buf.validate.field).string = {in: ["approved", "rejected"]}]; // "approved" | "rejected"
+  string note = 4 [(buf.validate.field).string.max_len = 200];
 }
 
 message ReviewItemRequestResponse {

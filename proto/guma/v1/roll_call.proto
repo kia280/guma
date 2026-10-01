@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "proto/guma/v1/item.proto";
@@ -124,13 +125,17 @@ message GetRollCallResponse {
 
 message CreateRollCallRequest {
   string guild_id = 1;
-  string title = 2;
-  string description = 3;
+  string title = 2 [(buf.validate.field).string.max_len = 200];
+  string description = 3 [(buf.validate.field).string.max_len = 2000];
   string datetime = 4;      // ISO 8601 datetime of the roll call
   string expire_time = 5;   // ISO 8601 datetime when the window closes
-  string image_url = 6;
-  repeated Item loot_list = 7; // Items distributed to attendees
-  repeated RollCallLootEntry loot = 8; // Supersedes loot_list when set; supports gold entries
+  string image_url = 6 [(buf.validate.field).cel = {
+    id: "image_url.https"
+    message: "image_url must be empty or an absolute https URL of at most 2048 characters"
+    expression: "this == \'\' || (size(this) <= 2048 && this.matches(\'^https://[^/?#]\') && this.isUri())"
+  }];
+  repeated Item loot_list = 7 [(buf.validate.field).repeated.max_items = 100]; // Items distributed to attendees
+  repeated RollCallLootEntry loot = 8 [(buf.validate.field).repeated.max_items = 100]; // Supersedes loot_list when set; supports gold entries
 }
 
 message CreateRollCallResponse {
@@ -140,13 +145,17 @@ message CreateRollCallResponse {
 message UpdateRollCallRequest {
   string guild_id = 1;
   string roll_call_id = 2;
-  string title = 3;
-  optional string description = 4;
+  string title = 3 [(buf.validate.field).string.max_len = 200];
+  optional string description = 4 [(buf.validate.field).string.max_len = 2000];
   string datetime = 5;
   string expire_time = 6;
-  optional string image_url = 7;
-  repeated Item loot_list = 8;
-  repeated RollCallLootEntry loot = 9;
+  optional string image_url = 7 [(buf.validate.field).cel = {
+    id: "image_url.https"
+    message: "image_url must be empty or an absolute https URL of at most 2048 characters"
+    expression: "this == \'\' || (size(this) <= 2048 && this.matches(\'^https://[^/?#]\') && this.isUri())"
+  }];
+  repeated Item loot_list = 8 [(buf.validate.field).repeated.max_items = 100];
+  repeated RollCallLootEntry loot = 9 [(buf.validate.field).repeated.max_items = 100];
 }
 
 message UpdateRollCallResponse {
@@ -184,7 +193,7 @@ message CompleteRollCallResponse {
 message UpdateRollCallLootRequest {
   string guild_id = 1;
   string roll_call_id = 2;
-  repeated Item loot_list = 3;
+  repeated Item loot_list = 3 [(buf.validate.field).repeated.max_items = 100];
 }
 
 message UpdateRollCallLootResponse {
@@ -229,7 +238,7 @@ message DistributeRollCallGoldResponse {
 message CheckInRequest {
   string guild_id = 1;
   string roll_call_id = 2;
-  string notes = 3;
+  string notes = 3 [(buf.validate.field).string.max_len = 500];
 }
 
 message CheckInResponse {

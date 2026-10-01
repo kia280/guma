@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -839,7 +840,7 @@ var File_proto_guma_v1_announcement_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_announcement_proto_rawDesc = "" +
 	"\n" +
-	" proto/guma/v1/announcement.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8c\x03\n" +
+	" proto/guma/v1/announcement.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8c\x03\n" +
 	"\fAnnouncement\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1b\n" +
@@ -870,12 +871,12 @@ const file_proto_guma_v1_announcement_proto_rawDesc = "" +
 	"\x1eCreateAnnouncementDraftRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\"\\\n" +
 	"\x1fCreateAnnouncementDraftResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xa7\x01\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xbc\x01\n" +
 	"\x19UpdateAnnouncementRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12'\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tR\x0eannouncementId\x12\x14\n" +
-	"\x05title\x18\x03 \x01(\tR\x05title\x12\x18\n" +
-	"\acontent\x18\x04 \x01(\tR\acontent\x12\x16\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tR\x0eannouncementId\x12\x1e\n" +
+	"\x05title\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05title\x12#\n" +
+	"\acontent\x18\x04 \x01(\tB\t\xbaH\x06r\x04\x18\xa0\x9c\x01R\acontent\x12\x16\n" +
 	"\x06pinned\x18\x05 \x01(\bR\x06pinned\"W\n" +
 	"\x1aUpdateAnnouncementResponse\x129\n" +
 	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"`\n" +

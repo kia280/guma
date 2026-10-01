@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -2840,25 +2841,25 @@ var File_proto_guma_v1_wallet_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/wallet.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"-\n" +
+	"\x1aproto/guma/v1/wallet.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"-\n" +
 	"\x10GetWalletRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\"<\n" +
 	"\x11GetWalletResponse\x12'\n" +
-	"\x06wallet\x18\x01 \x01(\v2\x0f.guma.v1.WalletR\x06wallet\"\\\n" +
+	"\x06wallet\x18\x01 \x01(\v2\x0f.guma.v1.WalletR\x06wallet\"f\n" +
 	"\x13DepositFundsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x12\n" +
-	"\x04note\x18\x03 \x01(\tR\x04note\"]\n" +
+	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x1c\n" +
+	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"g\n" +
 	"\x14WithdrawFundsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x12\n" +
-	"\x04note\x18\x03 \x01(\tR\x04note\"{\n" +
+	"\x06amount\x18\x02 \x01(\x03R\x06amount\x12\x1c\n" +
+	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"\x85\x01\n" +
 	"\x14TransferFundsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1c\n" +
 	"\n" +
 	"to_user_id\x18\x02 \x01(\tR\btoUserId\x12\x16\n" +
-	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12\x12\n" +
-	"\x04note\x18\x04 \x01(\tR\x04note\"\xd0\x01\n" +
+	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12\x1c\n" +
+	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"\xd0\x01\n" +
 	"\x13TransactionResponse\x126\n" +
 	"\vtransaction\x18\x01 \x01(\v2\x14.guma.v1.TransactionR\vtransaction\x126\n" +
 	"\x0eupdated_wallet\x18\x02 \x01(\v2\x0f.guma.v1.WalletR\rupdatedWallet\x12I\n" +
@@ -2891,13 +2892,13 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\brequests\x18\x01 \x03(\v2\x1a.guma.v1.WithdrawalRequestR\brequests\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\x86\x01\n" +
+	"totalCount\"\xab\x01\n" +
 	"\x1eReviewWithdrawalRequestRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
 	"\n" +
-	"request_id\x18\x02 \x01(\tR\trequestId\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\tR\x06status\x12\x12\n" +
-	"\x04note\x18\x04 \x01(\tR\x04note\"l\n" +
+	"request_id\x18\x02 \x01(\tR\trequestId\x121\n" +
+	"\x06status\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bapprovedR\brejectedR\x06status\x12\x1c\n" +
+	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"l\n" +
 	"\x1fReviewWithdrawalRequestResponse\x12I\n" +
 	"\x12withdrawal_request\x18\x01 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\"\x84\x01\n" +
 	"\x17ListTransactionsRequest\x12\x19\n" +
@@ -2925,13 +2926,13 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
 	"\aitem_id\x18\x02 \x01(\tR\x06itemId\"I\n" +
 	"\x1cWithdrawBackpackItemResponse\x12)\n" +
-	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"\x83\x01\n" +
+	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"\x8d\x01\n" +
 	"\x1bTransferBackpackItemRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
 	"\aitem_id\x18\x02 \x01(\tR\x06itemId\x12\x1c\n" +
 	"\n" +
-	"to_user_id\x18\x03 \x01(\tR\btoUserId\x12\x12\n" +
-	"\x04note\x18\x04 \x01(\tR\x04note\"I\n" +
+	"to_user_id\x18\x03 \x01(\tR\btoUserId\x12\x1c\n" +
+	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"I\n" +
 	"\x1cTransferBackpackItemResponse\x12)\n" +
 	"\x04item\x18\x01 \x01(\v2\x15.guma.v1.BackpackItemR\x04item\"G\n" +
 	"\x16GetBalanceTrendRequest\x12\x19\n" +
@@ -3043,26 +3044,26 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\x17GetMemberAssetsResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x18\n" +
 	"\abalance\x18\x02 \x01(\x03R\abalance\x12+\n" +
-	"\x05items\x18\x03 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\"\xbd\x01\n" +
+	"\x05items\x18\x03 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\"\xc7\x01\n" +
 	"\x19AdminTransferFundsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1c\n" +
 	"\n" +
 	"to_user_id\x18\x03 \x01(\tR\btoUserId\x12\"\n" +
 	"\rto_guild_bank\x18\x04 \x01(\bR\vtoGuildBank\x12\x16\n" +
-	"\x06amount\x18\x05 \x01(\x03R\x06amount\x12\x12\n" +
-	"\x04note\x18\x06 \x01(\tR\x04note\"n\n" +
+	"\x06amount\x18\x05 \x01(\x03R\x06amount\x12\x1c\n" +
+	"\x04note\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"n\n" +
 	"\x1aAdminTransferFundsResponse\x126\n" +
 	"\vtransaction\x18\x01 \x01(\v2\x14.guma.v1.TransactionR\vtransaction\x12\x18\n" +
-	"\abalance\x18\x02 \x01(\x03R\abalance\"\xc8\x01\n" +
+	"\abalance\x18\x02 \x01(\x03R\abalance\"\xdc\x01\n" +
 	"!AdminTransferBackpackItemsRequest\x12\x19\n" +
 	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
-	"\bitem_ids\x18\x03 \x03(\tR\aitemIds\x12\x1c\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12#\n" +
+	"\bitem_ids\x18\x03 \x03(\tB\b\xbaH\x05\x92\x01\x02\x10dR\aitemIds\x12\x1c\n" +
 	"\n" +
 	"to_user_id\x18\x04 \x01(\tR\btoUserId\x12\"\n" +
-	"\rto_guild_bank\x18\x05 \x01(\bR\vtoGuildBank\x12\x12\n" +
-	"\x04note\x18\x06 \x01(\tR\x04note\"?\n" +
+	"\rto_guild_bank\x18\x05 \x01(\bR\vtoGuildBank\x12\x1c\n" +
+	"\x04note\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"?\n" +
 	"\"AdminTransferBackpackItemsResponse\x12\x19\n" +
 	"\bitem_ids\x18\x01 \x03(\tR\aitemIds2\x97\x18\n" +
 	"\rWalletService\x12h\n" +

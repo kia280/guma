@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "proto/guma/v1/item.proto";
@@ -162,20 +163,20 @@ message GetWalletResponse {
 message DepositFundsRequest {
   string guild_id = 1;
   int64 amount = 2;
-  string note = 3;
+  string note = 3 [(buf.validate.field).string.max_len = 200];
 }
 
 message WithdrawFundsRequest {
   string guild_id = 1;
   int64 amount = 2;
-  string note = 3;
+  string note = 3 [(buf.validate.field).string.max_len = 200];
 }
 
 message TransferFundsRequest {
   string guild_id = 1;
   string to_user_id = 2;
   int64 amount = 3;
-  string note = 4;
+  string note = 4 [(buf.validate.field).string.max_len = 200];
 }
 
 message TransactionResponse {
@@ -223,8 +224,8 @@ message ListWithdrawalRequestsResponse {
 message ReviewWithdrawalRequestRequest {
   string guild_id = 1;
   string request_id = 2;
-  string status = 3;
-  string note = 4;
+  string status = 3 [(buf.validate.field).string = {in: ["approved", "rejected"]}];
+  string note = 4 [(buf.validate.field).string.max_len = 200];
 }
 
 message ReviewWithdrawalRequestResponse {
@@ -269,7 +270,7 @@ message TransferBackpackItemRequest {
   string guild_id = 1;
   string item_id = 2;
   string to_user_id = 3;
-  string note = 4;
+  string note = 4 [(buf.validate.field).string.max_len = 200];
 }
 
 message TransferBackpackItemResponse {
@@ -417,7 +418,7 @@ message AdminTransferFundsRequest {
   string to_user_id = 3;
   bool to_guild_bank = 4;
   int64 amount = 5;
-  string note = 6;
+  string note = 6 [(buf.validate.field).string.max_len = 200];
 }
 
 message AdminTransferFundsResponse {
@@ -428,10 +429,10 @@ message AdminTransferFundsResponse {
 message AdminTransferBackpackItemsRequest {
   string guild_id = 1;
   string user_id = 2;
-  repeated string item_ids = 3;
+  repeated string item_ids = 3 [(buf.validate.field).repeated.max_items = 100];
   string to_user_id = 4;
   bool to_guild_bank = 5;
-  string note = 6;
+  string note = 6 [(buf.validate.field).string.max_len = 200];
 }
 
 message AdminTransferBackpackItemsResponse {

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -82,14 +83,14 @@ message GetEventResponse {
 
 message CreateEventRequest {
   string guild_id = 1;
-  string title = 2;
-  string description = 3;
-  string type = 4;         // EventType
+  string title = 2 [(buf.validate.field).string.max_len = 200];
+  string description = 3 [(buf.validate.field).string.max_len = 2000];
+  string type = 4 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["boss_respawn", "guild_war", "guild_meeting", "raid", "training", "tournament", "social", "other"]}];         // EventType
   string start_date = 5;   // ISO 8601 datetime
   string end_date = 6;     // ISO 8601 datetime
   bool is_all_day = 7;
-  string location = 8;
-  string priority = 9;     // "low" | "medium" | "high" | "critical"
+  string location = 8 [(buf.validate.field).string.max_len = 200];
+  string priority = 9 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["low", "medium", "high", "critical"]}];     // "low" | "medium" | "high" | "critical"
   bool is_recurring = 10;
   RecurringPattern recurring_pattern = 11;
 }
@@ -101,14 +102,14 @@ message CreateEventResponse {
 message UpdateEventRequest {
   string guild_id = 1;
   string event_id = 2;
-  string title = 3;
-  string description = 4;
-  string type = 5;
+  string title = 3 [(buf.validate.field).string.max_len = 200];
+  string description = 4 [(buf.validate.field).string.max_len = 2000];
+  string type = 5 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["boss_respawn", "guild_war", "guild_meeting", "raid", "training", "tournament", "social", "other"]}];
   string start_date = 6;
   string end_date = 7;
   bool is_all_day = 8;
-  string location = 9;
-  string priority = 10;
+  string location = 9 [(buf.validate.field).string.max_len = 200];
+  string priority = 10 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["low", "medium", "high", "critical"]}];
   bool is_recurring = 11;
   RecurringPattern recurring_pattern = 12;
 }
@@ -172,9 +173,9 @@ message GuildEvent {
 }
 
 message RecurringPattern {
-  string type = 1;             // "daily" | "weekly" | "monthly" | "custom"
+  string type = 1 [(buf.validate.field).string = {in: ["daily", "weekly", "monthly", "custom"]}];             // "daily" | "weekly" | "monthly" | "custom"
   int32 interval = 2;
-  repeated int32 days_of_week = 3; // 0=Mon … 6=Sun
+  repeated int32 days_of_week = 3 [(buf.validate.field).repeated = {max_items: 7, items: {int32: {gte: 0, lte: 6}}}]; // 0=Mon … 6=Sun
   string end_date = 4;         // ISO 8601 date; empty means no end
   int32 occurrences = 5;       // 0 means unlimited
   int32 custom_hours = 6;      // for type="custom"

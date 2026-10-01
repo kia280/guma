@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -116,7 +117,7 @@ message UpdateMemberResponse {
 message UpdateMemberRoleRequest {
   string guild_id = 1;
   string user_id = 2;
-  string role = 3;
+  string role = 3 [(buf.validate.field).string = {in: ["owner", "admin", "moderator", "member"]}];
 }
 
 message UpdateMemberRoleResponse {
