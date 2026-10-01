@@ -42,11 +42,6 @@ cors:
     - Content-Type
     - Authorization
 
-# Rate limiting configuration
-rate_limit:
-  requests_per_minute: 60
-  burst: 10
-
 # Background job scheduling
 scheduler:
   raffle_draw_interval: 15s  # set to 0 to disable
