@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -20,7 +21,11 @@ func LoggingInterceptor(logger zerolog.Logger) grpc.UnaryServerInterceptor {
 		requestID := uuid.New().String()
 
 		// Add request ID to context
-		ctx = logger.With().Str("request_id", requestID).Logger().WithContext(ctx)
+		logContext := logger.With().Str("request_id", requestID)
+		if spanContext := trace.SpanContextFromContext(ctx); spanContext.HasTraceID() {
+			logContext = logContext.Str("trace_id", spanContext.TraceID().String())
+		}
+		ctx = logContext.Logger().WithContext(ctx)
 
 		// Add request ID to response metadata
 		if err := grpc.SetHeader(ctx, metadata.Pairs("x-request-id", requestID)); err != nil {

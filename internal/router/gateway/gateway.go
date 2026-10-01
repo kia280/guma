@@ -9,10 +9,10 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rs/zerolog"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -22,6 +22,7 @@ import (
 	"github.com/kia280/guma/internal/router/gateway/middleware"
 	"github.com/kia280/guma/internal/services/devauth"
 	"github.com/kia280/guma/internal/session"
+	"github.com/kia280/guma/internal/telemetry"
 )
 
 // Gateway wraps the HTTP gateway server
@@ -43,6 +44,7 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
+	opts = append(opts, telemetry.GRPCDialOptions(cfg.Tracing)...)
 
 	// Register gRPC-Gateway handlers
 	if err := gumav1.RegisterGumaServiceHandlerFromEndpoint(ctx, mux, grpcAddr, opts); err != nil {
@@ -133,7 +135,7 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 		return nil, fmt.Errorf("failed to create health client: %w", err)
 	}
 	handler = newProbeMux(healthpb.NewHealthClient(healthConn), handler)
-	handler = otelhttp.NewHandler(handler, "http-gateway")
+	handler = telemetry.HTTPHandler(handler)
 
 	// Create HTTP server
 	httpAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
@@ -175,6 +177,7 @@ func newServeMux(logger zerolog.Logger) *runtime.ServeMux {
 		runtime.WithIncomingHeaderMatcher(customHeaderMatcher),
 		runtime.WithOutgoingHeaderMatcher(outgoingHeaderMatcher),
 		runtime.WithMetadata(session.Annotator),
+		runtime.WithMetadata(nameTraceSpan),
 	)
 }
 
@@ -208,6 +211,13 @@ func (g *Gateway) Stop(ctx context.Context) error {
 // Address returns the server's listening address
 func (g *Gateway) Address() string {
 	return g.server.Addr
+}
+
+func nameTraceSpan(ctx context.Context, r *http.Request) metadata.MD {
+	if route, ok := runtime.HTTPPathPattern(ctx); ok {
+		telemetry.NameHTTPSpan(ctx, r.Method, route)
+	}
+	return nil
 }
 
 // customErrorHandler handles errors from gRPC-Gateway

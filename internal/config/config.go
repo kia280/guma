@@ -35,6 +35,9 @@ type Config struct {
 	Scheduler SchedulerConfig `mapstructure:"scheduler"`
 
 	Metrics MetricsConfig `mapstructure:"metrics"`
+
+	// Distributed tracing configuration
+	Tracing TracingConfig `mapstructure:"tracing"`
 }
 
 // ServerConfig holds server-specific configuration
@@ -137,6 +140,7 @@ func Load() (*Config, error) {
 	v.BindEnv("metrics.insecure", "METRICS_INSECURE")
 	v.BindEnv("metrics.headers", "METRICS_HEADERS")
 	v.BindEnv("metrics.export_interval", "METRICS_EXPORT_INTERVAL")
+	bindTracingEnv(v)
 
 	// Try to read config file
 	v.SetConfigName("config")
@@ -199,6 +203,8 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("metrics.insecure", false)
 	v.SetDefault("metrics.headers", "")
 	v.SetDefault("metrics.export_interval", "15s")
+
+	setTracingDefaults(v)
 }
 
 // Validate validates the configuration
@@ -217,6 +223,10 @@ func (c *Config) Validate() error {
 
 	if c.Dev.AuthEnabled && !c.IsDevelopment() {
 		return fmt.Errorf("dev auth can only be enabled when server.env is development, got %q", c.Server.Environment)
+	}
+
+	if err := c.Tracing.Validate(); err != nil {
+		return err
 	}
 
 	return c.Metrics.Validate()

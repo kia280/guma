@@ -124,6 +124,22 @@ metrics:
     name: ""
     key: headers
 
+# OpenTelemetry distributed tracing exported over OTLP. Disabled by default.
+tracing:
+  enabled: false
+  # host:port or full URL of the OTLP receiver; empty uses the OTEL_EXPORTER_OTLP_* defaults.
+  endpoint: ""
+  # grpc or http/protobuf
+  protocol: grpc
+  # Disable TLS to the OTLP receiver (plaintext).
+  insecure: false
+  # Ratio (0.0-1.0) of new traces to sample; sampled parents are always followed.
+  sampleRate: 1.0
+  # Optional secret holding export headers as "key=value,key2=value2".
+  headersSecret:
+    name: ""
+    key: headers
+
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
   enabled: false
