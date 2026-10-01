@@ -10,6 +10,7 @@ func CORSMiddleware(allowedOrigins, allowedMethods, allowedHeaders []string) fun
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
+			w.Header().Add("Vary", "Origin")
 
 			// Check if origin is allowed
 			if isOriginAllowed(origin, allowedOrigins) {
@@ -49,7 +50,7 @@ func SecurityHeadersMiddleware() func(http.Handler) http.Handler {
 // isOriginAllowed checks if an origin is in the allowed list
 func isOriginAllowed(origin string, allowedOrigins []string) bool {
 	for _, allowed := range allowedOrigins {
-		if allowed == "*" || allowed == origin {
+		if origin != "" && allowed == origin {
 			return true
 		}
 	}

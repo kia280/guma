@@ -221,6 +221,10 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("invalid gRPC port: %d", c.Server.GRPCPort)
 	}
 
+	if err := c.CORS.Validate(); err != nil {
+		return err
+	}
+
 	if c.Dev.AuthEnabled && !c.IsDevelopment() {
 		return fmt.Errorf("dev auth can only be enabled when server.env is development, got %q", c.Server.Environment)
 	}
@@ -230,6 +234,15 @@ func (c *Config) Validate() error {
 	}
 
 	return c.Metrics.Validate()
+}
+
+func (c CORSConfig) Validate() error {
+	for _, origin := range c.AllowedOrigins {
+		if origin == "*" {
+			return fmt.Errorf("cors allowed origins must list explicit origins; %q is not allowed with credentialed requests", origin)
+		}
+	}
+	return nil
 }
 
 func (m MetricsConfig) Validate() error {
