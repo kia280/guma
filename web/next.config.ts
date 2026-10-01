@@ -3,7 +3,21 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin();
 
+const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+
 const nextConfig: NextConfig = {
+  pageExtensions: demoMode ? ['tsx', 'ts', 'jsx', 'js'] : ['modal.tsx', 'tsx', 'ts', 'jsx', 'js'],
+  env: {
+    NEXT_PUBLIC_DEMO_MODE: String(demoMode),
+    ...(demoMode && { NEXT_PUBLIC_USE_MOCK: 'true', NEXT_PUBLIC_DEV_TOOLS: 'false' }),
+  },
+  ...(demoMode && {
+    output: 'export',
+    distDir: 'out-demo',
+    trailingSlash: true,
+    images: { unoptimized: true },
+  }),
+
   async redirects() {
     return [
       {

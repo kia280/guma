@@ -4,10 +4,10 @@ import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale } from './locales';
 import { DEFAULT_TIME_ZONE, TIME_ZONE_COOKIE, isTimeZone } from './timeZone';
 
 export default getRequestConfig(async () => {
-  const store = await cookies();
-  const stored = store.get(LOCALE_COOKIE)?.value;
+  const store = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? null : await cookies();
+  const stored = store?.get(LOCALE_COOKIE)?.value;
   const locale = isLocale(stored) ? stored : DEFAULT_LOCALE;
-  const storedTimeZone = store.get(TIME_ZONE_COOKIE)?.value;
+  const storedTimeZone = store?.get(TIME_ZONE_COOKIE)?.value;
 
   return {
     locale,

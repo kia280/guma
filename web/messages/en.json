@@ -1889,5 +1889,15 @@
   "memberComboBox": {
     "noMatches": "No members match “{query}”",
     "clearSearch": "Clear search"
+  },
+  "demo": {
+    "badge": "Demo",
+    "menuLabel": "Demo options",
+    "loginTitle": "Try the Guma demo",
+    "loginDescription": "Pick a role to explore a sample guild. Each role sees different features, and you can switch at any time.",
+    "rolesLabel": "Demo roles",
+    "signInAs": "Continue as {role}",
+    "dataNote": "Everything here is sample data. Changes last until you reload the page.",
+    "switchRole": "Switch role"
   }
 }

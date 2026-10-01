@@ -1,4 +1,5 @@
 import type {Metadata, Viewport} from "next";
+import dynamic from "next/dynamic";
 import {Noto_Sans_TC} from "next/font/google";
 import Script from "next/script";
 import {NextIntlClientProvider} from 'next-intl';
@@ -10,6 +11,9 @@ import {env} from "@/lib/env";
 import {fontSizeInitScript} from "@/lib/font-size";
 import {Providers} from "./providers";
 import "./globals.css";
+
+const DemoLocaleProvider =
+  process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? dynamic(() => import('@/components/demo/DemoLocaleProvider')) : null;
 
 const font = Noto_Sans_TC({
   weight: ['400', '500', '600', '700'],
@@ -34,6 +38,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const locale = await getLocale();
+  const content = (
+    <BrowserTimeZoneProvider>
+      <Providers>{children}</Providers>
+    </BrowserTimeZoneProvider>
+  );
   return (
     <html lang={HTML_LANG[isLocale(locale) ? locale : DEFAULT_LOCALE]} suppressHydrationWarning>
       <head>
@@ -48,9 +57,7 @@ export default async function RootLayout({
       </head>
       <body className={font.className}>
         <NextIntlClientProvider>
-          <BrowserTimeZoneProvider>
-            <Providers>{children}</Providers>
-          </BrowserTimeZoneProvider>
+          {DemoLocaleProvider ? <DemoLocaleProvider>{content}</DemoLocaleProvider> : content}
         </NextIntlClientProvider>
       </body>
     </html>

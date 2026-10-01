@@ -1,3 +1,4 @@
+import { readDemoRole } from '@/lib/demo/role';
 import { env } from '@/lib/env';
 import type { GuildRole } from '@/lib/permissions';
 
@@ -33,6 +34,9 @@ export function setDevMockEnabled(enabled: boolean): void {
 }
 
 export function getDevMockRole(): DevMockRole {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+    return readDemoRole() ?? DEV_TOOLS_DISABLED_MOCK_ROLE;
+  }
   if (!env.devTools) {
     return DEV_TOOLS_DISABLED_MOCK_ROLE;
   }
