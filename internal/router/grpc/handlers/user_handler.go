@@ -38,7 +38,6 @@ func (h *UserHandler) GetMe(ctx context.Context, _ *gumav1.GetMeRequest) (*gumav
 	cookie := session.CookieFromContext(ctx)
 	h.logger.Info().
 		Str("user_id", userID).
-		Str("cookie", cookie).
 		Msg("GetMe called")
 	u, err := h.svc.GetMe(ctx, userID, cookie)
 	if err != nil {

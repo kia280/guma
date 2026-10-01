@@ -89,9 +89,11 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 				defer resp.Body.Close()
 			}
 
-			if sessionJSON, mErr := json.Marshal(kratosSession); mErr == nil {
-				logger.Debug().RawJSON("session", sessionJSON).Str("path", r.URL.Path).Msg("kratos to_session")
-			}
+			logger.Debug().
+				Str("session_id", kratosSession.GetId()).
+				Str("identity_id", kratosSession.GetIdentity().Id).
+				Str("path", r.URL.Path).
+				Msg("kratos to_session")
 
 			if err != nil {
 				status := http.StatusServiceUnavailable
