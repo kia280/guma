@@ -153,7 +153,7 @@ service WalletService {
 // Request/Response messages
 
 message GetWalletRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetWalletResponse {
@@ -161,21 +161,21 @@ message GetWalletResponse {
 }
 
 message DepositFundsRequest {
-  string guild_id = 1;
-  int64 amount = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  int64 amount = 2 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
   string note = 3 [(buf.validate.field).string.max_len = 200];
 }
 
 message WithdrawFundsRequest {
-  string guild_id = 1;
-  int64 amount = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  int64 amount = 2 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
   string note = 3 [(buf.validate.field).string.max_len = 200];
 }
 
 message TransferFundsRequest {
-  string guild_id = 1;
-  string to_user_id = 2;
-  int64 amount = 3;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string to_user_id = 2 [(buf.validate.field).string.max_len = 64];
+  int64 amount = 3 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
   string note = 4 [(buf.validate.field).string.max_len = 200];
 }
 
@@ -186,10 +186,10 @@ message TransactionResponse {
 }
 
 message ListMyWithdrawalRequestsRequest {
-  string guild_id = 1;
-  string status = 2;
-  int32 page_size = 3;
-  string page_token = 4;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string status = 2 [(buf.validate.field).string.max_len = 32];
+  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListMyWithdrawalRequestsResponse {
@@ -199,8 +199,8 @@ message ListMyWithdrawalRequestsResponse {
 }
 
 message CancelWithdrawalRequestRequest {
-  string guild_id = 1;
-  string request_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string request_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message CancelWithdrawalRequestResponse {
@@ -209,10 +209,10 @@ message CancelWithdrawalRequestResponse {
 }
 
 message ListWithdrawalRequestsRequest {
-  string guild_id = 1;
-  string status = 2;
-  int32 page_size = 3;
-  string page_token = 4;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string status = 2 [(buf.validate.field).string.max_len = 32];
+  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListWithdrawalRequestsResponse {
@@ -222,8 +222,8 @@ message ListWithdrawalRequestsResponse {
 }
 
 message ReviewWithdrawalRequestRequest {
-  string guild_id = 1;
-  string request_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string request_id = 2 [(buf.validate.field).string.max_len = 64];
   string status = 3 [(buf.validate.field).string = {in: ["approved", "rejected"]}];
   string note = 4 [(buf.validate.field).string.max_len = 200];
 }
@@ -233,10 +233,10 @@ message ReviewWithdrawalRequestResponse {
 }
 
 message ListTransactionsRequest {
-  string guild_id = 1;
-  string type = 2;      // TransactionType filter; empty = all
-  int32 page_size = 3;
-  string page_token = 4;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string type = 2 [(buf.validate.field).string.max_len = 32];      // TransactionType filter; empty = all
+  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListTransactionsResponse {
@@ -246,9 +246,9 @@ message ListTransactionsResponse {
 }
 
 message ListBackpackItemsRequest {
-  string guild_id = 1;
-  int32 page_size = 2;
-  string page_token = 3;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  int32 page_size = 2 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 3 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListBackpackItemsResponse {
@@ -258,8 +258,8 @@ message ListBackpackItemsResponse {
 }
 
 message WithdrawBackpackItemRequest {
-  string guild_id = 1;
-  string item_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string item_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message WithdrawBackpackItemResponse {
@@ -267,9 +267,9 @@ message WithdrawBackpackItemResponse {
 }
 
 message TransferBackpackItemRequest {
-  string guild_id = 1;
-  string item_id = 2;
-  string to_user_id = 3;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string item_id = 2 [(buf.validate.field).string.max_len = 64];
+  string to_user_id = 3 [(buf.validate.field).string.max_len = 64];
   string note = 4 [(buf.validate.field).string.max_len = 200];
 }
 
@@ -278,8 +278,8 @@ message TransferBackpackItemResponse {
 }
 
 message GetBalanceTrendRequest {
-  string guild_id = 1;
-  int32 days = 2; // Default: 30
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  int32 days = 2 [(buf.validate.field).int32 = {gte: 0, lte: 365}]; // Default: 30
 }
 
 message GetBalanceTrendResponse {
@@ -362,8 +362,8 @@ message BackpackItem {
 }
 
 message CancelBackpackWithdrawalRequest {
-  string guild_id = 1;
-  string item_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string item_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message CancelBackpackWithdrawalResponse {
@@ -371,7 +371,7 @@ message CancelBackpackWithdrawalResponse {
 }
 
 message ListPendingDeliveriesRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message ListPendingDeliveriesResponse {
@@ -379,8 +379,8 @@ message ListPendingDeliveriesResponse {
 }
 
 message ConfirmBackpackDeliveryRequest {
-  string guild_id = 1;
-  string item_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string item_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message ConfirmBackpackDeliveryResponse {
@@ -388,7 +388,7 @@ message ConfirmBackpackDeliveryResponse {
 }
 
 message ListMemberAssetsRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message MemberAssetSummary {
@@ -402,8 +402,8 @@ message ListMemberAssetsResponse {
 }
 
 message GetMemberAssetsRequest {
-  string guild_id = 1;
-  string user_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string user_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetMemberAssetsResponse {
@@ -413,11 +413,11 @@ message GetMemberAssetsResponse {
 }
 
 message AdminTransferFundsRequest {
-  string guild_id = 1;
-  string user_id = 2;
-  string to_user_id = 3;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string user_id = 2 [(buf.validate.field).string.max_len = 64];
+  string to_user_id = 3 [(buf.validate.field).string.max_len = 64];
   bool to_guild_bank = 4;
-  int64 amount = 5;
+  int64 amount = 5 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
   string note = 6 [(buf.validate.field).string.max_len = 200];
 }
 
@@ -427,10 +427,10 @@ message AdminTransferFundsResponse {
 }
 
 message AdminTransferBackpackItemsRequest {
-  string guild_id = 1;
-  string user_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string user_id = 2 [(buf.validate.field).string.max_len = 64];
   repeated string item_ids = 3 [(buf.validate.field).repeated.max_items = 100];
-  string to_user_id = 4;
+  string to_user_id = 4 [(buf.validate.field).string.max_len = 64];
   bool to_guild_bank = 5;
   string note = 6 [(buf.validate.field).string.max_len = 200];
 }

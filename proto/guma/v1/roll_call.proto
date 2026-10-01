@@ -102,10 +102,10 @@ service RollCallService {
 // Request/Response messages
 
 message ListRollCallsRequest {
-  string guild_id = 1;
-  string status = 2;     // "active" | "expired" | "cancelled" | "completed" | "" (all)
-  int32 page_size = 3;
-  string page_token = 4;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string status = 2 [(buf.validate.field).string.max_len = 32];     // "active" | "expired" | "cancelled" | "completed" | "" (all)
+  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListRollCallsResponse {
@@ -115,8 +115,8 @@ message ListRollCallsResponse {
 }
 
 message GetRollCallRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetRollCallResponse {
@@ -124,11 +124,11 @@ message GetRollCallResponse {
 }
 
 message CreateRollCallRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
   string title = 2 [(buf.validate.field).string.max_len = 200];
   string description = 3 [(buf.validate.field).string.max_len = 2000];
-  string datetime = 4;      // ISO 8601 datetime of the roll call
-  string expire_time = 5;   // ISO 8601 datetime when the window closes
+  string datetime = 4 [(buf.validate.field).string.max_len = 64];      // ISO 8601 datetime of the roll call
+  string expire_time = 5 [(buf.validate.field).string.max_len = 64];   // ISO 8601 datetime when the window closes
   string image_url = 6 [(buf.validate.field).cel = {
     id: "image_url.https"
     message: "image_url must be empty or an absolute https URL of at most 2048 characters"
@@ -143,12 +143,12 @@ message CreateRollCallResponse {
 }
 
 message UpdateRollCallRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
   string title = 3 [(buf.validate.field).string.max_len = 200];
   optional string description = 4 [(buf.validate.field).string.max_len = 2000];
-  string datetime = 5;
-  string expire_time = 6;
+  string datetime = 5 [(buf.validate.field).string.max_len = 64];
+  string expire_time = 6 [(buf.validate.field).string.max_len = 64];
   optional string image_url = 7 [(buf.validate.field).cel = {
     id: "image_url.https"
     message: "image_url must be empty or an absolute https URL of at most 2048 characters"
@@ -163,8 +163,8 @@ message UpdateRollCallResponse {
 }
 
 message DeleteRollCallRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message DeleteRollCallResponse {
@@ -172,8 +172,8 @@ message DeleteRollCallResponse {
 }
 
 message CancelRollCallRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message CancelRollCallResponse {
@@ -181,8 +181,8 @@ message CancelRollCallResponse {
 }
 
 message CompleteRollCallRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
   bool keep_leftovers_in_bank = 3; // Complete even when loot is undistributed; leftover items and gold stay in the guild bank
 }
 
@@ -191,8 +191,8 @@ message CompleteRollCallResponse {
 }
 
 message UpdateRollCallLootRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
   repeated Item loot_list = 3 [(buf.validate.field).repeated.max_items = 100];
 }
 
@@ -201,10 +201,10 @@ message UpdateRollCallLootResponse {
 }
 
 message AssignLootRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
-  string item_id = 3;
-  string user_id = 4;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  string item_id = 3 [(buf.validate.field).string.max_len = 64];
+  string user_id = 4 [(buf.validate.field).string.max_len = 64];
 }
 
 message AssignLootResponse {
@@ -212,8 +212,8 @@ message AssignLootResponse {
 }
 
 message GetRollCallGoldRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetRollCallGoldResponse {
@@ -222,10 +222,10 @@ message GetRollCallGoldResponse {
 }
 
 message DistributeRollCallGoldRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
-  string request_id = 3; // Client-generated UUID; repeating it returns the original result
-  repeated RollCallGoldPayout payouts = 4;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  string request_id = 3 [(buf.validate.field).string.max_len = 64]; // Client-generated UUID; repeating it returns the original result
+  repeated RollCallGoldPayout payouts = 4 [(buf.validate.field).repeated.max_items = 1000];
 }
 
 message DistributeRollCallGoldResponse {
@@ -236,8 +236,8 @@ message DistributeRollCallGoldResponse {
 }
 
 message CheckInRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
   string notes = 3 [(buf.validate.field).string.max_len = 500];
 }
 
@@ -246,10 +246,10 @@ message CheckInResponse {
 }
 
 message ListAttendeesRequest {
-  string guild_id = 1;
-  string roll_call_id = 2;
-  int32 page_size = 3;
-  string page_token = 4;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListAttendeesResponse {
@@ -283,9 +283,9 @@ message RollCall {
 
 // LootKind values: item, gold
 message RollCallLootEntry {
-  string kind = 1;
+  string kind = 1 [(buf.validate.field).string.max_len = 32];
   Item item = 2;    // Set when kind is item
-  int64 amount = 3; // Gold in minor units when kind is gold
+  int64 amount = 3 [(buf.validate.field).int64 = {gte: 0, lte: 100000000000000}]; // Gold in minor units when kind is gold
 }
 
 message RollCallGoldPot {
@@ -297,8 +297,8 @@ message RollCallGoldPot {
 }
 
 message RollCallGoldPayout {
-  string user_id = 1;
-  int64 amount = 2;
+  string user_id = 1 [(buf.validate.field).string.max_len = 64];
+  int64 amount = 2 [(buf.validate.field).int64 = {gte: 0, lte: 100000000000000}];
 }
 
 message RollCallAttendee {

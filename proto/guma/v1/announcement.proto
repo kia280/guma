@@ -71,9 +71,9 @@ message Announcement {
 }
 
 message ListAnnouncementsRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
   bool include_drafts = 2;
-  int32 page_size = 3;
+  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
 }
 
 message ListAnnouncementsResponse {
@@ -81,8 +81,8 @@ message ListAnnouncementsResponse {
 }
 
 message GetAnnouncementRequest {
-  string guild_id = 1;
-  string announcement_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string announcement_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetAnnouncementResponse {
@@ -90,7 +90,7 @@ message GetAnnouncementResponse {
 }
 
 message CreateAnnouncementDraftRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message CreateAnnouncementDraftResponse {
@@ -98,8 +98,8 @@ message CreateAnnouncementDraftResponse {
 }
 
 message UpdateAnnouncementRequest {
-  string guild_id = 1;
-  string announcement_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string announcement_id = 2 [(buf.validate.field).string.max_len = 64];
   string title = 3 [(buf.validate.field).string.max_len = 200];
   string content = 4 [(buf.validate.field).string.max_len = 20000];
   bool pinned = 5;
@@ -110,8 +110,8 @@ message UpdateAnnouncementResponse {
 }
 
 message PublishAnnouncementRequest {
-  string guild_id = 1;
-  string announcement_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string announcement_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message PublishAnnouncementResponse {
@@ -119,8 +119,8 @@ message PublishAnnouncementResponse {
 }
 
 message UnpublishAnnouncementRequest {
-  string guild_id = 1;
-  string announcement_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string announcement_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message UnpublishAnnouncementResponse {
@@ -128,8 +128,8 @@ message UnpublishAnnouncementResponse {
 }
 
 message DeleteAnnouncementDraftRequest {
-  string guild_id = 1;
-  string announcement_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string announcement_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message DeleteAnnouncementDraftResponse {}

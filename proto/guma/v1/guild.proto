@@ -116,7 +116,7 @@ message CreateGuildResponse {
 }
 
 message GetGuildRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetGuildResponse {
@@ -124,7 +124,7 @@ message GetGuildResponse {
 }
 
 message UpdateGuildRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
   string name = 2 [(buf.validate.field).string.max_len = 100];
   string description = 3 [(buf.validate.field).string.max_len = 2000];
   reserved 4;
@@ -138,9 +138,9 @@ message UpdateGuildResponse {
 }
 
 message UploadGuildLogoRequest {
-  string guild_id = 1;
-  bytes data = 2;
-  string content_type = 3;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  bytes data = 2 [(buf.validate.field).bytes.max_len = 524288];
+  string content_type = 3 [(buf.validate.field).string.max_len = 100];
 }
 
 message UploadGuildLogoResponse {
@@ -148,7 +148,7 @@ message UploadGuildLogoResponse {
 }
 
 message DeleteGuildLogoRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message DeleteGuildLogoResponse {
@@ -156,12 +156,12 @@ message DeleteGuildLogoResponse {
 }
 
 message GetGuildLogoRequest {
-  string guild_id = 1;
-  string v = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string v = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message DeleteGuildRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message DeleteGuildResponse {
@@ -169,10 +169,10 @@ message DeleteGuildResponse {
 }
 
 message ListGuildsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
-  string search = 3;   // Free-text search on name/description
-  string order_by = 4;
+  int32 page_size = 1 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 2 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
+  string search = 3 [(buf.validate.field).string.max_len = 200];   // Free-text search on name/description
+  string order_by = 4 [(buf.validate.field).string.max_len = 32];
 }
 
 message ListGuildsResponse {
@@ -182,7 +182,7 @@ message ListGuildsResponse {
 }
 
 message GetGuildSettingsRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetGuildSettingsResponse {
@@ -190,7 +190,7 @@ message GetGuildSettingsResponse {
 }
 
 message UpdateGuildSettingsRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
   GuildSettings settings = 2;
 }
 
@@ -199,7 +199,7 @@ message UpdateGuildSettingsResponse {
 }
 
 message GetGuildStatsRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetGuildStatsResponse {
@@ -213,7 +213,7 @@ message GetCurrentGuildResponse {
 }
 
 message JoinGuildByIdRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message JoinGuildByIdResponse {
@@ -221,7 +221,7 @@ message JoinGuildByIdResponse {
 }
 
 message LeaveGuildRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message LeaveGuildResponse {

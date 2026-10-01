@@ -544,30 +544,30 @@ var File_proto_guma_v1_roll_call_template_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_roll_call_template_proto_rawDesc = "" +
 	"\n" +
-	"&proto/guma/v1/roll_call_template.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"9\n" +
-	"\x1cListRollCallTemplatesRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\"X\n" +
+	"&proto/guma/v1/roll_call_template.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"B\n" +
+	"\x1cListRollCallTemplatesRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"X\n" +
 	"\x1dListRollCallTemplatesResponse\x127\n" +
-	"\ttemplates\x18\x01 \x03(\v2\x19.guma.v1.RollCallTemplateR\ttemplates\"\xad\x01\n" +
-	"\x1dCreateRollCallTemplateRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
+	"\ttemplates\x18\x01 \x03(\v2\x19.guma.v1.RollCallTemplateR\ttemplates\"\xb6\x01\n" +
+	"\x1dCreateRollCallTemplateRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1b\n" +
 	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18dR\x04name\x12\x1e\n" +
 	"\x05title\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05title\x124\n" +
 	"\x11item_template_ids\x18\x04 \x03(\tB\b\xbaH\x05\x92\x01\x02\x10dR\x0fitemTemplateIds\"W\n" +
 	"\x1eCreateRollCallTemplateResponse\x125\n" +
-	"\btemplate\x18\x01 \x01(\v2\x19.guma.v1.RollCallTemplateR\btemplate\"\xce\x01\n" +
-	"\x1dUpdateRollCallTemplateRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1f\n" +
-	"\vtemplate_id\x18\x02 \x01(\tR\n" +
+	"\btemplate\x18\x01 \x01(\v2\x19.guma.v1.RollCallTemplateR\btemplate\"\xe0\x01\n" +
+	"\x1dUpdateRollCallTemplateRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12(\n" +
+	"\vtemplate_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
 	"templateId\x12\x1b\n" +
 	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18dR\x04name\x12\x1e\n" +
 	"\x05title\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05title\x124\n" +
 	"\x11item_template_ids\x18\x05 \x03(\tB\b\xbaH\x05\x92\x01\x02\x10dR\x0fitemTemplateIds\"W\n" +
 	"\x1eUpdateRollCallTemplateResponse\x125\n" +
-	"\btemplate\x18\x01 \x01(\v2\x19.guma.v1.RollCallTemplateR\btemplate\"[\n" +
-	"\x1dDeleteRollCallTemplateRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1f\n" +
-	"\vtemplate_id\x18\x02 \x01(\tR\n" +
+	"\btemplate\x18\x01 \x01(\v2\x19.guma.v1.RollCallTemplateR\btemplate\"m\n" +
+	"\x1dDeleteRollCallTemplateRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12(\n" +
+	"\vtemplate_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
 	"templateId\":\n" +
 	"\x1eDeleteRollCallTemplateResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa1\x02\n" +

@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
@@ -53,7 +54,7 @@ service GumaService {
 
 // Request/Response messages
 message GetNavigationRequest {
-  string guild_id = 1;  // Optional: guild-specific navigation
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];  // Optional: guild-specific navigation
 }
 
 message GetNavigationResponse {
@@ -61,7 +62,7 @@ message GetNavigationResponse {
 }
 
 message GetDashboardDataRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetDashboardDataResponse {
@@ -89,9 +90,9 @@ message GetAppConfigResponse {
 }
 
 message SearchGlobalRequest {
-  string query = 1;
-  string guild_id = 2;  // Optional: scope to guild
-  int32 limit = 3;      // Default: 20
+  string query = 1 [(buf.validate.field).string.max_len = 200];
+  string guild_id = 2 [(buf.validate.field).string.max_len = 64];  // Optional: scope to guild
+  int32 limit = 3 [(buf.validate.field).int32 = {gte: 0, lte: 100}];      // Default: 20
 }
 
 message SearchGlobalResponse {
@@ -111,12 +112,12 @@ message NavigationItem {
 }
 
 message UserPreferences {
-  string theme = 1;              // "light", "dark", "auto"
-  string language = 2;           // "en", "ja", etc.
-  string timezone = 3;           // IANA timezone
-  string date_format = 4;        // Date display format
-  string time_format = 5;        // 12h/24h
-  map<string, string> ui_settings = 6;  // Custom UI settings
+  string theme = 1 [(buf.validate.field).string.max_len = 32];              // "light", "dark", "auto"
+  string language = 2 [(buf.validate.field).string.max_len = 64];           // "en", "ja", etc.
+  string timezone = 3 [(buf.validate.field).string.max_len = 64];           // IANA timezone
+  string date_format = 4 [(buf.validate.field).string.max_len = 64];        // Date display format
+  string time_format = 5 [(buf.validate.field).string.max_len = 64];        // 12h/24h
+  map<string, string> ui_settings = 6 [(buf.validate.field).map = {max_pairs: 50, keys: {string: {max_len: 100}}, values: {string: {max_len: 2000}}}];  // Custom UI settings
 }
 
 message DashboardData {

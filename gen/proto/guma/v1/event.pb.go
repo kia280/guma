@@ -1180,33 +1180,35 @@ var File_proto_guma_v1_event_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/guma/v1/event.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\x01\n" +
-	"\x11ListEventsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x12\n" +
-	"\x04view\x18\x02 \x01(\tR\x04view\x12\x12\n" +
-	"\x04date\x18\x03 \x01(\tR\x04date\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\x19proto/guma/v1/event.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xcc\x01\n" +
+	"\x11ListEventsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1b\n" +
+	"\x04view\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04view\x12\x1b\n" +
+	"\x04date\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18@R\x04date\x12'\n" +
+	"\tpage_size\x18\x04 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
-	"page_token\x18\x05 \x01(\tR\tpageToken\"\x8a\x01\n" +
+	"page_token\x18\x05 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
+	"2\b^[0-9]*$R\tpageToken\"\x8a\x01\n" +
 	"\x12ListEventsResponse\x12+\n" +
 	"\x06events\x18\x01 \x03(\v2\x13.guma.v1.GuildEventR\x06events\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"G\n" +
-	"\x0fGetEventRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x19\n" +
-	"\bevent_id\x18\x02 \x01(\tR\aeventId\"=\n" +
+	"totalCount\"Y\n" +
+	"\x0fGetEventRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\"\n" +
+	"\bevent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\aeventId\"=\n" +
 	"\x10GetEventResponse\x12)\n" +
-	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"\x98\x04\n" +
-	"\x12CreateEventRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1e\n" +
+	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"\xb3\x04\n" +
+	"\x12CreateEventRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1e\n" +
 	"\x05title\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05title\x12*\n" +
 	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12o\n" +
 	"\x04type\x18\x04 \x01(\tB[\xbaHX\xd8\x01\x01rSR\fboss_respawnR\tguild_warR\rguild_meetingR\x04raidR\btrainingR\n" +
-	"tournamentR\x06socialR\x05otherR\x04type\x12\x1d\n" +
+	"tournamentR\x06socialR\x05otherR\x04type\x12&\n" +
 	"\n" +
-	"start_date\x18\x05 \x01(\tR\tstartDate\x12\x19\n" +
-	"\bend_date\x18\x06 \x01(\tR\aendDate\x12\x1c\n" +
+	"start_date\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x18@R\tstartDate\x12\"\n" +
+	"\bend_date\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x18@R\aendDate\x12\x1c\n" +
 	"\n" +
 	"is_all_day\x18\a \x01(\bR\bisAllDay\x12$\n" +
 	"\blocation\x18\b \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\blocation\x12A\n" +
@@ -1215,17 +1217,17 @@ const file_proto_guma_v1_event_proto_rawDesc = "" +
 	" \x01(\bR\visRecurring\x12F\n" +
 	"\x11recurring_pattern\x18\v \x01(\v2\x19.guma.v1.RecurringPatternR\x10recurringPattern\"@\n" +
 	"\x13CreateEventResponse\x12)\n" +
-	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"\xb3\x04\n" +
-	"\x12UpdateEventRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x19\n" +
-	"\bevent_id\x18\x02 \x01(\tR\aeventId\x12\x1e\n" +
+	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"\xd7\x04\n" +
+	"\x12UpdateEventRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\"\n" +
+	"\bevent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\aeventId\x12\x1e\n" +
 	"\x05title\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05title\x12*\n" +
 	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12o\n" +
 	"\x04type\x18\x05 \x01(\tB[\xbaHX\xd8\x01\x01rSR\fboss_respawnR\tguild_warR\rguild_meetingR\x04raidR\btrainingR\n" +
-	"tournamentR\x06socialR\x05otherR\x04type\x12\x1d\n" +
+	"tournamentR\x06socialR\x05otherR\x04type\x12&\n" +
 	"\n" +
-	"start_date\x18\x06 \x01(\tR\tstartDate\x12\x19\n" +
-	"\bend_date\x18\a \x01(\tR\aendDate\x12\x1c\n" +
+	"start_date\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x18@R\tstartDate\x12\"\n" +
+	"\bend_date\x18\a \x01(\tB\a\xbaH\x04r\x02\x18@R\aendDate\x12\x1c\n" +
 	"\n" +
 	"is_all_day\x18\b \x01(\bR\bisAllDay\x12$\n" +
 	"\blocation\x18\t \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\blocation\x12A\n" +
@@ -1234,25 +1236,25 @@ const file_proto_guma_v1_event_proto_rawDesc = "" +
 	"\fis_recurring\x18\v \x01(\bR\visRecurring\x12F\n" +
 	"\x11recurring_pattern\x18\f \x01(\v2\x19.guma.v1.RecurringPatternR\x10recurringPattern\"@\n" +
 	"\x13UpdateEventResponse\x12)\n" +
-	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"J\n" +
-	"\x12DeleteEventRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x19\n" +
-	"\bevent_id\x18\x02 \x01(\tR\aeventId\"/\n" +
+	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"\\\n" +
+	"\x12DeleteEventRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\"\n" +
+	"\bevent_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\aeventId\"/\n" +
 	"\x13DeleteEventResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"o\n" +
-	"\x18ListEventsByRangeRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1d\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x8a\x01\n" +
+	"\x18ListEventsByRangeRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12&\n" +
 	"\n" +
-	"start_date\x18\x02 \x01(\tR\tstartDate\x12\x19\n" +
-	"\bend_date\x18\x03 \x01(\tR\aendDate\"\x91\x01\n" +
+	"start_date\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\tstartDate\x12\"\n" +
+	"\bend_date\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18@R\aendDate\"\x91\x01\n" +
 	"\x19ListEventsByRangeResponse\x12+\n" +
 	"\x06events\x18\x01 \x03(\v2\x13.guma.v1.GuildEventR\x06events\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"L\n" +
-	"\x19ListUpcomingEventsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x14\n" +
-	"\x05limit\x18\x02 \x01(\x05R\x05limit\"I\n" +
+	"totalCount\"`\n" +
+	"\x19ListUpcomingEventsRequest\x12\"\n" +
+	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1f\n" +
+	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\"I\n" +
 	"\x1aListUpcomingEventsResponse\x12+\n" +
 	"\x06events\x18\x01 \x03(\v2\x13.guma.v1.GuildEventR\x06events\"\xe4\x04\n" +
 	"\n" +
@@ -1279,17 +1281,19 @@ const file_proto_guma_v1_event_proto_rawDesc = "" +
 	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12&\n" +
-	"\x0fcreated_by_name\x18\x11 \x01(\tR\rcreatedByName\"\xa4\x02\n" +
+	"\x0fcreated_by_name\x18\x11 \x01(\tR\rcreatedByName\"\xdb\x02\n" +
 	"\x10RecurringPattern\x129\n" +
-	"\x04type\x18\x01 \x01(\tB%\xbaH\"r R\x05dailyR\x06weeklyR\amonthlyR\x06customR\x04type\x12\x1a\n" +
-	"\binterval\x18\x02 \x01(\x05R\binterval\x122\n" +
+	"\x04type\x18\x01 \x01(\tB%\xbaH\"r R\x05dailyR\x06weeklyR\amonthlyR\x06customR\x04type\x12&\n" +
+	"\binterval\x18\x02 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\xed\x02(\x00R\binterval\x122\n" +
 	"\fdays_of_week\x18\x03 \x03(\x05B\x10\xbaH\r\x92\x01\n" +
 	"\x10\a\"\x06\x1a\x04\x18\x06(\x00R\n" +
-	"daysOfWeek\x12\x19\n" +
-	"\bend_date\x18\x04 \x01(\tR\aendDate\x12 \n" +
-	"\voccurrences\x18\x05 \x01(\x05R\voccurrences\x12!\n" +
-	"\fcustom_hours\x18\x06 \x01(\x05R\vcustomHours\x12%\n" +
-	"\x0ecustom_minutes\x18\a \x01(\x05R\rcustomMinutes2\xf1\x06\n" +
+	"daysOfWeek\x12\"\n" +
+	"\bend_date\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18@R\aendDate\x12,\n" +
+	"\voccurrences\x18\x05 \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\voccurrences\x12,\n" +
+	"\fcustom_hours\x18\x06 \x01(\x05B\t\xbaH\x06\x1a\x04\x18\x17(\x00R\vcustomHours\x120\n" +
+	"\x0ecustom_minutes\x18\a \x01(\x05B\t\xbaH\x06\x1a\x04\x18;(\x00R\rcustomMinutes2\xf1\x06\n" +
 	"\fEventService\x12k\n" +
 	"\n" +
 	"ListEvents\x12\x1a.guma.v1.ListEventsRequest\x1a\x1b.guma.v1.ListEventsResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/guilds/{guild_id}/events\x12p\n" +

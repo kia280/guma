@@ -59,11 +59,11 @@ service EventService {
 // Request/Response messages
 
 message ListEventsRequest {
-  string guild_id = 1;
-  string view = 2;  // "month" | "week" | "day"
-  string date = 3;  // ISO 8601 date anchor for the view
-  int32 page_size = 4;
-  string page_token = 5;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string view = 2 [(buf.validate.field).string.max_len = 32];  // "month" | "week" | "day"
+  string date = 3 [(buf.validate.field).string.max_len = 64];  // ISO 8601 date anchor for the view
+  int32 page_size = 4 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 5 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListEventsResponse {
@@ -73,8 +73,8 @@ message ListEventsResponse {
 }
 
 message GetEventRequest {
-  string guild_id = 1;
-  string event_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string event_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message GetEventResponse {
@@ -82,12 +82,12 @@ message GetEventResponse {
 }
 
 message CreateEventRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
   string title = 2 [(buf.validate.field).string.max_len = 200];
   string description = 3 [(buf.validate.field).string.max_len = 2000];
   string type = 4 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["boss_respawn", "guild_war", "guild_meeting", "raid", "training", "tournament", "social", "other"]}];         // EventType
-  string start_date = 5;   // ISO 8601 datetime
-  string end_date = 6;     // ISO 8601 datetime
+  string start_date = 5 [(buf.validate.field).string.max_len = 64];   // ISO 8601 datetime
+  string end_date = 6 [(buf.validate.field).string.max_len = 64];     // ISO 8601 datetime
   bool is_all_day = 7;
   string location = 8 [(buf.validate.field).string.max_len = 200];
   string priority = 9 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["low", "medium", "high", "critical"]}];     // "low" | "medium" | "high" | "critical"
@@ -100,13 +100,13 @@ message CreateEventResponse {
 }
 
 message UpdateEventRequest {
-  string guild_id = 1;
-  string event_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string event_id = 2 [(buf.validate.field).string.max_len = 64];
   string title = 3 [(buf.validate.field).string.max_len = 200];
   string description = 4 [(buf.validate.field).string.max_len = 2000];
   string type = 5 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["boss_respawn", "guild_war", "guild_meeting", "raid", "training", "tournament", "social", "other"]}];
-  string start_date = 6;
-  string end_date = 7;
+  string start_date = 6 [(buf.validate.field).string.max_len = 64];
+  string end_date = 7 [(buf.validate.field).string.max_len = 64];
   bool is_all_day = 8;
   string location = 9 [(buf.validate.field).string.max_len = 200];
   string priority = 10 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["low", "medium", "high", "critical"]}];
@@ -119,8 +119,8 @@ message UpdateEventResponse {
 }
 
 message DeleteEventRequest {
-  string guild_id = 1;
-  string event_id = 2;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string event_id = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message DeleteEventResponse {
@@ -128,9 +128,9 @@ message DeleteEventResponse {
 }
 
 message ListEventsByRangeRequest {
-  string guild_id = 1;
-  string start_date = 2; // ISO 8601
-  string end_date = 3;   // ISO 8601
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string start_date = 2 [(buf.validate.field).string.max_len = 64]; // ISO 8601
+  string end_date = 3 [(buf.validate.field).string.max_len = 64];   // ISO 8601
 }
 
 message ListEventsByRangeResponse {
@@ -140,8 +140,8 @@ message ListEventsByRangeResponse {
 }
 
 message ListUpcomingEventsRequest {
-  string guild_id = 1;
-  int32 limit = 2; // Default: 10
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  int32 limit = 2 [(buf.validate.field).int32 = {gte: 0, lte: 100}]; // Default: 10
 }
 
 message ListUpcomingEventsResponse {
@@ -174,10 +174,10 @@ message GuildEvent {
 
 message RecurringPattern {
   string type = 1 [(buf.validate.field).string = {in: ["daily", "weekly", "monthly", "custom"]}];             // "daily" | "weekly" | "monthly" | "custom"
-  int32 interval = 2;
+  int32 interval = 2 [(buf.validate.field).int32 = {gte: 0, lte: 365}];
   repeated int32 days_of_week = 3 [(buf.validate.field).repeated = {max_items: 7, items: {int32: {gte: 0, lte: 6}}}]; // 0=Mon … 6=Sun
-  string end_date = 4;         // ISO 8601 date; empty means no end
-  int32 occurrences = 5;       // 0 means unlimited
-  int32 custom_hours = 6;      // for type="custom"
-  int32 custom_minutes = 7;
+  string end_date = 4 [(buf.validate.field).string.max_len = 64];         // ISO 8601 date; empty means no end
+  int32 occurrences = 5 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];       // 0 means unlimited
+  int32 custom_hours = 6 [(buf.validate.field).int32 = {gte: 0, lte: 23}];      // for type="custom"
+  int32 custom_minutes = 7 [(buf.validate.field).int32 = {gte: 0, lte: 59}];
 }
