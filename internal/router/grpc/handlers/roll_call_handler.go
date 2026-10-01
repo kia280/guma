@@ -121,7 +121,11 @@ func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.Delete
 	if req.GuildId == "" || req.RollCallId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
-	if err := h.svc.Delete(ctx, req.GuildId, req.RollCallId); err != nil {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+	if err := h.svc.Delete(ctx, req.GuildId, req.RollCallId, userID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteRollCallResponse{Success: true}, nil

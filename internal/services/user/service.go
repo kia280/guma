@@ -140,7 +140,6 @@ func newKratosClient(baseURL string) *kratos.APIClient {
 func (s *Service) GetMe(ctx context.Context, userID, kratosCookie string) (*User, error) {
 	s.logger.Info().
 		Str("user_id", userID).
-		Str("kratos_cookie", kratosCookie).
 		Msg("GetMe")
 
 	id, err := uuid.Parse(userID)

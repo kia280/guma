@@ -361,8 +361,8 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 	return c, nil
 }
 
-// Delete removes a roll call.
-func (s *Service) Delete(ctx context.Context, guildIDStr, rollCallIDStr string) error {
+// Delete removes a roll call. Requires owner or admin role.
+func (s *Service) Delete(ctx context.Context, guildIDStr, rollCallIDStr, userIDStr string) error {
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -370,6 +370,13 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, rollCallIDStr string) 
 	rollCallID, err := uuid.Parse(rollCallIDStr)
 	if err != nil {
 		return fmt.Errorf("%w: roll call", errs.ErrNotFound)
+	}
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return fmt.Errorf("%w: user", errs.ErrInvalidArgument)
+	}
+	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
+		return err
 	}
 	n, err := s.q.DeleteRollCall(ctx, db.DeleteRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {

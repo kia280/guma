@@ -662,6 +662,7 @@
       "createRollCall": "Create roll calls",
       "editRollCall": "Edit open roll calls",
       "cancelRollCall": "Cancel roll calls",
+      "deleteRollCall": "Delete roll calls",
       "contribute": "Contribute funds and donate items",
       "requestFromBank": "Request funds or items",
       "reviewRequests": "Approve or reject fund and item requests",
