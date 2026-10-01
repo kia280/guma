@@ -26,6 +26,9 @@ go.work.sum
 .env.test.local
 .env.production.local
 
+# Local configuration with secrets
+config.yaml
+
 # OS generated files
 .DS_Store
 .DS_Store?
