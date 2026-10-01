@@ -513,8 +513,9 @@ func (s *Service) GetStats(ctx context.Context, userID string) (*Stats, error) {
 
 // autoJoinSingletonGuild drops a freshly-bootstrapped user into the one and
 // only guild when the deployment has exactly one. A no-op if the user is
-// already a member of any guild, if there are zero guilds, or if there are
-// two or more. Failures are non-fatal to the caller.
+// already a member of any guild, if there are zero guilds, if there are
+// two or more, or if the guild is not public. The user joins as a member.
+// Failures are non-fatal to the caller.
 func (s *Service) autoJoinSingletonGuild(ctx context.Context, userID uuid.UUID) error {
 	count, err := s.q.CountUserGuilds(ctx, userID)
 	if err != nil {
@@ -532,10 +533,18 @@ func (s *Service) autoJoinSingletonGuild(ctx context.Context, userID uuid.UUID) 
 		return fmt.Errorf("get singleton guild: %w", err)
 	}
 
+	public, err := s.q.GetGuildPublic(ctx, guildID)
+	if err != nil {
+		return fmt.Errorf("get guild public: %w", err)
+	}
+	if !public {
+		return nil
+	}
+
 	if err := s.q.InsertGuildMember(ctx, db.InsertGuildMemberParams{
 		UserID:  userID,
 		GuildID: guildID,
-		Role:    "admin",
+		Role:    "member",
 	}); err != nil {
 		return fmt.Errorf("insert guild member: %w", err)
 	}
