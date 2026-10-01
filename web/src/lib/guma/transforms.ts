@@ -1,6 +1,7 @@
 // Transforms proto-wire (snake_case, nested Item, etc.) → UI shapes used by components.
 // Keep these pure — no I/O, no axios calls.
 
+import { safeReturnPath } from '@/lib/safe-return-path';
 import type { AdminAnnouncement, AdminGuildStats } from '@/types/admin';
 import { AuctionStatus } from '@/types/auction';
 import type { AuctionItem, Bid } from '@/types/auction';
@@ -1032,8 +1033,7 @@ const toNotificationParams = (raw: Record<string, unknown> | undefined): Notific
   return params;
 };
 
-const toInternalHref = (url: string | undefined): string | undefined =>
-  url && url.startsWith('/') && !url.startsWith('//') ? url : undefined;
+const toInternalHref = (url: string | undefined): string | undefined => safeReturnPath(url, '') || undefined;
 
 export const toNotification = (raw: ProtoNotification): GuildNotification => ({
   id: raw.id,

@@ -41,11 +41,13 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 	grpcServer := grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 		grpc.ChainUnaryInterceptor(
+			interceptors.ErrorSanitizerInterceptor(),
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),
 			interceptors.ValidationInterceptor(),
 		),
 		grpc.ChainStreamInterceptor(
+			interceptors.StreamErrorSanitizerInterceptor(logger),
 			interceptors.StreamRecoveryInterceptor(logger),
 		),
 	)

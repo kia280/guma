@@ -25,9 +25,6 @@ type Config struct {
 	// CORS configuration
 	CORS CORSConfig `mapstructure:"cors"`
 
-	// Rate limiting configuration
-	RateLimit RateLimitConfig `mapstructure:"rate_limit"`
-
 	// Development tooling configuration
 	Dev DevConfig `mapstructure:"dev"`
 
@@ -99,12 +96,6 @@ type CORSConfig struct {
 	AllowedHeaders []string `mapstructure:"allowed_headers"`
 }
 
-// RateLimitConfig holds rate limiting configuration
-type RateLimitConfig struct {
-	RequestsPerMinute int `mapstructure:"requests_per_minute"`
-	Burst             int `mapstructure:"burst"`
-}
-
 // Load loads configuration from environment variables and config files
 func Load() (*Config, error) {
 	v := viper.New()
@@ -129,8 +120,6 @@ func Load() (*Config, error) {
 	v.BindEnv("cors.allowed_origins", "CORS_ALLOWED_ORIGINS")
 	v.BindEnv("cors.allowed_methods", "CORS_ALLOWED_METHODS")
 	v.BindEnv("cors.allowed_headers", "CORS_ALLOWED_HEADERS")
-	v.BindEnv("rate_limit.requests_per_minute", "RATE_LIMIT_REQUESTS_PER_MINUTE")
-	v.BindEnv("rate_limit.burst", "RATE_LIMIT_BURST")
 	v.BindEnv("dev.auth_enabled", "DEV_AUTH_ENABLED")
 	v.BindEnv("scheduler.raffle_draw_interval", "SCHEDULER_RAFFLE_DRAW_INTERVAL")
 	v.BindEnv("scheduler.auction_settle_interval", "SCHEDULER_AUCTION_SETTLE_INTERVAL")
@@ -190,10 +179,6 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("cors.allowed_methods", []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
 	v.SetDefault("cors.allowed_headers", []string{"Content-Type", "Authorization"})
 
-	// Rate limit defaults
-	v.SetDefault("rate_limit.requests_per_minute", 60)
-	v.SetDefault("rate_limit.burst", 10)
-
 	v.SetDefault("scheduler.raffle_draw_interval", "15s")
 	v.SetDefault("scheduler.auction_settle_interval", "15s")
 
@@ -221,6 +206,10 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("invalid gRPC port: %d", c.Server.GRPCPort)
 	}
 
+	if err := c.CORS.Validate(); err != nil {
+		return err
+	}
+
 	if c.Dev.AuthEnabled && !c.IsDevelopment() {
 		return fmt.Errorf("dev auth can only be enabled when server.env is development, got %q", c.Server.Environment)
 	}
@@ -230,6 +219,15 @@ func (c *Config) Validate() error {
 	}
 
 	return c.Metrics.Validate()
+}
+
+func (c CORSConfig) Validate() error {
+	for _, origin := range c.AllowedOrigins {
+		if origin == "*" {
+			return fmt.Errorf("cors allowed origins must list explicit origins; %q is not allowed with credentialed requests", origin)
+		}
+	}
+	return nil
 }
 
 func (m MetricsConfig) Validate() error {

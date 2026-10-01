@@ -307,7 +307,8 @@ func (s *Service) fetchKratosIdentity(ctx context.Context, cookie string) (krato
 		defer resp.Body.Close()
 	}
 	if err != nil || sess == nil {
-		return kratosIdentity{}, fmt.Errorf("%w: kratos whoami: %v", errs.ErrUnauthenticated, err)
+		s.logger.Warn().Err(err).Msg("kratos whoami failed")
+		return kratosIdentity{}, fmt.Errorf("%w: kratos whoami failed", errs.ErrUnauthenticated)
 	}
 
 	kid, ok := sess.GetIdentityOk()

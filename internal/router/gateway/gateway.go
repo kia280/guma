@@ -123,6 +123,11 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpc
 	}
 	handler = withAuth(handler, cfg.Auth.KratosPublicURL, devStore, logger)
 	handler = eventStreamMiddleware(handler)
+	crossOriginProtection, err := middleware.CrossOriginProtectionMiddleware(cfg.CORS.AllowedOrigins)
+	if err != nil {
+		return nil, err
+	}
+	handler = crossOriginProtection(handler)
 	handler = middleware.SecurityHeadersMiddleware()(handler)
 	handler = middleware.CORSMiddleware(
 		cfg.CORS.AllowedOrigins,

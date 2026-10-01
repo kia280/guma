@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -10,6 +11,7 @@ func CORSMiddleware(allowedOrigins, allowedMethods, allowedHeaders []string) fun
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			origin := r.Header.Get("Origin")
+			w.Header().Add("Vary", "Origin")
 
 			// Check if origin is allowed
 			if isOriginAllowed(origin, allowedOrigins) {
@@ -32,6 +34,16 @@ func CORSMiddleware(allowedOrigins, allowedMethods, allowedHeaders []string) fun
 	}
 }
 
+func CrossOriginProtectionMiddleware(trustedOrigins []string) (func(http.Handler) http.Handler, error) {
+	protection := http.NewCrossOriginProtection()
+	for _, origin := range trustedOrigins {
+		if err := protection.AddTrustedOrigin(origin); err != nil {
+			return nil, fmt.Errorf("invalid trusted origin %q: %w", origin, err)
+		}
+	}
+	return protection.Handler, nil
+}
+
 // SecurityHeadersMiddleware adds security headers to HTTP responses
 func SecurityHeadersMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -49,7 +61,7 @@ func SecurityHeadersMiddleware() func(http.Handler) http.Handler {
 // isOriginAllowed checks if an origin is in the allowed list
 func isOriginAllowed(origin string, allowedOrigins []string) bool {
 	for _, allowed := range allowedOrigins {
-		if allowed == "*" || allowed == origin {
+		if origin != "" && allowed == origin {
 			return true
 		}
 	}
