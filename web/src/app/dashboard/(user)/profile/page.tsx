@@ -74,9 +74,11 @@ export default function ProfilePage() {
 
   const hasDraftErrors = Object.keys(draftErrors).length > 0;
 
-  React.useEffect(() => {
+  const [draftResetFor, setDraftResetFor] = React.useState<{ isEditing: boolean; user: typeof user } | null>(null);
+  if (draftResetFor === null || draftResetFor.isEditing !== isEditing || draftResetFor.user !== user) {
+    setDraftResetFor({ isEditing, user });
     if (!isEditing) resetDraft();
-  }, [isEditing, resetDraft]);
+  }
 
   const toggleEditing = () => {
     if (isEditing) resetDraft();

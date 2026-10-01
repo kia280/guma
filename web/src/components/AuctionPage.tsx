@@ -3,7 +3,7 @@
 import { Button, Select, Chip, Tabs, TextField, Label, InputGroup, ListBox, useOverlayState } from '@heroui/react';
 import { Icon } from '@iconify/react';
 import { useTranslations } from 'next-intl';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { AsyncContent, CardGridSkeleton, EmptyContent } from '@/components/AsyncContent';
 import AuctionItemCard from '@/components/AuctionItemCard';
 import { CreateAuctionModal } from '@/components/CreateAuctionModal';
@@ -68,7 +68,6 @@ const AuctionPage = () => {
 
   useLiveResource(['auction'], refetchAuctions, { guildId });
 
-  const [filteredItems, setFilteredItems] = useState<AuctionItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
@@ -90,7 +89,7 @@ const AuctionPage = () => {
     })),
   ];
 
-  useEffect(() => {
+  const filteredItems = useMemo(() => {
     let filtered = auctionItems;
 
     if (activeTab !== 'all') {
@@ -113,7 +112,7 @@ const AuctionPage = () => {
       filtered = filtered.filter(item => item.rarity === selectedRarity);
     }
 
-    setFilteredItems(filtered);
+    return filtered;
   }, [auctionItems, searchTerm, selectedCategory, selectedRarity, activeTab]);
 
   const handlePlaceBid = async (itemId: string, amount: number) => {

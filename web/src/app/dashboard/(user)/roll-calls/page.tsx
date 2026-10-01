@@ -163,24 +163,34 @@ export default function RollCallsPage() {
   const [templatesState, setTemplatesState] = React.useState<'loading' | 'ready' | 'failed' | 'hidden'>('loading');
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<Key | null>(null);
 
+  const fetchTemplates = React.useCallback(
+    () =>
+      Promise.all([apiClient.listRollCallTemplates(guildId), apiClient.listItemTemplates(guildId)])
+        .then(([rollCallList, itemList]) => {
+          setTemplates(rollCallList);
+          setItemTemplates(itemList);
+          setTemplatesState('ready');
+        })
+        .catch(err => {
+          setTemplatesState(apiErrorCode(err) === GrpcCode.PermissionDenied ? 'hidden' : 'failed');
+        }),
+    [guildId]
+  );
+
   const loadTemplates = React.useCallback(async () => {
     setTemplatesState('loading');
-    try {
-      const [rollCallList, itemList] = await Promise.all([
-        apiClient.listRollCallTemplates(guildId),
-        apiClient.listItemTemplates(guildId),
-      ]);
-      setTemplates(rollCallList);
-      setItemTemplates(itemList);
-      setTemplatesState('ready');
-    } catch (err) {
-      setTemplatesState(apiErrorCode(err) === GrpcCode.PermissionDenied ? 'hidden' : 'failed');
-    }
-  }, [guildId]);
+    await fetchTemplates();
+  }, [fetchTemplates]);
+
+  const [templatesGuildId, setTemplatesGuildId] = React.useState(guildId);
+  if (templatesGuildId !== guildId) {
+    setTemplatesGuildId(guildId);
+    setTemplatesState('loading');
+  }
 
   React.useEffect(() => {
-    loadTemplates();
-  }, [loadTemplates]);
+    fetchTemplates();
+  }, [fetchTemplates]);
 
   const handleTemplateChange = (key: Key | null) => {
     setSelectedTemplateId(key);

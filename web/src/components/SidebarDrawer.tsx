@@ -1,6 +1,6 @@
 'use client';
 
-import { Drawer, Button } from '@heroui/react';
+import { Drawer } from '@heroui/react';
 import { cn } from '@heroui/react';
 import React from 'react';
 

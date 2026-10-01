@@ -4,7 +4,6 @@
 
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import { env } from '@/lib/env';
-import { clearSession } from '@/lib/session';
 import type { ItemSourceRef } from '@/types/item';
 import type { LootEntry } from '@/types/roll-call';
 import type { BalancePoint, UserStats } from '@/types/user';

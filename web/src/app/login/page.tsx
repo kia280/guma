@@ -58,36 +58,54 @@ function Login() {
   const flow = searchParams.get('flow');
   const returnUrl = safeReturnPath(searchParams.get('return'), DEFAULT_RETURN);
 
+  const requestLoginFlow = React.useCallback(
+    (signal?: AbortSignal) =>
+      checkSession()
+        .then(async session => {
+          if (session) {
+            if (!signal?.aborted) router.replace(returnUrl);
+            return;
+          }
+          const { data } = await createFlow(returnUrl);
+          if (!signal?.aborted) router.replace(loginPath(returnUrl, data.id));
+        })
+        .catch(error => {
+          if (!signal?.aborted) {
+            console.error('Error creating login flow:', error);
+            setLoginFlowError(true);
+          }
+        })
+        .finally(() => {
+          if (!signal?.aborted) setIsCreatingFlow(false);
+        }),
+    [returnUrl, router]
+  );
+
   const createLoginFlow = React.useCallback(
     async (signal?: AbortSignal) => {
       setLoginFlowError(false);
       setIsCreatingFlow(true);
-      try {
-        if (await checkSession()) {
-          if (!signal?.aborted) router.replace(returnUrl);
-          return;
-        }
-        const { data } = await createFlow(returnUrl);
-        if (!signal?.aborted) router.replace(loginPath(returnUrl, data.id));
-      } catch (error) {
-        if (!signal?.aborted) {
-          console.error('Error creating login flow:', error);
-          setLoginFlowError(true);
-        }
-      } finally {
-        if (!signal?.aborted) setIsCreatingFlow(false);
-      }
+      await requestLoginFlow(signal);
     },
-    [returnUrl, router]
+    [requestLoginFlow]
   );
+
+  const [flowRequestFor, setFlowRequestFor] = React.useState<{ flow: string | null; returnUrl: string } | null>(null);
+  if (flowRequestFor === null || flowRequestFor.flow !== flow || flowRequestFor.returnUrl !== returnUrl) {
+    setFlowRequestFor({ flow, returnUrl });
+    if (!flow) {
+      setLoginFlowError(false);
+      setIsCreatingFlow(true);
+    }
+  }
 
   React.useEffect(() => {
     if (flow) return;
 
     const controller = new AbortController();
-    void createLoginFlow(controller.signal);
+    void requestLoginFlow(controller.signal);
     return () => controller.abort();
-  }, [createLoginFlow, flow]);
+  }, [requestLoginFlow, flow]);
 
   React.useEffect(() => {
     if (!flow) return;

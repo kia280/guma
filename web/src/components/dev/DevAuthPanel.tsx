@@ -63,24 +63,32 @@ export function DevAuthPanel() {
   const [isMock] = useState(() => env.useMock || isDevMockEnabled());
   const [mockRole] = useState(getDevMockRole);
 
+  const loadAll = useCallback(
+    () =>
+      Promise.all([getDevSession(), listDevUsers()])
+        .then(([session, list]) => {
+          setCurrent(session);
+          setGuild(list.guild);
+          setUsers(list.users);
+        })
+        .catch((err) => {
+          setError(err instanceof Error ? err.message : String(err));
+        })
+        .finally(() => {
+          setIsLoading(false);
+        }),
+    [],
+  );
+
   const refresh = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    try {
-      const [session, list] = await Promise.all([getDevSession(), listDevUsers()]);
-      setCurrent(session);
-      setGuild(list.guild);
-      setUsers(list.users);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    await loadAll();
+  }, [loadAll]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    void loadAll();
+  }, [loadAll]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
