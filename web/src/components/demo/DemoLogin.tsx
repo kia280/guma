@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import { DEMO_ROLE_ICONS } from '@/components/demo/role-icons';
+import { withBasePath } from '@/lib/base-path';
 import { saveDemoRole } from '@/lib/demo/role';
 import { DEV_MOCK_ROLES, type DevMockRole } from '@/lib/dev-mock';
 import { LIST_ROW_CLASS } from '@/lib/list-row';
@@ -30,14 +31,14 @@ function DemoRolePicker() {
 
   const signIn = (role: DevMockRole) => {
     saveDemoRole(role);
-    window.location.assign(returnUrl);
+    window.location.assign(withBasePath(returnUrl));
   };
 
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg border border-transparent shadow-edge bg-surface py-6">
         <Card.Header className="flex flex-col items-center gap-2 px-4 pt-2 pb-0 text-center">
-          <Image src="/assets/logo/sunbaby-96x96.png" alt="Guma" width={60} height={60} preload />
+          <Image src={withBasePath('/assets/logo/sunbaby-96x96.png')} alt="Guma" width={60} height={60} preload />
           <div className="flex items-center gap-2 pt-2">
             <h1 className="type-title text-foreground text-balance">{t('loginTitle')}</h1>
             <Chip size="sm" color="accent" variant="soft">

@@ -7,6 +7,7 @@
  * file with actual API calls — consumers stay unchanged.
  */
 
+import { withBasePath } from '@/lib/base-path';
 import type { AdminActivity, AdminAnnouncement } from '@/types/admin';
 import { AuctionItem, AuctionStatus } from '@/types/auction';
 import { BackpackItem } from '@/types/backpack';
@@ -336,7 +337,7 @@ function generateRollCalls(): RollCall[] {
 
     return {
       id: String(i + 1),
-      imageUrl: `/mock/roll-calls/roll-call-${(i % 4) + 1}.webp`,
+      imageUrl: withBasePath(`/mock/roll-calls/roll-call-${(i % 4) + 1}.webp`),
       status,
       date: formatRollCallDate(start),
       title: ROLL_CALL_BOSSES[i % ROLL_CALL_BOSSES.length],

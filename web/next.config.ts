@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin();
 const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
 const nextConfig: NextConfig = {
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH ?? '',
   pageExtensions: demoMode ? ['tsx', 'ts', 'jsx', 'js'] : ['modal.tsx', 'tsx', 'ts', 'jsx', 'js'],
   env: {
     NEXT_PUBLIC_DEMO_MODE: String(demoMode),

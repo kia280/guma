@@ -6,6 +6,7 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getLocale} from 'next-intl/server';
 import {BrowserTimeZoneProvider} from "@/i18n/BrowserTimeZoneProvider";
 import {HTML_LANG, isLocale, DEFAULT_LOCALE} from "@/i18n/locales";
+import {withBasePath} from "@/lib/base-path";
 import {paletteInitScript} from "@/lib/dev-palette";
 import {env} from "@/lib/env";
 import {fontSizeInitScript} from "@/lib/font-size";
@@ -24,7 +25,7 @@ const font = Noto_Sans_TC({
 export const metadata: Metadata = {
   title: "Guma - Guild Management System",
   description: "Modern guild management system for MMO games",
-  manifest: "/manifest.json",
+  manifest: withBasePath("/manifest.json"),
 };
 
 export const generateViewport = (): Viewport => ({
@@ -53,7 +54,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Guma" />
-        <link rel="apple-touch-icon" href="/assets/logo/sunbaby-96x96.png" />
+        <link rel="apple-touch-icon" href={withBasePath("/assets/logo/sunbaby-96x96.png")} />
       </head>
       <body className={font.className}>
         <NextIntlClientProvider>
