@@ -16,11 +16,13 @@ track who joined each boss fight, split the loot and gold fairly, run auctions
 and raffles, and keep the schedule and announcements in one place. Guma brings
 those everyday guild operations into a single app.
 
-It is also my practice project for building a web-based cloud service end to
-end: a Go gRPC backend, a Next.js frontend, PostgreSQL, Discord login through
-Ory Kratos, live updates, observability, and a Helm chart for deployment. I also
-use it to practice working with coding agents: agents do much of the
-implementation, and I review every change before it is merged.
+It is also my practice project for building a web-based cloud service end to end
+with tools and ecosystems I am interested in: a Go gRPC backend with Buf and
+grpc-gateway, PostgreSQL queries with sqlc, the Ory identity ecosystem, a
+Next.js frontend, Dev Containers, OpenTelemetry, and much more. I also use it to
+practice working with coding agents, from inline suggestions to low-quality
+agent-written code to parallel development across worktrees. And of course,
+every change is reviewed by me before it is merged, with medium effort :p
 
 Many TODOs remain, and every guild runs things differently, so feel free to
 fork Guma and adapt it to your guild.
