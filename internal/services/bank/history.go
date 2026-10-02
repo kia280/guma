@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
@@ -39,7 +40,7 @@ func (s *Service) GetItemHistory(ctx context.Context, guildIDStr, viewerIDStr, i
 	if err != nil {
 		return nil, fmt.Errorf("%w: item", errs.ErrNotFound)
 	}
-	if err := s.requireRole(ctx, guildID, viewerID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, viewerID, authz.View); err != nil {
 		return nil, err
 	}
 
@@ -86,8 +87,11 @@ func (s *Service) authorizeItemHistory(ctx context.Context, guildID, viewerID, i
 		return fmt.Errorf("%w: load backpack item: %v", errs.ErrInternal, err)
 	}
 	if ownerID != viewerID {
-		if err := s.requireRole(ctx, guildID, viewerID, reviewerRoles...); err != nil {
-			return fmt.Errorf("%w: item", errs.ErrNotFound)
+		if err := authz.Require(ctx, s.az, guildID, viewerID, authz.ReviewBankRequests); err != nil {
+			if errors.Is(err, errs.ErrPermissionDenied) {
+				return fmt.Errorf("%w: item", errs.ErrNotFound)
+			}
+			return err
 		}
 	}
 	return nil

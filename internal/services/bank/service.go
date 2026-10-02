@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
@@ -121,10 +122,6 @@ const (
 	StatusRejected = "rejected"
 )
 
-var reviewerRoles = []string{"owner", "admin", "moderator"}
-
-var itemDeleterRoles = []string{"owner", "admin"}
-
 const (
 	itemEventDeleted = "deleted"
 	deletedItemNote  = "The item was removed from the guild bank."
@@ -196,11 +193,12 @@ type ListBankItemsResult struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
 // New creates a new bank Service.
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -208,6 +206,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	return &Service{
 		pool:   pool,
 		q:      q,
+		az:     az,
 		logger: logger.With().Str("service", "bank").Logger(),
 	}
 }
@@ -323,7 +322,7 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
 		return nil, err
 	}
 
@@ -361,7 +360,7 @@ func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDSt
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, reviewerID, reviewerRoles...); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, reviewerID, authz.ReviewBankRequests); err != nil {
 		return nil, err
 	}
 
@@ -438,7 +437,7 @@ func (s *Service) ListFundRequests(ctx context.Context, p ListFundRequestsParams
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
 		return nil, err
 	}
 
@@ -629,7 +628,7 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 	if err != nil {
 		return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
 	}
-	if err := s.requireRole(ctx, guildID, userID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
 		return nil, err
 	}
 
@@ -669,7 +668,7 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, reviewerID, reviewerRoles...); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, reviewerID, authz.ReviewBankRequests); err != nil {
 		return nil, err
 	}
 
@@ -747,7 +746,7 @@ func (s *Service) DeleteBankItem(ctx context.Context, guildIDStr, userIDStr, ban
 	if err != nil {
 		return fmt.Errorf("%w: bank item", errs.ErrNotFound)
 	}
-	if err := s.requireRole(ctx, guildID, userID, itemDeleterRoles...); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.DeleteBankItems); err != nil {
 		return err
 	}
 
@@ -805,7 +804,7 @@ func (s *Service) ListItemRequests(ctx context.Context, p ListItemRequestsParams
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
 		return nil, err
 	}
 
@@ -878,25 +877,6 @@ func checkReviewable(currentStatus string) error {
 		return fmt.Errorf("%w: request has already been reviewed", errs.ErrFailedPrecondition)
 	}
 	return nil
-}
-
-func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: load member role: %v", errs.ErrInternal, err)
-	}
-	if len(roles) == 0 {
-		return nil
-	}
-	for _, r := range roles {
-		if role == r {
-			return nil
-		}
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, roles)
 }
 
 // NextPageToken encodes the offset as a page token string.

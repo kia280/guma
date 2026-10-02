@@ -76,7 +76,7 @@ func NewServer(cfg *config.Config, db *database.Pool, az authz.Authorizer, broke
 	auctionHandler := handlers.NewAuctionService(db, az, logger)
 	eventHandler := handlers.NewEventService(db, logger)
 	raffleHandler := handlers.NewRaffleService(db, logger)
-	bankHandler := handlers.NewBankService(db, logger)
+	bankHandler := handlers.NewBankService(db, az, logger)
 	notificationHandler := handlers.NewNotificationService(db, logger)
 	preferenceHandler := handlers.NewPreferenceService(db, logger)
 	announcementHandler := handlers.NewAnnouncementService(db, az, logger)

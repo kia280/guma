@@ -11,6 +11,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/kia280/guma/internal/authz"
+	"github.com/kia280/guma/internal/authz/authztest"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
@@ -21,7 +23,7 @@ const (
 )
 
 func TestRequestFundsValidatesInput(t *testing.T) {
-	s := New(nil, zerolog.Nop())
+	s := New(nil, nil, zerolog.Nop())
 	tests := []struct {
 		name   string
 		guild  string
@@ -41,7 +43,7 @@ func TestRequestFundsValidatesInput(t *testing.T) {
 }
 
 func TestDeleteBankItemValidatesIDs(t *testing.T) {
-	s := New(nil, zerolog.Nop())
+	s := New(nil, nil, zerolog.Nop())
 	tests := []struct {
 		name  string
 		guild string
@@ -60,8 +62,12 @@ func TestDeleteBankItemValidatesIDs(t *testing.T) {
 	}
 }
 
-func TestItemDeleterRolesExcludeModerators(t *testing.T) {
-	assert.ElementsMatch(t, []string{"owner", "admin"}, itemDeleterRoles)
+func TestDeleteBankItemRequiresDeletePermission(t *testing.T) {
+	guild, user := uuid.MustParse(testGuild), uuid.MustParse(testUser)
+	checker := authztest.New().Grant(guild, user, authz.View, authz.ReviewBankRequests)
+	s := New(nil, checker, zerolog.Nop())
+	err := s.DeleteBankItem(context.Background(), testGuild, testUser, uuid.NewString())
+	assert.ErrorIs(t, err, errs.ErrPermissionDenied)
 }
 
 func TestCheckReviewable(t *testing.T) {
