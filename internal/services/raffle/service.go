@@ -17,6 +17,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
@@ -158,11 +159,12 @@ type raffleRow struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
 // New creates a new raffle Service.
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -170,6 +172,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	return &Service{
 		pool:   pool,
 		q:      q,
+		az:     az,
 		logger: logger.With().Str("service", "raffle").Logger(),
 	}
 }
@@ -245,7 +248,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Raffle, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, createdBy, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, createdBy, authz.ManageRaffles); err != nil {
 		return nil, err
 	}
 
@@ -428,7 +431,7 @@ func (s *Service) Draw(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ManageRaffles); err != nil {
 		return nil, nil, err
 	}
 
@@ -697,7 +700,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Raffle, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ManageRaffles); err != nil {
 		return nil, err
 	}
 
@@ -744,7 +747,7 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, raffleIDStr, callerIDS
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ManageRaffles); err != nil {
 		return nil, err
 	}
 
@@ -802,7 +805,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, raffleIDStr, callerIDS
 	if err != nil {
 		return err
 	}
-	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ManageRaffles); err != nil {
 		return err
 	}
 
@@ -955,22 +958,6 @@ func (s *Service) getWinners(ctx context.Context, raffleID uuid.UUID) ([]*Raffle
 		})
 	}
 	return winners, nil
-}
-
-func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-	}
-	for _, r := range roles {
-		if role == r {
-			return nil
-		}
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, roles)
 }
 
 // NextPageToken encodes the offset as a page token string.

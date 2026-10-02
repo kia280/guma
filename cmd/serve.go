@@ -138,7 +138,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	go grpcServer.RunHealthChecks(ctx)
 	logger.Info().Msg("health service startup marked as complete")
 
-	raffles := rafflesvc.New(db, logger)
+	raffles := rafflesvc.New(db, az, logger)
 	auctions := auctionsvc.New(db, az, logger)
 	jobs := scheduler.New(logger, scheduler.Job{
 		Name:     "raffle-draw",

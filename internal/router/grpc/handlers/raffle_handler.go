@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	rafflesvc "github.com/kia280/guma/internal/services/raffle"
 	"github.com/kia280/guma/internal/session"
@@ -22,9 +23,9 @@ type RaffleHandler struct {
 }
 
 // NewRaffleService creates a new Raffle gRPC handler.
-func NewRaffleService(db *database.Pool, logger zerolog.Logger) *RaffleHandler {
+func NewRaffleService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *RaffleHandler {
 	return &RaffleHandler{
-		svc:    rafflesvc.New(db, logger),
+		svc:    rafflesvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "raffle").Logger(),
 	}
 }
