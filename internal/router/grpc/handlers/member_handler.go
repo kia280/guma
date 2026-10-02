@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	memberv1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	membersvc "github.com/kia280/guma/internal/services/member"
 	"github.com/kia280/guma/internal/session"
@@ -25,9 +26,9 @@ type MemberService struct {
 }
 
 // NewMemberService creates a new Member handler
-func NewMemberService(db *database.Pool, logger zerolog.Logger) *MemberService {
+func NewMemberService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *MemberService {
 	return &MemberService{
-		svc:    membersvc.New(db, logger),
+		svc:    membersvc.New(db, az, logger),
 		logger: logger.With().Str("service", "member").Logger(),
 	}
 }
@@ -87,7 +88,7 @@ func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRe
 		UserId:      userID,
 		GuildId:     "mock-guild-id",
 		DisplayName: "User",
-		Role:        "member",
+		Role:        string(authz.RoleMember),
 		Profile:     map[string]string{},
 		JoinedAt:    timestamppb.Now(),
 		LastActive:  timestamppb.Now(),
@@ -235,7 +236,7 @@ func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRe
 		UserId:      userID,
 		GuildId:     req.GuildId,
 		DisplayName: "User",
-		Role:        "member",
+		Role:        string(authz.RoleMember),
 		Profile:     map[string]string{},
 		JoinedAt:    timestamppb.Now(),
 		LastActive:  timestamppb.Now(),

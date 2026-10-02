@@ -18,7 +18,7 @@ import (
 
 func TestNewMemberService(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	assert.NotNil(t, service)
 	assert.NotNil(t, service.logger)
@@ -26,7 +26,7 @@ func TestNewMemberService(t *testing.T) {
 
 func TestMemberService_InviteMember(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -79,7 +79,7 @@ func TestMemberService_InviteMember(t *testing.T) {
 
 func TestMemberService_JoinGuild(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -123,7 +123,7 @@ func TestMemberService_JoinGuild(t *testing.T) {
 
 func TestMemberService_UpdateMember(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -176,7 +176,7 @@ func TestMemberService_UpdateMember(t *testing.T) {
 
 func TestMemberService_RemoveMember(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -226,7 +226,7 @@ func TestMemberService_RemoveMember(t *testing.T) {
 
 func TestMemberService_ListMembers(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -283,7 +283,7 @@ func TestMemberService_ListMembers(t *testing.T) {
 
 func TestMemberService_GetMember(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -333,7 +333,7 @@ func TestMemberService_GetMember(t *testing.T) {
 
 func TestMemberService_GenerateInviteCode(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -378,7 +378,7 @@ func TestMemberService_GenerateInviteCode(t *testing.T) {
 
 func TestMemberService_ValidateInviteCode(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -416,7 +416,7 @@ func TestMemberService_ValidateInviteCode(t *testing.T) {
 
 func TestMemberService_ListInvites(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -460,7 +460,7 @@ func TestMemberService_ListInvites(t *testing.T) {
 
 func TestMemberService_RevokeInvite(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -509,7 +509,7 @@ func TestMemberService_RevokeInvite(t *testing.T) {
 }
 
 func TestMemberService_UpdateMemberRole(t *testing.T) {
-	service := NewMemberService(nil, zerolog.Nop())
+	service := NewMemberService(nil, nil, zerolog.Nop())
 	const guildID = "00000000-0000-0000-0000-000000000001"
 	const actorID = "00000000-0000-0000-0000-000000000002"
 	const targetID = "00000000-0000-0000-0000-000000000003"

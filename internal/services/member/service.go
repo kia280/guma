@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
@@ -53,15 +53,16 @@ type ListResult struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	az     authz.Authorizer
 	logger zerolog.Logger
 }
 
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Authorizer, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
 	}
-	return &Service{pool: pool, q: q, logger: logger.With().Str("service", "member").Logger()}
+	return &Service{pool: pool, q: q, az: az, logger: logger.With().Str("service", "member").Logger()}
 }
 
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
@@ -79,12 +80,15 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	}
 	pageSize := clampPageSize(p.PageSize)
 
-	callerRole, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: callerID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
+	if err := authz.Require(ctx, s.az, guildID, callerID, authz.View); err != nil {
+		return nil, err
+	}
+	showDiscord := true
+	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ViewMemberContacts); err != nil {
+		if !errors.Is(err, errs.ErrPermissionDenied) {
+			return nil, err
 		}
-		return nil, fmt.Errorf("%w: get member role: %v", errs.ErrInternal, err)
+		showDiscord = false
 	}
 
 	rows, err := s.q.ListGuildMembers(ctx, db.ListGuildMembersParams{
@@ -101,7 +105,6 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 		return nil, fmt.Errorf("%w: count members: %v", errs.ErrInternal, err)
 	}
 
-	showDiscord := canSeeDiscord(callerRole)
 	members := make([]*Member, 0, len(rows))
 	for _, r := range rows {
 		m := &Member{
@@ -126,10 +129,6 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 		NextPageToken: nextPageToken(offset, int32(len(rows)), pageSize, total),
 		TotalCount:    int32(total),
 	}, nil
-}
-
-func canSeeDiscord(role string) bool {
-	return role == "owner" || role == "admin" || role == "moderator"
 }
 
 func clampPageSize(size int32) int32 {

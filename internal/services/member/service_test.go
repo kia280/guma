@@ -5,13 +5,16 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
+	"github.com/kia280/guma/internal/authz/authztest"
 	"github.com/kia280/guma/internal/services/errs"
 )
 
 func TestListValidatesInput(t *testing.T) {
-	s := New(nil, zerolog.Nop())
+	s := New(nil, nil, zerolog.Nop())
 	const guild = "00000000-0000-0000-0000-000000000001"
 	const caller = "00000000-0000-0000-0000-000000000002"
 	tests := []struct {
@@ -68,16 +71,8 @@ func TestDecodeProfile(t *testing.T) {
 	}
 }
 
-func TestCanSeeDiscord(t *testing.T) {
-	for role, want := range map[string]bool{"owner": true, "admin": true, "moderator": true, "member": false, "": false} {
-		if got := canSeeDiscord(role); got != want {
-			t.Errorf("canSeeDiscord(%q) = %v, want %v", role, got, want)
-		}
-	}
-}
-
 func TestUpdateRoleValidatesInput(t *testing.T) {
-	s := New(nil, zerolog.Nop())
+	s := New(nil, nil, zerolog.Nop())
 	const guild = "00000000-0000-0000-0000-000000000001"
 	const actor = "00000000-0000-0000-0000-000000000002"
 	const target = "00000000-0000-0000-0000-000000000003"
@@ -100,35 +95,69 @@ func TestUpdateRoleValidatesInput(t *testing.T) {
 	}
 }
 
-func TestAuthorizeRoleChange(t *testing.T) {
+func TestRoleChangePermission(t *testing.T) {
 	tests := []struct {
-		actor, current, next string
-		allowed              bool
+		current, next authz.Role
+		want          authz.Permission
 	}{
-		{"owner", "member", "admin", true},
-		{"owner", "admin", "member", true},
-		{"owner", "admin", "moderator", true},
-		{"owner", "moderator", "member", true},
-		{"owner", "member", "owner", false},
-		{"owner", "owner", "admin", false},
-		{"admin", "member", "moderator", true},
-		{"admin", "member", "admin", true},
-		{"admin", "moderator", "member", true},
-		{"admin", "moderator", "admin", true},
-		{"admin", "admin", "member", false},
-		{"admin", "admin", "admin", false},
-		{"admin", "owner", "member", false},
-		{"admin", "member", "owner", false},
-		{"moderator", "member", "moderator", false},
-		{"member", "member", "moderator", false},
+		{authz.RoleMember, authz.RoleAdmin, authz.ManageRoles},
+		{authz.RoleMember, authz.RoleModerator, authz.ManageRoles},
+		{authz.RoleModerator, authz.RoleMember, authz.ManageRoles},
+		{authz.RoleModerator, authz.RoleAdmin, authz.ManageRoles},
+		{authz.RoleAdmin, authz.RoleMember, authz.ManageAdmins},
+		{authz.RoleAdmin, authz.RoleModerator, authz.ManageAdmins},
+		{authz.RoleAdmin, authz.RoleAdmin, authz.ManageAdmins},
 	}
 	for _, tt := range tests {
-		err := authorizeRoleChange(tt.actor, tt.current, tt.next)
-		if tt.allowed && err != nil {
-			t.Fatalf("%s changing %s to %s: unexpected error %v", tt.actor, tt.current, tt.next, err)
+		got, err := roleChangePermission(tt.current, tt.next)
+		if err != nil || got != tt.want {
+			t.Fatalf("changing %s to %s: got %q, %v; want %q", tt.current, tt.next, got, err, tt.want)
 		}
-		if !tt.allowed && !errors.Is(err, errs.ErrPermissionDenied) {
-			t.Fatalf("%s changing %s to %s: expected permission denied, got %v", tt.actor, tt.current, tt.next, err)
+	}
+	for _, tt := range []struct{ current, next authz.Role }{
+		{authz.RoleOwner, authz.RoleAdmin},
+		{authz.RoleOwner, authz.RoleMember},
+		{authz.RoleMember, authz.RoleOwner},
+		{authz.RoleAdmin, authz.RoleOwner},
+	} {
+		if _, err := roleChangePermission(tt.current, tt.next); !errors.Is(err, errs.ErrPermissionDenied) {
+			t.Fatalf("changing %s to %s: expected permission denied, got %v", tt.current, tt.next, err)
 		}
+	}
+}
+
+func TestUpdateRoleRequiresManageRoles(t *testing.T) {
+	guild, actor, target := uuid.New(), uuid.New(), uuid.New()
+	for name, checker := range map[string]*authztest.Fake{
+		"non-member":       authztest.New(),
+		"moderator powers": authztest.New().Grant(guild, actor, authz.View, authz.ViewMemberContacts, authz.ManageRollCalls),
+	} {
+		t.Run(name, func(t *testing.T) {
+			s := New(nil, checker, zerolog.Nop())
+			_, err := s.UpdateRole(context.Background(), UpdateRoleParams{
+				GuildID: guild.String(), ActorID: actor.String(), UserID: target.String(), Role: "moderator",
+			})
+			if !errors.Is(err, errs.ErrPermissionDenied) {
+				t.Fatalf("expected permission denied, got %v", err)
+			}
+		})
+	}
+}
+
+func TestUpdateRoleCheckerFailureIsInternal(t *testing.T) {
+	s := New(nil, &authztest.Fake{CanErr: errors.New("keto down")}, zerolog.Nop())
+	_, err := s.UpdateRole(context.Background(), UpdateRoleParams{
+		GuildID: uuid.NewString(), ActorID: uuid.NewString(), UserID: uuid.NewString(), Role: "member",
+	})
+	if !errors.Is(err, errs.ErrInternal) {
+		t.Fatalf("expected internal error, got %v", err)
+	}
+}
+
+func TestListRequiresMembership(t *testing.T) {
+	s := New(nil, authztest.New(), zerolog.Nop())
+	_, err := s.List(context.Background(), ListParams{GuildID: uuid.NewString(), CallerID: uuid.NewString()})
+	if !errors.Is(err, errs.ErrPermissionDenied) {
+		t.Fatalf("expected permission denied, got %v", err)
 	}
 }
