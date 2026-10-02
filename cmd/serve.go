@@ -139,7 +139,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	logger.Info().Msg("health service startup marked as complete")
 
 	raffles := rafflesvc.New(db, logger)
-	auctions := auctionsvc.New(db, logger)
+	auctions := auctionsvc.New(db, az, logger)
 	jobs := scheduler.New(logger, scheduler.Job{
 		Name:     "raffle-draw",
 		Interval: cfg.Scheduler.RaffleDrawInterval,

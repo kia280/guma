@@ -73,7 +73,7 @@ func NewServer(cfg *config.Config, db *database.Pool, az authz.Authorizer, broke
 	rollCallTemplateHandler := handlers.NewRollCallTemplateService(db, logger)
 	itemTemplateHandler := handlers.NewItemTemplateService(db, logger)
 	walletHandler := handlers.NewWalletService(db, logger)
-	auctionHandler := handlers.NewAuctionService(db, logger)
+	auctionHandler := handlers.NewAuctionService(db, az, logger)
 	eventHandler := handlers.NewEventService(db, logger)
 	raffleHandler := handlers.NewRaffleService(db, logger)
 	bankHandler := handlers.NewBankService(db, logger)
