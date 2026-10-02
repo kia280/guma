@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
@@ -273,7 +274,7 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireRole(ctx, guildID, actorID, "owner", "admin", "moderator"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, actorID, authz.ManageRollCalls); err != nil {
 		return nil, err
 	}
 	rollCall, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})

@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
@@ -139,11 +140,12 @@ type rollCallRow struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
 // New creates a new roll call Service.
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -151,6 +153,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	return &Service{
 		pool:   pool,
 		q:      q,
+		az:     az,
 		logger: logger.With().Str("service", "rollcall").Logger(),
 	}
 }
@@ -229,7 +232,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, createdBy, "owner", "admin", "moderator"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, createdBy, authz.ManageRollCalls); err != nil {
 		return nil, err
 	}
 
@@ -322,7 +325,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin", "moderator"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCalls); err != nil {
 		return nil, err
 	}
 
@@ -378,7 +381,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 	if err != nil {
 		return fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.DeleteRollCalls); err != nil {
 		return err
 	}
 	n, err := s.q.DeleteRollCall(ctx, db.DeleteRollCallParams{ID: rollCallID, GuildID: guildID})
@@ -405,7 +408,7 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.DeleteRollCalls); err != nil {
 		return nil, err
 	}
 
@@ -471,7 +474,7 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin", "moderator"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCalls); err != nil {
 		return nil, err
 	}
 	donorName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
@@ -603,7 +606,7 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userI
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin", "moderator"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCalls); err != nil {
 		return nil, err
 	}
 
@@ -766,7 +769,7 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, rollCallIDStr, ite
 	if err != nil {
 		return "", fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, actorID, "owner", "admin", "moderator"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, actorID, authz.ManageRollCalls); err != nil {
 		return "", err
 	}
 	if exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: rollCallID, GuildID: guildID}); err != nil || !exists {
@@ -1040,22 +1043,6 @@ func normalizeImageURL(raw string) (string, error) {
 		return "", fmt.Errorf("%w: image_url must be an absolute https URL", errs.ErrInvalidArgument)
 	}
 	return raw, nil
-}
-
-func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-	}
-	for _, r := range roles {
-		if role == r {
-			return nil
-		}
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, roles)
 }
 
 // NextPageToken encodes the offset as a page token string.

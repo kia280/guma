@@ -16,7 +16,7 @@ import (
 )
 
 func TestCancelRollCall_Validation(t *testing.T) {
-	h := NewRollCallService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
@@ -42,7 +42,7 @@ func TestCancelRollCall_Validation(t *testing.T) {
 }
 
 func TestUpdateRollCall_Validation(t *testing.T) {
-	h := NewRollCallService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
@@ -77,7 +77,7 @@ func TestUpdateRollCall_Validation(t *testing.T) {
 }
 
 func TestDistributeRollCallGold_Validation(t *testing.T) {
-	h := NewRollCallService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
@@ -122,7 +122,7 @@ func TestDistributeRollCallGold_Validation(t *testing.T) {
 }
 
 func TestGetRollCallGold_Validation(t *testing.T) {
-	h := NewRollCallService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
@@ -160,7 +160,7 @@ func TestLootFromProto(t *testing.T) {
 }
 
 func TestCompleteRollCall_Validation(t *testing.T) {
-	h := NewRollCallService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
@@ -186,7 +186,7 @@ func TestCompleteRollCall_Validation(t *testing.T) {
 }
 
 func TestUpdateRollCallLoot_Validation(t *testing.T) {
-	h := NewRollCallService(nil, zerolog.Nop())
+	h := NewRollCallService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"

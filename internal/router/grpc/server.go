@@ -69,7 +69,7 @@ func NewServer(cfg *config.Config, db *database.Pool, az authz.Authorizer, broke
 		usersvc.WithDevAuth(cfg.Dev.AuthEnabled),
 		usersvc.WithKratosAdminURL(cfg.Auth.KratosAdminURL),
 	)
-	rollCallHandler := handlers.NewRollCallService(db, logger)
+	rollCallHandler := handlers.NewRollCallService(db, az, logger)
 	rollCallTemplateHandler := handlers.NewRollCallTemplateService(db, logger)
 	itemTemplateHandler := handlers.NewItemTemplateService(db, logger)
 	walletHandler := handlers.NewWalletService(db, logger)
