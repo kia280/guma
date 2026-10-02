@@ -57,6 +57,15 @@ type Auction struct {
 	CancelledAt     pgtype.Timestamptz
 }
 
+type AuthzMemberOutbox struct {
+	ID          int64
+	GuildID     uuid.UUID
+	UserID      uuid.UUID
+	Attempts    int32
+	AvailableAt time.Time
+	CreatedAt   time.Time
+}
+
 type BackpackItem struct {
 	ID                  uuid.UUID
 	OwnerID             uuid.UUID

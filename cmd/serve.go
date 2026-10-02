@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/config"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/events"
@@ -75,6 +76,16 @@ func runServe(cmd *cobra.Command, args []string) {
 
 	logger.Info().Msg("database connection established")
 
+	keto, err := authz.DialKeto(cfg.Keto.ReadAddr, cfg.Keto.WriteAddr)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("failed to create Keto client")
+		return
+	}
+	defer keto.Close() //nolint:errcheck
+	authzSyncer := authz.NewSyncer(db, keto, logger)
+	az := authz.New(keto, authzSyncer)
+	go authzSyncer.Run(ctx, cfg.Keto.OutboxSweepInterval)
+
 	shutdownMetrics, err := telemetry.StartMetrics(ctx, cfg.Metrics, telemetry.ServiceInfo{
 		Version:     Version,
 		Environment: cfg.Server.Environment,
@@ -88,7 +99,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	go events.Listen(ctx, db, broker, logger)
 
 	// Create gRPC server
-	grpcServer, err := grpc.NewServer(cfg, db, broker, logger)
+	grpcServer, err := grpc.NewServer(cfg, db, az, broker, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to create gRPC server")
 		return
@@ -105,7 +116,7 @@ func runServe(cmd *cobra.Command, args []string) {
 	grpcAddr := grpcServer.Address()
 
 	// Create HTTP gateway
-	gw, err := gateway.NewGateway(ctx, cfg, db, grpcAddr, logger)
+	gw, err := gateway.NewGateway(ctx, cfg, db, az, grpcAddr, logger)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to create HTTP gateway")
 		return

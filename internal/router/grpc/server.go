@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/config"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/events"
@@ -36,7 +37,7 @@ type Server struct {
 const healthCheckInterval = 5 * time.Second
 
 // NewServer creates and configures a new gRPC server
-func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, logger zerolog.Logger) (*Server, error) {
+func NewServer(cfg *config.Config, db *database.Pool, az authz.Authorizer, broker *events.Broker, logger zerolog.Logger) (*Server, error) {
 	logger = logger.With().Str("component", "grpc-server").Logger()
 
 	validator, err := protovalidate.New()

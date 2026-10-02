@@ -17,6 +17,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/config"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/router/gateway/middleware"
@@ -34,7 +35,7 @@ type Gateway struct {
 }
 
 // NewGateway creates and configures a new HTTP gateway
-func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, grpcAddr string, logger zerolog.Logger) (*Gateway, error) {
+func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, syncer authz.MemberSyncer, grpcAddr string, logger zerolog.Logger) (*Gateway, error) {
 	logger = logger.With().Str("component", "http-gateway").Logger()
 
 	// Create gRPC-Gateway mux

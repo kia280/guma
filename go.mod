@@ -10,6 +10,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.4
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0
 	github.com/jackc/pgx/v5 v5.9.2
+	github.com/ory/keto/proto v0.13.0-alpha.0
 	github.com/ory/kratos-client-go v1.3.8
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.10.1
