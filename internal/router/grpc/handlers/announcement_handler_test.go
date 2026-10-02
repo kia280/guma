@@ -29,25 +29,12 @@ func TestAnnouncementService_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name:     "list missing guild",
-			call:     func() error { _, err := h.ListAnnouncements(authed, &gumav1.ListAnnouncementsRequest{}); return err },
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name: "list unauthenticated",
 			call: func() error {
 				_, err := h.ListAnnouncements(anon, &gumav1.ListAnnouncementsRequest{GuildId: guild})
 				return err
 			},
 			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "get missing announcement",
-			call: func() error {
-				_, err := h.GetAnnouncement(authed, &gumav1.GetAnnouncementRequest{GuildId: guild})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
 		},
 		{
 			name: "create unauthenticated",
@@ -88,22 +75,6 @@ func TestAnnouncementService_Validation(t *testing.T) {
 				return err
 			},
 			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "unpublish missing announcement",
-			call: func() error {
-				_, err := h.UnpublishAnnouncement(authed, &gumav1.UnpublishAnnouncementRequest{GuildId: guild})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "delete missing guild",
-			call: func() error {
-				_, err := h.DeleteAnnouncementDraft(authed, &gumav1.DeleteAnnouncementDraftRequest{AnnouncementId: ann})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
 		},
 	}
 	for _, tt := range tests {

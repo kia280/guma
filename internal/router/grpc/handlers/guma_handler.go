@@ -122,10 +122,6 @@ func (s *GumaService) UpdateUserPreferences(ctx context.Context, req *gumav1.Upd
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 
-	if req.Preferences == nil {
-		return nil, status.Error(codes.InvalidArgument, "preferences are required")
-	}
-
 	s.logger.Info().Str("user_id", userID).Msg("updating user preferences")
 
 	// TODO: Validate and save to database
@@ -165,10 +161,6 @@ func (s *GumaService) GetAppConfig(ctx context.Context, req *gumav1.GetAppConfig
 // SearchGlobal performs global search
 func (s *GumaService) SearchGlobal(ctx context.Context, req *gumav1.SearchGlobalRequest) (*gumav1.SearchGlobalResponse, error) {
 	logger := s.logger.With().Str("operation", "search_global").Logger()
-
-	if req.Query == "" {
-		return nil, status.Error(codes.InvalidArgument, "search query cannot be empty")
-	}
 
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {

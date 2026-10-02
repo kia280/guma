@@ -31,9 +31,6 @@ func NewRollCallService(db *database.Pool, logger zerolog.Logger) *RollCallHandl
 }
 
 func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRollCallsRequest) (*gumav1.ListRollCallsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
@@ -60,9 +57,6 @@ func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRol
 }
 
 func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCallRequest) (*gumav1.GetRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	c, err := h.svc.Get(ctx, req.GuildId, req.RollCallId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -71,9 +65,6 @@ func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCa
 }
 
 func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.CreateRollCallRequest) (*gumav1.CreateRollCallResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -96,9 +87,6 @@ func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.Create
 }
 
 func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.UpdateRollCallRequest) (*gumav1.UpdateRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -122,9 +110,6 @@ func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.Update
 }
 
 func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.DeleteRollCallRequest) (*gumav1.DeleteRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -136,9 +121,6 @@ func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.Delete
 }
 
 func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.CompleteRollCallRequest) (*gumav1.CompleteRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -152,9 +134,6 @@ func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.Comp
 }
 
 func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.UpdateRollCallLootRequest) (*gumav1.UpdateRollCallLootResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -178,9 +157,6 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 }
 
 func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.CancelRollCallRequest) (*gumav1.CancelRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -194,9 +170,6 @@ func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.Cancel
 }
 
 func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLootRequest) (*gumav1.AssignLootResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" || req.ItemId == "" || req.UserId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id, roll_call_id, item_id and user_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -210,9 +183,6 @@ func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLoot
 }
 
 func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRollCallGoldRequest) (*gumav1.GetRollCallGoldResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	if session.UserIDFromContext(ctx) == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
@@ -228,12 +198,6 @@ func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRo
 }
 
 func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav1.DistributeRollCallGoldRequest) (*gumav1.DistributeRollCallGoldResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" || req.RequestId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id, roll_call_id and request_id are required")
-	}
-	if len(req.Payouts) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "payouts are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -262,9 +226,6 @@ func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav
 }
 
 func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInRequest) (*gumav1.CheckInResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -278,9 +239,6 @@ func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInReques
 }
 
 func (h *RollCallHandler) ListAttendees(ctx context.Context, req *gumav1.ListAttendeesRequest) (*gumav1.ListAttendeesResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)

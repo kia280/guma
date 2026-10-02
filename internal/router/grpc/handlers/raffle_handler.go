@@ -30,9 +30,6 @@ func NewRaffleService(db *database.Pool, logger zerolog.Logger) *RaffleHandler {
 }
 
 func (h *RaffleHandler) ListRaffles(ctx context.Context, req *gumav1.ListRafflesRequest) (*gumav1.ListRafflesResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	result, err := h.svc.List(ctx, rafflesvc.ListParams{
 		GuildID:  req.GuildId,
 		Status:   req.Status,
@@ -55,9 +52,6 @@ func (h *RaffleHandler) ListRaffles(ctx context.Context, req *gumav1.ListRaffles
 }
 
 func (h *RaffleHandler) GetRaffle(ctx context.Context, req *gumav1.GetRaffleRequest) (*gumav1.GetRaffleResponse, error) {
-	if req.GuildId == "" || req.RaffleId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
-	}
 	l, err := h.svc.Get(ctx, req.GuildId, req.RaffleId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -66,9 +60,6 @@ func (h *RaffleHandler) GetRaffle(ctx context.Context, req *gumav1.GetRaffleRequ
 }
 
 func (h *RaffleHandler) CreateRaffle(ctx context.Context, req *gumav1.CreateRaffleRequest) (*gumav1.CreateRaffleResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -94,9 +85,6 @@ func (h *RaffleHandler) CreateRaffle(ctx context.Context, req *gumav1.CreateRaff
 }
 
 func (h *RaffleHandler) PurchaseTickets(ctx context.Context, req *gumav1.PurchaseTicketsRequest) (*gumav1.PurchaseTicketsResponse, error) {
-	if req.GuildId == "" || req.RaffleId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -115,9 +103,6 @@ func (h *RaffleHandler) PurchaseTickets(ctx context.Context, req *gumav1.Purchas
 }
 
 func (h *RaffleHandler) GetRaffleWinners(ctx context.Context, req *gumav1.GetRaffleWinnersRequest) (*gumav1.GetRaffleWinnersResponse, error) {
-	if req.GuildId == "" || req.RaffleId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
-	}
 	winners, err := h.svc.GetWinners(ctx, req.GuildId, req.RaffleId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -131,9 +116,6 @@ func (h *RaffleHandler) GetRaffleWinners(ctx context.Context, req *gumav1.GetRaf
 }
 
 func (h *RaffleHandler) UpdateRaffle(ctx context.Context, req *gumav1.UpdateRaffleRequest) (*gumav1.UpdateRaffleResponse, error) {
-	if req.GuildId == "" || req.RaffleId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -157,9 +139,6 @@ func (h *RaffleHandler) UpdateRaffle(ctx context.Context, req *gumav1.UpdateRaff
 }
 
 func (h *RaffleHandler) CancelRaffle(ctx context.Context, req *gumav1.CancelRaffleRequest) (*gumav1.CancelRaffleResponse, error) {
-	if req.GuildId == "" || req.RaffleId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -173,9 +152,6 @@ func (h *RaffleHandler) CancelRaffle(ctx context.Context, req *gumav1.CancelRaff
 }
 
 func (h *RaffleHandler) DeleteRaffle(ctx context.Context, req *gumav1.DeleteRaffleRequest) (*gumav1.DeleteRaffleResponse, error) {
-	if req.GuildId == "" || req.RaffleId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -188,9 +164,6 @@ func (h *RaffleHandler) DeleteRaffle(ctx context.Context, req *gumav1.DeleteRaff
 }
 
 func (h *RaffleHandler) DrawRaffle(ctx context.Context, req *gumav1.DrawRaffleRequest) (*gumav1.DrawRaffleResponse, error) {
-	if req.GuildId == "" || req.RaffleId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")

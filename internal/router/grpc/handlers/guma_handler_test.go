@@ -207,13 +207,6 @@ func TestGumaService_UpdateUserPreferences(t *testing.T) {
 			wantCode: codes.Unauthenticated,
 		},
 		{
-			name:     "missing preferences",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &gumav1.UpdateUserPreferencesRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name: "successful preferences update",
 			ctx:  session.WithUserID(context.Background(), "test-user"),
 			req: &gumav1.UpdateUserPreferencesRequest{
@@ -303,13 +296,6 @@ func TestGumaService_SearchGlobal(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "empty query",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &gumav1.SearchGlobalRequest{Query: ""},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:     "missing user_id in context",
 			ctx:      context.Background(),

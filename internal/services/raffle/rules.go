@@ -62,30 +62,15 @@ func checkDeletable(status string) error {
 }
 
 func validateUpdate(p UpdateParams, now time.Time) error {
-	if p.Title != nil && strings.TrimSpace(*p.Title) == "" {
-		return fmt.Errorf("%w: title is required", errs.ErrInvalidArgument)
+	if p.DrawDate == "" {
+		return nil
 	}
-	if p.DrawDate != "" {
-		at, err := time.Parse(time.RFC3339, p.DrawDate)
-		if err != nil {
-			return fmt.Errorf("%w: draw_date must be an ISO 8601 datetime", errs.ErrInvalidArgument)
-		}
-		if !at.After(now) {
-			return fmt.Errorf("%w: draw_date must be in the future", errs.ErrInvalidArgument)
-		}
+	at, err := time.Parse(time.RFC3339, p.DrawDate)
+	if err != nil {
+		return fmt.Errorf("%w: draw_date must be an ISO 8601 datetime", errs.ErrInvalidArgument)
 	}
-	if p.TicketPrice != nil && *p.TicketPrice < 0 {
-		return fmt.Errorf("%w: ticket price cannot be negative", errs.ErrInvalidArgument)
-	}
-	if p.MaxTickets != nil && *p.MaxTickets < 0 {
-		return fmt.Errorf("%w: max tickets cannot be negative", errs.ErrInvalidArgument)
-	}
-	if p.MaxTicketsPerUser != nil && *p.MaxTicketsPerUser < 0 {
-		return fmt.Errorf("%w: max tickets per user cannot be negative", errs.ErrInvalidArgument)
-	}
-	if p.Title == nil && p.Description == nil && p.DrawDate == "" &&
-		p.TicketPrice == nil && p.MaxTickets == nil && p.MaxTicketsPerUser == nil {
-		return fmt.Errorf("%w: nothing to update", errs.ErrInvalidArgument)
+	if !at.After(now) {
+		return fmt.Errorf("%w: draw_date must be in the future", errs.ErrInvalidArgument)
 	}
 	return nil
 }

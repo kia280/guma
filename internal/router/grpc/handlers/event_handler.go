@@ -30,9 +30,6 @@ func NewEventService(db *database.Pool, logger zerolog.Logger) *EventHandler {
 }
 
 func (h *EventHandler) ListEvents(ctx context.Context, req *gumav1.ListEventsRequest) (*gumav1.ListEventsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	offset, err := eventsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
@@ -60,9 +57,6 @@ func (h *EventHandler) ListEvents(ctx context.Context, req *gumav1.ListEventsReq
 }
 
 func (h *EventHandler) GetEvent(ctx context.Context, req *gumav1.GetEventRequest) (*gumav1.GetEventResponse, error) {
-	if req.GuildId == "" || req.EventId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and event_id are required")
-	}
 	e, err := h.svc.Get(ctx, req.GuildId, req.EventId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -71,9 +65,6 @@ func (h *EventHandler) GetEvent(ctx context.Context, req *gumav1.GetEventRequest
 }
 
 func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventRequest) (*gumav1.CreateEventResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -100,9 +91,6 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventR
 }
 
 func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventRequest) (*gumav1.UpdateEventResponse, error) {
-	if req.GuildId == "" || req.EventId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and event_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -130,9 +118,6 @@ func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventR
 }
 
 func (h *EventHandler) DeleteEvent(ctx context.Context, req *gumav1.DeleteEventRequest) (*gumav1.DeleteEventResponse, error) {
-	if req.GuildId == "" || req.EventId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and event_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -145,9 +130,6 @@ func (h *EventHandler) DeleteEvent(ctx context.Context, req *gumav1.DeleteEventR
 }
 
 func (h *EventHandler) ListEventsByRange(ctx context.Context, req *gumav1.ListEventsByRangeRequest) (*gumav1.ListEventsByRangeResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	events, err := h.svc.ListByRange(ctx, req.GuildId, req.StartDate, req.EndDate)
 	if err != nil {
 		return nil, toStatus(err)
@@ -161,9 +143,6 @@ func (h *EventHandler) ListEventsByRange(ctx context.Context, req *gumav1.ListEv
 }
 
 func (h *EventHandler) ListUpcomingEvents(ctx context.Context, req *gumav1.ListUpcomingEventsRequest) (*gumav1.ListUpcomingEventsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	events, err := h.svc.ListUpcoming(ctx, req.GuildId, req.Limit)
 	if err != nil {
 		return nil, toStatus(err)

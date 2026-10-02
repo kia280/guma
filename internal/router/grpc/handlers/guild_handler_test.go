@@ -35,12 +35,6 @@ func TestGuildService_CreateGuild_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name:     "missing guild name",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &guildv1.CreateGuildRequest{},
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name:     "missing user_id in context",
 			ctx:      context.Background(),
 			req:      &guildv1.CreateGuildRequest{Name: "Test Guild"},
@@ -69,12 +63,6 @@ func TestGuildService_GetGuild_Validation(t *testing.T) {
 		req      *guildv1.GetGuildRequest
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &guildv1.GetGuildRequest{},
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:     "missing user_id in context",
 			ctx:      context.Background(),
@@ -105,12 +93,6 @@ func TestGuildService_UpdateGuild_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &guildv1.UpdateGuildRequest{},
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name:     "missing user_id in context",
 			ctx:      context.Background(),
 			req:      &guildv1.UpdateGuildRequest{GuildId: "guild-123", Name: "Updated Guild"},
@@ -139,12 +121,6 @@ func TestGuildService_DeleteGuild_Validation(t *testing.T) {
 		req      *guildv1.DeleteGuildRequest
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &guildv1.DeleteGuildRequest{},
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:     "missing user_id in context",
 			ctx:      context.Background(),
@@ -204,12 +180,6 @@ func TestGuildService_GetGuildSettings_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &guildv1.GetGuildSettingsRequest{},
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name:     "missing user_id in context",
 			ctx:      context.Background(),
 			req:      &guildv1.GetGuildSettingsRequest{GuildId: "guild-123"},
@@ -239,18 +209,6 @@ func TestGuildService_UpdateGuildSettings_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &guildv1.UpdateGuildSettingsRequest{},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name:     "missing settings",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &guildv1.UpdateGuildSettingsRequest{GuildId: "guild-123"},
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name: "missing user_id in context",
 			ctx:  context.Background(),
 			req: &guildv1.UpdateGuildSettingsRequest{
@@ -274,21 +232,12 @@ func TestGuildService_UpdateGuildSettings_Validation(t *testing.T) {
 
 func TestGuildService_GuildLogo_Validation(t *testing.T) {
 	service := NewGuildService(nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "test-user")
 
 	tests := []struct {
 		name     string
 		call     func() error
 		wantCode codes.Code
 	}{
-		{
-			name: "upload missing guild_id",
-			call: func() error {
-				_, err := service.UploadGuildLogo(authed, &guildv1.UploadGuildLogoRequest{})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name: "upload unauthenticated",
 			call: func() error {
@@ -310,28 +259,12 @@ func TestGuildService_GuildLogo_Validation(t *testing.T) {
 			wantCode: codes.InvalidArgument,
 		},
 		{
-			name: "delete missing guild_id",
-			call: func() error {
-				_, err := service.DeleteGuildLogo(authed, &guildv1.DeleteGuildLogoRequest{})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name: "delete unauthenticated",
 			call: func() error {
 				_, err := service.DeleteGuildLogo(context.Background(), &guildv1.DeleteGuildLogoRequest{GuildId: "g"})
 				return err
 			},
 			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "get missing guild_id",
-			call: func() error {
-				_, err := service.GetGuildLogo(authed, &guildv1.GetGuildLogoRequest{})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
 		},
 		{
 			name: "get unauthenticated",
@@ -364,12 +297,6 @@ func TestGuildService_GetGuildStats_Validation(t *testing.T) {
 		req      *guildv1.GetGuildStatsRequest
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &guildv1.GetGuildStatsRequest{},
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:     "missing user_id in context",
 			ctx:      context.Background(),

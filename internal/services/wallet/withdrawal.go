@@ -62,17 +62,11 @@ type ListWithdrawalRequestsResult struct {
 }
 
 func (s *Service) RequestWithdrawal(ctx context.Context, userIDStr, guildIDStr string, amount int64, note string) (*WithdrawalRequest, *Transaction, *Wallet, error) {
-	if amount <= 0 {
-		return nil, nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
-	}
 	userID, guildID, err := parseIDs(userIDStr, guildIDStr)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	note, err = normalizeNote(note)
-	if err != nil {
-		return nil, nil, nil, err
-	}
+	note = strings.TrimSpace(note)
 	if err := s.requireMember(ctx, s.q, guildID, userID, errs.ErrPermissionDenied); err != nil {
 		return nil, nil, nil, err
 	}
@@ -158,9 +152,6 @@ func (s *Service) CancelWithdrawalRequest(ctx context.Context, userIDStr, guildI
 }
 
 func (s *Service) ReviewWithdrawalRequest(ctx context.Context, reviewerIDStr, guildIDStr, requestIDStr, status, note string) (*WithdrawalRequest, error) {
-	if status != WithdrawalApproved && status != WithdrawalRejected {
-		return nil, fmt.Errorf("%w: status must be '%s' or '%s'", errs.ErrInvalidArgument, WithdrawalApproved, WithdrawalRejected)
-	}
 	reviewerID, guildID, err := parseIDs(reviewerIDStr, guildIDStr)
 	if err != nil {
 		return nil, err
@@ -169,10 +160,7 @@ func (s *Service) ReviewWithdrawalRequest(ctx context.Context, reviewerIDStr, gu
 	if err != nil {
 		return nil, fmt.Errorf("%w: withdrawal request", errs.ErrNotFound)
 	}
-	note, err = normalizeNote(note)
-	if err != nil {
-		return nil, err
-	}
+	note = strings.TrimSpace(note)
 	if err := s.requireWithdrawalReviewer(ctx, guildID, reviewerID); err != nil {
 		return nil, err
 	}
@@ -214,11 +202,6 @@ func (s *Service) ListWithdrawalRequests(ctx context.Context, p ListWithdrawalRe
 }
 
 func (s *Service) listWithdrawalRequests(ctx context.Context, guildID uuid.UUID, requesterID *uuid.UUID, p ListWithdrawalRequestsParams) (*ListWithdrawalRequestsResult, error) {
-	switch p.Status {
-	case "", WithdrawalPending, WithdrawalApproved, WithdrawalRejected, WithdrawalCancelled:
-	default:
-		return nil, fmt.Errorf("%w: unknown status filter %q", errs.ErrInvalidArgument, p.Status)
-	}
 	pageSize := p.PageSize
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
@@ -386,12 +369,4 @@ func (s *Service) requireWithdrawalReviewer(ctx context.Context, guildID, userID
 		return fmt.Errorf("%w: only officers can review withdrawal requests", errs.ErrPermissionDenied)
 	}
 	return nil
-}
-
-func normalizeNote(note string) (string, error) {
-	note = strings.TrimSpace(note)
-	if len([]rune(note)) > maxTransferNoteLength {
-		return "", fmt.Errorf("%w: note is too long", errs.ErrInvalidArgument)
-	}
-	return note, nil
 }

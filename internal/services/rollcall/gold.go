@@ -111,36 +111,22 @@ type goldPayoutLine struct {
 	amount int64
 }
 
-func prepareLoot(entries []LootEntry) (*preparedLoot, error) {
+func prepareLoot(entries []LootEntry) *preparedLoot {
 	prepared := &preparedLoot{items: []models.Item{}, stored: make([]storedLootEntry, 0, len(entries))}
 	for _, entry := range entries {
 		switch normalizeLootKind(entry.Kind) {
 		case LootKindItem:
-			items, err := prepareBankLoot([]models.Item{entry.Item})
-			if err != nil {
-				return nil, err
-			}
+			items := prepareBankLoot([]models.Item{entry.Item})
 			prepared.items = append(prepared.items, items[0])
 			prepared.stored = append(prepared.stored, storedLootEntry{Kind: LootKindItem, Item: items[0]})
 		case LootKindGold:
-			if prepared.gold > 0 {
-				return nil, fmt.Errorf("%w: a roll call can have only one gold loot entry", errs.ErrInvalidArgument)
-			}
-			if entry.Amount <= 0 {
-				return nil, fmt.Errorf("%w: gold loot amount must be positive", errs.ErrInvalidArgument)
-			}
-			if entry.Amount > maxGoldAmount {
-				return nil, fmt.Errorf("%w: gold loot amount is too large", errs.ErrInvalidArgument)
-			}
 			prepared.gold = entry.Amount
 			prepared.stored = append(prepared.stored, storedLootEntry{
 				Kind: LootKindGold, Item: models.Item{ID: uuid.NewString()}, Amount: entry.Amount,
 			})
-		default:
-			return nil, fmt.Errorf("%w: unknown loot kind %q", errs.ErrInvalidArgument, entry.Kind)
 		}
 	}
-	return prepared, nil
+	return prepared
 }
 
 func normalizeLootKind(kind string) string {
@@ -207,10 +193,7 @@ func normalizeGoldPayouts(payouts []GoldPayout) ([]goldPayoutLine, int64, error)
 			return nil, 0, fmt.Errorf("%w: each attendee can appear only once", errs.ErrInvalidArgument)
 		}
 		seen[userID] = true
-		if p.Amount < 0 {
-			return nil, 0, fmt.Errorf("%w: gold amounts cannot be negative", errs.ErrInvalidArgument)
-		}
-		if p.Amount > maxGoldAmount || total > maxGoldAmount-p.Amount {
+		if total > maxGoldAmount-p.Amount {
 			return nil, 0, fmt.Errorf("%w: gold amount is too large", errs.ErrInvalidArgument)
 		}
 		if p.Amount == 0 {
@@ -218,9 +201,6 @@ func normalizeGoldPayouts(payouts []GoldPayout) ([]goldPayoutLine, int64, error)
 		}
 		total += p.Amount
 		lines = append(lines, goldPayoutLine{userID: userID, amount: p.Amount})
-	}
-	if len(lines) == 0 {
-		return nil, 0, fmt.Errorf("%w: enter a gold amount for at least one attendee", errs.ErrInvalidArgument)
 	}
 	sort.Slice(lines, func(i, j int) bool { return bytes.Compare(lines[i].userID[:], lines[j].userID[:]) < 0 })
 	return lines, total, nil

@@ -373,3 +373,65 @@ func TestRequestRules(t *testing.T) {
 		})
 	}
 }
+
+func TestRequestRulesReplaceHandlerChecks(t *testing.T) {
+	validator := newTestValidator(t)
+	gold := func(amount int64) []*gumav1.RollCallLootEntry {
+		return []*gumav1.RollCallLootEntry{{Kind: "gold", Amount: amount}}
+	}
+
+	tests := []struct {
+		name string
+		req  proto.Message
+		want violation
+	}{
+		{"deposit zero amount", &gumav1.DepositFundsRequest{GuildId: testUUID}, violation{"amount", "int64.gt_lte"}},
+		{"transfer negative amount", &gumav1.TransferFundsRequest{GuildId: testUUID, ToUserId: testUUID, Amount: -1}, violation{"amount", "int64.gt_lte"}},
+		{"deposit note too long", &gumav1.DepositFundsRequest{GuildId: testUUID, Amount: 1, Note: strings.Repeat("n", 201)}, violation{"note", "string.max_len"}},
+		{"request item reason too long", &gumav1.RequestItemRequest{GuildId: testUUID, BankItemId: testUUID, Reason: strings.Repeat("r", 501)}, violation{"reason", "string.max_len"}},
+		{"review withdrawal pending", &gumav1.ReviewWithdrawalRequestRequest{GuildId: testUUID, RequestId: testUUID, Status: "pending"}, violation{"status", "string.in"}},
+		{"review fund request empty", &gumav1.ReviewFundRequestRequest{GuildId: testUUID, RequestId: testUUID}, violation{"status", "string.in"}},
+		{"withdrawal status filter", &gumav1.ListWithdrawalRequestsRequest{GuildId: testUUID, Status: "done"}, violation{"status", "string.in"}},
+		{"admin item transfer too many", &gumav1.AdminTransferBackpackItemsRequest{GuildId: testUUID, UserId: testUUID, ToGuildBank: true, ItemIds: make([]string, 101)}, violation{"item_ids", "repeated.max_items"}},
+		{"admin funds transfer without destination", &gumav1.AdminTransferFundsRequest{GuildId: testUUID, UserId: testUUID, Amount: 1}, violation{"", "message.oneof"}},
+		{"missing guild name", &gumav1.CreateGuildRequest{}, violation{"name", "required"}},
+		{"guild name too long", &gumav1.CreateGuildRequest{Name: strings.Repeat("名", 101)}, violation{"name", "string.max_len"}},
+		{"missing member role", &gumav1.UpdateMemberRoleRequest{GuildId: testUUID, UserId: testUUID}, violation{"role", "string.in"}},
+		{"unknown member role", &gumav1.UpdateMemberRoleRequest{GuildId: testUUID, UserId: testUUID, Role: "king"}, violation{"role", "string.in"}},
+		{"missing invite email", &gumav1.InviteMemberRequest{GuildId: testUUID}, violation{"email", "required"}},
+		{"missing search query", &gumav1.SearchGlobalRequest{}, violation{"query", "required"}},
+		{"missing user preferences", &gumav1.UpdateUserPreferencesRequest{}, violation{"preferences", "required"}},
+		{"missing notification patch", &gumav1.UpdateMyPreferencesRequest{}, violation{"notifications", "required"}},
+		{"empty display name", &gumav1.UpdateMeRequest{}, violation{"display_name", "string.not_blank"}},
+		{"avatar url too long", &gumav1.UpdateMeRequest{DisplayName: "n", AvatarUrl: strings.Repeat("a", 2049)}, violation{"avatar_url", "string.max_len"}},
+		{"announcement title too long", &gumav1.UpdateAnnouncementRequest{GuildId: testUUID, AnnouncementId: testUUID, Title: strings.Repeat("t", 201)}, violation{"title", "string.max_len"}},
+		{"unknown event type", &gumav1.CreateEventRequest{GuildId: testUUID, Title: "t", Type: "party"}, violation{"type", "string.in"}},
+		{"unknown event priority", &gumav1.CreateEventRequest{GuildId: testUUID, Title: "t", Priority: "urgent"}, violation{"priority", "string.in"}},
+		{"too many recurring days", &gumav1.CreateEventRequest{GuildId: testUUID, Title: "t", RecurringPattern: &gumav1.RecurringPattern{Type: "weekly", DaysOfWeek: []int32{0, 1, 2, 3, 4, 5, 6, 0}}}, violation{"recurring_pattern", "repeated.max_items"}},
+		{"empty recurring type", &gumav1.CreateEventRequest{GuildId: testUUID, Title: "t", RecurringPattern: &gumav1.RecurringPattern{}}, violation{"recurring_pattern", "string.in"}},
+		{"gold loot negative", &gumav1.CreateRollCallRequest{GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b", Loot: gold(-1)}, violation{"loot", "int64.gte_lte"}},
+		{"gold loot too large", &gumav1.CreateRollCallRequest{GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b", Loot: gold(100000000000001)}, violation{"loot", "int64.gte_lte"}},
+		{"item loot without name", &gumav1.CreateRollCallRequest{GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b", Loot: []*gumav1.RollCallLootEntry{{Kind: "item"}}}, violation{"loot", "roll_call_loot_entry.item_name_required"}},
+		{"blank legacy loot item", &gumav1.CreateRollCallRequest{GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b", LootList: []*gumav1.Item{{Name: " "}}}, violation{"", "create_roll_call.loot_list_item_name_required"}},
+		{"loot change on update", &gumav1.UpdateRollCallRequest{GuildId: testUUID, RollCallId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b", Loot: gold(1)}, violation{"loot", "repeated.max_items"}},
+		{"check-in notes too long", &gumav1.CheckInRequest{GuildId: testUUID, RollCallId: testUUID, Notes: strings.Repeat("n", 501)}, violation{"notes", "string.max_len"}},
+		{"no payouts", &gumav1.DistributeRollCallGoldRequest{GuildId: testUUID, RollCallId: testUUID, RequestId: testUUID}, violation{"payouts", "repeated.min_items"}},
+		{"all zero payouts", &gumav1.DistributeRollCallGoldRequest{GuildId: testUUID, RollCallId: testUUID, RequestId: testUUID, Payouts: []*gumav1.RollCallGoldPayout{{UserId: testUUID}}}, violation{"payouts", "payouts.positive_total"}},
+		{"negative payout", &gumav1.DistributeRollCallGoldRequest{GuildId: testUUID, RollCallId: testUUID, RequestId: testUUID, Payouts: []*gumav1.RollCallGoldPayout{{UserId: testUUID, Amount: -1}, {UserId: otherTestUUID, Amount: 2}}}, violation{"payouts", "int64.gte_lte"}},
+		{"blank roll call template name", &gumav1.CreateRollCallTemplateRequest{GuildId: testUUID, Name: " ", Title: "t"}, violation{"name", "string.not_blank"}},
+		{"too many template items", &gumav1.CreateRollCallTemplateRequest{GuildId: testUUID, Name: "n", Title: "t", ItemTemplateIds: make([]string, 101)}, violation{"item_template_ids", "repeated.max_items"}},
+		{"missing item template rarity", &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: "misc"}, violation{"rarity", "rarity.allowed"}},
+		{"item template description too long", &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: "misc", Rarity: "rare", Description: strings.Repeat("d", 501)}, violation{"description", "string.max_len"}},
+		{"auction increment zero on update", &gumav1.UpdateAuctionRequest{GuildId: testUUID, AuctionId: testUUID, MinBidIncrement: proto.Int64(0)}, violation{"min_bid_increment", "int64.gt_lte"}},
+		{"auction end equals start", &gumav1.UpdateAuctionRequest{GuildId: testUUID, AuctionId: testUUID, StartTime: timestamppb.New(time.Unix(1900000000, 0)), EndTime: timestamppb.New(time.Unix(1900000000, 0))}, violation{"", "update_auction.end_after_start"}},
+		{"blank auction item name on update", &gumav1.UpdateAuctionRequest{GuildId: testUUID, AuctionId: testUUID, Item: &gumav1.Item{Name: " "}}, violation{"item", "item.name_required"}},
+		{"negative raffle ticket price", &gumav1.UpdateRaffleRequest{GuildId: testUUID, RaffleId: testUUID, TicketPrice: proto.Int64(-1)}, violation{"ticket_price", "int64.gte_lte"}},
+		{"raffle prize from two sources", &gumav1.CreateRaffleRequest{GuildId: testUUID, Title: "t", DrawDate: "d", Prizes: []*gumav1.RafflePrize{{Source: &gumav1.ItemSourceRef{BackpackItemId: testUUID, BankItemId: testUUID}}}}, violation{"prizes", "item_source_ref.single_source"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Contains(t, violationsOf(t, validator.Validate(tt.req)), tt.want)
+		})
+	}
+}

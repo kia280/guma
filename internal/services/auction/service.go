@@ -408,9 +408,6 @@ func (s *Service) GetBidHistory(ctx context.Context, guildIDStr, auctionIDStr st
 }
 
 func (s *Service) Update(ctx context.Context, p UpdateParams) (*AuctionItem, error) {
-	if err := validateUpdate(p); err != nil {
-		return nil, err
-	}
 	guildID, auctionID, userID, err := parseIDs(p.GuildID, p.AuctionID, p.UpdatedBy)
 	if err != nil {
 		return nil, err

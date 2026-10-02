@@ -28,9 +28,6 @@ func NewAnnouncementService(db *database.Pool, logger zerolog.Logger) *Announcem
 }
 
 func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1.ListAnnouncementsRequest) (*gumav1.ListAnnouncementsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -53,7 +50,7 @@ func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1
 }
 
 func (h *AnnouncementHandler) GetAnnouncement(ctx context.Context, req *gumav1.GetAnnouncementRequest) (*gumav1.GetAnnouncementResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +62,6 @@ func (h *AnnouncementHandler) GetAnnouncement(ctx context.Context, req *gumav1.G
 }
 
 func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *gumav1.CreateAnnouncementDraftRequest) (*gumav1.CreateAnnouncementDraftResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -80,7 +74,7 @@ func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *
 }
 
 func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav1.UpdateAnnouncementRequest) (*gumav1.UpdateAnnouncementResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +93,7 @@ func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav
 }
 
 func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *gumav1.PublishAnnouncementRequest) (*gumav1.PublishAnnouncementResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +105,7 @@ func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *guma
 }
 
 func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gumav1.UnpublishAnnouncementRequest) (*gumav1.UnpublishAnnouncementResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +117,7 @@ func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gu
 }
 
 func (h *AnnouncementHandler) DeleteAnnouncementDraft(ctx context.Context, req *gumav1.DeleteAnnouncementDraftRequest) (*gumav1.DeleteAnnouncementDraftResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -133,13 +127,7 @@ func (h *AnnouncementHandler) DeleteAnnouncementDraft(ctx context.Context, req *
 	return &gumav1.DeleteAnnouncementDraftResponse{}, nil
 }
 
-func requireAnnouncementTarget(ctx context.Context, guildID, announcementID string) (string, error) {
-	if guildID == "" {
-		return "", status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-	if announcementID == "" {
-		return "", status.Error(codes.InvalidArgument, "announcement_id is required")
-	}
+func requireAnnouncementUser(ctx context.Context) (string, error) {
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return "", status.Error(codes.Unauthenticated, "user not authenticated")

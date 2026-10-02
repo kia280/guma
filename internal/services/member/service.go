@@ -22,8 +22,6 @@ const (
 	maxPageSize     = 500
 )
 
-var validRoles = map[string]bool{"owner": true, "admin": true, "moderator": true, "member": true}
-
 type Member struct {
 	ID              string
 	UserID          string
@@ -73,9 +71,6 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	callerID, err := uuid.Parse(p.CallerID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: caller id must be a UUID", errs.ErrInvalidArgument)
-	}
-	if p.Role != "" && !validRoles[p.Role] {
-		return nil, fmt.Errorf("%w: unknown role %q", errs.ErrInvalidArgument, p.Role)
 	}
 	offset, err := parsePageToken(p.PageToken)
 	if err != nil {

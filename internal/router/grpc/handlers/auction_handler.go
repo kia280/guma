@@ -32,9 +32,6 @@ func NewAuctionService(db *database.Pool, logger zerolog.Logger) *AuctionHandler
 }
 
 func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAuctionsRequest) (*gumav1.ListAuctionsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	result, err := h.svc.List(ctx, auctionsvc.ListParams{
 		GuildID:  req.GuildId,
 		Status:   req.Status,
@@ -60,9 +57,6 @@ func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAucti
 }
 
 func (h *AuctionHandler) GetAuction(ctx context.Context, req *gumav1.GetAuctionRequest) (*gumav1.GetAuctionResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	a, err := h.svc.Get(ctx, req.GuildId, req.AuctionId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -71,9 +65,6 @@ func (h *AuctionHandler) GetAuction(ctx context.Context, req *gumav1.GetAuctionR
 }
 
 func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAuctionRequest) (*gumav1.CreateAuctionResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -102,9 +93,6 @@ func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAu
 }
 
 func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidRequest) (*gumav1.PlaceBidResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -118,9 +106,6 @@ func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidReque
 }
 
 func (h *AuctionHandler) GetBidHistory(ctx context.Context, req *gumav1.GetBidHistoryRequest) (*gumav1.GetBidHistoryResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	result, err := h.svc.GetBidHistory(ctx, req.GuildId, req.AuctionId, int(req.PageSize), auctionsvc.ParsePageToken(req.PageToken))
 	if err != nil {
 		return nil, toStatus(err)
@@ -138,9 +123,6 @@ func (h *AuctionHandler) GetBidHistory(ctx context.Context, req *gumav1.GetBidHi
 }
 
 func (h *AuctionHandler) UpdateAuction(ctx context.Context, req *gumav1.UpdateAuctionRequest) (*gumav1.UpdateAuctionResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -181,9 +163,6 @@ func (h *AuctionHandler) UpdateAuction(ctx context.Context, req *gumav1.UpdateAu
 }
 
 func (h *AuctionHandler) DeleteAuction(ctx context.Context, req *gumav1.DeleteAuctionRequest) (*gumav1.DeleteAuctionResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -196,9 +175,6 @@ func (h *AuctionHandler) DeleteAuction(ctx context.Context, req *gumav1.DeleteAu
 }
 
 func (h *AuctionHandler) CancelAuction(ctx context.Context, req *gumav1.CancelAuctionRequest) (*gumav1.CancelAuctionResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")

@@ -34,14 +34,6 @@ func NewMemberService(db *database.Pool, logger zerolog.Logger) *MemberService {
 
 // InviteMember creates an invitation for a new member
 func (s *MemberService) InviteMember(ctx context.Context, req *memberv1.InviteMemberRequest) (*memberv1.InviteMemberResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.Email == "" {
-		return nil, status.Error(codes.InvalidArgument, "email is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -76,10 +68,6 @@ func (s *MemberService) InviteMember(ctx context.Context, req *memberv1.InviteMe
 
 // JoinGuild allows a user to join a guild using an invite code
 func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRequest) (*memberv1.JoinGuildResponse, error) {
-	if req.InviteCode == "" {
-		return nil, status.Error(codes.InvalidArgument, "invite_code is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -112,14 +100,6 @@ func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRe
 
 // UpdateMember updates a member's information
 func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMemberRequest) (*memberv1.UpdateMemberResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.MemberId == "" {
-		return nil, status.Error(codes.InvalidArgument, "member_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -151,18 +131,6 @@ func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMe
 }
 
 func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.UpdateMemberRoleRequest) (*memberv1.UpdateMemberRoleResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.UserId == "" {
-		return nil, status.Error(codes.InvalidArgument, "user_id is required")
-	}
-
-	if req.Role == "" {
-		return nil, status.Error(codes.InvalidArgument, "role is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -183,14 +151,6 @@ func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.Upda
 
 // RemoveMember removes a member from a guild
 func (s *MemberService) RemoveMember(ctx context.Context, req *memberv1.RemoveMemberRequest) (*memberv1.RemoveMemberResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.MemberId == "" {
-		return nil, status.Error(codes.InvalidArgument, "member_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -212,10 +172,6 @@ func (s *MemberService) RemoveMember(ctx context.Context, req *memberv1.RemoveMe
 
 // ListMembers lists members of a guild
 func (s *MemberService) ListMembers(ctx context.Context, req *memberv1.ListMembersRequest) (*memberv1.ListMembersResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -261,14 +217,6 @@ func toMemberProto(m *membersvc.Member) *memberv1.Member {
 
 // GetMember retrieves a specific member
 func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRequest) (*memberv1.GetMemberResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.MemberId == "" {
-		return nil, status.Error(codes.InvalidArgument, "member_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -300,10 +248,6 @@ func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRe
 
 // GenerateInviteCode generates a new invite code
 func (s *MemberService) GenerateInviteCode(ctx context.Context, req *memberv1.GenerateInviteCodeRequest) (*memberv1.GenerateInviteCodeResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -344,10 +288,6 @@ func (s *MemberService) GenerateInviteCode(ctx context.Context, req *memberv1.Ge
 
 // ValidateInviteCode validates an invite code
 func (s *MemberService) ValidateInviteCode(ctx context.Context, req *memberv1.ValidateInviteCodeRequest) (*memberv1.ValidateInviteCodeResponse, error) {
-	if req.Code == "" {
-		return nil, status.Error(codes.InvalidArgument, "code is required")
-	}
-
 	code := strings.ToUpper(req.Code)
 
 	s.logger.Info().Str("code", code).Msg("validating invite code")
@@ -363,10 +303,6 @@ func (s *MemberService) ValidateInviteCode(ctx context.Context, req *memberv1.Va
 
 // ListInvites lists all invitations for a guild
 func (s *MemberService) ListInvites(ctx context.Context, req *memberv1.ListInvitesRequest) (*memberv1.ListInvitesResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -389,14 +325,6 @@ func (s *MemberService) ListInvites(ctx context.Context, req *memberv1.ListInvit
 
 // RevokeInvite revokes an invitation
 func (s *MemberService) RevokeInvite(ctx context.Context, req *memberv1.RevokeInviteRequest) (*memberv1.RevokeInviteResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.InviteId == "" {
-		return nil, status.Error(codes.InvalidArgument, "invite_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")

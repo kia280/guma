@@ -48,14 +48,6 @@ func TestNotificationService_Validation(t *testing.T) {
 			wantCode: codes.Unauthenticated,
 		},
 		{
-			name: "mark read missing id",
-			call: func() error {
-				_, err := h.MarkNotificationRead(authed, &gumav1.MarkNotificationReadRequest{})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name: "mark read malformed id",
 			call: func() error {
 				_, err := h.MarkNotificationRead(authed, &gumav1.MarkNotificationReadRequest{NotificationId: "nope"})

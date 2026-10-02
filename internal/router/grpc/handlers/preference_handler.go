@@ -48,10 +48,6 @@ func (h *PreferenceHandler) UpdateMyPreferences(ctx context.Context, req *gumav1
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
-	if req.Notifications == nil {
-		return nil, status.Error(codes.InvalidArgument, "notifications is required")
-	}
-
 	p, err := h.svc.UpdateNotifications(ctx, userID, preferencesvc.NotificationPatch{
 		EmailNotifications: req.Notifications.EmailNotifications,
 		AuctionAlerts:      req.Notifications.AuctionAlerts,

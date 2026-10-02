@@ -169,13 +169,7 @@ func (s *Service) GetWallet(ctx context.Context, userIDStr, guildIDStr string) (
 
 // Deposit adds funds to a wallet (admin or system operation).
 func (s *Service) Deposit(ctx context.Context, userIDStr, guildIDStr string, amount int64, note string) (*Transaction, *Wallet, error) {
-	if amount <= 0 {
-		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
-	}
-	note, err := normalizeNote(note)
-	if err != nil {
-		return nil, nil, err
-	}
+	note = strings.TrimSpace(note)
 
 	w, err := s.GetWallet(ctx, userIDStr, guildIDStr)
 	if err != nil {
@@ -203,9 +197,6 @@ func (s *Service) Deposit(ctx context.Context, userIDStr, guildIDStr string, amo
 
 // Transfer moves funds atomically between two users in the same guild.
 func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guildIDStr string, amount int64, note string) (*Transaction, *Wallet, error) {
-	if amount <= 0 {
-		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
-	}
 	fromUserID, err := uuid.Parse(fromUserIDStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: sender", errs.ErrInvalidArgument)
@@ -221,10 +212,7 @@ func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guil
 	if toUserID == fromUserID {
 		return nil, nil, fmt.Errorf("%w: cannot transfer to yourself", errs.ErrInvalidArgument)
 	}
-	note, err = normalizeNote(note)
-	if err != nil {
-		return nil, nil, err
-	}
+	note = strings.TrimSpace(note)
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -397,9 +385,6 @@ func (s *Service) TransferBackpackItem(ctx context.Context, fromUserIDStr, guild
 		return nil, fmt.Errorf("%w: cannot transfer an item to yourself", errs.ErrInvalidArgument)
 	}
 	note = strings.TrimSpace(note)
-	if len([]rune(note)) > maxTransferNoteLength {
-		return nil, fmt.Errorf("%w: note is too long", errs.ErrInvalidArgument)
-	}
 	if _, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: toUserID}); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: recipient is not a guild member", errs.ErrFailedPrecondition)
@@ -419,8 +404,6 @@ func (s *Service) TransferBackpackItem(ctx context.Context, fromUserIDStr, guild
 	s.logger.Info().Str("backpack_item_id", itemIDStr).Str("from", fromUserIDStr).Str("to", toUserIDStr).Msg("backpack item transferred")
 	return toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt), nil
 }
-
-const maxTransferNoteLength = 200
 
 // --- helpers ---
 

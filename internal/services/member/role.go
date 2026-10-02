@@ -37,9 +37,6 @@ func (s *Service) UpdateRole(ctx context.Context, p UpdateRoleParams) (*Member, 
 	if err != nil {
 		return nil, fmt.Errorf("%w: member", errs.ErrNotFound)
 	}
-	if !validRoles[p.Role] {
-		return nil, fmt.Errorf("%w: unknown role %q", errs.ErrInvalidArgument, p.Role)
-	}
 	if actorID == userID {
 		return nil, fmt.Errorf("%w: you cannot change your own role", errs.ErrPermissionDenied)
 	}

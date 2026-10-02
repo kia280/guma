@@ -3,7 +3,6 @@ package rollcalltemplate
 import (
 	"context"
 	"errors"
-	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -165,29 +164,15 @@ func TestCreateRollCallTemplateRejectsItemsFromOtherGuilds(t *testing.T) {
 	assert.Zero(t, store.writes)
 }
 
-func TestCreateRollCallTemplateValidatesInput(t *testing.T) {
-	tests := []struct {
-		name   string
-		mutate func(*Fields)
-	}{
-		{name: "blank name", mutate: func(f *Fields) { f.Name = "  " }},
-		{name: "long name", mutate: func(f *Fields) { f.Name = strings.Repeat("名", maxNameLength+1) }},
-		{name: "blank title", mutate: func(f *Fields) { f.Title = "" }},
-		{name: "long title", mutate: func(f *Fields) { f.Title = strings.Repeat("a", maxTitleLength+1) }},
-		{name: "malformed item id", mutate: func(f *Fields) { f.ItemTemplateIDs = []string{"nope"} }},
-		{name: "too many items", mutate: func(f *Fields) { f.ItemTemplateIDs = make([]string, maxItems+1) }},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			store := newFake("owner")
-			s := newService(store, zerolog.Nop())
-			f := validFields()
-			tt.mutate(&f)
-			_, err := s.Create(context.Background(), testGuild.String(), testUser.String(), f)
-			assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-			assert.Zero(t, store.writes)
-		})
-	}
+func TestCreateRollCallTemplateRejectsMalformedItemIDs(t *testing.T) {
+	store := newFake("owner")
+	s := newService(store, zerolog.Nop())
+	f := validFields()
+	f.ItemTemplateIDs = []string{"nope"}
+
+	_, err := s.Create(context.Background(), testGuild.String(), testUser.String(), f)
+	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
+	assert.Zero(t, store.writes)
 }
 
 func TestCreateItemTemplateNormalizesFields(t *testing.T) {
@@ -200,29 +185,6 @@ func TestCreateItemTemplateNormalizesFields(t *testing.T) {
 		GuildID: testGuild, CreatedBy: testUser,
 		Name: "Dragon Scale", Description: "shiny", Category: "material", Rarity: "epic",
 	}, store.itemCreate)
-}
-
-func TestCreateItemTemplateValidatesInput(t *testing.T) {
-	tests := []struct {
-		name   string
-		mutate func(*ItemFields)
-	}{
-		{name: "blank name", mutate: func(f *ItemFields) { f.Name = " " }},
-		{name: "long description", mutate: func(f *ItemFields) { f.Description = strings.Repeat("a", maxDescriptionLength+1) }},
-		{name: "unknown category", mutate: func(f *ItemFields) { f.Category = "vehicle" }},
-		{name: "missing rarity", mutate: func(f *ItemFields) { f.Rarity = "" }},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			store := newFake("owner")
-			s := newItemService(store, zerolog.Nop())
-			f := validItem()
-			tt.mutate(&f)
-			_, err := s.Create(context.Background(), testGuild.String(), testUser.String(), f)
-			assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-			assert.Zero(t, store.writes)
-		})
-	}
 }
 
 func TestManagementRequiresManagerRole(t *testing.T) {

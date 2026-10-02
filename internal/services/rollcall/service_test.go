@@ -2,10 +2,8 @@ package rollcall
 
 import (
 	"context"
-	"strings"
 	"testing"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -16,12 +14,11 @@ import (
 )
 
 func TestPrepareBankLootAssignsIDsAndDefaults(t *testing.T) {
-	loot, err := prepareBankLoot([]models.Item{
+	loot := prepareBankLoot([]models.Item{
 		{ID: "client-id", Name: " Dragon Scale ", Category: "MATERIAL", Rarity: "Epic", Description: "hot"},
 		{Name: "Coin"},
 		{Name: "Coin"},
 	})
-	require.NoError(t, err)
 	require.Len(t, loot, 3)
 
 	seen := map[string]bool{}
@@ -36,39 +33,10 @@ func TestPrepareBankLootAssignsIDsAndDefaults(t *testing.T) {
 	assert.Equal(t, models.Item{ID: loot[1].ID, Name: "Coin", Category: "misc", Rarity: "common"}, loot[1])
 }
 
-func TestPrepareBankLootRejectsBlankNames(t *testing.T) {
-	_, err := prepareBankLoot([]models.Item{{Name: "Sword"}, {Name: "  "}})
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-}
-
 func TestPrepareBankLootEmpty(t *testing.T) {
-	loot, err := prepareBankLoot(nil)
-	require.NoError(t, err)
+	loot := prepareBankLoot(nil)
 	assert.Empty(t, loot)
 	assert.NotNil(t, loot)
-}
-
-func TestNormalizeCheckInNotes(t *testing.T) {
-	notes, err := normalizeCheckInNotes("  Late arrival \n")
-	require.NoError(t, err)
-	assert.Equal(t, "Late arrival", notes)
-
-	notes, err = normalizeCheckInNotes(strings.Repeat("遲", maxCheckInNotes))
-	require.NoError(t, err)
-	assert.Equal(t, maxCheckInNotes, utf8.RuneCountInString(notes))
-
-	_, err = normalizeCheckInNotes(strings.Repeat("a", maxCheckInNotes+1))
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-}
-
-func TestCheckInRejectsLongNotesBeforeQuerying(t *testing.T) {
-	s := &Service{}
-	_, err := s.CheckIn(context.Background(),
-		"00000000-0000-0000-0000-000000000001",
-		"00000000-0000-0000-0000-000000000002",
-		"00000000-0000-0000-0000-000000000003",
-		strings.Repeat("a", maxCheckInNotes+1))
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }
 
 func TestCheckCancellable(t *testing.T) {
@@ -128,13 +96,11 @@ func TestUpdateValidatesBeforeQuerying(t *testing.T) {
 		mutate  func(p *UpdateParams)
 		wantErr error
 	}{
-		{name: "blank title", mutate: func(p *UpdateParams) { p.Title = "  " }, wantErr: errs.ErrInvalidArgument},
 		{name: "expire before datetime", mutate: func(p *UpdateParams) { p.ExpireTime = p.Datetime }, wantErr: errs.ErrInvalidArgument},
 		{name: "expire in the past", mutate: func(p *UpdateParams) {
 			p.Datetime = "2020-01-01T00:00:00Z"
 			p.ExpireTime = "2020-01-02T00:00:00Z"
 		}, wantErr: errs.ErrInvalidArgument},
-		{name: "loot change", mutate: func(p *UpdateParams) { p.Loot = []LootEntry{{Kind: LootKindItem, Item: models.Item{Name: "Sword"}}} }, wantErr: errs.ErrInvalidArgument},
 		{name: "malformed guild", mutate: func(p *UpdateParams) { p.GuildID = "bad" }, wantErr: errs.ErrNotFound},
 		{name: "malformed roll call", mutate: func(p *UpdateParams) { p.RollCallID = "bad" }, wantErr: errs.ErrNotFound},
 		{name: "malformed user", mutate: func(p *UpdateParams) { p.UpdatedBy = "bad" }, wantErr: errs.ErrInvalidArgument},
@@ -223,8 +189,6 @@ func TestPlanLootUpdate(t *testing.T) {
 		{name: "rename listed item", requested: []models.Item{inVault, {ID: listed.ID, Name: "Buckler"}, handedOut}, wantErr: errs.ErrFailedPrecondition},
 		{name: "unknown item", requested: []models.Item{inVault, listed, handedOut, {ID: uuid.NewString(), Name: "Ghost"}}, wantErr: errs.ErrInvalidArgument},
 		{name: "duplicate item", requested: []models.Item{inVault, inVault, listed, handedOut}, wantErr: errs.ErrInvalidArgument},
-		{name: "blank new item", requested: []models.Item{inVault, listed, handedOut, {Name: " "}}, wantErr: errs.ErrInvalidArgument},
-		{name: "blank rename", requested: []models.Item{{ID: inVault.ID, Name: ""}, listed, handedOut}, wantErr: errs.ErrInvalidArgument},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

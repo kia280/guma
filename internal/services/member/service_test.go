@@ -20,7 +20,6 @@ func TestListValidatesInput(t *testing.T) {
 	}{
 		{name: "bad guild id", p: ListParams{GuildID: "nope", CallerID: caller}},
 		{name: "bad caller id", p: ListParams{GuildID: guild, CallerID: "nope"}},
-		{name: "unknown role", p: ListParams{GuildID: guild, CallerID: caller, Role: "king"}},
 		{name: "bad page token", p: ListParams{GuildID: guild, CallerID: caller, PageToken: "next"}},
 		{name: "negative page token", p: ListParams{GuildID: guild, CallerID: caller, PageToken: "-5"}},
 	}
@@ -90,7 +89,6 @@ func TestUpdateRoleValidatesInput(t *testing.T) {
 		{name: "bad guild id", p: UpdateRoleParams{GuildID: "nope", ActorID: actor, UserID: target, Role: "admin"}, want: errs.ErrInvalidArgument},
 		{name: "bad actor id", p: UpdateRoleParams{GuildID: guild, ActorID: "nope", UserID: target, Role: "admin"}, want: errs.ErrInvalidArgument},
 		{name: "bad user id", p: UpdateRoleParams{GuildID: guild, ActorID: actor, UserID: "nope", Role: "admin"}, want: errs.ErrNotFound},
-		{name: "unknown role", p: UpdateRoleParams{GuildID: guild, ActorID: actor, UserID: target, Role: "king"}, want: errs.ErrInvalidArgument},
 		{name: "own role", p: UpdateRoleParams{GuildID: guild, ActorID: actor, UserID: actor, Role: "member"}, want: errs.ErrPermissionDenied},
 	}
 	for _, tt := range tests {

@@ -44,9 +44,6 @@ type Locked struct {
 }
 
 func Lock(ctx context.Context, qtx *db.Queries, guildID, actorID uuid.UUID, ref Ref, holder Holder, rejectNote string) (*Locked, error) {
-	if ref.BackpackItemID != "" && ref.BankItemID != "" {
-		return nil, fmt.Errorf("%w: choose either a backpack item or a bank item", errs.ErrInvalidArgument)
-	}
 	var (
 		sourceType string
 		itemID     uuid.UUID

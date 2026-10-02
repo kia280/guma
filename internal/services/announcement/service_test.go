@@ -39,14 +39,6 @@ func TestValidatesInputBeforeQuerying(t *testing.T) {
 			_, err := s.Update(ctx, Update{GuildID: testGuild, UserID: testUser, AnnouncementID: "nope"})
 			return err
 		}, want: errs.ErrInvalidArgument},
-		{name: "update title too long", call: func() error {
-			_, err := s.Update(ctx, Update{GuildID: testGuild, UserID: testUser, AnnouncementID: testAnn, Title: strings.Repeat("a", maxTitleLength+1)})
-			return err
-		}, want: errs.ErrInvalidArgument},
-		{name: "update content too long", call: func() error {
-			_, err := s.Update(ctx, Update{GuildID: testGuild, UserID: testUser, AnnouncementID: testAnn, Content: strings.Repeat("a", maxContentLength+1)})
-			return err
-		}, want: errs.ErrInvalidArgument},
 		{name: "publish bad guild", call: func() error { _, err := s.Publish(ctx, "nope", testAnn, testUser); return err }, want: errs.ErrInvalidArgument},
 		{name: "unpublish without user", call: func() error { _, err := s.Unpublish(ctx, testGuild, testAnn, ""); return err }, want: errs.ErrUnauthenticated},
 		{name: "unpublish bad announcement id", call: func() error { _, err := s.Unpublish(ctx, testGuild, "nope", testUser); return err }, want: errs.ErrInvalidArgument},
@@ -58,15 +50,6 @@ func TestValidatesInputBeforeQuerying(t *testing.T) {
 				t.Fatalf("expected %v, got %v", tt.want, err)
 			}
 		})
-	}
-}
-
-func TestValidateDraftCountsRunes(t *testing.T) {
-	if err := validateDraft(strings.Repeat("公", maxTitleLength), strings.Repeat("告", maxContentLength)); err != nil {
-		t.Fatalf("expected multibyte text at the limit to be valid, got %v", err)
-	}
-	if err := validateDraft("", ""); err != nil {
-		t.Fatalf("expected empty draft to be valid, got %v", err)
 	}
 }
 

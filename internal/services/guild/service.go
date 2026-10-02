@@ -127,9 +127,6 @@ func mkGuild(
 
 // Create inserts a new guild and adds the owner as a member.
 func (s *Service) Create(ctx context.Context, p CreateParams) (*Guild, error) {
-	if err := validateGuildFields(p.Name, p.Description, p.IconURL, p.BannerURL, p.CustomSettings); err != nil {
-		return nil, err
-	}
 	ownerID, err := uuid.Parse(p.OwnerID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: owner id", errs.ErrInvalidArgument)
@@ -189,9 +186,6 @@ func (s *Service) Get(ctx context.Context, guildID string) (*Guild, error) {
 
 // Update modifies an existing guild. The requesting user must be owner or admin.
 func (s *Service) Update(ctx context.Context, p UpdateParams) (*Guild, error) {
-	if err := validateGuildFields(p.Name, p.Description, p.IconURL, p.BannerURL, nil); err != nil {
-		return nil, err
-	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
@@ -400,9 +394,6 @@ func (s *Service) GetSettings(ctx context.Context, guildIDStr string) (*GuildSet
 
 // UpdateSettings replaces guild settings. Requires owner or admin role.
 func (s *Service) UpdateSettings(ctx context.Context, guildIDStr, userIDStr string, settings GuildSettings) (*GuildSettings, error) {
-	if err := validateSettings(settings); err != nil {
-		return nil, err
-	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)

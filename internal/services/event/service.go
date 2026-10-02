@@ -186,13 +186,7 @@ func (s *Service) Get(ctx context.Context, guildIDStr, eventIDStr string) (*Guil
 
 // Create inserts a new guild event.
 func (s *Service) Create(ctx context.Context, p CreateParams) (*GuildEvent, error) {
-	f, err := normalizeFields(eventFields{
-		Title: p.Title, Description: p.Description, Type: p.Type,
-		Location: p.Location, Priority: p.Priority, RecurringPattern: p.RecurringPattern,
-	})
-	if err != nil {
-		return nil, err
-	}
+	f := normalizeFields(eventFields{Title: p.Title, Type: p.Type, Priority: p.Priority})
 	p.Title, p.Type, p.Priority = f.Title, f.Type, f.Priority
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
@@ -225,13 +219,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*GuildEvent, erro
 
 // Update modifies an existing event.
 func (s *Service) Update(ctx context.Context, p UpdateParams) (*GuildEvent, error) {
-	f, err := normalizeFields(eventFields{
-		Title: p.Title, Description: p.Description, Type: p.Type,
-		Location: p.Location, Priority: p.Priority, RecurringPattern: p.RecurringPattern,
-	})
-	if err != nil {
-		return nil, err
-	}
+	f := normalizeFields(eventFields{Title: p.Title, Type: p.Type, Priority: p.Priority})
 	p.Title, p.Type, p.Priority = f.Title, f.Type, f.Priority
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {

@@ -7,7 +7,6 @@ import (
 	"slices"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -24,9 +23,6 @@ const (
 
 	defaultPageSize = 50
 	maxPageSize     = 200
-
-	maxTitleLength   = 200
-	maxContentLength = 20000
 )
 
 var managerRoles = []string{"owner", "admin", "moderator"}
@@ -150,9 +146,6 @@ func (s *Service) Update(ctx context.Context, p Update) (*Announcement, error) {
 	}
 	announcementID, err := parseAnnouncementID(p.AnnouncementID)
 	if err != nil {
-		return nil, err
-	}
-	if err := validateDraft(p.Title, p.Content); err != nil {
 		return nil, err
 	}
 	if err := s.requireRole(ctx, guildID, userID, managerRoles...); err != nil {
@@ -303,16 +296,6 @@ func publishRejection(a *Announcement) error {
 		return fmt.Errorf("%w: title and content are required to publish", errs.ErrFailedPrecondition)
 	}
 	return fmt.Errorf("%w: announcement could not be published", errs.ErrFailedPrecondition)
-}
-
-func validateDraft(title, content string) error {
-	if utf8.RuneCountInString(title) > maxTitleLength {
-		return fmt.Errorf("%w: title must be at most %d characters", errs.ErrInvalidArgument, maxTitleLength)
-	}
-	if utf8.RuneCountInString(content) > maxContentLength {
-		return fmt.Errorf("%w: content must be at most %d characters", errs.ErrInvalidArgument, maxContentLength)
-	}
-	return nil
 }
 
 func parseGuildAndUser(guildIDStr, userIDStr string) (uuid.UUID, uuid.UUID, error) {

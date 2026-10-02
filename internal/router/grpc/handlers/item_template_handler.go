@@ -28,9 +28,6 @@ func NewItemTemplateService(db *database.Pool, logger zerolog.Logger) *ItemTempl
 }
 
 func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1.ListItemTemplatesRequest) (*gumav1.ListItemTemplatesResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -47,9 +44,6 @@ func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1
 }
 
 func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav1.CreateItemTemplateRequest) (*gumav1.CreateItemTemplateResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -67,9 +61,6 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav1.UpdateItemTemplateRequest) (*gumav1.UpdateItemTemplateResponse, error) {
-	if req.GuildId == "" || req.TemplateId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -87,9 +78,6 @@ func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) DeleteItemTemplate(ctx context.Context, req *gumav1.DeleteItemTemplateRequest) (*gumav1.DeleteItemTemplateResponse, error) {
-	if req.GuildId == "" || req.TemplateId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")

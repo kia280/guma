@@ -1,11 +1,9 @@
 package raffle
 
 import (
-	"context"
 	"testing"
 	"time"
 
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -59,16 +57,11 @@ func TestValidateRaffleUpdate(t *testing.T) {
 		p    UpdateParams
 		ok   bool
 	}{
-		{name: "empty", p: UpdateParams{}},
-		{name: "blank title", p: UpdateParams{Title: ptr("  ")}},
 		{name: "clear description", p: UpdateParams{Description: ptr("")}, ok: true},
 		{name: "past draw date", p: UpdateParams{DrawDate: "2026-09-28T11:00:00Z"}},
 		{name: "malformed draw date", p: UpdateParams{DrawDate: "tomorrow"}},
 		{name: "future draw date", p: UpdateParams{DrawDate: "2026-09-29T12:00:00Z"}, ok: true},
-		{name: "negative price", p: UpdateParams{TicketPrice: ptr(int64(-1))}},
 		{name: "free tickets", p: UpdateParams{TicketPrice: ptr(int64(0))}, ok: true},
-		{name: "negative max", p: UpdateParams{MaxTickets: ptr(int32(-1))}},
-		{name: "negative per user", p: UpdateParams{MaxTicketsPerUser: ptr(int32(-1))}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -125,9 +118,4 @@ func TestApplyRaffleUpdateFreezesTicketsAfterSale(t *testing.T) {
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "Renamed", next.Title)
-}
-
-func TestPurchaseTicketsNonPositiveQuantityIsInvalidArgument(t *testing.T) {
-	_, _, err := New(nil, zerolog.Nop()).PurchaseTickets(context.Background(), "", "", "", 0)
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }
