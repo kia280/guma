@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -32,7 +33,13 @@ message GetMyPreferencesResponse {
 }
 
 message UpdateMyPreferencesRequest {
-  NotificationPreferencesPatch notifications = 1;
+  option (buf.validate.message).cel = {
+    id: "notifications.not_empty"
+    message: "at least one notification preference must be set"
+    expression: "!has(this.notifications) || has(this.notifications.email_notifications) || has(this.notifications.auction_alerts) || has(this.notifications.raffle_alerts) || has(this.notifications.event_reminders) || has(this.notifications.roll_call_reminders)"
+  };
+
+  NotificationPreferencesPatch notifications = 1 [(buf.validate.field).required = true];
 }
 
 message UpdateMyPreferencesResponse {

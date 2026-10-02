@@ -104,7 +104,7 @@ service GuildService {
 
 // Request/Response messages
 message CreateGuildRequest {
-  string name = 1 [(buf.validate.field).string.max_len = 100];
+  string name = 1 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
   string description = 2 [(buf.validate.field).string.max_len = 2000];
   map<string, string> settings = 3 [(buf.validate.field).map = {max_pairs: 50, keys: {string: {max_len: 100}}, values: {string: {max_len: 2000}}}];
   reserved 4;
@@ -116,7 +116,7 @@ message CreateGuildResponse {
 }
 
 message GetGuildRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message GetGuildResponse {
@@ -124,7 +124,7 @@ message GetGuildResponse {
 }
 
 message UpdateGuildRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   string name = 2 [(buf.validate.field).string.max_len = 100];
   string description = 3 [(buf.validate.field).string.max_len = 2000];
   reserved 4;
@@ -138,9 +138,9 @@ message UpdateGuildResponse {
 }
 
 message UploadGuildLogoRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  bytes data = 2 [(buf.validate.field).bytes.max_len = 524288];
-  string content_type = 3 [(buf.validate.field).string.max_len = 100];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  bytes data = 2 [(buf.validate.field).bytes = {min_len: 1, max_len: 524288}];
+  string content_type = 3 [(buf.validate.field).string = {max_len: 100, pattern: "^[\\t\\n\\v\\f\\r\\x{85}\\p{Z}]*(?i:[i\\x{130}]mage/(?:png|jpeg|webp|g[i\\x{130}]f))[\\t\\n\\v\\f\\r\\x{85}\\p{Z}]*$"}];
 }
 
 message UploadGuildLogoResponse {
@@ -148,7 +148,7 @@ message UploadGuildLogoResponse {
 }
 
 message DeleteGuildLogoRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message DeleteGuildLogoResponse {
@@ -156,12 +156,12 @@ message DeleteGuildLogoResponse {
 }
 
 message GetGuildLogoRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   string v = 2 [(buf.validate.field).string.max_len = 64];
 }
 
 message DeleteGuildRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message DeleteGuildResponse {
@@ -182,7 +182,7 @@ message ListGuildsResponse {
 }
 
 message GetGuildSettingsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message GetGuildSettingsResponse {
@@ -190,8 +190,8 @@ message GetGuildSettingsResponse {
 }
 
 message UpdateGuildSettingsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  GuildSettings settings = 2;
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  GuildSettings settings = 2 [(buf.validate.field).required = true];
 }
 
 message UpdateGuildSettingsResponse {
@@ -199,7 +199,7 @@ message UpdateGuildSettingsResponse {
 }
 
 message GetGuildStatsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message GetGuildStatsResponse {
@@ -213,7 +213,7 @@ message GetCurrentGuildResponse {
 }
 
 message JoinGuildByIdRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message JoinGuildByIdResponse {
@@ -221,7 +221,7 @@ message JoinGuildByIdResponse {
 }
 
 message LeaveGuildRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message LeaveGuildResponse {

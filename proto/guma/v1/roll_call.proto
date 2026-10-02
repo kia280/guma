@@ -102,7 +102,7 @@ service RollCallService {
 // Request/Response messages
 
 message ListRollCallsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   string status = 2 [(buf.validate.field).string.max_len = 32];     // "active" | "expired" | "cancelled" | "completed" | "" (all)
   int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
   string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
@@ -115,8 +115,8 @@ message ListRollCallsResponse {
 }
 
 message GetRollCallRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message GetRollCallResponse {
@@ -124,11 +124,27 @@ message GetRollCallResponse {
 }
 
 message CreateRollCallRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string title = 2 [(buf.validate.field).string.max_len = 200];
+  option (buf.validate.message).cel = {
+    id: "loot_list.item_name_required"
+    message: "each loot item needs a name"
+    expression: "this.loot.size() > 0 || this.loot_list.all(i, i.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]'))"
+  };
+  option (buf.validate.message).cel = {
+    id: "loot_list.item_max_len"
+    message: "loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters"
+    expression: "this.loot.size() > 0 || this.loot_list.all(i, i.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$'))"
+  };
+  option (buf.validate.message).cel = {
+    id: "loot.single_gold_entry"
+    message: "a roll call can have only one gold loot entry"
+    expression: "this.loot.filter(e, e.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$')).size() <= 1"
+  };
+
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string title = 2 [(buf.validate.field).string = {max_len: 200, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
   string description = 3 [(buf.validate.field).string.max_len = 2000];
-  string datetime = 4 [(buf.validate.field).string.max_len = 64];      // ISO 8601 datetime of the roll call
-  string expire_time = 5 [(buf.validate.field).string.max_len = 64];   // ISO 8601 datetime when the window closes
+  string datetime = 4 [(buf.validate.field).string = {min_len: 1, max_len: 64}];      // ISO 8601 datetime of the roll call
+  string expire_time = 5 [(buf.validate.field).string = {min_len: 1, max_len: 64}];   // ISO 8601 datetime when the window closes
   string image_url = 6 [(buf.validate.field).cel = {
     id: "image_url.https"
     message: "image_url must be empty or an absolute https URL of at most 2048 characters"
@@ -143,19 +159,19 @@ message CreateRollCallResponse {
 }
 
 message UpdateRollCallRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
-  string title = 3 [(buf.validate.field).string.max_len = 200];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string title = 3 [(buf.validate.field).string = {max_len: 200, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
   optional string description = 4 [(buf.validate.field).string.max_len = 2000];
-  string datetime = 5 [(buf.validate.field).string.max_len = 64];
-  string expire_time = 6 [(buf.validate.field).string.max_len = 64];
+  string datetime = 5 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string expire_time = 6 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   optional string image_url = 7 [(buf.validate.field).cel = {
     id: "image_url.https"
     message: "image_url must be empty or an absolute https URL of at most 2048 characters"
     expression: "this == \'\' || (size(this) <= 2048 && this.matches(\'^https://[^/?#]\') && this.isUri())"
   }];
-  repeated Item loot_list = 8 [(buf.validate.field).repeated.max_items = 100];
-  repeated RollCallLootEntry loot = 9 [(buf.validate.field).repeated.max_items = 100];
+  repeated Item loot_list = 8 [(buf.validate.field).repeated.max_items = 0];
+  repeated RollCallLootEntry loot = 9 [(buf.validate.field).repeated.max_items = 0];
 }
 
 message UpdateRollCallResponse {
@@ -163,8 +179,8 @@ message UpdateRollCallResponse {
 }
 
 message DeleteRollCallRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message DeleteRollCallResponse {
@@ -172,8 +188,8 @@ message DeleteRollCallResponse {
 }
 
 message CancelRollCallRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message CancelRollCallResponse {
@@ -181,8 +197,8 @@ message CancelRollCallResponse {
 }
 
 message CompleteRollCallRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   bool keep_leftovers_in_bank = 3; // Complete even when loot is undistributed; leftover items and gold stay in the guild bank
 }
 
@@ -191,9 +207,25 @@ message CompleteRollCallResponse {
 }
 
 message UpdateRollCallLootRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
-  repeated Item loot_list = 3 [(buf.validate.field).repeated.max_items = 100];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  repeated Item loot_list = 3 [(buf.validate.field).repeated = {
+    max_items: 100
+    items: {
+      cel: [
+        {
+          id: "loot_item.name_required"
+          message: "each loot item needs a name"
+          expression: "this.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]')"
+        },
+        {
+          id: "loot_item.max_len"
+          message: "loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters"
+          expression: "this.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$')"
+        }
+      ]
+    }
+  }];
 }
 
 message UpdateRollCallLootResponse {
@@ -201,10 +233,10 @@ message UpdateRollCallLootResponse {
 }
 
 message AssignLootRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
-  string item_id = 3 [(buf.validate.field).string.max_len = 64];
-  string user_id = 4 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string item_id = 3 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string user_id = 4 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message AssignLootResponse {
@@ -212,8 +244,8 @@ message AssignLootResponse {
 }
 
 message GetRollCallGoldRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message GetRollCallGoldResponse {
@@ -222,10 +254,22 @@ message GetRollCallGoldResponse {
 }
 
 message DistributeRollCallGoldRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
-  string request_id = 3 [(buf.validate.field).string.max_len = 64]; // Client-generated UUID; repeating it returns the original result
-  repeated RollCallGoldPayout payouts = 4 [(buf.validate.field).repeated.max_items = 1000];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string request_id = 3 [(buf.validate.field).string = {min_len: 1, max_len: 64}]; // Client-generated UUID; repeating it returns the original result
+  repeated RollCallGoldPayout payouts = 4 [
+    (buf.validate.field).repeated = {min_items: 1, max_items: 1000},
+    (buf.validate.field).cel = {
+      id: "payouts.unique_user_ids"
+      message: "each attendee can appear only once"
+      expression: "this.map(p, p.user_id).unique()"
+    },
+    (buf.validate.field).cel = {
+      id: "payouts.positive_total"
+      message: "enter a gold amount for at least one attendee"
+      expression: "this.size() == 0 || this.exists(p, p.amount > 0)"
+    }
+  ];
 }
 
 message DistributeRollCallGoldResponse {
@@ -236,8 +280,8 @@ message DistributeRollCallGoldResponse {
 }
 
 message CheckInRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   string notes = 3 [(buf.validate.field).string.max_len = 500];
 }
 
@@ -246,8 +290,8 @@ message CheckInResponse {
 }
 
 message ListAttendeesRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string roll_call_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string roll_call_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
   string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
@@ -283,7 +327,23 @@ message RollCall {
 
 // LootKind values: item, gold
 message RollCallLootEntry {
-  string kind = 1 [(buf.validate.field).string.max_len = 32];
+  option (buf.validate.message).cel = {
+    id: "loot_entry.gold_amount_positive"
+    message: "gold loot amount must be positive"
+    expression: "!this.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') || this.amount > 0"
+  };
+  option (buf.validate.message).cel = {
+    id: "loot_entry.item_name_required"
+    message: "item loot entries need an item with a name"
+    expression: "this.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') || this.item.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]')"
+  };
+  option (buf.validate.message).cel = {
+    id: "loot_entry.item_max_len"
+    message: "loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters"
+    expression: "this.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') || (this.item.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.item.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.item.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.item.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$'))"
+  };
+
+  string kind = 1 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[iI\\x{130}][tT][eE][mM]|[gG][oO][lL][dD])?[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
   Item item = 2;    // Set when kind is item
   int64 amount = 3 [(buf.validate.field).int64 = {gte: 0, lte: 100000000000000}]; // Gold in minor units when kind is gold
 }
@@ -297,7 +357,7 @@ message RollCallGoldPot {
 }
 
 message RollCallGoldPayout {
-  string user_id = 1 [(buf.validate.field).string.max_len = 64];
+  string user_id = 1 [(buf.validate.field).string = {max_len: 64, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
   int64 amount = 2 [(buf.validate.field).int64 = {gte: 0, lte: 100000000000000}];
 }
 

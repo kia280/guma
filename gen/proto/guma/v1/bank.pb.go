@@ -2312,37 +2312,43 @@ var File_proto_guma_v1_bank_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/guma/v1/bank.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"4\n" +
-	"\x0eGetBankRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"9\n" +
+	"\x18proto/guma/v1/bank.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"7\n" +
+	"\x0eGetBankRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\"9\n" +
 	"\x0fGetBankResponse\x12&\n" +
-	"\x04bank\x18\x01 \x01(\v2\x12.guma.v1.GuildBankR\x04bank\"\x83\x01\n" +
-	"\x16ContributeFundsRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12'\n" +
+	"\x04bank\x18\x01 \x01(\v2\x12.guma.v1.GuildBankR\x04bank\"\x86\x01\n" +
+	"\x16ContributeFundsRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12'\n" +
 	"\x06amount\x18\x02 \x01(\x03B\x0f\xbaH\f\"\n" +
 	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12\x1c\n" +
 	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"\x8f\x01\n" +
 	"\x17ContributeFundsResponse\x12=\n" +
 	"\fcontribution\x18\x01 \x01(\v2\x19.guma.v1.BankContributionR\fcontribution\x125\n" +
-	"\fupdated_bank\x18\x02 \x01(\v2\x12.guma.v1.GuildBankR\vupdatedBank\"\x84\x01\n" +
-	"\x13RequestFundsRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12'\n" +
+	"\fupdated_bank\x18\x02 \x01(\v2\x12.guma.v1.GuildBankR\vupdatedBank\"\xa3\x01\n" +
+	"\x13RequestFundsRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12'\n" +
 	"\x06amount\x18\x02 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12 \n" +
-	"\x06reason\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x06reason\"O\n" +
+	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12<\n" +
+	"\x06reason\x18\x03 \x01(\tB$\xbaH!r\x1f\x18\xf4\x032\x1a[^\\t\\n\\x0B\\f\\r\\x{85}\\p{Z}]R\x06reason\"O\n" +
 	"\x14RequestFundsResponse\x127\n" +
-	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\xb7\x01\n" +
-	"\x18ReviewFundRequestRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12&\n" +
+	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\xbd\x01\n" +
+	"\x18ReviewFundRequestRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12)\n" +
 	"\n" +
-	"request_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\trequestId\x121\n" +
+	"request_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\trequestId\x121\n" +
 	"\x06status\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bapprovedR\brejectedR\x06status\x12\x1c\n" +
 	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"T\n" +
 	"\x19ReviewFundRequestResponse\x127\n" +
-	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\xb9\x01\n" +
-	"\x17ListFundRequestsRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1f\n" +
-	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
+	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\xdb\x01\n" +
+	"\x17ListFundRequestsRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12>\n" +
+	"\x06status\x18\x02 \x01(\tB&\xbaH#r!\x18 R\x00R\apendingR\bapprovedR\brejectedR\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
@@ -2352,9 +2358,10 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\brequests\x18\x01 \x03(\v2\x14.guma.v1.FundRequestR\brequests\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\x99\x01\n" +
-	"\x18ListContributionsRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12'\n" +
+	"totalCount\"\x9c\x01\n" +
+	"\x18ListContributionsRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12'\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
@@ -2364,15 +2371,18 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\rcontributions\x18\x01 \x03(\v2\x19.guma.v1.BankContributionR\rcontributions\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\x88\x01\n" +
-	"\x11DonateItemRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x121\n" +
-	"\x10backpack_item_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0ebackpackItemId\x12\x1c\n" +
+	"totalCount\"\x8e\x01\n" +
+	"\x11DonateItemRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x124\n" +
+	"\x10backpack_item_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\x0ebackpackItemId\x12\x1c\n" +
 	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"D\n" +
 	"\x12DonateItemResponse\x12.\n" +
-	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\x86\x02\n" +
-	"\x14ListBankItemsRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12#\n" +
+	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\x89\x02\n" +
+	"\x14ListBankItemsRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12#\n" +
 	"\bcategory\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\bcategory\x12\x1f\n" +
 	"\x06rarity\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06rarity\x12'\n" +
 	"\tpage_size\x18\x04 \x01(\x05B\n" +
@@ -2386,31 +2396,38 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2\x11.guma.v1.BankItemR\x05items\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"f\n" +
-	"\x15DeleteBankItemRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12)\n" +
-	"\fbank_item_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
+	"totalCount\"l\n" +
+	"\x15DeleteBankItemRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12,\n" +
+	"\fbank_item_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
 	"bankItemId\"2\n" +
 	"\x16DeleteBankItemResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x85\x01\n" +
-	"\x12RequestItemRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12)\n" +
-	"\fbank_item_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
-	"bankItemId\x12 \n" +
-	"\x06reason\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x06reason\"N\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa7\x01\n" +
+	"\x12RequestItemRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12,\n" +
+	"\fbank_item_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
+	"bankItemId\x12<\n" +
+	"\x06reason\x18\x03 \x01(\tB$\xbaH!r\x1f\x18\xf4\x032\x1a[^\\t\\n\\x0B\\f\\r\\x{85}\\p{Z}]R\x06reason\"N\n" +
 	"\x13RequestItemResponse\x127\n" +
-	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\xb7\x01\n" +
-	"\x18ReviewItemRequestRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12&\n" +
+	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\xbd\x01\n" +
+	"\x18ReviewItemRequestRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12)\n" +
 	"\n" +
-	"request_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\trequestId\x121\n" +
+	"request_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\trequestId\x121\n" +
 	"\x06status\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bapprovedR\brejectedR\x06status\x12\x1c\n" +
 	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"T\n" +
 	"\x19ReviewItemRequestResponse\x127\n" +
-	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\xb9\x01\n" +
-	"\x17ListItemRequestsRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1f\n" +
-	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
+	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\xdb\x01\n" +
+	"\x17ListItemRequestsRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12>\n" +
+	"\x06status\x18\x02 \x01(\tB&\xbaH#r!\x18 R\x00R\apendingR\bapprovedR\brejectedR\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
@@ -2511,10 +2528,12 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\vreviewed_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"reviewedAt\x12!\n" +
 	"\x04item\x18\f \x01(\v2\r.guma.v1.ItemR\x04item\x120\n" +
-	"\x14requester_avatar_url\x18\r \x01(\tR\x12requesterAvatarUrl\"]\n" +
-	"\x15GetItemHistoryRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12 \n" +
-	"\aitem_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x06itemId\"\xd1\x02\n" +
+	"\x14requester_avatar_url\x18\r \x01(\tR\x12requesterAvatarUrl\"c\n" +
+	"\x15GetItemHistoryRequest\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\aguildId\x12#\n" +
+	"\aitem_id\x18\x02 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\x06itemId\"\xd1\x02\n" +
 	"\x10ItemHistoryEvent\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04kind\x18\x02 \x01(\tR\x04kind\x12\x16\n" +

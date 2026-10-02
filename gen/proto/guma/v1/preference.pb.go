@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -363,14 +364,15 @@ var File_proto_guma_v1_preference_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_preference_proto_rawDesc = "" +
 	"\n" +
-	"\x1eproto/guma/v1/preference.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x19\n" +
+	"\x1eproto/guma/v1/preference.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x19\n" +
 	"\x17GetMyPreferencesRequest\"\x9d\x01\n" +
 	"\x18GetMyPreferencesResponse\x12F\n" +
 	"\rnotifications\x18\x01 \x01(\v2 .guma.v1.NotificationPreferencesR\rnotifications\x129\n" +
 	"\n" +
-	"updated_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"i\n" +
-	"\x1aUpdateMyPreferencesRequest\x12K\n" +
-	"\rnotifications\x18\x01 \x01(\v2%.guma.v1.NotificationPreferencesPatchR\rnotifications\"\xa0\x01\n" +
+	"updated_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xbd\x03\n" +
+	"\x1aUpdateMyPreferencesRequest\x12S\n" +
+	"\rnotifications\x18\x01 \x01(\v2%.guma.v1.NotificationPreferencesPatchB\x06\xbaH\x03\xc8\x01\x01R\rnotifications:\xc9\x02\xbaH\xc5\x02\x1a\xc2\x02\n" +
+	"\x17notifications.not_empty\x120at least one notification preference must be set\x1a\xf4\x01!has(this.notifications) || has(this.notifications.email_notifications) || has(this.notifications.auction_alerts) || has(this.notifications.raffle_alerts) || has(this.notifications.event_reminders) || has(this.notifications.roll_call_reminders)\"\xa0\x01\n" +
 	"\x1bUpdateMyPreferencesResponse\x12F\n" +
 	"\rnotifications\x18\x01 \x01(\v2 .guma.v1.NotificationPreferencesR\rnotifications\x129\n" +
 	"\n" +

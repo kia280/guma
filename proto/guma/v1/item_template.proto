@@ -37,7 +37,7 @@ service ItemTemplateService {
 }
 
 message ListItemTemplatesRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message ListItemTemplatesResponse {
@@ -45,11 +45,11 @@ message ListItemTemplatesResponse {
 }
 
 message CreateItemTemplateRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string name = 2 [(buf.validate.field).string.max_len = 100];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string name = 2 [(buf.validate.field).string = {max_len: 100, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
   string description = 3 [(buf.validate.field).string.max_len = 500];
-  string category = 4 [(buf.validate.field).string.max_len = 32];
-  string rarity = 5 [(buf.validate.field).string.max_len = 32];
+  string category = 4 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[wW][eE][aA][pP][oO][nN]|[aA][rR][mM][oO][rR]|[aA][cC][cC][eE][sS][sS][oO][rR][yY]|[cC][oO][nN][sS][uU][mM][aA][bB][lL][eE]|[sS][kK\\x{212A}][iI\\x{130}][lL][lL]_[sS][cC][rR][oO][lL][lL]|[mM][aA][tT][eE][rR][iI\\x{130}][aA][lL]|[mM][iI\\x{130}][sS][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
+  string rarity = 5 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[cC][oO][mM][mM][oO][nN]|[uU][nN][cC][oO][mM][mM][oO][nN]|[rR][aA][rR][eE]|[eE][pP][iI\\x{130}][cC]|[lL][eE][gG][eE][nN][dD][aA][rR][yY]|[mM][yY][tT][hH][iI\\x{130}][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
 }
 
 message CreateItemTemplateResponse {
@@ -57,12 +57,12 @@ message CreateItemTemplateResponse {
 }
 
 message UpdateItemTemplateRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string template_id = 2 [(buf.validate.field).string.max_len = 64];
-  string name = 3 [(buf.validate.field).string.max_len = 100];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string template_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string name = 3 [(buf.validate.field).string = {max_len: 100, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
   string description = 4 [(buf.validate.field).string.max_len = 500];
-  string category = 5 [(buf.validate.field).string.max_len = 32];
-  string rarity = 6 [(buf.validate.field).string.max_len = 32];
+  string category = 5 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[wW][eE][aA][pP][oO][nN]|[aA][rR][mM][oO][rR]|[aA][cC][cC][eE][sS][sS][oO][rR][yY]|[cC][oO][nN][sS][uU][mM][aA][bB][lL][eE]|[sS][kK\\x{212A}][iI\\x{130}][lL][lL]_[sS][cC][rR][oO][lL][lL]|[mM][aA][tT][eE][rR][iI\\x{130}][aA][lL]|[mM][iI\\x{130}][sS][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
+  string rarity = 6 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[cC][oO][mM][mM][oO][nN]|[uU][nN][cC][oO][mM][mM][oO][nN]|[rR][aA][rR][eE]|[eE][pP][iI\\x{130}][cC]|[lL][eE][gG][eE][nN][dD][aA][rR][yY]|[mM][yY][tT][hH][iI\\x{130}][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
 }
 
 message UpdateItemTemplateResponse {
@@ -70,8 +70,8 @@ message UpdateItemTemplateResponse {
 }
 
 message DeleteItemTemplateRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string template_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string template_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message DeleteItemTemplateResponse {

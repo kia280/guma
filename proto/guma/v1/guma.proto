@@ -76,7 +76,7 @@ message GetUserPreferencesResponse {
 }
 
 message UpdateUserPreferencesRequest {
-  UserPreferences preferences = 1;
+  UserPreferences preferences = 1 [(buf.validate.field).required = true];
 }
 
 message UpdateUserPreferencesResponse {
@@ -90,7 +90,7 @@ message GetAppConfigResponse {
 }
 
 message SearchGlobalRequest {
-  string query = 1 [(buf.validate.field).string.max_len = 200];
+  string query = 1 [(buf.validate.field).string = {min_len: 1, max_len: 200}];
   string guild_id = 2 [(buf.validate.field).string.max_len = 64];  // Optional: scope to guild
   int32 limit = 3 [(buf.validate.field).int32 = {gte: 0, lte: 100}];      // Default: 20
 }

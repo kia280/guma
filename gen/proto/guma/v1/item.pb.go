@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -210,17 +211,18 @@ var File_proto_guma_v1_item_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_item_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/guma/v1/item.proto\x12\aguma.v1\"\x80\x01\n" +
+	"\x18proto/guma/v1/item.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\"\x80\x01\n" +
 	"\x04Item\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
 	"\bcategory\x18\x04 \x01(\tR\bcategory\x12\x16\n" +
-	"\x06rarity\x18\x05 \x01(\tR\x06rarity\"[\n" +
-	"\rItemSourceRef\x12(\n" +
-	"\x10backpack_item_id\x18\x01 \x01(\tR\x0ebackpackItemId\x12 \n" +
-	"\fbank_item_id\x18\x02 \x01(\tR\n" +
-	"bankItemId\".\n" +
+	"\x06rarity\x18\x05 \x01(\tR\x06rarity\"\xfc\x01\n" +
+	"\rItemSourceRef\x121\n" +
+	"\x10backpack_item_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0ebackpackItemId\x12)\n" +
+	"\fbank_item_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
+	"bankItemId:\x8c\x01\xbaH\x88\x01\x1a\x85\x01\n" +
+	"\x1ditem_source_ref.single_source\x12,choose either a backpack item or a bank item\x1a6this.backpack_item_id == '' || this.bank_item_id == ''\".\n" +
 	"\bItemLock\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12\x0e\n" +
 	"\x02id\x18\x02 \x01(\tR\x02idB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\x06proto3"

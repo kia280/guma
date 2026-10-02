@@ -1438,24 +1438,25 @@ var File_proto_guma_v1_member_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9a\x01\n" +
-	"\x13InviteMemberRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1e\n" +
-	"\x05email\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xfe\x01R\x05email\x12\x1b\n" +
+	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9e\x01\n" +
+	"\x13InviteMemberRequest\x12$\n" +
+	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12 \n" +
+	"\x05email\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\x10\x01\x18\xfe\x01R\x05email\x12\x1b\n" +
 	"\x04role\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04role\x12\"\n" +
 	"\amessage\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\amessage\"K\n" +
 	"\x14InviteMemberResponse\x123\n" +
 	"\n" +
 	"invitation\x18\x01 \x01(\v2\x13.guma.v1.InvitationR\n" +
-	"invitation\"<\n" +
-	"\x10JoinGuildRequest\x12(\n" +
-	"\vinvite_code\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
+	"invitation\">\n" +
+	"\x10JoinGuildRequest\x12*\n" +
+	"\vinvite_code\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
 	"inviteCode\"<\n" +
 	"\x11JoinGuildResponse\x12'\n" +
-	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xc0\x02\n" +
-	"\x13UpdateMemberRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12$\n" +
-	"\tmember_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\bmemberId\x12*\n" +
+	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xc4\x02\n" +
+	"\x13UpdateMemberRequest\x12$\n" +
+	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12&\n" +
+	"\tmember_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\bmemberId\x12*\n" +
 	"\fdisplay_name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18 R\vdisplayName\x12\x1b\n" +
 	"\x04role\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04role\x12Z\n" +
 	"\aprofile\x18\x05 \x03(\v2).guma.v1.UpdateMemberRequest.ProfileEntryB\x15\xbaH\x12\x9a\x01\x0f\x102\"\x04r\x02\x18d*\x05r\x03\x18\xd0\x0fR\aprofile\x1a:\n" +
@@ -1463,38 +1464,38 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"?\n" +
 	"\x14UpdateMemberResponse\x12'\n" +
-	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\x9b\x01\n" +
-	"\x17UpdateMemberRoleRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12 \n" +
-	"\auser_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x06userId\x12:\n" +
+	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xca\x02\n" +
+	"\x17UpdateMemberRoleRequest\x12\xce\x01\n" +
+	"\bguild_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\aguildId\x12\"\n" +
+	"\auser_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\x06userId\x12:\n" +
 	"\x04role\x18\x03 \x01(\tB&\xbaH#r!R\x05ownerR\x05adminR\tmoderatorR\x06memberR\x04role\"C\n" +
 	"\x18UpdateMemberRoleResponse\x12'\n" +
-	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"_\n" +
-	"\x13RemoveMemberRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12$\n" +
-	"\tmember_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\bmemberId\"0\n" +
+	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"c\n" +
+	"\x13RemoveMemberRequest\x12$\n" +
+	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12&\n" +
+	"\tmember_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\bmemberId\"0\n" +
 	"\x14RemoveMemberResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xb0\x01\n" +
-	"\x12ListMembersRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12'\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xfe\x02\n" +
+	"\x12ListMembersRequest\x12\xce\x01\n" +
+	"\bguild_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\aguildId\x12'\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
 	"page_token\x18\x03 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\x12\x1b\n" +
-	"\x04role\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04role\"\x89\x01\n" +
+	"2\b^[0-9]*$R\tpageToken\x12<\n" +
+	"\x04role\x18\x04 \x01(\tB(\xbaH%r#R\x00R\x05ownerR\x05adminR\tmoderatorR\x06memberR\x04role\"\x89\x01\n" +
 	"\x13ListMembersResponse\x12)\n" +
 	"\amembers\x18\x01 \x03(\v2\x0f.guma.v1.MemberR\amembers\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\\\n" +
-	"\x10GetMemberRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12$\n" +
-	"\tmember_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\bmemberId\"<\n" +
+	"totalCount\"`\n" +
+	"\x10GetMemberRequest\x12$\n" +
+	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12&\n" +
+	"\tmember_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\bmemberId\"<\n" +
 	"\x11GetMemberResponse\x12'\n" +
-	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xbe\x01\n" +
-	"\x19GenerateInviteCodeRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12%\n" +
+	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xc0\x01\n" +
+	"\x19GenerateInviteCodeRequest\x12$\n" +
+	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12%\n" +
 	"\bmax_uses\x18\x02 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\x90N(\x00R\amaxUses\x129\n" +
 	"\n" +
@@ -1503,16 +1504,16 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\x1aGenerateInviteCodeResponse\x123\n" +
 	"\n" +
 	"invitation\x18\x01 \x01(\v2\x13.guma.v1.InvitationR\n" +
-	"invitation\"8\n" +
-	"\x19ValidateInviteCodeRequest\x12\x1b\n" +
-	"\x04code\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\x04code\"l\n" +
+	"invitation\":\n" +
+	"\x19ValidateInviteCodeRequest\x12\x1d\n" +
+	"\x04code\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\x04code\"l\n" +
 	"\x1aValidateInviteCodeResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1d\n" +
 	"\n" +
-	"guild_name\x18\x03 \x01(\tR\tguildName\"\x93\x01\n" +
-	"\x12ListInvitesRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12'\n" +
+	"guild_name\x18\x03 \x01(\tR\tguildName\"\x95\x01\n" +
+	"\x12ListInvitesRequest\x12$\n" +
+	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12'\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
@@ -1520,10 +1521,10 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"2\b^[0-9]*$R\tpageToken\"t\n" +
 	"\x13ListInvitesResponse\x125\n" +
 	"\vinvitations\x18\x01 \x03(\v2\x13.guma.v1.InvitationR\vinvitations\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"_\n" +
-	"\x13RevokeInviteRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12$\n" +
-	"\tinvite_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\binviteId\"0\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"c\n" +
+	"\x13RevokeInviteRequest\x12$\n" +
+	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12&\n" +
+	"\tinvite_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\binviteId\"0\n" +
 	"\x14RevokeInviteResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xcd\x03\n" +
 	"\x06Member\x12\x0e\n" +

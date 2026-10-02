@@ -104,7 +104,7 @@ service BankService {
 // Request/Response messages
 
 message GetBankRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message GetBankResponse {
@@ -112,7 +112,7 @@ message GetBankResponse {
 }
 
 message ContributeFundsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   int64 amount = 2 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
   string note = 3 [(buf.validate.field).string.max_len = 200];
 }
@@ -123,9 +123,9 @@ message ContributeFundsResponse {
 }
 
 message RequestFundsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   int64 amount = 2 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
-  string reason = 3 [(buf.validate.field).string.max_len = 500];
+  string reason = 3 [(buf.validate.field).string = {max_len: 500, pattern: "[^\\t\\n\\x0B\\f\\r\\x{85}\\p{Z}]"}];
 }
 
 message RequestFundsResponse {
@@ -133,8 +133,8 @@ message RequestFundsResponse {
 }
 
 message ReviewFundRequestRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string request_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string request_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   string status = 3 [(buf.validate.field).string = {in: ["approved", "rejected"]}];  // "approved" | "rejected"
   string note = 4 [(buf.validate.field).string.max_len = 200];
 }
@@ -144,8 +144,8 @@ message ReviewFundRequestResponse {
 }
 
 message ListFundRequestsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string status = 2 [(buf.validate.field).string.max_len = 32]; // "pending" | "approved" | "rejected" | "" (all)
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string status = 2 [(buf.validate.field).string = {max_len: 32, in: ["", "pending", "approved", "rejected"]}]; // "pending" | "approved" | "rejected" | "" (all)
   int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
   string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
@@ -157,7 +157,7 @@ message ListFundRequestsResponse {
 }
 
 message ListContributionsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   int32 page_size = 2 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
   string page_token = 3 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
@@ -169,8 +169,8 @@ message ListContributionsResponse {
 }
 
 message DonateItemRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string backpack_item_id = 2 [(buf.validate.field).string.max_len = 64]; // Item from user's backpack
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string backpack_item_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64]; // Item from user's backpack
   string note = 3 [(buf.validate.field).string.max_len = 200];
 }
 
@@ -179,7 +179,7 @@ message DonateItemResponse {
 }
 
 message ListBankItemsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   string category = 2 [(buf.validate.field).string.max_len = 32];
   string rarity = 3 [(buf.validate.field).string.max_len = 32];
   int32 page_size = 4 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
@@ -194,8 +194,8 @@ message ListBankItemsResponse {
 }
 
 message DeleteBankItemRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string bank_item_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string bank_item_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message DeleteBankItemResponse {
@@ -203,9 +203,9 @@ message DeleteBankItemResponse {
 }
 
 message RequestItemRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string bank_item_id = 2 [(buf.validate.field).string.max_len = 64];
-  string reason = 3 [(buf.validate.field).string.max_len = 500];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string bank_item_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string reason = 3 [(buf.validate.field).string = {max_len: 500, pattern: "[^\\t\\n\\x0B\\f\\r\\x{85}\\p{Z}]"}];
 }
 
 message RequestItemResponse {
@@ -213,8 +213,8 @@ message RequestItemResponse {
 }
 
 message ReviewItemRequestRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string request_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string request_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   string status = 3 [(buf.validate.field).string = {in: ["approved", "rejected"]}]; // "approved" | "rejected"
   string note = 4 [(buf.validate.field).string.max_len = 200];
 }
@@ -224,8 +224,8 @@ message ReviewItemRequestResponse {
 }
 
 message ListItemRequestsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string status = 2 [(buf.validate.field).string.max_len = 32]; // "pending" | "approved" | "rejected" | "" (all)
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string status = 2 [(buf.validate.field).string = {max_len: 32, in: ["", "pending", "approved", "rejected"]}]; // "pending" | "approved" | "rejected" | "" (all)
   int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
   string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
@@ -322,8 +322,8 @@ message ItemRequest {
 }
 
 message GetItemHistoryRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string item_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string item_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message ItemHistoryEvent {

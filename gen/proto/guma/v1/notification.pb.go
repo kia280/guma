@@ -420,9 +420,9 @@ const file_proto_guma_v1_notification_proto_rawDesc = "" +
 	"\funread_count\x18\x04 \x01(\x05R\vunreadCount\"#\n" +
 	"!GetUnreadNotificationCountRequest\"G\n" +
 	"\"GetUnreadNotificationCountResponse\x12!\n" +
-	"\funread_count\x18\x01 \x01(\x05R\vunreadCount\"O\n" +
-	"\x1bMarkNotificationReadRequest\x120\n" +
-	"\x0fnotification_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0enotificationId\"Y\n" +
+	"\funread_count\x18\x01 \x01(\x05R\vunreadCount\"\xfc\x01\n" +
+	"\x1bMarkNotificationReadRequest\x12\xdc\x01\n" +
+	"\x0fnotification_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\x0enotificationId\"Y\n" +
 	"\x1cMarkNotificationReadResponse\x129\n" +
 	"\fnotification\x18\x01 \x01(\v2\x15.guma.v1.NotificationR\fnotification\"!\n" +
 	"\x1fMarkAllNotificationsReadRequest\"G\n" +

@@ -59,7 +59,7 @@ service EventService {
 // Request/Response messages
 
 message ListEventsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   string view = 2 [(buf.validate.field).string.max_len = 32];  // "month" | "week" | "day"
   string date = 3 [(buf.validate.field).string.max_len = 64];  // ISO 8601 date anchor for the view
   int32 page_size = 4 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
@@ -73,8 +73,8 @@ message ListEventsResponse {
 }
 
 message GetEventRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string event_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string event_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message GetEventResponse {
@@ -82,8 +82,8 @@ message GetEventResponse {
 }
 
 message CreateEventRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string title = 2 [(buf.validate.field).string.max_len = 200];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string title = 2 [(buf.validate.field).string = {max_len: 200, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
   string description = 3 [(buf.validate.field).string.max_len = 2000];
   string type = 4 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["boss_respawn", "guild_war", "guild_meeting", "raid", "training", "tournament", "social", "other"]}];         // EventType
   string start_date = 5 [(buf.validate.field).string.max_len = 64];   // ISO 8601 datetime
@@ -100,9 +100,9 @@ message CreateEventResponse {
 }
 
 message UpdateEventRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string event_id = 2 [(buf.validate.field).string.max_len = 64];
-  string title = 3 [(buf.validate.field).string.max_len = 200];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string event_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string title = 3 [(buf.validate.field).string = {max_len: 200, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
   string description = 4 [(buf.validate.field).string.max_len = 2000];
   string type = 5 [(buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE, (buf.validate.field).string = {in: ["boss_respawn", "guild_war", "guild_meeting", "raid", "training", "tournament", "social", "other"]}];
   string start_date = 6 [(buf.validate.field).string.max_len = 64];
@@ -119,8 +119,8 @@ message UpdateEventResponse {
 }
 
 message DeleteEventRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string event_id = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string event_id = 2 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
 }
 
 message DeleteEventResponse {
@@ -128,7 +128,7 @@ message DeleteEventResponse {
 }
 
 message ListEventsByRangeRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   string start_date = 2 [(buf.validate.field).string.max_len = 64]; // ISO 8601
   string end_date = 3 [(buf.validate.field).string.max_len = 64];   // ISO 8601
 }
@@ -140,7 +140,7 @@ message ListEventsByRangeResponse {
 }
 
 message ListUpcomingEventsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
   int32 limit = 2 [(buf.validate.field).int32 = {gte: 0, lte: 100}]; // Default: 10
 }
 

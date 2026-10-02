@@ -856,44 +856,44 @@ const file_proto_guma_v1_announcement_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x8e\x01\n" +
-	"\x18ListAnnouncementsRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12%\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xbb\x02\n" +
+	"\x18ListAnnouncementsRequest\x12\xce\x01\n" +
+	"\bguild_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\aguildId\x12%\n" +
 	"\x0einclude_drafts\x18\x02 \x01(\bR\rincludeDrafts\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\"X\n" +
 	"\x19ListAnnouncementsResponse\x12;\n" +
-	"\rannouncements\x18\x01 \x03(\v2\x15.guma.v1.AnnouncementR\rannouncements\"n\n" +
-	"\x16GetAnnouncementRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\"T\n" +
+	"\rannouncements\x18\x01 \x03(\v2\x15.guma.v1.AnnouncementR\rannouncements\"\xc8\x03\n" +
+	"\x16GetAnnouncementRequest\x12\xce\x01\n" +
+	"\bguild_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\aguildId\x12\xdc\x01\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\x0eannouncementId\"T\n" +
 	"\x17GetAnnouncementResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"D\n" +
-	"\x1eCreateAnnouncementDraftRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"\\\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xf1\x01\n" +
+	"\x1eCreateAnnouncementDraftRequest\x12\xce\x01\n" +
+	"\bguild_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\aguildId\"\\\n" +
 	"\x1fCreateAnnouncementDraftResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xce\x01\n" +
-	"\x19UpdateAnnouncementRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\x12\x1e\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xa8\x04\n" +
+	"\x19UpdateAnnouncementRequest\x12\xce\x01\n" +
+	"\bguild_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\aguildId\x12\xdc\x01\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\x0eannouncementId\x12\x1e\n" +
 	"\x05title\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05title\x12#\n" +
 	"\acontent\x18\x04 \x01(\tB\t\xbaH\x06r\x04\x18\xa0\x9c\x01R\acontent\x12\x16\n" +
 	"\x06pinned\x18\x05 \x01(\bR\x06pinned\"W\n" +
 	"\x1aUpdateAnnouncementResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"r\n" +
-	"\x1aPublishAnnouncementRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\"X\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xcc\x03\n" +
+	"\x1aPublishAnnouncementRequest\x12\xce\x01\n" +
+	"\bguild_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\aguildId\x12\xdc\x01\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\x0eannouncementId\"X\n" +
 	"\x1bPublishAnnouncementResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"t\n" +
-	"\x1cUnpublishAnnouncementRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\"Z\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xce\x03\n" +
+	"\x1cUnpublishAnnouncementRequest\x12\xce\x01\n" +
+	"\bguild_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\aguildId\x12\xdc\x01\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\x0eannouncementId\"Z\n" +
 	"\x1dUnpublishAnnouncementResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"v\n" +
-	"\x1eDeleteAnnouncementDraftRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\"!\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xd0\x03\n" +
+	"\x1eDeleteAnnouncementDraftRequest\x12\xce\x01\n" +
+	"\bguild_id\x18\x01 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\aguildId\x12\xdc\x01\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\xb2\x01\xbaH\xae\x01r\xab\x01\x10\x01\x18@2\xa4\x01^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$R\x0eannouncementId\"!\n" +
 	"\x1fDeleteAnnouncementDraftResponse2\x86\t\n" +
 	"\x13AnnouncementService\x12\x87\x01\n" +
 	"\x11ListAnnouncements\x12!.guma.v1.ListAnnouncementsRequest\x1a\".guma.v1.ListAnnouncementsResponse\"+\x82\xd3\xe4\x93\x02%\x12#/v1/guilds/{guild_id}/announcements\x12\x93\x01\n" +

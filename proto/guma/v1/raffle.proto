@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package guma.v1;
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "proto/guma/v1/item.proto";
@@ -81,10 +82,10 @@ service RaffleService {
 // Request/Response messages
 
 message ListRafflesRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   string status = 2;     // "active" | "upcoming" | "ended" | "cancelled" | "" (all)
-  int32 page_size = 3;
-  string page_token = 4;
+  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListRafflesResponse {
@@ -94,8 +95,8 @@ message ListRafflesResponse {
 }
 
 message GetRaffleRequest {
-  string guild_id = 1;
-  string raffle_id = 2;
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message GetRaffleResponse {
@@ -103,7 +104,7 @@ message GetRaffleResponse {
 }
 
 message CreateRaffleRequest {
-  string guild_id = 1;
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   string title = 2;
   string description = 3;
   int64 ticket_price = 4;
@@ -118,9 +119,9 @@ message CreateRaffleResponse {
 }
 
 message PurchaseTicketsRequest {
-  string guild_id = 1;
-  string raffle_id = 2;
-  int32 quantity = 3;
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  int32 quantity = 3 [(buf.validate.field).int32.gt = 0];
 }
 
 message PurchaseTicketsResponse {
@@ -129,8 +130,8 @@ message PurchaseTicketsResponse {
 }
 
 message GetRaffleWinnersRequest {
-  string guild_id = 1;
-  string raffle_id = 2;
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message GetRaffleWinnersResponse {
@@ -138,8 +139,8 @@ message GetRaffleWinnersResponse {
 }
 
 message DrawRaffleRequest {
-  string guild_id = 1;
-  string raffle_id = 2;
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message DrawRaffleResponse {
@@ -148,14 +149,24 @@ message DrawRaffleResponse {
 }
 
 message UpdateRaffleRequest {
-  string guild_id = 1;
-  string raffle_id = 2;
+  option (buf.validate.message).cel = {
+    id: "update_raffle.nothing_to_update"
+    message: "nothing to update"
+    expression: "has(this.title) || has(this.description) || this.draw_date != '' || has(this.ticket_price) || has(this.max_tickets) || has(this.max_tickets_per_user)"
+  };
+
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   string draw_date = 3; // ISO 8601 datetime; must be in the future
-  optional string title = 4;
+  optional string title = 4 [(buf.validate.field).cel = {
+    id: "update_raffle.title_required"
+    message: "title is required"
+    expression: "this.trim() != ''"
+  }];
   optional string description = 5;
-  optional int64 ticket_price = 6;
-  optional int32 max_tickets = 7;
-  optional int32 max_tickets_per_user = 8;
+  optional int64 ticket_price = 6 [(buf.validate.field).int64.gte = 0];
+  optional int32 max_tickets = 7 [(buf.validate.field).int32.gte = 0];
+  optional int32 max_tickets_per_user = 8 [(buf.validate.field).int32.gte = 0];
 }
 
 message UpdateRaffleResponse {
@@ -163,8 +174,8 @@ message UpdateRaffleResponse {
 }
 
 message CancelRaffleRequest {
-  string guild_id = 1;
-  string raffle_id = 2;
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message CancelRaffleResponse {
@@ -172,8 +183,8 @@ message CancelRaffleResponse {
 }
 
 message DeleteRaffleRequest {
-  string guild_id = 1;
-  string raffle_id = 2;
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message DeleteRaffleResponse {
@@ -181,9 +192,9 @@ message DeleteRaffleResponse {
 }
 
 message ListMyTicketsRequest {
-  string guild_id = 1; // Optional: filter by guild
-  int32 page_size = 2;
-  string page_token = 3;
+  string guild_id = 1 [(buf.validate.field).string.max_len = 64]; // Optional: filter by guild
+  int32 page_size = 2 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  string page_token = 3 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
 
 message ListMyTicketsResponse {
