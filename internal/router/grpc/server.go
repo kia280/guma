@@ -6,6 +6,8 @@ import (
 	"net"
 	"time"
 
+	"buf.build/go/protovalidate"
+	grpcprotovalidate "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/protovalidate"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -37,6 +39,11 @@ const healthCheckInterval = 5 * time.Second
 func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, logger zerolog.Logger) (*Server, error) {
 	logger = logger.With().Str("component", "grpc-server").Logger()
 
+	validator, err := protovalidate.New()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request validator: %w", err)
+	}
+
 	// Create gRPC server with interceptors
 	grpcServer := grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
@@ -44,11 +51,12 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 			interceptors.ErrorSanitizerInterceptor(),
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),
-			interceptors.ValidationInterceptor(),
+			grpcprotovalidate.UnaryServerInterceptor(validator),
 		),
 		grpc.ChainStreamInterceptor(
 			interceptors.StreamErrorSanitizerInterceptor(logger),
 			interceptors.StreamRecoveryInterceptor(logger),
+			grpcprotovalidate.StreamServerInterceptor(validator),
 		),
 	)
 
