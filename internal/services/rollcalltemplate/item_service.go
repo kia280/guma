@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
@@ -37,15 +38,16 @@ type ItemFields struct {
 
 type ItemService struct {
 	q      store
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
-func NewItemService(pool *database.Pool, logger zerolog.Logger) *ItemService {
-	return newItemService(newStore(pool), logger)
+func NewItemService(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *ItemService {
+	return newItemService(newStore(pool), az, logger)
 }
 
-func newItemService(q store, logger zerolog.Logger) *ItemService {
-	return &ItemService{q: q, logger: logger.With().Str("service", "itemtemplate").Logger()}
+func newItemService(q store, az authz.Checker, logger zerolog.Logger) *ItemService {
+	return &ItemService{q: q, az: az, logger: logger.With().Str("service", "itemtemplate").Logger()}
 }
 
 func (s *ItemService) List(ctx context.Context, guildIDStr, userIDStr string) ([]*ItemTemplate, error) {
@@ -53,7 +55,7 @@ func (s *ItemService) List(ctx context.Context, guildIDStr, userIDStr string) ([
 	if err != nil {
 		return nil, err
 	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
 		return nil, err
 	}
 	rows, err := s.q.ListItemTemplates(ctx, guildID)
@@ -73,7 +75,7 @@ func (s *ItemService) Create(ctx context.Context, guildIDStr, userIDStr string, 
 	if err != nil {
 		return nil, err
 	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
 		return nil, err
 	}
 	r, err := s.q.CreateItemTemplate(ctx, db.CreateItemTemplateParams{
@@ -97,7 +99,7 @@ func (s *ItemService) Update(ctx context.Context, guildIDStr, templateIDStr, use
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", errs.ErrNotFound, itemEntity)
 	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
 		return nil, err
 	}
 	r, err := s.q.UpdateItemTemplate(ctx, db.UpdateItemTemplateParams{
@@ -119,7 +121,7 @@ func (s *ItemService) Delete(ctx context.Context, guildIDStr, templateIDStr, use
 	if err != nil {
 		return fmt.Errorf("%w: %s", errs.ErrNotFound, itemEntity)
 	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
 		return err
 	}
 	n, err := s.q.DeleteItemTemplate(ctx, db.DeleteItemTemplateParams{ID: templateID, GuildID: guildID})

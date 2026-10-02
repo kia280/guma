@@ -12,6 +12,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/kia280/guma/internal/authz"
+	"github.com/kia280/guma/internal/authz/authztest"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
@@ -26,8 +28,6 @@ var (
 )
 
 type fakeStore struct {
-	role                   string
-	roleErr                error
 	knownItems             map[uuid.UUID]bool
 	countArg               db.CountGuildItemTemplatesParams
 	rollCallTemplateCreate db.CreateRollCallTemplateParams
@@ -39,10 +39,6 @@ type fakeStore struct {
 	writeErr               error
 	deleted                int64
 	writes                 int
-}
-
-func (f *fakeStore) GetGuildMemberRole(context.Context, db.GetGuildMemberRoleParams) (string, error) {
-	return f.role, f.roleErr
 }
 
 func (f *fakeStore) ListRollCallTemplates(context.Context, uuid.UUID) ([]db.ListRollCallTemplatesRow, error) {
@@ -104,8 +100,12 @@ func (f *fakeStore) CountGuildItemTemplates(_ context.Context, arg db.CountGuild
 	return n, nil
 }
 
-func newFake(role string) *fakeStore {
-	return &fakeStore{role: role, knownItems: map[uuid.UUID]bool{testSword: true, testShield: true}, deleted: 1}
+func newFake() *fakeStore {
+	return &fakeStore{knownItems: map[uuid.UUID]bool{testSword: true, testShield: true}, deleted: 1}
+}
+
+func manager() *authztest.Fake {
+	return authztest.New().Grant(testGuild, testUser, authz.ManageRollCallTemplates)
 }
 
 func validFields() Fields {
@@ -121,12 +121,12 @@ func validItem() ItemFields {
 }
 
 func TestCreateRollCallTemplateKeepsItemOrderAndDuplicates(t *testing.T) {
-	store := newFake("moderator")
+	store := newFake()
 	store.rollCallRow = db.GetRollCallTemplateRow{
 		GuildID: testGuild, Name: "Weekly raid", Title: "Raid night",
 		Items: []byte(`[{"id":"` + testSword.String() + `","name":"Sword","category":"weapon","rarity":"rare"}]`),
 	}
-	s := newService(store, zerolog.Nop())
+	s := newService(store, manager(), zerolog.Nop())
 
 	tmpl, err := s.Create(context.Background(), testGuild.String(), testUser.String(), validFields())
 	require.NoError(t, err)
@@ -141,8 +141,8 @@ func TestCreateRollCallTemplateKeepsItemOrderAndDuplicates(t *testing.T) {
 }
 
 func TestCreateRollCallTemplateWithoutItemsSkipsItemCheck(t *testing.T) {
-	store := newFake("admin")
-	s := newService(store, zerolog.Nop())
+	store := newFake()
+	s := newService(store, manager(), zerolog.Nop())
 	f := validFields()
 	f.ItemTemplateIDs = nil
 
@@ -154,8 +154,8 @@ func TestCreateRollCallTemplateWithoutItemsSkipsItemCheck(t *testing.T) {
 }
 
 func TestCreateRollCallTemplateRejectsItemsFromOtherGuilds(t *testing.T) {
-	store := newFake("admin")
-	s := newService(store, zerolog.Nop())
+	store := newFake()
+	s := newService(store, manager(), zerolog.Nop())
 	f := validFields()
 	f.ItemTemplateIDs = []string{testSword.String(), uuid.NewString()}
 
@@ -165,8 +165,8 @@ func TestCreateRollCallTemplateRejectsItemsFromOtherGuilds(t *testing.T) {
 }
 
 func TestCreateRollCallTemplateRejectsMalformedItemIDs(t *testing.T) {
-	store := newFake("owner")
-	s := newService(store, zerolog.Nop())
+	store := newFake()
+	s := newService(store, manager(), zerolog.Nop())
 	f := validFields()
 	f.ItemTemplateIDs = []string{"nope"}
 
@@ -176,8 +176,8 @@ func TestCreateRollCallTemplateRejectsMalformedItemIDs(t *testing.T) {
 }
 
 func TestCreateItemTemplateNormalizesFields(t *testing.T) {
-	store := newFake("admin")
-	s := newItemService(store, zerolog.Nop())
+	store := newFake()
+	s := newItemService(store, manager(), zerolog.Nop())
 
 	_, err := s.Create(context.Background(), testGuild.String(), testUser.String(), validItem())
 	require.NoError(t, err)
@@ -187,26 +187,22 @@ func TestCreateItemTemplateNormalizesFields(t *testing.T) {
 	}, store.itemCreate)
 }
 
-func TestManagementRequiresManagerRole(t *testing.T) {
+func TestManagementRequiresManagerPermission(t *testing.T) {
 	tests := []struct {
 		name    string
-		role    string
-		roleErr error
+		checker *authztest.Fake
 		wantErr error
 	}{
-		{name: "owner", role: "owner"},
-		{name: "admin", role: "admin"},
-		{name: "moderator", role: "moderator"},
-		{name: "member", role: "member", wantErr: errs.ErrPermissionDenied},
-		{name: "not a member", roleErr: pgx.ErrNoRows, wantErr: errs.ErrPermissionDenied},
-		{name: "role lookup failure", roleErr: errors.New("boom"), wantErr: errs.ErrInternal},
+		{name: "granted", checker: manager()},
+		{name: "other permission only", checker: authztest.New().Grant(testGuild, testUser, authz.View, authz.ManageRollCalls), wantErr: errs.ErrPermissionDenied},
+		{name: "not a member", checker: authztest.New(), wantErr: errs.ErrPermissionDenied},
+		{name: "checker failure", checker: &authztest.Fake{CanErr: errors.New("boom")}, wantErr: errs.ErrInternal},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			store := newFake(tt.role)
-			store.roleErr = tt.roleErr
-			rollCalls := newService(store, zerolog.Nop())
-			items := newItemService(store, zerolog.Nop())
+			store := newFake()
+			rollCalls := newService(store, tt.checker, zerolog.Nop())
+			items := newItemService(store, tt.checker, zerolog.Nop())
 			ctx := context.Background()
 			guild, tmpl, user := testGuild.String(), testTemplate.String(), testUser.String()
 
@@ -237,58 +233,58 @@ func TestManagementRequiresManagerRole(t *testing.T) {
 }
 
 func TestDuplicateNamesReturnAlreadyExists(t *testing.T) {
-	store := newFake("admin")
+	store := newFake()
 	store.writeErr = &pgconn.PgError{Code: "23505"}
 
-	_, err := newService(store, zerolog.Nop()).Create(context.Background(), testGuild.String(), testUser.String(), validFields())
+	_, err := newService(store, manager(), zerolog.Nop()).Create(context.Background(), testGuild.String(), testUser.String(), validFields())
 	assert.ErrorIs(t, err, errs.ErrAlreadyExists)
-	_, err = newItemService(store, zerolog.Nop()).Create(context.Background(), testGuild.String(), testUser.String(), validItem())
+	_, err = newItemService(store, manager(), zerolog.Nop()).Create(context.Background(), testGuild.String(), testUser.String(), validItem())
 	assert.ErrorIs(t, err, errs.ErrAlreadyExists)
 }
 
 func TestUpdateMissingTemplatesReturnNotFound(t *testing.T) {
-	store := newFake("admin")
+	store := newFake()
 	store.writeErr = pgx.ErrNoRows
 	ctx := context.Background()
 
-	_, err := newService(store, zerolog.Nop()).Update(ctx, testGuild.String(), testTemplate.String(), testUser.String(), validFields())
+	_, err := newService(store, manager(), zerolog.Nop()).Update(ctx, testGuild.String(), testTemplate.String(), testUser.String(), validFields())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
 	assert.Equal(t, testGuild, store.rollCallTemplateUpdate.GuildID)
 
-	_, err = newItemService(store, zerolog.Nop()).Update(ctx, testGuild.String(), testTemplate.String(), testUser.String(), validItem())
+	_, err = newItemService(store, manager(), zerolog.Nop()).Update(ctx, testGuild.String(), testTemplate.String(), testUser.String(), validItem())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
 	assert.Equal(t, testGuild, store.itemUpdate.GuildID)
 }
 
 func TestMalformedTemplateIDReturnsNotFound(t *testing.T) {
-	store := newFake("admin")
+	store := newFake()
 	ctx := context.Background()
 
-	_, err := newService(store, zerolog.Nop()).Update(ctx, testGuild.String(), "nope", testUser.String(), validFields())
+	_, err := newService(store, manager(), zerolog.Nop()).Update(ctx, testGuild.String(), "nope", testUser.String(), validFields())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-	err = newItemService(store, zerolog.Nop()).Delete(ctx, testGuild.String(), "nope", testUser.String())
+	err = newItemService(store, manager(), zerolog.Nop()).Delete(ctx, testGuild.String(), "nope", testUser.String())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
 	assert.Zero(t, store.writes)
 }
 
 func TestDeleteMissingTemplatesReturnNotFound(t *testing.T) {
-	store := newFake("admin")
+	store := newFake()
 	store.deleted = 0
 	ctx := context.Background()
 
-	err := newService(store, zerolog.Nop()).Delete(ctx, testGuild.String(), testTemplate.String(), testUser.String())
+	err := newService(store, manager(), zerolog.Nop()).Delete(ctx, testGuild.String(), testTemplate.String(), testUser.String())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-	err = newItemService(store, zerolog.Nop()).Delete(ctx, testGuild.String(), testTemplate.String(), testUser.String())
+	err = newItemService(store, manager(), zerolog.Nop()).Delete(ctx, testGuild.String(), testTemplate.String(), testUser.String())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
 }
 
 func TestListRollCallTemplatesDecodesItems(t *testing.T) {
-	store := newFake("moderator")
+	store := newFake()
 	store.rollCallRows = []db.ListRollCallTemplatesRow{
 		{ID: testTemplate, GuildID: testGuild, Name: "a", Title: "A", Items: []byte(`[{"id":"x","name":"Gem","rarity":"epic"}]`)},
 		{ID: uuid.New(), GuildID: testGuild, Name: "b", Title: "B", Items: []byte(`[]`)},
 	}
-	s := newService(store, zerolog.Nop())
+	s := newService(store, manager(), zerolog.Nop())
 
 	templates, err := s.List(context.Background(), testGuild.String(), testUser.String())
 	require.NoError(t, err)
