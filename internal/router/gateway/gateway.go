@@ -120,7 +120,7 @@ func NewGateway(ctx context.Context, cfg *config.Config, db *database.Pool, sync
 	// Apply middleware
 	var devStore devUserStore
 	if cfg.Dev.AuthEnabled {
-		devStore = devauth.New(db)
+		devStore = devauth.New(db, syncer, logger)
 	}
 	handler = withAuth(handler, cfg.Auth.KratosPublicURL, devStore, logger)
 	handler = eventStreamMiddleware(handler)
