@@ -70,10 +70,10 @@ service AuctionService {
 
 message ListAuctionsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string status = 2;    // AuctionStatus filter; empty = all
-  string category = 3;  // Item.category filter
-  string rarity = 4;    // Item.rarity filter
-  string search = 5;
+  string status = 2 [(buf.validate.field).string.max_len = 32];    // AuctionStatus filter; empty = all
+  string category = 3 [(buf.validate.field).string.max_len = 32];  // Item.category filter
+  string rarity = 4 [(buf.validate.field).string.max_len = 32];    // Item.rarity filter
+  string search = 5 [(buf.validate.field).string.max_len = 200];
   int32 page_size = 6 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
   string page_token = 7 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
@@ -97,16 +97,16 @@ message CreateAuctionRequest {
   option (buf.validate.message).cel = {
     id: "create_auction.item_name_required"
     message: "item name is required unless the item comes from a backpack or bank source"
-    expression: "(has(this.source) && (this.source.backpack_item_id != '' || this.source.bank_item_id != '')) || (has(this.item) && this.item.name != '')"
+    expression: "(has(this.source) && (this.source.backpack_item_id != '' || this.source.bank_item_id != '')) || (has(this.item) && this.item.name.trim() != '')"
   };
 
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   Item item = 2;
-  int64 starting_bid = 3;
-  int64 min_bid_increment = 4;
-  int32 duration_hours = 5;
+  int64 starting_bid = 3 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
+  int64 min_bid_increment = 4 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
+  int32 duration_hours = 5 [(buf.validate.field).int32.gt = 0];
   bool is_blind = 6;
-  string status = 7; // "UPCOMING" (scheduled) or "ACTIVE" (starts immediately)
+  string status = 7 [(buf.validate.field).string = {in: ["", "UPCOMING", "ACTIVE"]}]; // "UPCOMING" (scheduled) or "ACTIVE" (starts immediately)
   ItemSourceRef source = 8;
 }
 
@@ -117,7 +117,7 @@ message CreateAuctionResponse {
 message PlaceBidRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  int64 amount = 3;
+  int64 amount = 3 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
 }
 
 message PlaceBidResponse {
@@ -148,12 +148,12 @@ message UpdateAuctionRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   Item item = 3 [(buf.validate.field).cel = {
-    id: "update_auction.item_name_required"
+    id: "item.name_required"
     message: "item name is required"
     expression: "this.name.trim() != ''"
   }];
-  optional int64 starting_bid = 4 [(buf.validate.field).int64.gt = 0];
-  optional int64 min_bid_increment = 5 [(buf.validate.field).int64.gt = 0];
+  optional int64 starting_bid = 4 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
+  optional int64 min_bid_increment = 5 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
   optional bool is_blind = 6;
   google.protobuf.Timestamp start_time = 7;
   google.protobuf.Timestamp end_time = 8;
@@ -175,7 +175,7 @@ message DeleteAuctionResponse {
 message CancelAuctionRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string reason = 3;
+  string reason = 3 [(buf.validate.field).string.max_len = 500];
 }
 
 message CancelAuctionResponse {

@@ -1438,19 +1438,19 @@ var File_proto_guma_v1_member_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa0\x01\n" +
+	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa1\x01\n" +
 	"\x13InviteMemberRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12 \n" +
-	"\x05email\x18\x02 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\xfe\x01R\x05email\x12\x1b\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
+	"\x05email\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xfe\x01R\x05email\x12\x1b\n" +
 	"\x04role\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04role\x12\"\n" +
 	"\amessage\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\amessage\"K\n" +
 	"\x14InviteMemberResponse\x123\n" +
 	"\n" +
 	"invitation\x18\x01 \x01(\v2\x13.guma.v1.InvitationR\n" +
-	"invitation\">\n" +
-	"\x10JoinGuildRequest\x12*\n" +
-	"\vinvite_code\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"invitation\"?\n" +
+	"\x10JoinGuildRequest\x12+\n" +
+	"\vinvite_code\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
 	"inviteCode\"<\n" +
 	"\x11JoinGuildResponse\x12'\n" +
 	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xc8\x02\n" +
@@ -1504,9 +1504,10 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\x1aGenerateInviteCodeResponse\x123\n" +
 	"\n" +
 	"invitation\x18\x01 \x01(\v2\x13.guma.v1.InvitationR\n" +
-	"invitation\":\n" +
-	"\x19ValidateInviteCodeRequest\x12\x1d\n" +
-	"\x04code\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\x04code\"l\n" +
+	"invitation\";\n" +
+	"\x19ValidateInviteCodeRequest\x12\x1e\n" +
+	"\x04code\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\x04code\"l\n" +
 	"\x1aValidateInviteCodeResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1d\n" +

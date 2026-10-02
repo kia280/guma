@@ -1993,7 +1993,7 @@ var File_proto_guma_v1_roll_call_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\n" +
-	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"\xba\x01\n" +
+	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xba\x01\n" +
 	"\x14ListRollCallsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
 	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
@@ -2013,31 +2013,34 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\"E\n" +
 	"\x13GetRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xe2\v\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xe8\x06\n" +
 	"\x15CreateRollCallRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12<\n" +
-	"\x05title\x18\x02 \x01(\tB&\xbaH#r!\x18\xc8\x012\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x05title\x12*\n" +
-	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12%\n" +
-	"\bdatetime\x18\x04 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\bdatetime\x12*\n" +
-	"\vexpire_time\x18\x05 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
+	"\x05title\x18\x02 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12&\n" +
+	"\bdatetime\x18\x04 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\bdatetime\x12+\n" +
+	"\vexpire_time\x18\x05 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
 	"expireTime\x12\xdb\x01\n" +
 	"\timage_url\x18\x06 \x01(\tB\xbd\x01\xbaH\xb9\x01\xba\x01\xb5\x01\n" +
 	"\x0fimage_url.https\x12Kimage_url must be empty or an absolute https URL of at most 2048 characters\x1aUthis == '' || (size(this) <= 2048 && this.matches('^https://[^/?#]') && this.isUri())R\bimageUrl\x124\n" +
 	"\tloot_list\x18\a \x03(\v2\r.guma.v1.ItemB\b\xbaH\x05\x92\x01\x02\x10dR\blootList\x128\n" +
-	"\x04loot\x18\b \x03(\v2\x1a.guma.v1.RollCallLootEntryB\b\xbaH\x05\x92\x01\x02\x10dR\x04loot:\x95\a\xbaH\x91\a\x1a\x9b\x01\n" +
-	"\x1cloot_list.item_name_required\x12\x1beach loot item needs a name\x1a^this.loot.size() > 0 || this.loot_list.all(i, i.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]'))\x1a\xa6\x04\n" +
-	"\x16loot_list.item_max_len\x12_loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters\x1a\xaa\x03this.loot.size() > 0 || this.loot_list.all(i, i.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$'))\x1a\xc7\x01\n" +
-	"\x16loot.single_gold_entry\x12-a roll call can have only one gold loot entry\x1a~this.loot.filter(e, e.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$')).size() <= 1\"H\n" +
+	"\x04loot\x18\b \x03(\v2\x1a.guma.v1.RollCallLootEntryB\b\xbaH\x05\x92\x01\x02\x10dR\x04loot:\xb4\x02\xbaH\xb0\x02\x1a\x90\x01\n" +
+	"-create_roll_call.loot_list_item_name_required\x12\x1beach loot item needs a name\x1aBthis.loot.size() > 0 || this.loot_list.all(i, i.name.trim() != '')\x1a\x9a\x01\n" +
+	"\"create_roll_call.single_gold_entry\x12-a roll call can have only one gold loot entry\x1aEthis.loot.filter(e, e.kind.trim().lowerAscii() == 'gold').size() <= 1\"H\n" +
 	"\x16CreateRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xa1\x05\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x88\x05\n" +
 	"\x15UpdateRollCallRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
-	"rollCallId\x12<\n" +
-	"\x05title\x18\x03 \x01(\tB&\xbaH#r!\x18\xc8\x012\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x05title\x12/\n" +
-	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fH\x00R\vdescription\x88\x01\x01\x12%\n" +
-	"\bdatetime\x18\x05 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\bdatetime\x12*\n" +
-	"\vexpire_time\x18\x06 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"rollCallId\x12!\n" +
+	"\x05title\x18\x03 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12/\n" +
+	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fH\x00R\vdescription\x88\x01\x01\x12&\n" +
+	"\bdatetime\x18\x05 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\bdatetime\x12+\n" +
+	"\vexpire_time\x18\x06 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
 	"expireTime\x12\xe0\x01\n" +
 	"\timage_url\x18\a \x01(\tB\xbd\x01\xbaH\xb9\x01\xba\x01\xb5\x01\n" +
 	"\x0fimage_url.https\x12Kimage_url must be empty or an absolute https URL of at most 2048 characters\x1aUthis == '' || (size(this) <= 2048 && this.matches('^https://[^/?#]') && this.isUri())H\x01R\bimageUrl\x88\x01\x01\x124\n" +
@@ -2066,14 +2069,13 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"rollCallId\x123\n" +
 	"\x16keep_leftovers_in_bank\x18\x03 \x01(\bR\x13keepLeftoversInBank\"J\n" +
 	"\x18CompleteRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x9e\x06\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x81\x02\n" +
 	"\x19UpdateRollCallLootRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
-	"rollCallId\x12\xa9\x05\n" +
-	"\tloot_list\x18\x03 \x03(\v2\r.guma.v1.ItemB\xfc\x04\xbaH\xf8\x04\x92\x01\xf4\x04\x10d\"\xef\x04\xba\x01j\n" +
-	"\x17loot_item.name_required\x12\x1beach loot item needs a name\x1a2this.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]')\xba\x01\xfe\x03\n" +
-	"\x11loot_item.max_len\x12_loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters\x1a\x87\x03this.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$')R\blootList\"L\n" +
+	"rollCallId\x12\x8c\x01\n" +
+	"\tloot_list\x18\x03 \x03(\v2\r.guma.v1.ItemB`\xbaH]\x92\x01Z\x10d\"V\xba\x01S\n" +
+	"\x1cloot_list.item_name_required\x12\x1beach loot item needs a name\x1a\x16this.name.trim() != ''R\blootList\"L\n" +
 	"\x1aUpdateRollCallLootResponse\x12.\n" +
 	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xb6\x01\n" +
 	"\x11AssignLootRequest\x12&\n" +
@@ -2152,16 +2154,15 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\x04loot\x18\x0f \x03(\v2\x1a.guma.v1.RollCallLootEntryR\x04loot\x123\n" +
 	"\bgold_pot\x18\x10 \x01(\v2\x18.guma.v1.RollCallGoldPotR\agoldPot\x12!\n" +
 	"\fis_completed\x18\x11 \x01(\bR\visCompleted\x12=\n" +
-	"\fcompleted_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"\x97\n" +
-	"\n" +
-	"\x11RollCallLootEntry\x12\x84\x01\n" +
-	"\x04kind\x18\x01 \x01(\tBp\xbaHmrk\x18 2g^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[iI\\x{130}][tT][eE][mM]|[gG][oO][lL][dD])?[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$R\x04kind\x12!\n" +
+	"\fcompleted_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"\x8e\x04\n" +
+	"\x11RollCallLootEntry\x12y\n" +
+	"\x04kind\x18\x01 \x01(\tBe\xbaHb\xba\x01[\n" +
+	"\fkind.allowed\x12\x19kind must be item or gold\x1a0this.trim().lowerAscii() in ['', 'item', 'gold']r\x02\x18 R\x04kind\x12!\n" +
 	"\x04item\x18\x02 \x01(\v2\r.guma.v1.ItemR\x04item\x12'\n" +
 	"\x06amount\x18\x03 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16(\x00R\x06amount:\xae\b\xbaH\xaa\b\x1a\xba\x01\n" +
-	"\x1floot_entry.gold_amount_positive\x12!gold loot amount must be positive\x1at!this.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') || this.amount > 0\x1a\xe9\x01\n" +
-	"\x1dloot_entry.item_name_required\x12*item loot entries need an item with a name\x1a\x9b\x01this.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') || this.item.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]')\x1a\xfe\x04\n" +
-	"\x17loot_entry.item_max_len\x12_loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters\x1a\x81\x04this.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') || (this.item.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.item.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.item.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.item.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$'))\"\x99\x01\n" +
+	"\x18\x80\x80郱\xde\x16(\x00R\x06amount:\xb1\x02\xbaH\xad\x02\x1a\x8a\x01\n" +
+	")roll_call_loot_entry.gold_amount_positive\x12!gold loot amount must be positive\x1a:this.kind.trim().lowerAscii() != 'gold' || this.amount > 0\x1a\x9d\x01\n" +
+	"'roll_call_loot_entry.item_name_required\x12*item loot entries need an item with a name\x1aFthis.kind.trim().lowerAscii() == 'gold' || this.item.name.trim() != ''\"\x99\x01\n" +
 	"\x0fRollCallGoldPot\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12 \n" +
 	"\vdistributed\x18\x02 \x01(\x03R\vdistributed\x12\x1c\n" +
@@ -2313,6 +2314,7 @@ func file_proto_guma_v1_roll_call_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_validate_proto_init()
 	file_proto_guma_v1_roll_call_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

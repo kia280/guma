@@ -105,6 +105,54 @@ func TestRequestRules(t *testing.T) {
 			want: violation{"item_ids", "string.uuid"},
 		},
 		{
+			name: "zero starting bid on auction create",
+			req:  &gumav1.CreateAuctionRequest{GuildId: testUUID, Item: &gumav1.Item{Name: "Sword"}, MinBidIncrement: 1, DurationHours: 1},
+			want: violation{"starting_bid", "int64.gt_lte"},
+		},
+		{
+			name: "unknown auction create status",
+			req:  &gumav1.CreateAuctionRequest{GuildId: testUUID, Item: &gumav1.Item{Name: "Sword"}, StartingBid: 1, MinBidIncrement: 1, DurationHours: 1, Status: "ENDED"},
+			want: violation{"status", "string.in"},
+		},
+		{
+			name: "zero bid amount",
+			req:  &gumav1.PlaceBidRequest{GuildId: testUUID, AuctionId: testUUID},
+			want: violation{"amount", "int64.gt_lte"},
+		},
+		{
+			name: "auction search too long",
+			req:  &gumav1.ListAuctionsRequest{GuildId: testUUID, Search: strings.Repeat("s", 201)},
+			want: violation{"search", "string.max_len"},
+		},
+		{
+			name: "item name too long",
+			req:  &gumav1.CreateAuctionRequest{GuildId: testUUID, Item: &gumav1.Item{Name: strings.Repeat("n", 101)}, StartingBid: 1, MinBidIncrement: 1, DurationHours: 1},
+			want: violation{"item", "string.max_len"},
+		},
+		{
+			name: "blank raffle title on create",
+			req:  &gumav1.CreateRaffleRequest{GuildId: testUUID, Title: " ", DrawDate: "2030-01-01T00:00:00Z"},
+			want: violation{"title", "string.not_blank"},
+		},
+		{
+			name: "missing raffle draw date",
+			req:  &gumav1.CreateRaffleRequest{GuildId: testUUID, Title: "Raffle"},
+			want: violation{"draw_date", "required"},
+		},
+		{
+			name: "empty invite code",
+			req:  &gumav1.JoinGuildRequest{},
+			want: violation{"invite_code", "required"},
+		},
+		{
+			name: "unknown loot kind",
+			req: &gumav1.CreateRollCallRequest{
+				GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b",
+				Loot: []*gumav1.RollCallLootEntry{{Kind: "silver", Item: &gumav1.Item{Name: "n"}}},
+			},
+			want: violation{"loot", "kind.allowed"},
+		},
+		{
 			name: "missing auction guild id",
 			req:  &gumav1.GetAuctionRequest{AuctionId: testUUID},
 			want: violation{"guild_id", "required"},
@@ -117,7 +165,7 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "zero starting bid on auction update",
 			req:  &gumav1.UpdateAuctionRequest{GuildId: testUUID, AuctionId: testUUID, StartingBid: proto.Int64(0)},
-			want: violation{"starting_bid", "int64.gt"},
+			want: violation{"starting_bid", "int64.gt_lte"},
 		},
 		{
 			name: "auction end before start",
@@ -137,7 +185,7 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "blank raffle title",
 			req:  &gumav1.UpdateRaffleRequest{GuildId: testUUID, RaffleId: testUUID, Title: proto.String("  ")},
-			want: violation{"title", "update_raffle.title_required"},
+			want: violation{"title", "string.not_blank"},
 		},
 		{
 			name: "auction from two inventory sources",
@@ -165,7 +213,7 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "blank fund request reason",
 			req:  &gumav1.RequestFundsRequest{GuildId: testUUID, Amount: 1, Reason: " \t "},
-			want: violation{"reason", "string.pattern"},
+			want: violation{"reason", "string.not_blank"},
 		},
 		{
 			name: "admin transfer to user and bank",
@@ -175,7 +223,7 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "admin transfer to same user",
 			req:  &gumav1.AdminTransferFundsRequest{GuildId: testUUID, UserId: testUUID, Amount: 5, ToUserId: testUUID},
-			want: violation{"", "to_user_id_differs_from_user_id"},
+			want: violation{"", "admin_transfer_funds.to_user_id_differs"},
 		},
 		{
 			name: "admin item transfer without items",
@@ -185,12 +233,12 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "blank display name",
 			req:  &gumav1.UpdateMeRequest{DisplayName: "  \t"},
-			want: violation{"display_name", "display_name.not_blank"},
+			want: violation{"display_name", "string.not_blank"},
 		},
 		{
 			name: "unsupported logo type",
 			req:  &gumav1.UploadGuildLogoRequest{GuildId: testUUID, Data: []byte{1}, ContentType: "image/svg+xml"},
-			want: violation{"content_type", "string.pattern"},
+			want: violation{"content_type", "content_type.allowed"},
 		},
 		{
 			name: "unknown member role filter",
@@ -200,7 +248,7 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "empty notification preferences patch",
 			req:  &gumav1.UpdateMyPreferencesRequest{Notifications: &gumav1.NotificationPreferencesPatch{}},
-			want: violation{"", "notifications.not_empty"},
+			want: violation{"", "update_my_preferences.notifications_not_empty"},
 		},
 		{
 			name: "missing guild settings",
@@ -215,7 +263,7 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "blank event title",
 			req:  &gumav1.CreateEventRequest{GuildId: testUUID, Title: "  \t"},
-			want: violation{"title", "string.pattern"},
+			want: violation{"title", "string.not_blank"},
 		},
 		{
 			name: "two gold loot entries",
@@ -223,7 +271,7 @@ func TestRequestRules(t *testing.T) {
 				GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b",
 				Loot: []*gumav1.RollCallLootEntry{{Kind: " GOLD ", Amount: 5}, {Kind: "gold", Amount: 1}},
 			},
-			want: violation{"", "loot.single_gold_entry"},
+			want: violation{"", "create_roll_call.single_gold_entry"},
 		},
 		{
 			name: "gold loot without amount",
@@ -231,7 +279,7 @@ func TestRequestRules(t *testing.T) {
 				GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b",
 				Loot: []*gumav1.RollCallLootEntry{{Kind: "Gold"}},
 			},
-			want: violation{"loot", "loot_entry.gold_amount_positive"},
+			want: violation{"loot", "roll_call_loot_entry.gold_amount_positive"},
 		},
 		{
 			name: "loot update item without name",
@@ -239,7 +287,7 @@ func TestRequestRules(t *testing.T) {
 				GuildId: testUUID, RollCallId: testUUID,
 				LootList: []*gumav1.Item{{Name: "n"}, {}},
 			},
-			want: violation{"loot_list", "loot_item.name_required"},
+			want: violation{"loot_list", "loot_list.item_name_required"},
 		},
 		{
 			name: "duplicate gold payout users",
@@ -252,7 +300,7 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "unknown item template category",
 			req:  &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: "ſkill_scroll", Rarity: "rare"},
-			want: violation{"category", "string.pattern"},
+			want: violation{"category", "category.allowed"},
 		},
 	}
 
@@ -295,7 +343,7 @@ func TestRequestRules(t *testing.T) {
 		},
 		{
 			name: "mixed case item template enums",
-			req:  &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: "SKILL_SCROLL", Rarity: "Epİc"},
+			req:  &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: " SKILL_SCROLL ", Rarity: "Epic"},
 		},
 		{
 			name: "loot list ignored when loot entries are set",
@@ -304,6 +352,14 @@ func TestRequestRules(t *testing.T) {
 				LootList: []*gumav1.Item{{Name: "  "}},
 				Loot:     []*gumav1.RollCallLootEntry{{Kind: "gold", Amount: 5}},
 			},
+		},
+		{
+			name: "auction create",
+			req:  &gumav1.CreateAuctionRequest{GuildId: testUUID, Item: &gumav1.Item{Name: "Sword"}, StartingBid: 1, MinBidIncrement: 1, DurationHours: 1, Status: "ACTIVE"},
+		},
+		{
+			name: "raffle create",
+			req:  &gumav1.CreateRaffleRequest{GuildId: testUUID, Title: "Raffle", DrawDate: "2030-01-01T00:00:00Z", TicketPrice: 10, MaxTickets: 100},
 		},
 		{
 			name: "list guilds at page size limit",

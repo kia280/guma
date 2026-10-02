@@ -5,6 +5,7 @@ package guma.v1;
 import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "proto/guma/v1/validate.proto";
 
 option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
 
@@ -46,10 +47,18 @@ message ListItemTemplatesResponse {
 
 message CreateItemTemplateRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string name = 2 [(buf.validate.field).string = {max_len: 100, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
+  string name = 2 [(buf.validate.field).string = {max_len: 100, [guma.v1.not_blank]: true}];
   string description = 3 [(buf.validate.field).string.max_len = 500];
-  string category = 4 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[wW][eE][aA][pP][oO][nN]|[aA][rR][mM][oO][rR]|[aA][cC][cC][eE][sS][sS][oO][rR][yY]|[cC][oO][nN][sS][uU][mM][aA][bB][lL][eE]|[sS][kK\\x{212A}][iI\\x{130}][lL][lL]_[sS][cC][rR][oO][lL][lL]|[mM][aA][tT][eE][rR][iI\\x{130}][aA][lL]|[mM][iI\\x{130}][sS][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
-  string rarity = 5 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[cC][oO][mM][mM][oO][nN]|[uU][nN][cC][oO][mM][mM][oO][nN]|[rR][aA][rR][eE]|[eE][pP][iI\\x{130}][cC]|[lL][eE][gG][eE][nN][dD][aA][rR][yY]|[mM][yY][tT][hH][iI\\x{130}][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
+  string category = 4 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+    id: "category.allowed"
+    message: "category must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc"
+    expression: "this.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc']"
+  }];
+  string rarity = 5 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+    id: "rarity.allowed"
+    message: "rarity must be one of common, uncommon, rare, epic, legendary, mythic"
+    expression: "this.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']"
+  }];
 }
 
 message CreateItemTemplateResponse {
@@ -59,10 +68,18 @@ message CreateItemTemplateResponse {
 message UpdateItemTemplateRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string template_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string name = 3 [(buf.validate.field).string = {max_len: 100, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
+  string name = 3 [(buf.validate.field).string = {max_len: 100, [guma.v1.not_blank]: true}];
   string description = 4 [(buf.validate.field).string.max_len = 500];
-  string category = 5 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[wW][eE][aA][pP][oO][nN]|[aA][rR][mM][oO][rR]|[aA][cC][cC][eE][sS][sS][oO][rR][yY]|[cC][oO][nN][sS][uU][mM][aA][bB][lL][eE]|[sS][kK\\x{212A}][iI\\x{130}][lL][lL]_[sS][cC][rR][oO][lL][lL]|[mM][aA][tT][eE][rR][iI\\x{130}][aA][lL]|[mM][iI\\x{130}][sS][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
-  string rarity = 6 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[cC][oO][mM][mM][oO][nN]|[uU][nN][cC][oO][mM][mM][oO][nN]|[rR][aA][rR][eE]|[eE][pP][iI\\x{130}][cC]|[lL][eE][gG][eE][nN][dD][aA][rR][yY]|[mM][yY][tT][hH][iI\\x{130}][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
+  string category = 5 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+    id: "category.allowed"
+    message: "category must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc"
+    expression: "this.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc']"
+  }];
+  string rarity = 6 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+    id: "rarity.allowed"
+    message: "rarity must be one of common, uncommon, rare, epic, legendary, mythic"
+    expression: "this.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']"
+  }];
 }
 
 message UpdateItemTemplateResponse {

@@ -303,7 +303,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Raffle, error) {
 // PurchaseTickets deducts cost from wallet and issues tickets.
 func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, raffleIDStr, userIDStr string, quantity int32) ([]*RaffleTicket, int64, error) {
 	if quantity <= 0 {
-		return nil, 0, fmt.Errorf("%w: quantity must be positive", errs.ErrFailedPrecondition)
+		return nil, 0, fmt.Errorf("%w: quantity must be positive", errs.ErrInvalidArgument)
 	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {

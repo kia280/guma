@@ -6,6 +6,7 @@ import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "proto/guma/v1/item.proto";
+import "proto/guma/v1/validate.proto";
 
 option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
 
@@ -125,26 +126,21 @@ message GetRollCallResponse {
 
 message CreateRollCallRequest {
   option (buf.validate.message).cel = {
-    id: "loot_list.item_name_required"
+    id: "create_roll_call.loot_list_item_name_required"
     message: "each loot item needs a name"
-    expression: "this.loot.size() > 0 || this.loot_list.all(i, i.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]'))"
+    expression: "this.loot.size() > 0 || this.loot_list.all(i, i.name.trim() != '')"
   };
   option (buf.validate.message).cel = {
-    id: "loot_list.item_max_len"
-    message: "loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters"
-    expression: "this.loot.size() > 0 || this.loot_list.all(i, i.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$'))"
-  };
-  option (buf.validate.message).cel = {
-    id: "loot.single_gold_entry"
+    id: "create_roll_call.single_gold_entry"
     message: "a roll call can have only one gold loot entry"
-    expression: "this.loot.filter(e, e.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$')).size() <= 1"
+    expression: "this.loot.filter(e, e.kind.trim().lowerAscii() == 'gold').size() <= 1"
   };
 
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string title = 2 [(buf.validate.field).string = {max_len: 200, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
+  string title = 2 [(buf.validate.field).string = {max_len: 200, [guma.v1.not_blank]: true}];
   string description = 3 [(buf.validate.field).string.max_len = 2000];
-  string datetime = 4 [(buf.validate.field).string = {min_len: 1, max_len: 64}];      // ISO 8601 datetime of the roll call
-  string expire_time = 5 [(buf.validate.field).string = {min_len: 1, max_len: 64}];   // ISO 8601 datetime when the window closes
+  string datetime = 4 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];      // ISO 8601 datetime of the roll call
+  string expire_time = 5 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];   // ISO 8601 datetime when the window closes
   string image_url = 6 [(buf.validate.field).cel = {
     id: "image_url.https"
     message: "image_url must be empty or an absolute https URL of at most 2048 characters"
@@ -161,10 +157,10 @@ message CreateRollCallResponse {
 message UpdateRollCallRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string roll_call_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string title = 3 [(buf.validate.field).string = {max_len: 200, pattern: "[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]"}];
+  string title = 3 [(buf.validate.field).string = {max_len: 200, [guma.v1.not_blank]: true}];
   optional string description = 4 [(buf.validate.field).string.max_len = 2000];
-  string datetime = 5 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
-  string expire_time = 6 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string datetime = 5 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string expire_time = 6 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
   optional string image_url = 7 [(buf.validate.field).cel = {
     id: "image_url.https"
     message: "image_url must be empty or an absolute https URL of at most 2048 characters"
@@ -212,18 +208,11 @@ message UpdateRollCallLootRequest {
   repeated Item loot_list = 3 [(buf.validate.field).repeated = {
     max_items: 100
     items: {
-      cel: [
-        {
-          id: "loot_item.name_required"
-          message: "each loot item needs a name"
-          expression: "this.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]')"
-        },
-        {
-          id: "loot_item.max_len"
-          message: "loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters"
-          expression: "this.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$')"
-        }
-      ]
+      cel: {
+        id: "loot_list.item_name_required"
+        message: "each loot item needs a name"
+        expression: "this.name.trim() != ''"
+      }
     }
   }];
 }
@@ -328,22 +317,21 @@ message RollCall {
 // LootKind values: item, gold
 message RollCallLootEntry {
   option (buf.validate.message).cel = {
-    id: "loot_entry.gold_amount_positive"
+    id: "roll_call_loot_entry.gold_amount_positive"
     message: "gold loot amount must be positive"
-    expression: "!this.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') || this.amount > 0"
+    expression: "this.kind.trim().lowerAscii() != 'gold' || this.amount > 0"
   };
   option (buf.validate.message).cel = {
-    id: "loot_entry.item_name_required"
+    id: "roll_call_loot_entry.item_name_required"
     message: "item loot entries need an item with a name"
-    expression: "this.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') || this.item.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]')"
-  };
-  option (buf.validate.message).cel = {
-    id: "loot_entry.item_max_len"
-    message: "loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters"
-    expression: "this.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') || (this.item.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.item.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.item.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.item.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$'))"
+    expression: "this.kind.trim().lowerAscii() == 'gold' || this.item.name.trim() != ''"
   };
 
-  string kind = 1 [(buf.validate.field).string = {max_len: 32, pattern: "^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[iI\\x{130}][tT][eE][mM]|[gG][oO][lL][dD])?[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$"}];
+  string kind = 1 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+    id: "kind.allowed"
+    message: "kind must be item or gold"
+    expression: "this.trim().lowerAscii() in ['', 'item', 'gold']"
+  }];
   Item item = 2;    // Set when kind is item
   int64 amount = 3 [(buf.validate.field).int64 = {gte: 0, lte: 100000000000000}]; // Gold in minor units when kind is gold
 }

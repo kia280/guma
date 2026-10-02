@@ -2312,7 +2312,7 @@ var File_proto_guma_v1_bank_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/guma/v1/bank.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"8\n" +
+	"\x18proto/guma/v1/bank.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"8\n" +
 	"\x0eGetBankRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"9\n" +
 	"\x0fGetBankResponse\x12&\n" +
@@ -2324,12 +2324,12 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"\x8f\x01\n" +
 	"\x17ContributeFundsResponse\x12=\n" +
 	"\fcontribution\x18\x01 \x01(\v2\x19.guma.v1.BankContributionR\fcontribution\x125\n" +
-	"\fupdated_bank\x18\x02 \x01(\v2\x12.guma.v1.GuildBankR\vupdatedBank\"\xa4\x01\n" +
+	"\fupdated_bank\x18\x02 \x01(\v2\x12.guma.v1.GuildBankR\vupdatedBank\"\x8b\x01\n" +
 	"\x13RequestFundsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12'\n" +
 	"\x06amount\x18\x02 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12<\n" +
-	"\x06reason\x18\x03 \x01(\tB$\xbaH!r\x1f\x18\xf4\x032\x1a[^\\t\\n\\x0B\\f\\r\\x{85}\\p{Z}]R\x06reason\"O\n" +
+	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12#\n" +
+	"\x06reason\x18\x03 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xf4\x03R\x06reason\"O\n" +
 	"\x14RequestFundsResponse\x127\n" +
 	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\xbf\x01\n" +
 	"\x18ReviewFundRequestRequest\x12&\n" +
@@ -2392,12 +2392,12 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\fbank_item_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"bankItemId\"2\n" +
 	"\x16DeleteBankItemResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa9\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x90\x01\n" +
 	"\x12RequestItemRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
 	"\fbank_item_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
-	"bankItemId\x12<\n" +
-	"\x06reason\x18\x03 \x01(\tB$\xbaH!r\x1f\x18\xf4\x032\x1a[^\\t\\n\\x0B\\f\\r\\x{85}\\p{Z}]R\x06reason\"N\n" +
+	"bankItemId\x12#\n" +
+	"\x06reason\x18\x03 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xf4\x03R\x06reason\"N\n" +
 	"\x13RequestItemResponse\x127\n" +
 	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\xbf\x01\n" +
 	"\x18ReviewItemRequestRequest\x12&\n" +
@@ -2666,6 +2666,7 @@ func file_proto_guma_v1_bank_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

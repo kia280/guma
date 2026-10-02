@@ -544,24 +544,26 @@ var File_proto_guma_v1_roll_call_template_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_roll_call_template_proto_rawDesc = "" +
 	"\n" +
-	"&proto/guma/v1/roll_call_template.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"F\n" +
+	"&proto/guma/v1/roll_call_template.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"F\n" +
 	"\x1cListRollCallTemplatesRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"X\n" +
 	"\x1dListRollCallTemplatesResponse\x127\n" +
-	"\ttemplates\x18\x01 \x03(\v2\x19.guma.v1.RollCallTemplateR\ttemplates\"\xfd\x01\n" +
+	"\ttemplates\x18\x01 \x03(\v2\x19.guma.v1.RollCallTemplateR\ttemplates\"\xc7\x01\n" +
 	"\x1dCreateRollCallTemplateRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x129\n" +
-	"\x04name\x18\x02 \x01(\tB%\xbaH\"r \x18d2\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x04name\x12<\n" +
-	"\x05title\x18\x03 \x01(\tB&\xbaH#r!\x18\xc8\x012\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x05title\x12;\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1e\n" +
+	"\x04name\x18\x02 \x01(\tB\n" +
+	"\xbaH\ar\x05\xc8>\x01\x18dR\x04name\x12!\n" +
+	"\x05title\x18\x03 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12;\n" +
 	"\x11item_template_ids\x18\x04 \x03(\tB\x0f\xbaH\f\x92\x01\t\x10d\"\x05r\x03\xb0\x01\x01R\x0fitemTemplateIds\"W\n" +
 	"\x1eCreateRollCallTemplateResponse\x125\n" +
-	"\btemplate\x18\x01 \x01(\v2\x19.guma.v1.RollCallTemplateR\btemplate\"\xab\x02\n" +
+	"\btemplate\x18\x01 \x01(\v2\x19.guma.v1.RollCallTemplateR\btemplate\"\xf5\x01\n" +
 	"\x1dUpdateRollCallTemplateRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12,\n" +
 	"\vtemplate_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
-	"templateId\x129\n" +
-	"\x04name\x18\x03 \x01(\tB%\xbaH\"r \x18d2\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x04name\x12<\n" +
-	"\x05title\x18\x04 \x01(\tB&\xbaH#r!\x18\xc8\x012\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x05title\x12;\n" +
+	"templateId\x12\x1e\n" +
+	"\x04name\x18\x03 \x01(\tB\n" +
+	"\xbaH\ar\x05\xc8>\x01\x18dR\x04name\x12!\n" +
+	"\x05title\x18\x04 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12;\n" +
 	"\x11item_template_ids\x18\x05 \x03(\tB\x0f\xbaH\f\x92\x01\t\x10d\"\x05r\x03\xb0\x01\x01R\x0fitemTemplateIds\"W\n" +
 	"\x1eUpdateRollCallTemplateResponse\x125\n" +
 	"\btemplate\x18\x01 \x01(\v2\x19.guma.v1.RollCallTemplateR\btemplate\"u\n" +
@@ -643,6 +645,7 @@ func file_proto_guma_v1_roll_call_template_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

@@ -1588,10 +1588,10 @@ var File_proto_guma_v1_raffle_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_raffle_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/raffle.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"\xaf\x01\n" +
+	"\x1aproto/guma/v1/raffle.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xb8\x01\n" +
 	"\x12ListRafflesRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\x12'\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
+	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
 	"\n" +
@@ -1606,17 +1606,19 @@ const file_proto_guma_v1_raffle_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
 	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\"<\n" +
 	"\x11GetRaffleResponse\x12'\n" +
-	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"\xb5\x02\n" +
+	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"\x85\x03\n" +
 	"\x13CreateRaffleRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12!\n" +
-	"\fticket_price\x18\x04 \x01(\x03R\vticketPrice\x12\x1f\n" +
-	"\vmax_tickets\x18\x05 \x01(\x05R\n" +
-	"maxTickets\x12/\n" +
-	"\x14max_tickets_per_user\x18\x06 \x01(\x05R\x11maxTicketsPerUser\x12\x1b\n" +
-	"\tdraw_date\x18\a \x01(\tR\bdrawDate\x12,\n" +
-	"\x06prizes\x18\b \x03(\v2\x14.guma.v1.RafflePrizeR\x06prizes\"?\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
+	"\x05title\x18\x02 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x122\n" +
+	"\fticket_price\x18\x04 \x01(\x03B\x0f\xbaH\f\"\n" +
+	"\x18\x80\x80郱\xde\x16(\x00R\vticketPrice\x12(\n" +
+	"\vmax_tickets\x18\x05 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\n" +
+	"maxTickets\x128\n" +
+	"\x14max_tickets_per_user\x18\x06 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\x11maxTicketsPerUser\x12'\n" +
+	"\tdraw_date\x18\a \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18@R\bdrawDate\x126\n" +
+	"\x06prizes\x18\b \x03(\v2\x14.guma.v1.RafflePrizeB\b\xbaH\x05\x92\x01\x02\x10dR\x06prizes\"?\n" +
 	"\x14CreateRaffleResponse\x12'\n" +
 	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"\x8f\x01\n" +
 	"\x16PurchaseTicketsRequest\x12&\n" +
@@ -1637,15 +1639,15 @@ const file_proto_guma_v1_raffle_proto_rawDesc = "" +
 	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\"n\n" +
 	"\x12DrawRaffleResponse\x12'\n" +
 	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\x12/\n" +
-	"\awinners\x18\x02 \x03(\v2\x15.guma.v1.RaffleWinnerR\awinners\"\xdb\x05\n" +
+	"\awinners\x18\x02 \x03(\v2\x15.guma.v1.RaffleWinnerR\awinners\"\xb7\x05\n" +
 	"\x13UpdateRaffleRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
-	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\x12\x1b\n" +
-	"\tdraw_date\x18\x03 \x01(\tR\bdrawDate\x12e\n" +
-	"\x05title\x18\x04 \x01(\tBJ\xbaHG\xba\x01D\n" +
-	"\x1cupdate_raffle.title_required\x12\x11title is required\x1a\x11this.trim() != ''H\x00R\x05title\x88\x01\x01\x12%\n" +
-	"\vdescription\x18\x05 \x01(\tH\x01R\vdescription\x88\x01\x01\x12/\n" +
-	"\fticket_price\x18\x06 \x01(\x03B\a\xbaH\x04\"\x02(\x00H\x02R\vticketPrice\x88\x01\x01\x12-\n" +
+	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\x12$\n" +
+	"\tdraw_date\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18@R\bdrawDate\x12&\n" +
+	"\x05title\x18\x04 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01H\x00R\x05title\x88\x01\x01\x12/\n" +
+	"\vdescription\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fH\x01R\vdescription\x88\x01\x01\x127\n" +
+	"\fticket_price\x18\x06 \x01(\x03B\x0f\xbaH\f\"\n" +
+	"\x18\x80\x80郱\xde\x16(\x00H\x02R\vticketPrice\x88\x01\x01\x12-\n" +
 	"\vmax_tickets\x18\a \x01(\x05B\a\xbaH\x04\x1a\x02(\x00H\x03R\n" +
 	"maxTickets\x88\x01\x01\x12=\n" +
 	"\x14max_tickets_per_user\x18\b \x01(\x05B\a\xbaH\x04\x1a\x02(\x00H\x04R\x11maxTicketsPerUser\x88\x01\x01:\xd3\x01\xbaH\xcf\x01\x1a\xcc\x01\n" +
@@ -1700,11 +1702,12 @@ const file_proto_guma_v1_raffle_proto_rawDesc = "" +
 	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12=\n" +
-	"\fcancelled_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\vcancelledAt\"\xae\x01\n" +
-	"\vRafflePrize\x12\x12\n" +
-	"\x04rank\x18\x01 \x01(\x05R\x04rank\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x16\n" +
-	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12!\n" +
+	"\fcancelled_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\vcancelledAt\"\xd2\x01\n" +
+	"\vRafflePrize\x12\x1b\n" +
+	"\x04rank\x18\x01 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\x04rank\x12*\n" +
+	"\vdescription\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12'\n" +
+	"\x06amount\x18\x03 \x01(\x03B\x0f\xbaH\f\"\n" +
+	"\x18\x80\x80郱\xde\x16(\x00R\x06amount\x12!\n" +
 	"\x04item\x18\x04 \x01(\v2\r.guma.v1.ItemR\x04item\x12.\n" +
 	"\x06source\x18\x05 \x01(\v2\x16.guma.v1.ItemSourceRefR\x06source\"\xb8\x01\n" +
 	"\fRaffleTicket\x12\x0e\n" +
@@ -1833,6 +1836,7 @@ func file_proto_guma_v1_raffle_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_validate_proto_init()
 	file_proto_guma_v1_raffle_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

@@ -1683,9 +1683,10 @@ var File_proto_guma_v1_guild_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/guma/v1/guild.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/api/httpbody.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x86\x02\n" +
-	"\x12CreateGuildRequest\x12\x1d\n" +
-	"\x04name\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18dR\x04name\x12*\n" +
+	"\x19proto/guma/v1/guild.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/api/httpbody.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x87\x02\n" +
+	"\x12CreateGuildRequest\x12\x1e\n" +
+	"\x04name\x18\x01 \x01(\tB\n" +
+	"\xbaH\a\xc8\x01\x01r\x02\x18dR\x04name\x12*\n" +
 	"\vdescription\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12\\\n" +
 	"\bsettings\x18\x03 \x03(\v2).guma.v1.CreateGuildRequest.SettingsEntryB\x15\xbaH\x12\x9a\x01\x0f\x102\"\x04r\x02\x18d*\x05r\x03\x18\xd0\x0fR\bsettings\x1a;\n" +
 	"\rSettingsEntry\x12\x10\n" +
@@ -1705,11 +1706,12 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\n" +
 	"banner_url\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x10R\tbannerUrlJ\x04\b\x04\x10\x05R\x04tags\";\n" +
 	"\x13UpdateGuildResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"\xf4\x01\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"\xc9\x02\n" +
 	"\x16UploadGuildLogoRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
-	"\x04data\x18\x02 \x01(\fB\v\xbaH\bz\x06\x10\x01\x18\x80\x80 R\x04data\x12\x90\x01\n" +
-	"\fcontent_type\x18\x03 \x01(\tBm\xbaHjrh\x18d2d^[\\t\\n\\v\\f\\r\\x{85}\\p{Z}]*(?i:[i\\x{130}]mage/(?:png|jpeg|webp|g[i\\x{130}]f))[\\t\\n\\v\\f\\r\\x{85}\\p{Z}]*$R\vcontentType\"?\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12 \n" +
+	"\x04data\x18\x02 \x01(\fB\f\xbaH\t\xc8\x01\x01z\x04\x18\x80\x80 R\x04data\x12\xe4\x01\n" +
+	"\fcontent_type\x18\x03 \x01(\tB\xc0\x01\xbaH\xbc\x01\xba\x01\xb4\x01\n" +
+	"\x14content_type.allowed\x12Hcontent_type must be one of image/png, image/jpeg, image/webp, image/gif\x1aRthis.trim().lowerAscii() in ['image/png', 'image/jpeg', 'image/webp', 'image/gif']r\x02\x18dR\vcontentType\"?\n" +
 	"\x17UploadGuildLogoResponse\x12$\n" +
 	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"@\n" +
 	"\x16DeleteGuildLogoRequest\x12&\n" +

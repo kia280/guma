@@ -369,10 +369,10 @@ const file_proto_guma_v1_preference_proto_rawDesc = "" +
 	"\x18GetMyPreferencesResponse\x12F\n" +
 	"\rnotifications\x18\x01 \x01(\v2 .guma.v1.NotificationPreferencesR\rnotifications\x129\n" +
 	"\n" +
-	"updated_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xbd\x03\n" +
+	"updated_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xd3\x03\n" +
 	"\x1aUpdateMyPreferencesRequest\x12S\n" +
-	"\rnotifications\x18\x01 \x01(\v2%.guma.v1.NotificationPreferencesPatchB\x06\xbaH\x03\xc8\x01\x01R\rnotifications:\xc9\x02\xbaH\xc5\x02\x1a\xc2\x02\n" +
-	"\x17notifications.not_empty\x120at least one notification preference must be set\x1a\xf4\x01!has(this.notifications) || has(this.notifications.email_notifications) || has(this.notifications.auction_alerts) || has(this.notifications.raffle_alerts) || has(this.notifications.event_reminders) || has(this.notifications.roll_call_reminders)\"\xa0\x01\n" +
+	"\rnotifications\x18\x01 \x01(\v2%.guma.v1.NotificationPreferencesPatchB\x06\xbaH\x03\xc8\x01\x01R\rnotifications:\xdf\x02\xbaH\xdb\x02\x1a\xd8\x02\n" +
+	"-update_my_preferences.notifications_not_empty\x120at least one notification preference must be set\x1a\xf4\x01!has(this.notifications) || has(this.notifications.email_notifications) || has(this.notifications.auction_alerts) || has(this.notifications.raffle_alerts) || has(this.notifications.event_reminders) || has(this.notifications.roll_call_reminders)\"\xa0\x01\n" +
 	"\x1bUpdateMyPreferencesResponse\x12F\n" +
 	"\rnotifications\x18\x01 \x01(\v2 .guma.v1.NotificationPreferencesR\rnotifications\x129\n" +
 	"\n" +

@@ -1,9 +1,11 @@
 package raffle
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -123,4 +125,9 @@ func TestApplyRaffleUpdateFreezesTicketsAfterSale(t *testing.T) {
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "Renamed", next.Title)
+}
+
+func TestPurchaseTicketsNonPositiveQuantityIsInvalidArgument(t *testing.T) {
+	_, _, err := New(nil, zerolog.Nop()).PurchaseTickets(context.Background(), "", "", "", 0)
+	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }

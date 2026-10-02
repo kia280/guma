@@ -85,7 +85,7 @@ service MemberService {
 // Request/Response messages
 message InviteMemberRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string email = 2 [(buf.validate.field).string = {min_len: 1, max_len: 254}];
+  string email = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 254];
   string role = 3 [(buf.validate.field).string.max_len = 32];
   string message = 4 [(buf.validate.field).string.max_len = 500];
 }
@@ -95,7 +95,7 @@ message InviteMemberResponse {
 }
 
 message JoinGuildRequest {
-  string invite_code = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string invite_code = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message JoinGuildResponse {
@@ -167,7 +167,7 @@ message GenerateInviteCodeResponse {
 }
 
 message ValidateInviteCodeRequest {
-  string code = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string code = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
 }
 
 message ValidateInviteCodeResponse {

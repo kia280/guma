@@ -34,7 +34,7 @@ message GetMyPreferencesResponse {
 
 message UpdateMyPreferencesRequest {
   option (buf.validate.message).cel = {
-    id: "notifications.not_empty"
+    id: "update_my_preferences.notifications_not_empty"
     message: "at least one notification preference must be set"
     expression: "!has(this.notifications) || has(this.notifications.email_notifications) || has(this.notifications.auction_alerts) || has(this.notifications.raffle_alerts) || has(this.notifications.event_reminders) || has(this.notifications.roll_call_reminders)"
   };

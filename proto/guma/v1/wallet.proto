@@ -418,7 +418,7 @@ message AdminTransferFundsRequest {
     required: true
   };
   option (buf.validate.message).cel = {
-    id: "to_user_id_differs_from_user_id"
+    id: "admin_transfer_funds.to_user_id_differs"
     message: "source and destination must differ"
     expression: "this.to_user_id == '' || this.to_user_id != this.user_id"
   };
@@ -442,7 +442,7 @@ message AdminTransferBackpackItemsRequest {
     required: true
   };
   option (buf.validate.message).cel = {
-    id: "to_user_id_differs_from_user_id"
+    id: "admin_transfer_backpack_items.to_user_id_differs"
     message: "source and destination must differ"
     expression: "this.to_user_id == '' || this.to_user_id != this.user_id"
   };

@@ -3056,7 +3056,7 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\x17GetMemberAssetsResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x18\n" +
 	"\abalance\x18\x02 \x01(\x03R\abalance\x12+\n" +
-	"\x05items\x18\x03 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\"\xa6\x03\n" +
+	"\x05items\x18\x03 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\"\xaf\x03\n" +
 	"\x19AdminTransferFundsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12$\n" +
 	"\auser_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x06userId\x12)\n" +
@@ -3065,14 +3065,14 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\rto_guild_bank\x18\x04 \x01(\bR\vtoGuildBank\x12'\n" +
 	"\x06amount\x18\x05 \x01(\x03B\x0f\xbaH\f\"\n" +
 	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\x12\x1c\n" +
-	"\x04note\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note:\xa4\x01\xbaH\xa0\x01\x1a\x7f\n" +
-	"\x1fto_user_id_differs_from_user_id\x12\"source and destination must differ\x1a8this.to_user_id == '' || this.to_user_id != this.user_id\"\x1d\n" +
+	"\x04note\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note:\xad\x01\xbaH\xa9\x01\x1a\x87\x01\n" +
+	"'admin_transfer_funds.to_user_id_differs\x12\"source and destination must differ\x1a8this.to_user_id == '' || this.to_user_id != this.user_id\"\x1d\n" +
 	"\n" +
 	"to_user_id\n" +
 	"\rto_guild_bank\x10\x01\"n\n" +
 	"\x1aAdminTransferFundsResponse\x126\n" +
 	"\vtransaction\x18\x01 \x01(\v2\x14.guma.v1.TransactionR\vtransaction\x12\x18\n" +
-	"\abalance\x18\x02 \x01(\x03R\abalance\"\xb3\x03\n" +
+	"\abalance\x18\x02 \x01(\x03R\abalance\"\xc5\x03\n" +
 	"!AdminTransferBackpackItemsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12$\n" +
 	"\auser_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x06userId\x12,\n" +
@@ -3080,8 +3080,8 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\n" +
 	"to_user_id\x18\x04 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\btoUserId\x12\"\n" +
 	"\rto_guild_bank\x18\x05 \x01(\bR\vtoGuildBank\x12\x1c\n" +
-	"\x04note\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note:\xa4\x01\xbaH\xa0\x01\x1a\x7f\n" +
-	"\x1fto_user_id_differs_from_user_id\x12\"source and destination must differ\x1a8this.to_user_id == '' || this.to_user_id != this.user_id\"\x1d\n" +
+	"\x04note\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note:\xb6\x01\xbaH\xb2\x01\x1a\x90\x01\n" +
+	"0admin_transfer_backpack_items.to_user_id_differs\x12\"source and destination must differ\x1a8this.to_user_id == '' || this.to_user_id != this.user_id\"\x1d\n" +
 	"\n" +
 	"to_user_id\n" +
 	"\rto_guild_bank\x10\x01\"?\n" +

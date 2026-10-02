@@ -1180,7 +1180,7 @@ var File_proto_guma_v1_event_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/guma/v1/event.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd0\x01\n" +
+	"\x19proto/guma/v1/event.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\xd0\x01\n" +
 	"\x11ListEventsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1b\n" +
 	"\x04view\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04view\x12\x1b\n" +
@@ -1199,10 +1199,10 @@ const file_proto_guma_v1_event_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12&\n" +
 	"\bevent_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aeventId\"=\n" +
 	"\x10GetEventResponse\x12)\n" +
-	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"\xd5\x04\n" +
+	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"\xba\x04\n" +
 	"\x12CreateEventRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12<\n" +
-	"\x05title\x18\x02 \x01(\tB&\xbaH#r!\x18\xc8\x012\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x05title\x12*\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
+	"\x05title\x18\x02 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12*\n" +
 	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12o\n" +
 	"\x04type\x18\x04 \x01(\tB[\xbaHX\xd8\x01\x01rSR\fboss_respawnR\tguild_warR\rguild_meetingR\x04raidR\btrainingR\n" +
 	"tournamentR\x06socialR\x05otherR\x04type\x12&\n" +
@@ -1217,11 +1217,11 @@ const file_proto_guma_v1_event_proto_rawDesc = "" +
 	" \x01(\bR\visRecurring\x12F\n" +
 	"\x11recurring_pattern\x18\v \x01(\v2\x19.guma.v1.RecurringPatternR\x10recurringPattern\"@\n" +
 	"\x13CreateEventResponse\x12)\n" +
-	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"\xfd\x04\n" +
+	"\x05event\x18\x01 \x01(\v2\x13.guma.v1.GuildEventR\x05event\"\xe2\x04\n" +
 	"\x12UpdateEventRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12&\n" +
-	"\bevent_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aeventId\x12<\n" +
-	"\x05title\x18\x03 \x01(\tB&\xbaH#r!\x18\xc8\x012\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x05title\x12*\n" +
+	"\bevent_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aeventId\x12!\n" +
+	"\x05title\x18\x03 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12*\n" +
 	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12o\n" +
 	"\x04type\x18\x05 \x01(\tB[\xbaHX\xd8\x01\x01rSR\fboss_respawnR\tguild_warR\rguild_meetingR\x04raidR\btrainingR\n" +
 	"tournamentR\x06socialR\x05otherR\x04type\x12&\n" +
@@ -1374,6 +1374,7 @@ func file_proto_guma_v1_event_proto_init() {
 	if File_proto_guma_v1_event_proto != nil {
 		return
 	}
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

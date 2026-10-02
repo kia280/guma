@@ -104,7 +104,7 @@ service GuildService {
 
 // Request/Response messages
 message CreateGuildRequest {
-  string name = 1 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
+  string name = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 100];
   string description = 2 [(buf.validate.field).string.max_len = 2000];
   map<string, string> settings = 3 [(buf.validate.field).map = {max_pairs: 50, keys: {string: {max_len: 100}}, values: {string: {max_len: 2000}}}];
   reserved 4;
@@ -139,8 +139,12 @@ message UpdateGuildResponse {
 
 message UploadGuildLogoRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  bytes data = 2 [(buf.validate.field).bytes = {min_len: 1, max_len: 524288}];
-  string content_type = 3 [(buf.validate.field).string = {max_len: 100, pattern: "^[\\t\\n\\v\\f\\r\\x{85}\\p{Z}]*(?i:[i\\x{130}]mage/(?:png|jpeg|webp|g[i\\x{130}]f))[\\t\\n\\v\\f\\r\\x{85}\\p{Z}]*$"}];
+  bytes data = 2 [(buf.validate.field).required = true, (buf.validate.field).bytes.max_len = 524288];
+  string content_type = 3 [(buf.validate.field).string.max_len = 100, (buf.validate.field).cel = {
+    id: "content_type.allowed"
+    message: "content_type must be one of image/png, image/jpeg, image/webp, image/gif"
+    expression: "this.trim().lowerAscii() in ['image/png', 'image/jpeg', 'image/webp', 'image/gif']"
+  }];
 }
 
 message UploadGuildLogoResponse {

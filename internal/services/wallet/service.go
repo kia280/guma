@@ -170,7 +170,7 @@ func (s *Service) GetWallet(ctx context.Context, userIDStr, guildIDStr string) (
 // Deposit adds funds to a wallet (admin or system operation).
 func (s *Service) Deposit(ctx context.Context, userIDStr, guildIDStr string, amount int64, note string) (*Transaction, *Wallet, error) {
 	if amount <= 0 {
-		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrFailedPrecondition)
+		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
 	}
 	note, err := normalizeNote(note)
 	if err != nil {
@@ -204,7 +204,7 @@ func (s *Service) Deposit(ctx context.Context, userIDStr, guildIDStr string, amo
 // Transfer moves funds atomically between two users in the same guild.
 func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guildIDStr string, amount int64, note string) (*Transaction, *Wallet, error) {
 	if amount <= 0 {
-		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrFailedPrecondition)
+		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
 	}
 	fromUserID, err := uuid.Parse(fromUserIDStr)
 	if err != nil {
