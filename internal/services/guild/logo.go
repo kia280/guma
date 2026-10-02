@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
@@ -71,7 +72,7 @@ func (s *Service) UploadLogo(ctx context.Context, p UploadLogoParams) (*Guild, e
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageGuild); err != nil {
 		return nil, err
 	}
 
@@ -110,7 +111,7 @@ func (s *Service) DeleteLogo(ctx context.Context, guildIDStr, userIDStr string) 
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageGuild); err != nil {
 		return nil, err
 	}
 

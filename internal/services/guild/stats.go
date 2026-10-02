@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/services/errs"
 )
 
@@ -28,7 +29,7 @@ func (s *Service) Stats(ctx context.Context, guildIDStr, userIDStr string) (*Sta
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.ViewStats); err != nil {
 		return nil, err
 	}
 
