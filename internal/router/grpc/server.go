@@ -79,7 +79,7 @@ func NewServer(cfg *config.Config, db *database.Pool, az authz.Authorizer, broke
 	bankHandler := handlers.NewBankService(db, logger)
 	notificationHandler := handlers.NewNotificationService(db, logger)
 	preferenceHandler := handlers.NewPreferenceService(db, logger)
-	announcementHandler := handlers.NewAnnouncementService(db, logger)
+	announcementHandler := handlers.NewAnnouncementService(db, az, logger)
 	streamHandler := handlers.NewStreamService(broker, events.MemberGuildIDs(db), logger)
 
 	healthService := health.NewService(db)

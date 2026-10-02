@@ -17,7 +17,7 @@ import (
 )
 
 func TestAnnouncementService_Validation(t *testing.T) {
-	h := NewAnnouncementService(nil, zerolog.Nop())
+	h := NewAnnouncementService(nil, nil, zerolog.Nop())
 	anon := context.Background()
 	authed := session.WithUserID(anon, "00000000-0000-0000-0000-000000000001")
 	const guild = "00000000-0000-0000-0000-00000000000a"
