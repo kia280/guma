@@ -65,7 +65,7 @@ func NewServer(cfg *config.Config, db *database.Pool, az authz.Authorizer, broke
 	gumaHandler := handlers.NewGumaService(logger)
 	guildHandler := handlers.NewGuildService(db, az, logger)
 	memberHandler := handlers.NewMemberService(db, az, logger)
-	userHandler := handlers.NewUserService(db, cfg.Auth.KratosPublicURL, logger,
+	userHandler := handlers.NewUserService(db, az, cfg.Auth.KratosPublicURL, logger,
 		usersvc.WithDevAuth(cfg.Dev.AuthEnabled),
 		usersvc.WithKratosAdminURL(cfg.Auth.KratosAdminURL),
 	)

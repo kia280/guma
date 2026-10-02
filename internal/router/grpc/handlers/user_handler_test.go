@@ -19,7 +19,7 @@ import (
 )
 
 func TestUserService_GetMe_Unauthenticated(t *testing.T) {
-	service := NewUserService(nil, "", zerolog.New(os.Stdout))
+	service := NewUserService(nil, nil, "", zerolog.New(os.Stdout))
 
 	_, err := service.GetMe(context.Background(), &gumav1.GetMeRequest{})
 	require.Error(t, err)
@@ -29,7 +29,7 @@ func TestUserService_GetMe_Unauthenticated(t *testing.T) {
 }
 
 func TestUserService_UpdateMe_InvalidArgument(t *testing.T) {
-	service := NewUserService(nil, "", zerolog.New(os.Stdout))
+	service := NewUserService(nil, nil, "", zerolog.New(os.Stdout))
 	ctx := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 
 	tests := []struct {
