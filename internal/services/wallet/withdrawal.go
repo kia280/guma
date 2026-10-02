@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 	"github.com/kia280/guma/internal/services/pagination"
@@ -29,8 +29,6 @@ const (
 
 	withdrawalReferenceType = "withdrawal"
 )
-
-var withdrawalReviewerRoles = []string{"owner", "admin", "moderator"}
 
 type WithdrawalRequest struct {
 	ID                 string
@@ -68,7 +66,7 @@ func (s *Service) RequestWithdrawal(ctx context.Context, userIDStr, guildIDStr s
 		return nil, nil, nil, err
 	}
 	note = strings.TrimSpace(note)
-	if err := s.requireMember(ctx, s.q, guildID, userID, errs.ErrPermissionDenied); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
 		return nil, nil, nil, err
 	}
 
@@ -162,7 +160,7 @@ func (s *Service) ReviewWithdrawalRequest(ctx context.Context, reviewerIDStr, gu
 		return nil, fmt.Errorf("%w: withdrawal request", errs.ErrNotFound)
 	}
 	note = strings.TrimSpace(note)
-	if err := s.requireWithdrawalReviewer(ctx, guildID, reviewerID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, reviewerID, authz.ReviewWithdrawals); err != nil {
 		return nil, err
 	}
 
@@ -196,7 +194,7 @@ func (s *Service) ListWithdrawalRequests(ctx context.Context, p ListWithdrawalRe
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireWithdrawalReviewer(ctx, guildID, viewerID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, viewerID, authz.ReviewWithdrawals); err != nil {
 		return nil, err
 	}
 	return s.listWithdrawalRequests(ctx, guildID, nil, p)
@@ -353,18 +351,4 @@ func toWithdrawalRequest(r db.ListWithdrawalRequestsRow) *WithdrawalRequest {
 		ReviewerID: uuidString(r.ReviewerID), ReviewerName: r.ReviewerName, ReviewNote: r.ReviewNote,
 		CreatedAt: r.CreatedAt, ReviewedAt: timestampPtr(r.ReviewedAt),
 	}
-}
-
-func (s *Service) requireWithdrawalReviewer(ctx context.Context, guildID, userID uuid.UUID) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: load member role: %v", errs.ErrInternal, err)
-	}
-	if !slices.Contains(withdrawalReviewerRoles, role) {
-		return fmt.Errorf("%w: only officers can review withdrawal requests", errs.ErrPermissionDenied)
-	}
-	return nil
 }

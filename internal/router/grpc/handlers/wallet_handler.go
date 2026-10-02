@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	walletsvc "github.com/kia280/guma/internal/services/wallet"
 	"github.com/kia280/guma/internal/session"
@@ -22,9 +23,9 @@ type WalletHandler struct {
 }
 
 // NewWalletService creates a new Wallet gRPC handler.
-func NewWalletService(db *database.Pool, logger zerolog.Logger) *WalletHandler {
+func NewWalletService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *WalletHandler {
 	return &WalletHandler{
-		svc:    walletsvc.New(db, logger),
+		svc:    walletsvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "wallet").Logger(),
 	}
 }

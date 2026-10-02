@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
@@ -22,8 +23,6 @@ const (
 
 	contributionKindAdminTransfer = "admin_transfer"
 )
-
-var assetAdminRoles = []string{"owner", "admin"}
 
 type MemberAssetSummary struct {
 	UserID    string
@@ -74,7 +73,7 @@ func (s *Service) ListMemberAssets(ctx context.Context, adminIDStr, guildIDStr s
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireAssetAdmin(ctx, guildID, adminID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, adminID, authz.ManageMemberAssets); err != nil {
 		return nil, err
 	}
 	rows, err := s.q.ListMemberAssets(ctx, guildID)
@@ -97,7 +96,7 @@ func (s *Service) GetMemberAssets(ctx context.Context, adminIDStr, guildIDStr, m
 	if err != nil {
 		return nil, fmt.Errorf("%w: member", errs.ErrNotFound)
 	}
-	if err := s.requireAssetAdmin(ctx, guildID, adminID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, adminID, authz.ManageMemberAssets); err != nil {
 		return nil, err
 	}
 	if err := s.requireMember(ctx, s.q, guildID, memberID, errs.ErrNotFound); err != nil {
@@ -330,7 +329,7 @@ func (s *Service) prepareAdminTransfer(ctx context.Context, adminIDStr, guildIDS
 		}
 	}
 
-	if err := s.requireAssetAdmin(ctx, guildID, adminID); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, adminID, authz.ManageMemberAssets); err != nil {
 		return t, err
 	}
 	if !t.toBank {
@@ -339,20 +338,6 @@ func (s *Service) prepareAdminTransfer(ctx context.Context, adminIDStr, guildIDS
 		}
 	}
 	return t, nil
-}
-
-func (s *Service) requireAssetAdmin(ctx context.Context, guildID, userID uuid.UUID) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: load member role: %v", errs.ErrInternal, err)
-	}
-	if !slices.Contains(assetAdminRoles, role) {
-		return fmt.Errorf("%w: only owners and admins can manage member assets", errs.ErrPermissionDenied)
-	}
-	return nil
 }
 
 func (s *Service) requireMember(ctx context.Context, q *db.Queries, guildID, userID uuid.UUID, missing error) error {
