@@ -217,10 +217,10 @@ const file_proto_guma_v1_item_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1a\n" +
 	"\bcategory\x18\x04 \x01(\tR\bcategory\x12\x16\n" +
-	"\x06rarity\x18\x05 \x01(\tR\x06rarity\"\xfc\x01\n" +
-	"\rItemSourceRef\x121\n" +
-	"\x10backpack_item_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0ebackpackItemId\x12)\n" +
-	"\fbank_item_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
+	"\x06rarity\x18\x05 \x01(\tR\x06rarity\"\x84\x02\n" +
+	"\rItemSourceRef\x125\n" +
+	"\x10backpack_item_id\x18\x01 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\x0ebackpackItemId\x12-\n" +
+	"\fbank_item_id\x18\x02 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"bankItemId:\x8c\x01\xbaH\x88\x01\x1a\x85\x01\n" +
 	"\x1ditem_source_ref.single_source\x12,choose either a backpack item or a bank item\x1a6this.backpack_item_id == '' || this.bank_item_id == ''\".\n" +
 	"\bItemLock\x12\x12\n" +

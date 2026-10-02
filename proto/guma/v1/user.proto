@@ -69,7 +69,7 @@ message UpdateMeResponse {
 }
 
 message GetUserRequest {
-  string user_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64}];
+  string user_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message GetUserResponse {

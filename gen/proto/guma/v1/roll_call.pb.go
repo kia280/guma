@@ -1993,9 +1993,9 @@ var File_proto_guma_v1_roll_call_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\n" +
-	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"\xb8\x01\n" +
-	"\x14ListRollCallsRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12\x1f\n" +
+	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"\xba\x01\n" +
+	"\x14ListRollCallsRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
 	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
@@ -2007,15 +2007,15 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"roll_calls\x18\x01 \x03(\v2\x11.guma.v1.RollCallR\trollCalls\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"g\n" +
-	"\x12GetRollCallRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"totalCount\"k\n" +
+	"\x12GetRollCallRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\"E\n" +
 	"\x13GetRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xe0\v\n" +
-	"\x15CreateRollCallRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12<\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xe2\v\n" +
+	"\x15CreateRollCallRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12<\n" +
 	"\x05title\x18\x02 \x01(\tB&\xbaH#r!\x18\xc8\x012\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x05title\x12*\n" +
 	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12%\n" +
 	"\bdatetime\x18\x04 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\bdatetime\x12*\n" +
@@ -2029,10 +2029,10 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\x16loot_list.item_max_len\x12_loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters\x1a\xaa\x03this.loot.size() > 0 || this.loot_list.all(i, i.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && i.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$'))\x1a\xc7\x01\n" +
 	"\x16loot.single_gold_entry\x12-a roll call can have only one gold loot entry\x1a~this.loot.filter(e, e.kind.matches(r'^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*[gG][oO][lL][dD][\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$')).size() <= 1\"H\n" +
 	"\x16CreateRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x9d\x05\n" +
-	"\x15UpdateRollCallRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xa1\x05\n" +
+	"\x15UpdateRollCallRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\x12<\n" +
 	"\x05title\x18\x03 \x01(\tB&\xbaH#r!\x18\xc8\x012\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x05title\x12/\n" +
 	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fH\x00R\vdescription\x88\x01\x01\x12%\n" +
@@ -2047,58 +2047,58 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\n" +
 	"_image_url\"H\n" +
 	"\x16UpdateRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"j\n" +
-	"\x15DeleteRollCallRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"n\n" +
+	"\x15DeleteRollCallRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\"2\n" +
 	"\x16DeleteRollCallResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"j\n" +
-	"\x15CancelRollCallRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"n\n" +
+	"\x15CancelRollCallRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\"H\n" +
 	"\x16CancelRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xa1\x01\n" +
-	"\x17CompleteRollCallRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xa5\x01\n" +
+	"\x17CompleteRollCallRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\x123\n" +
 	"\x16keep_leftovers_in_bank\x18\x03 \x01(\bR\x13keepLeftoversInBank\"J\n" +
 	"\x18CompleteRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x9a\x06\n" +
-	"\x19UpdateRollCallLootRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x9e\x06\n" +
+	"\x19UpdateRollCallLootRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\x12\xa9\x05\n" +
 	"\tloot_list\x18\x03 \x03(\v2\r.guma.v1.ItemB\xfc\x04\xbaH\xf8\x04\x92\x01\xf4\x04\x10d\"\xef\x04\xba\x01j\n" +
 	"\x17loot_item.name_required\x12\x1beach loot item needs a name\x1a2this.name.matches(r'[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]')\xba\x01\xfe\x03\n" +
 	"\x11loot_item.max_len\x12_loot item name, description, category and rarity must be at most 100, 500, 50 and 50 characters\x1a\x87\x03this.name.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,100}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.description.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,500}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.category.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$') && this.rarity.matches(r'(?s)^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*.{0,50}[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$')R\blootList\"L\n" +
 	"\x1aUpdateRollCallLootResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xae\x01\n" +
-	"\x11AssignLootRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
-	"rollCallId\x12\"\n" +
-	"\aitem_id\x18\x03 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\x06itemId\x12\"\n" +
-	"\auser_id\x18\x04 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\x06userId\">\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xb6\x01\n" +
+	"\x11AssignLootRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
+	"rollCallId\x12$\n" +
+	"\aitem_id\x18\x03 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x06itemId\x12$\n" +
+	"\auser_id\x18\x04 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x06userId\">\n" +
 	"\x12AssignLootResponse\x12(\n" +
-	"\x10backpack_item_id\x18\x01 \x01(\tR\x0ebackpackItemId\"k\n" +
-	"\x16GetRollCallGoldRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\x10backpack_item_id\x18\x01 \x01(\tR\x0ebackpackItemId\"o\n" +
+	"\x16GetRollCallGoldRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\"\x82\x01\n" +
 	"\x17GetRollCallGoldResponse\x12*\n" +
 	"\x03pot\x18\x01 \x01(\v2\x18.guma.v1.RollCallGoldPotR\x03pot\x12;\n" +
 	"\n" +
 	"recipients\x18\x02 \x03(\v2\x1b.guma.v1.RollCallGoldPayoutR\n" +
-	"recipients\"\xc0\x03\n" +
-	"\x1dDistributeRollCallGoldRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
-	"rollCallId\x12(\n" +
+	"recipients\"\xc6\x03\n" +
+	"\x1dDistributeRollCallGoldRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
+	"rollCallId\x12*\n" +
 	"\n" +
-	"request_id\x18\x03 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\trequestId\x12\xa1\x02\n" +
+	"request_id\x18\x03 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\trequestId\x12\xa1\x02\n" +
 	"\apayouts\x18\x04 \x03(\v2\x1b.guma.v1.RollCallGoldPayoutB\xe9\x01\xbaH\xe5\x01\xba\x01^\n" +
 	"\x17payouts.unique_user_ids\x12\"each attendee can appear only once\x1a\x1fthis.map(p, p.user_id).unique()\xba\x01y\n" +
 	"\x16payouts.positive_total\x12-enter a gold amount for at least one attendee\x1a0this.size() == 0 || this.exists(p, p.amount > 0)\x92\x01\x05\b\x01\x10\xe8\aR\apayouts\"\xc8\x01\n" +
@@ -2106,17 +2106,17 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\x0fdistribution_id\x18\x01 \x01(\tR\x0edistributionId\x12*\n" +
 	"\x03pot\x18\x02 \x01(\v2\x18.guma.v1.RollCallGoldPotR\x03pot\x125\n" +
 	"\apayouts\x18\x03 \x03(\v2\x1b.guma.v1.RollCallGoldPayoutR\apayouts\x12\x1a\n" +
-	"\breplayed\x18\x04 \x01(\bR\breplayed\"\x83\x01\n" +
-	"\x0eCheckInRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\breplayed\x18\x04 \x01(\bR\breplayed\"\x87\x01\n" +
+	"\x0eCheckInRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\x12\x1e\n" +
 	"\x05notes\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x05notes\"H\n" +
 	"\x0fCheckInResponse\x125\n" +
-	"\battendee\x18\x01 \x01(\v2\x19.guma.v1.RollCallAttendeeR\battendee\"\xc4\x01\n" +
-	"\x14ListAttendeesRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12+\n" +
-	"\froll_call_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\battendee\x18\x01 \x01(\v2\x19.guma.v1.RollCallAttendeeR\battendee\"\xc8\x01\n" +
+	"\x14ListAttendeesRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
+	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
@@ -2167,9 +2167,9 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\vdistributed\x18\x02 \x01(\x03R\vdistributed\x12\x1c\n" +
 	"\tretracted\x18\x03 \x01(\x03R\tretracted\x12\x1c\n" +
 	"\tremaining\x18\x04 \x01(\x03R\tremaining\x12\x12\n" +
-	"\x04kept\x18\x05 \x01(\x03R\x04kept\"}\n" +
-	"\x12RollCallGoldPayout\x12>\n" +
-	"\auser_id\x18\x01 \x01(\tB%\xbaH\"r \x18@2\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x06userId\x12'\n" +
+	"\x04kept\x18\x05 \x01(\x03R\x04kept\"c\n" +
+	"\x12RollCallGoldPayout\x12$\n" +
+	"\auser_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x06userId\x12'\n" +
 	"\x06amount\x18\x02 \x01(\x03B\x0f\xbaH\f\"\n" +
 	"\x18\x80\x80郱\xde\x16(\x00R\x06amount\"\xf5\x01\n" +
 	"\x10RollCallAttendee\x12\x0e\n" +

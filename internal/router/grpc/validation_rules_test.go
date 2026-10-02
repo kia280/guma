@@ -17,7 +17,10 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 )
 
-const testUUID = "123e4567-e89b-12d3-a456-426614174000"
+const (
+	testUUID      = "123e4567-e89b-12d3-a456-426614174000"
+	otherTestUUID = "123e4567-e89b-12d3-a456-426614174001"
+)
 
 func newTestValidator(t *testing.T) protovalidate.Validator {
 	t.Helper()
@@ -82,30 +85,45 @@ func TestRequestRules(t *testing.T) {
 		want violation
 	}{
 		{
-			name: "guild id too long",
+			name: "guild id too long for a uuid",
 			req:  &gumav1.GetGuildRequest{GuildId: strings.Repeat("a", 65)},
-			want: violation{"guild_id", "string.max_len"},
+			want: violation{"guild_id", "string.uuid"},
+		},
+		{
+			name: "braced guild uuid",
+			req:  &gumav1.ListMembersRequest{GuildId: "{" + testUUID + "}"},
+			want: violation{"guild_id", "string.uuid"},
+		},
+		{
+			name: "malformed optional guild id",
+			req:  &gumav1.ListMyTicketsRequest{GuildId: "guild-1"},
+			want: violation{"guild_id", "string.uuid"},
+		},
+		{
+			name: "malformed repeated item id",
+			req:  &gumav1.AdminTransferBackpackItemsRequest{GuildId: testUUID, UserId: testUUID, ItemIds: []string{"i1"}, ToGuildBank: true},
+			want: violation{"item_ids", "string.uuid"},
 		},
 		{
 			name: "missing auction guild id",
-			req:  &gumav1.GetAuctionRequest{AuctionId: "a"},
+			req:  &gumav1.GetAuctionRequest{AuctionId: testUUID},
 			want: violation{"guild_id", "required"},
 		},
 		{
 			name: "zero ticket quantity",
-			req:  &gumav1.PurchaseTicketsRequest{GuildId: "g", RaffleId: "r"},
+			req:  &gumav1.PurchaseTicketsRequest{GuildId: testUUID, RaffleId: testUUID},
 			want: violation{"quantity", "int32.gt"},
 		},
 		{
 			name: "zero starting bid on auction update",
-			req:  &gumav1.UpdateAuctionRequest{GuildId: "g", AuctionId: "a", StartingBid: proto.Int64(0)},
+			req:  &gumav1.UpdateAuctionRequest{GuildId: testUUID, AuctionId: testUUID, StartingBid: proto.Int64(0)},
 			want: violation{"starting_bid", "int64.gt"},
 		},
 		{
 			name: "auction end before start",
 			req: &gumav1.UpdateAuctionRequest{
-				GuildId:   "g",
-				AuctionId: "a",
+				GuildId:   testUUID,
+				AuctionId: testUUID,
 				StartTime: timestamppb.New(time.Unix(1900003600, 0)),
 				EndTime:   timestamppb.New(time.Unix(1900000000, 0)),
 			},
@@ -113,25 +131,25 @@ func TestRequestRules(t *testing.T) {
 		},
 		{
 			name: "empty raffle update",
-			req:  &gumav1.UpdateRaffleRequest{GuildId: "g", RaffleId: "r"},
+			req:  &gumav1.UpdateRaffleRequest{GuildId: testUUID, RaffleId: testUUID},
 			want: violation{"", "update_raffle.nothing_to_update"},
 		},
 		{
 			name: "blank raffle title",
-			req:  &gumav1.UpdateRaffleRequest{GuildId: "g", RaffleId: "r", Title: proto.String("  ")},
+			req:  &gumav1.UpdateRaffleRequest{GuildId: testUUID, RaffleId: testUUID, Title: proto.String("  ")},
 			want: violation{"title", "update_raffle.title_required"},
 		},
 		{
 			name: "auction from two inventory sources",
 			req: &gumav1.CreateAuctionRequest{
-				GuildId: "g",
-				Source:  &gumav1.ItemSourceRef{BackpackItemId: "b", BankItemId: "c"},
+				GuildId: testUUID,
+				Source:  &gumav1.ItemSourceRef{BackpackItemId: testUUID, BankItemId: testUUID},
 			},
 			want: violation{"source", "item_source_ref.single_source"},
 		},
 		{
 			name: "auction item without name",
-			req:  &gumav1.CreateAuctionRequest{GuildId: "g", Item: &gumav1.Item{}},
+			req:  &gumav1.CreateAuctionRequest{GuildId: testUUID, Item: &gumav1.Item{}},
 			want: violation{"", "create_auction.item_name_required"},
 		},
 		{
@@ -141,27 +159,27 @@ func TestRequestRules(t *testing.T) {
 		},
 		{
 			name: "unknown fund request status",
-			req:  &gumav1.ListFundRequestsRequest{GuildId: "g", Status: "cancelled"},
+			req:  &gumav1.ListFundRequestsRequest{GuildId: testUUID, Status: "cancelled"},
 			want: violation{"status", "string.in"},
 		},
 		{
 			name: "blank fund request reason",
-			req:  &gumav1.RequestFundsRequest{GuildId: "g", Amount: 1, Reason: " \t "},
+			req:  &gumav1.RequestFundsRequest{GuildId: testUUID, Amount: 1, Reason: " \t "},
 			want: violation{"reason", "string.pattern"},
 		},
 		{
 			name: "admin transfer to user and bank",
-			req:  &gumav1.AdminTransferFundsRequest{GuildId: "g", UserId: "u", Amount: 5, ToUserId: "x", ToGuildBank: true},
+			req:  &gumav1.AdminTransferFundsRequest{GuildId: testUUID, UserId: testUUID, Amount: 5, ToUserId: testUUID, ToGuildBank: true},
 			want: violation{"", "message.oneof"},
 		},
 		{
 			name: "admin transfer to same user",
-			req:  &gumav1.AdminTransferFundsRequest{GuildId: "g", UserId: "u", Amount: 5, ToUserId: "u"},
+			req:  &gumav1.AdminTransferFundsRequest{GuildId: testUUID, UserId: testUUID, Amount: 5, ToUserId: testUUID},
 			want: violation{"", "to_user_id_differs_from_user_id"},
 		},
 		{
 			name: "admin item transfer without items",
-			req:  &gumav1.AdminTransferBackpackItemsRequest{GuildId: "g", UserId: "u", ToGuildBank: true},
+			req:  &gumav1.AdminTransferBackpackItemsRequest{GuildId: testUUID, UserId: testUUID, ToGuildBank: true},
 			want: violation{"item_ids", "repeated.min_items"},
 		},
 		{
@@ -171,7 +189,7 @@ func TestRequestRules(t *testing.T) {
 		},
 		{
 			name: "unsupported logo type",
-			req:  &gumav1.UploadGuildLogoRequest{GuildId: "x", Data: []byte{1}, ContentType: "image/svg+xml"},
+			req:  &gumav1.UploadGuildLogoRequest{GuildId: testUUID, Data: []byte{1}, ContentType: "image/svg+xml"},
 			want: violation{"content_type", "string.pattern"},
 		},
 		{
@@ -186,23 +204,23 @@ func TestRequestRules(t *testing.T) {
 		},
 		{
 			name: "missing guild settings",
-			req:  &gumav1.UpdateGuildSettingsRequest{GuildId: "x"},
+			req:  &gumav1.UpdateGuildSettingsRequest{GuildId: testUUID},
 			want: violation{"settings", "required"},
 		},
 		{
 			name: "malformed notification id",
 			req:  &gumav1.MarkNotificationReadRequest{NotificationId: "nope"},
-			want: violation{"notification_id", "string.pattern"},
+			want: violation{"notification_id", "string.uuid"},
 		},
 		{
 			name: "blank event title",
-			req:  &gumav1.CreateEventRequest{GuildId: "g", Title: "  \t"},
+			req:  &gumav1.CreateEventRequest{GuildId: testUUID, Title: "  \t"},
 			want: violation{"title", "string.pattern"},
 		},
 		{
 			name: "two gold loot entries",
 			req: &gumav1.CreateRollCallRequest{
-				GuildId: "g", Title: "t", Datetime: "a", ExpireTime: "b",
+				GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b",
 				Loot: []*gumav1.RollCallLootEntry{{Kind: " GOLD ", Amount: 5}, {Kind: "gold", Amount: 1}},
 			},
 			want: violation{"", "loot.single_gold_entry"},
@@ -210,7 +228,7 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "gold loot without amount",
 			req: &gumav1.CreateRollCallRequest{
-				GuildId: "g", Title: "t", Datetime: "a", ExpireTime: "b",
+				GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b",
 				Loot: []*gumav1.RollCallLootEntry{{Kind: "Gold"}},
 			},
 			want: violation{"loot", "loot_entry.gold_amount_positive"},
@@ -218,7 +236,7 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "loot update item without name",
 			req: &gumav1.UpdateRollCallLootRequest{
-				GuildId: "g", RollCallId: "r",
+				GuildId: testUUID, RollCallId: testUUID,
 				LootList: []*gumav1.Item{{Name: "n"}, {}},
 			},
 			want: violation{"loot_list", "loot_item.name_required"},
@@ -226,14 +244,14 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "duplicate gold payout users",
 			req: &gumav1.DistributeRollCallGoldRequest{
-				GuildId: "g", RollCallId: "r", RequestId: "x",
-				Payouts: []*gumav1.RollCallGoldPayout{{UserId: "u", Amount: 1}, {UserId: "u", Amount: 2}},
+				GuildId: testUUID, RollCallId: testUUID, RequestId: testUUID,
+				Payouts: []*gumav1.RollCallGoldPayout{{UserId: testUUID, Amount: 1}, {UserId: testUUID, Amount: 2}},
 			},
 			want: violation{"payouts", "payouts.unique_user_ids"},
 		},
 		{
 			name: "unknown item template category",
-			req:  &gumav1.CreateItemTemplateRequest{GuildId: "g", Name: "n", Category: "ſkill_scroll", Rarity: "rare"},
+			req:  &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: "ſkill_scroll", Rarity: "rare"},
 			want: violation{"category", "string.pattern"},
 		},
 	}
@@ -251,8 +269,8 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "auction update",
 			req: &gumav1.UpdateAuctionRequest{
-				GuildId:     "g",
-				AuctionId:   "a",
+				GuildId:     testUUID,
+				AuctionId:   testUUID,
 				Item:        &gumav1.Item{Name: "Sword"},
 				StartingBid: proto.Int64(10),
 				StartTime:   timestamppb.New(time.Unix(1900000000, 0)),
@@ -261,15 +279,15 @@ func TestRequestRules(t *testing.T) {
 		},
 		{
 			name: "admin item transfer",
-			req:  &gumav1.AdminTransferBackpackItemsRequest{GuildId: "g", UserId: "u", ItemIds: []string{"i1"}, ToUserId: "x"},
+			req:  &gumav1.AdminTransferBackpackItemsRequest{GuildId: testUUID, UserId: testUUID, ItemIds: []string{testUUID}, ToUserId: otherTestUUID},
 		},
 		{
 			name: "padded logo content type",
-			req:  &gumav1.UploadGuildLogoRequest{GuildId: "x", Data: []byte{0x89, 'P', 'N', 'G'}, ContentType: " IMAGE/PNG "},
+			req:  &gumav1.UploadGuildLogoRequest{GuildId: testUUID, Data: []byte{0x89, 'P', 'N', 'G'}, ContentType: " IMAGE/PNG "},
 		},
 		{
-			name: "braced guild uuid",
-			req:  &gumav1.ListMembersRequest{GuildId: "{" + testUUID + "}"},
+			name: "optional guild id left empty",
+			req:  &gumav1.ListMyTicketsRequest{},
 		},
 		{
 			name: "single notification preference",
@@ -277,12 +295,12 @@ func TestRequestRules(t *testing.T) {
 		},
 		{
 			name: "mixed case item template enums",
-			req:  &gumav1.CreateItemTemplateRequest{GuildId: "g", Name: "n", Category: "SKILL_SCROLL", Rarity: "Epİc"},
+			req:  &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: "SKILL_SCROLL", Rarity: "Epİc"},
 		},
 		{
 			name: "loot list ignored when loot entries are set",
 			req: &gumav1.CreateRollCallRequest{
-				GuildId: "g", Title: "t", Datetime: "a", ExpireTime: "b",
+				GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b",
 				LootList: []*gumav1.Item{{Name: "  "}},
 				Loot:     []*gumav1.RollCallLootEntry{{Kind: "gold", Amount: 5}},
 			},

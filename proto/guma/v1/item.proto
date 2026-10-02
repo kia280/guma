@@ -26,8 +26,8 @@ message ItemSourceRef {
     expression: "this.backpack_item_id == '' || this.bank_item_id == ''"
   };
 
-  string backpack_item_id = 1 [(buf.validate.field).string.max_len = 64];
-  string bank_item_id = 2 [(buf.validate.field).string.max_len = 64];
+  string backpack_item_id = 1 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];
+  string bank_item_id = 2 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];
 }
 
 message ItemLock {

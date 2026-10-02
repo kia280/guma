@@ -82,7 +82,7 @@ service RaffleService {
 // Request/Response messages
 
 message ListRafflesRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string status = 2;     // "active" | "upcoming" | "ended" | "cancelled" | "" (all)
   int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
   string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
@@ -95,8 +95,8 @@ message ListRafflesResponse {
 }
 
 message GetRaffleRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message GetRaffleResponse {
@@ -104,7 +104,7 @@ message GetRaffleResponse {
 }
 
 message CreateRaffleRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string title = 2;
   string description = 3;
   int64 ticket_price = 4;
@@ -119,8 +119,8 @@ message CreateRaffleResponse {
 }
 
 message PurchaseTicketsRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   int32 quantity = 3 [(buf.validate.field).int32.gt = 0];
 }
 
@@ -130,8 +130,8 @@ message PurchaseTicketsResponse {
 }
 
 message GetRaffleWinnersRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message GetRaffleWinnersResponse {
@@ -139,8 +139,8 @@ message GetRaffleWinnersResponse {
 }
 
 message DrawRaffleRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message DrawRaffleResponse {
@@ -155,8 +155,8 @@ message UpdateRaffleRequest {
     expression: "has(this.title) || has(this.description) || this.draw_date != '' || has(this.ticket_price) || has(this.max_tickets) || has(this.max_tickets_per_user)"
   };
 
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string draw_date = 3; // ISO 8601 datetime; must be in the future
   optional string title = 4 [(buf.validate.field).cel = {
     id: "update_raffle.title_required"
@@ -174,8 +174,8 @@ message UpdateRaffleResponse {
 }
 
 message CancelRaffleRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message CancelRaffleResponse {
@@ -183,8 +183,8 @@ message CancelRaffleResponse {
 }
 
 message DeleteRaffleRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string raffle_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message DeleteRaffleResponse {
@@ -192,7 +192,7 @@ message DeleteRaffleResponse {
 }
 
 message ListMyTicketsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64]; // Optional: filter by guild
+  string guild_id = 1 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE]; // Optional: filter by guild
   int32 page_size = 2 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
   string page_token = 3 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }

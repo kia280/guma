@@ -700,9 +700,9 @@ const file_proto_guma_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"avatar_url\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x10R\tavatarUrl\"5\n" +
 	"\x10UpdateMeResponse\x12!\n" +
-	"\x04user\x18\x01 \x01(\v2\r.guma.v1.UserR\x04user\"4\n" +
-	"\x0eGetUserRequest\x12\"\n" +
-	"\auser_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\x06userId\"4\n" +
+	"\x04user\x18\x01 \x01(\v2\r.guma.v1.UserR\x04user\"6\n" +
+	"\x0eGetUserRequest\x12$\n" +
+	"\auser_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x06userId\"4\n" +
 	"\x0fGetUserResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.guma.v1.UserR\x04user\"\x15\n" +
 	"\x13GetUserStatsRequest\"@\n" +

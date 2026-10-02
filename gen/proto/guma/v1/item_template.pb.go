@@ -568,32 +568,32 @@ var File_proto_guma_v1_item_template_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_item_template_proto_rawDesc = "" +
 	"\n" +
-	"!proto/guma/v1/item_template.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"@\n" +
-	"\x18ListItemTemplatesRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\"P\n" +
+	"!proto/guma/v1/item_template.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"B\n" +
+	"\x18ListItemTemplatesRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"P\n" +
 	"\x19ListItemTemplatesResponse\x123\n" +
-	"\ttemplates\x18\x01 \x03(\v2\x15.guma.v1.ItemTemplateR\ttemplates\"\x97\x06\n" +
-	"\x19CreateItemTemplateRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x129\n" +
+	"\ttemplates\x18\x01 \x03(\v2\x15.guma.v1.ItemTemplateR\ttemplates\"\x99\x06\n" +
+	"\x19CreateItemTemplateRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x129\n" +
 	"\x04name\x18\x02 \x01(\tB%\xbaH\"r \x18d2\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x04name\x12*\n" +
 	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\vdescription\x12\xdf\x02\n" +
 	"\bcategory\x18\x04 \x01(\tB\xc2\x02\xbaH\xbe\x02r\xbb\x02\x18 2\xb6\x02^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[wW][eE][aA][pP][oO][nN]|[aA][rR][mM][oO][rR]|[aA][cC][cC][eE][sS][sS][oO][rR][yY]|[cC][oO][nN][sS][uU][mM][aA][bB][lL][eE]|[sS][kK\\x{212A}][iI\\x{130}][lL][lL]_[sS][cC][rR][oO][lL][lL]|[mM][aA][tT][eE][rR][iI\\x{130}][aA][lL]|[mM][iI\\x{130}][sS][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$R\bcategory\x12\x8a\x02\n" +
 	"\x06rarity\x18\x05 \x01(\tB\xf1\x01\xbaH\xed\x01r\xea\x01\x18 2\xe5\x01^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[cC][oO][mM][mM][oO][nN]|[uU][nN][cC][oO][mM][mM][oO][nN]|[rR][aA][rR][eE]|[eE][pP][iI\\x{130}][cC]|[lL][eE][gG][eE][nN][dD][aA][rR][yY]|[mM][yY][tT][hH][iI\\x{130}][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$R\x06rarity\"O\n" +
 	"\x1aCreateItemTemplateResponse\x121\n" +
-	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"\xc3\x06\n" +
-	"\x19UpdateItemTemplateRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12*\n" +
-	"\vtemplate_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"\xc7\x06\n" +
+	"\x19UpdateItemTemplateRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12,\n" +
+	"\vtemplate_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"templateId\x129\n" +
 	"\x04name\x18\x03 \x01(\tB%\xbaH\"r \x18d2\x1c[^\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]R\x04name\x12*\n" +
 	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\vdescription\x12\xdf\x02\n" +
 	"\bcategory\x18\x05 \x01(\tB\xc2\x02\xbaH\xbe\x02r\xbb\x02\x18 2\xb6\x02^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[wW][eE][aA][pP][oO][nN]|[aA][rR][mM][oO][rR]|[aA][cC][cC][eE][sS][sS][oO][rR][yY]|[cC][oO][nN][sS][uU][mM][aA][bB][lL][eE]|[sS][kK\\x{212A}][iI\\x{130}][lL][lL]_[sS][cC][rR][oO][lL][lL]|[mM][aA][tT][eE][rR][iI\\x{130}][aA][lL]|[mM][iI\\x{130}][sS][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$R\bcategory\x12\x8a\x02\n" +
 	"\x06rarity\x18\x06 \x01(\tB\xf1\x01\xbaH\xed\x01r\xea\x01\x18 2\xe5\x01^[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*(?:[cC][oO][mM][mM][oO][nN]|[uU][nN][cC][oO][mM][mM][oO][nN]|[rR][aA][rR][eE]|[eE][pP][iI\\x{130}][cC]|[lL][eE][gG][eE][nN][dD][aA][rR][yY]|[mM][yY][tT][hH][iI\\x{130}][cC])[\\t\\n\\x{0B}\\f\\r\\x{85}\\p{Z}]*$R\x06rarity\"O\n" +
 	"\x1aUpdateItemTemplateResponse\x121\n" +
-	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"m\n" +
-	"\x19DeleteItemTemplateRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12*\n" +
-	"\vtemplate_id\x18\x02 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\n" +
+	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"q\n" +
+	"\x19DeleteItemTemplateRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12,\n" +
+	"\vtemplate_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"templateId\"6\n" +
 	"\x1aDeleteItemTemplateResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xb8\x02\n" +

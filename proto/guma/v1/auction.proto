@@ -69,7 +69,7 @@ service AuctionService {
 // Request/Response messages
 
 message ListAuctionsRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string status = 2;    // AuctionStatus filter; empty = all
   string category = 3;  // Item.category filter
   string rarity = 4;    // Item.rarity filter
@@ -85,8 +85,8 @@ message ListAuctionsResponse {
 }
 
 message GetAuctionRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message GetAuctionResponse {
@@ -100,7 +100,7 @@ message CreateAuctionRequest {
     expression: "(has(this.source) && (this.source.backpack_item_id != '' || this.source.bank_item_id != '')) || (has(this.item) && this.item.name != '')"
   };
 
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   Item item = 2;
   int64 starting_bid = 3;
   int64 min_bid_increment = 4;
@@ -115,8 +115,8 @@ message CreateAuctionResponse {
 }
 
 message PlaceBidRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   int64 amount = 3;
 }
 
@@ -126,8 +126,8 @@ message PlaceBidResponse {
 }
 
 message GetBidHistoryRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
   string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
 }
@@ -145,8 +145,8 @@ message UpdateAuctionRequest {
     expression: "!has(this.start_time) || !has(this.end_time) || this.end_time > this.start_time"
   };
 
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   Item item = 3 [(buf.validate.field).cel = {
     id: "update_auction.item_name_required"
     message: "item name is required"
@@ -164,8 +164,8 @@ message UpdateAuctionResponse {
 }
 
 message DeleteAuctionRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message DeleteAuctionResponse {
@@ -173,8 +173,8 @@ message DeleteAuctionResponse {
 }
 
 message CancelAuctionRequest {
-  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string reason = 3;
 }
 

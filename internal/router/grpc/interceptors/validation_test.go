@@ -2,7 +2,6 @@ package interceptors
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	validatepb "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
@@ -75,10 +74,10 @@ func TestUnaryValidation(t *testing.T) {
 		wantRuleID string
 	}{
 		{
-			name:       "guild id too long",
-			request:    &gumav1.GetGuildRequest{GuildId: strings.Repeat("a", 65)},
+			name:       "guild id is not a uuid",
+			request:    &gumav1.GetGuildRequest{GuildId: "not-a-uuid"},
 			wantField:  "guild_id",
-			wantRuleID: "string.max_len",
+			wantRuleID: "string.uuid",
 		},
 		{
 			name:       "page size above limit",
@@ -155,17 +154,17 @@ func TestStreamValidation(t *testing.T) {
 	}
 
 	t.Run("invalid message is rejected", func(t *testing.T) {
-		_, err := run(&gumav1.GetGuildRequest{GuildId: strings.Repeat("a", 65)})
+		_, err := run(&gumav1.GetGuildRequest{GuildId: "not-a-uuid"})
 
 		require.Error(t, err)
-		requireViolation(t, err, "guild_id", "string.max_len")
+		requireViolation(t, err, "guild_id", "string.uuid")
 	})
 
 	t.Run("valid message is received", func(t *testing.T) {
-		received, err := run(&gumav1.GetGuildRequest{GuildId: "guild-1"})
+		received, err := run(&gumav1.GetGuildRequest{GuildId: "123e4567-e89b-12d3-a456-426614174000"})
 
 		require.NoError(t, err)
-		assert.Equal(t, "guild-1", received.GetGuildId())
+		assert.Equal(t, "123e4567-e89b-12d3-a456-426614174000", received.GetGuildId())
 	})
 }
 

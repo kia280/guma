@@ -56,7 +56,7 @@ message GetUnreadNotificationCountResponse {
 }
 
 message MarkNotificationReadRequest {
-  string notification_id = 1 [(buf.validate.field).string = {min_len: 1, max_len: 64, pattern: "^(?:(?i:urn:uuid:)?[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}|[\\x00-\\x7F][0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}[\\x00-\\x7F]|[0-9A-Fa-f]{32})$"}];
+  string notification_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message MarkNotificationReadResponse {

@@ -1692,35 +1692,35 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01J\x04\b\x04\x10\x05R\x04tags\";\n" +
 	"\x13CreateGuildResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"7\n" +
-	"\x0fGetGuildRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\"8\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"9\n" +
+	"\x0fGetGuildRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"8\n" +
 	"\x10GetGuildResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"\xdd\x01\n" +
-	"\x12UpdateGuildRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12\x1b\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"\xdf\x01\n" +
+	"\x12UpdateGuildRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1b\n" +
 	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18dR\x04name\x12*\n" +
 	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12#\n" +
 	"\bicon_url\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x10R\aiconUrl\x12'\n" +
 	"\n" +
 	"banner_url\x18\x06 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x10R\tbannerUrlJ\x04\b\x04\x10\x05R\x04tags\";\n" +
 	"\x13UpdateGuildResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"\xf2\x01\n" +
-	"\x16UploadGuildLogoRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12\x1f\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"\xf4\x01\n" +
+	"\x16UploadGuildLogoRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
 	"\x04data\x18\x02 \x01(\fB\v\xbaH\bz\x06\x10\x01\x18\x80\x80 R\x04data\x12\x90\x01\n" +
 	"\fcontent_type\x18\x03 \x01(\tBm\xbaHjrh\x18d2d^[\\t\\n\\v\\f\\r\\x{85}\\p{Z}]*(?i:[i\\x{130}]mage/(?:png|jpeg|webp|g[i\\x{130}]f))[\\t\\n\\v\\f\\r\\x{85}\\p{Z}]*$R\vcontentType\"?\n" +
 	"\x17UploadGuildLogoResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\">\n" +
-	"\x16DeleteGuildLogoRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\"?\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"@\n" +
+	"\x16DeleteGuildLogoRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"?\n" +
 	"\x17DeleteGuildLogoResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"R\n" +
-	"\x13GetGuildLogoRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12\x15\n" +
-	"\x01v\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x01v\":\n" +
-	"\x12DeleteGuildRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\"/\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"T\n" +
+	"\x13GetGuildLogoRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x15\n" +
+	"\x01v\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x01v\"<\n" +
+	"\x12DeleteGuildRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"/\n" +
 	"\x13DeleteGuildResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xb4\x01\n" +
 	"\x11ListGuildsRequest\x12'\n" +
@@ -1735,29 +1735,29 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\x06guilds\x18\x01 \x03(\v2\x0e.guma.v1.GuildR\x06guilds\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"?\n" +
-	"\x17GetGuildSettingsRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\"N\n" +
+	"totalCount\"A\n" +
+	"\x17GetGuildSettingsRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"N\n" +
 	"\x18GetGuildSettingsResponse\x122\n" +
-	"\bsettings\x18\x01 \x01(\v2\x16.guma.v1.GuildSettingsR\bsettings\"~\n" +
-	"\x1aUpdateGuildSettingsRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\x12:\n" +
+	"\bsettings\x18\x01 \x01(\v2\x16.guma.v1.GuildSettingsR\bsettings\"\x80\x01\n" +
+	"\x1aUpdateGuildSettingsRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12:\n" +
 	"\bsettings\x18\x02 \x01(\v2\x16.guma.v1.GuildSettingsB\x06\xbaH\x03\xc8\x01\x01R\bsettings\"Q\n" +
 	"\x1bUpdateGuildSettingsResponse\x122\n" +
-	"\bsettings\x18\x01 \x01(\v2\x16.guma.v1.GuildSettingsR\bsettings\"<\n" +
-	"\x14GetGuildStatsRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\"B\n" +
+	"\bsettings\x18\x01 \x01(\v2\x16.guma.v1.GuildSettingsR\bsettings\">\n" +
+	"\x14GetGuildStatsRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"B\n" +
 	"\x15GetGuildStatsResponse\x12)\n" +
 	"\x05stats\x18\x01 \x01(\v2\x13.guma.v1.GuildStatsR\x05stats\"\x18\n" +
 	"\x16GetCurrentGuildRequest\"?\n" +
 	"\x17GetCurrentGuildResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"<\n" +
-	"\x14JoinGuildByIdRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\"=\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\">\n" +
+	"\x14JoinGuildByIdRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"=\n" +
 	"\x15JoinGuildByIdResponse\x12$\n" +
-	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\"9\n" +
-	"\x11LeaveGuildRequest\x12$\n" +
-	"\bguild_id\x18\x01 \x01(\tB\t\xbaH\x06r\x04\x10\x01\x18@R\aguildId\".\n" +
+	"\x05guild\x18\x01 \x01(\v2\x0e.guma.v1.GuildR\x05guild\";\n" +
+	"\x11LeaveGuildRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\".\n" +
 	"\x12LeaveGuildResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa6\x03\n" +
 	"\x05Guild\x12\x0e\n" +

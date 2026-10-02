@@ -54,7 +54,7 @@ service GumaService {
 
 // Request/Response messages
 message GetNavigationRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];  // Optional: guild-specific navigation
+  string guild_id = 1 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];  // Optional: guild-specific navigation
 }
 
 message GetNavigationResponse {
@@ -62,7 +62,7 @@ message GetNavigationResponse {
 }
 
 message GetDashboardDataRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];
 }
 
 message GetDashboardDataResponse {
@@ -91,7 +91,7 @@ message GetAppConfigResponse {
 
 message SearchGlobalRequest {
   string query = 1 [(buf.validate.field).string = {min_len: 1, max_len: 200}];
-  string guild_id = 2 [(buf.validate.field).string.max_len = 64];  // Optional: scope to guild
+  string guild_id = 2 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];  // Optional: scope to guild
   int32 limit = 3 [(buf.validate.field).int32 = {gte: 0, lte: 100}];      // Default: 20
 }
 

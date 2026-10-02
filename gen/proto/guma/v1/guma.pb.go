@@ -1327,13 +1327,13 @@ var File_proto_guma_v1_guma_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_guma_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/guma/v1/guma.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\":\n" +
-	"\x14GetNavigationRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"F\n" +
+	"\x18proto/guma/v1/guma.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\">\n" +
+	"\x14GetNavigationRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\aguildId\"F\n" +
 	"\x15GetNavigationResponse\x12-\n" +
-	"\x05items\x18\x01 \x03(\v2\x17.guma.v1.NavigationItemR\x05items\"=\n" +
-	"\x17GetDashboardDataRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"F\n" +
+	"\x05items\x18\x01 \x03(\v2\x17.guma.v1.NavigationItemR\x05items\"A\n" +
+	"\x17GetDashboardDataRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\aguildId\"F\n" +
 	"\x18GetDashboardDataResponse\x12*\n" +
 	"\x04data\x18\x01 \x01(\v2\x16.guma.v1.DashboardDataR\x04data\"\x1b\n" +
 	"\x19GetUserPreferencesRequest\"X\n" +
@@ -1345,11 +1345,11 @@ const file_proto_guma_v1_guma_proto_rawDesc = "" +
 	"\vpreferences\x18\x01 \x01(\v2\x18.guma.v1.UserPreferencesR\vpreferences\"\x15\n" +
 	"\x13GetAppConfigRequest\"B\n" +
 	"\x14GetAppConfigResponse\x12*\n" +
-	"\x06config\x18\x01 \x01(\v2\x12.guma.v1.AppConfigR\x06config\"|\n" +
+	"\x06config\x18\x01 \x01(\v2\x12.guma.v1.AppConfigR\x06config\"\x80\x01\n" +
 	"\x13SearchGlobalRequest\x12 \n" +
 	"\x05query\x18\x01 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x05query\x12\"\n" +
-	"\bguild_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1f\n" +
+	"\xbaH\ar\x05\x10\x01\x18\xc8\x01R\x05query\x12&\n" +
+	"\bguild_id\x18\x02 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
 	"\x05limit\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\"H\n" +
 	"\x14SearchGlobalResponse\x120\n" +
 	"\aresults\x18\x01 \x01(\v2\x16.guma.v1.SearchResultsR\aresults\"\xc3\x02\n" +
