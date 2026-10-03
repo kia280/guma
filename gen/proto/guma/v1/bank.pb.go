@@ -2339,27 +2339,25 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x06status\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bapprovedR\brejectedR\x06status\x12\x1c\n" +
 	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"T\n" +
 	"\x19ReviewFundRequestResponse\x127\n" +
-	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\xdc\x01\n" +
+	"\ffund_request\x18\x01 \x01(\v2\x14.guma.v1.FundRequestR\vfundRequest\"\xd3\x01\n" +
 	"\x17ListFundRequestsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12>\n" +
 	"\x06status\x18\x02 \x01(\tB&\xbaH#r!\x18 R\x00R\apendingR\bapprovedR\brejectedR\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x95\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x95\x01\n" +
 	"\x18ListFundRequestsResponse\x120\n" +
 	"\brequests\x18\x01 \x03(\v2\x14.guma.v1.FundRequestR\brequests\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\x9d\x01\n" +
+	"totalCount\"\x94\x01\n" +
 	"\x18ListContributionsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12'\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\xa5\x01\n" +
+	"page_token\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\xa5\x01\n" +
 	"\x19ListContributionsResponse\x12?\n" +
 	"\rcontributions\x18\x01 \x03(\v2\x19.guma.v1.BankContributionR\rcontributions\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -2370,16 +2368,15 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x10backpack_item_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x0ebackpackItemId\x12\x1c\n" +
 	"\x04note\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"D\n" +
 	"\x12DonateItemResponse\x12.\n" +
-	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\x8e\x02\n" +
+	"\tbank_item\x18\x01 \x01(\v2\x11.guma.v1.BankItemR\bbankItem\"\x85\x02\n" +
 	"\x14ListBankItemsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12#\n" +
 	"\bcategory\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\bcategory\x12\x1f\n" +
 	"\x06rarity\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06rarity\x12'\n" +
 	"\tpage_size\x18\x04 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x05 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\x12-\n" +
+	"page_token\x18\x05 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\x12-\n" +
 	"\froll_call_id\x18\x06 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\"\x89\x01\n" +
 	"\x15ListBankItemsResponse\x12'\n" +
@@ -2407,15 +2404,14 @@ const file_proto_guma_v1_bank_proto_rawDesc = "" +
 	"\x06status\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bapprovedR\brejectedR\x06status\x12\x1c\n" +
 	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"T\n" +
 	"\x19ReviewItemRequestResponse\x127\n" +
-	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\xdc\x01\n" +
+	"\fitem_request\x18\x01 \x01(\v2\x14.guma.v1.ItemRequestR\vitemRequest\"\xd3\x01\n" +
 	"\x17ListItemRequestsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12>\n" +
 	"\x06status\x18\x02 \x01(\tB&\xbaH#r!\x18 R\x00R\apendingR\bapprovedR\brejectedR\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x95\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x95\x01\n" +
 	"\x18ListItemRequestsResponse\x120\n" +
 	"\brequests\x18\x01 \x03(\v2\x14.guma.v1.ItemRequestR\brequests\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +

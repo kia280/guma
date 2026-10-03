@@ -30,12 +30,32 @@ var file_proto_guma_v1_validate_proto_extTypes = []protoimpl.ExtensionInfo{
 		Tag:           "varint,1001,opt,name=not_blank",
 		Filename:      "proto/guma/v1/validate.proto",
 	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1002,
+		Name:          "guma.v1.page_token",
+		Tag:           "varint,1002,opt,name=page_token",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1003,
+		Name:          "guma.v1.https_url",
+		Tag:           "varint,1003,opt,name=https_url",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
 }
 
 // Extension fields to validate.StringRules.
 var (
 	// optional bool not_blank = 1001;
 	E_NotBlank = &file_proto_guma_v1_validate_proto_extTypes[0]
+	// optional bool page_token = 1002;
+	E_PageToken = &file_proto_guma_v1_validate_proto_extTypes[1]
+	// optional bool https_url = 1003;
+	E_HttpsUrl = &file_proto_guma_v1_validate_proto_extTypes[2]
 )
 
 var File_proto_guma_v1_validate_proto protoreflect.FileDescriptor
@@ -45,17 +65,26 @@ const file_proto_guma_v1_validate_proto_rawDesc = "" +
 	"\x1cproto/guma/v1/validate.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto:\x8d\x01\n" +
 	"\tnot_blank\x12\x19.buf.validate.StringRules\x18\xe9\a \x01(\bBT\xc2HQ\n" +
 	"O\n" +
-	"\x10string.not_blank\x1a;!rule || this.trim() != '' ? '' : 'value must not be blank'R\bnotBlankB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\beditionsp\xe8\a"
+	"\x10string.not_blank\x1a;!rule || this.trim() != '' ? '' : 'value must not be blank'R\bnotBlank:\x91\x02\n" +
+	"\n" +
+	"page_token\x12\x19.buf.validate.StringRules\x18\xea\a \x01(\bB\xd5\x01\xc2H\xd1\x01\n" +
+	"\xce\x01\n" +
+	"\x11string.page_token\x1a\xb8\x01!rule || this == '' || (size(this) <= 10 && this.split('').all(c, c >= '0' && c <= '9') && int(this) <= 2147483647) ? '' : 'value must be a page token returned by a previous list call'R\tpageToken:\x81\x02\n" +
+	"\thttps_url\x12\x19.buf.validate.StringRules\x18\xeb\a \x01(\bB\xc7\x01\xc2H\xc3\x01\n" +
+	"\xc0\x01\n" +
+	"\x10string.https_url\x1a\xab\x01!rule || this == '' || (this.startsWith('https://') && size(this) > 8 && !(this.charAt(8) in ['/', '?', '#']) && this.isUri()) ? '' : 'value must be an absolute https URL'R\bhttpsUrlB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\beditionsp\xe8\a"
 
 var file_proto_guma_v1_validate_proto_goTypes = []any{
 	(*validate.StringRules)(nil), // 0: buf.validate.StringRules
 }
 var file_proto_guma_v1_validate_proto_depIdxs = []int32{
 	0, // 0: guma.v1.not_blank:extendee -> buf.validate.StringRules
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	0, // [0:1] is the sub-list for extension extendee
+	0, // 1: guma.v1.page_token:extendee -> buf.validate.StringRules
+	0, // 2: guma.v1.https_url:extendee -> buf.validate.StringRules
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	0, // [0:3] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
 }
 
@@ -71,7 +100,7 @@ func file_proto_guma_v1_validate_proto_init() {
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_validate_proto_rawDesc), len(file_proto_guma_v1_validate_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   0,
-			NumExtensions: 1,
+			NumExtensions: 3,
 			NumServices:   0,
 		},
 		GoTypes:           file_proto_guma_v1_validate_proto_goTypes,

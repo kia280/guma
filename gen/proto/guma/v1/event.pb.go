@@ -1180,16 +1180,15 @@ var File_proto_guma_v1_event_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_event_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/guma/v1/event.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\xd0\x01\n" +
+	"\x19proto/guma/v1/event.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\xc7\x01\n" +
 	"\x11ListEventsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1b\n" +
 	"\x04view\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04view\x12\x1b\n" +
 	"\x04date\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18@R\x04date\x12'\n" +
 	"\tpage_size\x18\x04 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x05 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x8a\x01\n" +
+	"page_token\x18\x05 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x8a\x01\n" +
 	"\x12ListEventsResponse\x12+\n" +
 	"\x06events\x18\x01 \x03(\v2\x13.guma.v1.GuildEventR\x06events\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +

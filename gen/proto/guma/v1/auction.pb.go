@@ -1300,7 +1300,7 @@ var File_proto_guma_v1_auction_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\n" +
-	"\x1bproto/guma/v1/auction.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"\xa1\x02\n" +
+	"\x1bproto/guma/v1/auction.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\x98\x02\n" +
 	"\x13ListAuctionsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
 	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12#\n" +
@@ -1308,10 +1308,9 @@ const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\x06rarity\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06rarity\x12 \n" +
 	"\x06search\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x06search\x12'\n" +
 	"\tpage_size\x18\x06 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\a \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x91\x01\n" +
+	"page_token\x18\a \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x91\x01\n" +
 	"\x14ListAuctionsResponse\x120\n" +
 	"\bauctions\x18\x01 \x03(\v2\x14.guma.v1.AuctionItemR\bauctions\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -1345,16 +1344,15 @@ const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\"b\n" +
 	"\x10PlaceBidResponse\x12.\n" +
 	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\x12\x1e\n" +
-	"\x03bid\x18\x02 \x01(\v2\f.guma.v1.BidR\x03bid\"\xc5\x01\n" +
+	"\x03bid\x18\x02 \x01(\v2\f.guma.v1.BidR\x03bid\"\xbc\x01\n" +
 	"\x14GetBidHistoryRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12*\n" +
 	"\n" +
 	"auction_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\tauctionId\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x82\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x82\x01\n" +
 	"\x15GetBidHistoryResponse\x12 \n" +
 	"\x04bids\x18\x01 \x03(\v2\f.guma.v1.BidR\x04bids\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -1529,6 +1527,7 @@ func file_proto_guma_v1_auction_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_validate_proto_init()
 	file_proto_guma_v1_auction_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

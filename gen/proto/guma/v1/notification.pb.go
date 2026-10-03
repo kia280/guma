@@ -403,13 +403,12 @@ var File_proto_guma_v1_notification_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_notification_proto_rawDesc = "" +
 	"\n" +
-	" proto/guma/v1/notification.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x18proto/guma/v1/guma.proto\"\x96\x01\n" +
+	" proto/guma/v1/notification.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x18proto/guma/v1/guma.proto\x1a\x1cproto/guma/v1/validate.proto\"\x8d\x01\n" +
 	"\x18ListNotificationsRequest\x12'\n" +
 	"\tpage_size\x18\x01 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x02 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\x12\x1f\n" +
+	"page_token\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\x12\x1f\n" +
 	"\vunread_only\x18\x03 \x01(\bR\n" +
 	"unreadOnly\"\xc4\x01\n" +
 	"\x19ListNotificationsResponse\x12;\n" +
@@ -482,6 +481,7 @@ func file_proto_guma_v1_notification_proto_init() {
 		return
 	}
 	file_proto_guma_v1_guma_proto_init()
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

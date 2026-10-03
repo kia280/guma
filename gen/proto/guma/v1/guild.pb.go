@@ -1683,7 +1683,7 @@ var File_proto_guma_v1_guild_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\n" +
-	"\x19proto/guma/v1/guild.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/api/httpbody.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x87\x02\n" +
+	"\x19proto/guma/v1/guild.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x19google/api/httpbody.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\x87\x02\n" +
 	"\x12CreateGuildRequest\x12\x1e\n" +
 	"\x04name\x18\x01 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x18dR\x04name\x12*\n" +
@@ -1724,13 +1724,12 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\x12DeleteGuildRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"/\n" +
 	"\x13DeleteGuildResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xb4\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xab\x01\n" +
 	"\x11ListGuildsRequest\x12'\n" +
 	"\tpage_size\x18\x01 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x02 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\x12 \n" +
+	"page_token\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\x12 \n" +
 	"\x06search\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x06search\x12\"\n" +
 	"\border_by\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\aorderBy\"\x85\x01\n" +
 	"\x12ListGuildsResponse\x12&\n" +
@@ -1929,6 +1928,7 @@ func file_proto_guma_v1_guild_proto_init() {
 	if File_proto_guma_v1_guild_proto != nil {
 		return
 	}
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

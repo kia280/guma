@@ -2841,7 +2841,7 @@ var File_proto_guma_v1_wallet_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/wallet.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\":\n" +
+	"\x1aproto/guma/v1/wallet.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\":\n" +
 	"\x10GetWalletRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"<\n" +
 	"\x11GetWalletResponse\x12'\n" +
@@ -2866,15 +2866,14 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\x13TransactionResponse\x126\n" +
 	"\vtransaction\x18\x01 \x01(\v2\x14.guma.v1.TransactionR\vtransaction\x126\n" +
 	"\x0eupdated_wallet\x18\x02 \x01(\v2\x0f.guma.v1.WalletR\rupdatedWallet\x12I\n" +
-	"\x12withdrawal_request\x18\x03 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\"\xef\x01\n" +
+	"\x12withdrawal_request\x18\x03 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\"\xe6\x01\n" +
 	"\x1fListMyWithdrawalRequestsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12I\n" +
 	"\x06status\x18\x02 \x01(\tB1\xbaH.r,\x18 R\x00R\apendingR\bapprovedR\brejectedR\tcancelledR\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\xa3\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\xa3\x01\n" +
 	" ListMyWithdrawalRequestsResponse\x126\n" +
 	"\brequests\x18\x01 \x03(\v2\x1a.guma.v1.WithdrawalRequestR\brequests\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -2886,15 +2885,14 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"request_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\trequestId\"\xa4\x01\n" +
 	"\x1fCancelWithdrawalRequestResponse\x12I\n" +
 	"\x12withdrawal_request\x18\x01 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\x126\n" +
-	"\x0eupdated_wallet\x18\x02 \x01(\v2\x0f.guma.v1.WalletR\rupdatedWallet\"\xed\x01\n" +
+	"\x0eupdated_wallet\x18\x02 \x01(\v2\x0f.guma.v1.WalletR\rupdatedWallet\"\xe4\x01\n" +
 	"\x1dListWithdrawalRequestsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12I\n" +
 	"\x06status\x18\x02 \x01(\tB1\xbaH.r,\x18 R\x00R\apendingR\bapprovedR\brejectedR\tcancelledR\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\xa1\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\xa1\x01\n" +
 	"\x1eListWithdrawalRequestsResponse\x126\n" +
 	"\brequests\x18\x01 \x03(\v2\x1a.guma.v1.WithdrawalRequestR\brequests\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -2907,27 +2905,25 @@ const file_proto_guma_v1_wallet_proto_rawDesc = "" +
 	"\x06status\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bapprovedR\brejectedR\x06status\x12\x1c\n" +
 	"\x04note\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x04note\"l\n" +
 	"\x1fReviewWithdrawalRequestResponse\x12I\n" +
-	"\x12withdrawal_request\x18\x01 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\"\xb9\x01\n" +
+	"\x12withdrawal_request\x18\x01 \x01(\v2\x1a.guma.v1.WithdrawalRequestR\x11withdrawalRequest\"\xb0\x01\n" +
 	"\x17ListTransactionsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1b\n" +
 	"\x04type\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04type\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x9d\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x9d\x01\n" +
 	"\x18ListTransactionsResponse\x128\n" +
 	"\ftransactions\x18\x01 \x03(\v2\x14.guma.v1.TransactionR\ftransactions\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\x9d\x01\n" +
+	"totalCount\"\x94\x01\n" +
 	"\x18ListBackpackItemsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12'\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x91\x01\n" +
+	"page_token\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x91\x01\n" +
 	"\x19ListBackpackItemsResponse\x12+\n" +
 	"\x05items\x18\x01 \x03(\v2\x15.guma.v1.BackpackItemR\x05items\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -3257,6 +3253,7 @@ func file_proto_guma_v1_wallet_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

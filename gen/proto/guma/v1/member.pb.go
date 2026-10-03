@@ -1438,7 +1438,7 @@ var File_proto_guma_v1_member_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa1\x01\n" +
+	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\xa1\x01\n" +
 	"\x13InviteMemberRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
 	"\x05email\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xfe\x01R\x05email\x12\x1b\n" +
@@ -1475,14 +1475,13 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
 	"\tmember_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\bmemberId\"0\n" +
 	"\x14RemoveMemberResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xd5\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xcc\x01\n" +
 	"\x12ListMembersRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12'\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\x12<\n" +
+	"page_token\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\x12<\n" +
 	"\x04role\x18\x04 \x01(\tB(\xbaH%r#R\x00R\x05ownerR\x05adminR\tmoderatorR\x06memberR\x04role\"\x89\x01\n" +
 	"\x13ListMembersResponse\x12)\n" +
 	"\amembers\x18\x01 \x03(\v2\x0f.guma.v1.MemberR\amembers\x12&\n" +
@@ -1512,14 +1511,13 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1d\n" +
 	"\n" +
-	"guild_name\x18\x03 \x01(\tR\tguildName\"\x97\x01\n" +
+	"guild_name\x18\x03 \x01(\tR\tguildName\"\x8e\x01\n" +
 	"\x12ListInvitesRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12'\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"t\n" +
+	"page_token\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"t\n" +
 	"\x13ListInvitesResponse\x125\n" +
 	"\vinvitations\x18\x01 \x03(\v2\x13.guma.v1.InvitationR\vinvitations\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"g\n" +
@@ -1668,6 +1666,7 @@ func file_proto_guma_v1_member_proto_init() {
 	if File_proto_guma_v1_member_proto != nil {
 		return
 	}
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

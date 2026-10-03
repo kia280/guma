@@ -11,4 +11,12 @@ extend buf.validate.StringRules {
     id: "string.not_blank"
     expression: "!rule || this.trim() != '' ? '' : 'value must not be blank'"
   }];
+  bool page_token = 1002 [(buf.validate.predefined).cel = {
+    id: "string.page_token"
+    expression: "!rule || this == '' || (size(this) <= 10 && this.split('').all(c, c >= '0' && c <= '9') && int(this) <= 2147483647) ? '' : 'value must be a page token returned by a previous list call'"
+  }];
+  bool https_url = 1003 [(buf.validate.predefined).cel = {
+    id: "string.https_url"
+    expression: "!rule || this == '' || (this.startsWith('https://') && size(this) > 8 && !(this.charAt(8) in ['/', '?', '#']) && this.isUri()) ? '' : 'value must be an absolute https URL'"
+  }];
 }

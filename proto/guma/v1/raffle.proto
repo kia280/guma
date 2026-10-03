@@ -86,7 +86,7 @@ message ListRafflesRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string status = 2 [(buf.validate.field).string.max_len = 32];     // "active" | "upcoming" | "ended" | "cancelled" | "" (all)
   int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
-  string page_token = 4 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
+  string page_token = 4 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 
 message ListRafflesResponse {
@@ -191,7 +191,7 @@ message DeleteRaffleResponse {
 message ListMyTicketsRequest {
   string guild_id = 1 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE]; // Optional: filter by guild
   int32 page_size = 2 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
-  string page_token = 3 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
+  string page_token = 3 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 
 message ListMyTicketsResponse {

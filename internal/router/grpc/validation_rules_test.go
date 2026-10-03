@@ -435,3 +435,48 @@ func TestRequestRulesReplaceHandlerChecks(t *testing.T) {
 		})
 	}
 }
+
+func TestPredefinedRules(t *testing.T) {
+	validator := newTestValidator(t)
+	rollCall := func(imageURL string) *gumav1.CreateRollCallRequest {
+		return &gumav1.CreateRollCallRequest{GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b", ImageUrl: imageURL}
+	}
+
+	invalid := []struct {
+		name string
+		req  proto.Message
+		want violation
+	}{
+		{"non-numeric page token", &gumav1.ListGuildsRequest{PageToken: "abc"}, violation{"page_token", "string.page_token"}},
+		{"signed page token", &gumav1.ListGuildsRequest{PageToken: "+5"}, violation{"page_token", "string.page_token"}},
+		{"page token above int32", &gumav1.ListGuildsRequest{PageToken: "2147483648"}, violation{"page_token", "string.page_token"}},
+		{"page token too long", &gumav1.ListGuildsRequest{PageToken: "00000000001"}, violation{"page_token", "string.page_token"}},
+		{"http image url", rollCall("http://example.com/a.png"), violation{"image_url", "string.https_url"}},
+		{"image url without host", rollCall("https:///a.png"), violation{"image_url", "string.https_url"}},
+		{"bare https scheme", rollCall("https://"), violation{"image_url", "string.https_url"}},
+		{"image url too long", rollCall("https://example.com/" + strings.Repeat("a", 2048)), violation{"image_url", "string.max_len"}},
+	}
+
+	for _, tt := range invalid {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Contains(t, violationsOf(t, validator.Validate(tt.req)), tt.want)
+		})
+	}
+
+	valid := []struct {
+		name string
+		req  proto.Message
+	}{
+		{"empty page token", &gumav1.ListGuildsRequest{}},
+		{"numeric page token", &gumav1.ListGuildsRequest{PageToken: "40"}},
+		{"page token at int32 max", &gumav1.ListGuildsRequest{PageToken: "2147483647"}},
+		{"empty image url", rollCall("")},
+		{"https image url", rollCall("https://example.com/a.png?size=2")},
+	}
+
+	for _, tt := range valid {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.NoError(t, validator.Validate(tt.req))
+		})
+	}
+}

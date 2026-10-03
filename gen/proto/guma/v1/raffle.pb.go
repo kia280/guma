@@ -1588,15 +1588,14 @@ var File_proto_guma_v1_raffle_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_raffle_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/raffle.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xb8\x01\n" +
+	"\x1aproto/guma/v1/raffle.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xaf\x01\n" +
 	"\x12ListRafflesRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
 	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x89\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x89\x01\n" +
 	"\x13ListRafflesResponse\x12)\n" +
 	"\araffles\x18\x01 \x03(\v2\x0f.guma.v1.RaffleR\araffles\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -1668,14 +1667,13 @@ const file_proto_guma_v1_raffle_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
 	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\"0\n" +
 	"\x14DeleteRaffleResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x99\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x90\x01\n" +
 	"\x14ListMyTicketsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12'\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x91\x01\n" +
+	"page_token\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x91\x01\n" +
 	"\x15ListMyTicketsResponse\x12/\n" +
 	"\atickets\x18\x01 \x03(\v2\x15.guma.v1.RaffleTicketR\atickets\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +

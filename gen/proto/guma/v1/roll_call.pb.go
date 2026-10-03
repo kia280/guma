@@ -1993,15 +1993,14 @@ var File_proto_guma_v1_roll_call_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\n" +
-	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xba\x01\n" +
+	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xb1\x01\n" +
 	"\x14ListRollCallsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
 	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x92\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x92\x01\n" +
 	"\x15ListRollCallsResponse\x120\n" +
 	"\n" +
 	"roll_calls\x18\x01 \x03(\v2\x11.guma.v1.RollCallR\trollCalls\x12&\n" +
@@ -2013,7 +2012,7 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\"E\n" +
 	"\x13GetRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xe8\x06\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xb4\x05\n" +
 	"\x15CreateRollCallRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
 	"\x05title\x18\x02 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12*\n" +
@@ -2022,15 +2021,14 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\xbaH\a\xc8\x01\x01r\x02\x18@R\bdatetime\x12+\n" +
 	"\vexpire_time\x18\x05 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
-	"expireTime\x12\xdb\x01\n" +
-	"\timage_url\x18\x06 \x01(\tB\xbd\x01\xbaH\xb9\x01\xba\x01\xb5\x01\n" +
-	"\x0fimage_url.https\x12Kimage_url must be empty or an absolute https URL of at most 2048 characters\x1aUthis == '' || (size(this) <= 2048 && this.matches('^https://[^/?#]') && this.isUri())R\bimageUrl\x124\n" +
+	"expireTime\x12(\n" +
+	"\timage_url\x18\x06 \x01(\tB\v\xbaH\br\x06\xd8>\x01\x18\x80\x10R\bimageUrl\x124\n" +
 	"\tloot_list\x18\a \x03(\v2\r.guma.v1.ItemB\b\xbaH\x05\x92\x01\x02\x10dR\blootList\x128\n" +
 	"\x04loot\x18\b \x03(\v2\x1a.guma.v1.RollCallLootEntryB\b\xbaH\x05\x92\x01\x02\x10dR\x04loot:\xb4\x02\xbaH\xb0\x02\x1a\x90\x01\n" +
 	"-create_roll_call.loot_list_item_name_required\x12\x1beach loot item needs a name\x1aBthis.loot.size() > 0 || this.loot_list.all(i, i.name.trim() != '')\x1a\x9a\x01\n" +
 	"\"create_roll_call.single_gold_entry\x12-a roll call can have only one gold loot entry\x1aEthis.loot.filter(e, e.kind.trim().lowerAscii() == 'gold').size() <= 1\"H\n" +
 	"\x16CreateRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\x88\x05\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xd4\x03\n" +
 	"\x15UpdateRollCallRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
@@ -2041,9 +2039,8 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\xbaH\a\xc8\x01\x01r\x02\x18@R\bdatetime\x12+\n" +
 	"\vexpire_time\x18\x06 \x01(\tB\n" +
 	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
-	"expireTime\x12\xe0\x01\n" +
-	"\timage_url\x18\a \x01(\tB\xbd\x01\xbaH\xb9\x01\xba\x01\xb5\x01\n" +
-	"\x0fimage_url.https\x12Kimage_url must be empty or an absolute https URL of at most 2048 characters\x1aUthis == '' || (size(this) <= 2048 && this.matches('^https://[^/?#]') && this.isUri())H\x01R\bimageUrl\x88\x01\x01\x124\n" +
+	"expireTime\x12-\n" +
+	"\timage_url\x18\a \x01(\tB\v\xbaH\br\x06\xd8>\x01\x18\x80\x10H\x01R\bimageUrl\x88\x01\x01\x124\n" +
 	"\tloot_list\x18\b \x03(\v2\r.guma.v1.ItemB\b\xbaH\x05\x92\x01\x02\x10\x00R\blootList\x128\n" +
 	"\x04loot\x18\t \x03(\v2\x1a.guma.v1.RollCallLootEntryB\b\xbaH\x05\x92\x01\x02\x10\x00R\x04lootB\x0e\n" +
 	"\f_descriptionB\f\n" +
@@ -2115,16 +2112,15 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"rollCallId\x12\x1e\n" +
 	"\x05notes\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x05notes\"H\n" +
 	"\x0fCheckInResponse\x125\n" +
-	"\battendee\x18\x01 \x01(\v2\x19.guma.v1.RollCallAttendeeR\battendee\"\xc8\x01\n" +
+	"\battendee\x18\x01 \x01(\v2\x19.guma.v1.RollCallAttendeeR\battendee\"\xbf\x01\n" +
 	"\x14ListAttendeesRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\x12'\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x120\n" +
+	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tB\x11\xbaH\x0er\f\x18\n" +
-	"2\b^[0-9]*$R\tpageToken\"\x99\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x99\x01\n" +
 	"\x15ListAttendeesResponse\x127\n" +
 	"\tattendees\x18\x01 \x03(\v2\x19.guma.v1.RollCallAttendeeR\tattendees\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
