@@ -33,8 +33,13 @@ func NewAuctionService(db *database.Pool, az authz.Authorizer, logger zerolog.Lo
 }
 
 func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAuctionsRequest) (*gumav1.ListAuctionsResponse, error) {
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
 	result, err := h.svc.List(ctx, auctionsvc.ListParams{
 		GuildID:  req.GuildId,
+		UserID:   userID,
 		Status:   req.Status,
 		Category: req.Category,
 		Rarity:   req.Rarity,
@@ -58,7 +63,11 @@ func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAucti
 }
 
 func (h *AuctionHandler) GetAuction(ctx context.Context, req *gumav1.GetAuctionRequest) (*gumav1.GetAuctionResponse, error) {
-	a, err := h.svc.Get(ctx, req.GuildId, req.AuctionId)
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+	a, err := h.svc.Get(ctx, req.GuildId, req.AuctionId, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -107,7 +116,11 @@ func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidReque
 }
 
 func (h *AuctionHandler) GetBidHistory(ctx context.Context, req *gumav1.GetBidHistoryRequest) (*gumav1.GetBidHistoryResponse, error) {
-	result, err := h.svc.GetBidHistory(ctx, req.GuildId, req.AuctionId, int(req.PageSize), auctionsvc.ParsePageToken(req.PageToken))
+	userID := session.UserIDFromContext(ctx)
+	if userID == "" {
+		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
+	}
+	result, err := h.svc.GetBidHistory(ctx, req.GuildId, req.AuctionId, userID, int(req.PageSize), auctionsvc.ParsePageToken(req.PageToken))
 	if err != nil {
 		return nil, toStatus(err)
 	}
