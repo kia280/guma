@@ -14,7 +14,7 @@ import (
 	"github.com/kia280/guma/internal/session"
 )
 
-var MembershipExemptMethods = map[string]bool{
+var GuildAuthzExemptMethods = map[string]bool{
 	healthpb.Health_Check_FullMethodName: true,
 	healthpb.Health_List_FullMethodName:  true,
 
@@ -50,14 +50,15 @@ type guildScoped interface {
 	GetGuildId() string
 }
 
-func GuildMembershipInterceptor(checker authz.Checker) grpc.UnaryServerInterceptor {
+func GuildAuthzInterceptor(checker authz.Checker) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if MembershipExemptMethods[info.FullMethod] {
+		if GuildAuthzExemptMethods[info.FullMethod] {
 			return handler(ctx, req)
 		}
+		permission, declared := MethodPermissions[info.FullMethod]
 		scoped, ok := req.(guildScoped)
-		if !ok {
-			return nil, status.Errorf(codes.PermissionDenied, "%s is neither guild scoped nor exempt from membership checks", info.FullMethod)
+		if !declared || !ok {
+			return nil, status.Errorf(codes.PermissionDenied, "%s has no declared guild permission", info.FullMethod)
 		}
 		if scoped.GetGuildId() == "" {
 			return handler(ctx, req)
@@ -70,12 +71,12 @@ func GuildMembershipInterceptor(checker authz.Checker) grpc.UnaryServerIntercept
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 		}
-		member, err := authz.Allowed(ctx, checker, guildID, userID, authz.View)
+		allowed, err := authz.Allowed(ctx, checker, guildID, userID, permission)
 		if err != nil {
-			return nil, status.Errorf(codes.Internal, "check guild membership: %v", err)
+			return nil, status.Errorf(codes.Internal, "check guild permission %s: %v", permission, err)
 		}
-		if !member {
-			return nil, status.Error(codes.PermissionDenied, "not a member of this guild")
+		if !allowed {
+			return nil, status.Errorf(codes.PermissionDenied, "requires guild permission %s", permission)
 		}
 		return handler(ctx, req)
 	}

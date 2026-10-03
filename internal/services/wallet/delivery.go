@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
@@ -84,11 +83,8 @@ func (s *Service) CancelBackpackWithdrawal(ctx context.Context, ownerIDStr, guil
 }
 
 func (s *Service) ListPendingDeliveries(ctx context.Context, viewerIDStr, guildIDStr string) ([]*BackpackItem, error) {
-	viewerID, guildID, err := parseIDs(viewerIDStr, guildIDStr)
+	_, guildID, err := parseIDs(viewerIDStr, guildIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, viewerID, authz.DeliverItems); err != nil {
 		return nil, err
 	}
 
@@ -109,9 +105,6 @@ func (s *Service) ListPendingDeliveries(ctx context.Context, viewerIDStr, guildI
 func (s *Service) ConfirmBackpackDelivery(ctx context.Context, officerIDStr, guildIDStr, itemIDStr string) (*BackpackItem, error) {
 	officerID, guildID, itemID, err := parseItemIDs(officerIDStr, guildIDStr, itemIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, officerID, authz.DeliverItems); err != nil {
 		return nil, err
 	}
 

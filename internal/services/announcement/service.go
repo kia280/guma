@@ -103,9 +103,6 @@ func (s *Service) Get(ctx context.Context, guildIDStr, announcementIDStr, userID
 	if err != nil {
 		return nil, err
 	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
-		return nil, err
-	}
 
 	a, err := s.load(ctx, guildID, announcementID)
 	if err != nil {
@@ -131,9 +128,6 @@ func (s *Service) CreateDraft(ctx context.Context, guildIDStr, userIDStr string)
 	if err != nil {
 		return nil, err
 	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageAnnouncements); err != nil {
-		return nil, err
-	}
 
 	id, err := s.q.CreateAnnouncementDraft(ctx, db.CreateAnnouncementDraftParams{GuildID: guildID, AuthorID: userID})
 	if err != nil {
@@ -143,15 +137,12 @@ func (s *Service) CreateDraft(ctx context.Context, guildIDStr, userIDStr string)
 }
 
 func (s *Service) Update(ctx context.Context, p Update) (*Announcement, error) {
-	guildID, userID, err := parseGuildAndUser(p.GuildID, p.UserID)
+	guildID, _, err := parseGuildAndUser(p.GuildID, p.UserID)
 	if err != nil {
 		return nil, err
 	}
 	announcementID, err := parseAnnouncementID(p.AnnouncementID)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageAnnouncements); err != nil {
 		return nil, err
 	}
 
@@ -176,15 +167,12 @@ func (s *Service) Update(ctx context.Context, p Update) (*Announcement, error) {
 }
 
 func (s *Service) Unpublish(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) (*Announcement, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return nil, err
 	}
 	announcementID, err := parseAnnouncementID(announcementIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageAnnouncements); err != nil {
 		return nil, err
 	}
 
@@ -203,15 +191,12 @@ func (s *Service) Unpublish(ctx context.Context, guildIDStr, announcementIDStr, 
 }
 
 func (s *Service) Publish(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) (*Announcement, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return nil, err
 	}
 	announcementID, err := parseAnnouncementID(announcementIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageAnnouncements); err != nil {
 		return nil, err
 	}
 
@@ -230,15 +215,12 @@ func (s *Service) Publish(ctx context.Context, guildIDStr, announcementIDStr, us
 }
 
 func (s *Service) DeleteDraft(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) error {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return err
 	}
 	announcementID, err := parseAnnouncementID(announcementIDStr)
 	if err != nil {
-		return err
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageAnnouncements); err != nil {
 		return err
 	}
 

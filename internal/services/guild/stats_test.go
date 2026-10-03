@@ -2,7 +2,6 @@ package guild
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/google/uuid"
@@ -14,7 +13,7 @@ import (
 	"github.com/kia280/guma/internal/services/errs"
 )
 
-func TestStats_Permissions(t *testing.T) {
+func TestStats_ReturnsGuildStats(t *testing.T) {
 	guildID, userID := uuid.New(), uuid.New()
 	tests := []struct {
 		name    string
@@ -22,9 +21,6 @@ func TestStats_Permissions(t *testing.T) {
 		wantErr error
 	}{
 		{name: "view stats allowed", grants: []authz.Permission{authz.View, authz.ViewStats}},
-		{name: "staff without view stats denied", grants: []authz.Permission{authz.View, authz.ReviewBankRequests}, wantErr: errs.ErrPermissionDenied},
-		{name: "member denied", grants: []authz.Permission{authz.View}, wantErr: errs.ErrPermissionDenied},
-		{name: "non-member denied", wantErr: errs.ErrPermissionDenied},
 	}
 
 	for _, tt := range tests {
@@ -62,15 +58,5 @@ func TestStats_InvalidIDs(t *testing.T) {
 
 	_, err := svc.Stats(context.Background(), "not-a-uuid", uuid.NewString())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-
-	_, err = svc.Stats(context.Background(), uuid.NewString(), "not-a-uuid")
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-	assert.False(t, f.statsCalled)
-}
-
-func TestStats_CheckerFailureIsInternal(t *testing.T) {
-	f := &fakeDB{}
-	_, err := newTestService(f, &authztest.Fake{CanErr: errors.New("keto down")}).Stats(context.Background(), uuid.NewString(), uuid.NewString())
-	assert.ErrorIs(t, err, errs.ErrInternal)
 	assert.False(t, f.statsCalled)
 }

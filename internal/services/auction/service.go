@@ -60,7 +60,6 @@ type Bid struct {
 // ListParams holds the inputs for List.
 type ListParams struct {
 	GuildID  string
-	UserID   string
 	Status   string
 	Category string
 	Rarity   string
@@ -137,13 +136,6 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
 	}
-	userID, err := uuid.Parse(p.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
-		return nil, err
-	}
 	search := "%" + p.Search + "%"
 
 	rows, err := s.q.ListAuctions(ctx, db.ListAuctionsParams{
@@ -176,18 +168,7 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 }
 
 // Get fetches a single auction by ID.
-func (s *Service) Get(ctx context.Context, guildIDStr, auctionIDStr, userIDStr string) (*AuctionItem, error) {
-	guildID, _, userID, err := parseIDs(guildIDStr, auctionIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
-		return nil, err
-	}
-	return s.get(ctx, guildIDStr, auctionIDStr)
-}
-
-func (s *Service) get(ctx context.Context, guildIDStr, auctionIDStr string) (*AuctionItem, error) {
+func (s *Service) Get(ctx context.Context, guildIDStr, auctionIDStr string) (*AuctionItem, error) {
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
@@ -274,7 +255,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*AuctionItem, err
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	s.logger.Info().Str("auction_id", row.ID.String()).Str("guild_id", p.GuildID).Msg("auction created")
-	return s.get(ctx, p.GuildID, row.ID.String())
+	return s.Get(ctx, p.GuildID, row.ID.String())
 }
 
 // PlaceBid places a bid on an active auction, handling wallet escrow atomically.
@@ -290,9 +271,6 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 	bidderID, err := uuid.Parse(bidderIDStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: bidder", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, bidderID, authz.View); err != nil {
-		return nil, nil, err
 	}
 
 	pgtx, err := s.pool.Begin(ctx)
@@ -373,7 +351,7 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 		return nil, nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 
-	a, err := s.get(ctx, guildIDStr, auctionIDStr)
+	a, err := s.Get(ctx, guildIDStr, auctionIDStr)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -386,14 +364,15 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 }
 
 // GetBidHistory returns paginated bid history for an auction.
-func (s *Service) GetBidHistory(ctx context.Context, guildIDStr, auctionIDStr, userIDStr string, pageSize, offset int) (*BidHistoryResult, error) {
+func (s *Service) GetBidHistory(ctx context.Context, guildIDStr, auctionIDStr string, pageSize, offset int) (*BidHistoryResult, error) {
 	pageSize = pagination.StandardSize(pageSize)
-	guildID, auctionID, userID, err := parseIDs(guildIDStr, auctionIDStr, userIDStr)
+	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
 	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
-		return nil, err
+	auctionID, err := uuid.Parse(auctionIDStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)
 	}
 
 	exists, err := s.q.AuctionExists(ctx, db.AuctionExistsParams{ID: auctionID, GuildID: guildID})
@@ -472,7 +451,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*AuctionItem, err
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 	s.logger.Info().Str("auction_id", p.AuctionID).Str("guild_id", p.GuildID).Str("user_id", p.UpdatedBy).Msg("auction updated")
-	return s.get(ctx, p.GuildID, p.AuctionID)
+	return s.Get(ctx, p.GuildID, p.AuctionID)
 }
 
 // Cancel cancels an open auction, refunds the escrowed highest bid and returns
@@ -520,7 +499,7 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, auctionIDStr, userIDSt
 	}
 	s.logger.Info().Str("auction_id", auctionIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).
 		Int64("refunded", current.CurrentBid).Msg("auction cancelled")
-	return s.get(ctx, guildIDStr, auctionIDStr)
+	return s.Get(ctx, guildIDStr, auctionIDStr)
 }
 
 // Delete permanently removes a cancelled auction and its bid history.

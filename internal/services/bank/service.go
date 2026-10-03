@@ -322,9 +322,6 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
-		return nil, err
-	}
 
 	bank, err := s.GetBank(ctx, guildIDStr)
 	if err != nil {
@@ -359,9 +356,6 @@ func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDSt
 	reviewerID, err := uuid.Parse(reviewerIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, reviewerID, authz.ReviewBankRequests); err != nil {
-		return nil, err
 	}
 
 	pgtx, err := s.pool.Begin(ctx)
@@ -432,13 +426,6 @@ func (s *Service) ListFundRequests(ctx context.Context, p ListFundRequestsParams
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
-	userID, err := uuid.Parse(p.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
-		return nil, err
 	}
 
 	rows, err := s.q.ListFundRequests(ctx, db.ListFundRequestsParams{
@@ -628,9 +615,6 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 	if err != nil {
 		return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
 	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
-		return nil, err
-	}
 
 	requesterName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
 
@@ -667,9 +651,6 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 	reviewerID, err := uuid.Parse(reviewerIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, reviewerID, authz.ReviewBankRequests); err != nil {
-		return nil, err
 	}
 
 	pgtx, err := s.pool.Begin(ctx)
@@ -746,9 +727,6 @@ func (s *Service) DeleteBankItem(ctx context.Context, guildIDStr, userIDStr, ban
 	if err != nil {
 		return fmt.Errorf("%w: bank item", errs.ErrNotFound)
 	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.DeleteBankItems); err != nil {
-		return err
-	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -799,13 +777,6 @@ func (s *Service) ListItemRequests(ctx context.Context, p ListItemRequestsParams
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
-	userID, err := uuid.Parse(p.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
-		return nil, err
 	}
 
 	rows, err := s.q.ListItemRequests(ctx, db.ListItemRequestsParams{

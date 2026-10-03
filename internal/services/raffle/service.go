@@ -248,9 +248,6 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Raffle, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := authz.Require(ctx, s.az, guildID, createdBy, authz.ManageRaffles); err != nil {
-		return nil, err
-	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -426,13 +423,6 @@ func (s *Service) Draw(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr
 	raffleID, err := uuid.Parse(raffleIDStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
-	}
-	callerID, err := uuid.Parse(callerIDStr)
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ManageRaffles); err != nil {
-		return nil, nil, err
 	}
 
 	winners, err := s.draw(ctx, guildID, raffleID, false)
@@ -696,11 +686,8 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Raffle, error) {
 	if err := validateUpdate(p, now); err != nil {
 		return nil, err
 	}
-	guildID, raffleID, callerID, err := parseIDs(p.GuildID, p.RaffleID, p.UpdatedBy)
+	guildID, raffleID, _, err := parseIDs(p.GuildID, p.RaffleID, p.UpdatedBy)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ManageRaffles); err != nil {
 		return nil, err
 	}
 
@@ -743,11 +730,8 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Raffle, error) {
 // Cancel cancels an undrawn raffle, refunds every ticket to its buyer and
 // returns item prizes to where they came from.
 func (s *Service) Cancel(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr string) (*Raffle, error) {
-	guildID, raffleID, callerID, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
+	guildID, raffleID, _, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ManageRaffles); err != nil {
 		return nil, err
 	}
 
@@ -801,11 +785,8 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, raffleIDStr, callerIDS
 
 // Delete permanently removes a cancelled raffle together with its tickets.
 func (s *Service) Delete(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr string) error {
-	guildID, raffleID, callerID, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
+	guildID, raffleID, _, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
 	if err != nil {
-		return err
-	}
-	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ManageRaffles); err != nil {
 		return err
 	}
 

@@ -37,21 +37,28 @@ generated `sqlc` queries.
   worktree on a new branch, and do all edits, generation, and checks there.
 - Keep transport concerns in handlers, business rules in services, and data access
   in sqlc queries.
-- Authorize guild actions only through the `authz` helpers; services never call
-  `Checker.Can` directly and never compare role strings. Use `authz.Require` to
-  reject the request, `authz.RequireOrNotFound` when a denial should hide that
-  the resource exists, and `authz.Allowed` when a permission only changes what
-  is shown. When the required permission depends on resource state (who owns
-  it, its status), choose it in a pure policy function in the service package
-  (for example `cancelPermission` in `internal/services/auction/policy.go`),
-  cover it with a table test, and make a single helper call. To add a
-  permission, add a permit to `internal/authz/namespaces.keto.ts` and a matching
-  constant in `internal/authz/authz.go` (a test keeps them in sync).
-- `interceptors.GuildMembershipInterceptor` rejects any unary RPC whose request
-  has a `guild_id` unless the caller is a guild member (`authz.View`). RPCs
-  without a `guild_id`, or that non-members must reach (such as joining a
-  guild), must be listed in `MembershipExemptMethods`; a test fails otherwise.
-  Services still make their own `authz` checks.
+- Guild authorization has two layers:
+  - `interceptors.GuildAuthzInterceptor` authorizes every unary RPC whose
+    request has a `guild_id`. It requires the permission declared for that
+    method in `MethodPermissions`
+    (`internal/router/grpc/interceptors/permissions.go`). When you add an RPC,
+    declare its permission there (use `authz.View` for "any member"), or list it
+    in `GuildAuthzExemptMethods` if it has no `guild_id` or non-members must
+    reach it (such as joining a guild). A test fails until every method is
+    declared or exempted. Services do not repeat these fixed checks.
+  - Services make only the checks that depend on the request contents or on
+    resource state (who owns it, its status). Choose the permission in a pure
+    policy function in the service package (for example `cancelPermission` in
+    `internal/services/auction/policy.go`), cover it with a table test, and
+    call one `authz` helper: `authz.Require` to reject, `authz.RequireOrNotFound`
+    when a denial should hide that the resource exists, or `authz.Allowed` when
+    a permission only changes what is shown. Services never call `Checker.Can`
+    directly and never compare role strings.
+  - Because the interceptor authorizes the request's `guild_id`, every query
+    that loads or changes a resource by its id must also filter by that
+    `guild_id`, or run only after a guild-scoped lookup of its parent.
+  - To add a permission, add a permit to `internal/authz/namespaces.keto.ts` and
+    a matching constant in `internal/authz/authz.go` (a test keeps them in sync).
 - Membership rows (`members`) are mirrored into Keto by a trigger-fed outbox. After
   committing a membership or role change, call `authz.SyncAfterCommit` so the
   caller's next request sees it; `go run main.go authz sync` repairs drift.

@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 	"github.com/kia280/guma/internal/services/pagination"
@@ -66,9 +65,6 @@ func (s *Service) RequestWithdrawal(ctx context.Context, userIDStr, guildIDStr s
 		return nil, nil, nil, err
 	}
 	note = strings.TrimSpace(note)
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.View); err != nil {
-		return nil, nil, nil, err
-	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -160,9 +156,6 @@ func (s *Service) ReviewWithdrawalRequest(ctx context.Context, reviewerIDStr, gu
 		return nil, fmt.Errorf("%w: withdrawal request", errs.ErrNotFound)
 	}
 	note = strings.TrimSpace(note)
-	if err := authz.Require(ctx, s.az, guildID, reviewerID, authz.ReviewWithdrawals); err != nil {
-		return nil, err
-	}
 
 	resolution := withdrawalResolution{
 		guildID: guildID, requestID: requestID, actorID: reviewerID, reviewerID: &reviewerID,
@@ -190,11 +183,8 @@ func (s *Service) ListMyWithdrawalRequests(ctx context.Context, p ListWithdrawal
 }
 
 func (s *Service) ListWithdrawalRequests(ctx context.Context, p ListWithdrawalRequestsParams) (*ListWithdrawalRequestsResult, error) {
-	viewerID, guildID, err := parseIDs(p.ViewerID, p.GuildID)
+	_, guildID, err := parseIDs(p.ViewerID, p.GuildID)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, viewerID, authz.ReviewWithdrawals); err != nil {
 		return nil, err
 	}
 	return s.listWithdrawalRequests(ctx, guildID, nil, p)

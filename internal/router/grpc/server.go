@@ -53,7 +53,7 @@ func NewServer(cfg *config.Config, db *database.Pool, az authz.Authorizer, broke
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),
 			grpcprotovalidate.UnaryServerInterceptor(validator),
-			interceptors.GuildMembershipInterceptor(az),
+			interceptors.GuildAuthzInterceptor(az),
 		),
 		grpc.ChainStreamInterceptor(
 			interceptors.StreamErrorSanitizerInterceptor(logger),

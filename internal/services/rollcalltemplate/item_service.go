@@ -51,11 +51,8 @@ func newItemService(q store, az authz.Checker, logger zerolog.Logger) *ItemServi
 }
 
 func (s *ItemService) List(ctx context.Context, guildIDStr, userIDStr string) ([]*ItemTemplate, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
 		return nil, err
 	}
 	rows, err := s.q.ListItemTemplates(ctx, guildID)
@@ -75,9 +72,6 @@ func (s *ItemService) Create(ctx context.Context, guildIDStr, userIDStr string, 
 	if err != nil {
 		return nil, err
 	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
-		return nil, err
-	}
 	r, err := s.q.CreateItemTemplate(ctx, db.CreateItemTemplateParams{
 		GuildID: guildID, CreatedBy: userID,
 		Name: f.Name, Description: f.Description, Category: f.Category, Rarity: f.Rarity,
@@ -91,16 +85,13 @@ func (s *ItemService) Create(ctx context.Context, guildIDStr, userIDStr string, 
 
 func (s *ItemService) Update(ctx context.Context, guildIDStr, templateIDStr, userIDStr string, f ItemFields) (*ItemTemplate, error) {
 	f = normalizeItemFields(f)
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return nil, err
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", errs.ErrNotFound, itemEntity)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
-		return nil, err
 	}
 	r, err := s.q.UpdateItemTemplate(ctx, db.UpdateItemTemplateParams{
 		ID: templateID, GuildID: guildID,
@@ -113,16 +104,13 @@ func (s *ItemService) Update(ctx context.Context, guildIDStr, templateIDStr, use
 }
 
 func (s *ItemService) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDStr string) error {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return err
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
 		return fmt.Errorf("%w: %s", errs.ErrNotFound, itemEntity)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
-		return err
 	}
 	n, err := s.q.DeleteItemTemplate(ctx, db.DeleteItemTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {

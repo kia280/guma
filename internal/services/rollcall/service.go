@@ -232,9 +232,6 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := authz.Require(ctx, s.az, guildID, createdBy, authz.ManageRollCalls); err != nil {
-		return nil, err
-	}
 
 	prepared := prepareLoot(p.Loot)
 	loot := prepared.items
@@ -321,13 +318,6 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
-	userID, err := uuid.Parse(p.UpdatedBy)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCalls); err != nil {
-		return nil, err
-	}
 
 	current, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
@@ -377,13 +367,6 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 	if err != nil {
 		return fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.DeleteRollCalls); err != nil {
-		return err
-	}
 	n, err := s.q.DeleteRollCall(ctx, db.DeleteRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
 		return fmt.Errorf("%w: delete roll call: %v", errs.ErrInternal, err)
@@ -407,9 +390,6 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.DeleteRollCalls); err != nil {
-		return nil, err
 	}
 
 	current, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})
@@ -473,9 +453,6 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall
 	userID, err := uuid.Parse(p.UpdatedBy)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCalls); err != nil {
-		return nil, err
 	}
 	donorName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
 
@@ -605,9 +582,6 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userI
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCalls); err != nil {
-		return nil, err
 	}
 
 	pgtx, err := s.pool.Begin(ctx)
@@ -768,9 +742,6 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, rollCallIDStr, ite
 	recipientID, err := uuid.Parse(recipientIDStr)
 	if err != nil {
 		return "", fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, actorID, authz.ManageRollCalls); err != nil {
-		return "", err
 	}
 	if exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: rollCallID, GuildID: guildID}); err != nil || !exists {
 		return "", fmt.Errorf("%w: roll call", errs.ErrNotFound)

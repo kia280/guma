@@ -79,9 +79,6 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	}
 	pageSize := clampPageSize(p.PageSize)
 
-	if err := authz.Require(ctx, s.az, guildID, callerID, authz.View); err != nil {
-		return nil, err
-	}
 	showDiscord, err := authz.Allowed(ctx, s.az, guildID, callerID, authz.ViewMemberContacts)
 	if err != nil {
 		return nil, err

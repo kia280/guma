@@ -40,9 +40,6 @@ func (s *Service) GetItemHistory(ctx context.Context, guildIDStr, viewerIDStr, i
 	if err != nil {
 		return nil, fmt.Errorf("%w: item", errs.ErrNotFound)
 	}
-	if err := authz.Require(ctx, s.az, guildID, viewerID, authz.View); err != nil {
-		return nil, err
-	}
 
 	if err := s.authorizeItemHistory(ctx, guildID, viewerID, itemID); err != nil {
 		return nil, err

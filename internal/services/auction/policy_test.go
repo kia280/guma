@@ -77,28 +77,12 @@ func TestCancelPermission(t *testing.T) {
 	}
 }
 
-func TestNonMembersAreDenied(t *testing.T) {
-	guild, outsider, auctionID := uuid.NewString(), uuid.NewString(), uuid.NewString()
+func TestCreateRequiresMembership(t *testing.T) {
+	guild, outsider := uuid.NewString(), uuid.NewString()
 	s := New(nil, authztest.New(), zerolog.Nop())
 	ctx := context.Background()
 
 	calls := map[string]func() error{
-		"list": func() error {
-			_, err := s.List(ctx, ListParams{GuildID: guild, UserID: outsider})
-			return err
-		},
-		"get": func() error {
-			_, err := s.Get(ctx, guild, auctionID, outsider)
-			return err
-		},
-		"bid history": func() error {
-			_, err := s.GetBidHistory(ctx, guild, auctionID, outsider, 20, 0)
-			return err
-		},
-		"place bid": func() error {
-			_, _, err := s.PlaceBid(ctx, guild, auctionID, outsider, 100)
-			return err
-		},
 		"create": func() error {
 			_, err := s.Create(ctx, CreateParams{GuildID: guild, SellerID: outsider, Item: models.Item{Name: "Sword"}})
 			return err

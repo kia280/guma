@@ -5,11 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
 	"github.com/kia280/guma/internal/authz"
-	"github.com/kia280/guma/internal/authz/authztest"
 	"github.com/kia280/guma/internal/services/errs"
 )
 
@@ -123,41 +121,5 @@ func TestRoleChangePermission(t *testing.T) {
 		if _, err := roleChangePermission(tt.current, tt.next); !errors.Is(err, errs.ErrPermissionDenied) {
 			t.Fatalf("changing %s to %s: expected permission denied, got %v", tt.current, tt.next, err)
 		}
-	}
-}
-
-func TestUpdateRoleRequiresManageRoles(t *testing.T) {
-	guild, actor, target := uuid.New(), uuid.New(), uuid.New()
-	for name, checker := range map[string]*authztest.Fake{
-		"non-member":       authztest.New(),
-		"moderator powers": authztest.New().Grant(guild, actor, authz.View, authz.ViewMemberContacts, authz.ManageRollCalls),
-	} {
-		t.Run(name, func(t *testing.T) {
-			s := New(nil, checker, zerolog.Nop())
-			_, err := s.UpdateRole(context.Background(), UpdateRoleParams{
-				GuildID: guild.String(), ActorID: actor.String(), UserID: target.String(), Role: "moderator",
-			})
-			if !errors.Is(err, errs.ErrPermissionDenied) {
-				t.Fatalf("expected permission denied, got %v", err)
-			}
-		})
-	}
-}
-
-func TestUpdateRoleCheckerFailureIsInternal(t *testing.T) {
-	s := New(nil, &authztest.Fake{CanErr: errors.New("keto down")}, zerolog.Nop())
-	_, err := s.UpdateRole(context.Background(), UpdateRoleParams{
-		GuildID: uuid.NewString(), ActorID: uuid.NewString(), UserID: uuid.NewString(), Role: "member",
-	})
-	if !errors.Is(err, errs.ErrInternal) {
-		t.Fatalf("expected internal error, got %v", err)
-	}
-}
-
-func TestListRequiresMembership(t *testing.T) {
-	s := New(nil, authztest.New(), zerolog.Nop())
-	_, err := s.List(context.Background(), ListParams{GuildID: uuid.NewString(), CallerID: uuid.NewString()})
-	if !errors.Is(err, errs.ErrPermissionDenied) {
-		t.Fatalf("expected permission denied, got %v", err)
 	}
 }

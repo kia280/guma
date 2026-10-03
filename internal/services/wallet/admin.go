@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
@@ -69,11 +68,8 @@ type adminTransfer struct {
 }
 
 func (s *Service) ListMemberAssets(ctx context.Context, adminIDStr, guildIDStr string) ([]MemberAssetSummary, error) {
-	adminID, guildID, err := parseIDs(adminIDStr, guildIDStr)
+	_, guildID, err := parseIDs(adminIDStr, guildIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, adminID, authz.ManageMemberAssets); err != nil {
 		return nil, err
 	}
 	rows, err := s.q.ListMemberAssets(ctx, guildID)
@@ -88,16 +84,13 @@ func (s *Service) ListMemberAssets(ctx context.Context, adminIDStr, guildIDStr s
 }
 
 func (s *Service) GetMemberAssets(ctx context.Context, adminIDStr, guildIDStr, memberIDStr string) (*MemberAssets, error) {
-	adminID, guildID, err := parseIDs(adminIDStr, guildIDStr)
+	_, guildID, err := parseIDs(adminIDStr, guildIDStr)
 	if err != nil {
 		return nil, err
 	}
 	memberID, err := uuid.Parse(memberIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: member", errs.ErrNotFound)
-	}
-	if err := authz.Require(ctx, s.az, guildID, adminID, authz.ManageMemberAssets); err != nil {
-		return nil, err
 	}
 	if err := s.requireMember(ctx, s.q, guildID, memberID, errs.ErrNotFound); err != nil {
 		return nil, err
@@ -329,9 +322,6 @@ func (s *Service) prepareAdminTransfer(ctx context.Context, adminIDStr, guildIDS
 		}
 	}
 
-	if err := authz.Require(ctx, s.az, guildID, adminID, authz.ManageMemberAssets); err != nil {
-		return t, err
-	}
 	if !t.toBank {
 		if err := s.requireMember(ctx, s.q, guildID, t.toID, errs.ErrFailedPrecondition); err != nil {
 			return t, err

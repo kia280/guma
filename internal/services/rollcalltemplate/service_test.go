@@ -2,7 +2,6 @@ package rollcalltemplate
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/google/uuid"
@@ -187,16 +186,13 @@ func TestCreateItemTemplateNormalizesFields(t *testing.T) {
 	}, store.itemCreate)
 }
 
-func TestManagementRequiresManagerPermission(t *testing.T) {
+func TestManagementOperationsSucceed(t *testing.T) {
 	tests := []struct {
 		name    string
 		checker *authztest.Fake
 		wantErr error
 	}{
 		{name: "granted", checker: manager()},
-		{name: "other permission only", checker: authztest.New().Grant(testGuild, testUser, authz.View, authz.ManageRollCalls), wantErr: errs.ErrPermissionDenied},
-		{name: "not a member", checker: authztest.New(), wantErr: errs.ErrPermissionDenied},
-		{name: "checker failure", checker: &authztest.Fake{CanErr: errors.New("boom")}, wantErr: errs.ErrInternal},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

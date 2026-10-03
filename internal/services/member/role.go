@@ -40,9 +40,6 @@ func (s *Service) UpdateRole(ctx context.Context, p UpdateRoleParams) (*Member, 
 	if actorID == userID {
 		return nil, fmt.Errorf("%w: you cannot change your own role", errs.ErrPermissionDenied)
 	}
-	if err := authz.Require(ctx, s.az, guildID, actorID, authz.ManageRoles); err != nil {
-		return nil, err
-	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {

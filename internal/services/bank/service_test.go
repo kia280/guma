@@ -11,8 +11,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/kia280/guma/internal/authz"
-	"github.com/kia280/guma/internal/authz/authztest"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
@@ -60,14 +58,6 @@ func TestDeleteBankItemValidatesIDs(t *testing.T) {
 			assert.ErrorIs(t, s.DeleteBankItem(context.Background(), tt.guild, tt.user, tt.item), tt.want)
 		})
 	}
-}
-
-func TestDeleteBankItemRequiresDeletePermission(t *testing.T) {
-	guild, user := uuid.MustParse(testGuild), uuid.MustParse(testUser)
-	checker := authztest.New().Grant(guild, user, authz.View, authz.ReviewBankRequests)
-	s := New(nil, checker, zerolog.Nop())
-	err := s.DeleteBankItem(context.Background(), testGuild, testUser, uuid.NewString())
-	assert.ErrorIs(t, err, errs.ErrPermissionDenied)
 }
 
 func TestCheckReviewable(t *testing.T) {

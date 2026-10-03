@@ -123,7 +123,7 @@ func TestValidateLogo(t *testing.T) {
 	}
 }
 
-func TestUploadLogo_Permissions(t *testing.T) {
+func TestUploadLogo_StoresLogo(t *testing.T) {
 	guildID := uuid.New()
 	userID := uuid.New()
 
@@ -133,9 +133,6 @@ func TestUploadLogo_Permissions(t *testing.T) {
 		wantErr error
 	}{
 		{name: "manage guild allowed", grants: []authz.Permission{authz.View, authz.ManageGuild}},
-		{name: "staff without manage guild denied", grants: []authz.Permission{authz.View, authz.ManageRollCalls}, wantErr: errs.ErrPermissionDenied},
-		{name: "member denied", grants: []authz.Permission{authz.View}, wantErr: errs.ErrPermissionDenied},
-		{name: "non-member denied", wantErr: errs.ErrPermissionDenied},
 	}
 
 	for _, tt := range tests {
@@ -170,11 +167,4 @@ func TestUploadLogo_RejectsInvalidImageBeforeWriting(t *testing.T) {
 	})
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 	assert.False(t, f.upsertCalled)
-}
-
-func TestDeleteLogo_RequiresManageGuild(t *testing.T) {
-	guildID, userID := uuid.New(), uuid.New()
-	f := &fakeDB{}
-	_, err := newTestService(f, authztest.New().Grant(guildID, userID, authz.View)).DeleteLogo(context.Background(), guildID.String(), userID.String())
-	assert.ErrorIs(t, err, errs.ErrPermissionDenied)
 }

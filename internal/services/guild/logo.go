@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
@@ -64,15 +63,8 @@ func (s *Service) UploadLogo(ctx context.Context, p UploadLogoParams) (*Guild, e
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
 	}
-	userID, err := uuid.Parse(p.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
 	contentType, err := ValidateLogo(p.ContentType, p.Data)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageGuild); err != nil {
 		return nil, err
 	}
 
@@ -106,13 +98,6 @@ func (s *Service) DeleteLogo(ctx context.Context, guildIDStr, userIDStr string) 
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageGuild); err != nil {
-		return nil, err
 	}
 
 	row, err := s.q.DeleteGuildLogo(ctx, guildID)

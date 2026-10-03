@@ -195,13 +195,6 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Guild, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
 	}
-	userID, err := uuid.Parse(p.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageGuild); err != nil {
-		return nil, err
-	}
 
 	row, err := s.q.UpdateGuild(ctx, db.UpdateGuildParams{
 		Name:        p.Name,
@@ -234,13 +227,6 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, userIDStr string) erro
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.DeleteGuild); err != nil {
-		return err
 	}
 	if err := s.q.DeleteGuild(ctx, guildID); err != nil {
 		return fmt.Errorf("%w: delete guild: %v", errs.ErrInternal, err)
@@ -401,13 +387,6 @@ func (s *Service) UpdateSettings(ctx context.Context, guildIDStr, userIDStr stri
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageGuild); err != nil {
-		return nil, err
 	}
 
 	cs := settings.CustomSettings

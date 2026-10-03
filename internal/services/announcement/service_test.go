@@ -64,9 +64,6 @@ func TestDraftAccessRequiresManagePermission(t *testing.T) {
 	if !errors.Is(err, errs.ErrPermissionDenied) {
 		t.Fatalf("listing drafts: expected permission denied, got %v", err)
 	}
-	if _, err := s.CreateDraft(ctx, guild.String(), user.String()); !errors.Is(err, errs.ErrPermissionDenied) {
-		t.Fatalf("creating draft: expected permission denied, got %v", err)
-	}
 }
 
 func TestNonMemberCannotListAnnouncements(t *testing.T) {

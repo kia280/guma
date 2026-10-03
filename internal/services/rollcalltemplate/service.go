@@ -51,11 +51,8 @@ func newService(q store, az authz.Checker, logger zerolog.Logger) *Service {
 }
 
 func (s *Service) List(ctx context.Context, guildIDStr, userIDStr string) ([]*Template, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
 		return nil, err
 	}
 	rows, err := s.q.ListRollCallTemplates(ctx, guildID)
@@ -78,9 +75,6 @@ func (s *Service) Create(ctx context.Context, guildIDStr, userIDStr string, f Fi
 	if err != nil {
 		return nil, err
 	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
-		return nil, err
-	}
 	if err := s.requireGuildItems(ctx, guildID, itemIDs); err != nil {
 		return nil, err
 	}
@@ -99,16 +93,13 @@ func (s *Service) Update(ctx context.Context, guildIDStr, templateIDStr, userIDS
 	if err != nil {
 		return nil, err
 	}
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return nil, err
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", errs.ErrNotFound, rollCallTemplateEntity)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
-		return nil, err
 	}
 	if err := s.requireGuildItems(ctx, guildID, itemIDs); err != nil {
 		return nil, err
@@ -123,16 +114,13 @@ func (s *Service) Update(ctx context.Context, guildIDStr, templateIDStr, userIDS
 }
 
 func (s *Service) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDStr string) error {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return err
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
 		return fmt.Errorf("%w: %s", errs.ErrNotFound, rollCallTemplateEntity)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageRollCallTemplates); err != nil {
-		return err
 	}
 	n, err := s.q.DeleteRollCallTemplate(ctx, db.DeleteRollCallTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {

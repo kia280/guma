@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/services/errs"
 )
 
@@ -24,13 +23,6 @@ func (s *Service) Stats(ctx context.Context, guildIDStr, userIDStr string) (*Sta
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, authz.ViewStats); err != nil {
-		return nil, err
 	}
 
 	row, err := s.q.GetGuildStats(ctx, guildID)
