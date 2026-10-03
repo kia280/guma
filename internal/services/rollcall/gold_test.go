@@ -58,10 +58,10 @@ func TestNormalizeGoldPayouts(t *testing.T) {
 	b := uuid.MustParse("00000000-0000-0000-0000-00000000000b")
 	c := uuid.MustParse("00000000-0000-0000-0000-00000000000c")
 
-	lines, total, err := normalizeGoldPayouts([]GoldPayout{
-		{UserID: c.String(), Amount: 333},
-		{UserID: a.String(), Amount: 334},
-		{UserID: b.String(), Amount: 0},
+	lines, total, err := normalizeGoldPayouts([]GoldPayoutRequest{
+		{UserID: c, Amount: 333},
+		{UserID: a, Amount: 334},
+		{UserID: b, Amount: 0},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, int64(667), total)
@@ -69,12 +69,11 @@ func TestNormalizeGoldPayouts(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		payouts []GoldPayout
+		payouts []GoldPayoutRequest
 	}{
-		{name: "duplicate", payouts: []GoldPayout{{UserID: a.String(), Amount: 5}, {UserID: a.String(), Amount: 5}}},
-		{name: "duplicate with zero", payouts: []GoldPayout{{UserID: a.String(), Amount: 5}, {UserID: a.String()}}},
-		{name: "bad user", payouts: []GoldPayout{{UserID: "nope", Amount: 5}}},
-		{name: "overflowing sum", payouts: []GoldPayout{{UserID: a.String(), Amount: maxGoldAmount}, {UserID: b.String(), Amount: 1}}},
+		{name: "duplicate", payouts: []GoldPayoutRequest{{UserID: a, Amount: 5}, {UserID: a, Amount: 5}}},
+		{name: "duplicate with zero", payouts: []GoldPayoutRequest{{UserID: a, Amount: 5}, {UserID: a}}},
+		{name: "overflowing sum", payouts: []GoldPayoutRequest{{UserID: a, Amount: maxGoldAmount}, {UserID: b, Amount: 1}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

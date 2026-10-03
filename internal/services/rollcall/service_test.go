@@ -52,20 +52,6 @@ func TestCheckCheckInOpen(t *testing.T) {
 	assert.ErrorIs(t, checkCheckInOpen(now.Add(-time.Hour), false, now), errs.ErrFailedPrecondition)
 }
 
-func TestCancelRejectsMalformedIDsBeforeQuerying(t *testing.T) {
-	s := &Service{}
-	const valid = "00000000-0000-0000-0000-000000000001"
-
-	_, err := s.Cancel(context.Background(), "bad", valid, valid)
-	assert.ErrorIs(t, err, errs.ErrNotFound)
-
-	_, err = s.Cancel(context.Background(), valid, "bad", valid)
-	assert.ErrorIs(t, err, errs.ErrNotFound)
-
-	_, err = s.Cancel(context.Background(), valid, valid, "bad")
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-}
-
 func TestCheckEditable(t *testing.T) {
 	assert.NoError(t, checkEditable(false, false))
 	assert.ErrorIs(t, checkEditable(true, false), errs.ErrFailedPrecondition)
@@ -82,7 +68,7 @@ func TestCheckExpireTimeInFuture(t *testing.T) {
 
 func TestUpdateValidatesBeforeQuerying(t *testing.T) {
 	s := &Service{}
-	const valid = "00000000-0000-0000-0000-000000000001"
+	valid := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	future := time.Now().UTC().Add(time.Hour)
 	datetime := future.Format(time.RFC3339)
 	expireTime := future.Add(time.Hour).Format(time.RFC3339)
@@ -101,8 +87,6 @@ func TestUpdateValidatesBeforeQuerying(t *testing.T) {
 			p.Datetime = "2020-01-01T00:00:00Z"
 			p.ExpireTime = "2020-01-02T00:00:00Z"
 		}, wantErr: errs.ErrInvalidArgument},
-		{name: "malformed guild", mutate: func(p *UpdateParams) { p.GuildID = "bad" }, wantErr: errs.ErrNotFound},
-		{name: "malformed roll call", mutate: func(p *UpdateParams) { p.RollCallID = "bad" }, wantErr: errs.ErrNotFound},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -195,25 +179,6 @@ func TestPlanLootUpdate(t *testing.T) {
 			assert.ErrorIs(t, err, tt.wantErr)
 		})
 	}
-}
-
-func TestUpdateLootAndCompleteRejectMalformedIDsBeforeQuerying(t *testing.T) {
-	s := &Service{}
-	const valid = "00000000-0000-0000-0000-000000000001"
-
-	_, err := s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: "bad", RollCallID: valid, UpdatedBy: valid})
-	assert.ErrorIs(t, err, errs.ErrNotFound)
-	_, err = s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: valid, RollCallID: "bad", UpdatedBy: valid})
-	assert.ErrorIs(t, err, errs.ErrNotFound)
-	_, err = s.UpdateLoot(context.Background(), UpdateLootParams{GuildID: valid, RollCallID: valid, UpdatedBy: "bad"})
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-
-	_, err = s.Complete(context.Background(), "bad", valid, valid, false)
-	assert.ErrorIs(t, err, errs.ErrNotFound)
-	_, err = s.Complete(context.Background(), valid, "bad", valid, false)
-	assert.ErrorIs(t, err, errs.ErrNotFound)
-	_, err = s.Complete(context.Background(), valid, valid, "bad", false)
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }
 
 func TestStoreLootKeepsGoldEntries(t *testing.T) {
