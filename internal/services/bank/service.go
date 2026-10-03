@@ -19,6 +19,7 @@ import (
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 // GuildBank is the domain model for the guild bank.
@@ -428,10 +429,7 @@ func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDSt
 
 // ListFundRequests returns paginated fund requests.
 func (s *Service) ListFundRequests(ctx context.Context, p ListFundRequestsParams) (*ListFundRequestsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -468,10 +466,7 @@ func (s *Service) ListFundRequests(ctx context.Context, p ListFundRequestsParams
 
 // ListContributions returns paginated contributions.
 func (s *Service) ListContributions(ctx context.Context, p ListContributionsParams) (*ListContributionsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -570,10 +565,7 @@ func (s *Service) DonateItem(ctx context.Context, guildIDStr, userIDStr, backpac
 
 // ListBankItems returns paginated bank items with optional filters.
 func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*ListBankItemsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -804,10 +796,7 @@ func (s *Service) DeleteBankItem(ctx context.Context, guildIDStr, userIDStr, ban
 }
 
 func (s *Service) ListItemRequests(ctx context.Context, p ListItemRequestsParams) (*ListItemRequestsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)

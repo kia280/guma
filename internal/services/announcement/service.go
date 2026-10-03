@@ -15,6 +15,7 @@ import (
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 const (
@@ -322,13 +323,7 @@ func parseAnnouncementID(raw string) (uuid.UUID, error) {
 }
 
 func clampPageSize(size int32) int32 {
-	if size <= 0 {
-		return defaultPageSize
-	}
-	if size > maxPageSize {
-		return maxPageSize
-	}
-	return size
+	return pagination.Size(size, defaultPageSize, maxPageSize)
 }
 
 func toAnnouncement(r db.GetAnnouncementRow) *Announcement {

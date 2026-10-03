@@ -17,6 +17,7 @@ import (
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
 	"github.com/kia280/guma/internal/services/inventory"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 // AuctionItem is the domain model for an auction.
@@ -127,10 +128,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 
 // List returns paginated auctions for a guild with optional filters.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -366,9 +364,7 @@ func (s *Service) PlaceBid(ctx context.Context, guildIDStr, auctionIDStr, bidder
 
 // GetBidHistory returns paginated bid history for an auction.
 func (s *Service) GetBidHistory(ctx context.Context, guildIDStr, auctionIDStr string, pageSize, offset int) (*BidHistoryResult, error) {
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize = pagination.StandardSize(pageSize)
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: auction", errs.ErrNotFound)

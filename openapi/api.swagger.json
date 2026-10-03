@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/guma/v1/announcement.proto",
+    "title": "proto/guma/v1/validate.proto",
     "version": "version not set"
   },
   "tags": [

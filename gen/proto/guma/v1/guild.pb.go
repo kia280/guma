@@ -1724,10 +1724,9 @@ const file_proto_guma_v1_guild_proto_rawDesc = "" +
 	"\x12DeleteGuildRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"/\n" +
 	"\x13DeleteGuildResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xab\x01\n" +
-	"\x11ListGuildsRequest\x12'\n" +
-	"\tpage_size\x18\x01 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xa9\x01\n" +
+	"\x11ListGuildsRequest\x12%\n" +
+	"\tpage_size\x18\x01 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +
 	"page_token\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\x12 \n" +
 	"\x06search\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x06search\x12\"\n" +

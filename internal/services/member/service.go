@@ -15,6 +15,7 @@ import (
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 const (
@@ -132,13 +133,7 @@ func canSeeDiscord(role string) bool {
 }
 
 func clampPageSize(size int32) int32 {
-	if size <= 0 {
-		return defaultPageSize
-	}
-	if size > maxPageSize {
-		return maxPageSize
-	}
-	return size
+	return pagination.Size(size, defaultPageSize, maxPageSize)
 }
 
 func parsePageToken(token string) (int32, error) {

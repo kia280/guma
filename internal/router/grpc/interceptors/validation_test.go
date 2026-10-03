@@ -83,7 +83,7 @@ func TestUnaryValidation(t *testing.T) {
 			name:       "page size above limit",
 			request:    &gumav1.ListGuildsRequest{PageSize: 1001},
 			wantField:  "page_size",
-			wantRuleID: "int32.gte_lte",
+			wantRuleID: "int32.max_page_size",
 		},
 	}
 
@@ -111,7 +111,7 @@ func TestUnaryValidation(t *testing.T) {
 			return "response", nil
 		}
 
-		resp, err := interceptor(context.Background(), &gumav1.ListGuildsRequest{PageSize: 1000}, info, handler)
+		resp, err := interceptor(context.Background(), &gumav1.ListGuildsRequest{PageSize: 100}, info, handler)
 
 		require.NoError(t, err)
 		assert.True(t, handlerCalled)

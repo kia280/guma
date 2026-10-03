@@ -13,6 +13,7 @@ import (
 
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 const (
@@ -202,10 +203,7 @@ func (s *Service) ListWithdrawalRequests(ctx context.Context, p ListWithdrawalRe
 }
 
 func (s *Service) listWithdrawalRequests(ctx context.Context, guildID uuid.UUID, requesterID *uuid.UUID, p ListWithdrawalRequestsParams) (*ListWithdrawalRequestsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 
 	rows, err := s.q.ListWithdrawalRequests(ctx, db.ListWithdrawalRequestsParams{
 		GuildID: guildID, RequesterID: requesterID, StatusFilter: p.Status,

@@ -18,6 +18,7 @@ import (
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 // Wallet is the domain model for a user's guild wallet.
@@ -285,10 +286,7 @@ func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guil
 
 // ListTransactions returns paginated transactions for a user in a guild.
 func (s *Service) ListTransactions(ctx context.Context, p ListTransactionsParams) (*ListTransactionsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	userID, guildID, err := parseIDs(p.UserID, p.GuildID)
 	if err != nil {
 		return nil, err
@@ -333,10 +331,7 @@ func (s *Service) ListTransactions(ctx context.Context, p ListTransactionsParams
 
 // ListBackpackItems returns paginated backpack items for a user in a guild.
 func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (*ListBackpackResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	ownerID, guildID, err := parseIDs(p.OwnerID, p.GuildID)
 	if err != nil {
 		return nil, err

@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 func TestValidatesInputBeforeQuerying(t *testing.T) {
@@ -39,7 +40,7 @@ func TestValidatesInputBeforeQuerying(t *testing.T) {
 }
 
 func TestClampPageSize(t *testing.T) {
-	for in, want := range map[int32]int32{0: defaultPageSize, -3: defaultPageSize, 7: 7, maxPageSize + 1: maxPageSize} {
+	for in, want := range map[int32]int32{0: pagination.DefaultSize, -3: pagination.DefaultSize, 7: 7, pagination.MaxSize + 1: pagination.MaxSize} {
 		if got := clampPageSize(in); got != want {
 			t.Fatalf("clampPageSize(%d) = %d, want %d", in, got, want)
 		}

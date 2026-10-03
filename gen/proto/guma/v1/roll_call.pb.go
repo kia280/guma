@@ -1993,12 +1993,11 @@ var File_proto_guma_v1_roll_call_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\n" +
-	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xb1\x01\n" +
+	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xaf\x01\n" +
 	"\x14ListRollCallsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
-	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12'\n" +
-	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
+	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12%\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +
 	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x92\x01\n" +
 	"\x15ListRollCallsResponse\x120\n" +
@@ -2112,13 +2111,12 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"rollCallId\x12\x1e\n" +
 	"\x05notes\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x05notes\"H\n" +
 	"\x0fCheckInResponse\x125\n" +
-	"\battendee\x18\x01 \x01(\v2\x19.guma.v1.RollCallAttendeeR\battendee\"\xbf\x01\n" +
+	"\battendee\x18\x01 \x01(\v2\x19.guma.v1.RollCallAttendeeR\battendee\"\xbd\x01\n" +
 	"\x14ListAttendeesRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
-	"rollCallId\x12'\n" +
-	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
+	"rollCallId\x12%\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +
 	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x99\x01\n" +
 	"\x15ListAttendeesResponse\x127\n" +
@@ -2150,13 +2148,12 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\x04loot\x18\x0f \x03(\v2\x1a.guma.v1.RollCallLootEntryR\x04loot\x123\n" +
 	"\bgold_pot\x18\x10 \x01(\v2\x18.guma.v1.RollCallGoldPotR\agoldPot\x12!\n" +
 	"\fis_completed\x18\x11 \x01(\bR\visCompleted\x12=\n" +
-	"\fcompleted_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"\x8e\x04\n" +
+	"\fcompleted_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"\x87\x04\n" +
 	"\x11RollCallLootEntry\x12y\n" +
 	"\x04kind\x18\x01 \x01(\tBe\xbaHb\xba\x01[\n" +
 	"\fkind.allowed\x12\x19kind must be item or gold\x1a0this.trim().lowerAscii() in ['', 'item', 'gold']r\x02\x18 R\x04kind\x12!\n" +
-	"\x04item\x18\x02 \x01(\v2\r.guma.v1.ItemR\x04item\x12'\n" +
-	"\x06amount\x18\x03 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16(\x00R\x06amount:\xb1\x02\xbaH\xad\x02\x1a\x8a\x01\n" +
+	"\x04item\x18\x02 \x01(\v2\r.guma.v1.ItemR\x04item\x12 \n" +
+	"\x06amount\x18\x03 \x01(\x03B\b\xbaH\x05\"\x03\xd0>\x01R\x06amount:\xb1\x02\xbaH\xad\x02\x1a\x8a\x01\n" +
 	")roll_call_loot_entry.gold_amount_positive\x12!gold loot amount must be positive\x1a:this.kind.trim().lowerAscii() != 'gold' || this.amount > 0\x1a\x9d\x01\n" +
 	"'roll_call_loot_entry.item_name_required\x12*item loot entries need an item with a name\x1aFthis.kind.trim().lowerAscii() == 'gold' || this.item.name.trim() != ''\"\x99\x01\n" +
 	"\x0fRollCallGoldPot\x12\x14\n" +
@@ -2164,11 +2161,10 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\vdistributed\x18\x02 \x01(\x03R\vdistributed\x12\x1c\n" +
 	"\tretracted\x18\x03 \x01(\x03R\tretracted\x12\x1c\n" +
 	"\tremaining\x18\x04 \x01(\x03R\tremaining\x12\x12\n" +
-	"\x04kept\x18\x05 \x01(\x03R\x04kept\"c\n" +
+	"\x04kept\x18\x05 \x01(\x03R\x04kept\"\\\n" +
 	"\x12RollCallGoldPayout\x12$\n" +
-	"\auser_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x06userId\x12'\n" +
-	"\x06amount\x18\x02 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16(\x00R\x06amount\"\xf5\x01\n" +
+	"\auser_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x06userId\x12 \n" +
+	"\x06amount\x18\x02 \x01(\x03B\b\xbaH\x05\"\x03\xd0>\x01R\x06amount\"\xf5\x01\n" +
 	"\x10RollCallAttendee\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12 \n" +
 	"\froll_call_id\x18\x02 \x01(\tR\n" +

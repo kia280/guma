@@ -18,6 +18,7 @@ import (
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 const (
@@ -216,13 +217,7 @@ func randomItem(items []string) (string, error) {
 }
 
 func clampLimit(limit int32) int32 {
-	if limit <= 0 {
-		return defaultListLimit
-	}
-	if limit > maxListLimit {
-		return maxListLimit
-	}
-	return limit
+	return pagination.Size(limit, defaultListLimit, maxListLimit)
 }
 
 // ListUsers returns the most recently created users.

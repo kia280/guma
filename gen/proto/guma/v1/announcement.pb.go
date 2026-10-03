@@ -840,7 +840,7 @@ var File_proto_guma_v1_announcement_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_announcement_proto_rawDesc = "" +
 	"\n" +
-	" proto/guma/v1/announcement.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8c\x03\n" +
+	" proto/guma/v1/announcement.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\x8c\x03\n" +
 	"\fAnnouncement\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1b\n" +
@@ -856,12 +856,11 @@ const file_proto_guma_v1_announcement_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x92\x01\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x91\x01\n" +
 	"\x18ListAnnouncementsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12%\n" +
-	"\x0einclude_drafts\x18\x02 \x01(\bR\rincludeDrafts\x12'\n" +
-	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\"X\n" +
+	"\x0einclude_drafts\x18\x02 \x01(\bR\rincludeDrafts\x12&\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\xc8>\xc8\x01R\bpageSize\"X\n" +
 	"\x19ListAnnouncementsResponse\x12;\n" +
 	"\rannouncements\x18\x01 \x03(\v2\x15.guma.v1.AnnouncementR\rannouncements\"v\n" +
 	"\x16GetAnnouncementRequest\x12&\n" +
@@ -971,6 +970,7 @@ func file_proto_guma_v1_announcement_proto_init() {
 	if File_proto_guma_v1_announcement_proto != nil {
 		return
 	}
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

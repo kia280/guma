@@ -1300,15 +1300,14 @@ var File_proto_guma_v1_auction_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\n" +
-	"\x1bproto/guma/v1/auction.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\x98\x02\n" +
+	"\x1bproto/guma/v1/auction.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\x96\x02\n" +
 	"\x13ListAuctionsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
 	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12#\n" +
 	"\bcategory\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18 R\bcategory\x12\x1f\n" +
 	"\x06rarity\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06rarity\x12 \n" +
-	"\x06search\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x06search\x12'\n" +
-	"\tpage_size\x18\x06 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
+	"\x06search\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x06search\x12%\n" +
+	"\tpage_size\x18\x06 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +
 	"page_token\x18\a \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x91\x01\n" +
 	"\x14ListAuctionsResponse\x120\n" +
@@ -1321,53 +1320,47 @@ const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\n" +
 	"auction_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\tauctionId\"D\n" +
 	"\x12GetAuctionResponse\x12.\n" +
-	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"\x8b\x05\n" +
+	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"\xfd\x04\n" +
 	"\x14CreateAuctionRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
-	"\x04item\x18\x02 \x01(\v2\r.guma.v1.ItemR\x04item\x122\n" +
-	"\fstarting_bid\x18\x03 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16 \x00R\vstartingBid\x12;\n" +
-	"\x11min_bid_increment\x18\x04 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16 \x00R\x0fminBidIncrement\x12.\n" +
+	"\x04item\x18\x02 \x01(\v2\r.guma.v1.ItemR\x04item\x12+\n" +
+	"\fstarting_bid\x18\x03 \x01(\x03B\b\xbaH\x05\"\x03\xc8>\x01R\vstartingBid\x124\n" +
+	"\x11min_bid_increment\x18\x04 \x01(\x03B\b\xbaH\x05\"\x03\xc8>\x01R\x0fminBidIncrement\x12.\n" +
 	"\x0eduration_hours\x18\x05 \x01(\x05B\a\xbaH\x04\x1a\x02 \x00R\rdurationHours\x12\x19\n" +
 	"\bis_blind\x18\x06 \x01(\bR\aisBlind\x121\n" +
 	"\x06status\x18\a \x01(\tB\x19\xbaH\x16r\x14R\x00R\bUPCOMINGR\x06ACTIVER\x06status\x12.\n" +
 	"\x06source\x18\b \x01(\v2\x16.guma.v1.ItemSourceRefR\x06source:\x88\x02\xbaH\x84\x02\x1a\x81\x02\n" +
 	"!create_auction.item_name_required\x12Jitem name is required unless the item comes from a backpack or bank source\x1a\x8f\x01(has(this.source) && (this.source.backpack_item_id != '' || this.source.bank_item_id != '')) || (has(this.item) && this.item.name.trim() != '')\"G\n" +
 	"\x15CreateAuctionResponse\x12.\n" +
-	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"\x8e\x01\n" +
+	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"\x87\x01\n" +
 	"\x0fPlaceBidRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12*\n" +
 	"\n" +
-	"auction_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\tauctionId\x12'\n" +
-	"\x06amount\x18\x03 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16 \x00R\x06amount\"b\n" +
+	"auction_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\tauctionId\x12 \n" +
+	"\x06amount\x18\x03 \x01(\x03B\b\xbaH\x05\"\x03\xc8>\x01R\x06amount\"b\n" +
 	"\x10PlaceBidResponse\x12.\n" +
 	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\x12\x1e\n" +
-	"\x03bid\x18\x02 \x01(\v2\f.guma.v1.BidR\x03bid\"\xbc\x01\n" +
+	"\x03bid\x18\x02 \x01(\v2\f.guma.v1.BidR\x03bid\"\xba\x01\n" +
 	"\x14GetBidHistoryRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12*\n" +
 	"\n" +
-	"auction_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\tauctionId\x12'\n" +
-	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\x12'\n" +
+	"auction_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\tauctionId\x12%\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +
 	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x82\x01\n" +
 	"\x15GetBidHistoryResponse\x12 \n" +
 	"\x04bids\x18\x01 \x03(\v2\f.guma.v1.BidR\x04bids\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"\xb7\x05\n" +
+	"totalCount\"\xa9\x05\n" +
 	"\x14UpdateAuctionRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12*\n" +
 	"\n" +
 	"auction_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\tauctionId\x12l\n" +
 	"\x04item\x18\x03 \x01(\v2\r.guma.v1.ItemBI\xbaHF\xba\x01C\n" +
-	"\x12item.name_required\x12\x15item name is required\x1a\x16this.name.trim() != ''R\x04item\x127\n" +
-	"\fstarting_bid\x18\x04 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16 \x00H\x00R\vstartingBid\x88\x01\x01\x12@\n" +
-	"\x11min_bid_increment\x18\x05 \x01(\x03B\x0f\xbaH\f\"\n" +
-	"\x18\x80\x80郱\xde\x16 \x00H\x01R\x0fminBidIncrement\x88\x01\x01\x12\x1e\n" +
+	"\x12item.name_required\x12\x15item name is required\x1a\x16this.name.trim() != ''R\x04item\x120\n" +
+	"\fstarting_bid\x18\x04 \x01(\x03B\b\xbaH\x05\"\x03\xc8>\x01H\x00R\vstartingBid\x88\x01\x01\x129\n" +
+	"\x11min_bid_increment\x18\x05 \x01(\x03B\b\xbaH\x05\"\x03\xc8>\x01H\x01R\x0fminBidIncrement\x88\x01\x01\x12\x1e\n" +
 	"\bis_blind\x18\x06 \x01(\bH\x02R\aisBlind\x88\x01\x01\x129\n" +
 	"\n" +
 	"start_time\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +

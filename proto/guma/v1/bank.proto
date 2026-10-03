@@ -114,7 +114,7 @@ message GetBankResponse {
 
 message ContributeFundsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  int64 amount = 2 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
+  int64 amount = 2 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
   string note = 3 [(buf.validate.field).string.max_len = 200];
 }
 
@@ -125,7 +125,7 @@ message ContributeFundsResponse {
 
 message RequestFundsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  int64 amount = 2 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
+  int64 amount = 2 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
   string reason = 3 [(buf.validate.field).string = {max_len: 500, [guma.v1.not_blank]: true}];
 }
 
@@ -147,7 +147,7 @@ message ReviewFundRequestResponse {
 message ListFundRequestsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string status = 2 [(buf.validate.field).string = {max_len: 32, in: ["", "pending", "approved", "rejected"]}]; // "pending" | "approved" | "rejected" | "" (all)
-  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  int32 page_size = 3 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 4 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 
@@ -159,7 +159,7 @@ message ListFundRequestsResponse {
 
 message ListContributionsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  int32 page_size = 2 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  int32 page_size = 2 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 3 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 
@@ -183,7 +183,7 @@ message ListBankItemsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string category = 2 [(buf.validate.field).string.max_len = 32];
   string rarity = 3 [(buf.validate.field).string.max_len = 32];
-  int32 page_size = 4 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  int32 page_size = 4 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 5 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
   string roll_call_id = 6 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];
 }
@@ -227,7 +227,7 @@ message ReviewItemRequestResponse {
 message ListItemRequestsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string status = 2 [(buf.validate.field).string = {max_len: 32, in: ["", "pending", "approved", "rejected"]}]; // "pending" | "approved" | "rejected" | "" (all)
-  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  int32 page_size = 3 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 4 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 

@@ -63,7 +63,7 @@ message ListEventsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string view = 2 [(buf.validate.field).string.max_len = 32];  // "month" | "week" | "day"
   string date = 3 [(buf.validate.field).string.max_len = 64];  // ISO 8601 date anchor for the view
-  int32 page_size = 4 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  int32 page_size = 4 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 5 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 
@@ -142,7 +142,7 @@ message ListEventsByRangeResponse {
 
 message ListUpcomingEventsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  int32 limit = 2 [(buf.validate.field).int32 = {gte: 0, lte: 100}]; // Default: 10
+  int32 limit = 2 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}]; // Default: 10
 }
 
 message ListUpcomingEventsResponse {

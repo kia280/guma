@@ -15,6 +15,7 @@ import (
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 // Guild is the domain model for a guild.
@@ -246,10 +247,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, userIDStr string) erro
 
 // List returns a paginated, searchable list of guilds.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 
 	search := "%" + p.Search + "%"
 

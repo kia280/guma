@@ -20,3 +20,21 @@ extend buf.validate.StringRules {
     expression: "!rule || this == '' || (this.startsWith('https://') && size(this) > 8 && !(this.charAt(8) in ['/', '?', '#']) && this.isUri()) ? '' : 'value must be an absolute https URL'"
   }];
 }
+
+extend buf.validate.Int32Rules {
+  int32 max_page_size = 1001 [(buf.validate.predefined).cel = {
+    id: "int32.max_page_size"
+    expression: "this >= 0 && this <= rule ? '' : 'value must be between 0 and ' + string(rule)"
+  }];
+}
+
+extend buf.validate.Int64Rules {
+  bool amount = 1001 [(buf.validate.predefined).cel = {
+    id: "int64.amount"
+    expression: "!rule || (this > 0 && this <= 100000000000000) ? '' : 'value must be a positive amount of at most 100000000000000'"
+  }];
+  bool amount_or_zero = 1002 [(buf.validate.predefined).cel = {
+    id: "int64.amount_or_zero"
+    expression: "!rule || (this >= 0 && this <= 100000000000000) ? '' : 'value must be an amount between 0 and 100000000000000'"
+  }];
+}

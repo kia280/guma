@@ -13,7 +13,10 @@ import (
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
+
+const defaultUpcomingLimit = 10
 
 // GuildEvent is the domain model for a guild event.
 type GuildEvent struct {
@@ -137,10 +140,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 
 // List returns paginated events for a guild.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -290,7 +290,7 @@ func (s *Service) ListByRange(ctx context.Context, guildIDStr, startDate, endDat
 // ListUpcoming returns the next N upcoming events for a guild.
 func (s *Service) ListUpcoming(ctx context.Context, guildIDStr string, limit int32) ([]*GuildEvent, error) {
 	if limit <= 0 {
-		limit = 10
+		limit = defaultUpcomingLimit
 	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {

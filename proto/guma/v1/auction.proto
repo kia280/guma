@@ -75,7 +75,7 @@ message ListAuctionsRequest {
   string category = 3 [(buf.validate.field).string.max_len = 32];  // Item.category filter
   string rarity = 4 [(buf.validate.field).string.max_len = 32];    // Item.rarity filter
   string search = 5 [(buf.validate.field).string.max_len = 200];
-  int32 page_size = 6 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  int32 page_size = 6 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 7 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 
@@ -103,8 +103,8 @@ message CreateAuctionRequest {
 
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   Item item = 2;
-  int64 starting_bid = 3 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
-  int64 min_bid_increment = 4 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
+  int64 starting_bid = 3 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
+  int64 min_bid_increment = 4 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
   int32 duration_hours = 5 [(buf.validate.field).int32.gt = 0];
   bool is_blind = 6;
   string status = 7 [(buf.validate.field).string = {in: ["", "UPCOMING", "ACTIVE"]}]; // "UPCOMING" (scheduled) or "ACTIVE" (starts immediately)
@@ -118,7 +118,7 @@ message CreateAuctionResponse {
 message PlaceBidRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  int64 amount = 3 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
+  int64 amount = 3 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
 }
 
 message PlaceBidResponse {
@@ -129,7 +129,7 @@ message PlaceBidResponse {
 message GetBidHistoryRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  int32 page_size = 3 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 4 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 
@@ -153,8 +153,8 @@ message UpdateAuctionRequest {
     message: "item name is required"
     expression: "this.name.trim() != ''"
   }];
-  optional int64 starting_bid = 4 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
-  optional int64 min_bid_increment = 5 [(buf.validate.field).int64 = {gt: 0, lte: 100000000000000}];
+  optional int64 starting_bid = 4 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
+  optional int64 min_bid_increment = 5 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
   optional bool is_blind = 6;
   google.protobuf.Timestamp start_time = 7;
   google.protobuf.Timestamp end_time = 8;

@@ -85,7 +85,7 @@ service RaffleService {
 message ListRafflesRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string status = 2 [(buf.validate.field).string.max_len = 32];     // "active" | "upcoming" | "ended" | "cancelled" | "" (all)
-  int32 page_size = 3 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  int32 page_size = 3 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 4 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 
@@ -108,7 +108,7 @@ message CreateRaffleRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string title = 2 [(buf.validate.field).string = {max_len: 200, [guma.v1.not_blank]: true}];
   string description = 3 [(buf.validate.field).string.max_len = 2000];
-  int64 ticket_price = 4 [(buf.validate.field).int64 = {gte: 0, lte: 100000000000000}];
+  int64 ticket_price = 4 [(buf.validate.field).int64 = {[guma.v1.amount_or_zero]: true}];
   int32 max_tickets = 5 [(buf.validate.field).int32.gte = 0];         // 0 = unlimited
   int32 max_tickets_per_user = 6 [(buf.validate.field).int32.gte = 0]; // 0 = unlimited
   string draw_date = 7 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];           // ISO 8601 datetime
@@ -161,7 +161,7 @@ message UpdateRaffleRequest {
   string draw_date = 3 [(buf.validate.field).string.max_len = 64]; // ISO 8601 datetime; must be in the future
   optional string title = 4 [(buf.validate.field).string = {max_len: 200, [guma.v1.not_blank]: true}];
   optional string description = 5 [(buf.validate.field).string.max_len = 2000];
-  optional int64 ticket_price = 6 [(buf.validate.field).int64 = {gte: 0, lte: 100000000000000}];
+  optional int64 ticket_price = 6 [(buf.validate.field).int64 = {[guma.v1.amount_or_zero]: true}];
   optional int32 max_tickets = 7 [(buf.validate.field).int32.gte = 0];
   optional int32 max_tickets_per_user = 8 [(buf.validate.field).int32.gte = 0];
 }
@@ -190,7 +190,7 @@ message DeleteRaffleResponse {
 
 message ListMyTicketsRequest {
   string guild_id = 1 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE]; // Optional: filter by guild
-  int32 page_size = 2 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
+  int32 page_size = 2 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 3 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
 
@@ -226,7 +226,7 @@ message Raffle {
 message RafflePrize {
   int32 rank = 1 [(buf.validate.field).int32.gte = 0];          // 1st, 2nd, 3rd place
   string description = 2 [(buf.validate.field).string.max_len = 2000];
-  int64 amount = 3 [(buf.validate.field).int64 = {gte: 0, lte: 100000000000000}];        // Currency prize; 0 if item prize
+  int64 amount = 3 [(buf.validate.field).int64 = {[guma.v1.amount_or_zero]: true}];        // Currency prize; 0 if item prize
   Item item = 4;           // Item prize; unset if currency prize
   ItemSourceRef source = 5;
 }

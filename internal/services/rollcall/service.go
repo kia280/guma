@@ -19,6 +19,7 @@ import (
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 const (
@@ -156,10 +157,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 
 // List returns paginated roll calls for a guild.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -706,9 +704,7 @@ func (s *Service) CheckIn(ctx context.Context, guildIDStr, rollCallIDStr, userID
 
 // ListAttendees returns paginated attendees for a roll call.
 func (s *Service) ListAttendees(ctx context.Context, guildIDStr, rollCallIDStr string, pageSize, offset int) (*ListAttendeesResult, error) {
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize = pagination.StandardSize(pageSize)
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
