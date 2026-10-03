@@ -1993,10 +1993,10 @@ var File_proto_guma_v1_roll_call_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\n" +
-	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xaf\x01\n" +
+	"\x1dproto/guma/v1/roll_call.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xb0\x01\n" +
 	"\x14ListRollCallsRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
-	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12 \n" +
+	"\x06status\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x06status\x12%\n" +
 	"\tpage_size\x18\x03 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +
 	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x92\x01\n" +
@@ -2011,35 +2011,31 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\"E\n" +
 	"\x13GetRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xb4\x05\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xb6\x05\n" +
 	"\x15CreateRollCallRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
-	"\x05title\x18\x02 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12*\n" +
-	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fR\vdescription\x12&\n" +
-	"\bdatetime\x18\x04 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x18@R\bdatetime\x12+\n" +
-	"\vexpire_time\x18\x05 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
+	"\x05title\x18\x02 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x80?\x01R\x05title\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x90?\x01R\vdescription\x12'\n" +
+	"\bdatetime\x18\x04 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xf0>\x01R\bdatetime\x12,\n" +
+	"\vexpire_time\x18\x05 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xf0>\x01R\n" +
 	"expireTime\x12(\n" +
-	"\timage_url\x18\x06 \x01(\tB\v\xbaH\br\x06\xd8>\x01\x18\x80\x10R\bimageUrl\x124\n" +
+	"\timage_url\x18\x06 \x01(\tB\v\xbaH\br\x06\xd8>\x01\x98?\x01R\bimageUrl\x124\n" +
 	"\tloot_list\x18\a \x03(\v2\r.guma.v1.ItemB\b\xbaH\x05\x92\x01\x02\x10dR\blootList\x128\n" +
 	"\x04loot\x18\b \x03(\v2\x1a.guma.v1.RollCallLootEntryB\b\xbaH\x05\x92\x01\x02\x10dR\x04loot:\xb4\x02\xbaH\xb0\x02\x1a\x90\x01\n" +
 	"-create_roll_call.loot_list_item_name_required\x12\x1beach loot item needs a name\x1aBthis.loot.size() > 0 || this.loot_list.all(i, i.name.trim() != '')\x1a\x9a\x01\n" +
 	"\"create_roll_call.single_gold_entry\x12-a roll call can have only one gold loot entry\x1aEthis.loot.filter(e, e.kind.trim().lowerAscii() == 'gold').size() <= 1\"H\n" +
 	"\x16CreateRollCallResponse\x12.\n" +
-	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xd4\x03\n" +
+	"\troll_call\x18\x01 \x01(\v2\x11.guma.v1.RollCallR\brollCall\"\xd6\x03\n" +
 	"\x15UpdateRollCallRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\x12!\n" +
-	"\x05title\x18\x03 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x18\xc8\x01R\x05title\x12/\n" +
-	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xd0\x0fH\x00R\vdescription\x88\x01\x01\x12&\n" +
-	"\bdatetime\x18\x05 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x18@R\bdatetime\x12+\n" +
-	"\vexpire_time\x18\x06 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
+	"\x05title\x18\x03 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x80?\x01R\x05title\x12/\n" +
+	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x90?\x01H\x00R\vdescription\x88\x01\x01\x12'\n" +
+	"\bdatetime\x18\x05 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xf0>\x01R\bdatetime\x12,\n" +
+	"\vexpire_time\x18\x06 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xf0>\x01R\n" +
 	"expireTime\x12-\n" +
-	"\timage_url\x18\a \x01(\tB\v\xbaH\br\x06\xd8>\x01\x18\x80\x10H\x01R\bimageUrl\x88\x01\x01\x124\n" +
+	"\timage_url\x18\a \x01(\tB\v\xbaH\br\x06\xd8>\x01\x98?\x01H\x01R\bimageUrl\x88\x01\x01\x124\n" +
 	"\tloot_list\x18\b \x03(\v2\r.guma.v1.ItemB\b\xbaH\x05\x92\x01\x02\x10\x00R\blootList\x128\n" +
 	"\x04loot\x18\t \x03(\v2\x1a.guma.v1.RollCallLootEntryB\b\xbaH\x05\x92\x01\x02\x10\x00R\x04lootB\x0e\n" +
 	"\f_descriptionB\f\n" +
@@ -2109,7 +2105,7 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12-\n" +
 	"\froll_call_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"rollCallId\x12\x1e\n" +
-	"\x05notes\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x05notes\"H\n" +
+	"\x05notes\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\x05notes\"H\n" +
 	"\x0fCheckInResponse\x125\n" +
 	"\battendee\x18\x01 \x01(\v2\x19.guma.v1.RollCallAttendeeR\battendee\"\xbd\x01\n" +
 	"\x14ListAttendeesRequest\x12&\n" +
@@ -2148,10 +2144,10 @@ const file_proto_guma_v1_roll_call_proto_rawDesc = "" +
 	"\x04loot\x18\x0f \x03(\v2\x1a.guma.v1.RollCallLootEntryR\x04loot\x123\n" +
 	"\bgold_pot\x18\x10 \x01(\v2\x18.guma.v1.RollCallGoldPotR\agoldPot\x12!\n" +
 	"\fis_completed\x18\x11 \x01(\bR\visCompleted\x12=\n" +
-	"\fcompleted_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"\x87\x04\n" +
-	"\x11RollCallLootEntry\x12y\n" +
-	"\x04kind\x18\x01 \x01(\tBe\xbaHb\xba\x01[\n" +
-	"\fkind.allowed\x12\x19kind must be item or gold\x1a0this.trim().lowerAscii() in ['', 'item', 'gold']r\x02\x18 R\x04kind\x12!\n" +
+	"\fcompleted_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"\x88\x04\n" +
+	"\x11RollCallLootEntry\x12z\n" +
+	"\x04kind\x18\x01 \x01(\tBf\xbaHc\xba\x01[\n" +
+	"\fkind.allowed\x12\x19kind must be item or gold\x1a0this.trim().lowerAscii() in ['', 'item', 'gold']r\x03\xe8>\x01R\x04kind\x12!\n" +
 	"\x04item\x18\x02 \x01(\v2\r.guma.v1.ItemR\x04item\x12 \n" +
 	"\x06amount\x18\x03 \x01(\x03B\b\xbaH\x05\"\x03\xd0>\x01R\x06amount:\xb1\x02\xbaH\xad\x02\x1a\x8a\x01\n" +
 	")roll_call_loot_entry.gold_amount_positive\x12!gold loot amount must be positive\x1a:this.kind.trim().lowerAscii() != 'gold' || this.amount > 0\x1a\x9d\x01\n" +

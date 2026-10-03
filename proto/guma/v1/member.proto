@@ -87,8 +87,8 @@ service MemberService {
 message InviteMemberRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string email = 2 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 254];
-  string role = 3 [(buf.validate.field).string.max_len = 32];
-  string message = 4 [(buf.validate.field).string.max_len = 500];
+  string role = 3 [(buf.validate.field).string = {[guma.v1.keyword]: true}];
+  string message = 4 [(buf.validate.field).string = {[guma.v1.paragraph]: true}];
 }
 
 message InviteMemberResponse {
@@ -96,7 +96,7 @@ message InviteMemberResponse {
 }
 
 message JoinGuildRequest {
-  string invite_code = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string invite_code = 1 [(buf.validate.field).required = true, (buf.validate.field).string = {[guma.v1.code]: true}];
 }
 
 message JoinGuildResponse {
@@ -106,9 +106,9 @@ message JoinGuildResponse {
 message UpdateMemberRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string member_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string display_name = 3 [(buf.validate.field).string.max_len = 32];
-  string role = 4 [(buf.validate.field).string.max_len = 32];
-  map<string, string> profile = 5 [(buf.validate.field).map = {max_pairs: 50, keys: {string: {max_len: 100}}, values: {string: {max_len: 2000}}}];
+  string display_name = 3 [(buf.validate.field).string = {[guma.v1.handle]: true}];
+  string role = 4 [(buf.validate.field).string = {[guma.v1.keyword]: true}];
+  map<string, string> profile = 5 [(buf.validate.field).map = {[guma.v1.settings_map]: true}];
 }
 
 message UpdateMemberResponse {
@@ -160,7 +160,7 @@ message GenerateInviteCodeRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   int32 max_uses = 2 [(buf.validate.field).int32 = {gte: 0, lte: 10000}];
   google.protobuf.Timestamp expires_at = 3;
-  string role = 4 [(buf.validate.field).string.max_len = 32];  // Role assigned to invited members
+  string role = 4 [(buf.validate.field).string = {[guma.v1.keyword]: true}];  // Role assigned to invited members
 }
 
 message GenerateInviteCodeResponse {
@@ -168,7 +168,7 @@ message GenerateInviteCodeResponse {
 }
 
 message ValidateInviteCodeRequest {
-  string code = 1 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
+  string code = 1 [(buf.validate.field).required = true, (buf.validate.field).string = {[guma.v1.code]: true}];
 }
 
 message ValidateInviteCodeResponse {

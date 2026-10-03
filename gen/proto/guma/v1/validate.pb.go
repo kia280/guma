@@ -47,6 +47,70 @@ var file_proto_guma_v1_validate_proto_extTypes = []protoimpl.ExtensionInfo{
 		Filename:      "proto/guma/v1/validate.proto",
 	},
 	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1004,
+		Name:          "guma.v1.handle",
+		Tag:           "varint,1004,opt,name=handle",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1005,
+		Name:          "guma.v1.keyword",
+		Tag:           "varint,1005,opt,name=keyword",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1006,
+		Name:          "guma.v1.code",
+		Tag:           "varint,1006,opt,name=code",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1007,
+		Name:          "guma.v1.name",
+		Tag:           "varint,1007,opt,name=name",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1008,
+		Name:          "guma.v1.line",
+		Tag:           "varint,1008,opt,name=line",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1009,
+		Name:          "guma.v1.paragraph",
+		Tag:           "varint,1009,opt,name=paragraph",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1010,
+		Name:          "guma.v1.text",
+		Tag:           "varint,1010,opt,name=text",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1011,
+		Name:          "guma.v1.url",
+		Tag:           "varint,1011,opt,name=url",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
 		ExtendedType:  (*validate.Int32Rules)(nil),
 		ExtensionType: (*int32)(nil),
 		Field:         1001,
@@ -70,6 +134,14 @@ var file_proto_guma_v1_validate_proto_extTypes = []protoimpl.ExtensionInfo{
 		Tag:           "varint,1002,opt,name=amount_or_zero",
 		Filename:      "proto/guma/v1/validate.proto",
 	},
+	{
+		ExtendedType:  (*validate.MapRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1001,
+		Name:          "guma.v1.settings_map",
+		Tag:           "varint,1001,opt,name=settings_map",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
 }
 
 // Extension fields to validate.StringRules.
@@ -80,20 +152,42 @@ var (
 	E_PageToken = &file_proto_guma_v1_validate_proto_extTypes[1]
 	// optional bool https_url = 1003;
 	E_HttpsUrl = &file_proto_guma_v1_validate_proto_extTypes[2]
+	// optional bool handle = 1004;
+	E_Handle = &file_proto_guma_v1_validate_proto_extTypes[3]
+	// optional bool keyword = 1005;
+	E_Keyword = &file_proto_guma_v1_validate_proto_extTypes[4]
+	// optional bool code = 1006;
+	E_Code = &file_proto_guma_v1_validate_proto_extTypes[5]
+	// optional bool name = 1007;
+	E_Name = &file_proto_guma_v1_validate_proto_extTypes[6]
+	// optional bool line = 1008;
+	E_Line = &file_proto_guma_v1_validate_proto_extTypes[7]
+	// optional bool paragraph = 1009;
+	E_Paragraph = &file_proto_guma_v1_validate_proto_extTypes[8]
+	// optional bool text = 1010;
+	E_Text = &file_proto_guma_v1_validate_proto_extTypes[9]
+	// optional bool url = 1011;
+	E_Url = &file_proto_guma_v1_validate_proto_extTypes[10]
 )
 
 // Extension fields to validate.Int32Rules.
 var (
 	// optional int32 max_page_size = 1001;
-	E_MaxPageSize = &file_proto_guma_v1_validate_proto_extTypes[3]
+	E_MaxPageSize = &file_proto_guma_v1_validate_proto_extTypes[11]
 )
 
 // Extension fields to validate.Int64Rules.
 var (
 	// optional bool amount = 1001;
-	E_Amount = &file_proto_guma_v1_validate_proto_extTypes[4]
+	E_Amount = &file_proto_guma_v1_validate_proto_extTypes[12]
 	// optional bool amount_or_zero = 1002;
-	E_AmountOrZero = &file_proto_guma_v1_validate_proto_extTypes[5]
+	E_AmountOrZero = &file_proto_guma_v1_validate_proto_extTypes[13]
+)
+
+// Extension fields to validate.MapRules.
+var (
+	// optional bool settings_map = 1001;
+	E_SettingsMap = &file_proto_guma_v1_validate_proto_extTypes[14]
 )
 
 var File_proto_guma_v1_validate_proto protoreflect.FileDescriptor
@@ -110,7 +204,32 @@ const file_proto_guma_v1_validate_proto_rawDesc = "" +
 	"\x11string.page_token\x1a\xb8\x01!rule || this == '' || (size(this) <= 10 && this.split('').all(c, c >= '0' && c <= '9') && int(this) <= 2147483647) ? '' : 'value must be a page token returned by a previous list call'R\tpageToken:\x81\x02\n" +
 	"\thttps_url\x12\x19.buf.validate.StringRules\x18\xeb\a \x01(\bB\xc7\x01\xc2H\xc3\x01\n" +
 	"\xc0\x01\n" +
-	"\x10string.https_url\x1a\xab\x01!rule || this == '' || (this.startsWith('https://') && size(this) > 8 && !(this.charAt(8) in ['/', '?', '#']) && this.isUri()) ? '' : 'value must be an absolute https URL'R\bhttpsUrl:\xa9\x01\n" +
+	"\x10string.https_url\x1a\xab\x01!rule || this == '' || (this.startsWith('https://') && size(this) > 8 && !(this.charAt(8) in ['/', '?', '#']) && this.isUri()) ? '' : 'value must be an absolute https URL'R\bhttpsUrl:\x90\x01\n" +
+	"\x06handle\x12\x19.buf.validate.StringRules\x18\xec\a \x01(\bB\\\xc2HY\n" +
+	"W\n" +
+	"\rstring.handle\x1aF!rule || size(this) <= 32 ? '' : 'value must be at most 32 characters'R\x06handle:\x93\x01\n" +
+	"\akeyword\x12\x19.buf.validate.StringRules\x18\xed\a \x01(\bB]\xc2HZ\n" +
+	"X\n" +
+	"\x0estring.keyword\x1aF!rule || size(this) <= 50 ? '' : 'value must be at most 50 characters'R\akeyword:\x8a\x01\n" +
+	"\x04code\x12\x19.buf.validate.StringRules\x18\xee\a \x01(\bBZ\xc2HW\n" +
+	"U\n" +
+	"\vstring.code\x1aF!rule || size(this) <= 64 ? '' : 'value must be at most 64 characters'R\x04code:\x8c\x01\n" +
+	"\x04name\x12\x19.buf.validate.StringRules\x18\xef\a \x01(\bB\\\xc2HY\n" +
+	"W\n" +
+	"\vstring.name\x1aH!rule || size(this) <= 100 ? '' : 'value must be at most 100 characters'R\x04name:\x8c\x01\n" +
+	"\x04line\x12\x19.buf.validate.StringRules\x18\xf0\a \x01(\bB\\\xc2HY\n" +
+	"W\n" +
+	"\vstring.line\x1aH!rule || size(this) <= 200 ? '' : 'value must be at most 200 characters'R\x04line:\x9b\x01\n" +
+	"\tparagraph\x12\x19.buf.validate.StringRules\x18\xf1\a \x01(\bBa\xc2H^\n" +
+	"\\\n" +
+	"\x10string.paragraph\x1aH!rule || size(this) <= 500 ? '' : 'value must be at most 500 characters'R\tparagraph:\x8e\x01\n" +
+	"\x04text\x12\x19.buf.validate.StringRules\x18\xf2\a \x01(\bB^\xc2H[\n" +
+	"Y\n" +
+	"\vstring.text\x1aJ!rule || size(this) <= 2000 ? '' : 'value must be at most 2000 characters'R\x04text:\x8b\x01\n" +
+	"\x03url\x12\x19.buf.validate.StringRules\x18\xf3\a \x01(\bB]\xc2HZ\n" +
+	"X\n" +
+	"\n" +
+	"string.url\x1aJ!rule || size(this) <= 2048 ? '' : 'value must be at most 2048 characters'R\x03url:\xa9\x01\n" +
 	"\rmax_page_size\x12\x18.buf.validate.Int32Rules\x18\xe9\a \x01(\x05Bj\xc2Hg\n" +
 	"e\n" +
 	"\x13int32.max_page_size\x1aNthis >= 0 && this <= rule ? '' : 'value must be between 0 and ' + string(rule)R\vmaxPageSize:\xbd\x01\n" +
@@ -119,25 +238,38 @@ const file_proto_guma_v1_validate_proto_rawDesc = "" +
 	"\fint64.amount\x1ar!rule || (this > 0 && this <= 100000000000000) ? '' : 'value must be a positive amount of at most 100000000000000'R\x06amount:\xcf\x01\n" +
 	"\x0eamount_or_zero\x12\x18.buf.validate.Int64Rules\x18\xea\a \x01(\bB\x8d\x01\xc2H\x89\x01\n" +
 	"\x86\x01\n" +
-	"\x14int64.amount_or_zero\x1an!rule || (this >= 0 && this <= 100000000000000) ? '' : 'value must be an amount between 0 and 100000000000000'R\famountOrZeroB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\beditionsp\xe8\a"
+	"\x14int64.amount_or_zero\x1an!rule || (this >= 0 && this <= 100000000000000) ? '' : 'value must be an amount between 0 and 100000000000000'R\famountOrZero:\x97\x02\n" +
+	"\fsettings_map\x12\x16.buf.validate.MapRules\x18\xe9\a \x01(\bB\xda\x01\xc2H\xd6\x01\n" +
+	"\xd3\x01\n" +
+	"\x10map.settings_map\x1a\xbe\x01!rule || (size(this) <= 50 && this.all(k, size(k) <= 100 && size(this[k]) <= 2000)) ? '' : 'value must have at most 50 entries with keys of at most 100 and values of at most 2000 characters'R\vsettingsMapB1Z/github.com/kia280/guma/gen/proto/guma/v1;gumav1b\beditionsp\xe8\a"
 
 var file_proto_guma_v1_validate_proto_goTypes = []any{
 	(*validate.StringRules)(nil), // 0: buf.validate.StringRules
 	(*validate.Int32Rules)(nil),  // 1: buf.validate.Int32Rules
 	(*validate.Int64Rules)(nil),  // 2: buf.validate.Int64Rules
+	(*validate.MapRules)(nil),    // 3: buf.validate.MapRules
 }
 var file_proto_guma_v1_validate_proto_depIdxs = []int32{
-	0, // 0: guma.v1.not_blank:extendee -> buf.validate.StringRules
-	0, // 1: guma.v1.page_token:extendee -> buf.validate.StringRules
-	0, // 2: guma.v1.https_url:extendee -> buf.validate.StringRules
-	1, // 3: guma.v1.max_page_size:extendee -> buf.validate.Int32Rules
-	2, // 4: guma.v1.amount:extendee -> buf.validate.Int64Rules
-	2, // 5: guma.v1.amount_or_zero:extendee -> buf.validate.Int64Rules
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	0, // [0:6] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: guma.v1.not_blank:extendee -> buf.validate.StringRules
+	0,  // 1: guma.v1.page_token:extendee -> buf.validate.StringRules
+	0,  // 2: guma.v1.https_url:extendee -> buf.validate.StringRules
+	0,  // 3: guma.v1.handle:extendee -> buf.validate.StringRules
+	0,  // 4: guma.v1.keyword:extendee -> buf.validate.StringRules
+	0,  // 5: guma.v1.code:extendee -> buf.validate.StringRules
+	0,  // 6: guma.v1.name:extendee -> buf.validate.StringRules
+	0,  // 7: guma.v1.line:extendee -> buf.validate.StringRules
+	0,  // 8: guma.v1.paragraph:extendee -> buf.validate.StringRules
+	0,  // 9: guma.v1.text:extendee -> buf.validate.StringRules
+	0,  // 10: guma.v1.url:extendee -> buf.validate.StringRules
+	1,  // 11: guma.v1.max_page_size:extendee -> buf.validate.Int32Rules
+	2,  // 12: guma.v1.amount:extendee -> buf.validate.Int64Rules
+	2,  // 13: guma.v1.amount_or_zero:extendee -> buf.validate.Int64Rules
+	3,  // 14: guma.v1.settings_map:extendee -> buf.validate.MapRules
+	15, // [15:15] is the sub-list for method output_type
+	15, // [15:15] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	0,  // [0:15] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_proto_guma_v1_validate_proto_init() }
@@ -152,7 +284,7 @@ func file_proto_guma_v1_validate_proto_init() {
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_validate_proto_rawDesc), len(file_proto_guma_v1_validate_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   0,
-			NumExtensions: 6,
+			NumExtensions: 15,
 			NumServices:   0,
 		},
 		GoTypes:           file_proto_guma_v1_validate_proto_goTypes,

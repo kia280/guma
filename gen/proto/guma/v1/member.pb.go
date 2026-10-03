@@ -1438,28 +1438,27 @@ var File_proto_guma_v1_member_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\xa1\x01\n" +
+	"\x1aproto/guma/v1/member.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\xa2\x01\n" +
 	"\x13InviteMemberRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
-	"\x05email\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xfe\x01R\x05email\x12\x1b\n" +
-	"\x04role\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04role\x12\"\n" +
-	"\amessage\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\amessage\"K\n" +
+	"\x05email\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x18\xfe\x01R\x05email\x12\x1c\n" +
+	"\x04role\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x04role\x12\"\n" +
+	"\amessage\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\amessage\"K\n" +
 	"\x14InviteMemberResponse\x123\n" +
 	"\n" +
 	"invitation\x18\x01 \x01(\v2\x13.guma.v1.InvitationR\n" +
-	"invitation\"?\n" +
-	"\x10JoinGuildRequest\x12+\n" +
-	"\vinvite_code\x18\x01 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x18@R\n" +
+	"invitation\"@\n" +
+	"\x10JoinGuildRequest\x12,\n" +
+	"\vinvite_code\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xf0>\x01R\n" +
 	"inviteCode\"<\n" +
 	"\x11JoinGuildResponse\x12'\n" +
-	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xc8\x02\n" +
+	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xbe\x02\n" +
 	"\x13UpdateMemberRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
-	"\tmember_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\bmemberId\x12*\n" +
-	"\fdisplay_name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18 R\vdisplayName\x12\x1b\n" +
-	"\x04role\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04role\x12Z\n" +
-	"\aprofile\x18\x05 \x03(\v2).guma.v1.UpdateMemberRequest.ProfileEntryB\x15\xbaH\x12\x9a\x01\x0f\x102\"\x04r\x02\x18d*\x05r\x03\x18\xd0\x0fR\aprofile\x1a:\n" +
+	"\tmember_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\bmemberId\x12+\n" +
+	"\fdisplay_name\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xe0>\x01R\vdisplayName\x12\x1c\n" +
+	"\x04role\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x04role\x12N\n" +
+	"\aprofile\x18\x05 \x03(\v2).guma.v1.UpdateMemberRequest.ProfileEntryB\t\xbaH\x06\x9a\x01\x03\xc8>\x01R\aprofile\x1a:\n" +
 	"\fProfileEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"?\n" +
@@ -1491,21 +1490,20 @@ const file_proto_guma_v1_member_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
 	"\tmember_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\bmemberId\"<\n" +
 	"\x11GetMemberResponse\x12'\n" +
-	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xc2\x01\n" +
+	"\x06member\x18\x01 \x01(\v2\x0f.guma.v1.MemberR\x06member\"\xc3\x01\n" +
 	"\x19GenerateInviteCodeRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12%\n" +
 	"\bmax_uses\x18\x02 \x01(\x05B\n" +
 	"\xbaH\a\x1a\x05\x18\x90N(\x00R\amaxUses\x129\n" +
 	"\n" +
-	"expires_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x1b\n" +
-	"\x04role\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\x04role\"Q\n" +
+	"expires_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x1c\n" +
+	"\x04role\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x04role\"Q\n" +
 	"\x1aGenerateInviteCodeResponse\x123\n" +
 	"\n" +
 	"invitation\x18\x01 \x01(\v2\x13.guma.v1.InvitationR\n" +
-	"invitation\";\n" +
-	"\x19ValidateInviteCodeRequest\x12\x1e\n" +
-	"\x04code\x18\x01 \x01(\tB\n" +
-	"\xbaH\a\xc8\x01\x01r\x02\x18@R\x04code\"l\n" +
+	"invitation\"<\n" +
+	"\x19ValidateInviteCodeRequest\x12\x1f\n" +
+	"\x04code\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xf0>\x01R\x04code\"l\n" +
 	"\x1aValidateInviteCodeResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1d\n" +

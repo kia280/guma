@@ -164,20 +164,20 @@ message GetWalletResponse {
 message DepositFundsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   int64 amount = 2 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
-  string note = 3 [(buf.validate.field).string.max_len = 200];
+  string note = 3 [(buf.validate.field).string = {[guma.v1.line]: true}];
 }
 
 message WithdrawFundsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   int64 amount = 2 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
-  string note = 3 [(buf.validate.field).string.max_len = 200];
+  string note = 3 [(buf.validate.field).string = {[guma.v1.line]: true}];
 }
 
 message TransferFundsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string to_user_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   int64 amount = 3 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
-  string note = 4 [(buf.validate.field).string.max_len = 200];
+  string note = 4 [(buf.validate.field).string = {[guma.v1.line]: true}];
 }
 
 message TransactionResponse {
@@ -188,7 +188,7 @@ message TransactionResponse {
 
 message ListMyWithdrawalRequestsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string status = 2 [(buf.validate.field).string = {max_len: 32, in: ["", "pending", "approved", "rejected", "cancelled"]}];
+  string status = 2 [(buf.validate.field).string = {[guma.v1.keyword]: true, in: ["", "pending", "approved", "rejected", "cancelled"]}];
   int32 page_size = 3 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 4 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
@@ -211,7 +211,7 @@ message CancelWithdrawalRequestResponse {
 
 message ListWithdrawalRequestsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string status = 2 [(buf.validate.field).string = {max_len: 32, in: ["", "pending", "approved", "rejected", "cancelled"]}];
+  string status = 2 [(buf.validate.field).string = {[guma.v1.keyword]: true, in: ["", "pending", "approved", "rejected", "cancelled"]}];
   int32 page_size = 3 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 4 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
@@ -226,7 +226,7 @@ message ReviewWithdrawalRequestRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string request_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string status = 3 [(buf.validate.field).string = {in: ["approved", "rejected"]}];
-  string note = 4 [(buf.validate.field).string.max_len = 200];
+  string note = 4 [(buf.validate.field).string = {[guma.v1.line]: true}];
 }
 
 message ReviewWithdrawalRequestResponse {
@@ -235,7 +235,7 @@ message ReviewWithdrawalRequestResponse {
 
 message ListTransactionsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string type = 2 [(buf.validate.field).string.max_len = 32];      // TransactionType filter; empty = all
+  string type = 2 [(buf.validate.field).string = {[guma.v1.keyword]: true}];      // TransactionType filter; empty = all
   int32 page_size = 3 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 4 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
@@ -271,7 +271,7 @@ message TransferBackpackItemRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string item_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string to_user_id = 3 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string note = 4 [(buf.validate.field).string.max_len = 200];
+  string note = 4 [(buf.validate.field).string = {[guma.v1.line]: true}];
 }
 
 message TransferBackpackItemResponse {
@@ -429,7 +429,7 @@ message AdminTransferFundsRequest {
   string to_user_id = 3 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];
   bool to_guild_bank = 4;
   int64 amount = 5 [(buf.validate.field).int64 = {[guma.v1.amount]: true}];
-  string note = 6 [(buf.validate.field).string.max_len = 200];
+  string note = 6 [(buf.validate.field).string = {[guma.v1.line]: true}];
 }
 
 message AdminTransferFundsResponse {
@@ -453,7 +453,7 @@ message AdminTransferBackpackItemsRequest {
   repeated string item_ids = 3 [(buf.validate.field).repeated = {min_items: 1, max_items: 100, items: {string: {uuid: true}}}];
   string to_user_id = 4 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];
   bool to_guild_bank = 5;
-  string note = 6 [(buf.validate.field).string.max_len = 200];
+  string note = 6 [(buf.validate.field).string = {[guma.v1.line]: true}];
 }
 
 message AdminTransferBackpackItemsResponse {

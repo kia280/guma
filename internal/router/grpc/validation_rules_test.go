@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -122,12 +123,12 @@ func TestRequestRules(t *testing.T) {
 		{
 			name: "auction search too long",
 			req:  &gumav1.ListAuctionsRequest{GuildId: testUUID, Search: strings.Repeat("s", 201)},
-			want: violation{"search", "string.max_len"},
+			want: violation{"search", "string.line"},
 		},
 		{
 			name: "item name too long",
 			req:  &gumav1.CreateAuctionRequest{GuildId: testUUID, Item: &gumav1.Item{Name: strings.Repeat("n", 101)}, StartingBid: 1, MinBidIncrement: 1, DurationHours: 1},
-			want: violation{"item", "string.max_len"},
+			want: violation{"item", "string.name"},
 		},
 		{
 			name: "blank raffle title on create",
@@ -387,15 +388,15 @@ func TestRequestRulesReplaceHandlerChecks(t *testing.T) {
 	}{
 		{"deposit zero amount", &gumav1.DepositFundsRequest{GuildId: testUUID}, violation{"amount", "int64.amount"}},
 		{"transfer negative amount", &gumav1.TransferFundsRequest{GuildId: testUUID, ToUserId: testUUID, Amount: -1}, violation{"amount", "int64.amount"}},
-		{"deposit note too long", &gumav1.DepositFundsRequest{GuildId: testUUID, Amount: 1, Note: strings.Repeat("n", 201)}, violation{"note", "string.max_len"}},
-		{"request item reason too long", &gumav1.RequestItemRequest{GuildId: testUUID, BankItemId: testUUID, Reason: strings.Repeat("r", 501)}, violation{"reason", "string.max_len"}},
+		{"deposit note too long", &gumav1.DepositFundsRequest{GuildId: testUUID, Amount: 1, Note: strings.Repeat("n", 201)}, violation{"note", "string.line"}},
+		{"request item reason too long", &gumav1.RequestItemRequest{GuildId: testUUID, BankItemId: testUUID, Reason: strings.Repeat("r", 501)}, violation{"reason", "string.paragraph"}},
 		{"review withdrawal pending", &gumav1.ReviewWithdrawalRequestRequest{GuildId: testUUID, RequestId: testUUID, Status: "pending"}, violation{"status", "string.in"}},
 		{"review fund request empty", &gumav1.ReviewFundRequestRequest{GuildId: testUUID, RequestId: testUUID}, violation{"status", "string.in"}},
 		{"withdrawal status filter", &gumav1.ListWithdrawalRequestsRequest{GuildId: testUUID, Status: "done"}, violation{"status", "string.in"}},
 		{"admin item transfer too many", &gumav1.AdminTransferBackpackItemsRequest{GuildId: testUUID, UserId: testUUID, ToGuildBank: true, ItemIds: make([]string, 101)}, violation{"item_ids", "repeated.max_items"}},
 		{"admin funds transfer without destination", &gumav1.AdminTransferFundsRequest{GuildId: testUUID, UserId: testUUID, Amount: 1}, violation{"", "message.oneof"}},
 		{"missing guild name", &gumav1.CreateGuildRequest{}, violation{"name", "required"}},
-		{"guild name too long", &gumav1.CreateGuildRequest{Name: strings.Repeat("名", 101)}, violation{"name", "string.max_len"}},
+		{"guild name too long", &gumav1.CreateGuildRequest{Name: strings.Repeat("名", 101)}, violation{"name", "string.name"}},
 		{"missing member role", &gumav1.UpdateMemberRoleRequest{GuildId: testUUID, UserId: testUUID}, violation{"role", "string.in"}},
 		{"unknown member role", &gumav1.UpdateMemberRoleRequest{GuildId: testUUID, UserId: testUUID, Role: "king"}, violation{"role", "string.in"}},
 		{"missing invite email", &gumav1.InviteMemberRequest{GuildId: testUUID}, violation{"email", "required"}},
@@ -403,8 +404,8 @@ func TestRequestRulesReplaceHandlerChecks(t *testing.T) {
 		{"missing user preferences", &gumav1.UpdateUserPreferencesRequest{}, violation{"preferences", "required"}},
 		{"missing notification patch", &gumav1.UpdateMyPreferencesRequest{}, violation{"notifications", "required"}},
 		{"empty display name", &gumav1.UpdateMeRequest{}, violation{"display_name", "string.not_blank"}},
-		{"avatar url too long", &gumav1.UpdateMeRequest{DisplayName: "n", AvatarUrl: strings.Repeat("a", 2049)}, violation{"avatar_url", "string.max_len"}},
-		{"announcement title too long", &gumav1.UpdateAnnouncementRequest{GuildId: testUUID, AnnouncementId: testUUID, Title: strings.Repeat("t", 201)}, violation{"title", "string.max_len"}},
+		{"avatar url too long", &gumav1.UpdateMeRequest{DisplayName: "n", AvatarUrl: strings.Repeat("a", 2049)}, violation{"avatar_url", "string.url"}},
+		{"announcement title too long", &gumav1.UpdateAnnouncementRequest{GuildId: testUUID, AnnouncementId: testUUID, Title: strings.Repeat("t", 201)}, violation{"title", "string.line"}},
 		{"unknown event type", &gumav1.CreateEventRequest{GuildId: testUUID, Title: "t", Type: "party"}, violation{"type", "string.in"}},
 		{"unknown event priority", &gumav1.CreateEventRequest{GuildId: testUUID, Title: "t", Priority: "urgent"}, violation{"priority", "string.in"}},
 		{"too many recurring days", &gumav1.CreateEventRequest{GuildId: testUUID, Title: "t", RecurringPattern: &gumav1.RecurringPattern{Type: "weekly", DaysOfWeek: []int32{0, 1, 2, 3, 4, 5, 6, 0}}}, violation{"recurring_pattern", "repeated.max_items"}},
@@ -414,14 +415,14 @@ func TestRequestRulesReplaceHandlerChecks(t *testing.T) {
 		{"item loot without name", &gumav1.CreateRollCallRequest{GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b", Loot: []*gumav1.RollCallLootEntry{{Kind: "item"}}}, violation{"loot", "roll_call_loot_entry.item_name_required"}},
 		{"blank legacy loot item", &gumav1.CreateRollCallRequest{GuildId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b", LootList: []*gumav1.Item{{Name: " "}}}, violation{"", "create_roll_call.loot_list_item_name_required"}},
 		{"loot change on update", &gumav1.UpdateRollCallRequest{GuildId: testUUID, RollCallId: testUUID, Title: "t", Datetime: "a", ExpireTime: "b", Loot: gold(1)}, violation{"loot", "repeated.max_items"}},
-		{"check-in notes too long", &gumav1.CheckInRequest{GuildId: testUUID, RollCallId: testUUID, Notes: strings.Repeat("n", 501)}, violation{"notes", "string.max_len"}},
+		{"check-in notes too long", &gumav1.CheckInRequest{GuildId: testUUID, RollCallId: testUUID, Notes: strings.Repeat("n", 501)}, violation{"notes", "string.paragraph"}},
 		{"no payouts", &gumav1.DistributeRollCallGoldRequest{GuildId: testUUID, RollCallId: testUUID, RequestId: testUUID}, violation{"payouts", "repeated.min_items"}},
 		{"all zero payouts", &gumav1.DistributeRollCallGoldRequest{GuildId: testUUID, RollCallId: testUUID, RequestId: testUUID, Payouts: []*gumav1.RollCallGoldPayout{{UserId: testUUID}}}, violation{"payouts", "payouts.positive_total"}},
 		{"negative payout", &gumav1.DistributeRollCallGoldRequest{GuildId: testUUID, RollCallId: testUUID, RequestId: testUUID, Payouts: []*gumav1.RollCallGoldPayout{{UserId: testUUID, Amount: -1}, {UserId: otherTestUUID, Amount: 2}}}, violation{"payouts", "int64.amount_or_zero"}},
 		{"blank roll call template name", &gumav1.CreateRollCallTemplateRequest{GuildId: testUUID, Name: " ", Title: "t"}, violation{"name", "string.not_blank"}},
 		{"too many template items", &gumav1.CreateRollCallTemplateRequest{GuildId: testUUID, Name: "n", Title: "t", ItemTemplateIds: make([]string, 101)}, violation{"item_template_ids", "repeated.max_items"}},
 		{"missing item template rarity", &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: "misc"}, violation{"rarity", "rarity.allowed"}},
-		{"item template description too long", &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: "misc", Rarity: "rare", Description: strings.Repeat("d", 501)}, violation{"description", "string.max_len"}},
+		{"item template description too long", &gumav1.CreateItemTemplateRequest{GuildId: testUUID, Name: "n", Category: "misc", Rarity: "rare", Description: strings.Repeat("d", 501)}, violation{"description", "string.paragraph"}},
 		{"auction increment zero on update", &gumav1.UpdateAuctionRequest{GuildId: testUUID, AuctionId: testUUID, MinBidIncrement: proto.Int64(0)}, violation{"min_bid_increment", "int64.amount"}},
 		{"auction end equals start", &gumav1.UpdateAuctionRequest{GuildId: testUUID, AuctionId: testUUID, StartTime: timestamppb.New(time.Unix(1900000000, 0)), EndTime: timestamppb.New(time.Unix(1900000000, 0))}, violation{"", "update_auction.end_after_start"}},
 		{"blank auction item name on update", &gumav1.UpdateAuctionRequest{GuildId: testUUID, AuctionId: testUUID, Item: &gumav1.Item{Name: " "}}, violation{"item", "item.name_required"}},
@@ -434,6 +435,14 @@ func TestRequestRulesReplaceHandlerChecks(t *testing.T) {
 			assert.Contains(t, violationsOf(t, validator.Validate(tt.req)), tt.want)
 		})
 	}
+}
+
+func manySettings(n int) map[string]string {
+	settings := make(map[string]string, n)
+	for i := range n {
+		settings[strconv.Itoa(i)] = "v"
+	}
+	return settings
 }
 
 func TestPredefinedRules(t *testing.T) {
@@ -450,6 +459,12 @@ func TestPredefinedRules(t *testing.T) {
 		{"page size above standard limit", &gumav1.ListGuildsRequest{PageSize: 101}, violation{"page_size", "int32.max_page_size"}},
 		{"negative page size", &gumav1.ListGuildsRequest{PageSize: -1}, violation{"page_size", "int32.max_page_size"}},
 		{"member page size above member limit", &gumav1.ListMembersRequest{GuildId: testUUID, PageSize: 501}, violation{"page_size", "int32.max_page_size"}},
+		{"handle too long", &gumav1.UpdateMeRequest{DisplayName: strings.Repeat("名", 33)}, violation{"display_name", "string.handle"}},
+		{"keyword too long", &gumav1.ListRafflesRequest{GuildId: testUUID, Status: strings.Repeat("s", 51)}, violation{"status", "string.keyword"}},
+		{"code too long", &gumav1.CreateRollCallRequest{GuildId: testUUID, Title: "t", Datetime: strings.Repeat("1", 65), ExpireTime: "b"}, violation{"datetime", "string.code"}},
+		{"text too long", &gumav1.CreateGuildRequest{Name: "g", Description: strings.Repeat("d", 2001)}, violation{"description", "string.text"}},
+		{"too many settings", &gumav1.CreateGuildRequest{Name: "g", Settings: manySettings(51)}, violation{"settings", "map.settings_map"}},
+		{"settings value too long", &gumav1.CreateGuildRequest{Name: "g", Settings: map[string]string{"k": strings.Repeat("v", 2001)}}, violation{"settings", "map.settings_map"}},
 		{"amount above cap", &gumav1.DepositFundsRequest{GuildId: testUUID, Amount: 100000000000001}, violation{"amount", "int64.amount"}},
 		{"negative contribution", &gumav1.ContributeFundsRequest{GuildId: testUUID, Amount: -1}, violation{"amount", "int64.amount"}},
 		{"non-numeric page token", &gumav1.ListGuildsRequest{PageToken: "abc"}, violation{"page_token", "string.page_token"}},
@@ -459,7 +474,7 @@ func TestPredefinedRules(t *testing.T) {
 		{"http image url", rollCall("http://example.com/a.png"), violation{"image_url", "string.https_url"}},
 		{"image url without host", rollCall("https:///a.png"), violation{"image_url", "string.https_url"}},
 		{"bare https scheme", rollCall("https://"), violation{"image_url", "string.https_url"}},
-		{"image url too long", rollCall("https://example.com/" + strings.Repeat("a", 2048)), violation{"image_url", "string.max_len"}},
+		{"image url too long", rollCall("https://example.com/" + strings.Repeat("a", 2048)), violation{"image_url", "string.url"}},
 	}
 
 	for _, tt := range invalid {
@@ -475,6 +490,8 @@ func TestPredefinedRules(t *testing.T) {
 		{"empty page token", &gumav1.ListGuildsRequest{}},
 		{"member page size at member limit", &gumav1.ListMembersRequest{GuildId: testUUID, PageSize: 500}},
 		{"announcement page size at announcement limit", &gumav1.ListAnnouncementsRequest{GuildId: testUUID, PageSize: 200}},
+		{"handle at limit", &gumav1.UpdateMeRequest{DisplayName: strings.Repeat("名", 32)}},
+		{"settings at limit", &gumav1.CreateGuildRequest{Name: "g", Settings: manySettings(50)}},
 		{"amount at cap", &gumav1.DepositFundsRequest{GuildId: testUUID, Amount: 100000000000000}},
 		{"zero ticket price", &gumav1.UpdateRaffleRequest{GuildId: testUUID, RaffleId: testUUID, TicketPrice: proto.Int64(0)}},
 		{"numeric page token", &gumav1.ListGuildsRequest{PageToken: "40"}},

@@ -572,29 +572,27 @@ const file_proto_guma_v1_item_template_proto_rawDesc = "" +
 	"\x18ListItemTemplatesRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"P\n" +
 	"\x19ListItemTemplatesResponse\x123\n" +
-	"\ttemplates\x18\x01 \x03(\v2\x15.guma.v1.ItemTemplateR\ttemplates\"\xf3\x04\n" +
+	"\ttemplates\x18\x01 \x03(\v2\x15.guma.v1.ItemTemplateR\ttemplates\"\xf6\x04\n" +
 	"\x19CreateItemTemplateRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1e\n" +
-	"\x04name\x18\x02 \x01(\tB\n" +
-	"\xbaH\ar\x05\xc8>\x01\x18dR\x04name\x12*\n" +
-	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\vdescription\x12\x87\x02\n" +
-	"\bcategory\x18\x04 \x01(\tB\xea\x01\xbaH\xe6\x01\xba\x01\xde\x01\n" +
-	"\x10category.allowed\x12Zcategory must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc\x1anthis.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc']r\x02\x18 R\bcategory\x12\xd7\x01\n" +
-	"\x06rarity\x18\x05 \x01(\tB\xbe\x01\xbaH\xba\x01\xba\x01\xb2\x01\n" +
-	"\x0erarity.allowed\x12Erarity must be one of common, uncommon, rare, epic, legendary, mythic\x1aYthis.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']r\x02\x18 R\x06rarity\"O\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
+	"\x04name\x18\x02 \x01(\tB\v\xbaH\br\x06\xc8>\x01\xf8>\x01R\x04name\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\vdescription\x12\x88\x02\n" +
+	"\bcategory\x18\x04 \x01(\tB\xeb\x01\xbaH\xe7\x01\xba\x01\xde\x01\n" +
+	"\x10category.allowed\x12Zcategory must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc\x1anthis.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc']r\x03\xe8>\x01R\bcategory\x12\xd8\x01\n" +
+	"\x06rarity\x18\x05 \x01(\tB\xbf\x01\xbaH\xbb\x01\xba\x01\xb2\x01\n" +
+	"\x0erarity.allowed\x12Erarity must be one of common, uncommon, rare, epic, legendary, mythic\x1aYthis.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']r\x03\xe8>\x01R\x06rarity\"O\n" +
 	"\x1aCreateItemTemplateResponse\x121\n" +
-	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"\xa1\x05\n" +
+	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"\xa4\x05\n" +
 	"\x19UpdateItemTemplateRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12,\n" +
 	"\vtemplate_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
-	"templateId\x12\x1e\n" +
-	"\x04name\x18\x03 \x01(\tB\n" +
-	"\xbaH\ar\x05\xc8>\x01\x18dR\x04name\x12*\n" +
-	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\vdescription\x12\x87\x02\n" +
-	"\bcategory\x18\x05 \x01(\tB\xea\x01\xbaH\xe6\x01\xba\x01\xde\x01\n" +
-	"\x10category.allowed\x12Zcategory must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc\x1anthis.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc']r\x02\x18 R\bcategory\x12\xd7\x01\n" +
-	"\x06rarity\x18\x06 \x01(\tB\xbe\x01\xbaH\xba\x01\xba\x01\xb2\x01\n" +
-	"\x0erarity.allowed\x12Erarity must be one of common, uncommon, rare, epic, legendary, mythic\x1aYthis.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']r\x02\x18 R\x06rarity\"O\n" +
+	"templateId\x12\x1f\n" +
+	"\x04name\x18\x03 \x01(\tB\v\xbaH\br\x06\xc8>\x01\xf8>\x01R\x04name\x12*\n" +
+	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\vdescription\x12\x88\x02\n" +
+	"\bcategory\x18\x05 \x01(\tB\xeb\x01\xbaH\xe7\x01\xba\x01\xde\x01\n" +
+	"\x10category.allowed\x12Zcategory must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc\x1anthis.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc']r\x03\xe8>\x01R\bcategory\x12\xd8\x01\n" +
+	"\x06rarity\x18\x06 \x01(\tB\xbf\x01\xbaH\xbb\x01\xba\x01\xb2\x01\n" +
+	"\x0erarity.allowed\x12Erarity must be one of common, uncommon, rare, epic, legendary, mythic\x1aYthis.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']r\x03\xe8>\x01R\x06rarity\"O\n" +
 	"\x1aUpdateItemTemplateResponse\x121\n" +
 	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"q\n" +
 	"\x19DeleteItemTemplateRequest\x12&\n" +

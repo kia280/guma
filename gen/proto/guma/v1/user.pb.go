@@ -691,14 +691,13 @@ const file_proto_guma_v1_user_proto_rawDesc = "" +
 	"\x18proto/guma/v1/user.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\x0e\n" +
 	"\fGetMeRequest\"2\n" +
 	"\rGetMeResponse\x12!\n" +
-	"\x04user\x18\x01 \x01(\v2\r.guma.v1.UserR\x04user\"\xaa\x01\n" +
-	"\x0fUpdateMeRequest\x12-\n" +
-	"\fdisplay_name\x18\x01 \x01(\tB\n" +
-	"\xbaH\ar\x05\xc8>\x01\x18 R\vdisplayName\x12#\n" +
-	"\busername\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\busername\x12\x1a\n" +
-	"\x03bio\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x03bio\x12'\n" +
+	"\x04user\x18\x01 \x01(\v2\r.guma.v1.UserR\x04user\"\xac\x01\n" +
+	"\x0fUpdateMeRequest\x12.\n" +
+	"\fdisplay_name\x18\x01 \x01(\tB\v\xbaH\br\x06\xc8>\x01\xe0>\x01R\vdisplayName\x12$\n" +
+	"\busername\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xe0>\x01R\busername\x12\x1a\n" +
+	"\x03bio\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\x03bio\x12'\n" +
 	"\n" +
-	"avatar_url\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x10R\tavatarUrl\"5\n" +
+	"avatar_url\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x98?\x01R\tavatarUrl\"5\n" +
 	"\x10UpdateMeResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.guma.v1.UserR\x04user\"6\n" +
 	"\x0eGetUserRequest\x12$\n" +

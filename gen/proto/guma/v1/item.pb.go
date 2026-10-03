@@ -211,13 +211,13 @@ var File_proto_guma_v1_item_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_item_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/guma/v1/item.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\"\xae\x01\n" +
-	"\x04Item\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\x02id\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18dR\x04name\x12*\n" +
-	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\vdescription\x12#\n" +
-	"\bcategory\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x182R\bcategory\x12\x1f\n" +
-	"\x06rarity\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x182R\x06rarity\"\x84\x02\n" +
+	"\x18proto/guma/v1/item.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cproto/guma/v1/validate.proto\"\xb2\x01\n" +
+	"\x04Item\x12\x18\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xf0>\x01R\x02id\x12\x1c\n" +
+	"\x04name\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xf8>\x01R\x04name\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\vdescription\x12$\n" +
+	"\bcategory\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\bcategory\x12 \n" +
+	"\x06rarity\x18\x05 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x06rarity\"\x84\x02\n" +
 	"\rItemSourceRef\x125\n" +
 	"\x10backpack_item_id\x18\x01 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\x0ebackpackItemId\x12-\n" +
 	"\fbank_item_id\x18\x02 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\n" +
@@ -258,6 +258,7 @@ func file_proto_guma_v1_item_proto_init() {
 	if File_proto_guma_v1_item_proto != nil {
 		return
 	}
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

@@ -47,14 +47,14 @@ message ListItemTemplatesResponse {
 
 message CreateItemTemplateRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string name = 2 [(buf.validate.field).string = {max_len: 100, [guma.v1.not_blank]: true}];
-  string description = 3 [(buf.validate.field).string.max_len = 500];
-  string category = 4 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+  string name = 2 [(buf.validate.field).string = {[guma.v1.name]: true, [guma.v1.not_blank]: true}];
+  string description = 3 [(buf.validate.field).string = {[guma.v1.paragraph]: true}];
+  string category = 4 [(buf.validate.field).string = {[guma.v1.keyword]: true}, (buf.validate.field).cel = {
     id: "category.allowed"
     message: "category must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc"
     expression: "this.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc']"
   }];
-  string rarity = 5 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+  string rarity = 5 [(buf.validate.field).string = {[guma.v1.keyword]: true}, (buf.validate.field).cel = {
     id: "rarity.allowed"
     message: "rarity must be one of common, uncommon, rare, epic, legendary, mythic"
     expression: "this.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']"
@@ -68,14 +68,14 @@ message CreateItemTemplateResponse {
 message UpdateItemTemplateRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string template_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string name = 3 [(buf.validate.field).string = {max_len: 100, [guma.v1.not_blank]: true}];
-  string description = 4 [(buf.validate.field).string.max_len = 500];
-  string category = 5 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+  string name = 3 [(buf.validate.field).string = {[guma.v1.name]: true, [guma.v1.not_blank]: true}];
+  string description = 4 [(buf.validate.field).string = {[guma.v1.paragraph]: true}];
+  string category = 5 [(buf.validate.field).string = {[guma.v1.keyword]: true}, (buf.validate.field).cel = {
     id: "category.allowed"
     message: "category must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc"
     expression: "this.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc']"
   }];
-  string rarity = 6 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+  string rarity = 6 [(buf.validate.field).string = {[guma.v1.keyword]: true}, (buf.validate.field).cel = {
     id: "rarity.allowed"
     message: "rarity must be one of common, uncommon, rare, epic, legendary, mythic"
     expression: "this.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']"

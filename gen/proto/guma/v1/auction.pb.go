@@ -1300,13 +1300,13 @@ var File_proto_guma_v1_auction_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\n" +
-	"\x1bproto/guma/v1/auction.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\x96\x02\n" +
+	"\x1bproto/guma/v1/auction.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\x99\x02\n" +
 	"\x13ListAuctionsRequest\x12&\n" +
-	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
-	"\x06status\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06status\x12#\n" +
-	"\bcategory\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18 R\bcategory\x12\x1f\n" +
-	"\x06rarity\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06rarity\x12 \n" +
-	"\x06search\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x06search\x12%\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12 \n" +
+	"\x06status\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x06status\x12$\n" +
+	"\bcategory\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\bcategory\x12 \n" +
+	"\x06rarity\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x06rarity\x12 \n" +
+	"\x06search\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x80?\x01R\x06search\x12%\n" +
 	"\tpage_size\x18\x06 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +
 	"page_token\x18\a \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x91\x01\n" +
@@ -1381,7 +1381,7 @@ const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12*\n" +
 	"\n" +
 	"auction_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\tauctionId\x12 \n" +
-	"\x06reason\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\x06reason\"G\n" +
+	"\x06reason\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\x06reason\"G\n" +
 	"\x15CancelAuctionResponse\x12.\n" +
 	"\aauction\x18\x01 \x01(\v2\x14.guma.v1.AuctionItemR\aauction\"\xc7\x06\n" +
 	"\vAuctionItem\x12\x0e\n" +

@@ -19,6 +19,38 @@ extend buf.validate.StringRules {
     id: "string.https_url"
     expression: "!rule || this == '' || (this.startsWith('https://') && size(this) > 8 && !(this.charAt(8) in ['/', '?', '#']) && this.isUri()) ? '' : 'value must be an absolute https URL'"
   }];
+  bool handle = 1004 [(buf.validate.predefined).cel = {
+    id: "string.handle"
+    expression: "!rule || size(this) <= 32 ? '' : 'value must be at most 32 characters'"
+  }];
+  bool keyword = 1005 [(buf.validate.predefined).cel = {
+    id: "string.keyword"
+    expression: "!rule || size(this) <= 50 ? '' : 'value must be at most 50 characters'"
+  }];
+  bool code = 1006 [(buf.validate.predefined).cel = {
+    id: "string.code"
+    expression: "!rule || size(this) <= 64 ? '' : 'value must be at most 64 characters'"
+  }];
+  bool name = 1007 [(buf.validate.predefined).cel = {
+    id: "string.name"
+    expression: "!rule || size(this) <= 100 ? '' : 'value must be at most 100 characters'"
+  }];
+  bool line = 1008 [(buf.validate.predefined).cel = {
+    id: "string.line"
+    expression: "!rule || size(this) <= 200 ? '' : 'value must be at most 200 characters'"
+  }];
+  bool paragraph = 1009 [(buf.validate.predefined).cel = {
+    id: "string.paragraph"
+    expression: "!rule || size(this) <= 500 ? '' : 'value must be at most 500 characters'"
+  }];
+  bool text = 1010 [(buf.validate.predefined).cel = {
+    id: "string.text"
+    expression: "!rule || size(this) <= 2000 ? '' : 'value must be at most 2000 characters'"
+  }];
+  bool url = 1011 [(buf.validate.predefined).cel = {
+    id: "string.url"
+    expression: "!rule || size(this) <= 2048 ? '' : 'value must be at most 2048 characters'"
+  }];
 }
 
 extend buf.validate.Int32Rules {
@@ -36,5 +68,12 @@ extend buf.validate.Int64Rules {
   bool amount_or_zero = 1002 [(buf.validate.predefined).cel = {
     id: "int64.amount_or_zero"
     expression: "!rule || (this >= 0 && this <= 100000000000000) ? '' : 'value must be an amount between 0 and 100000000000000'"
+  }];
+}
+
+extend buf.validate.MapRules {
+  bool settings_map = 1001 [(buf.validate.predefined).cel = {
+    id: "map.settings_map"
+    expression: "!rule || (size(this) <= 50 && this.all(k, size(k) <= 100 && size(this[k]) <= 2000)) ? '' : 'value must have at most 50 entries with keys of at most 100 and values of at most 2000 characters'"
   }];
 }

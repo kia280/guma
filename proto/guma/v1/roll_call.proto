@@ -104,7 +104,7 @@ service RollCallService {
 
 message ListRollCallsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string status = 2 [(buf.validate.field).string.max_len = 32];     // "active" | "expired" | "cancelled" | "completed" | "" (all)
+  string status = 2 [(buf.validate.field).string = {[guma.v1.keyword]: true}];     // "active" | "expired" | "cancelled" | "completed" | "" (all)
   int32 page_size = 3 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 4 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
@@ -137,11 +137,11 @@ message CreateRollCallRequest {
   };
 
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string title = 2 [(buf.validate.field).string = {max_len: 200, [guma.v1.not_blank]: true}];
-  string description = 3 [(buf.validate.field).string.max_len = 2000];
-  string datetime = 4 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];      // ISO 8601 datetime of the roll call
-  string expire_time = 5 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];   // ISO 8601 datetime when the window closes
-  string image_url = 6 [(buf.validate.field).string = {max_len: 2048, [guma.v1.https_url]: true}];
+  string title = 2 [(buf.validate.field).string = {[guma.v1.line]: true, [guma.v1.not_blank]: true}];
+  string description = 3 [(buf.validate.field).string = {[guma.v1.text]: true}];
+  string datetime = 4 [(buf.validate.field).required = true, (buf.validate.field).string = {[guma.v1.code]: true}];      // ISO 8601 datetime of the roll call
+  string expire_time = 5 [(buf.validate.field).required = true, (buf.validate.field).string = {[guma.v1.code]: true}];   // ISO 8601 datetime when the window closes
+  string image_url = 6 [(buf.validate.field).string = {[guma.v1.url]: true, [guma.v1.https_url]: true}];
   repeated Item loot_list = 7 [(buf.validate.field).repeated.max_items = 100]; // Items distributed to attendees
   repeated RollCallLootEntry loot = 8 [(buf.validate.field).repeated.max_items = 100]; // Supersedes loot_list when set; supports gold entries
 }
@@ -153,11 +153,11 @@ message CreateRollCallResponse {
 message UpdateRollCallRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string roll_call_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string title = 3 [(buf.validate.field).string = {max_len: 200, [guma.v1.not_blank]: true}];
-  optional string description = 4 [(buf.validate.field).string.max_len = 2000];
-  string datetime = 5 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  string expire_time = 6 [(buf.validate.field).required = true, (buf.validate.field).string.max_len = 64];
-  optional string image_url = 7 [(buf.validate.field).string = {max_len: 2048, [guma.v1.https_url]: true}];
+  string title = 3 [(buf.validate.field).string = {[guma.v1.line]: true, [guma.v1.not_blank]: true}];
+  optional string description = 4 [(buf.validate.field).string = {[guma.v1.text]: true}];
+  string datetime = 5 [(buf.validate.field).required = true, (buf.validate.field).string = {[guma.v1.code]: true}];
+  string expire_time = 6 [(buf.validate.field).required = true, (buf.validate.field).string = {[guma.v1.code]: true}];
+  optional string image_url = 7 [(buf.validate.field).string = {[guma.v1.url]: true, [guma.v1.https_url]: true}];
   repeated Item loot_list = 8 [(buf.validate.field).repeated.max_items = 0];
   repeated RollCallLootEntry loot = 9 [(buf.validate.field).repeated.max_items = 0];
 }
@@ -263,7 +263,7 @@ message DistributeRollCallGoldResponse {
 message CheckInRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string roll_call_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string notes = 3 [(buf.validate.field).string.max_len = 500];
+  string notes = 3 [(buf.validate.field).string = {[guma.v1.paragraph]: true}];
 }
 
 message CheckInResponse {
@@ -319,7 +319,7 @@ message RollCallLootEntry {
     expression: "this.kind.trim().lowerAscii() == 'gold' || this.item.name.trim() != ''"
   };
 
-  string kind = 1 [(buf.validate.field).string.max_len = 32, (buf.validate.field).cel = {
+  string kind = 1 [(buf.validate.field).string = {[guma.v1.keyword]: true}, (buf.validate.field).cel = {
     id: "kind.allowed"
     message: "kind must be item or gold"
     expression: "this.trim().lowerAscii() in ['', 'item', 'gold']"

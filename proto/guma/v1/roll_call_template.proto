@@ -48,8 +48,8 @@ message ListRollCallTemplatesResponse {
 
 message CreateRollCallTemplateRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string name = 2 [(buf.validate.field).string = {max_len: 100, [guma.v1.not_blank]: true}];
-  string title = 3 [(buf.validate.field).string = {max_len: 200, [guma.v1.not_blank]: true}];
+  string name = 2 [(buf.validate.field).string = {[guma.v1.name]: true, [guma.v1.not_blank]: true}];
+  string title = 3 [(buf.validate.field).string = {[guma.v1.line]: true, [guma.v1.not_blank]: true}];
   repeated string item_template_ids = 4 [(buf.validate.field).repeated = {max_items: 100, items: {string: {uuid: true}}}];
 }
 
@@ -60,8 +60,8 @@ message CreateRollCallTemplateResponse {
 message UpdateRollCallTemplateRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string template_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string name = 3 [(buf.validate.field).string = {max_len: 100, [guma.v1.not_blank]: true}];
-  string title = 4 [(buf.validate.field).string = {max_len: 200, [guma.v1.not_blank]: true}];
+  string name = 3 [(buf.validate.field).string = {[guma.v1.name]: true, [guma.v1.not_blank]: true}];
+  string title = 4 [(buf.validate.field).string = {[guma.v1.line]: true, [guma.v1.not_blank]: true}];
   repeated string item_template_ids = 5 [(buf.validate.field).repeated = {max_items: 100, items: {string: {uuid: true}}}];
 }
 

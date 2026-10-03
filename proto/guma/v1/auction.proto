@@ -71,10 +71,10 @@ service AuctionService {
 
 message ListAuctionsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string status = 2 [(buf.validate.field).string.max_len = 32];    // AuctionStatus filter; empty = all
-  string category = 3 [(buf.validate.field).string.max_len = 32];  // Item.category filter
-  string rarity = 4 [(buf.validate.field).string.max_len = 32];    // Item.rarity filter
-  string search = 5 [(buf.validate.field).string.max_len = 200];
+  string status = 2 [(buf.validate.field).string = {[guma.v1.keyword]: true}];    // AuctionStatus filter; empty = all
+  string category = 3 [(buf.validate.field).string = {[guma.v1.keyword]: true}];  // Item.category filter
+  string rarity = 4 [(buf.validate.field).string = {[guma.v1.keyword]: true}];    // Item.rarity filter
+  string search = 5 [(buf.validate.field).string = {[guma.v1.line]: true}];
   int32 page_size = 6 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 7 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
 }
@@ -176,7 +176,7 @@ message DeleteAuctionResponse {
 message CancelAuctionRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
   string auction_id = 2 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string reason = 3 [(buf.validate.field).string.max_len = 500];
+  string reason = 3 [(buf.validate.field).string = {[guma.v1.paragraph]: true}];
 }
 
 message CancelAuctionResponse {
