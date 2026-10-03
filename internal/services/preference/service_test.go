@@ -17,7 +17,7 @@ import (
 	"github.com/kia280/guma/internal/services/errs"
 )
 
-const testUser = "00000000-0000-0000-0000-000000000001"
+var testUser = uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 type fakeStore struct {
 	getRow    db.GetNotificationPreferencesRow
@@ -39,35 +39,6 @@ func (f *fakeStore) UpsertNotificationPreferences(_ context.Context, arg db.Upse
 }
 
 func boolPtr(v bool) *bool { return &v }
-
-func TestValidatesInputBeforeQuerying(t *testing.T) {
-	s := New(nil, zerolog.Nop())
-	ctx := context.Background()
-
-	tests := []struct {
-		name string
-		call func() error
-		want error
-	}{
-		{name: "get without user", call: func() error { _, err := s.Get(ctx, ""); return err }, want: errs.ErrUnauthenticated},
-		{name: "get bad user id", call: func() error { _, err := s.Get(ctx, "nope"); return err }, want: errs.ErrInvalidArgument},
-		{name: "update without user", call: func() error {
-			_, err := s.UpdateNotifications(ctx, "", NotificationPatch{AuctionAlerts: boolPtr(false)})
-			return err
-		}, want: errs.ErrUnauthenticated},
-		{name: "update bad user id", call: func() error {
-			_, err := s.UpdateNotifications(ctx, "nope", NotificationPatch{AuctionAlerts: boolPtr(false)})
-			return err
-		}, want: errs.ErrInvalidArgument},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.call()
-			require.Error(t, err)
-			assert.ErrorIs(t, err, tt.want)
-		})
-	}
-}
 
 func TestGetReturnsDefaultsWhenNoRow(t *testing.T) {
 	s := newService(&fakeStore{getErr: pgx.ErrNoRows}, zerolog.Nop())
@@ -114,7 +85,7 @@ func TestUpdateNotificationsSendsOnlyProvidedFields(t *testing.T) {
 	got, err := s.UpdateNotifications(context.Background(), testUser, NotificationPatch{AuctionAlerts: boolPtr(false)})
 	require.NoError(t, err)
 	assert.Equal(t, 1, store.writes)
-	assert.Equal(t, uuid.MustParse(testUser), store.upsertArg.UserID)
+	assert.Equal(t, testUser, store.upsertArg.UserID)
 	assert.True(t, store.upsertArg.AuctionAlerts.Valid)
 	assert.False(t, store.upsertArg.AuctionAlerts.Bool)
 	assert.False(t, store.upsertArg.EmailNotifications.Valid)

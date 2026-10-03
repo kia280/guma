@@ -1,12 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/codes"
 
+	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	preferencesvc "github.com/kia280/guma/internal/services/preference"
 )
 
@@ -32,4 +36,12 @@ func TestPreferencesUpdatedAt(t *testing.T) {
 	got := preferencesUpdatedAt(&preferencesvc.Preferences{UpdatedAt: updated})
 	require.NotNil(t, got)
 	assert.True(t, got.AsTime().Equal(updated))
+}
+
+func TestPreferenceService_RequiresCaller(t *testing.T) {
+	h := NewPreferenceService(nil, zerolog.Nop())
+	_, err := h.GetMyPreferences(context.Background(), &gumav1.GetMyPreferencesRequest{})
+	requireCode(t, err, codes.Unauthenticated)
+	_, err = h.UpdateMyPreferences(context.Background(), &gumav1.UpdateMyPreferencesRequest{})
+	requireCode(t, err, codes.Unauthenticated)
 }

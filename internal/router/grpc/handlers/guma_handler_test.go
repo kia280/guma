@@ -38,6 +38,13 @@ func TestGumaService_GetNavigation(t *testing.T) {
 		checkResult func(t *testing.T, resp *gumav1.GetNavigationResponse)
 	}{
 		{
+			name:     "unauthenticated",
+			ctx:      context.Background(),
+			req:      &gumav1.GetNavigationRequest{},
+			wantErr:  true,
+			wantCode: codes.Unauthenticated,
+		},
+		{
 			name:      "successful navigation retrieval without guild_id",
 			ctx:       session.WithUserID(context.Background(), testUserID),
 			req:       &gumav1.GetNavigationRequest{},
@@ -93,6 +100,13 @@ func TestGumaService_GetDashboardData(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
+			name:     "unauthenticated",
+			ctx:      context.Background(),
+			req:      &gumav1.GetDashboardDataRequest{},
+			wantErr:  true,
+			wantCode: codes.Unauthenticated,
+		},
+		{
 			name:    "successful dashboard data retrieval",
 			ctx:     session.WithUserID(context.Background(), testUserID),
 			req:     &gumav1.GetDashboardDataRequest{GuildId: "guild-123"},
@@ -133,6 +147,13 @@ func TestGumaService_GetUserPreferences(t *testing.T) {
 		wantCode    codes.Code
 		checkResult func(t *testing.T, resp *gumav1.GetUserPreferencesResponse)
 	}{
+		{
+			name:     "unauthenticated",
+			ctx:      context.Background(),
+			req:      &gumav1.GetUserPreferencesRequest{},
+			wantErr:  true,
+			wantCode: codes.Unauthenticated,
+		},
 		{
 			name:    "successful preferences retrieval",
 			ctx:     session.WithUserID(context.Background(), testUserID),
@@ -178,6 +199,13 @@ func TestGumaService_UpdateUserPreferences(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
+		{
+			name:     "unauthenticated",
+			ctx:      context.Background(),
+			req:      &gumav1.UpdateUserPreferencesRequest{},
+			wantErr:  true,
+			wantCode: codes.Unauthenticated,
+		},
 		{
 			name: "successful preferences update",
 			ctx:  session.WithUserID(context.Background(), testUserID),
@@ -268,6 +296,13 @@ func TestGumaService_SearchGlobal(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
+		{
+			name:     "unauthenticated",
+			ctx:      context.Background(),
+			req:      &gumav1.SearchGlobalRequest{},
+			wantErr:  true,
+			wantCode: codes.Unauthenticated,
+		},
 		{
 			name:    "successful search without guild_id",
 			ctx:     session.WithUserID(context.Background(), testUserID),

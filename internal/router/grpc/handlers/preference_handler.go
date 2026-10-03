@@ -25,7 +25,10 @@ func NewPreferenceService(db *database.Pool, logger zerolog.Logger) *PreferenceH
 }
 
 func (h *PreferenceHandler) GetMyPreferences(ctx context.Context, _ *gumav1.GetMyPreferencesRequest) (*gumav1.GetMyPreferencesResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	p, err := h.svc.Get(ctx, userID)
 	if err != nil {
@@ -38,7 +41,10 @@ func (h *PreferenceHandler) GetMyPreferences(ctx context.Context, _ *gumav1.GetM
 }
 
 func (h *PreferenceHandler) UpdateMyPreferences(ctx context.Context, req *gumav1.UpdateMyPreferencesRequest) (*gumav1.UpdateMyPreferencesResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	p, err := h.svc.UpdateNotifications(ctx, userID, preferencesvc.NotificationPatch{
 		EmailNotifications: req.Notifications.EmailNotifications,
 		AuctionAlerts:      req.Notifications.AuctionAlerts,
