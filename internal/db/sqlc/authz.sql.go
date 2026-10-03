@@ -48,7 +48,7 @@ func (q *Queries) ClaimNextAuthzOutboxMember(ctx context.Context) (ClaimNextAuth
 const deferAuthzOutboxMember = `-- name: DeferAuthzOutboxMember :exec
 UPDATE authz_member_outbox
 SET attempts = attempts + 1,
-    available_at = NOW() + make_interval(secs => LEAST(300, power(2, LEAST(attempts, 8))))
+    available_at = NOW() + make_interval(secs => power(2, LEAST(attempts, 8)))
 WHERE guild_id = $1 AND user_id = $2
 `
 

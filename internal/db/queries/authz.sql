@@ -19,7 +19,7 @@ DELETE FROM authz_member_outbox WHERE id = ANY(sqlc.arg(ids)::bigint[]);
 -- name: DeferAuthzOutboxMember :exec
 UPDATE authz_member_outbox
 SET attempts = attempts + 1,
-    available_at = NOW() + make_interval(secs => LEAST(300, power(2, LEAST(attempts, 8))))
+    available_at = NOW() + make_interval(secs => power(2, LEAST(attempts, 8)))
 WHERE guild_id = sqlc.arg(guild_id) AND user_id = sqlc.arg(user_id);
 
 -- name: ListMemberRolesAfter :many
