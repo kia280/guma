@@ -448,7 +448,19 @@ func TestMemberService_UpdateMemberRole(t *testing.T) {
 			name:     "malformed target",
 			ctx:      authed,
 			req:      &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: "nope", Role: "admin"},
-			wantCode: codes.NotFound,
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name:     "malformed guild",
+			ctx:      authed,
+			req:      &memberv1.UpdateMemberRoleRequest{GuildId: "nope", UserId: targetID, Role: "admin"},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name:     "unauthenticated",
+			ctx:      context.Background(),
+			req:      &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: targetID, Role: "admin"},
+			wantCode: codes.Unauthenticated,
 		},
 		{
 			name:     "own role",
