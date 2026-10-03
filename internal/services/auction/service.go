@@ -199,6 +199,9 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*AuctionItem, err
 	if err != nil {
 		return nil, fmt.Errorf("%w: seller", errs.ErrInvalidArgument)
 	}
+	if err := authz.Require(ctx, s.az, guildID, sellerID, createPermission(p.Source)); err != nil {
+		return nil, err
+	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -207,11 +210,6 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*AuctionItem, err
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	if p.Source.BankItemID != "" {
-		if err := authz.Require(ctx, s.az, guildID, sellerID, authz.ManageAuctions); err != nil {
-			return nil, err
-		}
-	}
 	auctionID := uuid.New()
 	locked, err := inventory.Lock(ctx, qtx, guildID, sellerID, p.Source,
 		inventory.Holder{Type: inventory.HolderAuction, ID: auctionID}, "Listed in an auction")
@@ -423,7 +421,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*AuctionItem, err
 	if err != nil {
 		return nil, err
 	}
-	if err := s.authorizeManage(ctx, guildID, userID, current); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, managePermission(current, userID)); err != nil {
 		return nil, err
 	}
 	now := time.Now().UTC()
@@ -475,20 +473,14 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, auctionIDStr, userIDSt
 	if err != nil {
 		return nil, err
 	}
-	if err := s.authorizeManage(ctx, guildID, userID, current); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, cancelPermission(current, userID)); err != nil {
 		return nil, err
 	}
 	if err := checkCancellable(current.Status, current.EndTime, time.Now().UTC()); err != nil {
 		return nil, err
 	}
-	hasBids := current.CurrentBidderID != nil
-	if hasBids {
-		if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageAuctions); err != nil {
-			return nil, err
-		}
-	}
 
-	if hasBids && current.CurrentBid > 0 {
+	if current.CurrentBidderID != nil && current.CurrentBid > 0 {
 		if err := refundBid(ctx, qtx, guildID, *current.CurrentBidderID, current.CurrentBid, auctionIDStr, "Auction cancelled refund"); err != nil {
 			return nil, err
 		}
@@ -528,7 +520,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, auctionIDStr, userIDSt
 	if err != nil {
 		return err
 	}
-	if err := s.authorizeManage(ctx, guildID, userID, current); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, managePermission(current, userID)); err != nil {
 		return err
 	}
 	if err := checkDeletable(current.Status); err != nil {
@@ -588,13 +580,6 @@ func lockAuction(ctx context.Context, qtx *db.Queries, guildID, auctionID uuid.U
 		return db.Auction{}, fmt.Errorf("%w: load auction: %v", errs.ErrInternal, err)
 	}
 	return a, nil
-}
-
-func (s *Service) authorizeManage(ctx context.Context, guildID, userID uuid.UUID, a db.Auction) error {
-	if a.SellerID == userID {
-		return authz.Require(ctx, s.az, guildID, userID, authz.View)
-	}
-	return authz.Require(ctx, s.az, guildID, userID, authz.ManageAuctions)
 }
 
 func refundBid(ctx context.Context, qtx *db.Queries, guildID, bidderID uuid.UUID, amount int64, auctionID, description string) error {
