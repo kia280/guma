@@ -1,64 +1,17 @@
 package bank
 
 import (
-	"context"
 	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
-
-const (
-	testGuild = "00000000-0000-0000-0000-000000000001"
-	testUser  = "00000000-0000-0000-0000-000000000002"
-)
-
-func TestRequestFundsValidatesInput(t *testing.T) {
-	s := New(nil, nil, zerolog.Nop())
-	tests := []struct {
-		name   string
-		guild  string
-		user   string
-		amount int64
-		reason string
-	}{
-		{name: "bad guild id", guild: "nope", user: testUser, amount: 10, reason: "raid"},
-		{name: "bad user id", guild: testGuild, user: "nope", amount: 10, reason: "raid"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := s.RequestFunds(context.Background(), tt.guild, tt.user, tt.amount, tt.reason)
-			assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-		})
-	}
-}
-
-func TestDeleteBankItemValidatesIDs(t *testing.T) {
-	s := New(nil, nil, zerolog.Nop())
-	tests := []struct {
-		name  string
-		guild string
-		user  string
-		item  string
-		want  error
-	}{
-		{name: "bad guild id", guild: "nope", user: testUser, item: uuid.NewString(), want: errs.ErrNotFound},
-		{name: "bad user id", guild: testGuild, user: "nope", item: uuid.NewString(), want: errs.ErrInvalidArgument},
-		{name: "bad item id", guild: testGuild, user: testUser, item: "nope", want: errs.ErrNotFound},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.ErrorIs(t, s.DeleteBankItem(context.Background(), tt.guild, tt.user, tt.item), tt.want)
-		})
-	}
-}
 
 func TestCheckReviewable(t *testing.T) {
 	tests := []struct {

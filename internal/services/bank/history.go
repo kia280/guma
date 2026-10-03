@@ -27,20 +27,7 @@ type ItemEvent struct {
 	CreatedAt      time.Time
 }
 
-func (s *Service) GetItemHistory(ctx context.Context, guildIDStr, viewerIDStr, itemIDStr string) ([]ItemEvent, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	viewerID, err := uuid.Parse(viewerIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: viewer", errs.ErrInvalidArgument)
-	}
-	itemID, err := uuid.Parse(itemIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: item", errs.ErrNotFound)
-	}
-
+func (s *Service) GetItemHistory(ctx context.Context, guildID, viewerID, itemID uuid.UUID) ([]ItemEvent, error) {
 	if err := s.authorizeItemHistory(ctx, guildID, viewerID, itemID); err != nil {
 		return nil, err
 	}
