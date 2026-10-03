@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/kia280/guma/internal/services/errs"
 )
 
@@ -35,18 +37,17 @@ func TestRandomSeedName(t *testing.T) {
 
 func TestSeedGuildMembersValidatesInput(t *testing.T) {
 	s := &Service{}
+	guildID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	tests := []struct {
-		name    string
-		guildID string
-		count   int
+		name  string
+		count int
 	}{
-		{name: "bad guild id", guildID: "nope", count: 1},
-		{name: "zero count", guildID: "00000000-0000-0000-0000-000000000001", count: 0},
-		{name: "too many", guildID: "00000000-0000-0000-0000-000000000001", count: MaxSeedCount + 1},
+		{name: "zero count", count: 0},
+		{name: "too many", count: MaxSeedCount + 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, err := s.SeedGuildMembers(context.Background(), tt.guildID, tt.count); !errors.Is(err, errs.ErrInvalidArgument) {
+			if _, err := s.SeedGuildMembers(context.Background(), guildID, tt.count); !errors.Is(err, errs.ErrInvalidArgument) {
 				t.Fatalf("expected invalid argument, got %v", err)
 			}
 		})

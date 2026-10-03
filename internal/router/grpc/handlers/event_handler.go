@@ -3,13 +3,14 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	eventsvc "github.com/kia280/guma/internal/services/event"
-	"github.com/kia280/guma/internal/session"
 )
 
 // EventHandler is a thin gRPC adapter over the event service.
@@ -28,12 +29,18 @@ func NewEventService(db *database.Pool, logger zerolog.Logger) *EventHandler {
 }
 
 func (h *EventHandler) ListEvents(ctx context.Context, req *gumav1.ListEventsRequest) (*gumav1.ListEventsResponse, error) {
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 	offset, err := eventsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.List(ctx, eventsvc.ListParams{
-		GuildID:  req.GuildId,
+		GuildID:  in.GuildID,
 		View:     req.View,
 		Date:     req.Date,
 		PageSize: int(req.PageSize),
@@ -55,7 +62,14 @@ func (h *EventHandler) ListEvents(ctx context.Context, req *gumav1.ListEventsReq
 }
 
 func (h *EventHandler) GetEvent(ctx context.Context, req *gumav1.GetEventRequest) (*gumav1.GetEventResponse, error) {
-	e, err := h.svc.Get(ctx, req.GuildId, req.EventId)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+		EventID uuid.UUID `proto:"event_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	e, err := h.svc.Get(ctx, in.GuildID, in.EventID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -63,10 +77,19 @@ func (h *EventHandler) GetEvent(ctx context.Context, req *gumav1.GetEventRequest
 }
 
 func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventRequest) (*gumav1.CreateEventResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	e, err := h.svc.Create(ctx, eventsvc.CreateParams{
-		GuildID:          req.GuildId,
+		GuildID:          in.GuildID,
 		CreatedBy:        userID,
 		Title:            req.Title,
 		Description:      req.Description,
@@ -86,11 +109,21 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventR
 }
 
 func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventRequest) (*gumav1.UpdateEventResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+		EventID uuid.UUID `proto:"event_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	e, err := h.svc.Update(ctx, eventsvc.UpdateParams{
-		GuildID:          req.GuildId,
-		EventID:          req.EventId,
+		GuildID:          in.GuildID,
+		EventID:          in.EventID,
 		UserID:           userID,
 		Title:            req.Title,
 		Description:      req.Description,
@@ -110,16 +143,32 @@ func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventR
 }
 
 func (h *EventHandler) DeleteEvent(ctx context.Context, req *gumav1.DeleteEventRequest) (*gumav1.DeleteEventResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+		EventID uuid.UUID `proto:"event_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	if err := h.svc.Delete(ctx, req.GuildId, req.EventId, userID); err != nil {
+	if err := h.svc.Delete(ctx, in.GuildID, in.EventID, userID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteEventResponse{Success: true}, nil
 }
 
 func (h *EventHandler) ListEventsByRange(ctx context.Context, req *gumav1.ListEventsByRangeRequest) (*gumav1.ListEventsByRangeResponse, error) {
-	events, err := h.svc.ListByRange(ctx, req.GuildId, req.StartDate, req.EndDate)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	events, err := h.svc.ListByRange(ctx, in.GuildID, req.StartDate, req.EndDate)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -132,7 +181,13 @@ func (h *EventHandler) ListEventsByRange(ctx context.Context, req *gumav1.ListEv
 }
 
 func (h *EventHandler) ListUpcomingEvents(ctx context.Context, req *gumav1.ListUpcomingEventsRequest) (*gumav1.ListUpcomingEventsResponse, error) {
-	events, err := h.svc.ListUpcoming(ctx, req.GuildId, req.Limit)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	events, err := h.svc.ListUpcoming(ctx, in.GuildID, req.Limit)
 	if err != nil {
 		return nil, toStatus(err)
 	}

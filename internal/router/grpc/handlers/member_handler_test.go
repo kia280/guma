@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,7 +38,7 @@ func TestMemberService_InviteMember(t *testing.T) {
 	}{
 		{
 			name: "successful member invitation",
-			ctx:  session.WithUserID(context.Background(), "test-user"),
+			ctx:  session.WithUserID(context.Background(), testUserID),
 			req: &memberv1.InviteMemberRequest{
 				GuildId: "guild-123",
 				Email:   "test@example.com",
@@ -80,7 +81,7 @@ func TestMemberService_JoinGuild(t *testing.T) {
 	}{
 		{
 			name:    "successful guild join",
-			ctx:     session.WithUserID(context.Background(), "test-user"),
+			ctx:     session.WithUserID(context.Background(), testUserID),
 			req:     &memberv1.JoinGuildRequest{InviteCode: "ABC123"},
 			wantErr: false,
 		},
@@ -117,7 +118,7 @@ func TestMemberService_UpdateMember(t *testing.T) {
 	}{
 		{
 			name: "successful member update",
-			ctx:  session.WithUserID(context.Background(), "test-user"),
+			ctx:  session.WithUserID(context.Background(), testUserID),
 			req: &memberv1.UpdateMemberRequest{
 				GuildId:     "guild-123",
 				MemberId:    "member-456",
@@ -160,7 +161,7 @@ func TestMemberService_RemoveMember(t *testing.T) {
 	}{
 		{
 			name: "successful member removal",
-			ctx:  session.WithUserID(context.Background(), "test-user"),
+			ctx:  session.WithUserID(context.Background(), testUserID),
 			req: &memberv1.RemoveMemberRequest{
 				GuildId:  "guild-123",
 				MemberId: "member-456",
@@ -200,14 +201,14 @@ func TestMemberService_ListMembers(t *testing.T) {
 	}{
 		{
 			name:     "malformed guild_id",
-			ctx:      session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000002"),
+			ctx:      session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000002")),
 			req:      &memberv1.ListMembersRequest{GuildId: "guild-123"},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
 		},
 		{
 			name: "malformed page token",
-			ctx:  session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000002"),
+			ctx:  session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000002")),
 			req: &memberv1.ListMembersRequest{
 				GuildId:   "00000000-0000-0000-0000-000000000001",
 				PageSize:  10,
@@ -250,7 +251,7 @@ func TestMemberService_GetMember(t *testing.T) {
 	}{
 		{
 			name: "successful member retrieval",
-			ctx:  session.WithUserID(context.Background(), "test-user"),
+			ctx:  session.WithUserID(context.Background(), testUserID),
 			req: &memberv1.GetMemberRequest{
 				GuildId:  "guild-123",
 				MemberId: "member-456",
@@ -290,7 +291,7 @@ func TestMemberService_GenerateInviteCode(t *testing.T) {
 	}{
 		{
 			name:    "successful invite code generation",
-			ctx:     session.WithUserID(context.Background(), "test-user"),
+			ctx:     session.WithUserID(context.Background(), testUserID),
 			req:     &memberv1.GenerateInviteCodeRequest{GuildId: "guild-123"},
 			wantErr: false,
 		},
@@ -366,7 +367,7 @@ func TestMemberService_ListInvites(t *testing.T) {
 	}{
 		{
 			name:    "successful invite listing",
-			ctx:     session.WithUserID(context.Background(), "test-user"),
+			ctx:     session.WithUserID(context.Background(), testUserID),
 			req:     &memberv1.ListInvitesRequest{GuildId: "guild-123"},
 			wantErr: false,
 		},
@@ -403,7 +404,7 @@ func TestMemberService_RevokeInvite(t *testing.T) {
 	}{
 		{
 			name: "successful invite revocation",
-			ctx:  session.WithUserID(context.Background(), "test-user"),
+			ctx:  session.WithUserID(context.Background(), testUserID),
 			req: &memberv1.RevokeInviteRequest{
 				GuildId:  "guild-123",
 				InviteId: "invite-789",
@@ -435,7 +436,7 @@ func TestMemberService_UpdateMemberRole(t *testing.T) {
 	const guildID = "00000000-0000-0000-0000-000000000001"
 	const actorID = "00000000-0000-0000-0000-000000000002"
 	const targetID = "00000000-0000-0000-0000-000000000003"
-	authed := session.WithUserID(context.Background(), actorID)
+	authed := session.WithUserID(context.Background(), uuid.MustParse(actorID))
 
 	tests := []struct {
 		name     string
@@ -447,7 +448,19 @@ func TestMemberService_UpdateMemberRole(t *testing.T) {
 			name:     "malformed target",
 			ctx:      authed,
 			req:      &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: "nope", Role: "admin"},
-			wantCode: codes.NotFound,
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name:     "malformed guild",
+			ctx:      authed,
+			req:      &memberv1.UpdateMemberRoleRequest{GuildId: "nope", UserId: targetID, Role: "admin"},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name:     "unauthenticated",
+			ctx:      context.Background(),
+			req:      &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: targetID, Role: "admin"},
+			wantCode: codes.Unauthenticated,
 		},
 		{
 			name:     "own role",

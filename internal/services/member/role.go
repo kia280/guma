@@ -14,25 +14,14 @@ import (
 )
 
 type UpdateRoleParams struct {
-	GuildID string
-	ActorID string
-	UserID  string
+	GuildID uuid.UUID
+	ActorID uuid.UUID
+	UserID  uuid.UUID
 	Role    string
 }
 
 func (s *Service) UpdateRole(ctx context.Context, p UpdateRoleParams) (*Member, error) {
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild_id must be a UUID", errs.ErrInvalidArgument)
-	}
-	actorID, err := uuid.Parse(p.ActorID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: caller id must be a UUID", errs.ErrInvalidArgument)
-	}
-	userID, err := uuid.Parse(p.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: member", errs.ErrNotFound)
-	}
+	guildID, actorID, userID := p.GuildID, p.ActorID, p.UserID
 	newRole, ok := authz.ParseRole(p.Role)
 	if !ok {
 		return nil, fmt.Errorf("%w: unknown role %q", errs.ErrInvalidArgument, p.Role)
@@ -96,7 +85,7 @@ func (s *Service) UpdateRole(ctx context.Context, p UpdateRoleParams) (*Member, 
 
 	if currentRole != newRole {
 		authz.SyncAfterCommit(ctx, s.az, s.logger, guildID, userID)
-		s.logger.Info().Str("actor_id", p.ActorID).Str("user_id", p.UserID).Str("guild_id", p.GuildID).
+		s.logger.Info().Str("actor_id", actorID.String()).Str("user_id", userID.String()).Str("guild_id", guildID.String()).
 			Str("old_role", string(currentRole)).Str("new_role", string(newRole)).Msg("member role changed")
 	}
 

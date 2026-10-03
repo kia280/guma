@@ -26,7 +26,7 @@ func TestKratosSessionMiddleware_Success(t *testing.T) {
 			"id":     "sess-123",
 			"active": true,
 			"identity": map[string]any{
-				"id":         "ident-1",
+				"id":         "7f3c1a52-0d4e-4c7b-9a51-2b8e6f0c9d13",
 				"schema_id":  "default",
 				"schema_url": "file://schemas/default.schema.json",
 				"traits": map[string]any{
@@ -51,7 +51,7 @@ func TestKratosSessionMiddleware_Success(t *testing.T) {
 		if !ok {
 			t.Fatalf("expected session on context")
 		}
-		if session.Identity.ID != "ident-1" {
+		if session.Identity.ID != "7f3c1a52-0d4e-4c7b-9a51-2b8e6f0c9d13" {
 			t.Fatalf("unexpected identity id: %s", session.Identity.ID)
 		}
 		w.WriteHeader(http.StatusOK)

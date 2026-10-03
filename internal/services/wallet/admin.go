@@ -36,24 +36,24 @@ type MemberAssets struct {
 }
 
 type AssetDestination struct {
-	UserID    string
+	UserID    uuid.UUID
 	GuildBank bool
 }
 
 type AdminTransferFundsParams struct {
-	AdminID     string
-	GuildID     string
-	FromUserID  string
+	AdminID     uuid.UUID
+	GuildID     uuid.UUID
+	FromUserID  uuid.UUID
 	Destination AssetDestination
 	Amount      int64
 	Note        string
 }
 
 type AdminTransferItemsParams struct {
-	AdminID     string
-	GuildID     string
-	FromUserID  string
-	ItemIDs     []string
+	AdminID     uuid.UUID
+	GuildID     uuid.UUID
+	FromUserID  uuid.UUID
+	ItemIDs     []uuid.UUID
 	Destination AssetDestination
 	Note        string
 }
@@ -67,11 +67,7 @@ type adminTransfer struct {
 	note    string
 }
 
-func (s *Service) ListMemberAssets(ctx context.Context, adminIDStr, guildIDStr string) ([]MemberAssetSummary, error) {
-	_, guildID, err := parseIDs(adminIDStr, guildIDStr)
-	if err != nil {
-		return nil, err
-	}
+func (s *Service) ListMemberAssets(ctx context.Context, guildID uuid.UUID) ([]MemberAssetSummary, error) {
 	rows, err := s.q.ListMemberAssets(ctx, guildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: list member assets: %v", errs.ErrInternal, err)
@@ -83,15 +79,7 @@ func (s *Service) ListMemberAssets(ctx context.Context, adminIDStr, guildIDStr s
 	return summaries, nil
 }
 
-func (s *Service) GetMemberAssets(ctx context.Context, adminIDStr, guildIDStr, memberIDStr string) (*MemberAssets, error) {
-	_, guildID, err := parseIDs(adminIDStr, guildIDStr)
-	if err != nil {
-		return nil, err
-	}
-	memberID, err := uuid.Parse(memberIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: member", errs.ErrNotFound)
-	}
+func (s *Service) GetMemberAssets(ctx context.Context, guildID, memberID uuid.UUID) (*MemberAssets, error) {
 	if err := s.requireMember(ctx, s.q, guildID, memberID, errs.ErrNotFound); err != nil {
 		return nil, err
 	}
@@ -117,7 +105,7 @@ func (s *Service) GetMemberAssets(ctx context.Context, adminIDStr, guildIDStr, m
 		item.Lock = models.NewItemLock(r.LockedByType, r.LockedByID)
 		items = append(items, item)
 	}
-	return &MemberAssets{UserID: memberIDStr, Balance: balance, Items: items}, nil
+	return &MemberAssets{UserID: memberID.String(), Balance: balance, Items: items}, nil
 }
 
 func (s *Service) AdminTransferFunds(ctx context.Context, p AdminTransferFundsParams) (*Transaction, int64, error) {
@@ -192,7 +180,7 @@ func (s *Service) AdminTransferFunds(ctx context.Context, p AdminTransferFundsPa
 		return nil, 0, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 
-	s.logger.Info().Str("admin_id", p.AdminID).Str("from", p.FromUserID).Str("to", p.Destination.UserID).
+	s.logger.Info().Str("admin_id", t.adminID.String()).Str("from", t.fromID.String()).Str("to", t.destinationUserID()).
 		Bool("to_bank", t.toBank).Int64("amount", p.Amount).Msg("admin transferred funds")
 
 	tx := &Transaction{
@@ -207,10 +195,7 @@ func (s *Service) AdminTransferFunds(ctx context.Context, p AdminTransferFundsPa
 }
 
 func (s *Service) AdminTransferBackpackItems(ctx context.Context, p AdminTransferItemsParams) ([]string, error) {
-	itemIDs, err := parseItemIDList(p.ItemIDs)
-	if err != nil {
-		return nil, err
-	}
+	itemIDs := uniqueIDs(p.ItemIDs)
 	t, err := s.prepareAdminTransfer(ctx, p.AdminID, p.GuildID, p.FromUserID, p.Destination, p.Note)
 	if err != nil {
 		return nil, err
@@ -258,7 +243,7 @@ func (s *Service) AdminTransferBackpackItems(ctx context.Context, p AdminTransfe
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("admin_id", p.AdminID).Str("from", p.FromUserID).Str("to", p.Destination.UserID).
+	s.logger.Info().Str("admin_id", t.adminID.String()).Str("from", t.fromID.String()).Str("to", t.destinationUserID()).
 		Bool("to_bank", t.toBank).Strs("item_ids", moved).Msg("admin transferred backpack items")
 	return moved, nil
 }
@@ -300,23 +285,12 @@ func (s *Service) creditBankFromMember(ctx context.Context, qtx *db.Queries, t a
 	return nil
 }
 
-func (s *Service) prepareAdminTransfer(ctx context.Context, adminIDStr, guildIDStr, fromIDStr string, dest AssetDestination, note string) (adminTransfer, error) {
-	var t adminTransfer
-	adminID, guildID, err := parseIDs(adminIDStr, guildIDStr)
-	if err != nil {
-		return t, err
-	}
-	fromID, err := uuid.Parse(fromIDStr)
-	if err != nil {
-		return t, fmt.Errorf("%w: member", errs.ErrNotFound)
-	}
+func (s *Service) prepareAdminTransfer(ctx context.Context, adminID, guildID, fromID uuid.UUID, dest AssetDestination, note string) (adminTransfer, error) {
 	note = strings.TrimSpace(note)
-	t = adminTransfer{adminID: adminID, guildID: guildID, fromID: fromID, toBank: dest.GuildBank, note: note}
+	t := adminTransfer{adminID: adminID, guildID: guildID, fromID: fromID, toBank: dest.GuildBank, note: note}
 
 	if !dest.GuildBank {
-		if t.toID, err = uuid.Parse(dest.UserID); err != nil {
-			return t, fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
-		}
+		t.toID = dest.UserID
 		if t.toID == fromID {
 			return t, fmt.Errorf("%w: source and destination must differ", errs.ErrInvalidArgument)
 		}
@@ -340,16 +314,19 @@ func (s *Service) requireMember(ctx context.Context, q *db.Queries, guildID, use
 	return nil
 }
 
-func parseItemIDList(raw []string) ([]uuid.UUID, error) {
-	ids := make([]uuid.UUID, 0, len(raw))
-	for _, s := range raw {
-		id, err := uuid.Parse(s)
-		if err != nil {
-			return nil, fmt.Errorf("%w: item %q", errs.ErrInvalidArgument, s)
-		}
-		if !slices.Contains(ids, id) {
-			ids = append(ids, id)
+func (t adminTransfer) destinationUserID() string {
+	if t.toBank {
+		return ""
+	}
+	return t.toID.String()
+}
+
+func uniqueIDs(ids []uuid.UUID) []uuid.UUID {
+	unique := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		if !slices.Contains(unique, id) {
+			unique = append(unique, id)
 		}
 	}
-	return ids, nil
+	return unique
 }

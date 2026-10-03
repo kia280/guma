@@ -2,15 +2,18 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
+	"github.com/kia280/guma/internal/services/errs"
 	walletsvc "github.com/kia280/guma/internal/services/wallet"
-	"github.com/kia280/guma/internal/session"
 )
 
 // WalletHandler is a thin gRPC adapter over the wallet service.
@@ -29,9 +32,18 @@ func NewWalletService(db *database.Pool, az authz.Authorizer, logger zerolog.Log
 }
 
 func (h *WalletHandler) GetWallet(ctx context.Context, req *gumav1.GetWalletRequest) (*gumav1.GetWalletResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	w, err := h.svc.GetWallet(ctx, userID, req.GuildId)
+	w, err := h.svc.GetWallet(ctx, userID, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -39,9 +51,18 @@ func (h *WalletHandler) GetWallet(ctx context.Context, req *gumav1.GetWalletRequ
 }
 
 func (h *WalletHandler) DepositFunds(ctx context.Context, req *gumav1.DepositFundsRequest) (*gumav1.TransactionResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	tx, _, err := h.svc.Deposit(ctx, userID, req.GuildId, req.Amount, req.Note)
+	tx, _, err := h.svc.Deposit(ctx, userID, in.GuildID, req.Amount, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -49,9 +70,18 @@ func (h *WalletHandler) DepositFunds(ctx context.Context, req *gumav1.DepositFun
 }
 
 func (h *WalletHandler) WithdrawFunds(ctx context.Context, req *gumav1.WithdrawFundsRequest) (*gumav1.TransactionResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	request, tx, w, err := h.svc.RequestWithdrawal(ctx, userID, req.GuildId, req.Amount, req.Note)
+	request, tx, w, err := h.svc.RequestWithdrawal(ctx, userID, in.GuildID, req.Amount, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -63,15 +93,23 @@ func (h *WalletHandler) WithdrawFunds(ctx context.Context, req *gumav1.WithdrawF
 }
 
 func (h *WalletHandler) ListMyWithdrawalRequests(ctx context.Context, req *gumav1.ListMyWithdrawalRequestsRequest) (*gumav1.ListMyWithdrawalRequestsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.ListMyWithdrawalRequests(ctx, walletsvc.ListWithdrawalRequestsParams{
 		ViewerID: userID,
-		GuildID:  req.GuildId,
+		GuildID:  in.GuildID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
@@ -87,9 +125,19 @@ func (h *WalletHandler) ListMyWithdrawalRequests(ctx context.Context, req *gumav
 }
 
 func (h *WalletHandler) CancelWithdrawalRequest(ctx context.Context, req *gumav1.CancelWithdrawalRequestRequest) (*gumav1.CancelWithdrawalRequestResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID   uuid.UUID `proto:"guild_id"`
+		RequestID uuid.UUID `proto:"request_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	request, w, err := h.svc.CancelWithdrawalRequest(ctx, userID, req.GuildId, req.RequestId)
+	request, w, err := h.svc.CancelWithdrawalRequest(ctx, userID, in.GuildID, in.RequestID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -100,15 +148,23 @@ func (h *WalletHandler) CancelWithdrawalRequest(ctx context.Context, req *gumav1
 }
 
 func (h *WalletHandler) ListWithdrawalRequests(ctx context.Context, req *gumav1.ListWithdrawalRequestsRequest) (*gumav1.ListWithdrawalRequestsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.ListWithdrawalRequests(ctx, walletsvc.ListWithdrawalRequestsParams{
 		ViewerID: userID,
-		GuildID:  req.GuildId,
+		GuildID:  in.GuildID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
@@ -124,9 +180,19 @@ func (h *WalletHandler) ListWithdrawalRequests(ctx context.Context, req *gumav1.
 }
 
 func (h *WalletHandler) ReviewWithdrawalRequest(ctx context.Context, req *gumav1.ReviewWithdrawalRequestRequest) (*gumav1.ReviewWithdrawalRequestResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID   uuid.UUID `proto:"guild_id"`
+		RequestID uuid.UUID `proto:"request_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	request, err := h.svc.ReviewWithdrawalRequest(ctx, userID, req.GuildId, req.RequestId, req.Status, req.Note)
+	request, err := h.svc.ReviewWithdrawalRequest(ctx, userID, in.GuildID, in.RequestID, req.Status, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -134,9 +200,19 @@ func (h *WalletHandler) ReviewWithdrawalRequest(ctx context.Context, req *gumav1
 }
 
 func (h *WalletHandler) TransferFunds(ctx context.Context, req *gumav1.TransferFundsRequest) (*gumav1.TransactionResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID  uuid.UUID `proto:"guild_id"`
+		ToUserID uuid.UUID `proto:"to_user_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	tx, _, err := h.svc.Transfer(ctx, userID, req.ToUserId, req.GuildId, req.Amount, req.Note)
+	tx, _, err := h.svc.Transfer(ctx, userID, in.ToUserID, in.GuildID, req.Amount, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -144,15 +220,23 @@ func (h *WalletHandler) TransferFunds(ctx context.Context, req *gumav1.TransferF
 }
 
 func (h *WalletHandler) ListTransactions(ctx context.Context, req *gumav1.ListTransactionsRequest) (*gumav1.ListTransactionsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.ListTransactions(ctx, walletsvc.ListTransactionsParams{
 		UserID:   userID,
-		GuildID:  req.GuildId,
+		GuildID:  in.GuildID,
 		Type:     req.Type,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
@@ -173,9 +257,18 @@ func (h *WalletHandler) ListTransactions(ctx context.Context, req *gumav1.ListTr
 }
 
 func (h *WalletHandler) GetBalanceTrend(ctx context.Context, req *gumav1.GetBalanceTrendRequest) (*gumav1.GetBalanceTrendResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	points, err := h.svc.GetBalanceTrend(ctx, userID, req.GuildId, req.Days)
+	points, err := h.svc.GetBalanceTrend(ctx, userID, in.GuildID, req.Days)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -188,15 +281,23 @@ func (h *WalletHandler) GetBalanceTrend(ctx context.Context, req *gumav1.GetBala
 }
 
 func (h *WalletHandler) ListBackpackItems(ctx context.Context, req *gumav1.ListBackpackItemsRequest) (*gumav1.ListBackpackItemsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.ListBackpackItems(ctx, walletsvc.ListBackpackParams{
 		OwnerID:  userID,
-		GuildID:  req.GuildId,
+		GuildID:  in.GuildID,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
 	})
@@ -216,9 +317,19 @@ func (h *WalletHandler) ListBackpackItems(ctx context.Context, req *gumav1.ListB
 }
 
 func (h *WalletHandler) WithdrawBackpackItem(ctx context.Context, req *gumav1.WithdrawBackpackItemRequest) (*gumav1.WithdrawBackpackItemResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+		ItemID  uuid.UUID `proto:"item_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	bi, err := h.svc.WithdrawBackpackItem(ctx, userID, req.GuildId, req.ItemId)
+	bi, err := h.svc.WithdrawBackpackItem(ctx, userID, in.GuildID, in.ItemID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -226,9 +337,20 @@ func (h *WalletHandler) WithdrawBackpackItem(ctx context.Context, req *gumav1.Wi
 }
 
 func (h *WalletHandler) TransferBackpackItem(ctx context.Context, req *gumav1.TransferBackpackItemRequest) (*gumav1.TransferBackpackItemResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID  uuid.UUID `proto:"guild_id"`
+		ItemID   uuid.UUID `proto:"item_id"`
+		ToUserID uuid.UUID `proto:"to_user_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	bi, err := h.svc.TransferBackpackItem(ctx, userID, req.GuildId, req.ItemId, req.ToUserId, req.Note)
+	bi, err := h.svc.TransferBackpackItem(ctx, userID, in.GuildID, in.ItemID, in.ToUserID, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -329,9 +451,19 @@ func backpackItemToProto(bi *walletsvc.BackpackItem) *gumav1.BackpackItem {
 }
 
 func (h *WalletHandler) CancelBackpackWithdrawal(ctx context.Context, req *gumav1.CancelBackpackWithdrawalRequest) (*gumav1.CancelBackpackWithdrawalResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+		ItemID  uuid.UUID `proto:"item_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	bi, err := h.svc.CancelBackpackWithdrawal(ctx, userID, req.GuildId, req.ItemId)
+	bi, err := h.svc.CancelBackpackWithdrawal(ctx, userID, in.GuildID, in.ItemID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -339,9 +471,13 @@ func (h *WalletHandler) CancelBackpackWithdrawal(ctx context.Context, req *gumav
 }
 
 func (h *WalletHandler) ListPendingDeliveries(ctx context.Context, req *gumav1.ListPendingDeliveriesRequest) (*gumav1.ListPendingDeliveriesResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-
-	items, err := h.svc.ListPendingDeliveries(ctx, userID, req.GuildId)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	items, err := h.svc.ListPendingDeliveries(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -353,9 +489,19 @@ func (h *WalletHandler) ListPendingDeliveries(ctx context.Context, req *gumav1.L
 }
 
 func (h *WalletHandler) ConfirmBackpackDelivery(ctx context.Context, req *gumav1.ConfirmBackpackDeliveryRequest) (*gumav1.ConfirmBackpackDeliveryResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+		ItemID  uuid.UUID `proto:"item_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	bi, err := h.svc.ConfirmBackpackDelivery(ctx, userID, req.GuildId, req.ItemId)
+	bi, err := h.svc.ConfirmBackpackDelivery(ctx, userID, in.GuildID, in.ItemID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -363,9 +509,13 @@ func (h *WalletHandler) ConfirmBackpackDelivery(ctx context.Context, req *gumav1
 }
 
 func (h *WalletHandler) ListMemberAssets(ctx context.Context, req *gumav1.ListMemberAssetsRequest) (*gumav1.ListMemberAssetsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-
-	summaries, err := h.svc.ListMemberAssets(ctx, userID, req.GuildId)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	summaries, err := h.svc.ListMemberAssets(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -377,9 +527,14 @@ func (h *WalletHandler) ListMemberAssets(ctx context.Context, req *gumav1.ListMe
 }
 
 func (h *WalletHandler) GetMemberAssets(ctx context.Context, req *gumav1.GetMemberAssetsRequest) (*gumav1.GetMemberAssetsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-
-	assets, err := h.svc.GetMemberAssets(ctx, userID, req.GuildId, req.UserId)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+		UserID  uuid.UUID `proto:"user_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	assets, err := h.svc.GetMemberAssets(ctx, in.GuildID, in.UserID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -391,13 +546,28 @@ func (h *WalletHandler) GetMemberAssets(ctx context.Context, req *gumav1.GetMemb
 }
 
 func (h *WalletHandler) AdminTransferFunds(ctx context.Context, req *gumav1.AdminTransferFundsRequest) (*gumav1.AdminTransferFundsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID  uuid.UUID  `proto:"guild_id"`
+		UserID   uuid.UUID  `proto:"user_id"`
+		ToUserID *uuid.UUID `proto:"to_user_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	destination, err := assetDestination(in.ToUserID, req.ToGuildBank)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 
 	tx, balance, err := h.svc.AdminTransferFunds(ctx, walletsvc.AdminTransferFundsParams{
 		AdminID:     userID,
-		GuildID:     req.GuildId,
-		FromUserID:  req.UserId,
-		Destination: walletsvc.AssetDestination{UserID: req.ToUserId, GuildBank: req.ToGuildBank},
+		GuildID:     in.GuildID,
+		FromUserID:  in.UserID,
+		Destination: destination,
 		Amount:      req.Amount,
 		Note:        req.Note,
 	})
@@ -408,18 +578,44 @@ func (h *WalletHandler) AdminTransferFunds(ctx context.Context, req *gumav1.Admi
 }
 
 func (h *WalletHandler) AdminTransferBackpackItems(ctx context.Context, req *gumav1.AdminTransferBackpackItemsRequest) (*gumav1.AdminTransferBackpackItemsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID  uuid.UUID   `proto:"guild_id"`
+		UserID   uuid.UUID   `proto:"user_id"`
+		ItemIDs  []uuid.UUID `proto:"item_ids"`
+		ToUserID *uuid.UUID  `proto:"to_user_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	destination, err := assetDestination(in.ToUserID, req.ToGuildBank)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 
 	moved, err := h.svc.AdminTransferBackpackItems(ctx, walletsvc.AdminTransferItemsParams{
 		AdminID:     userID,
-		GuildID:     req.GuildId,
-		FromUserID:  req.UserId,
-		ItemIDs:     req.ItemIds,
-		Destination: walletsvc.AssetDestination{UserID: req.ToUserId, GuildBank: req.ToGuildBank},
+		GuildID:     in.GuildID,
+		FromUserID:  in.UserID,
+		ItemIDs:     in.ItemIDs,
+		Destination: destination,
 		Note:        req.Note,
 	})
 	if err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.AdminTransferBackpackItemsResponse{ItemIds: moved}, nil
+}
+
+func assetDestination(toUserID *uuid.UUID, toGuildBank bool) (walletsvc.AssetDestination, error) {
+	if toGuildBank {
+		return walletsvc.AssetDestination{GuildBank: true}, nil
+	}
+	if toUserID == nil {
+		return walletsvc.AssetDestination{}, fmt.Errorf("%w: to_user_id must be a UUID", errs.ErrInvalidArgument)
+	}
+	return walletsvc.AssetDestination{UserID: *toUserID}, nil
 }

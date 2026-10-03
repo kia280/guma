@@ -63,7 +63,7 @@ type Attendee struct {
 
 // ListParams holds the inputs for List.
 type ListParams struct {
-	GuildID  string
+	GuildID  uuid.UUID
 	Status   string // "active" | "expired" | "cancelled" | "completed" | ""
 	PageSize int
 	Offset   int
@@ -78,8 +78,8 @@ type ListResult struct {
 
 // CreateParams holds the inputs for Create.
 type CreateParams struct {
-	GuildID     string
-	CreatedBy   string
+	GuildID     uuid.UUID
+	CreatedBy   uuid.UUID
 	Title       string
 	Description string
 	Datetime    string
@@ -90,9 +90,9 @@ type CreateParams struct {
 
 // UpdateParams holds the inputs for Update.
 type UpdateParams struct {
-	GuildID     string
-	RollCallID  string
-	UpdatedBy   string
+	GuildID     uuid.UUID
+	RollCallID  uuid.UUID
+	UpdatedBy   uuid.UUID
 	Title       string
 	Description *string
 	Datetime    string
@@ -103,9 +103,9 @@ type UpdateParams struct {
 
 // UpdateLootParams holds the inputs for UpdateLoot.
 type UpdateLootParams struct {
-	GuildID    string
-	RollCallID string
-	UpdatedBy  string
+	GuildID    uuid.UUID
+	RollCallID uuid.UUID
+	UpdatedBy  uuid.UUID
 	LootList   []models.Item
 }
 
@@ -161,10 +161,7 @@ func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service 
 // List returns paginated roll calls for a guild.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	pageSize := pagination.StandardSize(p.PageSize)
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
+	guildID := p.GuildID
 
 	rows, err := s.q.ListRollCalls(ctx, db.ListRollCallsParams{
 		GuildID: guildID, StatusFilter: p.Status,
@@ -193,15 +190,7 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 }
 
 // Get fetches a single roll call by ID.
-func (s *Service) Get(ctx context.Context, guildIDStr, rollCallIDStr string) (*RollCall, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(rollCallIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
+func (s *Service) Get(ctx context.Context, guildID, rollCallID uuid.UUID) (*RollCall, error) {
 	r, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -224,14 +213,8 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
-	createdBy, err := uuid.Parse(p.CreatedBy)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
+	guildID := p.GuildID
+	createdBy := p.CreatedBy
 
 	prepared := prepareLoot(p.Loot)
 	loot := prepared.items
@@ -290,7 +273,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 	if prepared.gold > 0 {
 		c.GoldPot = &GoldPot{Total: prepared.gold}
 	}
-	s.logger.Info().Str("roll_call_id", c.ID).Str("guild_id", p.GuildID).Int("bank_items", len(loot)).Int64("gold", prepared.gold).Msg("roll call created")
+	s.logger.Info().Str("roll_call_id", c.ID).Str("guild_id", p.GuildID.String()).Int("bank_items", len(loot)).Int64("gold", prepared.gold).Msg("roll call created")
 	return c, nil
 }
 
@@ -310,14 +293,8 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 		}
 		imageURL = &normalized
 	}
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(p.RollCallID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
+	guildID := p.GuildID
+	rollCallID := p.RollCallID
 
 	current, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
@@ -347,7 +324,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 		}
 		return nil, fmt.Errorf("%w: update roll call: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("roll_call_id", p.RollCallID).Str("guild_id", p.GuildID).Str("user_id", p.UpdatedBy).Msg("roll call updated")
+	s.logger.Info().Str("roll_call_id", p.RollCallID.String()).Str("guild_id", p.GuildID.String()).Str("user_id", p.UpdatedBy.String()).Msg("roll call updated")
 	c := toRollCall(rollCallRow(r))
 	if c.hasGoldLoot() {
 		if c.GoldPot, err = s.loadGoldPot(ctx, guildID, rollCallID); err != nil {
@@ -358,15 +335,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 }
 
 // Delete removes a roll call. Requires owner or admin role.
-func (s *Service) Delete(ctx context.Context, guildIDStr, rollCallIDStr, userIDStr string) error {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(rollCallIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
+func (s *Service) Delete(ctx context.Context, guildID, rollCallID, userID uuid.UUID) error {
 	n, err := s.q.DeleteRollCall(ctx, db.DeleteRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
 		return fmt.Errorf("%w: delete roll call: %v", errs.ErrInternal, err)
@@ -378,20 +347,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 }
 
 // Cancel marks an open roll call as cancelled so no further attendance is accepted.
-func (s *Service) Cancel(ctx context.Context, guildIDStr, rollCallIDStr, userIDStr string) (*RollCall, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(rollCallIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-
+func (s *Service) Cancel(ctx context.Context, guildID, rollCallID, userID uuid.UUID) (*RollCall, error) {
 	current, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -435,25 +391,16 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("roll_call_id", rollCallIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).Int64("retracted_loot", retracted).Msg("roll call cancelled")
+	s.logger.Info().Str("roll_call_id", rollCallID.String()).Str("guild_id", guildID.String()).Str("user_id", userID.String()).Int64("retracted_loot", retracted).Msg("roll call cancelled")
 	c := toRollCall(rollCallRow(r))
 	c.GoldPot = goldPot
 	return c, nil
 }
 
 func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall, error) {
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(p.RollCallID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(p.UpdatedBy)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
+	guildID := p.GuildID
+	rollCallID := p.RollCallID
+	userID := p.UpdatedBy
 	donorName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
 
 	pgtx, err := s.pool.Begin(ctx)
@@ -558,7 +505,7 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("roll_call_id", p.RollCallID).Str("guild_id", p.GuildID).Str("user_id", p.UpdatedBy).
+	s.logger.Info().Str("roll_call_id", p.RollCallID.String()).Str("guild_id", p.GuildID.String()).Str("user_id", p.UpdatedBy.String()).
 		Int("added", len(plan.added)).Int("changed", len(plan.changed)).Int("removed", len(plan.removed)).
 		Msg("roll call loot updated")
 	c := toRollCall(rollCallRow(r))
@@ -570,20 +517,7 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall
 	return c, nil
 }
 
-func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userIDStr string, keepLeftovers bool) (*RollCall, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(rollCallIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-
+func (s *Service) Complete(ctx context.Context, guildID, rollCallID, userID uuid.UUID, keepLeftovers bool) (*RollCall, error) {
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
@@ -627,7 +561,7 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userI
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("roll_call_id", rollCallIDStr).Str("guild_id", guildIDStr).Str("user_id", userIDStr).
+	s.logger.Info().Str("roll_call_id", rollCallID.String()).Str("guild_id", guildID.String()).Str("user_id", userID.String()).
 		Int64("kept_loot", remaining).Int64("kept_gold", goldRemaining).Msg("roll call completed")
 	c := toRollCall(rollCallRow(r))
 	if goldPot != nil {
@@ -638,19 +572,7 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userI
 }
 
 // CheckIn records that a member checked in to a roll call.
-func (s *Service) CheckIn(ctx context.Context, guildIDStr, rollCallIDStr, userIDStr, notes string) (*Attendee, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(rollCallIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
+func (s *Service) CheckIn(ctx context.Context, guildID, rollCallID, userID uuid.UUID, notes string) (*Attendee, error) {
 	notes = strings.TrimSpace(notes)
 
 	window, err := s.q.GetRollCallCheckInWindow(ctx, db.GetRollCallCheckInWindowParams{ID: rollCallID, GuildID: guildID})
@@ -674,22 +596,14 @@ func (s *Service) CheckIn(ctx context.Context, guildIDStr, rollCallIDStr, userID
 	_ = s.q.IncrementRollCallAttendance(ctx, rollCallID)
 
 	return &Attendee{
-		ID: attendeeID.String(), RollCallID: rollCallIDStr, UserID: userIDStr,
+		ID: attendeeID.String(), RollCallID: rollCallID.String(), UserID: userID.String(),
 		DisplayName: info.DisplayName, AvatarURL: info.AvatarUrl, Notes: notes, CheckedInAt: time.Now().UTC(),
 	}, nil
 }
 
 // ListAttendees returns paginated attendees for a roll call.
-func (s *Service) ListAttendees(ctx context.Context, guildIDStr, rollCallIDStr string, pageSize, offset int) (*ListAttendeesResult, error) {
+func (s *Service) ListAttendees(ctx context.Context, guildID, rollCallID uuid.UUID, pageSize, offset int) (*ListAttendeesResult, error) {
 	pageSize = pagination.StandardSize(pageSize)
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(rollCallIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
 
 	exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: rollCallID, GuildID: guildID})
 	if err != nil || !exists {
@@ -722,27 +636,7 @@ func (s *Service) ListAttendees(ctx context.Context, guildIDStr, rollCallIDStr s
 
 // --- helpers ---
 
-func (s *Service) AssignLoot(ctx context.Context, guildIDStr, rollCallIDStr, itemIDStr, actorIDStr, recipientIDStr string) (string, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return "", fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(rollCallIDStr)
-	if err != nil {
-		return "", fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	itemID, err := uuid.Parse(itemIDStr)
-	if err != nil {
-		return "", fmt.Errorf("%w: loot item", errs.ErrNotFound)
-	}
-	actorID, err := uuid.Parse(actorIDStr)
-	if err != nil {
-		return "", fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	recipientID, err := uuid.Parse(recipientIDStr)
-	if err != nil {
-		return "", fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
-	}
+func (s *Service) AssignLoot(ctx context.Context, guildID, rollCallID, itemID, actorID, recipientID uuid.UUID) (string, error) {
 	if exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: rollCallID, GuildID: guildID}); err != nil || !exists {
 		return "", fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
@@ -793,7 +687,7 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, rollCallIDStr, ite
 	if err := pgtx.Commit(ctx); err != nil {
 		return "", fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("roll_call_id", rollCallIDStr).Str("item_id", itemIDStr).Str("recipient_id", recipientIDStr).Msg("loot assigned")
+	s.logger.Info().Str("roll_call_id", rollCallID.String()).Str("item_id", itemID.String()).Str("recipient_id", recipientID.String()).Msg("loot assigned")
 	return backpackItemID.String(), nil
 }
 

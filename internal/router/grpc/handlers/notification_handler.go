@@ -3,14 +3,15 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	notificationsvc "github.com/kia280/guma/internal/services/notification"
-	"github.com/kia280/guma/internal/session"
 )
 
 type NotificationHandler struct {
@@ -27,7 +28,10 @@ func NewNotificationService(db *database.Pool, logger zerolog.Logger) *Notificat
 }
 
 func (h *NotificationHandler) ListNotifications(ctx context.Context, req *gumav1.ListNotificationsRequest) (*gumav1.ListNotificationsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := h.svc.List(ctx, notificationsvc.ListParams{
 		UserID:     userID,
@@ -52,7 +56,10 @@ func (h *NotificationHandler) ListNotifications(ctx context.Context, req *gumav1
 }
 
 func (h *NotificationHandler) GetUnreadNotificationCount(ctx context.Context, _ *gumav1.GetUnreadNotificationCountRequest) (*gumav1.GetUnreadNotificationCountResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	count, err := h.svc.UnreadCount(ctx, userID)
 	if err != nil {
@@ -62,9 +69,18 @@ func (h *NotificationHandler) GetUnreadNotificationCount(ctx context.Context, _ 
 }
 
 func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gumav1.MarkNotificationReadRequest) (*gumav1.MarkNotificationReadResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		NotificationID uuid.UUID `proto:"notification_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	n, err := h.svc.MarkRead(ctx, userID, req.NotificationId)
+	n, err := h.svc.MarkRead(ctx, userID, in.NotificationID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -72,7 +88,10 @@ func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gum
 }
 
 func (h *NotificationHandler) MarkAllNotificationsRead(ctx context.Context, _ *gumav1.MarkAllNotificationsReadRequest) (*gumav1.MarkAllNotificationsReadResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	updated, err := h.svc.MarkAllRead(ctx, userID)
 	if err != nil {

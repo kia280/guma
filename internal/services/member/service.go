@@ -36,8 +36,8 @@ type Member struct {
 }
 
 type ListParams struct {
-	GuildID   string
-	CallerID  string
+	GuildID   uuid.UUID
+	CallerID  uuid.UUID
 	Role      string
 	PageSize  int32
 	PageToken string
@@ -65,14 +65,7 @@ func New(pool *database.Pool, az authz.Authorizer, logger zerolog.Logger) *Servi
 }
 
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild_id must be a UUID", errs.ErrInvalidArgument)
-	}
-	callerID, err := uuid.Parse(p.CallerID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: caller id must be a UUID", errs.ErrInvalidArgument)
-	}
+	guildID, callerID := p.GuildID, p.CallerID
 	offset, err := parsePageToken(p.PageToken)
 	if err != nil {
 		return nil, err

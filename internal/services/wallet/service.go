@@ -78,8 +78,8 @@ type BackpackItem struct {
 
 // ListTransactionsParams holds the inputs for ListTransactions.
 type ListTransactionsParams struct {
-	UserID   string
-	GuildID  string
+	UserID   uuid.UUID
+	GuildID  uuid.UUID
 	Type     string
 	PageSize int
 	Offset   int
@@ -94,8 +94,8 @@ type ListTransactionsResult struct {
 
 // ListBackpackParams holds the inputs for ListBackpackItems.
 type ListBackpackParams struct {
-	OwnerID  string
-	GuildID  string
+	OwnerID  uuid.UUID
+	GuildID  uuid.UUID
 	PageSize int
 	Offset   int
 }
@@ -130,12 +130,7 @@ func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service 
 }
 
 // GetWallet fetches or auto-creates a user's wallet for a guild.
-func (s *Service) GetWallet(ctx context.Context, userIDStr, guildIDStr string) (*Wallet, error) {
-	userID, guildID, err := parseIDs(userIDStr, guildIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) GetWallet(ctx context.Context, userID, guildID uuid.UUID) (*Wallet, error) {
 	if err := s.q.EnsureWallet(ctx, db.EnsureWalletParams{UserID: userID, GuildID: guildID}); err != nil {
 		return nil, fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
 	}
@@ -172,15 +167,14 @@ func (s *Service) GetWallet(ctx context.Context, userIDStr, guildIDStr string) (
 }
 
 // Deposit adds funds to a wallet (admin or system operation).
-func (s *Service) Deposit(ctx context.Context, userIDStr, guildIDStr string, amount int64, note string) (*Transaction, *Wallet, error) {
+func (s *Service) Deposit(ctx context.Context, userID, guildID uuid.UUID, amount int64, note string) (*Transaction, *Wallet, error) {
 	note = strings.TrimSpace(note)
 
-	w, err := s.GetWallet(ctx, userIDStr, guildIDStr)
+	w, err := s.GetWallet(ctx, userID, guildID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	userID, guildID, _ := parseIDs(userIDStr, guildIDStr)
 	newBalance := w.Balance + amount
 
 	if err := s.q.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{
@@ -200,19 +194,7 @@ func (s *Service) Deposit(ctx context.Context, userIDStr, guildIDStr string, amo
 }
 
 // Transfer moves funds atomically between two users in the same guild.
-func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guildIDStr string, amount int64, note string) (*Transaction, *Wallet, error) {
-	fromUserID, err := uuid.Parse(fromUserIDStr)
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: sender", errs.ErrInvalidArgument)
-	}
-	toUserID, err := uuid.Parse(toUserIDStr)
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
-	}
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
+func (s *Service) Transfer(ctx context.Context, fromUserID, toUserID, guildID uuid.UUID, amount int64, note string) (*Transaction, *Wallet, error) {
 	if toUserID == fromUserID {
 		return nil, nil, fmt.Errorf("%w: cannot transfer to yourself", errs.ErrInvalidArgument)
 	}
@@ -273,9 +255,9 @@ func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guil
 		return nil, nil, fmt.Errorf("%w: record transaction: %v", errs.ErrInternal, err)
 	}
 	outTx := &Transaction{
-		ID: outID.String(), UserID: fromUserIDStr, GuildID: guildIDStr, Type: "TRANSFER_OUT",
+		ID: outID.String(), UserID: fromUserID.String(), GuildID: guildID.String(), Type: "TRANSFER_OUT",
 		Amount: -amount, BalanceAfter: newFromBalance, Description: desc, CreatedAt: time.Now().UTC(),
-		ActorID: fromUserIDStr, CounterpartyID: toUserIDStr,
+		ActorID: fromUserID.String(), CounterpartyID: toUserID.String(),
 	}
 
 	if err := pgtx.Commit(ctx); err != nil {
@@ -283,21 +265,17 @@ func (s *Service) Transfer(ctx context.Context, fromUserIDStr, toUserIDStr, guil
 	}
 
 	return outTx, &Wallet{
-		UserID: fromUserIDStr, GuildID: guildIDStr, Balance: newFromBalance, Currency: "gold", UpdatedAt: time.Now().UTC(),
+		UserID: fromUserID.String(), GuildID: guildID.String(), Balance: newFromBalance, Currency: "gold", UpdatedAt: time.Now().UTC(),
 	}, nil
 }
 
 // ListTransactions returns paginated transactions for a user in a guild.
 func (s *Service) ListTransactions(ctx context.Context, p ListTransactionsParams) (*ListTransactionsResult, error) {
 	pageSize := pagination.StandardSize(p.PageSize)
-	userID, guildID, err := parseIDs(p.UserID, p.GuildID)
-	if err != nil {
-		return nil, err
-	}
 
 	rows, err := s.q.ListWalletTransactions(ctx, db.ListWalletTransactionsParams{
-		UserID:     userID,
-		GuildID:    guildID,
+		UserID:     p.UserID,
+		GuildID:    p.GuildID,
 		TypeFilter: p.Type,
 		PageSize:   int32(pageSize),
 		PageOffset: int32(p.Offset),
@@ -322,7 +300,7 @@ func (s *Service) ListTransactions(ctx context.Context, p ListTransactionsParams
 	}
 
 	total, _ := s.q.CountWalletTransactions(ctx, db.CountWalletTransactionsParams{
-		UserID: userID, GuildID: guildID, TypeFilter: p.Type,
+		UserID: p.UserID, GuildID: p.GuildID, TypeFilter: p.Type,
 	})
 
 	nextOffset := 0
@@ -335,13 +313,9 @@ func (s *Service) ListTransactions(ctx context.Context, p ListTransactionsParams
 // ListBackpackItems returns paginated backpack items for a user in a guild.
 func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (*ListBackpackResult, error) {
 	pageSize := pagination.StandardSize(p.PageSize)
-	ownerID, guildID, err := parseIDs(p.OwnerID, p.GuildID)
-	if err != nil {
-		return nil, err
-	}
 
 	rows, err := s.q.ListBackpackItems(ctx, db.ListBackpackItemsParams{
-		OwnerID: ownerID, GuildID: guildID,
+		OwnerID: p.OwnerID, GuildID: p.GuildID,
 		PageSize: int32(pageSize), PageOffset: int32(p.Offset),
 	})
 	if err != nil {
@@ -357,7 +331,7 @@ func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (
 		items = append(items, item)
 	}
 
-	total, _ := s.q.CountBackpackItems(ctx, db.CountBackpackItemsParams{OwnerID: ownerID, GuildID: guildID})
+	total, _ := s.q.CountBackpackItems(ctx, db.CountBackpackItemsParams{OwnerID: p.OwnerID, GuildID: p.GuildID})
 
 	nextOffset := 0
 	if len(items) == pageSize {
@@ -366,19 +340,7 @@ func (s *Service) ListBackpackItems(ctx context.Context, p ListBackpackParams) (
 	return &ListBackpackResult{Items: items, TotalCount: int32(total), NextOffset: nextOffset}, nil
 }
 
-func (s *Service) TransferBackpackItem(ctx context.Context, fromUserIDStr, guildIDStr, itemIDStr, toUserIDStr, note string) (*BackpackItem, error) {
-	fromUserID, guildID, err := parseIDs(fromUserIDStr, guildIDStr)
-	if err != nil {
-		return nil, err
-	}
-	itemID, err := uuid.Parse(itemIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
-	}
-	toUserID, err := uuid.Parse(toUserIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
-	}
+func (s *Service) TransferBackpackItem(ctx context.Context, fromUserID, guildID, itemID, toUserID uuid.UUID, note string) (*BackpackItem, error) {
 	if toUserID == fromUserID {
 		return nil, fmt.Errorf("%w: cannot transfer an item to yourself", errs.ErrInvalidArgument)
 	}
@@ -399,23 +361,11 @@ func (s *Service) TransferBackpackItem(ctx context.Context, fromUserIDStr, guild
 		}
 		return nil, fmt.Errorf("%w: transfer item: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("backpack_item_id", itemIDStr).Str("from", fromUserIDStr).Str("to", toUserIDStr).Msg("backpack item transferred")
+	s.logger.Info().Str("backpack_item_id", itemID.String()).Str("from", fromUserID.String()).Str("to", toUserID.String()).Msg("backpack item transferred")
 	return toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt), nil
 }
 
 // --- helpers ---
-
-func parseIDs(userIDStr, guildIDStr string) (uuid.UUID, uuid.UUID, error) {
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
-	return userID, guildID, nil
-}
 
 func uuidString(id *uuid.UUID) string {
 	if id == nil {

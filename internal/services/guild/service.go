@@ -49,13 +49,13 @@ type CreateParams struct {
 	CustomSettings map[string]string
 	IconURL        string
 	BannerURL      string
-	OwnerID        string
+	OwnerID        uuid.UUID
 }
 
 // UpdateParams holds the inputs for UpdateGuild.
 type UpdateParams struct {
-	GuildID     string
-	UserID      string
+	GuildID     uuid.UUID
+	UserID      uuid.UUID
 	Name        string
 	Description string
 	IconURL     string
@@ -131,10 +131,7 @@ func mkGuild(
 
 // Create inserts a new guild and adds the owner as a member.
 func (s *Service) Create(ctx context.Context, p CreateParams) (*Guild, error) {
-	ownerID, err := uuid.Parse(p.OwnerID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: owner id", errs.ErrInvalidArgument)
-	}
+	ownerID := p.OwnerID
 
 	cs := p.CustomSettings
 	if cs == nil {
@@ -176,25 +173,18 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Guild, error) {
 	authz.SyncAfterCommit(ctx, s.az, s.logger, row.ID, ownerID)
 
 	g.MemberCount = 1
-	s.logger.Info().Str("guild_id", g.ID).Str("owner_id", p.OwnerID).Msg("guild created")
+	s.logger.Info().Str("guild_id", g.ID).Str("owner_id", ownerID.String()).Msg("guild created")
 	return g, nil
 }
 
 // Get fetches a single guild by ID.
-func (s *Service) Get(ctx context.Context, guildID string) (*Guild, error) {
-	id, err := uuid.Parse(guildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	return s.fetch(ctx, id)
+func (s *Service) Get(ctx context.Context, guildID uuid.UUID) (*Guild, error) {
+	return s.fetch(ctx, guildID)
 }
 
 // Update modifies an existing guild. The requesting user must be owner or admin.
 func (s *Service) Update(ctx context.Context, p UpdateParams) (*Guild, error) {
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
+	guildID := p.GuildID
 
 	row, err := s.q.UpdateGuild(ctx, db.UpdateGuildParams{
 		Name:        p.Name,
@@ -223,15 +213,11 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Guild, error) {
 }
 
 // Delete removes a guild. Only the owner can delete.
-func (s *Service) Delete(ctx context.Context, guildIDStr, userIDStr string) error {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
+func (s *Service) Delete(ctx context.Context, guildID, userID uuid.UUID) error {
 	if err := s.q.DeleteGuild(ctx, guildID); err != nil {
 		return fmt.Errorf("%w: delete guild: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("guild_id", guildIDStr).Str("user_id", userIDStr).Msg("guild deleted")
+	s.logger.Info().Str("guild_id", guildID.String()).Str("user_id", userID.String()).Msg("guild deleted")
 	return nil
 }
 
@@ -277,12 +263,7 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 }
 
 // GetCurrent returns the most recently active guild for the user, or nil if not in any guild.
-func (s *Service) GetCurrent(ctx context.Context, userIDStr string) (*Guild, error) {
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, nil
-	}
-
+func (s *Service) GetCurrent(ctx context.Context, userID uuid.UUID) (*Guild, error) {
 	row, err := s.q.GetUserCurrentGuild(ctx, userID)
 	if err != nil {
 		return nil, nil // not a member of any guild
@@ -300,16 +281,7 @@ func (s *Service) GetCurrent(ctx context.Context, userIDStr string) (*Guild, err
 }
 
 // Join adds the user to a public guild. No-ops if already a member.
-func (s *Service) Join(ctx context.Context, guildIDStr, userIDStr string) (*Guild, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-
+func (s *Service) Join(ctx context.Context, guildID, userID uuid.UUID) (*Guild, error) {
 	public, err := s.q.GetGuildPublic(ctx, guildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
@@ -330,16 +302,7 @@ func (s *Service) Join(ctx context.Context, guildIDStr, userIDStr string) (*Guil
 }
 
 // Leave removes the user from a guild. Owner must transfer ownership first.
-func (s *Service) Leave(ctx context.Context, guildIDStr, userIDStr string) error {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-
+func (s *Service) Leave(ctx context.Context, guildID, userID uuid.UUID) error {
 	ownerID, err := s.q.GetGuildOwner(ctx, guildID)
 	if err != nil {
 		return fmt.Errorf("%w: guild", errs.ErrNotFound)
@@ -358,12 +321,7 @@ func (s *Service) Leave(ctx context.Context, guildIDStr, userIDStr string) error
 }
 
 // GetSettings returns the settings for a guild.
-func (s *Service) GetSettings(ctx context.Context, guildIDStr string) (*GuildSettings, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-
+func (s *Service) GetSettings(ctx context.Context, guildID uuid.UUID) (*GuildSettings, error) {
 	row, err := s.q.GetGuildSettings(ctx, guildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
@@ -383,12 +341,7 @@ func (s *Service) GetSettings(ctx context.Context, guildIDStr string) (*GuildSet
 }
 
 // UpdateSettings replaces guild settings. Requires owner or admin role.
-func (s *Service) UpdateSettings(ctx context.Context, guildIDStr, userIDStr string, settings GuildSettings) (*GuildSettings, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-
+func (s *Service) UpdateSettings(ctx context.Context, guildID, userID uuid.UUID, settings GuildSettings) (*GuildSettings, error) {
 	cs := settings.CustomSettings
 	if cs == nil {
 		cs = map[string]string{}

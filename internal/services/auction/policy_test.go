@@ -23,8 +23,8 @@ func TestCreatePermission(t *testing.T) {
 		want   authz.Permission
 	}{
 		{name: "free-form item", want: authz.View},
-		{name: "own backpack item", source: inventory.Ref{BackpackItemID: uuid.NewString()}, want: authz.View},
-		{name: "guild bank item", source: inventory.Ref{BankItemID: uuid.NewString()}, want: authz.ManageAuctions},
+		{name: "own backpack item", source: inventory.Ref{BackpackItemID: ptr(uuid.New())}, want: authz.View},
+		{name: "guild bank item", source: inventory.Ref{BankItemID: ptr(uuid.New())}, want: authz.ManageAuctions},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -78,7 +78,7 @@ func TestCancelPermission(t *testing.T) {
 }
 
 func TestCreateRequiresMembership(t *testing.T) {
-	guild, outsider := uuid.NewString(), uuid.NewString()
+	guild, outsider := uuid.New(), uuid.New()
 	s := New(nil, authztest.New(), zerolog.Nop())
 	ctx := context.Background()
 

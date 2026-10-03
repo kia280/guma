@@ -3,14 +3,15 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	rollcalltemplatesvc "github.com/kia280/guma/internal/services/rollcalltemplate"
-	"github.com/kia280/guma/internal/session"
 )
 
 type RollCallTemplateHandler struct {
@@ -27,8 +28,13 @@ func NewRollCallTemplateService(db *database.Pool, az authz.Authorizer, logger z
 }
 
 func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req *gumav1.ListRollCallTemplatesRequest) (*gumav1.ListRollCallTemplatesResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-	templates, err := h.svc.List(ctx, req.GuildId, userID)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	templates, err := h.svc.List(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -40,11 +46,21 @@ func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req
 }
 
 func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, req *gumav1.CreateRollCallTemplateRequest) (*gumav1.CreateRollCallTemplateResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-	t, err := h.svc.Create(ctx, req.GuildId, userID, rollcalltemplatesvc.Fields{
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID         uuid.UUID   `proto:"guild_id"`
+		ItemTemplateIDs []uuid.UUID `proto:"item_template_ids"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	t, err := h.svc.Create(ctx, in.GuildID, userID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
-		ItemTemplateIDs: req.ItemTemplateIds,
+		ItemTemplateIDs: in.ItemTemplateIDs,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -53,11 +69,18 @@ func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, re
 }
 
 func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, req *gumav1.UpdateRollCallTemplateRequest) (*gumav1.UpdateRollCallTemplateResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, rollcalltemplatesvc.Fields{
+	var in struct {
+		GuildID         uuid.UUID   `proto:"guild_id"`
+		TemplateID      uuid.UUID   `proto:"template_id"`
+		ItemTemplateIDs []uuid.UUID `proto:"item_template_ids"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	t, err := h.svc.Update(ctx, in.GuildID, in.TemplateID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
-		ItemTemplateIDs: req.ItemTemplateIds,
+		ItemTemplateIDs: in.ItemTemplateIDs,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -66,8 +89,14 @@ func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, re
 }
 
 func (h *RollCallTemplateHandler) DeleteRollCallTemplate(ctx context.Context, req *gumav1.DeleteRollCallTemplateRequest) (*gumav1.DeleteRollCallTemplateResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-	if err := h.svc.Delete(ctx, req.GuildId, req.TemplateId, userID); err != nil {
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		TemplateID uuid.UUID `proto:"template_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	if err := h.svc.Delete(ctx, in.GuildID, in.TemplateID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteRollCallTemplateResponse{Success: true}, nil

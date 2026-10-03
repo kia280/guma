@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +18,7 @@ import (
 
 func TestCancelRollCall_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 
@@ -27,7 +28,7 @@ func TestCancelRollCall_Validation(t *testing.T) {
 		req      *gumav1.CancelRollCallRequest
 		wantCode codes.Code
 	}{
-		{name: "malformed roll call id", ctx: authed, req: &gumav1.CancelRollCallRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: &gumav1.CancelRollCallRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.InvalidArgument},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -42,7 +43,7 @@ func TestCancelRollCall_Validation(t *testing.T) {
 
 func TestUpdateRollCall_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 	future := time.Now().UTC().Add(time.Hour)
@@ -61,7 +62,7 @@ func TestUpdateRollCall_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{name: "expire before datetime", ctx: authed, req: func() *gumav1.UpdateRollCallRequest { r := valid(); r.ExpireTime = r.Datetime; return r }, wantCode: codes.InvalidArgument},
-		{name: "malformed roll call id", ctx: authed, req: func() *gumav1.UpdateRollCallRequest { r := valid(); r.RollCallId = "bad"; return r }, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: func() *gumav1.UpdateRollCallRequest { r := valid(); r.RollCallId = "bad"; return r }, wantCode: codes.InvalidArgument},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -76,7 +77,7 @@ func TestUpdateRollCall_Validation(t *testing.T) {
 
 func TestDistributeRollCallGold_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 	const requestID = "00000000-0000-0000-0000-000000000004"
@@ -102,7 +103,7 @@ func TestDistributeRollCallGold_Validation(t *testing.T) {
 		req      func() *gumav1.DistributeRollCallGoldRequest
 		wantCode codes.Code
 	}{
-		{name: "malformed roll call id", ctx: authed, req: with(func(r *gumav1.DistributeRollCallGoldRequest) { r.RollCallId = "bad" }), wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: with(func(r *gumav1.DistributeRollCallGoldRequest) { r.RollCallId = "bad" }), wantCode: codes.InvalidArgument},
 		{name: "malformed request id", ctx: authed, req: with(func(r *gumav1.DistributeRollCallGoldRequest) { r.RequestId = "bad" }), wantCode: codes.InvalidArgument},
 		{name: "duplicate recipient", ctx: authed, req: with(func(r *gumav1.DistributeRollCallGoldRequest) { r.Payouts[1].UserId = alice }), wantCode: codes.InvalidArgument},
 		{name: "malformed recipient", ctx: authed, req: with(func(r *gumav1.DistributeRollCallGoldRequest) { r.Payouts[0].UserId = "someone" }), wantCode: codes.InvalidArgument},
@@ -120,7 +121,7 @@ func TestDistributeRollCallGold_Validation(t *testing.T) {
 
 func TestGetRollCallGold_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 
@@ -130,7 +131,7 @@ func TestGetRollCallGold_Validation(t *testing.T) {
 		req      *gumav1.GetRollCallGoldRequest
 		wantCode codes.Code
 	}{
-		{name: "malformed roll call id", ctx: authed, req: &gumav1.GetRollCallGoldRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: &gumav1.GetRollCallGoldRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.InvalidArgument},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -157,7 +158,7 @@ func TestLootFromProto(t *testing.T) {
 
 func TestCompleteRollCall_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 
@@ -167,7 +168,7 @@ func TestCompleteRollCall_Validation(t *testing.T) {
 		req      *gumav1.CompleteRollCallRequest
 		wantCode codes.Code
 	}{
-		{name: "malformed roll call id", ctx: authed, req: &gumav1.CompleteRollCallRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: &gumav1.CompleteRollCallRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.InvalidArgument},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -182,7 +183,7 @@ func TestCompleteRollCall_Validation(t *testing.T) {
 
 func TestUpdateRollCallLoot_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 
@@ -192,7 +193,7 @@ func TestUpdateRollCallLoot_Validation(t *testing.T) {
 		req      *gumav1.UpdateRollCallLootRequest
 		wantCode codes.Code
 	}{
-		{name: "malformed roll call id", ctx: authed, req: &gumav1.UpdateRollCallLootRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.NotFound},
+		{name: "malformed roll call id", ctx: authed, req: &gumav1.UpdateRollCallLootRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.InvalidArgument},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -203,4 +204,64 @@ func TestUpdateRollCallLoot_Validation(t *testing.T) {
 			assert.Equal(t, tt.wantCode, st.Code())
 		})
 	}
+}
+
+func TestRollCallHandler_RejectsMalformedIDs(t *testing.T) {
+	h := NewRollCallService(nil, nil, zerolog.Nop())
+	authed := session.WithUserID(context.Background(), testUserID)
+	const guildID = "00000000-0000-0000-0000-000000000002"
+	const rollCallID = "00000000-0000-0000-0000-000000000003"
+
+	tests := []struct {
+		name string
+		call func() error
+	}{
+		{name: "list roll calls guild", call: func() error {
+			_, err := h.ListRollCalls(authed, &gumav1.ListRollCallsRequest{GuildId: "bad"})
+			return err
+		}},
+		{name: "get roll call guild", call: func() error {
+			_, err := h.GetRollCall(authed, &gumav1.GetRollCallRequest{GuildId: "bad", RollCallId: rollCallID})
+			return err
+		}},
+		{name: "get roll call id", call: func() error {
+			_, err := h.GetRollCall(authed, &gumav1.GetRollCallRequest{GuildId: guildID, RollCallId: "bad"})
+			return err
+		}},
+		{name: "create roll call guild", call: func() error {
+			_, err := h.CreateRollCall(authed, &gumav1.CreateRollCallRequest{GuildId: "bad"})
+			return err
+		}},
+		{name: "delete roll call id", call: func() error {
+			_, err := h.DeleteRollCall(authed, &gumav1.DeleteRollCallRequest{GuildId: guildID, RollCallId: "bad"})
+			return err
+		}},
+		{name: "assign loot item", call: func() error {
+			_, err := h.AssignLoot(authed, &gumav1.AssignLootRequest{GuildId: guildID, RollCallId: rollCallID, ItemId: "bad", UserId: aliceID.String()})
+			return err
+		}},
+		{name: "assign loot recipient", call: func() error {
+			_, err := h.AssignLoot(authed, &gumav1.AssignLootRequest{GuildId: guildID, RollCallId: rollCallID, ItemId: aliceID.String(), UserId: "bad"})
+			return err
+		}},
+		{name: "check in roll call id", call: func() error {
+			_, err := h.CheckIn(authed, &gumav1.CheckInRequest{GuildId: guildID, RollCallId: "bad"})
+			return err
+		}},
+		{name: "list attendees guild", call: func() error {
+			_, err := h.ListAttendees(authed, &gumav1.ListAttendeesRequest{GuildId: "bad", RollCallId: rollCallID})
+			return err
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requireCode(t, tt.call(), codes.InvalidArgument)
+		})
+	}
+}
+
+func TestRollCallHandler_RequiresAuthenticatedUser(t *testing.T) {
+	h := NewRollCallService(nil, nil, zerolog.Nop())
+	_, err := h.CheckIn(context.Background(), &gumav1.CheckInRequest{})
+	requireCode(t, err, codes.Unauthenticated)
 }

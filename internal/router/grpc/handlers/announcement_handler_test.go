@@ -18,7 +18,7 @@ import (
 
 func TestAnnouncementService_Validation(t *testing.T) {
 	h := NewAnnouncementService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), testUserID)
 	const guild = "00000000-0000-0000-0000-00000000000a"
 	const ann = "00000000-0000-0000-0000-0000000000f1"
 
@@ -31,6 +31,54 @@ func TestAnnouncementService_Validation(t *testing.T) {
 			name: "create malformed guild",
 			call: func() error {
 				_, err := h.CreateAnnouncementDraft(authed, &gumav1.CreateAnnouncementDraftRequest{GuildId: "nope"})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "list malformed guild",
+			call: func() error {
+				_, err := h.ListAnnouncements(authed, &gumav1.ListAnnouncementsRequest{GuildId: "nope"})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "list unauthenticated",
+			call: func() error {
+				_, err := h.ListAnnouncements(context.Background(), &gumav1.ListAnnouncementsRequest{GuildId: guild})
+				return err
+			},
+			wantCode: codes.Unauthenticated,
+		},
+		{
+			name: "get malformed announcement",
+			call: func() error {
+				_, err := h.GetAnnouncement(authed, &gumav1.GetAnnouncementRequest{GuildId: guild, AnnouncementId: "nope"})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "publish malformed guild",
+			call: func() error {
+				_, err := h.PublishAnnouncement(authed, &gumav1.PublishAnnouncementRequest{GuildId: "nope", AnnouncementId: ann})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "unpublish malformed announcement",
+			call: func() error {
+				_, err := h.UnpublishAnnouncement(authed, &gumav1.UnpublishAnnouncementRequest{GuildId: guild, AnnouncementId: "nope"})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "delete empty announcement",
+			call: func() error {
+				_, err := h.DeleteAnnouncementDraft(authed, &gumav1.DeleteAnnouncementDraftRequest{GuildId: guild})
 				return err
 			},
 			wantCode: codes.InvalidArgument,

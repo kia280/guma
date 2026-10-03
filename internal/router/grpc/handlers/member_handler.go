@@ -12,8 +12,8 @@ import (
 	memberv1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	membersvc "github.com/kia280/guma/internal/services/member"
-	"github.com/kia280/guma/internal/session"
 )
 
 // MemberService implements the MemberService gRPC service
@@ -33,10 +33,13 @@ func NewMemberService(db *database.Pool, az authz.Authorizer, logger zerolog.Log
 
 // InviteMember creates an invitation for a new member
 func (s *MemberService) InviteMember(ctx context.Context, req *memberv1.InviteMemberRequest) (*memberv1.InviteMemberResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	s.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", userID.String()).
 		Str("guild_id", req.GuildId).
 		Str("email", req.Email).
 		Msg("inviting member")
@@ -49,7 +52,7 @@ func (s *MemberService) InviteMember(ctx context.Context, req *memberv1.InviteMe
 		Id:        "mock-invitation-id",
 		GuildId:   req.GuildId,
 		Code:      "MOCK123",
-		CreatedBy: userID,
+		CreatedBy: userID.String(),
 		Role:      req.Role,
 		MaxUses:   1,
 		UseCount:  0,
@@ -64,10 +67,13 @@ func (s *MemberService) InviteMember(ctx context.Context, req *memberv1.InviteMe
 
 // JoinGuild allows a user to join a guild using an invite code
 func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRequest) (*memberv1.JoinGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	s.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", userID.String()).
 		Str("invite_code", req.InviteCode).
 		Msg("joining guild")
 
@@ -77,7 +83,7 @@ func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRe
 
 	member := &memberv1.Member{
 		Id:          uuid.NewString(),
-		UserId:      userID,
+		UserId:      userID.String(),
 		GuildId:     "mock-guild-id",
 		DisplayName: "User",
 		Role:        string(authz.RoleMember),
@@ -93,10 +99,13 @@ func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRe
 
 // UpdateMember updates a member's information
 func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMemberRequest) (*memberv1.UpdateMemberResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	s.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", userID.String()).
 		Str("guild_id", req.GuildId).
 		Str("member_id", req.MemberId).
 		Msg("updating member")
@@ -106,7 +115,7 @@ func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMe
 
 	member := &memberv1.Member{
 		Id:          req.MemberId,
-		UserId:      userID,
+		UserId:      userID.String(),
 		GuildId:     req.GuildId,
 		DisplayName: req.DisplayName,
 		Role:        req.Role,
@@ -121,12 +130,22 @@ func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMe
 }
 
 func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.UpdateMemberRoleRequest) (*memberv1.UpdateMemberRoleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+		UserID  uuid.UUID `proto:"user_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	member, err := s.svc.UpdateRole(ctx, membersvc.UpdateRoleParams{
-		GuildID: req.GuildId,
+		GuildID: in.GuildID,
 		ActorID: userID,
-		UserID:  req.UserId,
+		UserID:  in.UserID,
 		Role:    req.Role,
 	})
 	if err != nil {
@@ -138,10 +157,13 @@ func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.Upda
 
 // RemoveMember removes a member from a guild
 func (s *MemberService) RemoveMember(ctx context.Context, req *memberv1.RemoveMemberRequest) (*memberv1.RemoveMemberResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	s.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", userID.String()).
 		Str("guild_id", req.GuildId).
 		Str("member_id", req.MemberId).
 		Msg("removing member")
@@ -156,10 +178,19 @@ func (s *MemberService) RemoveMember(ctx context.Context, req *memberv1.RemoveMe
 
 // ListMembers lists members of a guild
 func (s *MemberService) ListMembers(ctx context.Context, req *memberv1.ListMembersRequest) (*memberv1.ListMembersResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	result, err := s.svc.List(ctx, membersvc.ListParams{
-		GuildID:   req.GuildId,
+		GuildID:   in.GuildID,
 		CallerID:  userID,
 		Role:      req.Role,
 		PageSize:  req.PageSize,
@@ -198,10 +229,13 @@ func toMemberProto(m *membersvc.Member) *memberv1.Member {
 
 // GetMember retrieves a specific member
 func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRequest) (*memberv1.GetMemberResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	s.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", userID.String()).
 		Str("guild_id", req.GuildId).
 		Str("member_id", req.MemberId).
 		Msg("getting member")
@@ -210,7 +244,7 @@ func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRe
 
 	member := &memberv1.Member{
 		Id:          req.MemberId,
-		UserId:      userID,
+		UserId:      userID.String(),
 		GuildId:     req.GuildId,
 		DisplayName: "User",
 		Role:        string(authz.RoleMember),
@@ -226,10 +260,13 @@ func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRe
 
 // GenerateInviteCode generates a new invite code
 func (s *MemberService) GenerateInviteCode(ctx context.Context, req *memberv1.GenerateInviteCodeRequest) (*memberv1.GenerateInviteCodeResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	s.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", userID.String()).
 		Str("guild_id", req.GuildId).
 		Msg("generating invite code")
 
@@ -247,7 +284,7 @@ func (s *MemberService) GenerateInviteCode(ctx context.Context, req *memberv1.Ge
 		Id:        uuid.NewString(),
 		GuildId:   req.GuildId,
 		Code:      code,
-		CreatedBy: userID,
+		CreatedBy: userID.String(),
 		Role:      req.Role,
 		MaxUses:   req.MaxUses,
 		UseCount:  0,
@@ -278,10 +315,13 @@ func (s *MemberService) ValidateInviteCode(ctx context.Context, req *memberv1.Va
 
 // ListInvites lists all invitations for a guild
 func (s *MemberService) ListInvites(ctx context.Context, req *memberv1.ListInvitesRequest) (*memberv1.ListInvitesResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	s.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", userID.String()).
 		Str("guild_id", req.GuildId).
 		Msg("listing invites")
 
@@ -297,10 +337,13 @@ func (s *MemberService) ListInvites(ctx context.Context, req *memberv1.ListInvit
 
 // RevokeInvite revokes an invitation
 func (s *MemberService) RevokeInvite(ctx context.Context, req *memberv1.RevokeInviteRequest) (*memberv1.RevokeInviteResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	s.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", userID.String()).
 		Str("guild_id", req.GuildId).
 		Str("invite_id", req.InviteId).
 		Msg("revoking invite")

@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,7 +21,7 @@ import (
 
 func TestUserService_UpdateMe_InvalidArgument(t *testing.T) {
 	service := NewUserService(nil, nil, "", zerolog.New(os.Stdout))
-	ctx := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	ctx := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 
 	tests := []struct {
 		name string
@@ -69,4 +70,24 @@ func TestUserToProto_UnknownIdentityState(t *testing.T) {
 	assert.Nil(t, got.EmailVerified)
 	assert.Nil(t, got.Discord)
 	assert.Empty(t, got.GuildRole)
+}
+
+func TestUserHandler_GetUser_RejectsMalformedID(t *testing.T) {
+	service := NewUserService(nil, nil, "", zerolog.Nop())
+
+	_, err := service.GetUser(session.WithUserID(context.Background(), testUserID), &gumav1.GetUserRequest{UserId: "bad"})
+	requireCode(t, err, codes.InvalidArgument)
+}
+
+func TestUserHandler_RequiresAuthenticatedUser(t *testing.T) {
+	service := NewUserService(nil, nil, "", zerolog.Nop())
+
+	_, err := service.GetMe(context.Background(), &gumav1.GetMeRequest{})
+	requireCode(t, err, codes.Unauthenticated)
+
+	_, err = service.UpdateMe(context.Background(), &gumav1.UpdateMeRequest{})
+	requireCode(t, err, codes.Unauthenticated)
+
+	_, err = service.GetUserStats(context.Background(), &gumav1.GetUserStatsRequest{})
+	requireCode(t, err, codes.Unauthenticated)
 }

@@ -31,8 +31,8 @@ type Logo struct {
 }
 
 type UploadLogoParams struct {
-	GuildID     string
-	UserID      string
+	GuildID     uuid.UUID
+	UserID      uuid.UUID
 	ContentType string
 	Data        []byte
 }
@@ -59,10 +59,7 @@ func ValidateLogo(contentType string, data []byte) (string, error) {
 }
 
 func (s *Service) UploadLogo(ctx context.Context, p UploadLogoParams) (*Guild, error) {
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
+	guildID := p.GuildID
 	contentType, err := ValidateLogo(p.ContentType, p.Data)
 	if err != nil {
 		return nil, err
@@ -90,16 +87,11 @@ func (s *Service) UploadLogo(ctx context.Context, p UploadLogoParams) (*Guild, e
 		row.CreatedAt, row.UpdatedAt,
 	)
 	g.MemberCount, _ = s.memberCount(ctx, guildID)
-	s.logger.Info().Str("guild_id", g.ID).Str("user_id", p.UserID).Int("bytes", len(p.Data)).Msg("guild logo uploaded")
+	s.logger.Info().Str("guild_id", g.ID).Str("user_id", p.UserID.String()).Int("bytes", len(p.Data)).Msg("guild logo uploaded")
 	return g, nil
 }
 
-func (s *Service) DeleteLogo(ctx context.Context, guildIDStr, userIDStr string) (*Guild, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-
+func (s *Service) DeleteLogo(ctx context.Context, guildID, userID uuid.UUID) (*Guild, error) {
 	row, err := s.q.DeleteGuildLogo(ctx, guildID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -117,15 +109,11 @@ func (s *Service) DeleteLogo(ctx context.Context, guildIDStr, userIDStr string) 
 		row.CreatedAt, row.UpdatedAt,
 	)
 	g.MemberCount, _ = s.memberCount(ctx, guildID)
-	s.logger.Info().Str("guild_id", g.ID).Str("user_id", userIDStr).Msg("guild logo removed")
+	s.logger.Info().Str("guild_id", g.ID).Str("user_id", userID.String()).Msg("guild logo removed")
 	return g, nil
 }
 
-func (s *Service) GetLogo(ctx context.Context, guildIDStr string) (*Logo, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild logo", errs.ErrNotFound)
-	}
+func (s *Service) GetLogo(ctx context.Context, guildID uuid.UUID) (*Logo, error) {
 	row, err := s.q.GetGuildLogo(ctx, guildID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

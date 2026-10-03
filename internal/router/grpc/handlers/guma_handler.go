@@ -6,7 +6,6 @@ import (
 	"github.com/rs/zerolog"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
-	"github.com/kia280/guma/internal/session"
 )
 
 // GumaService implements the GumaService gRPC service
@@ -27,9 +26,12 @@ func (s *GumaService) GetNavigation(ctx context.Context, req *gumav1.GetNavigati
 	logger := s.logger.With().Str("operation", "get_navigation").Logger()
 
 	// Get user ID from context
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	logger.Info().Str("user_id", userID).Str("guild_id", req.GuildId).Msg("getting navigation")
+	logger.Info().Str("user_id", userID.String()).Str("guild_id", req.GuildId).Msg("getting navigation")
 
 	// TODO: Implement navigation logic based on user permissions
 	// For now, return static navigation
@@ -61,9 +63,12 @@ func (s *GumaService) GetNavigation(ctx context.Context, req *gumav1.GetNavigati
 func (s *GumaService) GetDashboardData(ctx context.Context, req *gumav1.GetDashboardDataRequest) (*gumav1.GetDashboardDataResponse, error) {
 	logger := s.logger.With().Str("operation", "get_dashboard_data").Logger()
 
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	logger.Info().Str("user_id", userID).Str("guild_id", req.GuildId).Msg("getting dashboard data")
+	logger.Info().Str("user_id", userID.String()).Str("guild_id", req.GuildId).Msg("getting dashboard data")
 
 	// TODO: Implement dashboard data retrieval
 	data := &gumav1.DashboardData{
@@ -83,9 +88,12 @@ func (s *GumaService) GetDashboardData(ctx context.Context, req *gumav1.GetDashb
 
 // GetUserPreferences retrieves user preferences
 func (s *GumaService) GetUserPreferences(ctx context.Context, req *gumav1.GetUserPreferencesRequest) (*gumav1.GetUserPreferencesResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	s.logger.Info().Str("user_id", userID).Msg("getting user preferences")
+	s.logger.Info().Str("user_id", userID.String()).Msg("getting user preferences")
 
 	// TODO: Retrieve from database
 	// Return default preferences for now
@@ -105,9 +113,12 @@ func (s *GumaService) GetUserPreferences(ctx context.Context, req *gumav1.GetUse
 
 // UpdateUserPreferences updates user preferences
 func (s *GumaService) UpdateUserPreferences(ctx context.Context, req *gumav1.UpdateUserPreferencesRequest) (*gumav1.UpdateUserPreferencesResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	s.logger.Info().Str("user_id", userID).Msg("updating user preferences")
+	s.logger.Info().Str("user_id", userID.String()).Msg("updating user preferences")
 
 	// TODO: Validate and save to database
 
@@ -147,9 +158,12 @@ func (s *GumaService) GetAppConfig(ctx context.Context, req *gumav1.GetAppConfig
 func (s *GumaService) SearchGlobal(ctx context.Context, req *gumav1.SearchGlobalRequest) (*gumav1.SearchGlobalResponse, error) {
 	logger := s.logger.With().Str("operation", "search_global").Logger()
 
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	logger.Info().Str("user_id", userID).Str("query", req.Query).Msg("performing global search")
+	logger.Info().Str("user_id", userID.String()).Str("query", req.Query).Msg("performing global search")
 
 	// TODO: Implement search logic
 

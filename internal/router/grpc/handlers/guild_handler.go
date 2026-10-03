@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/genproto/googleapis/api/httpbody"
 	"google.golang.org/grpc"
@@ -12,8 +13,8 @@ import (
 	guildv1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	guildsvc "github.com/kia280/guma/internal/services/guild"
-	"github.com/kia280/guma/internal/session"
 )
 
 // GuildHandler is a thin gRPC adapter over the guild service.
@@ -32,7 +33,10 @@ func NewGuildService(db *database.Pool, az authz.Authorizer, logger zerolog.Logg
 }
 
 func (h *GuildHandler) CreateGuild(ctx context.Context, req *guildv1.CreateGuildRequest) (*guildv1.CreateGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	g, err := h.svc.Create(ctx, guildsvc.CreateParams{
 		Name:           req.Name,
@@ -47,7 +51,13 @@ func (h *GuildHandler) CreateGuild(ctx context.Context, req *guildv1.CreateGuild
 }
 
 func (h *GuildHandler) GetGuild(ctx context.Context, req *guildv1.GetGuildRequest) (*guildv1.GetGuildResponse, error) {
-	g, err := h.svc.Get(ctx, req.GuildId)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	g, err := h.svc.Get(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -55,10 +65,19 @@ func (h *GuildHandler) GetGuild(ctx context.Context, req *guildv1.GetGuildReques
 }
 
 func (h *GuildHandler) UpdateGuild(ctx context.Context, req *guildv1.UpdateGuildRequest) (*guildv1.UpdateGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	g, err := h.svc.Update(ctx, guildsvc.UpdateParams{
-		GuildID:     req.GuildId,
+		GuildID:     in.GuildID,
 		UserID:      userID,
 		Name:        req.Name,
 		Description: req.Description,
@@ -72,10 +91,19 @@ func (h *GuildHandler) UpdateGuild(ctx context.Context, req *guildv1.UpdateGuild
 }
 
 func (h *GuildHandler) UploadGuildLogo(ctx context.Context, req *guildv1.UploadGuildLogoRequest) (*guildv1.UploadGuildLogoResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	g, err := h.svc.UploadLogo(ctx, guildsvc.UploadLogoParams{
-		GuildID:     req.GuildId,
+		GuildID:     in.GuildID,
 		UserID:      userID,
 		ContentType: req.ContentType,
 		Data:        req.Data,
@@ -87,9 +115,18 @@ func (h *GuildHandler) UploadGuildLogo(ctx context.Context, req *guildv1.UploadG
 }
 
 func (h *GuildHandler) DeleteGuildLogo(ctx context.Context, req *guildv1.DeleteGuildLogoRequest) (*guildv1.DeleteGuildLogoResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	g, err := h.svc.DeleteLogo(ctx, req.GuildId, userID)
+	g, err := h.svc.DeleteLogo(ctx, in.GuildID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -97,7 +134,13 @@ func (h *GuildHandler) DeleteGuildLogo(ctx context.Context, req *guildv1.DeleteG
 }
 
 func (h *GuildHandler) GetGuildLogo(ctx context.Context, req *guildv1.GetGuildLogoRequest) (*httpbody.HttpBody, error) {
-	logo, err := h.svc.GetLogo(ctx, req.GuildId)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	logo, err := h.svc.GetLogo(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -113,9 +156,18 @@ func (h *GuildHandler) GetGuildLogo(ctx context.Context, req *guildv1.GetGuildLo
 }
 
 func (h *GuildHandler) DeleteGuild(ctx context.Context, req *guildv1.DeleteGuildRequest) (*guildv1.DeleteGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	if err := h.svc.Delete(ctx, req.GuildId, userID); err != nil {
+	if err := h.svc.Delete(ctx, in.GuildID, userID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &guildv1.DeleteGuildResponse{Success: true}, nil
@@ -147,7 +199,10 @@ func (h *GuildHandler) ListGuilds(ctx context.Context, req *guildv1.ListGuildsRe
 }
 
 func (h *GuildHandler) GetCurrentGuild(ctx context.Context, _ *guildv1.GetCurrentGuildRequest) (*guildv1.GetCurrentGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	g, err := h.svc.GetCurrent(ctx, userID)
 	if err != nil {
@@ -160,9 +215,18 @@ func (h *GuildHandler) GetCurrentGuild(ctx context.Context, _ *guildv1.GetCurren
 }
 
 func (h *GuildHandler) JoinGuildById(ctx context.Context, req *guildv1.JoinGuildByIdRequest) (*guildv1.JoinGuildByIdResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	g, err := h.svc.Join(ctx, req.GuildId, userID)
+	g, err := h.svc.Join(ctx, in.GuildID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -170,16 +234,31 @@ func (h *GuildHandler) JoinGuildById(ctx context.Context, req *guildv1.JoinGuild
 }
 
 func (h *GuildHandler) LeaveGuild(ctx context.Context, req *guildv1.LeaveGuildRequest) (*guildv1.LeaveGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	if err := h.svc.Leave(ctx, req.GuildId, userID); err != nil {
+	if err := h.svc.Leave(ctx, in.GuildID, userID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &guildv1.LeaveGuildResponse{Success: true}, nil
 }
 
 func (h *GuildHandler) GetGuildSettings(ctx context.Context, req *guildv1.GetGuildSettingsRequest) (*guildv1.GetGuildSettingsResponse, error) {
-	settings, err := h.svc.GetSettings(ctx, req.GuildId)
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	settings, err := h.svc.GetSettings(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -187,9 +266,18 @@ func (h *GuildHandler) GetGuildSettings(ctx context.Context, req *guildv1.GetGui
 }
 
 func (h *GuildHandler) UpdateGuildSettings(ctx context.Context, req *guildv1.UpdateGuildSettingsRequest) (*guildv1.UpdateGuildSettingsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	updated, err := h.svc.UpdateSettings(ctx, req.GuildId, userID, settingsFromProto(req.Settings))
+	updated, err := h.svc.UpdateSettings(ctx, in.GuildID, userID, settingsFromProto(req.Settings))
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -197,9 +285,18 @@ func (h *GuildHandler) UpdateGuildSettings(ctx context.Context, req *guildv1.Upd
 }
 
 func (h *GuildHandler) GetGuildStats(ctx context.Context, req *guildv1.GetGuildStatsRequest) (*guildv1.GetGuildStatsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	stats, err := h.svc.Stats(ctx, req.GuildId, userID)
+	stats, err := h.svc.Stats(ctx, in.GuildID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}

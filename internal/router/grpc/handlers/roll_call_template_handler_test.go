@@ -16,7 +16,7 @@ import (
 
 func TestRollCallTemplateService_Validation(t *testing.T) {
 	h := NewRollCallTemplateService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), testUserID)
 	const guildID = "00000000-0000-0000-0000-000000000002"
 
 	tests := []struct {
@@ -35,6 +35,32 @@ func TestRollCallTemplateService_Validation(t *testing.T) {
 			wantCode: codes.InvalidArgument,
 		},
 		{
+			name: "list malformed guild id",
+			call: func() error {
+				_, err := h.ListRollCallTemplates(authed, &gumav1.ListRollCallTemplatesRequest{GuildId: "nope"})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "create unauthenticated",
+			call: func() error {
+				_, err := h.CreateRollCallTemplate(context.Background(), &gumav1.CreateRollCallTemplateRequest{GuildId: guildID, Name: "n", Title: "t"})
+				return err
+			},
+			wantCode: codes.Unauthenticated,
+		},
+		{
+			name: "update malformed item template id",
+			call: func() error {
+				_, err := h.UpdateRollCallTemplate(authed, &gumav1.UpdateRollCallTemplateRequest{
+					GuildId: guildID, TemplateId: guildID, Name: "n", Title: "t", ItemTemplateIds: []string{guildID, "nope"},
+				})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
 			name: "update malformed template id",
 			call: func() error {
 				_, err := h.UpdateRollCallTemplate(authed, &gumav1.UpdateRollCallTemplateRequest{
@@ -42,7 +68,7 @@ func TestRollCallTemplateService_Validation(t *testing.T) {
 				})
 				return err
 			},
-			wantCode: codes.NotFound,
+			wantCode: codes.InvalidArgument,
 		},
 		{
 			name: "delete malformed template id",
@@ -50,7 +76,7 @@ func TestRollCallTemplateService_Validation(t *testing.T) {
 				_, err := h.DeleteRollCallTemplate(authed, &gumav1.DeleteRollCallTemplateRequest{GuildId: guildID, TemplateId: "nope"})
 				return err
 			},
-			wantCode: codes.NotFound,
+			wantCode: codes.InvalidArgument,
 		},
 	}
 

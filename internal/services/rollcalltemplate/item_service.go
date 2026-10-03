@@ -50,11 +50,7 @@ func newItemService(q store, az authz.Checker, logger zerolog.Logger) *ItemServi
 	return &ItemService{q: q, az: az, logger: logger.With().Str("service", "itemtemplate").Logger()}
 }
 
-func (s *ItemService) List(ctx context.Context, guildIDStr, userIDStr string) ([]*ItemTemplate, error) {
-	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
+func (s *ItemService) List(ctx context.Context, guildID uuid.UUID) ([]*ItemTemplate, error) {
 	rows, err := s.q.ListItemTemplates(ctx, guildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: list item templates: %v", errs.ErrInternal, err)
@@ -66,12 +62,8 @@ func (s *ItemService) List(ctx context.Context, guildIDStr, userIDStr string) ([
 	return templates, nil
 }
 
-func (s *ItemService) Create(ctx context.Context, guildIDStr, userIDStr string, f ItemFields) (*ItemTemplate, error) {
+func (s *ItemService) Create(ctx context.Context, guildID, userID uuid.UUID, f ItemFields) (*ItemTemplate, error) {
 	f = normalizeItemFields(f)
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
 	r, err := s.q.CreateItemTemplate(ctx, db.CreateItemTemplateParams{
 		GuildID: guildID, CreatedBy: userID,
 		Name: f.Name, Description: f.Description, Category: f.Category, Rarity: f.Rarity,
@@ -79,20 +71,12 @@ func (s *ItemService) Create(ctx context.Context, guildIDStr, userIDStr string, 
 	if err != nil {
 		return nil, writeError(itemEntity, err)
 	}
-	s.logger.Info().Str("template_id", r.ID.String()).Str("guild_id", guildIDStr).Msg("item template created")
+	s.logger.Info().Str("template_id", r.ID.String()).Str("guild_id", guildID.String()).Msg("item template created")
 	return toItemTemplate(r), nil
 }
 
-func (s *ItemService) Update(ctx context.Context, guildIDStr, templateIDStr, userIDStr string, f ItemFields) (*ItemTemplate, error) {
+func (s *ItemService) Update(ctx context.Context, guildID, templateID uuid.UUID, f ItemFields) (*ItemTemplate, error) {
 	f = normalizeItemFields(f)
-	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
-	templateID, err := uuid.Parse(templateIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %s", errs.ErrNotFound, itemEntity)
-	}
 	r, err := s.q.UpdateItemTemplate(ctx, db.UpdateItemTemplateParams{
 		ID: templateID, GuildID: guildID,
 		Name: f.Name, Description: f.Description, Category: f.Category, Rarity: f.Rarity,
@@ -103,15 +87,7 @@ func (s *ItemService) Update(ctx context.Context, guildIDStr, templateIDStr, use
 	return toItemTemplate(r), nil
 }
 
-func (s *ItemService) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDStr string) error {
-	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return err
-	}
-	templateID, err := uuid.Parse(templateIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: %s", errs.ErrNotFound, itemEntity)
-	}
+func (s *ItemService) Delete(ctx context.Context, guildID, templateID uuid.UUID) error {
 	n, err := s.q.DeleteItemTemplate(ctx, db.DeleteItemTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {
 		return fmt.Errorf("%w: delete item template: %v", errs.ErrInternal, err)

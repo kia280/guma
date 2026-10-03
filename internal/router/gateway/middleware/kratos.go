@@ -10,6 +10,7 @@ import (
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/ids"
 	"github.com/kia280/guma/internal/session"
 )
 
@@ -24,7 +25,7 @@ type KratosIdentity struct {
 
 // KratosSession is the subset of session data attached to the HTTP request context.
 // Downstream HTTP-only consumers can read it via SessionFromContext; gRPC handlers
-// should use session.UserIDFromContext(ctx) and session.CookieFromContext(ctx)
+// should use session.UserID(ctx) and session.CookieFromContext(ctx)
 // instead — only those two fields cross the HTTP → gRPC boundary.
 type KratosSession struct {
 	ID              string         `json:"id"`
@@ -71,7 +72,7 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == http.MethodOptions || session.UserIDFromContext(r.Context()) != "" {
+			if r.Method == http.MethodOptions || hasUserID(r) {
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -146,12 +147,24 @@ func KratosSessionMiddleware(baseURL string, logger zerolog.Logger) func(http.Ha
 				IssuedAt:        kratosSession.GetIssuedAt(),
 			}
 
+			userID, err := ids.Parse("identity.id", identity.ID)
+			if err != nil {
+				logger.Debug().Str("identity_id", identity.ID).Msg("kratos identity id is not a UUID")
+				writeAuthError(w, http.StatusUnauthorized, "invalid session")
+				return
+			}
+
 			ctx := context.WithValue(r.Context(), sessionContextKey{}, sess)
-			ctx = session.WithUserID(ctx, identity.ID)
+			ctx = session.WithUserID(ctx, userID)
 			ctx = session.WithCookie(ctx, cookie.Name+"="+cookie.Value)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func hasUserID(r *http.Request) bool {
+	_, ok := session.UserID(r.Context())
+	return ok
 }
 
 func writeAuthError(w http.ResponseWriter, status int, message string) {

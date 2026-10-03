@@ -26,7 +26,7 @@ func TestStats_ReturnsGuildStats(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			f := &fakeDB{}
-			stats, err := newTestService(f, authztest.New().Grant(guildID, userID, tt.grants...)).Stats(context.Background(), guildID.String(), userID.String())
+			stats, err := newTestService(f, authztest.New().Grant(guildID, userID, tt.grants...)).Stats(context.Background(), guildID, userID)
 			if tt.wantErr != nil {
 				assert.ErrorIs(t, err, tt.wantErr)
 				assert.False(t, f.statsCalled)
@@ -48,15 +48,6 @@ func TestStats_ReturnsGuildStats(t *testing.T) {
 func TestStats_MissingGuild(t *testing.T) {
 	guildID, userID := uuid.New(), uuid.New()
 	f := &fakeDB{statsMissing: true}
-	_, err := newTestService(f, authztest.New().Grant(guildID, userID, authz.ViewStats)).Stats(context.Background(), guildID.String(), userID.String())
+	_, err := newTestService(f, authztest.New().Grant(guildID, userID, authz.ViewStats)).Stats(context.Background(), guildID, userID)
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-}
-
-func TestStats_InvalidIDs(t *testing.T) {
-	f := &fakeDB{}
-	svc := newTestService(f, authztest.New())
-
-	_, err := svc.Stats(context.Background(), "not-a-uuid", uuid.NewString())
-	assert.ErrorIs(t, err, errs.ErrNotFound)
-	assert.False(t, f.statsCalled)
 }

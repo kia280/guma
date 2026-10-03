@@ -3,15 +3,16 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	"github.com/kia280/guma/internal/models"
 	rollcallsvc "github.com/kia280/guma/internal/services/rollcall"
-	"github.com/kia280/guma/internal/session"
 )
 
 // RollCallHandler is a thin gRPC adapter over the roll call service.
@@ -30,12 +31,18 @@ func NewRollCallService(db *database.Pool, az authz.Authorizer, logger zerolog.L
 }
 
 func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRollCallsRequest) (*gumav1.ListRollCallsResponse, error) {
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.List(ctx, rollcallsvc.ListParams{
-		GuildID:  req.GuildId,
+		GuildID:  in.GuildID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
@@ -56,7 +63,14 @@ func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRol
 }
 
 func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCallRequest) (*gumav1.GetRollCallResponse, error) {
-	c, err := h.svc.Get(ctx, req.GuildId, req.RollCallId)
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	c, err := h.svc.Get(ctx, in.GuildID, in.RollCallID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -64,10 +78,19 @@ func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCa
 }
 
 func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.CreateRollCallRequest) (*gumav1.CreateRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	c, err := h.svc.Create(ctx, rollcallsvc.CreateParams{
-		GuildID:     req.GuildId,
+		GuildID:     in.GuildID,
 		CreatedBy:   userID,
 		Title:       req.Title,
 		Description: req.Description,
@@ -83,11 +106,21 @@ func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.Create
 }
 
 func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.UpdateRollCallRequest) (*gumav1.UpdateRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	c, err := h.svc.Update(ctx, rollcallsvc.UpdateParams{
-		GuildID:     req.GuildId,
-		RollCallID:  req.RollCallId,
+		GuildID:     in.GuildID,
+		RollCallID:  in.RollCallID,
 		UpdatedBy:   userID,
 		Title:       req.Title,
 		Description: req.Description,
@@ -103,17 +136,37 @@ func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.Update
 }
 
 func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.DeleteRollCallRequest) (*gumav1.DeleteRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-	if err := h.svc.Delete(ctx, req.GuildId, req.RollCallId, userID); err != nil {
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	if err := h.svc.Delete(ctx, in.GuildID, in.RollCallID, userID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteRollCallResponse{Success: true}, nil
 }
 
 func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.CompleteRollCallRequest) (*gumav1.CompleteRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	c, err := h.svc.Complete(ctx, req.GuildId, req.RollCallId, userID, req.KeepLeftoversInBank)
+	c, err := h.svc.Complete(ctx, in.GuildID, in.RollCallID, userID, req.KeepLeftoversInBank)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -121,7 +174,17 @@ func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.Comp
 }
 
 func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.UpdateRollCallLootRequest) (*gumav1.UpdateRollCallLootResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	lootList := make([]models.Item, len(req.LootList))
 	for i, item := range req.LootList {
@@ -129,8 +192,8 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 	}
 
 	c, err := h.svc.UpdateLoot(ctx, rollcallsvc.UpdateLootParams{
-		GuildID:    req.GuildId,
-		RollCallID: req.RollCallId,
+		GuildID:    in.GuildID,
+		RollCallID: in.RollCallID,
 		UpdatedBy:  userID,
 		LootList:   lootList,
 	})
@@ -141,9 +204,19 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 }
 
 func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.CancelRollCallRequest) (*gumav1.CancelRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	c, err := h.svc.Cancel(ctx, req.GuildId, req.RollCallId, userID)
+	c, err := h.svc.Cancel(ctx, in.GuildID, in.RollCallID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -151,9 +224,21 @@ func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.Cancel
 }
 
 func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLootRequest) (*gumav1.AssignLootResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+		ItemID     uuid.UUID `proto:"item_id"`
+		UserID     uuid.UUID `proto:"user_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	backpackItemID, err := h.svc.AssignLoot(ctx, req.GuildId, req.RollCallId, req.ItemId, userID, req.UserId)
+	backpackItemID, err := h.svc.AssignLoot(ctx, in.GuildID, in.RollCallID, in.ItemID, userID, in.UserID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -161,7 +246,14 @@ func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLoot
 }
 
 func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRollCallGoldRequest) (*gumav1.GetRollCallGoldResponse, error) {
-	summary, err := h.svc.GetGold(ctx, req.GuildId, req.RollCallId)
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	summary, err := h.svc.GetGold(ctx, in.GuildID, in.RollCallID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -172,17 +264,30 @@ func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRo
 }
 
 func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav1.DistributeRollCallGoldRequest) (*gumav1.DistributeRollCallGoldResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-
-	payouts := make([]rollcallsvc.GoldPayout, len(req.Payouts))
-	for i, p := range req.Payouts {
-		payouts[i] = rollcallsvc.GoldPayout{UserID: p.UserId, Amount: p.Amount}
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+		RequestID  uuid.UUID `proto:"request_id"`
+		Payouts    []struct {
+			UserID uuid.UUID `proto:"user_id"`
+		} `proto:"payouts"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	payouts := make([]rollcallsvc.GoldPayoutRequest, len(req.Payouts))
+	for i, payout := range req.Payouts {
+		payouts[i] = rollcallsvc.GoldPayoutRequest{UserID: in.Payouts[i].UserID, Amount: payout.Amount}
 	}
 	result, err := h.svc.DistributeGold(ctx, rollcallsvc.DistributeGoldParams{
-		GuildID:    req.GuildId,
-		RollCallID: req.RollCallId,
+		GuildID:    in.GuildID,
+		RollCallID: in.RollCallID,
 		ActorID:    userID,
-		RequestID:  req.RequestId,
+		RequestID:  in.RequestID,
 		Payouts:    payouts,
 	})
 	if err != nil {
@@ -197,9 +302,19 @@ func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav
 }
 
 func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInRequest) (*gumav1.CheckInResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	attendee, err := h.svc.CheckIn(ctx, req.GuildId, req.RollCallId, userID, req.Notes)
+	attendee, err := h.svc.CheckIn(ctx, in.GuildID, in.RollCallID, userID, req.Notes)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -207,11 +322,18 @@ func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInReques
 }
 
 func (h *RollCallHandler) ListAttendees(ctx context.Context, req *gumav1.ListAttendeesRequest) (*gumav1.ListAttendeesResponse, error) {
+	var in struct {
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	result, err := h.svc.ListAttendees(ctx, req.GuildId, req.RollCallId, int(req.PageSize), offset)
+	result, err := h.svc.ListAttendees(ctx, in.GuildID, in.RollCallID, int(req.PageSize), offset)
 	if err != nil {
 		return nil, toStatus(err)
 	}

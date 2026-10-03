@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc/metadata"
@@ -55,7 +56,9 @@ type identitySeen struct {
 func recordIdentity(seen *identitySeen) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		seen.called = true
-		seen.userID = session.UserIDFromContext(r.Context())
+		if id, ok := session.UserID(r.Context()); ok {
+			seen.userID = id.String()
+		}
 		seen.cookie = session.CookieFromContext(r.Context())
 		seen.metadata = session.Annotator(r.Context(), r)
 		w.WriteHeader(http.StatusOK)
@@ -186,7 +189,7 @@ func TestGatewayMetadataForwardsOnlyAllowlistedHeaders(t *testing.T) {
 	req.Header.Set("Grpc-Metadata-X-Trace", "dropped")
 	req.Header.Set("User-Agent", "dropped")
 	req.Header.Set("X-Request-Id", "request-1")
-	ctx := session.WithUserID(req.Context(), kratosUserID)
+	ctx := session.WithUserID(req.Context(), uuid.MustParse(kratosUserID))
 	ctx = session.WithCookie(ctx, "guma_sess="+kratosCookie)
 	req = req.WithContext(ctx)
 

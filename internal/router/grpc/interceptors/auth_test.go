@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -14,13 +15,18 @@ import (
 	"github.com/kia280/guma/internal/session"
 )
 
+var (
+	userOne = uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	userTwo = uuid.MustParse("00000000-0000-0000-0000-000000000002")
+)
+
 func TestAuthInterceptor(t *testing.T) {
 	tests := []struct {
 		name       string
 		method     string
 		ctx        context.Context
 		wantCode   codes.Code
-		wantUserID string
+		wantUserID uuid.UUID
 	}{
 		{
 			name:     "rejects unauthenticated call",
@@ -31,16 +37,22 @@ func TestAuthInterceptor(t *testing.T) {
 		{
 			name:       "accepts user from context",
 			method:     "/guma.v1.GuildService/ListGuilds",
-			ctx:        session.WithUserID(context.Background(), "user-1"),
+			ctx:        session.WithUserID(context.Background(), userOne),
 			wantCode:   codes.OK,
-			wantUserID: "user-1",
+			wantUserID: userOne,
 		},
 		{
 			name:       "accepts user from metadata",
 			method:     "/guma.v1.GuildService/ListGuilds",
-			ctx:        metadata.NewIncomingContext(context.Background(), metadata.Pairs(session.UserIDMetadataKey, "user-2")),
+			ctx:        metadata.NewIncomingContext(context.Background(), metadata.Pairs(session.UserIDMetadataKey, userTwo.String())),
 			wantCode:   codes.OK,
-			wantUserID: "user-2",
+			wantUserID: userTwo,
+		},
+		{
+			name:     "rejects malformed user from metadata",
+			method:   "/guma.v1.GuildService/ListGuilds",
+			ctx:      metadata.NewIncomingContext(context.Background(), metadata.Pairs(session.UserIDMetadataKey, "user-2")),
+			wantCode: codes.Unauthenticated,
 		},
 		{
 			name:     "allows health check without user",
@@ -59,10 +71,10 @@ func TestAuthInterceptor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			called := false
-			var gotUserID string
+			var gotUserID uuid.UUID
 			handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 				called = true
-				gotUserID = session.UserIDFromContext(ctx)
+				gotUserID, _ = session.UserID(ctx)
 				return "response", nil
 			}
 
@@ -107,17 +119,17 @@ func TestStreamAuthInterceptor(t *testing.T) {
 	})
 
 	t.Run("exposes user on stream context", func(t *testing.T) {
-		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(session.UserIDMetadataKey, "user-1"))
-		var gotUserID string
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs(session.UserIDMetadataKey, userOne.String()))
+		var gotUserID uuid.UUID
 		handler := func(srv interface{}, ss grpc.ServerStream) error {
-			gotUserID = session.UserIDFromContext(ss.Context())
+			gotUserID, _ = session.UserID(ss.Context())
 			return nil
 		}
 
 		err := StreamAuthInterceptor()(nil, &contextStream{ctx: ctx}, info, handler)
 
 		require.NoError(t, err)
-		assert.Equal(t, "user-1", gotUserID)
+		assert.Equal(t, userOne, gotUserID)
 	})
 
 	t.Run("allows public stream without user", func(t *testing.T) {

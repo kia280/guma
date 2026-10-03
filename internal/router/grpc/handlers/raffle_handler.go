@@ -3,14 +3,15 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	rafflesvc "github.com/kia280/guma/internal/services/raffle"
-	"github.com/kia280/guma/internal/session"
 )
 
 // RaffleHandler is a thin gRPC adapter over the raffle service.
@@ -29,8 +30,14 @@ func NewRaffleService(db *database.Pool, az authz.Authorizer, logger zerolog.Log
 }
 
 func (h *RaffleHandler) ListRaffles(ctx context.Context, req *gumav1.ListRafflesRequest) (*gumav1.ListRafflesResponse, error) {
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.List(ctx, rafflesvc.ListParams{
-		GuildID:  req.GuildId,
+		GuildID:  in.GuildID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
 		Offset:   rafflesvc.ParsePageToken(req.PageToken),
@@ -51,7 +58,14 @@ func (h *RaffleHandler) ListRaffles(ctx context.Context, req *gumav1.ListRaffles
 }
 
 func (h *RaffleHandler) GetRaffle(ctx context.Context, req *gumav1.GetRaffleRequest) (*gumav1.GetRaffleResponse, error) {
-	l, err := h.svc.Get(ctx, req.GuildId, req.RaffleId)
+	var in struct {
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	l, err := h.svc.Get(ctx, in.GuildID, in.RaffleID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -59,12 +73,20 @@ func (h *RaffleHandler) GetRaffle(ctx context.Context, req *gumav1.GetRaffleRequ
 }
 
 func (h *RaffleHandler) CreateRaffle(ctx context.Context, req *gumav1.CreateRaffleRequest) (*gumav1.CreateRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-
-	prizes := prizesFromProto(req.Prizes)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID        `proto:"guild_id"`
+		Prizes  []rafflePrizeIDs `proto:"prizes"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	l, err := h.svc.Create(ctx, rafflesvc.CreateParams{
-		GuildID:           req.GuildId,
+		GuildID:           in.GuildID,
 		CreatedBy:         userID,
 		Title:             req.Title,
 		Description:       req.Description,
@@ -72,7 +94,7 @@ func (h *RaffleHandler) CreateRaffle(ctx context.Context, req *gumav1.CreateRaff
 		MaxTickets:        req.MaxTickets,
 		MaxTicketsPerUser: req.MaxTicketsPerUser,
 		DrawDate:          req.DrawDate,
-		Prizes:            prizes,
+		Prizes:            prizesFromProto(req.Prizes, in.Prizes),
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -81,9 +103,19 @@ func (h *RaffleHandler) CreateRaffle(ctx context.Context, req *gumav1.CreateRaff
 }
 
 func (h *RaffleHandler) PurchaseTickets(ctx context.Context, req *gumav1.PurchaseTicketsRequest) (*gumav1.PurchaseTicketsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	tickets, totalCost, err := h.svc.PurchaseTickets(ctx, req.GuildId, req.RaffleId, userID, req.Quantity)
+	tickets, totalCost, err := h.svc.PurchaseTickets(ctx, in.GuildID, in.RaffleID, userID, req.Quantity)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -96,7 +128,14 @@ func (h *RaffleHandler) PurchaseTickets(ctx context.Context, req *gumav1.Purchas
 }
 
 func (h *RaffleHandler) GetRaffleWinners(ctx context.Context, req *gumav1.GetRaffleWinnersRequest) (*gumav1.GetRaffleWinnersResponse, error) {
-	winners, err := h.svc.GetWinners(ctx, req.GuildId, req.RaffleId)
+	var in struct {
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	winners, err := h.svc.GetWinners(ctx, in.GuildID, in.RaffleID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -109,11 +148,21 @@ func (h *RaffleHandler) GetRaffleWinners(ctx context.Context, req *gumav1.GetRaf
 }
 
 func (h *RaffleHandler) UpdateRaffle(ctx context.Context, req *gumav1.UpdateRaffleRequest) (*gumav1.UpdateRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	l, err := h.svc.Update(ctx, rafflesvc.UpdateParams{
-		GuildID:           req.GuildId,
-		RaffleID:          req.RaffleId,
+		GuildID:           in.GuildID,
+		RaffleID:          in.RaffleID,
 		UpdatedBy:         userID,
 		Title:             req.Title,
 		Description:       req.Description,
@@ -129,9 +178,19 @@ func (h *RaffleHandler) UpdateRaffle(ctx context.Context, req *gumav1.UpdateRaff
 }
 
 func (h *RaffleHandler) CancelRaffle(ctx context.Context, req *gumav1.CancelRaffleRequest) (*gumav1.CancelRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	l, err := h.svc.Cancel(ctx, req.GuildId, req.RaffleId, userID)
+	l, err := h.svc.Cancel(ctx, in.GuildID, in.RaffleID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -139,18 +198,38 @@ func (h *RaffleHandler) CancelRaffle(ctx context.Context, req *gumav1.CancelRaff
 }
 
 func (h *RaffleHandler) DeleteRaffle(ctx context.Context, req *gumav1.DeleteRaffleRequest) (*gumav1.DeleteRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	if err := h.svc.Delete(ctx, req.GuildId, req.RaffleId, userID); err != nil {
+	if err := h.svc.Delete(ctx, in.GuildID, in.RaffleID, userID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteRaffleResponse{Success: true}, nil
 }
 
 func (h *RaffleHandler) DrawRaffle(ctx context.Context, req *gumav1.DrawRaffleRequest) (*gumav1.DrawRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	l, winners, err := h.svc.Draw(ctx, req.GuildId, req.RaffleId, userID)
+	l, winners, err := h.svc.Draw(ctx, in.GuildID, in.RaffleID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -163,9 +242,18 @@ func (h *RaffleHandler) DrawRaffle(ctx context.Context, req *gumav1.DrawRaffleRe
 }
 
 func (h *RaffleHandler) ListMyTickets(ctx context.Context, req *gumav1.ListMyTicketsRequest) (*gumav1.ListMyTicketsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID *uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
-	result, err := h.svc.ListMyTickets(ctx, userID, req.GuildId, int(req.PageSize), rafflesvc.ParsePageToken(req.PageToken))
+	result, err := h.svc.ListMyTickets(ctx, userID, in.GuildID, int(req.PageSize), rafflesvc.ParsePageToken(req.PageToken))
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -251,19 +339,23 @@ func raffleWinnerToProto(w *rafflesvc.RaffleWinner) *gumav1.RaffleWinner {
 	}
 }
 
-func prizesFromProto(protos []*gumav1.RafflePrize) []rafflesvc.RafflePrize {
+type rafflePrizeIDs struct {
+	Source *itemSourceIDs `proto:"source"`
+}
+
+func prizesFromProto(protos []*gumav1.RafflePrize, parsed []rafflePrizeIDs) []rafflesvc.RafflePrize {
 	prizes := make([]rafflesvc.RafflePrize, len(protos))
 	for i, p := range protos {
 		prize := rafflesvc.RafflePrize{
 			Rank:        p.Rank,
 			Description: p.Description,
 			Amount:      p.Amount,
+			Source:      parsed[i].Source.ref(),
 		}
 		if p.Item != nil {
 			item := itemFromProto(p.Item)
 			prize.Item = &item
 		}
-		prize.Source = sourceRefFromProto(p.Source)
 		prizes[i] = prize
 	}
 	return prizes

@@ -3,14 +3,15 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	announcementsvc "github.com/kia280/guma/internal/services/announcement"
-	"github.com/kia280/guma/internal/session"
 )
 
 type AnnouncementHandler struct {
@@ -27,10 +28,19 @@ func NewAnnouncementService(db *database.Pool, az authz.Authorizer, logger zerol
 }
 
 func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1.ListAnnouncementsRequest) (*gumav1.ListAnnouncementsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
 
 	list, err := h.svc.List(ctx, announcementsvc.ListParams{
-		GuildID:       req.GuildId,
+		GuildID:       in.GuildID,
 		UserID:        userID,
 		IncludeDrafts: req.IncludeDrafts,
 		PageSize:      req.PageSize,
@@ -46,11 +56,18 @@ func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1
 }
 
 func (h *AnnouncementHandler) GetAnnouncement(ctx context.Context, req *gumav1.GetAnnouncementRequest) (*gumav1.GetAnnouncementResponse, error) {
-	userID, err := requireAnnouncementUser(ctx)
+	userID, err := callerID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	a, err := h.svc.Get(ctx, req.GuildId, req.AnnouncementId, userID)
+	var in struct {
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	a, err := h.svc.Get(ctx, in.GuildID, in.AnnouncementID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -58,8 +75,17 @@ func (h *AnnouncementHandler) GetAnnouncement(ctx context.Context, req *gumav1.G
 }
 
 func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *gumav1.CreateAnnouncementDraftRequest) (*gumav1.CreateAnnouncementDraftResponse, error) {
-	userID := session.UserIDFromContext(ctx)
-	a, err := h.svc.CreateDraft(ctx, req.GuildId, userID)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	a, err := h.svc.CreateDraft(ctx, in.GuildID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -67,14 +93,16 @@ func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *
 }
 
 func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav1.UpdateAnnouncementRequest) (*gumav1.UpdateAnnouncementResponse, error) {
-	userID, err := requireAnnouncementUser(ctx)
-	if err != nil {
-		return nil, err
+	var in struct {
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
 	}
 	a, err := h.svc.Update(ctx, announcementsvc.Update{
-		GuildID:        req.GuildId,
-		AnnouncementID: req.AnnouncementId,
-		UserID:         userID,
+		GuildID:        in.GuildID,
+		AnnouncementID: in.AnnouncementID,
 		Title:          req.Title,
 		Content:        req.Content,
 		Pinned:         req.Pinned,
@@ -86,11 +114,14 @@ func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav
 }
 
 func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *gumav1.PublishAnnouncementRequest) (*gumav1.PublishAnnouncementResponse, error) {
-	userID, err := requireAnnouncementUser(ctx)
-	if err != nil {
-		return nil, err
+	var in struct {
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
 	}
-	a, err := h.svc.Publish(ctx, req.GuildId, req.AnnouncementId, userID)
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	a, err := h.svc.Publish(ctx, in.GuildID, in.AnnouncementID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -98,11 +129,14 @@ func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *guma
 }
 
 func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gumav1.UnpublishAnnouncementRequest) (*gumav1.UnpublishAnnouncementResponse, error) {
-	userID, err := requireAnnouncementUser(ctx)
-	if err != nil {
-		return nil, err
+	var in struct {
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
 	}
-	a, err := h.svc.Unpublish(ctx, req.GuildId, req.AnnouncementId, userID)
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	a, err := h.svc.Unpublish(ctx, in.GuildID, in.AnnouncementID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -110,19 +144,17 @@ func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gu
 }
 
 func (h *AnnouncementHandler) DeleteAnnouncementDraft(ctx context.Context, req *gumav1.DeleteAnnouncementDraftRequest) (*gumav1.DeleteAnnouncementDraftResponse, error) {
-	userID, err := requireAnnouncementUser(ctx)
-	if err != nil {
-		return nil, err
+	var in struct {
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
 	}
-	if err := h.svc.DeleteDraft(ctx, req.GuildId, req.AnnouncementId, userID); err != nil {
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	if err := h.svc.DeleteDraft(ctx, in.GuildID, in.AnnouncementID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteAnnouncementDraftResponse{}, nil
-}
-
-func requireAnnouncementUser(ctx context.Context) (string, error) {
-	userID := session.UserIDFromContext(ctx)
-	return userID, nil
 }
 
 func announcementToProto(a *announcementsvc.Announcement) *gumav1.Announcement {

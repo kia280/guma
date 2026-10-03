@@ -18,7 +18,7 @@ import (
 
 func TestNotificationService_Validation(t *testing.T) {
 	h := NewNotificationService(nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), testUserID)
 
 	tests := []struct {
 		name     string
@@ -40,6 +40,14 @@ func TestNotificationService_Validation(t *testing.T) {
 				return err
 			},
 			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "mark all read unauthenticated",
+			call: func() error {
+				_, err := h.MarkAllNotificationsRead(context.Background(), &gumav1.MarkAllNotificationsReadRequest{})
+				return err
+			},
+			wantCode: codes.Unauthenticated,
 		},
 	}
 

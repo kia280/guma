@@ -21,7 +21,9 @@ func TestDevSessionMiddleware_ValidCookieBypassesKratos(t *testing.T) {
 
 	var gotUserID, gotCookie string
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotUserID = session.UserIDFromContext(r.Context())
+		if id, ok := session.UserID(r.Context()); ok {
+			gotUserID = id.String()
+		}
 		gotCookie = session.CookieFromContext(r.Context())
 		w.WriteHeader(http.StatusOK)
 	})

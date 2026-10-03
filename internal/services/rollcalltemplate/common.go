@@ -34,18 +34,6 @@ func newStore(pool *database.Pool) store {
 	return db.New(pool.Pool)
 }
 
-func parseGuildAndUser(guildIDStr, userIDStr string) (uuid.UUID, uuid.UUID, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	return guildID, userID, nil
-}
-
 func writeError(entity string, err error) error {
 	var pgErr *pgconn.PgError
 	switch {

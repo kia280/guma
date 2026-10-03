@@ -139,8 +139,8 @@ func TestUploadLogo_StoresLogo(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			f := &fakeDB{}
 			g, err := newTestService(f, authztest.New().Grant(guildID, userID, tt.grants...)).UploadLogo(context.Background(), UploadLogoParams{
-				GuildID:     guildID.String(),
-				UserID:      userID.String(),
+				GuildID:     guildID,
+				UserID:      userID,
 				ContentType: "image/png",
 				Data:        pngBytes(t),
 			})
@@ -160,8 +160,8 @@ func TestUploadLogo_StoresLogo(t *testing.T) {
 func TestUploadLogo_RejectsInvalidImageBeforeWriting(t *testing.T) {
 	f := &fakeDB{}
 	_, err := newTestService(f, authztest.New()).UploadLogo(context.Background(), UploadLogoParams{
-		GuildID:     uuid.NewString(),
-		UserID:      uuid.NewString(),
+		GuildID:     uuid.New(),
+		UserID:      uuid.New(),
 		ContentType: "image/svg+xml",
 		Data:        []byte("<svg></svg>"),
 	})

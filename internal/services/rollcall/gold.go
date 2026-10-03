@@ -79,11 +79,16 @@ type GoldSummary struct {
 
 // DistributeGoldParams holds the inputs for DistributeGold.
 type DistributeGoldParams struct {
-	GuildID    string
-	RollCallID string
-	ActorID    string
-	RequestID  string
-	Payouts    []GoldPayout
+	GuildID    uuid.UUID
+	RollCallID uuid.UUID
+	ActorID    uuid.UUID
+	RequestID  uuid.UUID
+	Payouts    []GoldPayoutRequest
+}
+
+type GoldPayoutRequest struct {
+	UserID uuid.UUID
+	Amount int64
 }
 
 // DistributeGoldResult is returned by DistributeGold.
@@ -180,15 +185,12 @@ func lootItems(entries []LootEntry) []models.Item {
 	return items
 }
 
-func normalizeGoldPayouts(payouts []GoldPayout) ([]goldPayoutLine, int64, error) {
+func normalizeGoldPayouts(payouts []GoldPayoutRequest) ([]goldPayoutLine, int64, error) {
 	lines := make([]goldPayoutLine, 0, len(payouts))
 	seen := make(map[uuid.UUID]bool, len(payouts))
 	var total int64
 	for _, p := range payouts {
-		userID, err := uuid.Parse(strings.TrimSpace(p.UserID))
-		if err != nil {
-			return nil, 0, fmt.Errorf("%w: invalid recipient", errs.ErrInvalidArgument)
-		}
+		userID := p.UserID
 		if seen[userID] {
 			return nil, 0, fmt.Errorf("%w: each attendee can appear only once", errs.ErrInvalidArgument)
 		}
@@ -220,15 +222,7 @@ func checkGoldPotCapacity(pot GoldPot, isCancelled bool, total int64) error {
 }
 
 // GetGold returns the gold pot of a roll call and how much each attendee has received.
-func (s *Service) GetGold(ctx context.Context, guildIDStr, rollCallIDStr string) (*GoldSummary, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(rollCallIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
+func (s *Service) GetGold(ctx context.Context, guildID, rollCallID uuid.UUID) (*GoldSummary, error) {
 	if exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: rollCallID, GuildID: guildID}); err != nil || !exists {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
@@ -253,22 +247,10 @@ func (s *Service) GetGold(ctx context.Context, guildIDStr, rollCallIDStr string)
 
 // DistributeGold pays gold from a roll call's pot into attendees' wallets in one transaction.
 func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*DistributeGoldResult, error) {
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	rollCallID, err := uuid.Parse(p.RollCallID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	actorID, err := uuid.Parse(p.ActorID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	requestID, err := uuid.Parse(strings.TrimSpace(p.RequestID))
-	if err != nil {
-		return nil, fmt.Errorf("%w: request_id must be a UUID", errs.ErrInvalidArgument)
-	}
+	guildID := p.GuildID
+	rollCallID := p.RollCallID
+	actorID := p.ActorID
+	requestID := p.RequestID
 	lines, total, err := normalizeGoldPayouts(p.Payouts)
 	if err != nil {
 		return nil, err
@@ -384,7 +366,7 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("roll_call_id", p.RollCallID).Str("guild_id", p.GuildID).Str("actor_id", p.ActorID).
+	s.logger.Info().Str("roll_call_id", p.RollCallID.String()).Str("guild_id", p.GuildID.String()).Str("actor_id", p.ActorID.String()).
 		Int64("total", total).Int("recipients", len(lines)).Msg("roll call gold distributed")
 	return result, nil
 }

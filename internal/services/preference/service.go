@@ -70,12 +70,7 @@ func newService(q store, logger zerolog.Logger) *Service {
 	return &Service{q: q, logger: logger.With().Str("service", "preference").Logger()}
 }
 
-func (s *Service) Get(ctx context.Context, userIDStr string) (*Preferences, error) {
-	userID, err := parseUserID(userIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) Get(ctx context.Context, userID uuid.UUID) (*Preferences, error) {
 	row, err := s.q.GetNotificationPreferences(ctx, userID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -95,12 +90,7 @@ func (s *Service) Get(ctx context.Context, userIDStr string) (*Preferences, erro
 	}, nil
 }
 
-func (s *Service) UpdateNotifications(ctx context.Context, userIDStr string, patch NotificationPatch) (*Preferences, error) {
-	userID, err := parseUserID(userIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) UpdateNotifications(ctx context.Context, userID uuid.UUID, patch NotificationPatch) (*Preferences, error) {
 	row, err := s.q.UpsertNotificationPreferences(ctx, db.UpsertNotificationPreferencesParams{
 		UserID:             userID,
 		EmailNotifications: optionalBool(patch.EmailNotifications),
@@ -126,17 +116,6 @@ func (s *Service) UpdateNotifications(ctx context.Context, userIDStr string, pat
 		},
 		UpdatedAt: row.UpdatedAt,
 	}, nil
-}
-
-func parseUserID(raw string) (uuid.UUID, error) {
-	if raw == "" {
-		return uuid.Nil, errs.ErrUnauthenticated
-	}
-	id, err := uuid.Parse(raw)
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("%w: user id must be a UUID", errs.ErrInvalidArgument)
-	}
-	return id, nil
 }
 
 func optionalBool(v *bool) pgtype.Bool {

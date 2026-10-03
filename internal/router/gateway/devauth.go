@@ -8,8 +8,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/ids"
 	"github.com/kia280/guma/internal/services/devauth"
 	"github.com/kia280/guma/internal/services/errs"
 	"github.com/kia280/guma/internal/session"
@@ -23,11 +25,11 @@ const (
 
 type devUserStore interface {
 	ListUsers(ctx context.Context, limit int32) ([]devauth.User, error)
-	GetUser(ctx context.Context, userID string) (*devauth.User, error)
-	CreateUser(ctx context.Context, displayName, guildID string) (*devauth.User, error)
-	ResolveGuild(ctx context.Context, userID string) (*devauth.Guild, error)
-	ListGuildMembers(ctx context.Context, guildID string, limit int32) ([]devauth.User, error)
-	SeedGuildMembers(ctx context.Context, guildID string, count int) ([]devauth.User, error)
+	GetUser(ctx context.Context, userID uuid.UUID) (*devauth.User, error)
+	CreateUser(ctx context.Context, displayName string, guildID *uuid.UUID) (*devauth.User, error)
+	ResolveGuild(ctx context.Context, userID *uuid.UUID) (*devauth.Guild, error)
+	ListGuildMembers(ctx context.Context, guildID uuid.UUID, limit int32) ([]devauth.User, error)
+	SeedGuildMembers(ctx context.Context, guildID uuid.UUID, count int) ([]devauth.User, error)
 }
 
 type devUserJSON struct {
@@ -70,8 +72,15 @@ func (h *devAuthHandler) getSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := h.store.GetUser(r.Context(), cookie.Value)
-	if errors.Is(err, errs.ErrNotFound) || errors.Is(err, errs.ErrInvalidArgument) {
+	userID, err := ids.Parse("user_id", cookie.Value)
+	if err != nil {
+		clearDevCookie(w, r)
+		writeJSON(w, http.StatusOK, map[string]any{"user": nil})
+		return
+	}
+
+	u, err := h.store.GetUser(r.Context(), userID)
+	if errors.Is(err, errs.ErrNotFound) {
 		clearDevCookie(w, r)
 		writeJSON(w, http.StatusOK, map[string]any{"user": nil})
 		return
@@ -144,14 +153,16 @@ func (h *devAuthHandler) seed(w http.ResponseWriter, r *http.Request) {
 		h.writeError(w, r, err)
 		return
 	}
-	h.logger.Warn().Str("guild_id", guild.ID).Int("count", len(users)).Msg("dev seeded guild members")
+	h.logger.Warn().Str("guild_id", guild.ID.String()).Int("count", len(users)).Msg("dev seeded guild members")
 	writeJSON(w, http.StatusCreated, map[string]any{"guild": toDevGuildJSON(guild), "users": toDevUsersJSON(users)})
 }
 
 func (h *devAuthHandler) resolveGuild(r *http.Request) (*devauth.Guild, error) {
-	var userID string
+	var userID *uuid.UUID
 	if cookie, err := r.Cookie(session.DevCookieName); err == nil {
-		userID = cookie.Value
+		if id, err := ids.Parse("user_id", cookie.Value); err == nil {
+			userID = &id
+		}
 	}
 	return h.store.ResolveGuild(r.Context(), userID)
 }
@@ -170,9 +181,9 @@ func (h *devAuthHandler) createUser(w http.ResponseWriter, r *http.Request) {
 		h.writeError(w, r, err)
 		return
 	}
-	var guildID string
+	var guildID *uuid.UUID
 	if guild != nil {
-		guildID = guild.ID
+		guildID = &guild.ID
 	}
 
 	u, err := h.store.CreateUser(r.Context(), body.DisplayName, guildID)
@@ -194,7 +205,13 @@ func (h *devAuthHandler) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := h.store.GetUser(r.Context(), body.UserID)
+	userID, err := ids.Parse("user_id", body.UserID)
+	if err != nil {
+		h.writeError(w, r, err)
+		return
+	}
+
+	u, err := h.store.GetUser(r.Context(), userID)
 	if err != nil {
 		h.writeError(w, r, err)
 		return
@@ -292,5 +309,5 @@ func toDevGuildJSON(g *devauth.Guild) *devGuildJSON {
 	if g == nil {
 		return nil
 	}
-	return &devGuildJSON{ID: g.ID, Name: g.Name}
+	return &devGuildJSON{ID: g.ID.String(), Name: g.Name}
 }
