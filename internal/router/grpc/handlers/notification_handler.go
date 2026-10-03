@@ -30,9 +30,6 @@ func NewNotificationService(db *database.Pool, logger zerolog.Logger) *Notificat
 
 func (h *NotificationHandler) ListNotifications(ctx context.Context, req *gumav1.ListNotificationsRequest) (*gumav1.ListNotificationsResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	result, err := h.svc.List(ctx, notificationsvc.ListParams{
 		UserID:     userID,
@@ -58,9 +55,6 @@ func (h *NotificationHandler) ListNotifications(ctx context.Context, req *gumav1
 
 func (h *NotificationHandler) GetUnreadNotificationCount(ctx context.Context, _ *gumav1.GetUnreadNotificationCountRequest) (*gumav1.GetUnreadNotificationCountResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	count, err := h.svc.UnreadCount(ctx, userID)
 	if err != nil {
@@ -74,9 +68,6 @@ func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gum
 		return nil, status.Error(codes.InvalidArgument, "notification_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	n, err := h.svc.MarkRead(ctx, userID, req.NotificationId)
 	if err != nil {
@@ -87,9 +78,6 @@ func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gum
 
 func (h *NotificationHandler) MarkAllNotificationsRead(ctx context.Context, _ *gumav1.MarkAllNotificationsReadRequest) (*gumav1.MarkAllNotificationsReadResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	updated, err := h.svc.MarkAllRead(ctx, userID)
 	if err != nil {

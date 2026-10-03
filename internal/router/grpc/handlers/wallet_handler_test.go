@@ -31,12 +31,6 @@ func TestWalletHandler_GetBalanceTrend_Validation(t *testing.T) {
 			wantCode: codes.InvalidArgument,
 		},
 		{
-			name:     "missing user_id in context",
-			ctx:      context.Background(),
-			req:      &gumav1.GetBalanceTrendRequest{GuildId: "3f1d0a52-9a2e-4c0e-8f4b-0c5a0f6f2a11"},
-			wantCode: codes.Unauthenticated,
-		},
-		{
 			name:     "malformed guild_id",
 			ctx:      session.WithUserID(context.Background(), "3f1d0a52-9a2e-4c0e-8f4b-0c5a0f6f2a11"),
 			req:      &gumav1.GetBalanceTrendRequest{GuildId: "not-a-uuid"},

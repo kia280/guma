@@ -75,9 +75,6 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventR
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	e, err := h.svc.Create(ctx, eventsvc.CreateParams{
 		GuildID:          req.GuildId,
@@ -104,9 +101,6 @@ func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventR
 		return nil, status.Error(codes.InvalidArgument, "guild_id and event_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	e, err := h.svc.Update(ctx, eventsvc.UpdateParams{
 		GuildID:          req.GuildId,
@@ -134,9 +128,6 @@ func (h *EventHandler) DeleteEvent(ctx context.Context, req *gumav1.DeleteEventR
 		return nil, status.Error(codes.InvalidArgument, "guild_id and event_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	if err := h.svc.Delete(ctx, req.GuildId, req.EventId, userID); err != nil {
 		return nil, toStatus(err)

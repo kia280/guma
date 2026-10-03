@@ -29,9 +29,6 @@ func NewPreferenceService(db *database.Pool, logger zerolog.Logger) *PreferenceH
 
 func (h *PreferenceHandler) GetMyPreferences(ctx context.Context, _ *gumav1.GetMyPreferencesRequest) (*gumav1.GetMyPreferencesResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	p, err := h.svc.Get(ctx, userID)
 	if err != nil {
@@ -45,9 +42,6 @@ func (h *PreferenceHandler) GetMyPreferences(ctx context.Context, _ *gumav1.GetM
 
 func (h *PreferenceHandler) UpdateMyPreferences(ctx context.Context, req *gumav1.UpdateMyPreferencesRequest) (*gumav1.UpdateMyPreferencesResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	if req.Notifications == nil {
 		return nil, status.Error(codes.InvalidArgument, "notifications is required")
 	}

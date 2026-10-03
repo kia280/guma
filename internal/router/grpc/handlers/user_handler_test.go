@@ -18,16 +18,6 @@ import (
 	"github.com/kia280/guma/internal/session"
 )
 
-func TestUserService_GetMe_Unauthenticated(t *testing.T) {
-	service := NewUserService(nil, "", zerolog.New(os.Stdout))
-
-	_, err := service.GetMe(context.Background(), &gumav1.GetMeRequest{})
-	require.Error(t, err)
-	st, ok := status.FromError(err)
-	require.True(t, ok)
-	assert.Equal(t, codes.Unauthenticated, st.Code())
-}
-
 func TestUserService_UpdateMe_InvalidArgument(t *testing.T) {
 	service := NewUserService(nil, "", zerolog.New(os.Stdout))
 	ctx := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")

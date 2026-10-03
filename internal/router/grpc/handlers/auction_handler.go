@@ -75,9 +75,6 @@ func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAu
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	var item models.Item
 	if req.Item != nil {
@@ -106,9 +103,6 @@ func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidReque
 		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	auctionItem, bid, err := h.svc.PlaceBid(ctx, req.GuildId, req.AuctionId, userID, req.Amount)
 	if err != nil {
@@ -142,9 +136,6 @@ func (h *AuctionHandler) UpdateAuction(ctx context.Context, req *gumav1.UpdateAu
 		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	params := auctionsvc.UpdateParams{
 		GuildID:         req.GuildId,
@@ -185,9 +176,6 @@ func (h *AuctionHandler) DeleteAuction(ctx context.Context, req *gumav1.DeleteAu
 		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	if err := h.svc.Delete(ctx, req.GuildId, req.AuctionId, userID); err != nil {
 		return nil, toStatus(err)
@@ -200,9 +188,6 @@ func (h *AuctionHandler) CancelAuction(ctx context.Context, req *gumav1.CancelAu
 		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	a, err := h.svc.Cancel(ctx, req.GuildId, req.AuctionId, userID)
 	if err != nil {

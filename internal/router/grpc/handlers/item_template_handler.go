@@ -32,9 +32,6 @@ func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	templates, err := h.svc.List(ctx, req.GuildId, userID)
 	if err != nil {
 		return nil, toStatus(err)
@@ -51,9 +48,6 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	t, err := h.svc.Create(ctx, req.GuildId, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
@@ -71,9 +65,6 @@ func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav
 		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
@@ -91,9 +82,6 @@ func (h *ItemTemplateHandler) DeleteItemTemplate(ctx context.Context, req *gumav
 		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	if err := h.svc.Delete(ctx, req.GuildId, req.TemplateId, userID); err != nil {
 		return nil, toStatus(err)
 	}

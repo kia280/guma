@@ -75,9 +75,6 @@ func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.Create
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	c, err := h.svc.Create(ctx, rollcallsvc.CreateParams{
 		GuildID:     req.GuildId,
@@ -100,9 +97,6 @@ func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.Update
 		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	c, err := h.svc.Update(ctx, rollcallsvc.UpdateParams{
 		GuildID:     req.GuildId,
@@ -126,9 +120,6 @@ func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.Delete
 		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	if err := h.svc.Delete(ctx, req.GuildId, req.RollCallId, userID); err != nil {
 		return nil, toStatus(err)
 	}
@@ -140,9 +131,6 @@ func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.Comp
 		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	c, err := h.svc.Complete(ctx, req.GuildId, req.RollCallId, userID, req.KeepLeftoversInBank)
 	if err != nil {
@@ -156,9 +144,6 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	lootList := make([]models.Item, len(req.LootList))
 	for i, item := range req.LootList {
@@ -182,9 +167,6 @@ func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.Cancel
 		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	c, err := h.svc.Cancel(ctx, req.GuildId, req.RollCallId, userID)
 	if err != nil {
@@ -198,9 +180,6 @@ func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLoot
 		return nil, status.Error(codes.InvalidArgument, "guild_id, roll_call_id, item_id and user_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	backpackItemID, err := h.svc.AssignLoot(ctx, req.GuildId, req.RollCallId, req.ItemId, userID, req.UserId)
 	if err != nil {
@@ -213,10 +192,6 @@ func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRo
 	if req.GuildId == "" || req.RollCallId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
-	if session.UserIDFromContext(ctx) == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
 	summary, err := h.svc.GetGold(ctx, req.GuildId, req.RollCallId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -235,9 +210,6 @@ func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav
 		return nil, status.Error(codes.InvalidArgument, "payouts are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	payouts := make([]rollcallsvc.GoldPayout, len(req.Payouts))
 	for i, p := range req.Payouts {
@@ -266,9 +238,6 @@ func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInReques
 		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	attendee, err := h.svc.CheckIn(ctx, req.GuildId, req.RollCallId, userID, req.Notes)
 	if err != nil {

@@ -44,11 +44,13 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 			interceptors.ErrorSanitizerInterceptor(),
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),
+			interceptors.AuthInterceptor(),
 			interceptors.ValidationInterceptor(),
 		),
 		grpc.ChainStreamInterceptor(
 			interceptors.StreamErrorSanitizerInterceptor(logger),
 			interceptors.StreamRecoveryInterceptor(logger),
+			interceptors.StreamAuthInterceptor(),
 		),
 	)
 

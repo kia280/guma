@@ -40,7 +40,6 @@ func TestUpdateAuction_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{name: "missing ids", ctx: authed, req: &gumav1.UpdateAuctionRequest{}, wantCode: codes.InvalidArgument},
-		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.UpdateAuctionRequest{GuildId: guildID, AuctionId: auctionID}, wantCode: codes.Unauthenticated},
 		{name: "blank item name", ctx: authed, req: &gumav1.UpdateAuctionRequest{GuildId: guildID, AuctionId: auctionID, Item: &gumav1.Item{Name: " "}}, wantCode: codes.InvalidArgument},
 		{name: "zero starting bid", ctx: authed, req: &gumav1.UpdateAuctionRequest{GuildId: guildID, AuctionId: auctionID, StartingBid: &zero}, wantCode: codes.InvalidArgument},
 		{name: "zero increment", ctx: authed, req: &gumav1.UpdateAuctionRequest{GuildId: guildID, AuctionId: auctionID, MinBidIncrement: &zero}, wantCode: codes.InvalidArgument},
@@ -70,15 +69,11 @@ func TestCancelAndDeleteAuction_Validation(t *testing.T) {
 
 	_, err := h.CancelAuction(authed, &gumav1.CancelAuctionRequest{GuildId: guildID})
 	requireCode(t, err, codes.InvalidArgument)
-	_, err = h.CancelAuction(context.Background(), &gumav1.CancelAuctionRequest{GuildId: guildID, AuctionId: "a"})
-	requireCode(t, err, codes.Unauthenticated)
 	_, err = h.CancelAuction(authed, &gumav1.CancelAuctionRequest{GuildId: guildID, AuctionId: "bad"})
 	requireCode(t, err, codes.NotFound)
 
 	_, err = h.DeleteAuction(authed, &gumav1.DeleteAuctionRequest{AuctionId: "a"})
 	requireCode(t, err, codes.InvalidArgument)
-	_, err = h.DeleteAuction(context.Background(), &gumav1.DeleteAuctionRequest{GuildId: guildID, AuctionId: "a"})
-	requireCode(t, err, codes.Unauthenticated)
 	_, err = h.DeleteAuction(authed, &gumav1.DeleteAuctionRequest{GuildId: guildID, AuctionId: "bad"})
 	requireCode(t, err, codes.NotFound)
 }

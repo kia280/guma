@@ -33,14 +33,6 @@ func TestItemTemplateService_Validation(t *testing.T) {
 			wantCode: codes.InvalidArgument,
 		},
 		{
-			name: "list unauthenticated",
-			call: func() error {
-				_, err := h.ListItemTemplates(context.Background(), &gumav1.ListItemTemplatesRequest{GuildId: guildID})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
-		},
-		{
 			name: "create unknown category",
 			call: func() error {
 				_, err := h.CreateItemTemplate(authed, &gumav1.CreateItemTemplateRequest{
@@ -79,14 +71,6 @@ func TestItemTemplateService_Validation(t *testing.T) {
 				return err
 			},
 			wantCode: codes.NotFound,
-		},
-		{
-			name: "delete unauthenticated",
-			call: func() error {
-				_, err := h.DeleteItemTemplate(context.Background(), &gumav1.DeleteItemTemplateRequest{GuildId: guildID, TemplateId: "x"})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
 		},
 	}
 

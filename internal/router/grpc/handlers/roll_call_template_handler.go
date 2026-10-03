@@ -32,9 +32,6 @@ func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	templates, err := h.svc.List(ctx, req.GuildId, userID)
 	if err != nil {
 		return nil, toStatus(err)
@@ -51,9 +48,6 @@ func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, re
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	t, err := h.svc.Create(ctx, req.GuildId, userID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
@@ -70,9 +64,6 @@ func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, re
 		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
@@ -89,9 +80,6 @@ func (h *RollCallTemplateHandler) DeleteRollCallTemplate(ctx context.Context, re
 		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	if err := h.svc.Delete(ctx, req.GuildId, req.TemplateId, userID); err != nil {
 		return nil, toStatus(err)
 	}

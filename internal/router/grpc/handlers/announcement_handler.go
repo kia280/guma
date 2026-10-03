@@ -32,9 +32,6 @@ func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	list, err := h.svc.List(ctx, announcementsvc.ListParams{
 		GuildID:       req.GuildId,
@@ -69,9 +66,6 @@ func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	a, err := h.svc.CreateDraft(ctx, req.GuildId, userID)
 	if err != nil {
 		return nil, toStatus(err)
@@ -140,11 +134,7 @@ func requireAnnouncementTarget(ctx context.Context, guildID, announcementID stri
 	if announcementID == "" {
 		return "", status.Error(codes.InvalidArgument, "announcement_id is required")
 	}
-	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return "", status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-	return userID, nil
+	return session.UserIDFromContext(ctx), nil
 }
 
 func announcementToProto(a *announcementsvc.Announcement) *gumav1.Announcement {

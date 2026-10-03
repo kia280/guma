@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"errors"
 
 	"github.com/rs/zerolog"
 	"google.golang.org/genproto/googleapis/api/httpbody"
@@ -14,7 +13,6 @@ import (
 
 	guildv1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
-	"github.com/kia280/guma/internal/services/errs"
 	guildsvc "github.com/kia280/guma/internal/services/guild"
 	"github.com/kia280/guma/internal/session"
 )
@@ -39,9 +37,6 @@ func (h *GuildHandler) CreateGuild(ctx context.Context, req *guildv1.CreateGuild
 		return nil, status.Error(codes.InvalidArgument, "guild name is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	g, err := h.svc.Create(ctx, guildsvc.CreateParams{
 		Name:           req.Name,
@@ -59,10 +54,6 @@ func (h *GuildHandler) GetGuild(ctx context.Context, req *guildv1.GetGuildReques
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
-	if session.UserIDFromContext(ctx) == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
 	g, err := h.svc.Get(ctx, req.GuildId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -75,9 +66,6 @@ func (h *GuildHandler) UpdateGuild(ctx context.Context, req *guildv1.UpdateGuild
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	g, err := h.svc.Update(ctx, guildsvc.UpdateParams{
 		GuildID:     req.GuildId,
@@ -98,9 +86,6 @@ func (h *GuildHandler) UploadGuildLogo(ctx context.Context, req *guildv1.UploadG
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	g, err := h.svc.UploadLogo(ctx, guildsvc.UploadLogoParams{
 		GuildID:     req.GuildId,
@@ -119,9 +104,6 @@ func (h *GuildHandler) DeleteGuildLogo(ctx context.Context, req *guildv1.DeleteG
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	g, err := h.svc.DeleteLogo(ctx, req.GuildId, userID)
 	if err != nil {
@@ -134,10 +116,6 @@ func (h *GuildHandler) GetGuildLogo(ctx context.Context, req *guildv1.GetGuildLo
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
-	if session.UserIDFromContext(ctx) == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
 	logo, err := h.svc.GetLogo(ctx, req.GuildId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -158,9 +136,6 @@ func (h *GuildHandler) DeleteGuild(ctx context.Context, req *guildv1.DeleteGuild
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	if err := h.svc.Delete(ctx, req.GuildId, userID); err != nil {
 		return nil, toStatus(err)
@@ -169,10 +144,6 @@ func (h *GuildHandler) DeleteGuild(ctx context.Context, req *guildv1.DeleteGuild
 }
 
 func (h *GuildHandler) ListGuilds(ctx context.Context, req *guildv1.ListGuildsRequest) (*guildv1.ListGuildsResponse, error) {
-	if session.UserIDFromContext(ctx) == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
 	offset, err := guildsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
@@ -199,9 +170,6 @@ func (h *GuildHandler) ListGuilds(ctx context.Context, req *guildv1.ListGuildsRe
 
 func (h *GuildHandler) GetCurrentGuild(ctx context.Context, _ *guildv1.GetCurrentGuildRequest) (*guildv1.GetCurrentGuildResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	g, err := h.svc.GetCurrent(ctx, userID)
 	if err != nil {
@@ -218,9 +186,6 @@ func (h *GuildHandler) JoinGuildById(ctx context.Context, req *guildv1.JoinGuild
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	g, err := h.svc.Join(ctx, req.GuildId, userID)
 	if err != nil {
@@ -234,9 +199,6 @@ func (h *GuildHandler) LeaveGuild(ctx context.Context, req *guildv1.LeaveGuildRe
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	if err := h.svc.Leave(ctx, req.GuildId, userID); err != nil {
 		return nil, toStatus(err)
@@ -248,10 +210,6 @@ func (h *GuildHandler) GetGuildSettings(ctx context.Context, req *guildv1.GetGui
 	if req.GuildId == "" {
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
-	if session.UserIDFromContext(ctx) == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
 	settings, err := h.svc.GetSettings(ctx, req.GuildId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -267,9 +225,6 @@ func (h *GuildHandler) UpdateGuildSettings(ctx context.Context, req *guildv1.Upd
 		return nil, status.Error(codes.InvalidArgument, "settings are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	updated, err := h.svc.UpdateSettings(ctx, req.GuildId, userID, settingsFromProto(req.Settings))
 	if err != nil {
@@ -283,9 +238,6 @@ func (h *GuildHandler) GetGuildStats(ctx context.Context, req *guildv1.GetGuildS
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	stats, err := h.svc.Stats(ctx, req.GuildId, userID)
 	if err != nil {
@@ -338,25 +290,5 @@ func settingsFromProto(p *guildv1.GuildSettings) guildsvc.GuildSettings {
 		Public:         p.Public,
 		AllowInvites:   p.AllowInvites,
 		CustomSettings: p.CustomSettings,
-	}
-}
-
-// toStatus maps service layer errors to gRPC status errors.
-func toStatus(err error) error {
-	switch {
-	case errors.Is(err, errs.ErrNotFound):
-		return status.Error(codes.NotFound, err.Error())
-	case errors.Is(err, errs.ErrPermissionDenied):
-		return status.Error(codes.PermissionDenied, err.Error())
-	case errors.Is(err, errs.ErrUnauthenticated):
-		return status.Error(codes.Unauthenticated, err.Error())
-	case errors.Is(err, errs.ErrFailedPrecondition):
-		return status.Error(codes.FailedPrecondition, err.Error())
-	case errors.Is(err, errs.ErrAlreadyExists):
-		return status.Error(codes.AlreadyExists, err.Error())
-	case errors.Is(err, errs.ErrInvalidArgument):
-		return status.Error(codes.InvalidArgument, err.Error())
-	default:
-		return status.Errorf(codes.Internal, "%v", err)
 	}
 }

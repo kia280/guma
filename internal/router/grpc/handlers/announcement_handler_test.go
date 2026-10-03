@@ -18,8 +18,7 @@ import (
 
 func TestAnnouncementService_Validation(t *testing.T) {
 	h := NewAnnouncementService(nil, zerolog.Nop())
-	anon := context.Background()
-	authed := session.WithUserID(anon, "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guild = "00000000-0000-0000-0000-00000000000a"
 	const ann = "00000000-0000-0000-0000-0000000000f1"
 
@@ -34,28 +33,12 @@ func TestAnnouncementService_Validation(t *testing.T) {
 			wantCode: codes.InvalidArgument,
 		},
 		{
-			name: "list unauthenticated",
-			call: func() error {
-				_, err := h.ListAnnouncements(anon, &gumav1.ListAnnouncementsRequest{GuildId: guild})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
-		},
-		{
 			name: "get missing announcement",
 			call: func() error {
 				_, err := h.GetAnnouncement(authed, &gumav1.GetAnnouncementRequest{GuildId: guild})
 				return err
 			},
 			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "create unauthenticated",
-			call: func() error {
-				_, err := h.CreateAnnouncementDraft(anon, &gumav1.CreateAnnouncementDraftRequest{GuildId: guild})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
 		},
 		{
 			name: "create malformed guild",
@@ -72,22 +55,6 @@ func TestAnnouncementService_Validation(t *testing.T) {
 				return err
 			},
 			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "publish unauthenticated",
-			call: func() error {
-				_, err := h.PublishAnnouncement(anon, &gumav1.PublishAnnouncementRequest{GuildId: guild, AnnouncementId: ann})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "unpublish unauthenticated",
-			call: func() error {
-				_, err := h.UnpublishAnnouncement(anon, &gumav1.UnpublishAnnouncementRequest{GuildId: guild, AnnouncementId: ann})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
 		},
 		{
 			name: "unpublish missing announcement",

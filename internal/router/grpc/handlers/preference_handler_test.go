@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/proto"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	preferencesvc "github.com/kia280/guma/internal/services/preference"
@@ -19,29 +18,13 @@ import (
 
 func TestPreferenceService_Validation(t *testing.T) {
 	h := NewPreferenceService(nil, zerolog.Nop())
-	anon := context.Background()
-	authed := session.WithUserID(anon, "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 
 	tests := []struct {
 		name     string
 		call     func() error
 		wantCode codes.Code
 	}{
-		{
-			name:     "get unauthenticated",
-			call:     func() error { _, err := h.GetMyPreferences(anon, &gumav1.GetMyPreferencesRequest{}); return err },
-			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "update unauthenticated",
-			call: func() error {
-				_, err := h.UpdateMyPreferences(anon, &gumav1.UpdateMyPreferencesRequest{
-					Notifications: &gumav1.NotificationPreferencesPatch{AuctionAlerts: proto.Bool(false)},
-				})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
-		},
 		{
 			name: "update missing notifications",
 			call: func() error {

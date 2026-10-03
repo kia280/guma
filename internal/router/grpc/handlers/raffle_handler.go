@@ -70,9 +70,6 @@ func (h *RaffleHandler) CreateRaffle(ctx context.Context, req *gumav1.CreateRaff
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	prizes := prizesFromProto(req.Prizes)
 
@@ -98,9 +95,6 @@ func (h *RaffleHandler) PurchaseTickets(ctx context.Context, req *gumav1.Purchas
 		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	tickets, totalCost, err := h.svc.PurchaseTickets(ctx, req.GuildId, req.RaffleId, userID, req.Quantity)
 	if err != nil {
@@ -135,9 +129,6 @@ func (h *RaffleHandler) UpdateRaffle(ctx context.Context, req *gumav1.UpdateRaff
 		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	l, err := h.svc.Update(ctx, rafflesvc.UpdateParams{
 		GuildID:           req.GuildId,
@@ -161,9 +152,6 @@ func (h *RaffleHandler) CancelRaffle(ctx context.Context, req *gumav1.CancelRaff
 		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	l, err := h.svc.Cancel(ctx, req.GuildId, req.RaffleId, userID)
 	if err != nil {
@@ -177,9 +165,6 @@ func (h *RaffleHandler) DeleteRaffle(ctx context.Context, req *gumav1.DeleteRaff
 		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	if err := h.svc.Delete(ctx, req.GuildId, req.RaffleId, userID); err != nil {
 		return nil, toStatus(err)
@@ -192,9 +177,6 @@ func (h *RaffleHandler) DrawRaffle(ctx context.Context, req *gumav1.DrawRaffleRe
 		return nil, status.Error(codes.InvalidArgument, "guild_id and raffle_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	l, winners, err := h.svc.Draw(ctx, req.GuildId, req.RaffleId, userID)
 	if err != nil {
@@ -210,9 +192,6 @@ func (h *RaffleHandler) DrawRaffle(ctx context.Context, req *gumav1.DrawRaffleRe
 
 func (h *RaffleHandler) ListMyTickets(ctx context.Context, req *gumav1.ListMyTicketsRequest) (*gumav1.ListMyTicketsResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	result, err := h.svc.ListMyTickets(ctx, userID, req.GuildId, int(req.PageSize), rafflesvc.ParsePageToken(req.PageToken))
 	if err != nil {

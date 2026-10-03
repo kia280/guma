@@ -32,9 +32,6 @@ func NewUserService(db *database.Pool, kratosPublicURL string, logger zerolog.Lo
 
 func (h *UserHandler) GetMe(ctx context.Context, _ *gumav1.GetMeRequest) (*gumav1.GetMeResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	cookie := session.CookieFromContext(ctx)
 	h.logger.Info().
 		Str("user_id", userID).
@@ -48,9 +45,6 @@ func (h *UserHandler) GetMe(ctx context.Context, _ *gumav1.GetMeRequest) (*gumav
 
 func (h *UserHandler) UpdateMe(ctx context.Context, req *gumav1.UpdateMeRequest) (*gumav1.UpdateMeResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	u, err := h.svc.UpdateMe(ctx, userID, session.CookieFromContext(ctx), usersvc.UpdateParams{
 		DisplayName: req.DisplayName,
@@ -77,9 +71,6 @@ func (h *UserHandler) GetUser(ctx context.Context, req *gumav1.GetUserRequest) (
 
 func (h *UserHandler) GetUserStats(ctx context.Context, _ *gumav1.GetUserStatsRequest) (*gumav1.GetUserStatsResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	st, err := h.svc.GetStats(ctx, userID)
 	if err != nil {

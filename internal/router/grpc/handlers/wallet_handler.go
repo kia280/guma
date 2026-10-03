@@ -34,9 +34,6 @@ func (h *WalletHandler) GetWallet(ctx context.Context, req *gumav1.GetWalletRequ
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	w, err := h.svc.GetWallet(ctx, userID, req.GuildId)
 	if err != nil {
@@ -50,9 +47,6 @@ func (h *WalletHandler) DepositFunds(ctx context.Context, req *gumav1.DepositFun
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	tx, _, err := h.svc.Deposit(ctx, userID, req.GuildId, req.Amount, req.Note)
 	if err != nil {
@@ -66,9 +60,6 @@ func (h *WalletHandler) WithdrawFunds(ctx context.Context, req *gumav1.WithdrawF
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	request, tx, w, err := h.svc.RequestWithdrawal(ctx, userID, req.GuildId, req.Amount, req.Note)
 	if err != nil {
@@ -86,9 +77,6 @@ func (h *WalletHandler) ListMyWithdrawalRequests(ctx context.Context, req *gumav
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -116,9 +104,6 @@ func (h *WalletHandler) CancelWithdrawalRequest(ctx context.Context, req *gumav1
 		return nil, status.Error(codes.InvalidArgument, "guild_id and request_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	request, w, err := h.svc.CancelWithdrawalRequest(ctx, userID, req.GuildId, req.RequestId)
 	if err != nil {
@@ -135,9 +120,6 @@ func (h *WalletHandler) ListWithdrawalRequests(ctx context.Context, req *gumav1.
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -165,9 +147,6 @@ func (h *WalletHandler) ReviewWithdrawalRequest(ctx context.Context, req *gumav1
 		return nil, status.Error(codes.InvalidArgument, "guild_id and request_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	request, err := h.svc.ReviewWithdrawalRequest(ctx, userID, req.GuildId, req.RequestId, req.Status, req.Note)
 	if err != nil {
@@ -181,9 +160,6 @@ func (h *WalletHandler) TransferFunds(ctx context.Context, req *gumav1.TransferF
 		return nil, status.Error(codes.InvalidArgument, "guild_id and to_user_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	tx, _, err := h.svc.Transfer(ctx, userID, req.ToUserId, req.GuildId, req.Amount, req.Note)
 	if err != nil {
@@ -197,9 +173,6 @@ func (h *WalletHandler) ListTransactions(ctx context.Context, req *gumav1.ListTr
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -232,9 +205,6 @@ func (h *WalletHandler) GetBalanceTrend(ctx context.Context, req *gumav1.GetBala
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	points, err := h.svc.GetBalanceTrend(ctx, userID, req.GuildId, req.Days)
 	if err != nil {
@@ -253,9 +223,6 @@ func (h *WalletHandler) ListBackpackItems(ctx context.Context, req *gumav1.ListB
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -287,9 +254,6 @@ func (h *WalletHandler) WithdrawBackpackItem(ctx context.Context, req *gumav1.Wi
 		return nil, status.Error(codes.InvalidArgument, "guild_id and item_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	bi, err := h.svc.WithdrawBackpackItem(ctx, userID, req.GuildId, req.ItemId)
 	if err != nil {
@@ -303,9 +267,6 @@ func (h *WalletHandler) TransferBackpackItem(ctx context.Context, req *gumav1.Tr
 		return nil, status.Error(codes.InvalidArgument, "guild_id, item_id and to_user_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	bi, err := h.svc.TransferBackpackItem(ctx, userID, req.GuildId, req.ItemId, req.ToUserId, req.Note)
 	if err != nil {
@@ -412,9 +373,6 @@ func (h *WalletHandler) CancelBackpackWithdrawal(ctx context.Context, req *gumav
 		return nil, status.Error(codes.InvalidArgument, "guild_id and item_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	bi, err := h.svc.CancelBackpackWithdrawal(ctx, userID, req.GuildId, req.ItemId)
 	if err != nil {
@@ -428,9 +386,6 @@ func (h *WalletHandler) ListPendingDeliveries(ctx context.Context, req *gumav1.L
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	items, err := h.svc.ListPendingDeliveries(ctx, userID, req.GuildId)
 	if err != nil {
@@ -448,9 +403,6 @@ func (h *WalletHandler) ConfirmBackpackDelivery(ctx context.Context, req *gumav1
 		return nil, status.Error(codes.InvalidArgument, "guild_id and item_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	bi, err := h.svc.ConfirmBackpackDelivery(ctx, userID, req.GuildId, req.ItemId)
 	if err != nil {
@@ -464,9 +416,6 @@ func (h *WalletHandler) ListMemberAssets(ctx context.Context, req *gumav1.ListMe
 		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	summaries, err := h.svc.ListMemberAssets(ctx, userID, req.GuildId)
 	if err != nil {
@@ -484,9 +433,6 @@ func (h *WalletHandler) GetMemberAssets(ctx context.Context, req *gumav1.GetMemb
 		return nil, status.Error(codes.InvalidArgument, "guild_id and user_id are required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	assets, err := h.svc.GetMemberAssets(ctx, userID, req.GuildId, req.UserId)
 	if err != nil {
@@ -507,9 +453,6 @@ func (h *WalletHandler) AdminTransferFunds(ctx context.Context, req *gumav1.Admi
 		return nil, status.Error(codes.InvalidArgument, "to_user_id or to_guild_bank is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	tx, balance, err := h.svc.AdminTransferFunds(ctx, walletsvc.AdminTransferFundsParams{
 		AdminID:     userID,
@@ -533,9 +476,6 @@ func (h *WalletHandler) AdminTransferBackpackItems(ctx context.Context, req *gum
 		return nil, status.Error(codes.InvalidArgument, "to_user_id or to_guild_bank is required")
 	}
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	moved, err := h.svc.AdminTransferBackpackItems(ctx, walletsvc.AdminTransferItemsParams{
 		AdminID:     userID,

@@ -44,9 +44,6 @@ func NewStreamService(broker *events.Broker, guildLookup GuildLookup, logger zer
 func (h *StreamHandler) WatchUserEvents(_ *gumav1.WatchUserEventsRequest, stream grpc.ServerStreamingServer[gumav1.WatchUserEventsResponse]) error {
 	ctx := stream.Context()
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	guildIDs, err := h.guildLookup(ctx, userID)
 	if err != nil {

@@ -43,9 +43,6 @@ func (s *MemberService) InviteMember(ctx context.Context, req *memberv1.InviteMe
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().
 		Str("user_id", userID).
@@ -81,9 +78,6 @@ func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRe
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().
 		Str("user_id", userID).
@@ -121,9 +115,6 @@ func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMe
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().
 		Str("user_id", userID).
@@ -164,9 +155,6 @@ func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.Upda
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	member, err := s.svc.UpdateRole(ctx, membersvc.UpdateRoleParams{
 		GuildID: req.GuildId,
@@ -192,9 +180,6 @@ func (s *MemberService) RemoveMember(ctx context.Context, req *memberv1.RemoveMe
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().
 		Str("user_id", userID).
@@ -217,9 +202,6 @@ func (s *MemberService) ListMembers(ctx context.Context, req *memberv1.ListMembe
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	result, err := s.svc.List(ctx, membersvc.ListParams{
 		GuildID:   req.GuildId,
@@ -270,9 +252,6 @@ func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRe
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().
 		Str("user_id", userID).
@@ -305,9 +284,6 @@ func (s *MemberService) GenerateInviteCode(ctx context.Context, req *memberv1.Ge
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().
 		Str("user_id", userID).
@@ -368,9 +344,6 @@ func (s *MemberService) ListInvites(ctx context.Context, req *memberv1.ListInvit
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().
 		Str("user_id", userID).
@@ -398,9 +371,6 @@ func (s *MemberService) RevokeInvite(ctx context.Context, req *memberv1.RevokeIn
 	}
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().
 		Str("user_id", userID).
