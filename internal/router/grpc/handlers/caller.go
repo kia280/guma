@@ -17,11 +17,3 @@ func callerID(ctx context.Context) (uuid.UUID, error) {
 	}
 	return id, nil
 }
-
-func legacyCallerID(ctx context.Context) string {
-	id, ok := session.UserID(ctx)
-	if !ok {
-		return ""
-	}
-	return id.String()
-}
