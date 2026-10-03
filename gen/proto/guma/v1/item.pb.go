@@ -25,8 +25,8 @@ const (
 // Item is the shared structure for any in-game item across all features
 // (auctions, backpack, bank, roll call loot, raffles).
 //
-// ItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC
-// ItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC
+// ItemCategory values: weapon, armor, accessory, consumable, skill_scroll, material, misc
+// ItemRarity values: common, uncommon, rare, epic, legendary, mythic
 type Item struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -211,13 +211,13 @@ var File_proto_guma_v1_item_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_item_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/guma/v1/item.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cproto/guma/v1/validate.proto\"\xb2\x01\n" +
+	"\x18proto/guma/v1/item.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cproto/guma/v1/validate.proto\"\xb8\x01\n" +
 	"\x04Item\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xf0>\x01R\x02id\x12\x1c\n" +
 	"\x04name\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xf8>\x01R\x04name\x12*\n" +
-	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\vdescription\x12$\n" +
-	"\bcategory\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\bcategory\x12 \n" +
-	"\x06rarity\x18\x05 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x06rarity\"\x84\x02\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\vdescription\x12'\n" +
+	"\bcategory\x18\x04 \x01(\tB\v\xbaH\br\x06\xe8>\x01\xa0?\x01R\bcategory\x12#\n" +
+	"\x06rarity\x18\x05 \x01(\tB\v\xbaH\br\x06\xe8>\x01\xa8?\x01R\x06rarity\"\x84\x02\n" +
 	"\rItemSourceRef\x125\n" +
 	"\x10backpack_item_id\x18\x01 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\x0ebackpackItemId\x12-\n" +
 	"\fbank_item_id\x18\x02 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\n" +

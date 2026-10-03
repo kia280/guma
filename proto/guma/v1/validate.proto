@@ -51,6 +51,14 @@ extend buf.validate.StringRules {
     id: "string.url"
     expression: "!rule || size(this) <= 2048 ? '' : 'value must be at most 2048 characters'"
   }];
+  bool item_category = 1012 [(buf.validate.predefined).cel = {
+    id: "string.item_category"
+    expression: "!rule || this == '' || this.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc'] ? '' : 'value must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc'"
+  }];
+  bool item_rarity = 1013 [(buf.validate.predefined).cel = {
+    id: "string.item_rarity"
+    expression: "!rule || this == '' || this.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] ? '' : 'value must be one of common, uncommon, rare, epic, legendary, mythic'"
+  }];
 }
 
 extend buf.validate.Int32Rules {

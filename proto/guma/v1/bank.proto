@@ -181,8 +181,8 @@ message DonateItemResponse {
 
 message ListBankItemsRequest {
   string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
-  string category = 2 [(buf.validate.field).string = {[guma.v1.keyword]: true}];
-  string rarity = 3 [(buf.validate.field).string = {[guma.v1.keyword]: true}];
+  string category = 2 [(buf.validate.field).string = {[guma.v1.keyword]: true, [guma.v1.item_category]: true}];
+  string rarity = 3 [(buf.validate.field).string = {[guma.v1.keyword]: true, [guma.v1.item_rarity]: true}];
   int32 page_size = 4 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
   string page_token = 5 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
   string roll_call_id = 6 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];

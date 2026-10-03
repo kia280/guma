@@ -1300,12 +1300,12 @@ var File_proto_guma_v1_auction_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_auction_proto_rawDesc = "" +
 	"\n" +
-	"\x1bproto/guma/v1/auction.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\x99\x02\n" +
+	"\x1bproto/guma/v1/auction.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\x9f\x02\n" +
 	"\x13ListAuctionsRequest\x12&\n" +
 	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12 \n" +
-	"\x06status\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x06status\x12$\n" +
-	"\bcategory\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\bcategory\x12 \n" +
-	"\x06rarity\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x06rarity\x12 \n" +
+	"\x06status\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x06status\x12'\n" +
+	"\bcategory\x18\x03 \x01(\tB\v\xbaH\br\x06\xe8>\x01\xa0?\x01R\bcategory\x12#\n" +
+	"\x06rarity\x18\x04 \x01(\tB\v\xbaH\br\x06\xe8>\x01\xa8?\x01R\x06rarity\x12 \n" +
 	"\x06search\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x80?\x01R\x06search\x12%\n" +
 	"\tpage_size\x18\x06 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +

@@ -111,6 +111,22 @@ var file_proto_guma_v1_validate_proto_extTypes = []protoimpl.ExtensionInfo{
 		Filename:      "proto/guma/v1/validate.proto",
 	},
 	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1012,
+		Name:          "guma.v1.item_category",
+		Tag:           "varint,1012,opt,name=item_category",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
+		ExtendedType:  (*validate.StringRules)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         1013,
+		Name:          "guma.v1.item_rarity",
+		Tag:           "varint,1013,opt,name=item_rarity",
+		Filename:      "proto/guma/v1/validate.proto",
+	},
+	{
 		ExtendedType:  (*validate.Int32Rules)(nil),
 		ExtensionType: (*int32)(nil),
 		Field:         1001,
@@ -168,26 +184,30 @@ var (
 	E_Text = &file_proto_guma_v1_validate_proto_extTypes[9]
 	// optional bool url = 1011;
 	E_Url = &file_proto_guma_v1_validate_proto_extTypes[10]
+	// optional bool item_category = 1012;
+	E_ItemCategory = &file_proto_guma_v1_validate_proto_extTypes[11]
+	// optional bool item_rarity = 1013;
+	E_ItemRarity = &file_proto_guma_v1_validate_proto_extTypes[12]
 )
 
 // Extension fields to validate.Int32Rules.
 var (
 	// optional int32 max_page_size = 1001;
-	E_MaxPageSize = &file_proto_guma_v1_validate_proto_extTypes[11]
+	E_MaxPageSize = &file_proto_guma_v1_validate_proto_extTypes[13]
 )
 
 // Extension fields to validate.Int64Rules.
 var (
 	// optional bool amount = 1001;
-	E_Amount = &file_proto_guma_v1_validate_proto_extTypes[12]
+	E_Amount = &file_proto_guma_v1_validate_proto_extTypes[14]
 	// optional bool amount_or_zero = 1002;
-	E_AmountOrZero = &file_proto_guma_v1_validate_proto_extTypes[13]
+	E_AmountOrZero = &file_proto_guma_v1_validate_proto_extTypes[15]
 )
 
 // Extension fields to validate.MapRules.
 var (
 	// optional bool settings_map = 1001;
-	E_SettingsMap = &file_proto_guma_v1_validate_proto_extTypes[14]
+	E_SettingsMap = &file_proto_guma_v1_validate_proto_extTypes[16]
 )
 
 var File_proto_guma_v1_validate_proto protoreflect.FileDescriptor
@@ -229,7 +249,14 @@ const file_proto_guma_v1_validate_proto_rawDesc = "" +
 	"\x03url\x12\x19.buf.validate.StringRules\x18\xf3\a \x01(\bB]\xc2HZ\n" +
 	"X\n" +
 	"\n" +
-	"string.url\x1aJ!rule || size(this) <= 2048 ? '' : 'value must be at most 2048 characters'R\x03url:\xa9\x01\n" +
+	"string.url\x1aJ!rule || size(this) <= 2048 ? '' : 'value must be at most 2048 characters'R\x03url:\xc8\x02\n" +
+	"\ritem_category\x12\x19.buf.validate.StringRules\x18\xf4\a \x01(\bB\x86\x02\xc2H\x82\x02\n" +
+	"\xff\x01\n" +
+	"\x14string.item_category\x1a\xe6\x01!rule || this == '' || this.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc'] ? '' : 'value must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc'R\fitemCategory:\x9a\x02\n" +
+	"\vitem_rarity\x12\x19.buf.validate.StringRules\x18\xf5\a \x01(\bB\xdc\x01\xc2H\xd8\x01\n" +
+	"\xd5\x01\n" +
+	"\x12string.item_rarity\x1a\xbe\x01!rule || this == '' || this.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] ? '' : 'value must be one of common, uncommon, rare, epic, legendary, mythic'R\n" +
+	"itemRarity:\xa9\x01\n" +
 	"\rmax_page_size\x12\x18.buf.validate.Int32Rules\x18\xe9\a \x01(\x05Bj\xc2Hg\n" +
 	"e\n" +
 	"\x13int32.max_page_size\x1aNthis >= 0 && this <= rule ? '' : 'value must be between 0 and ' + string(rule)R\vmaxPageSize:\xbd\x01\n" +
@@ -261,14 +288,16 @@ var file_proto_guma_v1_validate_proto_depIdxs = []int32{
 	0,  // 8: guma.v1.paragraph:extendee -> buf.validate.StringRules
 	0,  // 9: guma.v1.text:extendee -> buf.validate.StringRules
 	0,  // 10: guma.v1.url:extendee -> buf.validate.StringRules
-	1,  // 11: guma.v1.max_page_size:extendee -> buf.validate.Int32Rules
-	2,  // 12: guma.v1.amount:extendee -> buf.validate.Int64Rules
-	2,  // 13: guma.v1.amount_or_zero:extendee -> buf.validate.Int64Rules
-	3,  // 14: guma.v1.settings_map:extendee -> buf.validate.MapRules
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	0,  // [0:15] is the sub-list for extension extendee
+	0,  // 11: guma.v1.item_category:extendee -> buf.validate.StringRules
+	0,  // 12: guma.v1.item_rarity:extendee -> buf.validate.StringRules
+	1,  // 13: guma.v1.max_page_size:extendee -> buf.validate.Int32Rules
+	2,  // 14: guma.v1.amount:extendee -> buf.validate.Int64Rules
+	2,  // 15: guma.v1.amount_or_zero:extendee -> buf.validate.Int64Rules
+	3,  // 16: guma.v1.settings_map:extendee -> buf.validate.MapRules
+	17, // [17:17] is the sub-list for method output_type
+	17, // [17:17] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	0,  // [0:17] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
 }
 
@@ -284,7 +313,7 @@ func file_proto_guma_v1_validate_proto_init() {
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_guma_v1_validate_proto_rawDesc), len(file_proto_guma_v1_validate_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   0,
-			NumExtensions: 15,
+			NumExtensions: 17,
 			NumServices:   0,
 		},
 		GoTypes:           file_proto_guma_v1_validate_proto_goTypes,

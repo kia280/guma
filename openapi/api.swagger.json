@@ -7076,7 +7076,7 @@
           "type": "string"
         }
       },
-      "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, roll call loot, raffles).\n\nItemCategory values: WEAPON, ARMOR, ACCESSORY, CONSUMABLE, SKILL_SCROLL, MATERIAL, MISC\nItemRarity values: COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC"
+      "description": "Item is the shared structure for any in-game item across all features\n(auctions, backpack, bank, roll call loot, raffles).\n\nItemCategory values: weapon, armor, accessory, consumable, skill_scroll, material, misc\nItemRarity values: common, uncommon, rare, epic, legendary, mythic"
     },
     "v1ItemHistoryEvent": {
       "type": "object",
