@@ -47,6 +47,11 @@ generated `sqlc` queries.
   cover it with a table test, and make a single helper call. To add a
   permission, add a permit to `internal/authz/namespaces.keto.ts` and a matching
   constant in `internal/authz/authz.go` (a test keeps them in sync).
+- `interceptors.GuildMembershipInterceptor` rejects any unary RPC whose request
+  has a `guild_id` unless the caller is a guild member (`authz.View`). RPCs
+  without a `guild_id`, or that non-members must reach (such as joining a
+  guild), must be listed in `MembershipExemptMethods`; a test fails otherwise.
+  Services still make their own `authz` checks.
 - Membership rows (`members`) are mirrored into Keto by a trigger-fed outbox. After
   committing a membership or role change, call `authz.SyncAfterCommit` so the
   caller's next request sees it; `go run main.go authz sync` repairs drift.
