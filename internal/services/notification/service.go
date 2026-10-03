@@ -15,11 +15,7 @@ import (
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
-)
-
-const (
-	defaultPageSize = 20
-	maxPageSize     = 100
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 type Notification struct {
@@ -173,13 +169,7 @@ func parseUserID(raw string) (uuid.UUID, error) {
 }
 
 func clampPageSize(size int32) int32 {
-	if size <= 0 {
-		return defaultPageSize
-	}
-	if size > maxPageSize {
-		return maxPageSize
-	}
-	return size
+	return pagination.StandardSize(size)
 }
 
 func parsePageToken(token string) (int32, error) {

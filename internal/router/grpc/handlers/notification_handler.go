@@ -70,9 +70,6 @@ func (h *NotificationHandler) GetUnreadNotificationCount(ctx context.Context, _ 
 }
 
 func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gumav1.MarkNotificationReadRequest) (*gumav1.MarkNotificationReadResponse, error) {
-	if req.NotificationId == "" {
-		return nil, status.Error(codes.InvalidArgument, "notification_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")

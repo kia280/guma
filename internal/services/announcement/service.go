@@ -7,7 +7,6 @@ import (
 	"slices"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -16,6 +15,7 @@ import (
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 const (
@@ -24,9 +24,6 @@ const (
 
 	defaultPageSize = 50
 	maxPageSize     = 200
-
-	maxTitleLength   = 200
-	maxContentLength = 20000
 )
 
 var managerRoles = []string{"owner", "admin", "moderator"}
@@ -150,9 +147,6 @@ func (s *Service) Update(ctx context.Context, p Update) (*Announcement, error) {
 	}
 	announcementID, err := parseAnnouncementID(p.AnnouncementID)
 	if err != nil {
-		return nil, err
-	}
-	if err := validateDraft(p.Title, p.Content); err != nil {
 		return nil, err
 	}
 	if err := s.requireRole(ctx, guildID, userID, managerRoles...); err != nil {
@@ -305,16 +299,6 @@ func publishRejection(a *Announcement) error {
 	return fmt.Errorf("%w: announcement could not be published", errs.ErrFailedPrecondition)
 }
 
-func validateDraft(title, content string) error {
-	if utf8.RuneCountInString(title) > maxTitleLength {
-		return fmt.Errorf("%w: title must be at most %d characters", errs.ErrInvalidArgument, maxTitleLength)
-	}
-	if utf8.RuneCountInString(content) > maxContentLength {
-		return fmt.Errorf("%w: content must be at most %d characters", errs.ErrInvalidArgument, maxContentLength)
-	}
-	return nil
-}
-
 func parseGuildAndUser(guildIDStr, userIDStr string) (uuid.UUID, uuid.UUID, error) {
 	if userIDStr == "" {
 		return uuid.Nil, uuid.Nil, errs.ErrUnauthenticated
@@ -339,13 +323,7 @@ func parseAnnouncementID(raw string) (uuid.UUID, error) {
 }
 
 func clampPageSize(size int32) int32 {
-	if size <= 0 {
-		return defaultPageSize
-	}
-	if size > maxPageSize {
-		return maxPageSize
-	}
-	return size
+	return pagination.Size(size, defaultPageSize, maxPageSize)
 }
 
 func toAnnouncement(r db.GetAnnouncementRow) *Announcement {

@@ -134,7 +134,6 @@ func TestValidateUpdateParams(t *testing.T) {
 		mutate func(p *UpdateParams)
 		want   string
 	}{
-		{name: "empty display name", mutate: func(p *UpdateParams) { p.DisplayName = "   " }, want: "display_name is required"},
 		{name: "display name too long", mutate: func(p *UpdateParams) { p.DisplayName = strings.Repeat("名", MaxDisplayNameLength+1) }, want: "display_name must be at most"},
 		{name: "bio too long", mutate: func(p *UpdateParams) { p.Bio = strings.Repeat("b", MaxBioLength+1) }, want: "bio must be at most"},
 	}

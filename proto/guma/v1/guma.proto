@@ -6,6 +6,7 @@ import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
+import "proto/guma/v1/validate.proto";
 
 option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
 
@@ -54,7 +55,7 @@ service GumaService {
 
 // Request/Response messages
 message GetNavigationRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];  // Optional: guild-specific navigation
+  string guild_id = 1 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];  // Optional: guild-specific navigation
 }
 
 message GetNavigationResponse {
@@ -62,7 +63,7 @@ message GetNavigationResponse {
 }
 
 message GetDashboardDataRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];
 }
 
 message GetDashboardDataResponse {
@@ -76,7 +77,7 @@ message GetUserPreferencesResponse {
 }
 
 message UpdateUserPreferencesRequest {
-  UserPreferences preferences = 1;
+  UserPreferences preferences = 1 [(buf.validate.field).required = true];
 }
 
 message UpdateUserPreferencesResponse {
@@ -90,9 +91,9 @@ message GetAppConfigResponse {
 }
 
 message SearchGlobalRequest {
-  string query = 1 [(buf.validate.field).string.max_len = 200];
-  string guild_id = 2 [(buf.validate.field).string.max_len = 64];  // Optional: scope to guild
-  int32 limit = 3 [(buf.validate.field).int32 = {gte: 0, lte: 100}];      // Default: 20
+  string query = 1 [(buf.validate.field).required = true, (buf.validate.field).string = {[guma.v1.line]: true}];
+  string guild_id = 2 [(buf.validate.field).string.uuid = true, (buf.validate.field).ignore = IGNORE_IF_ZERO_VALUE];  // Optional: scope to guild
+  int32 limit = 3 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];      // Default: 20
 }
 
 message SearchGlobalResponse {
@@ -112,12 +113,12 @@ message NavigationItem {
 }
 
 message UserPreferences {
-  string theme = 1 [(buf.validate.field).string.max_len = 32];              // "light", "dark", "auto"
-  string language = 2 [(buf.validate.field).string.max_len = 64];           // "en", "ja", etc.
-  string timezone = 3 [(buf.validate.field).string.max_len = 64];           // IANA timezone
-  string date_format = 4 [(buf.validate.field).string.max_len = 64];        // Date display format
-  string time_format = 5 [(buf.validate.field).string.max_len = 64];        // 12h/24h
-  map<string, string> ui_settings = 6 [(buf.validate.field).map = {max_pairs: 50, keys: {string: {max_len: 100}}, values: {string: {max_len: 2000}}}];  // Custom UI settings
+  string theme = 1 [(buf.validate.field).string = {[guma.v1.keyword]: true}];              // "light", "dark", "auto"
+  string language = 2 [(buf.validate.field).string = {[guma.v1.code]: true}];           // "en", "ja", etc.
+  string timezone = 3 [(buf.validate.field).string = {[guma.v1.code]: true}];           // IANA timezone
+  string date_format = 4 [(buf.validate.field).string = {[guma.v1.code]: true}];        // Date display format
+  string time_format = 5 [(buf.validate.field).string = {[guma.v1.code]: true}];        // 12h/24h
+  map<string, string> ui_settings = 6 [(buf.validate.field).map = {[guma.v1.settings_map]: true}];  // Custom UI settings
 }
 
 message DashboardData {

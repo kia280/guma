@@ -31,9 +31,6 @@ func NewBankService(db *database.Pool, logger zerolog.Logger) *BankHandler {
 }
 
 func (h *BankHandler) GetBank(ctx context.Context, req *gumav1.GetBankRequest) (*gumav1.GetBankResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	if session.UserIDFromContext(ctx) == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
@@ -46,9 +43,6 @@ func (h *BankHandler) GetBank(ctx context.Context, req *gumav1.GetBankRequest) (
 }
 
 func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.ContributeFundsRequest) (*gumav1.ContributeFundsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -65,9 +59,6 @@ func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.Contribut
 }
 
 func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFundsRequest) (*gumav1.RequestFundsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -81,9 +72,6 @@ func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFunds
 }
 
 func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewFundRequestRequest) (*gumav1.ReviewFundRequestResponse, error) {
-	if req.GuildId == "" || req.RequestId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and request_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -97,9 +85,6 @@ func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewF
 }
 
 func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFundRequestsRequest) (*gumav1.ListFundRequestsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -132,9 +117,6 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 }
 
 func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListContributionsRequest) (*gumav1.ListContributionsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	if session.UserIDFromContext(ctx) == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
@@ -164,9 +146,6 @@ func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListCon
 }
 
 func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequest) (*gumav1.DonateItemResponse, error) {
-	if req.GuildId == "" || req.BackpackItemId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and backpack_item_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -180,9 +159,6 @@ func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequ
 }
 
 func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankItemsRequest) (*gumav1.ListBankItemsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -217,9 +193,6 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 }
 
 func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBankItemRequest) (*gumav1.DeleteBankItemResponse, error) {
-	if req.GuildId == "" || req.BankItemId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and bank_item_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -232,9 +205,6 @@ func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBank
 }
 
 func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRequest) (*gumav1.RequestItemResponse, error) {
-	if req.GuildId == "" || req.BankItemId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and bank_item_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -248,9 +218,6 @@ func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRe
 }
 
 func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewItemRequestRequest) (*gumav1.ReviewItemRequestResponse, error) {
-	if req.GuildId == "" || req.RequestId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and request_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -264,9 +231,6 @@ func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewI
 }
 
 func (h *BankHandler) ListItemRequests(ctx context.Context, req *gumav1.ListItemRequestsRequest) (*gumav1.ListItemRequestsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -408,9 +372,6 @@ func itemRequestToProto(ir *banksvc.ItemRequest) *gumav1.ItemRequest {
 }
 
 func (h *BankHandler) GetItemHistory(ctx context.Context, req *gumav1.GetItemHistoryRequest) (*gumav1.GetItemHistoryResponse, error) {
-	if req.GuildId == "" || req.ItemId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and item_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")

@@ -22,6 +22,7 @@ import (
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
 	"github.com/kia280/guma/internal/services/inventory"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 type cryptoSource struct{}
@@ -175,10 +176,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 
 // List returns paginated raffles for a guild.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -302,9 +300,6 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Raffle, error) {
 
 // PurchaseTickets deducts cost from wallet and issues tickets.
 func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, raffleIDStr, userIDStr string, quantity int32) ([]*RaffleTicket, int64, error) {
-	if quantity <= 0 {
-		return nil, 0, fmt.Errorf("%w: quantity must be positive", errs.ErrFailedPrecondition)
-	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, 0, fmt.Errorf("%w: raffle", errs.ErrNotFound)
@@ -889,9 +884,7 @@ func parseIDs(guildIDStr, raffleIDStr, userIDStr string) (uuid.UUID, uuid.UUID, 
 
 // ListMyTickets returns tickets owned by a user across all guilds (or filtered by guild).
 func (s *Service) ListMyTickets(ctx context.Context, userIDStr, guildIDStr string, pageSize, offset int) (*ListTicketsResult, error) {
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize = pagination.StandardSize(pageSize)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)

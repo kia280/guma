@@ -568,32 +568,32 @@ var File_proto_guma_v1_item_template_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_item_template_proto_rawDesc = "" +
 	"\n" +
-	"!proto/guma/v1/item_template.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\">\n" +
-	"\x18ListItemTemplatesRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"P\n" +
+	"!proto/guma/v1/item_template.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"B\n" +
+	"\x18ListItemTemplatesRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"P\n" +
 	"\x19ListItemTemplatesResponse\x123\n" +
-	"\ttemplates\x18\x01 \x03(\v2\x15.guma.v1.ItemTemplateR\ttemplates\"\xce\x01\n" +
-	"\x19CreateItemTemplateRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1b\n" +
-	"\x04name\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18dR\x04name\x12*\n" +
-	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\vdescription\x12#\n" +
-	"\bcategory\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\bcategory\x12\x1f\n" +
-	"\x06rarity\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06rarity\"O\n" +
+	"\ttemplates\x18\x01 \x03(\v2\x15.guma.v1.ItemTemplateR\ttemplates\"\xe4\x01\n" +
+	"\x19CreateItemTemplateRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1f\n" +
+	"\x04name\x18\x02 \x01(\tB\v\xbaH\br\x06\xc8>\x01\xf8>\x01R\x04name\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\vdescription\x12*\n" +
+	"\bcategory\x18\x04 \x01(\tB\x0e\xbaH\v\xc8\x01\x01r\x06\xe8>\x01\xa0?\x01R\bcategory\x12&\n" +
+	"\x06rarity\x18\x05 \x01(\tB\x0e\xbaH\v\xc8\x01\x01r\x06\xe8>\x01\xa8?\x01R\x06rarity\"O\n" +
 	"\x1aCreateItemTemplateResponse\x121\n" +
-	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"\xf8\x01\n" +
-	"\x19UpdateItemTemplateRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12(\n" +
-	"\vtemplate_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
-	"templateId\x12\x1b\n" +
-	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18dR\x04name\x12*\n" +
-	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\xf4\x03R\vdescription\x12#\n" +
-	"\bcategory\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x18 R\bcategory\x12\x1f\n" +
-	"\x06rarity\x18\x06 \x01(\tB\a\xbaH\x04r\x02\x18 R\x06rarity\"O\n" +
+	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"\x92\x02\n" +
+	"\x19UpdateItemTemplateRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12,\n" +
+	"\vtemplate_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
+	"templateId\x12\x1f\n" +
+	"\x04name\x18\x03 \x01(\tB\v\xbaH\br\x06\xc8>\x01\xf8>\x01R\x04name\x12*\n" +
+	"\vdescription\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x88?\x01R\vdescription\x12*\n" +
+	"\bcategory\x18\x05 \x01(\tB\x0e\xbaH\v\xc8\x01\x01r\x06\xe8>\x01\xa0?\x01R\bcategory\x12&\n" +
+	"\x06rarity\x18\x06 \x01(\tB\x0e\xbaH\v\xc8\x01\x01r\x06\xe8>\x01\xa8?\x01R\x06rarity\"O\n" +
 	"\x1aUpdateItemTemplateResponse\x121\n" +
-	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"i\n" +
-	"\x19DeleteItemTemplateRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12(\n" +
-	"\vtemplate_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
+	"\btemplate\x18\x01 \x01(\v2\x15.guma.v1.ItemTemplateR\btemplate\"q\n" +
+	"\x19DeleteItemTemplateRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12,\n" +
+	"\vtemplate_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\n" +
 	"templateId\"6\n" +
 	"\x1aDeleteItemTemplateResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xb8\x02\n" +
@@ -667,6 +667,7 @@ func file_proto_guma_v1_item_template_proto_init() {
 	if File_proto_guma_v1_item_template_proto != nil {
 		return
 	}
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

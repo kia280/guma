@@ -28,9 +28,6 @@ func NewRollCallTemplateService(db *database.Pool, logger zerolog.Logger) *RollC
 }
 
 func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req *gumav1.ListRollCallTemplatesRequest) (*gumav1.ListRollCallTemplatesResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -47,9 +44,6 @@ func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req
 }
 
 func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, req *gumav1.CreateRollCallTemplateRequest) (*gumav1.CreateRollCallTemplateResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -66,9 +60,6 @@ func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, re
 }
 
 func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, req *gumav1.UpdateRollCallTemplateRequest) (*gumav1.UpdateRollCallTemplateResponse, error) {
-	if req.GuildId == "" || req.TemplateId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
@@ -85,9 +76,6 @@ func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, re
 }
 
 func (h *RollCallTemplateHandler) DeleteRollCallTemplate(ctx context.Context, req *gumav1.DeleteRollCallTemplateRequest) (*gumav1.DeleteRollCallTemplateResponse, error) {
-	if req.GuildId == "" || req.TemplateId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if userID == "" {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")

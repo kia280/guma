@@ -6,6 +6,7 @@ import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 import "google/api/httpbody.proto";
 import "google/protobuf/timestamp.proto";
+import "proto/guma/v1/validate.proto";
 
 option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
 
@@ -104,9 +105,9 @@ service GuildService {
 
 // Request/Response messages
 message CreateGuildRequest {
-  string name = 1 [(buf.validate.field).string.max_len = 100];
-  string description = 2 [(buf.validate.field).string.max_len = 2000];
-  map<string, string> settings = 3 [(buf.validate.field).map = {max_pairs: 50, keys: {string: {max_len: 100}}, values: {string: {max_len: 2000}}}];
+  string name = 1 [(buf.validate.field).required = true, (buf.validate.field).string = {[guma.v1.name]: true}];
+  string description = 2 [(buf.validate.field).string = {[guma.v1.text]: true}];
+  map<string, string> settings = 3 [(buf.validate.field).map = {[guma.v1.settings_map]: true}];
   reserved 4;
   reserved "tags";
 }
@@ -116,7 +117,7 @@ message CreateGuildResponse {
 }
 
 message GetGuildRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message GetGuildResponse {
@@ -124,13 +125,13 @@ message GetGuildResponse {
 }
 
 message UpdateGuildRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string name = 2 [(buf.validate.field).string.max_len = 100];
-  string description = 3 [(buf.validate.field).string.max_len = 2000];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string name = 2 [(buf.validate.field).string = {[guma.v1.name]: true}];
+  string description = 3 [(buf.validate.field).string = {[guma.v1.text]: true}];
   reserved 4;
   reserved "tags";
-  string icon_url = 5 [(buf.validate.field).string.max_len = 2048];
-  string banner_url = 6 [(buf.validate.field).string.max_len = 2048];
+  string icon_url = 5 [(buf.validate.field).string = {[guma.v1.url]: true}];
+  string banner_url = 6 [(buf.validate.field).string = {[guma.v1.url]: true}];
 }
 
 message UpdateGuildResponse {
@@ -138,9 +139,13 @@ message UpdateGuildResponse {
 }
 
 message UploadGuildLogoRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  bytes data = 2 [(buf.validate.field).bytes.max_len = 524288];
-  string content_type = 3 [(buf.validate.field).string.max_len = 100];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  bytes data = 2 [(buf.validate.field).required = true, (buf.validate.field).bytes.max_len = 524288];
+  string content_type = 3 [(buf.validate.field).string = {[guma.v1.name]: true}, (buf.validate.field).cel = {
+    id: "content_type.allowed"
+    message: "content_type must be one of image/png, image/jpeg, image/webp, image/gif"
+    expression: "this.trim().lowerAscii() in ['image/png', 'image/jpeg', 'image/webp', 'image/gif']"
+  }];
 }
 
 message UploadGuildLogoResponse {
@@ -148,7 +153,7 @@ message UploadGuildLogoResponse {
 }
 
 message DeleteGuildLogoRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message DeleteGuildLogoResponse {
@@ -156,12 +161,12 @@ message DeleteGuildLogoResponse {
 }
 
 message GetGuildLogoRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  string v = 2 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  string v = 2 [(buf.validate.field).string = {[guma.v1.code]: true}];
 }
 
 message DeleteGuildRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message DeleteGuildResponse {
@@ -169,10 +174,10 @@ message DeleteGuildResponse {
 }
 
 message ListGuildsRequest {
-  int32 page_size = 1 [(buf.validate.field).int32 = {gte: 0, lte: 1000}];
-  string page_token = 2 [(buf.validate.field).string = {max_len: 10, pattern: "^[0-9]*$"}];
-  string search = 3 [(buf.validate.field).string.max_len = 200];   // Free-text search on name/description
-  string order_by = 4 [(buf.validate.field).string.max_len = 32];
+  int32 page_size = 1 [(buf.validate.field).int32 = {[guma.v1.max_page_size]: 100}];
+  string page_token = 2 [(buf.validate.field).string = {[guma.v1.page_token]: true}];
+  string search = 3 [(buf.validate.field).string = {[guma.v1.line]: true}];   // Free-text search on name/description
+  string order_by = 4 [(buf.validate.field).string = {[guma.v1.keyword]: true}];
 }
 
 message ListGuildsResponse {
@@ -182,7 +187,7 @@ message ListGuildsResponse {
 }
 
 message GetGuildSettingsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message GetGuildSettingsResponse {
@@ -190,8 +195,8 @@ message GetGuildSettingsResponse {
 }
 
 message UpdateGuildSettingsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
-  GuildSettings settings = 2;
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
+  GuildSettings settings = 2 [(buf.validate.field).required = true];
 }
 
 message UpdateGuildSettingsResponse {
@@ -199,7 +204,7 @@ message UpdateGuildSettingsResponse {
 }
 
 message GetGuildStatsRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message GetGuildStatsResponse {
@@ -213,7 +218,7 @@ message GetCurrentGuildResponse {
 }
 
 message JoinGuildByIdRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message JoinGuildByIdResponse {
@@ -221,7 +226,7 @@ message JoinGuildByIdResponse {
 }
 
 message LeaveGuildRequest {
-  string guild_id = 1 [(buf.validate.field).string.max_len = 64];
+  string guild_id = 1 [(buf.validate.field).required = true, (buf.validate.field).string.uuid = true];
 }
 
 message LeaveGuildResponse {
@@ -262,9 +267,9 @@ message Plugin {
 }
 
 message GuildSettings {
-  string timezone = 1 [(buf.validate.field).string.max_len = 64];
-  string language = 2 [(buf.validate.field).string.max_len = 64];
+  string timezone = 1 [(buf.validate.field).string = {[guma.v1.code]: true}];
+  string language = 2 [(buf.validate.field).string = {[guma.v1.code]: true}];
   bool public = 3;
   bool allow_invites = 4;
-  map<string, string> custom_settings = 5 [(buf.validate.field).map = {max_pairs: 50, keys: {string: {max_len: 100}}, values: {string: {max_len: 2000}}}];
+  map<string, string> custom_settings = 5 [(buf.validate.field).map = {[guma.v1.settings_map]: true}];
 }

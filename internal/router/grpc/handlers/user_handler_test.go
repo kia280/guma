@@ -36,7 +36,6 @@ func TestUserService_UpdateMe_InvalidArgument(t *testing.T) {
 		name string
 		req  *gumav1.UpdateMeRequest
 	}{
-		{name: "empty display name", req: &gumav1.UpdateMeRequest{DisplayName: ""}},
 		{name: "display name too long", req: &gumav1.UpdateMeRequest{DisplayName: strings.Repeat("名", 33)}},
 	}
 	for _, tt := range tests {

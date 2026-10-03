@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,11 +16,7 @@ import (
 	"github.com/kia280/guma/internal/services/errs"
 )
 
-const (
-	rollCallTemplateEntity = "roll call template"
-	maxTitleLength         = 200
-	maxItems               = 100
-)
+const rollCallTemplateEntity = "roll call template"
 
 type Template struct {
 	ID        string
@@ -176,17 +173,6 @@ func (s *Service) requireGuildItems(ctx context.Context, guildID uuid.UUID, item
 }
 
 func normalizeFields(f Fields) (string, string, []uuid.UUID, error) {
-	name, err := requiredText("name", f.Name, maxNameLength)
-	if err != nil {
-		return "", "", nil, err
-	}
-	title, err := requiredText("title", f.Title, maxTitleLength)
-	if err != nil {
-		return "", "", nil, err
-	}
-	if len(f.ItemTemplateIDs) > maxItems {
-		return "", "", nil, fmt.Errorf("%w: at most %d items are allowed", errs.ErrInvalidArgument, maxItems)
-	}
 	itemIDs := make([]uuid.UUID, 0, len(f.ItemTemplateIDs))
 	for _, raw := range f.ItemTemplateIDs {
 		id, err := uuid.Parse(raw)
@@ -195,7 +181,7 @@ func normalizeFields(f Fields) (string, string, []uuid.UUID, error) {
 		}
 		itemIDs = append(itemIDs, id)
 	}
-	return name, title, itemIDs, nil
+	return strings.TrimSpace(f.Name), strings.TrimSpace(f.Title), itemIDs, nil
 }
 
 func toTemplate(r db.GetRollCallTemplateRow) *Template {

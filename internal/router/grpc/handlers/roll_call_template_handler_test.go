@@ -25,14 +25,6 @@ func TestRollCallTemplateService_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name: "list missing guild",
-			call: func() error {
-				_, err := h.ListRollCallTemplates(authed, &gumav1.ListRollCallTemplatesRequest{})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name: "list unauthenticated",
 			call: func() error {
 				_, err := h.ListRollCallTemplates(context.Background(), &gumav1.ListRollCallTemplatesRequest{GuildId: guildID})
@@ -49,27 +41,11 @@ func TestRollCallTemplateService_Validation(t *testing.T) {
 			wantCode: codes.Unauthenticated,
 		},
 		{
-			name: "create blank name",
-			call: func() error {
-				_, err := h.CreateRollCallTemplate(authed, &gumav1.CreateRollCallTemplateRequest{GuildId: guildID, Name: " ", Title: "t"})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name: "create malformed item template id",
 			call: func() error {
 				_, err := h.CreateRollCallTemplate(authed, &gumav1.CreateRollCallTemplateRequest{
 					GuildId: guildID, Name: "n", Title: "t", ItemTemplateIds: []string{"nope"},
 				})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "update missing template id",
-			call: func() error {
-				_, err := h.UpdateRollCallTemplate(authed, &gumav1.UpdateRollCallTemplateRequest{GuildId: guildID, Name: "n", Title: "t"})
 				return err
 			},
 			wantCode: codes.InvalidArgument,

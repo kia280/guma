@@ -64,10 +64,6 @@ func (h *UserHandler) UpdateMe(ctx context.Context, req *gumav1.UpdateMeRequest)
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *gumav1.GetUserRequest) (*gumav1.GetUserResponse, error) {
-	if req.UserId == "" {
-		return nil, status.Error(codes.InvalidArgument, "user_id is required")
-	}
-
 	u, err := h.svc.GetUser(ctx, req.UserId)
 	if err != nil {
 		return nil, toStatus(err)

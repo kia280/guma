@@ -21,22 +21,6 @@ func minimumBid(startingBid, currentBid, increment int64, hasBids bool) int64 {
 	return max(startingBid, increment)
 }
 
-func validateUpdate(p UpdateParams) error {
-	if p.Item != nil && strings.TrimSpace(p.Item.Name) == "" {
-		return fmt.Errorf("%w: item name is required", errs.ErrInvalidArgument)
-	}
-	if p.StartingBid != nil && *p.StartingBid <= 0 {
-		return fmt.Errorf("%w: starting bid must be positive", errs.ErrInvalidArgument)
-	}
-	if p.MinBidIncrement != nil && *p.MinBidIncrement <= 0 {
-		return fmt.Errorf("%w: bid increment must be positive", errs.ErrInvalidArgument)
-	}
-	if p.StartTime != nil && p.EndTime != nil && !p.EndTime.After(*p.StartTime) {
-		return fmt.Errorf("%w: end time must be after start time", errs.ErrInvalidArgument)
-	}
-	return nil
-}
-
 func isClosed(status string, endTime, now time.Time) bool {
 	return status == statusActive && !endTime.After(now)
 }

@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"slices"
-	"strings"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -16,8 +14,6 @@ import (
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
-
-const maxNameLength = 100
 
 var managerRoles = []string{"owner", "admin", "moderator"}
 
@@ -66,17 +62,6 @@ func parseGuildAndUser(guildIDStr, userIDStr string) (uuid.UUID, uuid.UUID, erro
 		return uuid.Nil, uuid.Nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
 	return guildID, userID, nil
-}
-
-func requiredText(field, value string, maxLength int) (string, error) {
-	value = strings.TrimSpace(value)
-	if value == "" {
-		return "", fmt.Errorf("%w: %s is required", errs.ErrInvalidArgument, field)
-	}
-	if utf8.RuneCountInString(value) > maxLength {
-		return "", fmt.Errorf("%w: %s must be at most %d characters", errs.ErrInvalidArgument, field, maxLength)
-	}
-	return value, nil
 }
 
 func writeError(entity string, err error) error {

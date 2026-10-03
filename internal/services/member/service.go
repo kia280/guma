@@ -15,14 +15,13 @@ import (
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 const (
 	defaultPageSize = 50
 	maxPageSize     = 500
 )
-
-var validRoles = map[string]bool{"owner": true, "admin": true, "moderator": true, "member": true}
 
 type Member struct {
 	ID              string
@@ -73,9 +72,6 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	callerID, err := uuid.Parse(p.CallerID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: caller id must be a UUID", errs.ErrInvalidArgument)
-	}
-	if p.Role != "" && !validRoles[p.Role] {
-		return nil, fmt.Errorf("%w: unknown role %q", errs.ErrInvalidArgument, p.Role)
 	}
 	offset, err := parsePageToken(p.PageToken)
 	if err != nil {
@@ -137,13 +133,7 @@ func canSeeDiscord(role string) bool {
 }
 
 func clampPageSize(size int32) int32 {
-	if size <= 0 {
-		return defaultPageSize
-	}
-	if size > maxPageSize {
-		return maxPageSize
-	}
-	return size
+	return pagination.Size(size, defaultPageSize, maxPageSize)
 }
 
 func parsePageToken(token string) (int32, error) {

@@ -14,13 +14,11 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	preferencesvc "github.com/kia280/guma/internal/services/preference"
-	"github.com/kia280/guma/internal/session"
 )
 
 func TestPreferenceService_Validation(t *testing.T) {
 	h := NewPreferenceService(nil, zerolog.Nop())
 	anon := context.Background()
-	authed := session.WithUserID(anon, "00000000-0000-0000-0000-000000000001")
 
 	tests := []struct {
 		name     string
@@ -41,24 +39,6 @@ func TestPreferenceService_Validation(t *testing.T) {
 				return err
 			},
 			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "update missing notifications",
-			call: func() error {
-				_, err := h.UpdateMyPreferences(authed, &gumav1.UpdateMyPreferencesRequest{})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "update empty patch",
-			call: func() error {
-				_, err := h.UpdateMyPreferences(authed, &gumav1.UpdateMyPreferencesRequest{
-					Notifications: &gumav1.NotificationPreferencesPatch{},
-				})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
 		},
 	}
 

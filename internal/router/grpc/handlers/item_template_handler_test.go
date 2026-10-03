@@ -25,50 +25,12 @@ func TestItemTemplateService_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name: "list missing guild",
-			call: func() error {
-				_, err := h.ListItemTemplates(authed, &gumav1.ListItemTemplatesRequest{})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
 			name: "list unauthenticated",
 			call: func() error {
 				_, err := h.ListItemTemplates(context.Background(), &gumav1.ListItemTemplatesRequest{GuildId: guildID})
 				return err
 			},
 			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "create unknown category",
-			call: func() error {
-				_, err := h.CreateItemTemplate(authed, &gumav1.CreateItemTemplateRequest{
-					GuildId: guildID, Name: "Sword", Category: "vehicle", Rarity: "rare",
-				})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "create unknown rarity",
-			call: func() error {
-				_, err := h.CreateItemTemplate(authed, &gumav1.CreateItemTemplateRequest{
-					GuildId: guildID, Name: "Sword", Category: "weapon", Rarity: "shiny",
-				})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "update missing template id",
-			call: func() error {
-				_, err := h.UpdateItemTemplate(authed, &gumav1.UpdateItemTemplateRequest{
-					GuildId: guildID, Name: "Sword", Category: "weapon", Rarity: "rare",
-				})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
 		},
 		{
 			name: "update malformed template id",

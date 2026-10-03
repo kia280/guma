@@ -21,7 +21,6 @@ const (
 	TypeAdminTransferIn  = "ADMIN_TRANSFER_IN"
 
 	contributionKindAdminTransfer = "admin_transfer"
-	maxAdminTransferItems         = 100
 )
 
 var assetAdminRoles = []string{"owner", "admin"}
@@ -130,9 +129,6 @@ func (s *Service) GetMemberAssets(ctx context.Context, adminIDStr, guildIDStr, m
 }
 
 func (s *Service) AdminTransferFunds(ctx context.Context, p AdminTransferFundsParams) (*Transaction, int64, error) {
-	if p.Amount <= 0 {
-		return nil, 0, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
-	}
 	t, err := s.prepareAdminTransfer(ctx, p.AdminID, p.GuildID, p.FromUserID, p.Destination, p.Note)
 	if err != nil {
 		return nil, 0, err
@@ -323,15 +319,9 @@ func (s *Service) prepareAdminTransfer(ctx context.Context, adminIDStr, guildIDS
 		return t, fmt.Errorf("%w: member", errs.ErrNotFound)
 	}
 	note = strings.TrimSpace(note)
-	if len([]rune(note)) > maxTransferNoteLength {
-		return t, fmt.Errorf("%w: note is too long", errs.ErrInvalidArgument)
-	}
 	t = adminTransfer{adminID: adminID, guildID: guildID, fromID: fromID, toBank: dest.GuildBank, note: note}
 
-	switch {
-	case dest.GuildBank && dest.UserID != "":
-		return t, fmt.Errorf("%w: choose either a member or the guild bank", errs.ErrInvalidArgument)
-	case !dest.GuildBank:
+	if !dest.GuildBank {
 		if t.toID, err = uuid.Parse(dest.UserID); err != nil {
 			return t, fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
 		}
@@ -376,12 +366,6 @@ func (s *Service) requireMember(ctx context.Context, q *db.Queries, guildID, use
 }
 
 func parseItemIDList(raw []string) ([]uuid.UUID, error) {
-	if len(raw) == 0 {
-		return nil, fmt.Errorf("%w: select at least one item", errs.ErrInvalidArgument)
-	}
-	if len(raw) > maxAdminTransferItems {
-		return nil, fmt.Errorf("%w: at most %d items per transfer", errs.ErrInvalidArgument, maxAdminTransferItems)
-	}
 	ids := make([]uuid.UUID, 0, len(raw))
 	for _, s := range raw {
 		id, err := uuid.Parse(s)
