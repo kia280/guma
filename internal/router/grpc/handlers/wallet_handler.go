@@ -36,7 +36,9 @@ func (h *WalletHandler) GetWallet(ctx context.Context, req *gumav1.GetWalletRequ
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -53,7 +55,9 @@ func (h *WalletHandler) DepositFunds(ctx context.Context, req *gumav1.DepositFun
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -70,7 +74,9 @@ func (h *WalletHandler) WithdrawFunds(ctx context.Context, req *gumav1.WithdrawF
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -91,7 +97,9 @@ func (h *WalletHandler) ListMyWithdrawalRequests(ctx context.Context, req *gumav
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -122,8 +130,8 @@ func (h *WalletHandler) CancelWithdrawalRequest(ctx context.Context, req *gumav1
 		return nil, err
 	}
 	var in struct {
-		GuildID   uuid.UUID
-		RequestID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		RequestID uuid.UUID `proto:"request_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -144,7 +152,9 @@ func (h *WalletHandler) ListWithdrawalRequests(ctx context.Context, req *gumav1.
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -175,8 +185,8 @@ func (h *WalletHandler) ReviewWithdrawalRequest(ctx context.Context, req *gumav1
 		return nil, err
 	}
 	var in struct {
-		GuildID   uuid.UUID
-		RequestID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		RequestID uuid.UUID `proto:"request_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -195,8 +205,8 @@ func (h *WalletHandler) TransferFunds(ctx context.Context, req *gumav1.TransferF
 		return nil, err
 	}
 	var in struct {
-		GuildID  uuid.UUID
-		ToUserID uuid.UUID
+		GuildID  uuid.UUID `proto:"guild_id"`
+		ToUserID uuid.UUID `proto:"to_user_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -214,7 +224,9 @@ func (h *WalletHandler) ListTransactions(ctx context.Context, req *gumav1.ListTr
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -249,7 +261,9 @@ func (h *WalletHandler) GetBalanceTrend(ctx context.Context, req *gumav1.GetBala
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -271,7 +285,9 @@ func (h *WalletHandler) ListBackpackItems(ctx context.Context, req *gumav1.ListB
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -306,8 +322,8 @@ func (h *WalletHandler) WithdrawBackpackItem(ctx context.Context, req *gumav1.Wi
 		return nil, err
 	}
 	var in struct {
-		GuildID uuid.UUID
-		ItemID  uuid.UUID
+		GuildID uuid.UUID `proto:"guild_id"`
+		ItemID  uuid.UUID `proto:"item_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -326,9 +342,9 @@ func (h *WalletHandler) TransferBackpackItem(ctx context.Context, req *gumav1.Tr
 		return nil, err
 	}
 	var in struct {
-		GuildID  uuid.UUID
-		ItemID   uuid.UUID
-		ToUserID uuid.UUID
+		GuildID  uuid.UUID `proto:"guild_id"`
+		ItemID   uuid.UUID `proto:"item_id"`
+		ToUserID uuid.UUID `proto:"to_user_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -440,8 +456,8 @@ func (h *WalletHandler) CancelBackpackWithdrawal(ctx context.Context, req *gumav
 		return nil, err
 	}
 	var in struct {
-		GuildID uuid.UUID
-		ItemID  uuid.UUID
+		GuildID uuid.UUID `proto:"guild_id"`
+		ItemID  uuid.UUID `proto:"item_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -455,7 +471,9 @@ func (h *WalletHandler) CancelBackpackWithdrawal(ctx context.Context, req *gumav
 }
 
 func (h *WalletHandler) ListPendingDeliveries(ctx context.Context, req *gumav1.ListPendingDeliveriesRequest) (*gumav1.ListPendingDeliveriesResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -476,8 +494,8 @@ func (h *WalletHandler) ConfirmBackpackDelivery(ctx context.Context, req *gumav1
 		return nil, err
 	}
 	var in struct {
-		GuildID uuid.UUID
-		ItemID  uuid.UUID
+		GuildID uuid.UUID `proto:"guild_id"`
+		ItemID  uuid.UUID `proto:"item_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -491,7 +509,9 @@ func (h *WalletHandler) ConfirmBackpackDelivery(ctx context.Context, req *gumav1
 }
 
 func (h *WalletHandler) ListMemberAssets(ctx context.Context, req *gumav1.ListMemberAssetsRequest) (*gumav1.ListMemberAssetsResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -508,8 +528,8 @@ func (h *WalletHandler) ListMemberAssets(ctx context.Context, req *gumav1.ListMe
 
 func (h *WalletHandler) GetMemberAssets(ctx context.Context, req *gumav1.GetMemberAssetsRequest) (*gumav1.GetMemberAssetsResponse, error) {
 	var in struct {
-		GuildID uuid.UUID
-		UserID  uuid.UUID
+		GuildID uuid.UUID `proto:"guild_id"`
+		UserID  uuid.UUID `proto:"user_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -531,9 +551,9 @@ func (h *WalletHandler) AdminTransferFunds(ctx context.Context, req *gumav1.Admi
 		return nil, err
 	}
 	var in struct {
-		GuildID  uuid.UUID
-		UserID   uuid.UUID
-		ToUserID *uuid.UUID
+		GuildID  uuid.UUID  `proto:"guild_id"`
+		UserID   uuid.UUID  `proto:"user_id"`
+		ToUserID *uuid.UUID `proto:"to_user_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -563,10 +583,10 @@ func (h *WalletHandler) AdminTransferBackpackItems(ctx context.Context, req *gum
 		return nil, err
 	}
 	var in struct {
-		GuildID  uuid.UUID
-		UserID   uuid.UUID
-		ItemIDs  []uuid.UUID
-		ToUserID *uuid.UUID
+		GuildID  uuid.UUID   `proto:"guild_id"`
+		UserID   uuid.UUID   `proto:"user_id"`
+		ItemIDs  []uuid.UUID `proto:"item_ids"`
+		ToUserID *uuid.UUID  `proto:"to_user_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)

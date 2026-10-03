@@ -28,7 +28,9 @@ func NewRollCallTemplateService(db *database.Pool, az authz.Authorizer, logger z
 }
 
 func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req *gumav1.ListRollCallTemplatesRequest) (*gumav1.ListRollCallTemplatesResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -49,8 +51,8 @@ func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, re
 		return nil, err
 	}
 	var in struct {
-		GuildID         uuid.UUID
-		ItemTemplateIDs []uuid.UUID
+		GuildID         uuid.UUID   `proto:"guild_id"`
+		ItemTemplateIDs []uuid.UUID `proto:"item_template_ids"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -68,9 +70,9 @@ func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, re
 
 func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, req *gumav1.UpdateRollCallTemplateRequest) (*gumav1.UpdateRollCallTemplateResponse, error) {
 	var in struct {
-		GuildID         uuid.UUID
-		TemplateID      uuid.UUID
-		ItemTemplateIDs []uuid.UUID
+		GuildID         uuid.UUID   `proto:"guild_id"`
+		TemplateID      uuid.UUID   `proto:"template_id"`
+		ItemTemplateIDs []uuid.UUID `proto:"item_template_ids"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -88,8 +90,8 @@ func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, re
 
 func (h *RollCallTemplateHandler) DeleteRollCallTemplate(ctx context.Context, req *gumav1.DeleteRollCallTemplateRequest) (*gumav1.DeleteRollCallTemplateResponse, error) {
 	var in struct {
-		GuildID    uuid.UUID
-		TemplateID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		TemplateID uuid.UUID `proto:"template_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)

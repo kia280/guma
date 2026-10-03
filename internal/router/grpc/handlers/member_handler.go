@@ -135,8 +135,8 @@ func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.Upda
 		return nil, err
 	}
 	var in struct {
-		GuildID uuid.UUID
-		UserID  uuid.UUID
+		GuildID uuid.UUID `proto:"guild_id"`
+		UserID  uuid.UUID `proto:"user_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -182,7 +182,9 @@ func (s *MemberService) ListMembers(ctx context.Context, req *memberv1.ListMembe
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}

@@ -3,8 +3,6 @@ package ids
 import (
 	"fmt"
 	"reflect"
-	"strings"
-	"unicode"
 
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/proto"
@@ -30,9 +28,9 @@ func bindMessage(m protoreflect.Message, dst reflect.Value, prefix string) error
 		if !sf.IsExported() {
 			continue
 		}
-		name := sf.Tag.Get("proto")
-		if name == "" {
-			name = protoName(sf.Name)
+		name, ok := sf.Tag.Lookup("proto")
+		if !ok || name == "" {
+			return fmt.Errorf("%w: ids.Bind: %s.%s has no proto tag", errs.ErrInternal, t, sf.Name)
 		}
 		fd := m.Descriptor().Fields().ByName(protoreflect.Name(name))
 		if fd == nil {
@@ -128,20 +126,4 @@ func stringValue(m protoreflect.Message, fd protoreflect.FieldDescriptor, path s
 
 func mismatch(path string, t reflect.Type) error {
 	return fmt.Errorf("%w: ids.Bind: cannot bind %s into %s", errs.ErrInternal, path, t)
-}
-
-func protoName(goName string) string {
-	goName = strings.ReplaceAll(goName, "IDs", "Ids")
-	goName = strings.ReplaceAll(goName, "ID", "Id")
-	var b strings.Builder
-	for i, r := range goName {
-		if unicode.IsUpper(r) {
-			if i > 0 {
-				b.WriteByte('_')
-			}
-			r = unicode.ToLower(r)
-		}
-		b.WriteRune(r)
-	}
-	return b.String()
 }

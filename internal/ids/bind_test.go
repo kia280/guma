@@ -19,14 +19,18 @@ var (
 )
 
 type sourceIDs struct {
-	BackpackItemID *uuid.UUID
-	BankItemID     *uuid.UUID
+	BackpackItemID *uuid.UUID `proto:"backpack_item_id"`
+	BankItemID     *uuid.UUID `proto:"bank_item_id"`
+}
+
+type prizeIDs struct {
+	Source *sourceIDs `proto:"source"`
 }
 
 func TestBindRequiredAndNested(t *testing.T) {
 	var in struct {
-		GuildID uuid.UUID
-		Source  *sourceIDs
+		GuildID uuid.UUID  `proto:"guild_id"`
+		Source  *sourceIDs `proto:"source"`
 	}
 	err := Bind(&gumav1.CreateAuctionRequest{
 		GuildId: guildA.String(),
@@ -42,15 +46,17 @@ func TestBindRequiredAndNested(t *testing.T) {
 
 func TestBindAbsentOptionalMessage(t *testing.T) {
 	var in struct {
-		GuildID uuid.UUID
-		Source  *sourceIDs
+		GuildID uuid.UUID  `proto:"guild_id"`
+		Source  *sourceIDs `proto:"source"`
 	}
 	require.NoError(t, Bind(&gumav1.CreateAuctionRequest{GuildId: guildA.String()}, &in))
 	assert.Nil(t, in.Source)
 }
 
 func TestBindOptional(t *testing.T) {
-	var in struct{ GuildID *uuid.UUID }
+	var in struct {
+		GuildID *uuid.UUID `proto:"guild_id"`
+	}
 	require.NoError(t, Bind(&gumav1.ListMyTicketsRequest{}, &in))
 	assert.Nil(t, in.GuildID)
 
@@ -60,7 +66,7 @@ func TestBindOptional(t *testing.T) {
 
 func TestBindLists(t *testing.T) {
 	var in struct {
-		ItemIDs []uuid.UUID
+		ItemIDs []uuid.UUID `proto:"item_ids"`
 	}
 	require.NoError(t, Bind(&gumav1.AdminTransferBackpackItemsRequest{ItemIds: []string{itemB.String(), itemC.String()}}, &in))
 	assert.Equal(t, []uuid.UUID{itemB, itemC}, in.ItemIDs)
@@ -68,7 +74,7 @@ func TestBindLists(t *testing.T) {
 
 func TestBindRepeatedMessages(t *testing.T) {
 	var in struct {
-		Prizes []struct{ Source *sourceIDs }
+		Prizes []prizeIDs `proto:"prizes"`
 	}
 	require.NoError(t, Bind(&gumav1.CreateRaffleRequest{Prizes: []*gumav1.RafflePrize{
 		{},
@@ -86,24 +92,32 @@ func TestBindMalformedIsInvalidArgument(t *testing.T) {
 		want string
 	}{
 		{name: "required", want: "invalid argument: guild_id must be a UUID", bind: func() error {
-			var in struct{ GuildID uuid.UUID }
+			var in struct {
+				GuildID uuid.UUID `proto:"guild_id"`
+			}
 			return Bind(&gumav1.CreateAuctionRequest{GuildId: "bad"}, &in)
 		}},
 		{name: "missing required", want: "invalid argument: guild_id must be a UUID", bind: func() error {
-			var in struct{ GuildID uuid.UUID }
+			var in struct {
+				GuildID uuid.UUID `proto:"guild_id"`
+			}
 			return Bind(&gumav1.CreateAuctionRequest{}, &in)
 		}},
 		{name: "optional", want: "invalid argument: guild_id must be a UUID", bind: func() error {
-			var in struct{ GuildID *uuid.UUID }
+			var in struct {
+				GuildID *uuid.UUID `proto:"guild_id"`
+			}
 			return Bind(&gumav1.ListMyTicketsRequest{GuildId: "bad"}, &in)
 		}},
 		{name: "list", want: "invalid argument: item_ids must be a UUID", bind: func() error {
-			var in struct{ ItemIDs []uuid.UUID }
+			var in struct {
+				ItemIDs []uuid.UUID `proto:"item_ids"`
+			}
 			return Bind(&gumav1.AdminTransferBackpackItemsRequest{ItemIds: []string{itemB.String(), "bad"}}, &in)
 		}},
 		{name: "nested", want: "invalid argument: prizes[1].source.bank_item_id must be a UUID", bind: func() error {
 			var in struct {
-				Prizes []struct{ Source *sourceIDs }
+				Prizes []prizeIDs `proto:"prizes"`
 			}
 			return Bind(&gumav1.CreateRaffleRequest{Prizes: []*gumav1.RafflePrize{{}, {Source: &gumav1.ItemSourceRef{BankItemId: "bad"}}}}, &in)
 		}},
@@ -122,13 +136,19 @@ func TestBindProgrammingErrorsAreInternal(t *testing.T) {
 		name string
 		dst  any
 	}{
-		{name: "not a pointer", dst: struct{ GuildID uuid.UUID }{}},
-		{name: "unknown field", dst: &struct{ AuctionID uuid.UUID }{}},
-		{name: "renamed field", dst: &struct {
-			Guild uuid.UUID `proto:"guild"`
+		{name: "not a pointer", dst: struct {
+			GuildID uuid.UUID `proto:"guild_id"`
 		}{}},
-		{name: "non-string field", dst: &struct{ StartingBid uuid.UUID }{}},
-		{name: "unsupported type", dst: &struct{ GuildID string }{}},
+		{name: "missing tag", dst: &struct{ GuildID uuid.UUID }{}},
+		{name: "unknown field", dst: &struct {
+			AuctionID uuid.UUID `proto:"auction_id"`
+		}{}},
+		{name: "non-string field", dst: &struct {
+			StartingBid uuid.UUID `proto:"starting_bid"`
+		}{}},
+		{name: "unsupported type", dst: &struct {
+			GuildID string `proto:"guild_id"`
+		}{}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -138,22 +158,10 @@ func TestBindProgrammingErrorsAreInternal(t *testing.T) {
 	}
 }
 
-func TestBindTagOverride(t *testing.T) {
+func TestBindUsesTagNotFieldName(t *testing.T) {
 	var in struct {
 		Guild uuid.UUID `proto:"guild_id"`
 	}
 	require.NoError(t, Bind(&gumav1.CreateAuctionRequest{GuildId: guildA.String()}, &in))
 	assert.Equal(t, guildA, in.Guild)
-}
-
-func TestProtoName(t *testing.T) {
-	for goName, want := range map[string]string{
-		"GuildID":        "guild_id",
-		"ItemIDs":        "item_ids",
-		"BackpackItemID": "backpack_item_id",
-		"RollCallID":     "roll_call_id",
-		"Source":         "source",
-	} {
-		assert.Equal(t, want, protoName(goName), goName)
-	}
 }

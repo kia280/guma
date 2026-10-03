@@ -29,7 +29,9 @@ func NewEventService(db *database.Pool, logger zerolog.Logger) *EventHandler {
 }
 
 func (h *EventHandler) ListEvents(ctx context.Context, req *gumav1.ListEventsRequest) (*gumav1.ListEventsResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -61,8 +63,8 @@ func (h *EventHandler) ListEvents(ctx context.Context, req *gumav1.ListEventsReq
 
 func (h *EventHandler) GetEvent(ctx context.Context, req *gumav1.GetEventRequest) (*gumav1.GetEventResponse, error) {
 	var in struct {
-		GuildID uuid.UUID
-		EventID uuid.UUID
+		GuildID uuid.UUID `proto:"guild_id"`
+		EventID uuid.UUID `proto:"event_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -79,7 +81,9 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventR
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -110,8 +114,8 @@ func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventR
 		return nil, err
 	}
 	var in struct {
-		GuildID uuid.UUID
-		EventID uuid.UUID
+		GuildID uuid.UUID `proto:"guild_id"`
+		EventID uuid.UUID `proto:"event_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -144,8 +148,8 @@ func (h *EventHandler) DeleteEvent(ctx context.Context, req *gumav1.DeleteEventR
 		return nil, err
 	}
 	var in struct {
-		GuildID uuid.UUID
-		EventID uuid.UUID
+		GuildID uuid.UUID `proto:"guild_id"`
+		EventID uuid.UUID `proto:"event_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -158,7 +162,9 @@ func (h *EventHandler) DeleteEvent(ctx context.Context, req *gumav1.DeleteEventR
 }
 
 func (h *EventHandler) ListEventsByRange(ctx context.Context, req *gumav1.ListEventsByRangeRequest) (*gumav1.ListEventsByRangeResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -175,7 +181,9 @@ func (h *EventHandler) ListEventsByRange(ctx context.Context, req *gumav1.ListEv
 }
 
 func (h *EventHandler) ListUpcomingEvents(ctx context.Context, req *gumav1.ListUpcomingEventsRequest) (*gumav1.ListUpcomingEventsResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}

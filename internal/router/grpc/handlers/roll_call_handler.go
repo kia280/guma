@@ -31,7 +31,9 @@ func NewRollCallService(db *database.Pool, az authz.Authorizer, logger zerolog.L
 }
 
 func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRollCallsRequest) (*gumav1.ListRollCallsResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -62,8 +64,8 @@ func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRol
 
 func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCallRequest) (*gumav1.GetRollCallResponse, error) {
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -80,7 +82,9 @@ func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.Create
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -107,8 +111,8 @@ func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.Update
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -137,8 +141,8 @@ func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.Delete
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -155,8 +159,8 @@ func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.Comp
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -175,8 +179,8 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -205,8 +209,8 @@ func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.Cancel
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -225,10 +229,10 @@ func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLoot
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
-		ItemID     uuid.UUID
-		UserID     uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+		ItemID     uuid.UUID `proto:"item_id"`
+		UserID     uuid.UUID `proto:"user_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -243,8 +247,8 @@ func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLoot
 
 func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRollCallGoldRequest) (*gumav1.GetRollCallGoldResponse, error) {
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -265,10 +269,12 @@ func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
-		RequestID  uuid.UUID
-		Payouts    []struct{ UserID uuid.UUID }
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
+		RequestID  uuid.UUID `proto:"request_id"`
+		Payouts    []struct {
+			UserID uuid.UUID `proto:"user_id"`
+		} `proto:"payouts"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -301,8 +307,8 @@ func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInReques
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -317,8 +323,8 @@ func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInReques
 
 func (h *RollCallHandler) ListAttendees(ctx context.Context, req *gumav1.ListAttendeesRequest) (*gumav1.ListAttendeesResponse, error) {
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		RollCallID uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)

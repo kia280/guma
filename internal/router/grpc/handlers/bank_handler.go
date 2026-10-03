@@ -31,7 +31,9 @@ func NewBankService(db *database.Pool, az authz.Authorizer, logger zerolog.Logge
 }
 
 func (h *BankHandler) GetBank(ctx context.Context, req *gumav1.GetBankRequest) (*gumav1.GetBankResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -47,7 +49,9 @@ func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.Contribut
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -67,7 +71,9 @@ func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFunds
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -85,8 +91,8 @@ func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewF
 		return nil, err
 	}
 	var in struct {
-		GuildID   uuid.UUID
-		RequestID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		RequestID uuid.UUID `proto:"request_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -104,7 +110,9 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -136,7 +144,9 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 }
 
 func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListContributionsRequest) (*gumav1.ListContributionsResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -170,8 +180,8 @@ func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequ
 		return nil, err
 	}
 	var in struct {
-		GuildID        uuid.UUID
-		BackpackItemID uuid.UUID
+		GuildID        uuid.UUID `proto:"guild_id"`
+		BackpackItemID uuid.UUID `proto:"backpack_item_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -190,8 +200,8 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		RollCallID *uuid.UUID
+		GuildID    uuid.UUID  `proto:"guild_id"`
+		RollCallID *uuid.UUID `proto:"roll_call_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -231,8 +241,8 @@ func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBank
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		BankItemID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		BankItemID uuid.UUID `proto:"bank_item_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -250,8 +260,8 @@ func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRe
 		return nil, err
 	}
 	var in struct {
-		GuildID    uuid.UUID
-		BankItemID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		BankItemID uuid.UUID `proto:"bank_item_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -270,8 +280,8 @@ func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewI
 		return nil, err
 	}
 	var in struct {
-		GuildID   uuid.UUID
-		RequestID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		RequestID uuid.UUID `proto:"request_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -289,7 +299,9 @@ func (h *BankHandler) ListItemRequests(ctx context.Context, req *gumav1.ListItem
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -435,8 +447,8 @@ func (h *BankHandler) GetItemHistory(ctx context.Context, req *gumav1.GetItemHis
 		return nil, err
 	}
 	var in struct {
-		GuildID uuid.UUID
-		ItemID  uuid.UUID
+		GuildID uuid.UUID `proto:"guild_id"`
+		ItemID  uuid.UUID `proto:"item_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)

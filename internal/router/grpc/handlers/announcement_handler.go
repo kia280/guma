@@ -32,7 +32,9 @@ func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -59,8 +61,8 @@ func (h *AnnouncementHandler) GetAnnouncement(ctx context.Context, req *gumav1.G
 		return nil, err
 	}
 	var in struct {
-		GuildID        uuid.UUID
-		AnnouncementID uuid.UUID
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -77,7 +79,9 @@ func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -90,8 +94,8 @@ func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *
 
 func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav1.UpdateAnnouncementRequest) (*gumav1.UpdateAnnouncementResponse, error) {
 	var in struct {
-		GuildID        uuid.UUID
-		AnnouncementID uuid.UUID
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -111,8 +115,8 @@ func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav
 
 func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *gumav1.PublishAnnouncementRequest) (*gumav1.PublishAnnouncementResponse, error) {
 	var in struct {
-		GuildID        uuid.UUID
-		AnnouncementID uuid.UUID
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -126,8 +130,8 @@ func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *guma
 
 func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gumav1.UnpublishAnnouncementRequest) (*gumav1.UnpublishAnnouncementResponse, error) {
 	var in struct {
-		GuildID        uuid.UUID
-		AnnouncementID uuid.UUID
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -141,8 +145,8 @@ func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gu
 
 func (h *AnnouncementHandler) DeleteAnnouncementDraft(ctx context.Context, req *gumav1.DeleteAnnouncementDraftRequest) (*gumav1.DeleteAnnouncementDraftResponse, error) {
 	var in struct {
-		GuildID        uuid.UUID
-		AnnouncementID uuid.UUID
+		GuildID        uuid.UUID `proto:"guild_id"`
+		AnnouncementID uuid.UUID `proto:"announcement_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)

@@ -34,7 +34,9 @@ func NewAuctionService(db *database.Pool, az authz.Authorizer, logger zerolog.Lo
 }
 
 func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAuctionsRequest) (*gumav1.ListAuctionsResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -64,8 +66,8 @@ func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAucti
 
 func (h *AuctionHandler) GetAuction(ctx context.Context, req *gumav1.GetAuctionRequest) (*gumav1.GetAuctionResponse, error) {
 	var in struct {
-		GuildID   uuid.UUID
-		AuctionID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		AuctionID uuid.UUID `proto:"auction_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -83,8 +85,8 @@ func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAu
 		return nil, err
 	}
 	var in struct {
-		GuildID uuid.UUID
-		Source  *itemSourceIDs
+		GuildID uuid.UUID      `proto:"guild_id"`
+		Source  *itemSourceIDs `proto:"source"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -118,8 +120,8 @@ func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidReque
 		return nil, err
 	}
 	var in struct {
-		GuildID   uuid.UUID
-		AuctionID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		AuctionID uuid.UUID `proto:"auction_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -134,8 +136,8 @@ func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidReque
 
 func (h *AuctionHandler) GetBidHistory(ctx context.Context, req *gumav1.GetBidHistoryRequest) (*gumav1.GetBidHistoryResponse, error) {
 	var in struct {
-		GuildID   uuid.UUID
-		AuctionID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		AuctionID uuid.UUID `proto:"auction_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -162,8 +164,8 @@ func (h *AuctionHandler) UpdateAuction(ctx context.Context, req *gumav1.UpdateAu
 		return nil, err
 	}
 	var in struct {
-		GuildID   uuid.UUID
-		AuctionID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		AuctionID uuid.UUID `proto:"auction_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -209,8 +211,8 @@ func (h *AuctionHandler) DeleteAuction(ctx context.Context, req *gumav1.DeleteAu
 		return nil, err
 	}
 	var in struct {
-		GuildID   uuid.UUID
-		AuctionID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		AuctionID uuid.UUID `proto:"auction_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -228,8 +230,8 @@ func (h *AuctionHandler) CancelAuction(ctx context.Context, req *gumav1.CancelAu
 		return nil, err
 	}
 	var in struct {
-		GuildID   uuid.UUID
-		AuctionID uuid.UUID
+		GuildID   uuid.UUID `proto:"guild_id"`
+		AuctionID uuid.UUID `proto:"auction_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -313,8 +315,8 @@ func itemFromProto(p *gumav1.Item) models.Item {
 }
 
 type itemSourceIDs struct {
-	BackpackItemID *uuid.UUID
-	BankItemID     *uuid.UUID
+	BackpackItemID *uuid.UUID `proto:"backpack_item_id"`
+	BankItemID     *uuid.UUID `proto:"bank_item_id"`
 }
 
 func (s *itemSourceIDs) ref() inventory.Ref {

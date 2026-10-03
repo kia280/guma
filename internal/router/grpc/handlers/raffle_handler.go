@@ -30,7 +30,9 @@ func NewRaffleService(db *database.Pool, az authz.Authorizer, logger zerolog.Log
 }
 
 func (h *RaffleHandler) ListRaffles(ctx context.Context, req *gumav1.ListRafflesRequest) (*gumav1.ListRafflesResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -57,8 +59,8 @@ func (h *RaffleHandler) ListRaffles(ctx context.Context, req *gumav1.ListRaffles
 
 func (h *RaffleHandler) GetRaffle(ctx context.Context, req *gumav1.GetRaffleRequest) (*gumav1.GetRaffleResponse, error) {
 	var in struct {
-		GuildID  uuid.UUID
-		RaffleID uuid.UUID
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -76,8 +78,8 @@ func (h *RaffleHandler) CreateRaffle(ctx context.Context, req *gumav1.CreateRaff
 		return nil, err
 	}
 	var in struct {
-		GuildID uuid.UUID
-		Prizes  []struct{ Source *itemSourceIDs }
+		GuildID uuid.UUID        `proto:"guild_id"`
+		Prizes  []rafflePrizeIDs `proto:"prizes"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -106,8 +108,8 @@ func (h *RaffleHandler) PurchaseTickets(ctx context.Context, req *gumav1.Purchas
 		return nil, err
 	}
 	var in struct {
-		GuildID  uuid.UUID
-		RaffleID uuid.UUID
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -127,8 +129,8 @@ func (h *RaffleHandler) PurchaseTickets(ctx context.Context, req *gumav1.Purchas
 
 func (h *RaffleHandler) GetRaffleWinners(ctx context.Context, req *gumav1.GetRaffleWinnersRequest) (*gumav1.GetRaffleWinnersResponse, error) {
 	var in struct {
-		GuildID  uuid.UUID
-		RaffleID uuid.UUID
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -151,8 +153,8 @@ func (h *RaffleHandler) UpdateRaffle(ctx context.Context, req *gumav1.UpdateRaff
 		return nil, err
 	}
 	var in struct {
-		GuildID  uuid.UUID
-		RaffleID uuid.UUID
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -181,8 +183,8 @@ func (h *RaffleHandler) CancelRaffle(ctx context.Context, req *gumav1.CancelRaff
 		return nil, err
 	}
 	var in struct {
-		GuildID  uuid.UUID
-		RaffleID uuid.UUID
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -201,8 +203,8 @@ func (h *RaffleHandler) DeleteRaffle(ctx context.Context, req *gumav1.DeleteRaff
 		return nil, err
 	}
 	var in struct {
-		GuildID  uuid.UUID
-		RaffleID uuid.UUID
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -220,8 +222,8 @@ func (h *RaffleHandler) DrawRaffle(ctx context.Context, req *gumav1.DrawRaffleRe
 		return nil, err
 	}
 	var in struct {
-		GuildID  uuid.UUID
-		RaffleID uuid.UUID
+		GuildID  uuid.UUID `proto:"guild_id"`
+		RaffleID uuid.UUID `proto:"raffle_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -244,7 +246,9 @@ func (h *RaffleHandler) ListMyTickets(ctx context.Context, req *gumav1.ListMyTic
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID *uuid.UUID }
+	var in struct {
+		GuildID *uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -335,7 +339,11 @@ func raffleWinnerToProto(w *rafflesvc.RaffleWinner) *gumav1.RaffleWinner {
 	}
 }
 
-func prizesFromProto(protos []*gumav1.RafflePrize, parsed []struct{ Source *itemSourceIDs }) []rafflesvc.RafflePrize {
+type rafflePrizeIDs struct {
+	Source *itemSourceIDs `proto:"source"`
+}
+
+func prizesFromProto(protos []*gumav1.RafflePrize, parsed []rafflePrizeIDs) []rafflesvc.RafflePrize {
 	prizes := make([]rafflesvc.RafflePrize, len(protos))
 	for i, p := range protos {
 		prize := rafflesvc.RafflePrize{

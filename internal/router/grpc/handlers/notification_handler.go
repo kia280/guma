@@ -73,7 +73,9 @@ func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gum
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ NotificationID uuid.UUID }
+	var in struct {
+		NotificationID uuid.UUID `proto:"notification_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}

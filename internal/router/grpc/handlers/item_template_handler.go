@@ -28,7 +28,9 @@ func NewItemTemplateService(db *database.Pool, az authz.Authorizer, logger zerol
 }
 
 func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1.ListItemTemplatesRequest) (*gumav1.ListItemTemplatesResponse, error) {
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -48,7 +50,9 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 	if err != nil {
 		return nil, err
 	}
-	var in struct{ GuildID uuid.UUID }
+	var in struct {
+		GuildID uuid.UUID `proto:"guild_id"`
+	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
@@ -66,8 +70,8 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 
 func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav1.UpdateItemTemplateRequest) (*gumav1.UpdateItemTemplateResponse, error) {
 	var in struct {
-		GuildID    uuid.UUID
-		TemplateID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		TemplateID uuid.UUID `proto:"template_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
@@ -86,8 +90,8 @@ func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav
 
 func (h *ItemTemplateHandler) DeleteItemTemplate(ctx context.Context, req *gumav1.DeleteItemTemplateRequest) (*gumav1.DeleteItemTemplateResponse, error) {
 	var in struct {
-		GuildID    uuid.UUID
-		TemplateID uuid.UUID
+		GuildID    uuid.UUID `proto:"guild_id"`
+		TemplateID uuid.UUID `proto:"template_id"`
 	}
 	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
