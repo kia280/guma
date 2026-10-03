@@ -11,13 +11,13 @@ import { BackpackItemMoveModal, type BackpackMoveMode } from '@/components/Backp
 import { CreateAuctionModal, type AuctionDraftItem } from '@/components/CreateAuctionModal';
 import { CreateRaffleModal, type RafflePrizeItem } from '@/components/CreateRaffleModal';
 import { ItemHistoryModal } from '@/components/ItemHistoryModal';
+import { useItemOverlay } from '@/hooks/useItemOverlay';
 import type { LoadState } from '@/hooks/useLoadState';
 import { useToast } from '@/hooks/useToast';
 import { apiClient } from '@/lib/guma';
 import { useGuildPermissions } from '@/lib/permissions';
 import type { BackpackItem } from '@/types/backpack';
 import type { MockUser } from '@/types/user';
-import { useItemOverlay } from '../_hooks/useItemOverlay';
 import { ItemWithdrawModal } from './ItemWithdrawModal';
 
 const GRID_CLASS = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3';

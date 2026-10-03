@@ -10,5 +10,6 @@ export function useItemOverlay<T>() {
     setItem(next);
     state.open();
   };
-  return { state, item, open };
+  const clear = () => setItem(null);
+  return { state, item, open, clear };
 }
