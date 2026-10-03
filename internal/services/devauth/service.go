@@ -58,7 +58,7 @@ type User struct {
 }
 
 type Guild struct {
-	ID   string
+	ID   uuid.UUID
 	Name string
 }
 
@@ -75,11 +75,11 @@ func New(pool *database.Pool, syncer authz.MemberSyncer, logger zerolog.Logger) 
 	return &Service{pool: pool, q: db.New(pool.Pool), syncer: syncer, logger: logger.With().Str("service", "devauth").Logger()}
 }
 
-func (s *Service) ResolveGuild(ctx context.Context, userID string) (*Guild, error) {
-	if id, err := uuid.Parse(userID); err == nil {
-		g, err := s.q.GetUserCurrentGuild(ctx, id)
+func (s *Service) ResolveGuild(ctx context.Context, userID *uuid.UUID) (*Guild, error) {
+	if userID != nil {
+		g, err := s.q.GetUserCurrentGuild(ctx, *userID)
 		if err == nil {
-			return &Guild{ID: g.ID.String(), Name: g.Name}, nil
+			return &Guild{ID: g.ID, Name: g.Name}, nil
 		}
 		if !errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: get current guild: %v", errs.ErrInternal, err)
@@ -93,16 +93,11 @@ func (s *Service) ResolveGuild(ctx context.Context, userID string) (*Guild, erro
 	if err != nil {
 		return nil, fmt.Errorf("%w: get default guild: %v", errs.ErrInternal, err)
 	}
-	return &Guild{ID: g.ID.String(), Name: g.Name}, nil
+	return &Guild{ID: g.ID, Name: g.Name}, nil
 }
 
-func (s *Service) ListGuildMembers(ctx context.Context, guildID string, limit int32) ([]User, error) {
-	gid, err := uuid.Parse(guildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild_id must be a UUID", errs.ErrInvalidArgument)
-	}
-
-	rows, err := s.q.ListGuildMemberUsers(ctx, db.ListGuildMemberUsersParams{GuildID: gid, MaxRows: clampLimit(limit)})
+func (s *Service) ListGuildMembers(ctx context.Context, guildID uuid.UUID, limit int32) ([]User, error) {
+	rows, err := s.q.ListGuildMemberUsers(ctx, db.ListGuildMemberUsersParams{GuildID: guildID, MaxRows: clampLimit(limit)})
 	if err != nil {
 		return nil, fmt.Errorf("%w: list guild members: %v", errs.ErrInternal, err)
 	}
@@ -122,11 +117,7 @@ func (s *Service) ListGuildMembers(ctx context.Context, guildID string, limit in
 	return users, nil
 }
 
-func (s *Service) SeedGuildMembers(ctx context.Context, guildID string, count int) ([]User, error) {
-	gid, err := uuid.Parse(guildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild_id must be a UUID", errs.ErrInvalidArgument)
-	}
+func (s *Service) SeedGuildMembers(ctx context.Context, guildID uuid.UUID, count int) ([]User, error) {
 	if count < 1 || count > MaxSeedCount {
 		return nil, fmt.Errorf("%w: count must be between 1 and %d", errs.ErrInvalidArgument, MaxSeedCount)
 	}
@@ -138,6 +129,7 @@ func (s *Service) SeedGuildMembers(ctx context.Context, guildID string, count in
 	defer tx.Rollback(ctx)
 	qtx := s.q.WithTx(tx)
 
+	userIDs := make([]uuid.UUID, 0, count)
 	users := make([]User, 0, count)
 	for i := 1; i <= count; i++ {
 		displayName, err := randomSeedName()
@@ -160,9 +152,10 @@ func (s *Service) SeedGuildMembers(ctx context.Context, guildID string, count in
 		if err != nil {
 			return nil, fmt.Errorf("%w: create user: %v", errs.ErrInternal, err)
 		}
-		if err := joinGuild(ctx, qtx, row.ID, gid, role); err != nil {
+		if err := joinGuild(ctx, qtx, row.ID, guildID, role); err != nil {
 			return nil, err
 		}
+		userIDs = append(userIDs, row.ID)
 		users = append(users, User{
 			ID:          row.ID.String(),
 			Email:       row.Email,
@@ -176,8 +169,8 @@ func (s *Service) SeedGuildMembers(ctx context.Context, guildID string, count in
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	for _, u := range users {
-		s.syncMember(ctx, gid, uuid.MustParse(u.ID))
+	for _, userID := range userIDs {
+		s.syncMember(ctx, guildID, userID)
 	}
 	return users, nil
 }
@@ -253,13 +246,8 @@ func (s *Service) ListUsers(ctx context.Context, limit int32) ([]User, error) {
 }
 
 // GetUser returns the user that a dev session would impersonate.
-func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
-	id, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user_id must be a UUID", errs.ErrInvalidArgument)
-	}
-
-	row, err := s.q.GetUserByID(ctx, id)
+func (s *Service) GetUser(ctx context.Context, userID uuid.UUID) (*User, error) {
+	row, err := s.q.GetUserByID(ctx, userID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
@@ -278,16 +266,7 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
 }
 
 // CreateUser inserts a local test user that exists only in the app database.
-func (s *Service) CreateUser(ctx context.Context, displayName, guildID string) (*User, error) {
-	var gid uuid.UUID
-	if guildID != "" {
-		parsed, err := uuid.Parse(guildID)
-		if err != nil {
-			return nil, fmt.Errorf("%w: guild_id must be a UUID", errs.ErrInvalidArgument)
-		}
-		gid = parsed
-	}
-
+func (s *Service) CreateUser(ctx context.Context, displayName string, guildID *uuid.UUID) (*User, error) {
 	displayName = strings.TrimSpace(displayName)
 
 	suffix, err := randomSuffix()
@@ -326,17 +305,17 @@ func (s *Service) CreateUser(ctx context.Context, displayName, guildID string) (
 	}
 
 	role := ""
-	if gid != uuid.Nil {
+	if guildID != nil {
 		role = string(authz.RoleMember)
-		if err := joinGuild(ctx, qtx, row.ID, gid, role); err != nil {
+		if err := joinGuild(ctx, qtx, row.ID, *guildID, role); err != nil {
 			return nil, err
 		}
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	if gid != uuid.Nil {
-		s.syncMember(ctx, gid, row.ID)
+	if guildID != nil {
+		s.syncMember(ctx, *guildID, row.ID)
 	}
 
 	return &User{
