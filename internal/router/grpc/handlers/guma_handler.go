@@ -6,7 +6,6 @@ import (
 	"github.com/rs/zerolog"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
-	"github.com/kia280/guma/internal/session"
 )
 
 // GumaService implements the GumaService gRPC service
@@ -27,7 +26,7 @@ func (s *GumaService) GetNavigation(ctx context.Context, req *gumav1.GetNavigati
 	logger := s.logger.With().Str("operation", "get_navigation").Logger()
 
 	// Get user ID from context
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	logger.Info().Str("user_id", userID).Str("guild_id", req.GuildId).Msg("getting navigation")
 
@@ -61,7 +60,7 @@ func (s *GumaService) GetNavigation(ctx context.Context, req *gumav1.GetNavigati
 func (s *GumaService) GetDashboardData(ctx context.Context, req *gumav1.GetDashboardDataRequest) (*gumav1.GetDashboardDataResponse, error) {
 	logger := s.logger.With().Str("operation", "get_dashboard_data").Logger()
 
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	logger.Info().Str("user_id", userID).Str("guild_id", req.GuildId).Msg("getting dashboard data")
 
@@ -83,7 +82,7 @@ func (s *GumaService) GetDashboardData(ctx context.Context, req *gumav1.GetDashb
 
 // GetUserPreferences retrieves user preferences
 func (s *GumaService) GetUserPreferences(ctx context.Context, req *gumav1.GetUserPreferencesRequest) (*gumav1.GetUserPreferencesResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	s.logger.Info().Str("user_id", userID).Msg("getting user preferences")
 
@@ -105,7 +104,7 @@ func (s *GumaService) GetUserPreferences(ctx context.Context, req *gumav1.GetUse
 
 // UpdateUserPreferences updates user preferences
 func (s *GumaService) UpdateUserPreferences(ctx context.Context, req *gumav1.UpdateUserPreferencesRequest) (*gumav1.UpdateUserPreferencesResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	s.logger.Info().Str("user_id", userID).Msg("updating user preferences")
 
@@ -147,7 +146,7 @@ func (s *GumaService) GetAppConfig(ctx context.Context, req *gumav1.GetAppConfig
 func (s *GumaService) SearchGlobal(ctx context.Context, req *gumav1.SearchGlobalRequest) (*gumav1.SearchGlobalResponse, error) {
 	logger := s.logger.With().Str("operation", "search_global").Logger()
 
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	logger.Info().Str("user_id", userID).Str("query", req.Query).Msg("performing global search")
 

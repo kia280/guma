@@ -11,7 +11,6 @@ import (
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/models"
 	banksvc "github.com/kia280/guma/internal/services/bank"
-	"github.com/kia280/guma/internal/session"
 )
 
 // BankHandler is a thin gRPC adapter over the bank service.
@@ -38,7 +37,7 @@ func (h *BankHandler) GetBank(ctx context.Context, req *gumav1.GetBankRequest) (
 }
 
 func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.ContributeFundsRequest) (*gumav1.ContributeFundsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	contribution, updatedBank, err := h.svc.ContributeFunds(ctx, req.GuildId, userID, req.Amount, req.Note)
 	if err != nil {
@@ -51,7 +50,7 @@ func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.Contribut
 }
 
 func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFundsRequest) (*gumav1.RequestFundsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	fr, err := h.svc.RequestFunds(ctx, req.GuildId, userID, req.Amount, req.Reason)
 	if err != nil {
@@ -61,7 +60,7 @@ func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFunds
 }
 
 func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewFundRequestRequest) (*gumav1.ReviewFundRequestResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	fr, err := h.svc.ReviewFundRequest(ctx, req.GuildId, req.RequestId, userID, req.Status, req.Note)
 	if err != nil {
@@ -71,7 +70,7 @@ func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewF
 }
 
 func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFundRequestsRequest) (*gumav1.ListFundRequestsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	offset, err := banksvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -125,7 +124,7 @@ func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListCon
 }
 
 func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequest) (*gumav1.DonateItemResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	bi, err := h.svc.DonateItem(ctx, req.GuildId, userID, req.BackpackItemId, req.Note)
 	if err != nil {
@@ -135,7 +134,7 @@ func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequ
 }
 
 func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankItemsRequest) (*gumav1.ListBankItemsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	offset, err := banksvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -166,7 +165,7 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 }
 
 func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBankItemRequest) (*gumav1.DeleteBankItemResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	if err := h.svc.DeleteBankItem(ctx, req.GuildId, userID, req.BankItemId); err != nil {
 		return nil, toStatus(err)
@@ -175,7 +174,7 @@ func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBank
 }
 
 func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRequest) (*gumav1.RequestItemResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	ir, err := h.svc.RequestItem(ctx, req.GuildId, userID, req.BankItemId, req.Reason)
 	if err != nil {
@@ -185,7 +184,7 @@ func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRe
 }
 
 func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewItemRequestRequest) (*gumav1.ReviewItemRequestResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	ir, err := h.svc.ReviewItemRequest(ctx, req.GuildId, req.RequestId, userID, req.Status, req.Note)
 	if err != nil {
@@ -195,7 +194,7 @@ func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewI
 }
 
 func (h *BankHandler) ListItemRequests(ctx context.Context, req *gumav1.ListItemRequestsRequest) (*gumav1.ListItemRequestsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	offset, err := banksvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -333,7 +332,7 @@ func itemRequestToProto(ir *banksvc.ItemRequest) *gumav1.ItemRequest {
 }
 
 func (h *BankHandler) GetItemHistory(ctx context.Context, req *gumav1.GetItemHistoryRequest) (*gumav1.GetItemHistoryResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	events, err := h.svc.GetItemHistory(ctx, req.GuildId, userID, req.ItemId)
 	if err != nil {

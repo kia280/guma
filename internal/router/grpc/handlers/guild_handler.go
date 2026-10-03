@@ -13,7 +13,6 @@ import (
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	guildsvc "github.com/kia280/guma/internal/services/guild"
-	"github.com/kia280/guma/internal/session"
 )
 
 // GuildHandler is a thin gRPC adapter over the guild service.
@@ -32,7 +31,7 @@ func NewGuildService(db *database.Pool, az authz.Authorizer, logger zerolog.Logg
 }
 
 func (h *GuildHandler) CreateGuild(ctx context.Context, req *guildv1.CreateGuildRequest) (*guildv1.CreateGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	g, err := h.svc.Create(ctx, guildsvc.CreateParams{
 		Name:           req.Name,
@@ -55,7 +54,7 @@ func (h *GuildHandler) GetGuild(ctx context.Context, req *guildv1.GetGuildReques
 }
 
 func (h *GuildHandler) UpdateGuild(ctx context.Context, req *guildv1.UpdateGuildRequest) (*guildv1.UpdateGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	g, err := h.svc.Update(ctx, guildsvc.UpdateParams{
 		GuildID:     req.GuildId,
@@ -72,7 +71,7 @@ func (h *GuildHandler) UpdateGuild(ctx context.Context, req *guildv1.UpdateGuild
 }
 
 func (h *GuildHandler) UploadGuildLogo(ctx context.Context, req *guildv1.UploadGuildLogoRequest) (*guildv1.UploadGuildLogoResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	g, err := h.svc.UploadLogo(ctx, guildsvc.UploadLogoParams{
 		GuildID:     req.GuildId,
@@ -87,7 +86,7 @@ func (h *GuildHandler) UploadGuildLogo(ctx context.Context, req *guildv1.UploadG
 }
 
 func (h *GuildHandler) DeleteGuildLogo(ctx context.Context, req *guildv1.DeleteGuildLogoRequest) (*guildv1.DeleteGuildLogoResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	g, err := h.svc.DeleteLogo(ctx, req.GuildId, userID)
 	if err != nil {
@@ -113,7 +112,7 @@ func (h *GuildHandler) GetGuildLogo(ctx context.Context, req *guildv1.GetGuildLo
 }
 
 func (h *GuildHandler) DeleteGuild(ctx context.Context, req *guildv1.DeleteGuildRequest) (*guildv1.DeleteGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	if err := h.svc.Delete(ctx, req.GuildId, userID); err != nil {
 		return nil, toStatus(err)
@@ -147,7 +146,7 @@ func (h *GuildHandler) ListGuilds(ctx context.Context, req *guildv1.ListGuildsRe
 }
 
 func (h *GuildHandler) GetCurrentGuild(ctx context.Context, _ *guildv1.GetCurrentGuildRequest) (*guildv1.GetCurrentGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	g, err := h.svc.GetCurrent(ctx, userID)
 	if err != nil {
@@ -160,7 +159,7 @@ func (h *GuildHandler) GetCurrentGuild(ctx context.Context, _ *guildv1.GetCurren
 }
 
 func (h *GuildHandler) JoinGuildById(ctx context.Context, req *guildv1.JoinGuildByIdRequest) (*guildv1.JoinGuildByIdResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	g, err := h.svc.Join(ctx, req.GuildId, userID)
 	if err != nil {
@@ -170,7 +169,7 @@ func (h *GuildHandler) JoinGuildById(ctx context.Context, req *guildv1.JoinGuild
 }
 
 func (h *GuildHandler) LeaveGuild(ctx context.Context, req *guildv1.LeaveGuildRequest) (*guildv1.LeaveGuildResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	if err := h.svc.Leave(ctx, req.GuildId, userID); err != nil {
 		return nil, toStatus(err)
@@ -187,7 +186,7 @@ func (h *GuildHandler) GetGuildSettings(ctx context.Context, req *guildv1.GetGui
 }
 
 func (h *GuildHandler) UpdateGuildSettings(ctx context.Context, req *guildv1.UpdateGuildSettingsRequest) (*guildv1.UpdateGuildSettingsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	updated, err := h.svc.UpdateSettings(ctx, req.GuildId, userID, settingsFromProto(req.Settings))
 	if err != nil {
@@ -197,7 +196,7 @@ func (h *GuildHandler) UpdateGuildSettings(ctx context.Context, req *guildv1.Upd
 }
 
 func (h *GuildHandler) GetGuildStats(ctx context.Context, req *guildv1.GetGuildStatsRequest) (*guildv1.GetGuildStatsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	stats, err := h.svc.Stats(ctx, req.GuildId, userID)
 	if err != nil {

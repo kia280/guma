@@ -10,7 +10,6 @@ import (
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	rafflesvc "github.com/kia280/guma/internal/services/raffle"
-	"github.com/kia280/guma/internal/session"
 )
 
 // RaffleHandler is a thin gRPC adapter over the raffle service.
@@ -59,7 +58,7 @@ func (h *RaffleHandler) GetRaffle(ctx context.Context, req *gumav1.GetRaffleRequ
 }
 
 func (h *RaffleHandler) CreateRaffle(ctx context.Context, req *gumav1.CreateRaffleRequest) (*gumav1.CreateRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	prizes := prizesFromProto(req.Prizes)
 
@@ -81,7 +80,7 @@ func (h *RaffleHandler) CreateRaffle(ctx context.Context, req *gumav1.CreateRaff
 }
 
 func (h *RaffleHandler) PurchaseTickets(ctx context.Context, req *gumav1.PurchaseTicketsRequest) (*gumav1.PurchaseTicketsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	tickets, totalCost, err := h.svc.PurchaseTickets(ctx, req.GuildId, req.RaffleId, userID, req.Quantity)
 	if err != nil {
@@ -109,7 +108,7 @@ func (h *RaffleHandler) GetRaffleWinners(ctx context.Context, req *gumav1.GetRaf
 }
 
 func (h *RaffleHandler) UpdateRaffle(ctx context.Context, req *gumav1.UpdateRaffleRequest) (*gumav1.UpdateRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	l, err := h.svc.Update(ctx, rafflesvc.UpdateParams{
 		GuildID:           req.GuildId,
@@ -129,7 +128,7 @@ func (h *RaffleHandler) UpdateRaffle(ctx context.Context, req *gumav1.UpdateRaff
 }
 
 func (h *RaffleHandler) CancelRaffle(ctx context.Context, req *gumav1.CancelRaffleRequest) (*gumav1.CancelRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	l, err := h.svc.Cancel(ctx, req.GuildId, req.RaffleId, userID)
 	if err != nil {
@@ -139,7 +138,7 @@ func (h *RaffleHandler) CancelRaffle(ctx context.Context, req *gumav1.CancelRaff
 }
 
 func (h *RaffleHandler) DeleteRaffle(ctx context.Context, req *gumav1.DeleteRaffleRequest) (*gumav1.DeleteRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	if err := h.svc.Delete(ctx, req.GuildId, req.RaffleId, userID); err != nil {
 		return nil, toStatus(err)
@@ -148,7 +147,7 @@ func (h *RaffleHandler) DeleteRaffle(ctx context.Context, req *gumav1.DeleteRaff
 }
 
 func (h *RaffleHandler) DrawRaffle(ctx context.Context, req *gumav1.DrawRaffleRequest) (*gumav1.DrawRaffleResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	l, winners, err := h.svc.Draw(ctx, req.GuildId, req.RaffleId, userID)
 	if err != nil {
@@ -163,7 +162,7 @@ func (h *RaffleHandler) DrawRaffle(ctx context.Context, req *gumav1.DrawRaffleRe
 }
 
 func (h *RaffleHandler) ListMyTickets(ctx context.Context, req *gumav1.ListMyTicketsRequest) (*gumav1.ListMyTicketsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	result, err := h.svc.ListMyTickets(ctx, userID, req.GuildId, int(req.PageSize), rafflesvc.ParsePageToken(req.PageToken))
 	if err != nil {

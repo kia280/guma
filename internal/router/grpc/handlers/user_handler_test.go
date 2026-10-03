@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,7 +21,7 @@ import (
 
 func TestUserService_UpdateMe_InvalidArgument(t *testing.T) {
 	service := NewUserService(nil, nil, "", zerolog.New(os.Stdout))
-	ctx := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	ctx := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 
 	tests := []struct {
 		name string

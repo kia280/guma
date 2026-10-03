@@ -3,7 +3,6 @@ package interceptors
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
@@ -11,6 +10,7 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
+	"github.com/kia280/guma/internal/ids"
 	"github.com/kia280/guma/internal/session"
 )
 
@@ -63,12 +63,12 @@ func GuildAuthzInterceptor(checker authz.Checker) grpc.UnaryServerInterceptor {
 		if scoped.GetGuildId() == "" {
 			return handler(ctx, req)
 		}
-		guildID, err := uuid.Parse(scoped.GetGuildId())
+		guildID, err := ids.Parse("guild_id", scoped.GetGuildId())
 		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, "guild_id must be a UUID")
+			return nil, status.Error(codes.InvalidArgument, err.Error())
 		}
-		userID, err := uuid.Parse(session.UserIDFromContext(ctx))
-		if err != nil {
+		userID, ok := session.UserID(ctx)
+		if !ok {
 			return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 		}
 		allowed, err := authz.Allowed(ctx, checker, guildID, userID, permission)

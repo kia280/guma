@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,7 +26,7 @@ func requireCode(t *testing.T, err error, want codes.Code) {
 
 func TestUpdateAuction_Validation(t *testing.T) {
 	h := NewAuctionService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const auctionID = "00000000-0000-0000-0000-000000000003"
 	positive := int64(100)
@@ -48,7 +49,7 @@ func TestUpdateAuction_Validation(t *testing.T) {
 
 func TestCancelAndDeleteAuction_Validation(t *testing.T) {
 	h := NewAuctionService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 
 	_, err := h.CancelAuction(authed, &gumav1.CancelAuctionRequest{GuildId: guildID, AuctionId: "bad"})

@@ -5,16 +5,16 @@
 // the identity ID and the raw Kratos cookie to the request context via
 // WithUserID / WithCookie, and the gRPC-gateway Annotator lifts them into
 // outgoing gRPC metadata. Handler code reads them back through
-// UserIDFromContext / CookieFromContext — those helpers first look at the
-// direct context keys (used on the HTTP side and in tests) and then fall
-// through to the gRPC incoming metadata, so a single call site works on
-// both transports without a dedicated gRPC interceptor.
+// UserID / CookieFromContext. The gRPC auth interceptor parses x-user-id from
+// incoming metadata once and stores it on the context as a uuid.UUID, so
+// handlers never see the raw string.
 package session
 
 import (
 	"context"
 	"net/http"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -39,26 +39,41 @@ const (
 )
 
 // WithUserID returns a new context carrying the authenticated identity ID.
-// Used by the HTTP middleware (so the gateway Annotator can lift it) and by
-// tests that want to exercise handlers directly.
-func WithUserID(ctx context.Context, id string) context.Context {
+// Used by the HTTP middleware (so the gateway Annotator can lift it), by the
+// gRPC auth interceptor once it has validated the metadata, and by tests that
+// want to exercise handlers directly.
+func WithUserID(ctx context.Context, id uuid.UUID) context.Context {
 	return context.WithValue(ctx, userIDKey, id)
 }
 
-// UserIDFromContext returns the authenticated identity ID. It first checks
-// for a direct context key (set by WithUserID on the HTTP side or in tests)
-// and falls back to reading x-user-id from incoming gRPC metadata.
-func UserIDFromContext(ctx context.Context) string {
+// UserID returns the authenticated identity ID stored by WithUserID.
+func UserID(ctx context.Context) (uuid.UUID, bool) {
 	if ctx == nil {
-		return ""
+		return uuid.Nil, false
 	}
-	if v, ok := ctx.Value(userIDKey).(string); ok && v != "" {
-		return v
+	id, ok := ctx.Value(userIDKey).(uuid.UUID)
+	if !ok || id == uuid.Nil {
+		return uuid.Nil, false
 	}
-	if md, ok := metadata.FromIncomingContext(ctx); ok {
-		return UserIDFromMetadata(md)
+	return id, true
+}
+
+// UserIDFromIncomingContext returns the authenticated identity ID. It first
+// checks for a direct context key (set by WithUserID) and falls back to
+// parsing x-user-id from incoming gRPC metadata.
+func UserIDFromIncomingContext(ctx context.Context) (uuid.UUID, bool) {
+	if id, ok := UserID(ctx); ok {
+		return id, true
 	}
-	return ""
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return uuid.Nil, false
+	}
+	id, err := uuid.Parse(UserIDFromMetadata(md))
+	if err != nil || id == uuid.Nil {
+		return uuid.Nil, false
+	}
+	return id, true
 }
 
 // WithCookie stores the raw Kratos session cookie ("name=value") on ctx so
@@ -88,8 +103,8 @@ func CookieFromContext(ctx context.Context) string {
 // HTTP request and into outgoing gRPC metadata.
 func Annotator(_ context.Context, r *http.Request) metadata.MD {
 	md := metadata.MD{}
-	if id := UserIDFromContext(r.Context()); id != "" {
-		md.Set(UserIDMetadataKey, id)
+	if id, ok := UserID(r.Context()); ok {
+		md.Set(UserIDMetadataKey, id.String())
 	}
 	if c := CookieFromContext(r.Context()); c != "" {
 		md.Set(CookieMetadataKey, c)

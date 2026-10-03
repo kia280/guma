@@ -10,7 +10,6 @@ import (
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	announcementsvc "github.com/kia280/guma/internal/services/announcement"
-	"github.com/kia280/guma/internal/session"
 )
 
 type AnnouncementHandler struct {
@@ -27,7 +26,7 @@ func NewAnnouncementService(db *database.Pool, az authz.Authorizer, logger zerol
 }
 
 func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1.ListAnnouncementsRequest) (*gumav1.ListAnnouncementsResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	list, err := h.svc.List(ctx, announcementsvc.ListParams{
 		GuildID:       req.GuildId,
@@ -58,7 +57,7 @@ func (h *AnnouncementHandler) GetAnnouncement(ctx context.Context, req *gumav1.G
 }
 
 func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *gumav1.CreateAnnouncementDraftRequest) (*gumav1.CreateAnnouncementDraftResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	a, err := h.svc.CreateDraft(ctx, req.GuildId, userID)
 	if err != nil {
 		return nil, toStatus(err)
@@ -121,7 +120,7 @@ func (h *AnnouncementHandler) DeleteAnnouncementDraft(ctx context.Context, req *
 }
 
 func requireAnnouncementUser(ctx context.Context) (string, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	return userID, nil
 }
 

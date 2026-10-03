@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -12,7 +13,6 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/events"
-	"github.com/kia280/guma/internal/session"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 	defaultMembershipCacheTTL = 5 * time.Second
 )
 
-type GuildLookup func(ctx context.Context, userID string) ([]string, error)
+type GuildLookup func(ctx context.Context, userID uuid.UUID) ([]string, error)
 
 type StreamHandler struct {
 	gumav1.UnimplementedStreamServiceServer
@@ -43,17 +43,20 @@ func NewStreamService(broker *events.Broker, guildLookup GuildLookup, logger zer
 
 func (h *StreamHandler) WatchUserEvents(_ *gumav1.WatchUserEventsRequest, stream grpc.ServerStreamingServer[gumav1.WatchUserEventsResponse]) error {
 	ctx := stream.Context()
-	userID := session.UserIDFromContext(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return err
+	}
 
 	guildIDs, err := h.guildLookup(ctx, userID)
 	if err != nil {
-		h.logger.Error().Err(err).Str("user_id", userID).Msg("failed to load guild memberships for event stream")
+		h.logger.Error().Err(err).Str("user_id", userID.String()).Msg("failed to load guild memberships for event stream")
 		return status.Error(codes.Internal, "failed to load guild memberships")
 	}
 
 	membership := newGuildMembership(userID, guildIDs, h.guildLookup, h.membershipTTL, time.Now())
 
-	updates, unsubscribe := h.broker.Subscribe(userID, guildIDs...)
+	updates, unsubscribe := h.broker.Subscribe(userID.String(), guildIDs...)
 	defer unsubscribe()
 
 	if err := stream.Send(heartbeatEvent(time.Now())); err != nil {
@@ -73,7 +76,7 @@ func (h *StreamHandler) WatchUserEvents(_ *gumav1.WatchUserEventsRequest, stream
 			}
 			allowed, err := membership.allows(ctx, e, time.Now())
 			if err != nil {
-				h.logger.Error().Err(err).Str("user_id", userID).Msg("failed to refresh guild memberships for event stream")
+				h.logger.Error().Err(err).Str("user_id", userID.String()).Msg("failed to refresh guild memberships for event stream")
 				continue
 			}
 			if !allowed {
@@ -91,7 +94,7 @@ func (h *StreamHandler) WatchUserEvents(_ *gumav1.WatchUserEventsRequest, stream
 }
 
 type guildMembership struct {
-	userID     string
+	userID     uuid.UUID
 	lookup     GuildLookup
 	ttl        time.Duration
 	subscribed map[string]struct{}
@@ -99,7 +102,7 @@ type guildMembership struct {
 	checkedAt  time.Time
 }
 
-func newGuildMembership(userID string, guildIDs []string, lookup GuildLookup, ttl time.Duration, now time.Time) *guildMembership {
+func newGuildMembership(userID uuid.UUID, guildIDs []string, lookup GuildLookup, ttl time.Duration, now time.Time) *guildMembership {
 	return &guildMembership{
 		userID:     userID,
 		lookup:     lookup,

@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,6 +21,7 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/events"
 	"github.com/kia280/guma/internal/router/grpc/handlers"
+	"github.com/kia280/guma/internal/router/grpc/interceptors"
 	"github.com/kia280/guma/internal/session"
 )
 
@@ -33,13 +35,13 @@ type sseFrame struct {
 	} `json:"result"`
 }
 
-func startStreamGateway(t *testing.T, broker *events.Broker, userID string, writeTimeout time.Duration) *httptest.Server {
+func startStreamGateway(t *testing.T, broker *events.Broker, userID uuid.UUID, writeTimeout time.Duration) *httptest.Server {
 	t.Helper()
 
 	lis, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
-	grpcServer := grpc.NewServer()
-	gumav1.RegisterStreamServiceServer(grpcServer, handlers.NewStreamService(broker, func(context.Context, string) ([]string, error) { return nil, nil }, zerolog.Nop()))
+	grpcServer := grpc.NewServer(grpc.StreamInterceptor(interceptors.StreamAuthInterceptor()))
+	gumav1.RegisterStreamServiceServer(grpcServer, handlers.NewStreamService(broker, func(context.Context, uuid.UUID) ([]string, error) { return nil, nil }, zerolog.Nop()))
 	go func() { _ = grpcServer.Serve(lis) }()
 	t.Cleanup(grpcServer.Stop)
 
@@ -77,7 +79,8 @@ func readFrame(t *testing.T, r *bufio.Reader) sseFrame {
 func TestWatchUserEventsOverServerSentEvents(t *testing.T) {
 	broker := events.NewBroker()
 	writeTimeout := 300 * time.Millisecond
-	srv := startStreamGateway(t, broker, "alice", writeTimeout)
+	alice := uuid.MustParse("00000000-0000-0000-0000-00000000a11c")
+	srv := startStreamGateway(t, broker, alice, writeTimeout)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -98,7 +101,7 @@ func TestWatchUserEventsOverServerSentEvents(t *testing.T) {
 
 	time.Sleep(2 * writeTimeout)
 	broker.Publish("bob", events.Event{OccurredAt: time.Now(), WalletUpdated: &events.WalletUpdated{GuildID: "g1", Balance: 1}})
-	broker.Publish("alice", events.Event{OccurredAt: time.Now(), WalletUpdated: &events.WalletUpdated{GuildID: "g1", Balance: 1234}})
+	broker.Publish(alice.String(), events.Event{OccurredAt: time.Now(), WalletUpdated: &events.WalletUpdated{GuildID: "g1", Balance: 1234}})
 
 	update := readFrame(t, body).Result.WalletUpdated
 	require.NotNil(t, update)

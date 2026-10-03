@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -35,7 +36,7 @@ func TestGuildService_GuildLogo_Validation(t *testing.T) {
 		{
 			name: "upload rejects unsupported type",
 			call: func() error {
-				_, err := service.UploadGuildLogo(session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001"), &guildv1.UploadGuildLogoRequest{
+				_, err := service.UploadGuildLogo(session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001")), &guildv1.UploadGuildLogoRequest{
 					GuildId:     "00000000-0000-0000-0000-000000000002",
 					ContentType: "image/svg+xml",
 					Data:        []byte("<svg></svg>"),

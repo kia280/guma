@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,7 +19,7 @@ import (
 
 func TestAnnouncementService_Validation(t *testing.T) {
 	h := NewAnnouncementService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guild = "00000000-0000-0000-0000-00000000000a"
 	const ann = "00000000-0000-0000-0000-0000000000f1"
 

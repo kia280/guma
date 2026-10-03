@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +18,7 @@ import (
 
 func TestRaffleService_UpdateRaffle_Validation(t *testing.T) {
 	service := NewRaffleService(nil, nil, zerolog.New(os.Stdout))
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 
 	tests := []struct {
 		name     string
@@ -60,7 +61,7 @@ func TestRaffleService_UpdateRaffle_Validation(t *testing.T) {
 
 func TestRaffleService_UpdateRaffle_MalformedRaffleID(t *testing.T) {
 	service := NewRaffleService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 
 	title := "Raffle"
@@ -70,7 +71,7 @@ func TestRaffleService_UpdateRaffle_MalformedRaffleID(t *testing.T) {
 
 func TestCancelAndDeleteRaffle_Validation(t *testing.T) {
 	service := NewRaffleService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 
 	_, err := service.CancelRaffle(authed, &gumav1.CancelRaffleRequest{GuildId: guildID, RaffleId: "bad"})

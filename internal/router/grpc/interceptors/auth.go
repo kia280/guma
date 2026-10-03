@@ -52,8 +52,8 @@ func (s *authenticatedStream) Context() context.Context {
 }
 
 func authenticate(ctx context.Context) (context.Context, error) {
-	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
+	userID, ok := session.UserIDFromIncomingContext(ctx)
+	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
 	}
 	return session.WithUserID(ctx, userID), nil

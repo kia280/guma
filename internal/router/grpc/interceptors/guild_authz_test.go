@@ -33,24 +33,24 @@ func TestGuildAuthzInterceptor(t *testing.T) {
 		checker  authz.Checker
 		method   string
 		req      any
-		userID   string
+		userID   uuid.UUID
 		wantCode codes.Code
 	}{
-		{name: "member on a view method", checker: checker, method: viewMethod, req: viewReq, userID: member.String(), wantCode: codes.OK},
-		{name: "non-member on a view method", checker: checker, method: viewMethod, req: viewReq, userID: outsider.String(), wantCode: codes.PermissionDenied},
-		{name: "officer on an officer method", checker: checker, method: officerMethod, req: officerReq, userID: officer.String(), wantCode: codes.OK},
-		{name: "member on an officer method", checker: checker, method: officerMethod, req: officerReq, userID: member.String(), wantCode: codes.PermissionDenied},
+		{name: "member on a view method", checker: checker, method: viewMethod, req: viewReq, userID: member, wantCode: codes.OK},
+		{name: "non-member on a view method", checker: checker, method: viewMethod, req: viewReq, userID: outsider, wantCode: codes.PermissionDenied},
+		{name: "officer on an officer method", checker: checker, method: officerMethod, req: officerReq, userID: officer, wantCode: codes.OK},
+		{name: "member on an officer method", checker: checker, method: officerMethod, req: officerReq, userID: member, wantCode: codes.PermissionDenied},
 		{name: "anonymous", checker: checker, method: viewMethod, req: viewReq, wantCode: codes.Unauthenticated},
-		{name: "malformed guild id", checker: checker, method: viewMethod, req: &gumav1.ListAuctionsRequest{GuildId: "nope"}, userID: member.String(), wantCode: codes.InvalidArgument},
-		{name: "missing guild id is left to the handler", checker: checker, method: viewMethod, req: &gumav1.ListAuctionsRequest{}, userID: outsider.String(), wantCode: codes.OK},
-		{name: "checker failure", checker: &authztest.Fake{CanErr: errors.New("keto down")}, method: viewMethod, req: viewReq, userID: member.String(), wantCode: codes.Internal},
-		{name: "exempt method", checker: checker, method: gumav1.GuildService_JoinGuildById_FullMethodName, req: &gumav1.JoinGuildByIdRequest{GuildId: guild.String()}, userID: outsider.String(), wantCode: codes.OK},
-		{name: "undeclared method", checker: checker, method: "/guma.v1.NewService/Undeclared", req: viewReq, userID: officer.String(), wantCode: codes.PermissionDenied},
+		{name: "malformed guild id", checker: checker, method: viewMethod, req: &gumav1.ListAuctionsRequest{GuildId: "nope"}, userID: member, wantCode: codes.InvalidArgument},
+		{name: "missing guild id is left to the handler", checker: checker, method: viewMethod, req: &gumav1.ListAuctionsRequest{}, userID: outsider, wantCode: codes.OK},
+		{name: "checker failure", checker: &authztest.Fake{CanErr: errors.New("keto down")}, method: viewMethod, req: viewReq, userID: member, wantCode: codes.Internal},
+		{name: "exempt method", checker: checker, method: gumav1.GuildService_JoinGuildById_FullMethodName, req: &gumav1.JoinGuildByIdRequest{GuildId: guild.String()}, userID: outsider, wantCode: codes.OK},
+		{name: "undeclared method", checker: checker, method: "/guma.v1.NewService/Undeclared", req: viewReq, userID: officer, wantCode: codes.PermissionDenied},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := context.Background()
-			if tt.userID != "" {
+			if tt.userID != uuid.Nil {
 				ctx = session.WithUserID(ctx, tt.userID)
 			}
 			called := false
@@ -158,7 +158,7 @@ func TestGuildAuthzInterceptorEnforcesMethodPermissions(t *testing.T) {
 				Grant(guild, lacking, tt.lacking...)
 			interceptor := GuildAuthzInterceptor(checker)
 			call := func(userID uuid.UUID) codes.Code {
-				ctx := session.WithUserID(context.Background(), userID.String())
+				ctx := session.WithUserID(context.Background(), userID)
 				_, err := interceptor(ctx, guildRequest(guild.String()), &grpc.UnaryServerInfo{FullMethod: tt.method},
 					func(context.Context, any) (any, error) { return nil, nil })
 				return status.Code(err)

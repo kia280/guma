@@ -10,7 +10,6 @@ import (
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	rollcalltemplatesvc "github.com/kia280/guma/internal/services/rollcalltemplate"
-	"github.com/kia280/guma/internal/session"
 )
 
 type RollCallTemplateHandler struct {
@@ -27,7 +26,7 @@ func NewRollCallTemplateService(db *database.Pool, az authz.Authorizer, logger z
 }
 
 func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req *gumav1.ListRollCallTemplatesRequest) (*gumav1.ListRollCallTemplatesResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	templates, err := h.svc.List(ctx, req.GuildId, userID)
 	if err != nil {
 		return nil, toStatus(err)
@@ -40,7 +39,7 @@ func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req
 }
 
 func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, req *gumav1.CreateRollCallTemplateRequest) (*gumav1.CreateRollCallTemplateResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	t, err := h.svc.Create(ctx, req.GuildId, userID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
@@ -53,7 +52,7 @@ func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, re
 }
 
 func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, req *gumav1.UpdateRollCallTemplateRequest) (*gumav1.UpdateRollCallTemplateResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
@@ -66,7 +65,7 @@ func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, re
 }
 
 func (h *RollCallTemplateHandler) DeleteRollCallTemplate(ctx context.Context, req *gumav1.DeleteRollCallTemplateRequest) (*gumav1.DeleteRollCallTemplateResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	if err := h.svc.Delete(ctx, req.GuildId, req.TemplateId, userID); err != nil {
 		return nil, toStatus(err)
 	}

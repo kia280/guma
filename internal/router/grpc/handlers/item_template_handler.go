@@ -10,7 +10,6 @@ import (
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	rollcalltemplatesvc "github.com/kia280/guma/internal/services/rollcalltemplate"
-	"github.com/kia280/guma/internal/session"
 )
 
 type ItemTemplateHandler struct {
@@ -27,7 +26,7 @@ func NewItemTemplateService(db *database.Pool, az authz.Authorizer, logger zerol
 }
 
 func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1.ListItemTemplatesRequest) (*gumav1.ListItemTemplatesResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	templates, err := h.svc.List(ctx, req.GuildId, userID)
 	if err != nil {
 		return nil, toStatus(err)
@@ -40,7 +39,7 @@ func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1
 }
 
 func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav1.CreateItemTemplateRequest) (*gumav1.CreateItemTemplateResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	t, err := h.svc.Create(ctx, req.GuildId, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
@@ -54,7 +53,7 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav1.UpdateItemTemplateRequest) (*gumav1.UpdateItemTemplateResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
@@ -68,7 +67,7 @@ func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) DeleteItemTemplate(ctx context.Context, req *gumav1.DeleteItemTemplateRequest) (*gumav1.DeleteItemTemplateResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	if err := h.svc.Delete(ctx, req.GuildId, req.TemplateId, userID); err != nil {
 		return nil, toStatus(err)
 	}

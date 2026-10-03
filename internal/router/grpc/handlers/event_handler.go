@@ -9,7 +9,6 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
 	eventsvc "github.com/kia280/guma/internal/services/event"
-	"github.com/kia280/guma/internal/session"
 )
 
 // EventHandler is a thin gRPC adapter over the event service.
@@ -63,7 +62,7 @@ func (h *EventHandler) GetEvent(ctx context.Context, req *gumav1.GetEventRequest
 }
 
 func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventRequest) (*gumav1.CreateEventResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	e, err := h.svc.Create(ctx, eventsvc.CreateParams{
 		GuildID:          req.GuildId,
@@ -86,7 +85,7 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventR
 }
 
 func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventRequest) (*gumav1.UpdateEventResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	e, err := h.svc.Update(ctx, eventsvc.UpdateParams{
 		GuildID:          req.GuildId,
@@ -110,7 +109,7 @@ func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventR
 }
 
 func (h *EventHandler) DeleteEvent(ctx context.Context, req *gumav1.DeleteEventRequest) (*gumav1.DeleteEventResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	if err := h.svc.Delete(ctx, req.GuildId, req.EventId, userID); err != nil {
 		return nil, toStatus(err)

@@ -11,7 +11,6 @@ import (
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/models"
 	rollcallsvc "github.com/kia280/guma/internal/services/rollcall"
-	"github.com/kia280/guma/internal/session"
 )
 
 // RollCallHandler is a thin gRPC adapter over the roll call service.
@@ -64,7 +63,7 @@ func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCa
 }
 
 func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.CreateRollCallRequest) (*gumav1.CreateRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	c, err := h.svc.Create(ctx, rollcallsvc.CreateParams{
 		GuildID:     req.GuildId,
@@ -83,7 +82,7 @@ func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.Create
 }
 
 func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.UpdateRollCallRequest) (*gumav1.UpdateRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	c, err := h.svc.Update(ctx, rollcallsvc.UpdateParams{
 		GuildID:     req.GuildId,
@@ -103,7 +102,7 @@ func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.Update
 }
 
 func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.DeleteRollCallRequest) (*gumav1.DeleteRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 	if err := h.svc.Delete(ctx, req.GuildId, req.RollCallId, userID); err != nil {
 		return nil, toStatus(err)
 	}
@@ -111,7 +110,7 @@ func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.Delete
 }
 
 func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.CompleteRollCallRequest) (*gumav1.CompleteRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	c, err := h.svc.Complete(ctx, req.GuildId, req.RollCallId, userID, req.KeepLeftoversInBank)
 	if err != nil {
@@ -121,7 +120,7 @@ func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.Comp
 }
 
 func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.UpdateRollCallLootRequest) (*gumav1.UpdateRollCallLootResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	lootList := make([]models.Item, len(req.LootList))
 	for i, item := range req.LootList {
@@ -141,7 +140,7 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 }
 
 func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.CancelRollCallRequest) (*gumav1.CancelRollCallResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	c, err := h.svc.Cancel(ctx, req.GuildId, req.RollCallId, userID)
 	if err != nil {
@@ -151,7 +150,7 @@ func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.Cancel
 }
 
 func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLootRequest) (*gumav1.AssignLootResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	backpackItemID, err := h.svc.AssignLoot(ctx, req.GuildId, req.RollCallId, req.ItemId, userID, req.UserId)
 	if err != nil {
@@ -172,7 +171,7 @@ func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRo
 }
 
 func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav1.DistributeRollCallGoldRequest) (*gumav1.DistributeRollCallGoldResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	payouts := make([]rollcallsvc.GoldPayout, len(req.Payouts))
 	for i, p := range req.Payouts {
@@ -197,7 +196,7 @@ func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav
 }
 
 func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInRequest) (*gumav1.CheckInResponse, error) {
-	userID := session.UserIDFromContext(ctx)
+	userID := legacyCallerID(ctx)
 
 	attendee, err := h.svc.CheckIn(ctx, req.GuildId, req.RollCallId, userID, req.Notes)
 	if err != nil {

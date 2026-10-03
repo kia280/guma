@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +18,7 @@ import (
 
 func TestCancelRollCall_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 
@@ -42,7 +43,7 @@ func TestCancelRollCall_Validation(t *testing.T) {
 
 func TestUpdateRollCall_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 	future := time.Now().UTC().Add(time.Hour)
@@ -76,7 +77,7 @@ func TestUpdateRollCall_Validation(t *testing.T) {
 
 func TestDistributeRollCallGold_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 	const requestID = "00000000-0000-0000-0000-000000000004"
@@ -120,7 +121,7 @@ func TestDistributeRollCallGold_Validation(t *testing.T) {
 
 func TestGetRollCallGold_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 
@@ -157,7 +158,7 @@ func TestLootFromProto(t *testing.T) {
 
 func TestCompleteRollCall_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 
@@ -182,7 +183,7 @@ func TestCompleteRollCall_Validation(t *testing.T) {
 
 func TestUpdateRollCallLoot_Validation(t *testing.T) {
 	h := NewRollCallService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const rollCallID = "00000000-0000-0000-0000-000000000003"
 

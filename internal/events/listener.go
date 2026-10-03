@@ -157,14 +157,10 @@ func dispatch(broker *Broker, logger zerolog.Logger, channel, payload string, no
 	}
 }
 
-func MemberGuildIDs(pool *database.Pool) func(ctx context.Context, userID string) ([]string, error) {
+func MemberGuildIDs(pool *database.Pool) func(ctx context.Context, userID uuid.UUID) ([]string, error) {
 	q := db.New(pool.Pool)
-	return func(ctx context.Context, userID string) ([]string, error) {
-		id, err := uuid.Parse(userID)
-		if err != nil {
-			return nil, fmt.Errorf("parse user id: %w", err)
-		}
-		rows, err := q.ListUserGuildIDs(ctx, id)
+	return func(ctx context.Context, userID uuid.UUID) ([]string, error) {
+		rows, err := q.ListUserGuildIDs(ctx, userID)
 		if err != nil {
 			return nil, fmt.Errorf("list user guilds: %w", err)
 		}
