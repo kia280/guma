@@ -13,6 +13,9 @@ services:
       - redis
       - minio
       - kratos
+      - keto
     environment:
       - DATABASE_URL=postgres://guma:password@postgres:5432/guma?sslmode=disable
       - KRATOS_ADMIN_URL=http://kratos:4434
+      - KETO_READ_ADDR=keto:4466
+      - KETO_WRITE_ADDR=keto:4467

@@ -16,7 +16,7 @@ import (
 )
 
 func TestWalletHandler_GetBalanceTrend_Validation(t *testing.T) {
-	handler := NewWalletService(nil, zerolog.New(os.Stdout))
+	handler := NewWalletService(nil, nil, zerolog.New(os.Stdout))
 
 	tests := []struct {
 		name     string
@@ -24,12 +24,6 @@ func TestWalletHandler_GetBalanceTrend_Validation(t *testing.T) {
 		req      *gumav1.GetBalanceTrendRequest
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "3f1d0a52-9a2e-4c0e-8f4b-0c5a0f6f2a11"),
-			req:      &gumav1.GetBalanceTrendRequest{},
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:     "malformed guild_id",
 			ctx:      session.WithUserID(context.Background(), "3f1d0a52-9a2e-4c0e-8f4b-0c5a0f6f2a11"),

@@ -16,7 +16,7 @@ import (
 )
 
 func TestRaffleService_UpdateRaffle_Validation(t *testing.T) {
-	service := NewRaffleService(nil, zerolog.New(os.Stdout))
+	service := NewRaffleService(nil, nil, zerolog.New(os.Stdout))
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 
 	tests := []struct {
@@ -25,18 +25,6 @@ func TestRaffleService_UpdateRaffle_Validation(t *testing.T) {
 		req      *gumav1.UpdateRaffleRequest
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing ids",
-			ctx:      authed,
-			req:      &gumav1.UpdateRaffleRequest{DrawDate: "2099-01-01T00:00:00Z"},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name:     "missing draw date",
-			ctx:      authed,
-			req:      &gumav1.UpdateRaffleRequest{GuildId: "g", RaffleId: "l"},
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name: "draw date in the past",
 			ctx:  authed,
@@ -70,24 +58,10 @@ func TestRaffleService_UpdateRaffle_Validation(t *testing.T) {
 	}
 }
 
-func TestRaffleService_UpdateRaffle_FieldValidation(t *testing.T) {
-	service := NewRaffleService(nil, zerolog.Nop())
+func TestRaffleService_UpdateRaffle_MalformedRaffleID(t *testing.T) {
+	service := NewRaffleService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
-	const raffleID = "00000000-0000-0000-0000-000000000003"
-	blank, negative, negativeCount := " ", int64(-1), int32(-1)
-
-	for name, req := range map[string]*gumav1.UpdateRaffleRequest{
-		"blank title":           {GuildId: guildID, RaffleId: raffleID, Title: &blank},
-		"negative price":        {GuildId: guildID, RaffleId: raffleID, TicketPrice: &negative},
-		"negative max":          {GuildId: guildID, RaffleId: raffleID, MaxTickets: &negativeCount},
-		"negative per user max": {GuildId: guildID, RaffleId: raffleID, MaxTicketsPerUser: &negativeCount},
-	} {
-		t.Run(name, func(t *testing.T) {
-			_, err := service.UpdateRaffle(authed, req)
-			requireCode(t, err, codes.InvalidArgument)
-		})
-	}
 
 	title := "Raffle"
 	_, err := service.UpdateRaffle(authed, &gumav1.UpdateRaffleRequest{GuildId: guildID, RaffleId: "bad", Title: &title})
@@ -95,17 +69,13 @@ func TestRaffleService_UpdateRaffle_FieldValidation(t *testing.T) {
 }
 
 func TestCancelAndDeleteRaffle_Validation(t *testing.T) {
-	service := NewRaffleService(nil, zerolog.Nop())
+	service := NewRaffleService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 
-	_, err := service.CancelRaffle(authed, &gumav1.CancelRaffleRequest{GuildId: guildID})
-	requireCode(t, err, codes.InvalidArgument)
-	_, err = service.CancelRaffle(authed, &gumav1.CancelRaffleRequest{GuildId: guildID, RaffleId: "bad"})
+	_, err := service.CancelRaffle(authed, &gumav1.CancelRaffleRequest{GuildId: guildID, RaffleId: "bad"})
 	requireCode(t, err, codes.NotFound)
 
-	_, err = service.DeleteRaffle(authed, &gumav1.DeleteRaffleRequest{RaffleId: "l"})
-	requireCode(t, err, codes.InvalidArgument)
 	_, err = service.DeleteRaffle(authed, &gumav1.DeleteRaffleRequest{GuildId: guildID, RaffleId: "bad"})
 	requireCode(t, err, codes.NotFound)
 }

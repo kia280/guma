@@ -10,6 +10,7 @@ func TestValidate_DevAuthRequiresDevelopment(t *testing.T) {
 	base := Config{
 		Server:   ServerConfig{Port: 8080, GRPCPort: 50051},
 		Database: DatabaseConfig{URL: "postgres://localhost/guma"},
+		Keto:     KetoConfig{ReadAddr: "keto:4466", WriteAddr: "keto:4467", OutboxSweepInterval: time.Second},
 		Dev:      DevConfig{AuthEnabled: true},
 	}
 
@@ -204,6 +205,7 @@ func TestValidate_Tracing(t *testing.T) {
 			cfg := Config{
 				Server:   ServerConfig{Port: 8080, GRPCPort: 50051, Environment: "production"},
 				Database: DatabaseConfig{URL: "postgres://localhost/guma"},
+				Keto:     KetoConfig{ReadAddr: "keto:4466", WriteAddr: "keto:4467", OutboxSweepInterval: time.Second},
 				Tracing:  valid,
 			}
 			tt.mutate(&cfg.Tracing)
@@ -215,5 +217,48 @@ func TestValidate_Tracing(t *testing.T) {
 				t.Fatalf("unexpected validation error: %v", err)
 			}
 		})
+	}
+}
+
+func TestLoad_KetoDefaultsAndEnv(t *testing.T) {
+	t.Setenv("DATABASE_URL", "postgres://localhost/guma")
+	t.Chdir(t.TempDir())
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if cfg.Keto.ReadAddr != "localhost:4466" || cfg.Keto.WriteAddr != "localhost:4467" {
+		t.Fatalf("unexpected default keto addresses %q, %q", cfg.Keto.ReadAddr, cfg.Keto.WriteAddr)
+	}
+	if cfg.Keto.OutboxSweepInterval != 5*time.Second {
+		t.Fatalf("expected default outbox sweep interval 5s, got %s", cfg.Keto.OutboxSweepInterval)
+	}
+
+	t.Setenv("KETO_READ_ADDR", "keto:4466")
+	t.Setenv("KETO_WRITE_ADDR", "keto:4467")
+	t.Setenv("KETO_OUTBOX_SWEEP_INTERVAL", "1m")
+	cfg, err = Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if cfg.Keto.ReadAddr != "keto:4466" || cfg.Keto.WriteAddr != "keto:4467" || cfg.Keto.OutboxSweepInterval != time.Minute {
+		t.Fatalf("expected env overrides, got %+v", cfg.Keto)
+	}
+}
+
+func TestKetoConfigValidate(t *testing.T) {
+	valid := KetoConfig{ReadAddr: "keto:4466", WriteAddr: "keto:4467", OutboxSweepInterval: time.Second}
+	if err := valid.Validate(); err != nil {
+		t.Fatalf("expected valid config: %v", err)
+	}
+	for name, cfg := range map[string]KetoConfig{
+		"missing read":  {WriteAddr: "keto:4467", OutboxSweepInterval: time.Second},
+		"missing write": {ReadAddr: "keto:4466", OutboxSweepInterval: time.Second},
+		"zero interval": {ReadAddr: "keto:4466", WriteAddr: "keto:4467"},
+	} {
+		if err := cfg.Validate(); err == nil {
+			t.Errorf("%s: expected validation error", name)
+		}
 	}
 }

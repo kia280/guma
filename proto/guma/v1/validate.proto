@@ -1,0 +1,87 @@
+edition = "2023";
+
+package guma.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/kia280/guma/gen/proto/guma/v1;gumav1";
+
+extend buf.validate.StringRules {
+  bool not_blank = 1001 [(buf.validate.predefined).cel = {
+    id: "string.not_blank"
+    expression: "!rule || this.trim() != '' ? '' : 'value must not be blank'"
+  }];
+  bool page_token = 1002 [(buf.validate.predefined).cel = {
+    id: "string.page_token"
+    expression: "!rule || this == '' || (size(this) <= 10 && this.split('').all(c, c >= '0' && c <= '9') && int(this) <= 2147483647) ? '' : 'value must be a page token returned by a previous list call'"
+  }];
+  bool https_url = 1003 [(buf.validate.predefined).cel = {
+    id: "string.https_url"
+    expression: "!rule || this == '' || (this.startsWith('https://') && size(this) > 8 && !(this.charAt(8) in ['/', '?', '#']) && this.isUri()) ? '' : 'value must be an absolute https URL'"
+  }];
+  bool handle = 1004 [(buf.validate.predefined).cel = {
+    id: "string.handle"
+    expression: "!rule || size(this) <= 32 ? '' : 'value must be at most 32 characters'"
+  }];
+  bool keyword = 1005 [(buf.validate.predefined).cel = {
+    id: "string.keyword"
+    expression: "!rule || size(this) <= 50 ? '' : 'value must be at most 50 characters'"
+  }];
+  bool code = 1006 [(buf.validate.predefined).cel = {
+    id: "string.code"
+    expression: "!rule || size(this) <= 64 ? '' : 'value must be at most 64 characters'"
+  }];
+  bool name = 1007 [(buf.validate.predefined).cel = {
+    id: "string.name"
+    expression: "!rule || size(this) <= 100 ? '' : 'value must be at most 100 characters'"
+  }];
+  bool line = 1008 [(buf.validate.predefined).cel = {
+    id: "string.line"
+    expression: "!rule || size(this) <= 200 ? '' : 'value must be at most 200 characters'"
+  }];
+  bool paragraph = 1009 [(buf.validate.predefined).cel = {
+    id: "string.paragraph"
+    expression: "!rule || size(this) <= 500 ? '' : 'value must be at most 500 characters'"
+  }];
+  bool text = 1010 [(buf.validate.predefined).cel = {
+    id: "string.text"
+    expression: "!rule || size(this) <= 2000 ? '' : 'value must be at most 2000 characters'"
+  }];
+  bool url = 1011 [(buf.validate.predefined).cel = {
+    id: "string.url"
+    expression: "!rule || size(this) <= 2048 ? '' : 'value must be at most 2048 characters'"
+  }];
+  bool item_category = 1012 [(buf.validate.predefined).cel = {
+    id: "string.item_category"
+    expression: "!rule || this == '' || this.trim().lowerAscii() in ['weapon', 'armor', 'accessory', 'consumable', 'skill_scroll', 'material', 'misc'] ? '' : 'value must be one of weapon, armor, accessory, consumable, skill_scroll, material, misc'"
+  }];
+  bool item_rarity = 1013 [(buf.validate.predefined).cel = {
+    id: "string.item_rarity"
+    expression: "!rule || this == '' || this.trim().lowerAscii() in ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] ? '' : 'value must be one of common, uncommon, rare, epic, legendary, mythic'"
+  }];
+}
+
+extend buf.validate.Int32Rules {
+  int32 max_page_size = 1001 [(buf.validate.predefined).cel = {
+    id: "int32.max_page_size"
+    expression: "this >= 0 && this <= rule ? '' : 'value must be between 0 and ' + string(rule)"
+  }];
+}
+
+extend buf.validate.Int64Rules {
+  bool amount = 1001 [(buf.validate.predefined).cel = {
+    id: "int64.amount"
+    expression: "!rule || (this > 0 && this <= 100000000000000) ? '' : 'value must be a positive amount of at most 100000000000000'"
+  }];
+  bool amount_or_zero = 1002 [(buf.validate.predefined).cel = {
+    id: "int64.amount_or_zero"
+    expression: "!rule || (this >= 0 && this <= 100000000000000) ? '' : 'value must be an amount between 0 and 100000000000000'"
+  }];
+}
+
+extend buf.validate.MapRules {
+  bool settings_map = 1001 [(buf.validate.predefined).cel = {
+    id: "map.settings_map"
+    expression: "!rule || (size(this) <= 50 && this.all(k, size(k) <= 100 && size(this[k]) <= 2000)) ? '' : 'value must have at most 50 entries with keys of at most 100 and values of at most 2000 characters'"
+  }];
+}

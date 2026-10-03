@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -16,10 +15,12 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 // GuildBank is the domain model for the guild bank.
@@ -121,10 +122,6 @@ const (
 	StatusRejected = "rejected"
 )
 
-var reviewerRoles = []string{"owner", "admin", "moderator"}
-
-var itemDeleterRoles = []string{"owner", "admin"}
-
 const (
 	itemEventDeleted = "deleted"
 	deletedItemNote  = "The item was removed from the guild bank."
@@ -196,11 +193,12 @@ type ListBankItemsResult struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
 // New creates a new bank Service.
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -208,6 +206,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	return &Service{
 		pool:   pool,
 		q:      q,
+		az:     az,
 		logger: logger.With().Str("service", "bank").Logger(),
 	}
 }
@@ -247,12 +246,6 @@ func (s *Service) GetBank(ctx context.Context, guildIDStr string) (*GuildBank, e
 
 // ContributeFunds transfers funds from user wallet to guild bank.
 func (s *Service) ContributeFunds(ctx context.Context, guildIDStr, userIDStr string, amount int64, note string) (*BankContribution, *GuildBank, error) {
-	if amount <= 0 {
-		return nil, nil, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
-	}
-	if err := checkLength("note", note, maxNoteLength); err != nil {
-		return nil, nil, err
-	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -320,16 +313,7 @@ func (s *Service) ContributeFunds(ctx context.Context, guildIDStr, userIDStr str
 
 // RequestFunds inserts a pending fund request.
 func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string, amount int64, reason string) (*FundRequest, error) {
-	if amount <= 0 {
-		return nil, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
-	}
 	reason = strings.TrimSpace(reason)
-	if reason == "" {
-		return nil, fmt.Errorf("%w: reason is required", errs.ErrInvalidArgument)
-	}
-	if err := checkLength("reason", reason, maxReasonLength); err != nil {
-		return nil, err
-	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -337,9 +321,6 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID); err != nil {
-		return nil, err
 	}
 
 	bank, err := s.GetBank(ctx, guildIDStr)
@@ -364,12 +345,6 @@ func (s *Service) RequestFunds(ctx context.Context, guildIDStr, userIDStr string
 
 // ReviewFundRequest approves or rejects a fund request.
 func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDStr, reviewerIDStr, status, note string) (*FundRequest, error) {
-	if err := validateDecision(status); err != nil {
-		return nil, err
-	}
-	if err := checkLength("note", note, maxNoteLength); err != nil {
-		return nil, err
-	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: fund request", errs.ErrNotFound)
@@ -381,9 +356,6 @@ func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDSt
 	reviewerID, err := uuid.Parse(reviewerIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, reviewerID, reviewerRoles...); err != nil {
-		return nil, err
 	}
 
 	pgtx, err := s.pool.Begin(ctx)
@@ -450,23 +422,10 @@ func (s *Service) ReviewFundRequest(ctx context.Context, guildIDStr, requestIDSt
 
 // ListFundRequests returns paginated fund requests.
 func (s *Service) ListFundRequests(ctx context.Context, p ListFundRequestsParams) (*ListFundRequestsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
-	if err := validateStatusFilter(p.Status); err != nil {
-		return nil, err
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
-	userID, err := uuid.Parse(p.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID); err != nil {
-		return nil, err
 	}
 
 	rows, err := s.q.ListFundRequests(ctx, db.ListFundRequestsParams{
@@ -493,10 +452,7 @@ func (s *Service) ListFundRequests(ctx context.Context, p ListFundRequestsParams
 
 // ListContributions returns paginated contributions.
 func (s *Service) ListContributions(ctx context.Context, p ListContributionsParams) (*ListContributionsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -539,9 +495,6 @@ func (s *Service) ListContributions(ctx context.Context, p ListContributionsPara
 
 // DonateItem moves a backpack item to the guild bank.
 func (s *Service) DonateItem(ctx context.Context, guildIDStr, userIDStr, backpackItemIDStr, note string) (*BankItem, error) {
-	if err := checkLength("note", note, maxNoteLength); err != nil {
-		return nil, err
-	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -598,10 +551,7 @@ func (s *Service) DonateItem(ctx context.Context, guildIDStr, userIDStr, backpac
 
 // ListBankItems returns paginated bank items with optional filters.
 func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*ListBankItemsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -653,12 +603,6 @@ func (s *Service) ListBankItems(ctx context.Context, p ListBankItemsParams) (*Li
 // RequestItem inserts a pending item request.
 func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankItemIDStr, reason string) (*ItemRequest, error) {
 	reason = strings.TrimSpace(reason)
-	if reason == "" {
-		return nil, fmt.Errorf("%w: reason is required", errs.ErrInvalidArgument)
-	}
-	if err := checkLength("reason", reason, maxReasonLength); err != nil {
-		return nil, err
-	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
@@ -670,9 +614,6 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 	bankItemID, err := uuid.Parse(bankItemIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
-	}
-	if err := s.requireRole(ctx, guildID, userID); err != nil {
-		return nil, err
 	}
 
 	requesterName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
@@ -699,12 +640,6 @@ func (s *Service) RequestItem(ctx context.Context, guildIDStr, userIDStr, bankIt
 
 // ReviewItemRequest approves or rejects an item request.
 func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDStr, reviewerIDStr, status, note string) (*ItemRequest, error) {
-	if err := validateDecision(status); err != nil {
-		return nil, err
-	}
-	if err := checkLength("note", note, maxNoteLength); err != nil {
-		return nil, err
-	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: item request", errs.ErrNotFound)
@@ -716,9 +651,6 @@ func (s *Service) ReviewItemRequest(ctx context.Context, guildIDStr, requestIDSt
 	reviewerID, err := uuid.Parse(reviewerIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, reviewerID, reviewerRoles...); err != nil {
-		return nil, err
 	}
 
 	pgtx, err := s.pool.Begin(ctx)
@@ -795,9 +727,6 @@ func (s *Service) DeleteBankItem(ctx context.Context, guildIDStr, userIDStr, ban
 	if err != nil {
 		return fmt.Errorf("%w: bank item", errs.ErrNotFound)
 	}
-	if err := s.requireRole(ctx, guildID, userID, itemDeleterRoles...); err != nil {
-		return err
-	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -844,23 +773,10 @@ func (s *Service) DeleteBankItem(ctx context.Context, guildIDStr, userIDStr, ban
 }
 
 func (s *Service) ListItemRequests(ctx context.Context, p ListItemRequestsParams) (*ListItemRequestsResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
-	if err := validateStatusFilter(p.Status); err != nil {
-		return nil, err
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
-	userID, err := uuid.Parse(p.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID); err != nil {
-		return nil, err
 	}
 
 	rows, err := s.q.ListItemRequests(ctx, db.ListItemRequestsParams{
@@ -927,57 +843,11 @@ func toItemRequest(r db.ListItemRequestsRow) *ItemRequest {
 	return ir
 }
 
-const (
-	maxNoteLength   = 200
-	maxReasonLength = 500
-)
-
-func checkLength(field, value string, maxLength int) error {
-	if utf8.RuneCountInString(value) > maxLength {
-		return fmt.Errorf("%w: %s must be at most %d characters", errs.ErrInvalidArgument, field, maxLength)
-	}
-	return nil
-}
-
-func validateDecision(status string) error {
-	if status != StatusApproved && status != StatusRejected {
-		return fmt.Errorf("%w: status must be '%s' or '%s'", errs.ErrInvalidArgument, StatusApproved, StatusRejected)
-	}
-	return nil
-}
-
-func validateStatusFilter(status string) error {
-	switch status {
-	case "", StatusPending, StatusApproved, StatusRejected:
-		return nil
-	}
-	return fmt.Errorf("%w: unknown status filter %q", errs.ErrInvalidArgument, status)
-}
-
 func checkReviewable(currentStatus string) error {
 	if currentStatus != StatusPending {
 		return fmt.Errorf("%w: request has already been reviewed", errs.ErrFailedPrecondition)
 	}
 	return nil
-}
-
-func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: load member role: %v", errs.ErrInternal, err)
-	}
-	if len(roles) == 0 {
-		return nil
-	}
-	for _, r := range roles {
-		if role == r {
-			return nil
-		}
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, roles)
 }
 
 // NextPageToken encodes the offset as a page token string.

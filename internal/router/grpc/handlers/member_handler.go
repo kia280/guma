@@ -7,11 +7,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	memberv1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	membersvc "github.com/kia280/guma/internal/services/member"
 	"github.com/kia280/guma/internal/session"
@@ -25,23 +24,15 @@ type MemberService struct {
 }
 
 // NewMemberService creates a new Member handler
-func NewMemberService(db *database.Pool, logger zerolog.Logger) *MemberService {
+func NewMemberService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *MemberService {
 	return &MemberService{
-		svc:    membersvc.New(db, logger),
+		svc:    membersvc.New(db, az, logger),
 		logger: logger.With().Str("service", "member").Logger(),
 	}
 }
 
 // InviteMember creates an invitation for a new member
 func (s *MemberService) InviteMember(ctx context.Context, req *memberv1.InviteMemberRequest) (*memberv1.InviteMemberResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.Email == "" {
-		return nil, status.Error(codes.InvalidArgument, "email is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	s.logger.Info().
@@ -73,10 +64,6 @@ func (s *MemberService) InviteMember(ctx context.Context, req *memberv1.InviteMe
 
 // JoinGuild allows a user to join a guild using an invite code
 func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRequest) (*memberv1.JoinGuildResponse, error) {
-	if req.InviteCode == "" {
-		return nil, status.Error(codes.InvalidArgument, "invite_code is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	s.logger.Info().
@@ -93,7 +80,7 @@ func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRe
 		UserId:      userID,
 		GuildId:     "mock-guild-id",
 		DisplayName: "User",
-		Role:        "member",
+		Role:        string(authz.RoleMember),
 		Profile:     map[string]string{},
 		JoinedAt:    timestamppb.Now(),
 		LastActive:  timestamppb.Now(),
@@ -106,14 +93,6 @@ func (s *MemberService) JoinGuild(ctx context.Context, req *memberv1.JoinGuildRe
 
 // UpdateMember updates a member's information
 func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMemberRequest) (*memberv1.UpdateMemberResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.MemberId == "" {
-		return nil, status.Error(codes.InvalidArgument, "member_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	s.logger.Info().
@@ -142,18 +121,6 @@ func (s *MemberService) UpdateMember(ctx context.Context, req *memberv1.UpdateMe
 }
 
 func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.UpdateMemberRoleRequest) (*memberv1.UpdateMemberRoleResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.UserId == "" {
-		return nil, status.Error(codes.InvalidArgument, "user_id is required")
-	}
-
-	if req.Role == "" {
-		return nil, status.Error(codes.InvalidArgument, "role is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	member, err := s.svc.UpdateRole(ctx, membersvc.UpdateRoleParams{
@@ -171,14 +138,6 @@ func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.Upda
 
 // RemoveMember removes a member from a guild
 func (s *MemberService) RemoveMember(ctx context.Context, req *memberv1.RemoveMemberRequest) (*memberv1.RemoveMemberResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.MemberId == "" {
-		return nil, status.Error(codes.InvalidArgument, "member_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	s.logger.Info().
@@ -197,10 +156,6 @@ func (s *MemberService) RemoveMember(ctx context.Context, req *memberv1.RemoveMe
 
 // ListMembers lists members of a guild
 func (s *MemberService) ListMembers(ctx context.Context, req *memberv1.ListMembersRequest) (*memberv1.ListMembersResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	result, err := s.svc.List(ctx, membersvc.ListParams{
@@ -243,14 +198,6 @@ func toMemberProto(m *membersvc.Member) *memberv1.Member {
 
 // GetMember retrieves a specific member
 func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRequest) (*memberv1.GetMemberResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.MemberId == "" {
-		return nil, status.Error(codes.InvalidArgument, "member_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	s.logger.Info().
@@ -266,7 +213,7 @@ func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRe
 		UserId:      userID,
 		GuildId:     req.GuildId,
 		DisplayName: "User",
-		Role:        "member",
+		Role:        string(authz.RoleMember),
 		Profile:     map[string]string{},
 		JoinedAt:    timestamppb.Now(),
 		LastActive:  timestamppb.Now(),
@@ -279,10 +226,6 @@ func (s *MemberService) GetMember(ctx context.Context, req *memberv1.GetMemberRe
 
 // GenerateInviteCode generates a new invite code
 func (s *MemberService) GenerateInviteCode(ctx context.Context, req *memberv1.GenerateInviteCodeRequest) (*memberv1.GenerateInviteCodeResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	s.logger.Info().
@@ -320,10 +263,6 @@ func (s *MemberService) GenerateInviteCode(ctx context.Context, req *memberv1.Ge
 
 // ValidateInviteCode validates an invite code
 func (s *MemberService) ValidateInviteCode(ctx context.Context, req *memberv1.ValidateInviteCodeRequest) (*memberv1.ValidateInviteCodeResponse, error) {
-	if req.Code == "" {
-		return nil, status.Error(codes.InvalidArgument, "code is required")
-	}
-
 	code := strings.ToUpper(req.Code)
 
 	s.logger.Info().Str("code", code).Msg("validating invite code")
@@ -339,10 +278,6 @@ func (s *MemberService) ValidateInviteCode(ctx context.Context, req *memberv1.Va
 
 // ListInvites lists all invitations for a guild
 func (s *MemberService) ListInvites(ctx context.Context, req *memberv1.ListInvitesRequest) (*memberv1.ListInvitesResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	s.logger.Info().
@@ -362,14 +297,6 @@ func (s *MemberService) ListInvites(ctx context.Context, req *memberv1.ListInvit
 
 // RevokeInvite revokes an invitation
 func (s *MemberService) RevokeInvite(ctx context.Context, req *memberv1.RevokeInviteRequest) (*memberv1.RevokeInviteResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-
-	if req.InviteId == "" {
-		return nil, status.Error(codes.InvalidArgument, "invite_id is required")
-	}
-
 	userID := session.UserIDFromContext(ctx)
 
 	s.logger.Info().

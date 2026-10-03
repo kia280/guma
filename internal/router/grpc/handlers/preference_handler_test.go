@@ -1,60 +1,14 @@
 package handlers
 
 import (
-	"context"
 	"testing"
 	"time"
 
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
-	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	preferencesvc "github.com/kia280/guma/internal/services/preference"
-	"github.com/kia280/guma/internal/session"
 )
-
-func TestPreferenceService_Validation(t *testing.T) {
-	h := NewPreferenceService(nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
-
-	tests := []struct {
-		name     string
-		call     func() error
-		wantCode codes.Code
-	}{
-		{
-			name: "update missing notifications",
-			call: func() error {
-				_, err := h.UpdateMyPreferences(authed, &gumav1.UpdateMyPreferencesRequest{})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "update empty patch",
-			call: func() error {
-				_, err := h.UpdateMyPreferences(authed, &gumav1.UpdateMyPreferencesRequest{
-					Notifications: &gumav1.NotificationPreferencesPatch{},
-				})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.call()
-			require.Error(t, err)
-			st, ok := status.FromError(err)
-			require.True(t, ok)
-			assert.Equal(t, tt.wantCode, st.Code())
-		})
-	}
-}
 
 func TestNotificationPreferencesToProto(t *testing.T) {
 	got := notificationPreferencesToProto(preferencesvc.NotificationPreferences{

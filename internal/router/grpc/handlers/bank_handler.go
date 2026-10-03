@@ -4,11 +4,10 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/models"
 	banksvc "github.com/kia280/guma/internal/services/bank"
@@ -23,17 +22,14 @@ type BankHandler struct {
 }
 
 // NewBankService creates a new Bank gRPC handler.
-func NewBankService(db *database.Pool, logger zerolog.Logger) *BankHandler {
+func NewBankService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *BankHandler {
 	return &BankHandler{
-		svc:    banksvc.New(db, logger),
+		svc:    banksvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "bank").Logger(),
 	}
 }
 
 func (h *BankHandler) GetBank(ctx context.Context, req *gumav1.GetBankRequest) (*gumav1.GetBankResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	bank, err := h.svc.GetBank(ctx, req.GuildId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -42,9 +38,6 @@ func (h *BankHandler) GetBank(ctx context.Context, req *gumav1.GetBankRequest) (
 }
 
 func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.ContributeFundsRequest) (*gumav1.ContributeFundsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	contribution, updatedBank, err := h.svc.ContributeFunds(ctx, req.GuildId, userID, req.Amount, req.Note)
@@ -58,9 +51,6 @@ func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.Contribut
 }
 
 func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFundsRequest) (*gumav1.RequestFundsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	fr, err := h.svc.RequestFunds(ctx, req.GuildId, userID, req.Amount, req.Reason)
@@ -71,9 +61,6 @@ func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFunds
 }
 
 func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewFundRequestRequest) (*gumav1.ReviewFundRequestResponse, error) {
-	if req.GuildId == "" || req.RequestId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and request_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	fr, err := h.svc.ReviewFundRequest(ctx, req.GuildId, req.RequestId, userID, req.Status, req.Note)
@@ -84,9 +71,6 @@ func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewF
 }
 
 func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFundRequestsRequest) (*gumav1.ListFundRequestsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	offset, err := banksvc.ParsePageToken(req.PageToken)
@@ -116,9 +100,6 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 }
 
 func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListContributionsRequest) (*gumav1.ListContributionsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	offset, err := banksvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
@@ -144,9 +125,6 @@ func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListCon
 }
 
 func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequest) (*gumav1.DonateItemResponse, error) {
-	if req.GuildId == "" || req.BackpackItemId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and backpack_item_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	bi, err := h.svc.DonateItem(ctx, req.GuildId, userID, req.BackpackItemId, req.Note)
@@ -157,9 +135,6 @@ func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequ
 }
 
 func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankItemsRequest) (*gumav1.ListBankItemsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	offset, err := banksvc.ParsePageToken(req.PageToken)
@@ -191,9 +166,6 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 }
 
 func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBankItemRequest) (*gumav1.DeleteBankItemResponse, error) {
-	if req.GuildId == "" || req.BankItemId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and bank_item_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	if err := h.svc.DeleteBankItem(ctx, req.GuildId, userID, req.BankItemId); err != nil {
@@ -203,9 +175,6 @@ func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBank
 }
 
 func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRequest) (*gumav1.RequestItemResponse, error) {
-	if req.GuildId == "" || req.BankItemId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and bank_item_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	ir, err := h.svc.RequestItem(ctx, req.GuildId, userID, req.BankItemId, req.Reason)
@@ -216,9 +185,6 @@ func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRe
 }
 
 func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewItemRequestRequest) (*gumav1.ReviewItemRequestResponse, error) {
-	if req.GuildId == "" || req.RequestId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and request_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	ir, err := h.svc.ReviewItemRequest(ctx, req.GuildId, req.RequestId, userID, req.Status, req.Note)
@@ -229,9 +195,6 @@ func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewI
 }
 
 func (h *BankHandler) ListItemRequests(ctx context.Context, req *gumav1.ListItemRequestsRequest) (*gumav1.ListItemRequestsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	offset, err := banksvc.ParsePageToken(req.PageToken)
@@ -370,9 +333,6 @@ func itemRequestToProto(ir *banksvc.ItemRequest) *gumav1.ItemRequest {
 }
 
 func (h *BankHandler) GetItemHistory(ctx context.Context, req *gumav1.GetItemHistoryRequest) (*gumav1.GetItemHistoryResponse, error) {
-	if req.GuildId == "" || req.ItemId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and item_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	events, err := h.svc.GetItemHistory(ctx, req.GuildId, userID, req.ItemId)

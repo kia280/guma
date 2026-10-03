@@ -4,11 +4,10 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	rollcalltemplatesvc "github.com/kia280/guma/internal/services/rollcalltemplate"
 	"github.com/kia280/guma/internal/session"
@@ -20,17 +19,14 @@ type ItemTemplateHandler struct {
 	logger zerolog.Logger
 }
 
-func NewItemTemplateService(db *database.Pool, logger zerolog.Logger) *ItemTemplateHandler {
+func NewItemTemplateService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *ItemTemplateHandler {
 	return &ItemTemplateHandler{
-		svc:    rollcalltemplatesvc.NewItemService(db, logger),
+		svc:    rollcalltemplatesvc.NewItemService(db, az, logger),
 		logger: logger.With().Str("handler", "item_template").Logger(),
 	}
 }
 
 func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1.ListItemTemplatesRequest) (*gumav1.ListItemTemplatesResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	templates, err := h.svc.List(ctx, req.GuildId, userID)
 	if err != nil {
@@ -44,9 +40,6 @@ func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1
 }
 
 func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav1.CreateItemTemplateRequest) (*gumav1.CreateItemTemplateResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	t, err := h.svc.Create(ctx, req.GuildId, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
@@ -61,9 +54,6 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav1.UpdateItemTemplateRequest) (*gumav1.UpdateItemTemplateResponse, error) {
-	if req.GuildId == "" || req.TemplateId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
@@ -78,9 +68,6 @@ func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) DeleteItemTemplate(ctx context.Context, req *gumav1.DeleteItemTemplateRequest) (*gumav1.DeleteItemTemplateResponse, error) {
-	if req.GuildId == "" || req.TemplateId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and template_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if err := h.svc.Delete(ctx, req.GuildId, req.TemplateId, userID); err != nil {
 		return nil, toStatus(err)

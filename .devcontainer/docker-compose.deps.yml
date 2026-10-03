@@ -13,10 +13,14 @@ services:
         condition: service_healthy
       kratos:
         condition: service_healthy
+      keto:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgres://guma:password@postgres:5432/guma?sslmode=disable
       - REDIS_URL=redis://redis:6379/0
       - KRATOS_ADMIN_URL=http://kratos:4434
+      - KETO_READ_ADDR=keto:4466
+      - KETO_WRITE_ADDR=keto:4467
       - ENV=development
       - DEV_AUTH_ENABLED=true
     healthcheck:
@@ -127,6 +131,7 @@ services:
       retries: 5
     volumes:
       - ./config/keto:/etc/config/keto/:ro
+      - ../internal/authz/namespaces.keto.ts:/etc/config/keto-namespaces/namespaces.keto.ts:ro
     entrypoint: keto serve --sqa-opt-out -c /etc/config/keto/config.yaml
 
 volumes:

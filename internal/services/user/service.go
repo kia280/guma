@@ -18,6 +18,7 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/text/unicode/norm"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
@@ -58,7 +59,6 @@ type UpdateParams struct {
 const (
 	MaxDisplayNameLength = 32
 	MaxBioLength         = 500
-	MaxAvatarURLLength   = 2048
 	uniqueViolation      = "23505"
 )
 
@@ -77,6 +77,7 @@ type Stats struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	syncer authz.MemberSyncer
 	kratos *kratos.APIClient
 	logger zerolog.Logger
 
@@ -105,7 +106,7 @@ func WithKratosAdminURL(url string) Option {
 
 // New creates a new user Service. kratosPublicURL is used by GetMe to
 // whoami-refresh the user profile from Kratos on every call.
-func New(pool *database.Pool, kratosPublicURL string, logger zerolog.Logger, opts ...Option) *Service {
+func New(pool *database.Pool, syncer authz.MemberSyncer, kratosPublicURL string, logger zerolog.Logger, opts ...Option) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -113,6 +114,7 @@ func New(pool *database.Pool, kratosPublicURL string, logger zerolog.Logger, opt
 	s := &Service{
 		pool:   pool,
 		q:      q,
+		syncer: syncer,
 		kratos: newKratosClient(kratosPublicURL),
 		logger: logger.With().Str("service", "user").Logger(),
 	}
@@ -433,14 +435,10 @@ func validateUpdateParams(p UpdateParams) (UpdateParams, error) {
 	p.AvatarURL = strings.TrimSpace(p.AvatarURL)
 
 	switch {
-	case p.DisplayName == "":
-		return p, fmt.Errorf("%w: display_name is required", errs.ErrInvalidArgument)
 	case utf8.RuneCountInString(p.DisplayName) > MaxDisplayNameLength:
 		return p, fmt.Errorf("%w: display_name must be at most %d characters", errs.ErrInvalidArgument, MaxDisplayNameLength)
 	case utf8.RuneCountInString(p.Bio) > MaxBioLength:
 		return p, fmt.Errorf("%w: bio must be at most %d characters", errs.ErrInvalidArgument, MaxBioLength)
-	case utf8.RuneCountInString(p.AvatarURL) > MaxAvatarURLLength:
-		return p, fmt.Errorf("%w: avatar_url must be at most %d characters", errs.ErrInvalidArgument, MaxAvatarURLLength)
 	}
 	return p, nil
 }
@@ -547,10 +545,11 @@ func (s *Service) autoJoinSingletonGuild(ctx context.Context, userID uuid.UUID) 
 	if err := s.q.InsertGuildMember(ctx, db.InsertGuildMemberParams{
 		UserID:  userID,
 		GuildID: guildID,
-		Role:    "member",
+		Role:    string(authz.RoleMember),
 	}); err != nil {
 		return fmt.Errorf("insert guild member: %w", err)
 	}
+	authz.SyncAfterCommit(ctx, s.syncer, s.logger, guildID, userID)
 	s.logger.Info().
 		Str("user_id", userID.String()).
 		Str("guild_id", guildID.String()).

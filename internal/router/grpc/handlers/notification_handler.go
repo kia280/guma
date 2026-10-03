@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -64,9 +62,6 @@ func (h *NotificationHandler) GetUnreadNotificationCount(ctx context.Context, _ 
 }
 
 func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gumav1.MarkNotificationReadRequest) (*gumav1.MarkNotificationReadResponse, error) {
-	if req.NotificationId == "" {
-		return nil, status.Error(codes.InvalidArgument, "notification_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	n, err := h.svc.MarkRead(ctx, userID, req.NotificationId)

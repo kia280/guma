@@ -21,7 +21,7 @@ const (
 )
 
 func TestRequestFundsValidatesInput(t *testing.T) {
-	s := New(nil, zerolog.Nop())
+	s := New(nil, nil, zerolog.Nop())
 	tests := []struct {
 		name   string
 		guild  string
@@ -29,9 +29,6 @@ func TestRequestFundsValidatesInput(t *testing.T) {
 		amount int64
 		reason string
 	}{
-		{name: "zero amount", guild: testGuild, user: testUser, amount: 0, reason: "raid"},
-		{name: "negative amount", guild: testGuild, user: testUser, amount: -5, reason: "raid"},
-		{name: "blank reason", guild: testGuild, user: testUser, amount: 10, reason: "   "},
 		{name: "bad guild id", guild: "nope", user: testUser, amount: 10, reason: "raid"},
 		{name: "bad user id", guild: testGuild, user: "nope", amount: 10, reason: "raid"},
 	}
@@ -43,26 +40,8 @@ func TestRequestFundsValidatesInput(t *testing.T) {
 	}
 }
 
-func TestRequestItemRequiresReason(t *testing.T) {
-	s := New(nil, zerolog.Nop())
-	_, err := s.RequestItem(context.Background(), testGuild, testUser, uuid.NewString(), " ")
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-}
-
-func TestReviewRejectsUnknownDecision(t *testing.T) {
-	s := New(nil, zerolog.Nop())
-	for _, status := range []string{"", "pending", "maybe"} {
-		t.Run(status, func(t *testing.T) {
-			_, err := s.ReviewFundRequest(context.Background(), testGuild, uuid.NewString(), testUser, status, "")
-			assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-			_, err = s.ReviewItemRequest(context.Background(), testGuild, uuid.NewString(), testUser, status, "")
-			assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-		})
-	}
-}
-
 func TestDeleteBankItemValidatesIDs(t *testing.T) {
-	s := New(nil, zerolog.Nop())
+	s := New(nil, nil, zerolog.Nop())
 	tests := []struct {
 		name  string
 		guild string
@@ -79,18 +58,6 @@ func TestDeleteBankItemValidatesIDs(t *testing.T) {
 			assert.ErrorIs(t, s.DeleteBankItem(context.Background(), tt.guild, tt.user, tt.item), tt.want)
 		})
 	}
-}
-
-func TestItemDeleterRolesExcludeModerators(t *testing.T) {
-	assert.ElementsMatch(t, []string{"owner", "admin"}, itemDeleterRoles)
-}
-
-func TestListRequestsRejectsUnknownStatusFilter(t *testing.T) {
-	s := New(nil, zerolog.Nop())
-	_, err := s.ListFundRequests(context.Background(), ListFundRequestsParams{GuildID: testGuild, UserID: testUser, Status: "done"})
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-	_, err = s.ListItemRequests(context.Background(), ListItemRequestsParams{GuildID: testGuild, UserID: testUser, Status: "done"})
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 }
 
 func TestCheckReviewable(t *testing.T) {

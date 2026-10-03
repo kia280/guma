@@ -4,11 +4,10 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/models"
 	rollcallsvc "github.com/kia280/guma/internal/services/rollcall"
@@ -23,17 +22,14 @@ type RollCallHandler struct {
 }
 
 // NewRollCallService creates a new roll call gRPC handler.
-func NewRollCallService(db *database.Pool, logger zerolog.Logger) *RollCallHandler {
+func NewRollCallService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *RollCallHandler {
 	return &RollCallHandler{
-		svc:    rollcallsvc.New(db, logger),
+		svc:    rollcallsvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "roll_call").Logger(),
 	}
 }
 
 func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRollCallsRequest) (*gumav1.ListRollCallsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
@@ -60,9 +56,6 @@ func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRol
 }
 
 func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCallRequest) (*gumav1.GetRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	c, err := h.svc.Get(ctx, req.GuildId, req.RollCallId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -71,9 +64,6 @@ func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCa
 }
 
 func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.CreateRollCallRequest) (*gumav1.CreateRollCallResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	c, err := h.svc.Create(ctx, rollcallsvc.CreateParams{
@@ -93,9 +83,6 @@ func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.Create
 }
 
 func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.UpdateRollCallRequest) (*gumav1.UpdateRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	c, err := h.svc.Update(ctx, rollcallsvc.UpdateParams{
@@ -116,9 +103,6 @@ func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.Update
 }
 
 func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.DeleteRollCallRequest) (*gumav1.DeleteRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	if err := h.svc.Delete(ctx, req.GuildId, req.RollCallId, userID); err != nil {
 		return nil, toStatus(err)
@@ -127,9 +111,6 @@ func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.Delete
 }
 
 func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.CompleteRollCallRequest) (*gumav1.CompleteRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	c, err := h.svc.Complete(ctx, req.GuildId, req.RollCallId, userID, req.KeepLeftoversInBank)
@@ -140,9 +121,6 @@ func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.Comp
 }
 
 func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.UpdateRollCallLootRequest) (*gumav1.UpdateRollCallLootResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	lootList := make([]models.Item, len(req.LootList))
@@ -163,9 +141,6 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 }
 
 func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.CancelRollCallRequest) (*gumav1.CancelRollCallResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	c, err := h.svc.Cancel(ctx, req.GuildId, req.RollCallId, userID)
@@ -176,9 +151,6 @@ func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.Cancel
 }
 
 func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLootRequest) (*gumav1.AssignLootResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" || req.ItemId == "" || req.UserId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id, roll_call_id, item_id and user_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	backpackItemID, err := h.svc.AssignLoot(ctx, req.GuildId, req.RollCallId, req.ItemId, userID, req.UserId)
@@ -189,9 +161,6 @@ func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLoot
 }
 
 func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRollCallGoldRequest) (*gumav1.GetRollCallGoldResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	summary, err := h.svc.GetGold(ctx, req.GuildId, req.RollCallId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -203,12 +172,6 @@ func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRo
 }
 
 func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav1.DistributeRollCallGoldRequest) (*gumav1.DistributeRollCallGoldResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" || req.RequestId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id, roll_call_id and request_id are required")
-	}
-	if len(req.Payouts) == 0 {
-		return nil, status.Error(codes.InvalidArgument, "payouts are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	payouts := make([]rollcallsvc.GoldPayout, len(req.Payouts))
@@ -234,9 +197,6 @@ func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav
 }
 
 func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInRequest) (*gumav1.CheckInResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	attendee, err := h.svc.CheckIn(ctx, req.GuildId, req.RollCallId, userID, req.Notes)
@@ -247,9 +207,6 @@ func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInReques
 }
 
 func (h *RollCallHandler) ListAttendees(ctx context.Context, req *gumav1.ListAttendeesRequest) (*gumav1.ListAttendeesResponse, error) {
-	if req.GuildId == "" || req.RollCallId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and roll_call_id are required")
-	}
 	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)

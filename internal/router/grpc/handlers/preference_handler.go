@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
@@ -42,10 +40,6 @@ func (h *PreferenceHandler) GetMyPreferences(ctx context.Context, _ *gumav1.GetM
 
 func (h *PreferenceHandler) UpdateMyPreferences(ctx context.Context, req *gumav1.UpdateMyPreferencesRequest) (*gumav1.UpdateMyPreferencesResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if req.Notifications == nil {
-		return nil, status.Error(codes.InvalidArgument, "notifications is required")
-	}
-
 	p, err := h.svc.UpdateNotifications(ctx, userID, preferencesvc.NotificationPatch{
 		EmailNotifications: req.Notifications.EmailNotifications,
 		AuctionAlerts:      req.Notifications.AuctionAlerts,

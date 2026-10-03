@@ -14,8 +14,6 @@ import (
 	"github.com/kia280/guma/internal/services/errs"
 )
 
-var deliveryRoles = []string{"owner", "admin", "moderator"}
-
 func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerIDStr, guildIDStr, itemIDStr string) (*BackpackItem, error) {
 	ownerID, guildID, itemID, err := parseItemIDs(ownerIDStr, guildIDStr, itemIDStr)
 	if err != nil {
@@ -85,11 +83,8 @@ func (s *Service) CancelBackpackWithdrawal(ctx context.Context, ownerIDStr, guil
 }
 
 func (s *Service) ListPendingDeliveries(ctx context.Context, viewerIDStr, guildIDStr string) ([]*BackpackItem, error) {
-	viewerID, guildID, err := parseIDs(viewerIDStr, guildIDStr)
+	_, guildID, err := parseIDs(viewerIDStr, guildIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireDeliveryRole(ctx, guildID, viewerID); err != nil {
 		return nil, err
 	}
 
@@ -110,9 +105,6 @@ func (s *Service) ListPendingDeliveries(ctx context.Context, viewerIDStr, guildI
 func (s *Service) ConfirmBackpackDelivery(ctx context.Context, officerIDStr, guildIDStr, itemIDStr string) (*BackpackItem, error) {
 	officerID, guildID, itemID, err := parseItemIDs(officerIDStr, guildIDStr, itemIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireDeliveryRole(ctx, guildID, officerID); err != nil {
 		return nil, err
 	}
 
@@ -145,22 +137,6 @@ func (s *Service) ConfirmBackpackDelivery(ctx context.Context, officerIDStr, gui
 	item := toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt)
 	item.DeliveryRequestedAt = timestampPtr(row.DeliveryRequestedAt)
 	return item, nil
-}
-
-func (s *Service) requireDeliveryRole(ctx context.Context, guildID, userID uuid.UUID) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: load member role: %v", errs.ErrInternal, err)
-	}
-	for _, r := range deliveryRoles {
-		if role == r {
-			return nil
-		}
-	}
-	return fmt.Errorf("%w: only officers can confirm deliveries", errs.ErrPermissionDenied)
 }
 
 func parseItemIDs(userIDStr, guildIDStr, itemIDStr string) (uuid.UUID, uuid.UUID, uuid.UUID, error) {

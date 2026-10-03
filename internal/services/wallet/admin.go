@@ -21,10 +21,7 @@ const (
 	TypeAdminTransferIn  = "ADMIN_TRANSFER_IN"
 
 	contributionKindAdminTransfer = "admin_transfer"
-	maxAdminTransferItems         = 100
 )
-
-var assetAdminRoles = []string{"owner", "admin"}
 
 type MemberAssetSummary struct {
 	UserID    string
@@ -71,11 +68,8 @@ type adminTransfer struct {
 }
 
 func (s *Service) ListMemberAssets(ctx context.Context, adminIDStr, guildIDStr string) ([]MemberAssetSummary, error) {
-	adminID, guildID, err := parseIDs(adminIDStr, guildIDStr)
+	_, guildID, err := parseIDs(adminIDStr, guildIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireAssetAdmin(ctx, guildID, adminID); err != nil {
 		return nil, err
 	}
 	rows, err := s.q.ListMemberAssets(ctx, guildID)
@@ -90,16 +84,13 @@ func (s *Service) ListMemberAssets(ctx context.Context, adminIDStr, guildIDStr s
 }
 
 func (s *Service) GetMemberAssets(ctx context.Context, adminIDStr, guildIDStr, memberIDStr string) (*MemberAssets, error) {
-	adminID, guildID, err := parseIDs(adminIDStr, guildIDStr)
+	_, guildID, err := parseIDs(adminIDStr, guildIDStr)
 	if err != nil {
 		return nil, err
 	}
 	memberID, err := uuid.Parse(memberIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: member", errs.ErrNotFound)
-	}
-	if err := s.requireAssetAdmin(ctx, guildID, adminID); err != nil {
-		return nil, err
 	}
 	if err := s.requireMember(ctx, s.q, guildID, memberID, errs.ErrNotFound); err != nil {
 		return nil, err
@@ -130,9 +121,6 @@ func (s *Service) GetMemberAssets(ctx context.Context, adminIDStr, guildIDStr, m
 }
 
 func (s *Service) AdminTransferFunds(ctx context.Context, p AdminTransferFundsParams) (*Transaction, int64, error) {
-	if p.Amount <= 0 {
-		return nil, 0, fmt.Errorf("%w: amount must be positive", errs.ErrInvalidArgument)
-	}
 	t, err := s.prepareAdminTransfer(ctx, p.AdminID, p.GuildID, p.FromUserID, p.Destination, p.Note)
 	if err != nil {
 		return nil, 0, err
@@ -323,15 +311,9 @@ func (s *Service) prepareAdminTransfer(ctx context.Context, adminIDStr, guildIDS
 		return t, fmt.Errorf("%w: member", errs.ErrNotFound)
 	}
 	note = strings.TrimSpace(note)
-	if len([]rune(note)) > maxTransferNoteLength {
-		return t, fmt.Errorf("%w: note is too long", errs.ErrInvalidArgument)
-	}
 	t = adminTransfer{adminID: adminID, guildID: guildID, fromID: fromID, toBank: dest.GuildBank, note: note}
 
-	switch {
-	case dest.GuildBank && dest.UserID != "":
-		return t, fmt.Errorf("%w: choose either a member or the guild bank", errs.ErrInvalidArgument)
-	case !dest.GuildBank:
+	if !dest.GuildBank {
 		if t.toID, err = uuid.Parse(dest.UserID); err != nil {
 			return t, fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
 		}
@@ -340,29 +322,12 @@ func (s *Service) prepareAdminTransfer(ctx context.Context, adminIDStr, guildIDS
 		}
 	}
 
-	if err := s.requireAssetAdmin(ctx, guildID, adminID); err != nil {
-		return t, err
-	}
 	if !t.toBank {
 		if err := s.requireMember(ctx, s.q, guildID, t.toID, errs.ErrFailedPrecondition); err != nil {
 			return t, err
 		}
 	}
 	return t, nil
-}
-
-func (s *Service) requireAssetAdmin(ctx context.Context, guildID, userID uuid.UUID) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: load member role: %v", errs.ErrInternal, err)
-	}
-	if !slices.Contains(assetAdminRoles, role) {
-		return fmt.Errorf("%w: only owners and admins can manage member assets", errs.ErrPermissionDenied)
-	}
-	return nil
 }
 
 func (s *Service) requireMember(ctx context.Context, q *db.Queries, guildID, userID uuid.UUID, missing error) error {
@@ -376,12 +341,6 @@ func (s *Service) requireMember(ctx context.Context, q *db.Queries, guildID, use
 }
 
 func parseItemIDList(raw []string) ([]uuid.UUID, error) {
-	if len(raw) == 0 {
-		return nil, fmt.Errorf("%w: select at least one item", errs.ErrInvalidArgument)
-	}
-	if len(raw) > maxAdminTransferItems {
-		return nil, fmt.Errorf("%w: at most %d items per transfer", errs.ErrInvalidArgument, maxAdminTransferItems)
-	}
 	ids := make([]uuid.UUID, 0, len(raw))
 	for _, s := range raw {
 		id, err := uuid.Parse(s)

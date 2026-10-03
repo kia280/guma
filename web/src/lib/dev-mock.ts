@@ -1,12 +1,11 @@
 import { readDemoRole } from '@/lib/demo/role';
 import { env } from '@/lib/env';
-import type { GuildRole } from '@/lib/permissions';
+import { DEV_MOCK_ROLES, type DevMockRole } from '@/lib/mock-roles';
+
+export { DEV_MOCK_ROLES, type DevMockRole };
 
 export const DEV_MOCK_COOKIE = 'guma_dev_mock';
 export const DEV_MOCK_ROLE_COOKIE = 'guma_dev_mock_role';
-
-export const DEV_MOCK_ROLES = ['owner', 'admin', 'moderator', 'member'] as const satisfies readonly GuildRole[];
-export type DevMockRole = (typeof DEV_MOCK_ROLES)[number];
 
 const DEFAULT_DEV_MOCK_ROLE: DevMockRole = 'owner';
 const DEV_TOOLS_DISABLED_MOCK_ROLE: DevMockRole = 'member';

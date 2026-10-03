@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/models"
 	auctionsvc "github.com/kia280/guma/internal/services/auction"
@@ -24,17 +25,14 @@ type AuctionHandler struct {
 }
 
 // NewAuctionService creates a new Auction gRPC handler.
-func NewAuctionService(db *database.Pool, logger zerolog.Logger) *AuctionHandler {
+func NewAuctionService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *AuctionHandler {
 	return &AuctionHandler{
-		svc:    auctionsvc.New(db, logger),
+		svc:    auctionsvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "auction").Logger(),
 	}
 }
 
 func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAuctionsRequest) (*gumav1.ListAuctionsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	result, err := h.svc.List(ctx, auctionsvc.ListParams{
 		GuildID:  req.GuildId,
 		Status:   req.Status,
@@ -60,9 +58,6 @@ func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAucti
 }
 
 func (h *AuctionHandler) GetAuction(ctx context.Context, req *gumav1.GetAuctionRequest) (*gumav1.GetAuctionResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	a, err := h.svc.Get(ctx, req.GuildId, req.AuctionId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -71,9 +66,6 @@ func (h *AuctionHandler) GetAuction(ctx context.Context, req *gumav1.GetAuctionR
 }
 
 func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAuctionRequest) (*gumav1.CreateAuctionResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	var item models.Item
@@ -99,9 +91,6 @@ func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAu
 }
 
 func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidRequest) (*gumav1.PlaceBidResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	auctionItem, bid, err := h.svc.PlaceBid(ctx, req.GuildId, req.AuctionId, userID, req.Amount)
@@ -112,9 +101,6 @@ func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidReque
 }
 
 func (h *AuctionHandler) GetBidHistory(ctx context.Context, req *gumav1.GetBidHistoryRequest) (*gumav1.GetBidHistoryResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	result, err := h.svc.GetBidHistory(ctx, req.GuildId, req.AuctionId, int(req.PageSize), auctionsvc.ParsePageToken(req.PageToken))
 	if err != nil {
 		return nil, toStatus(err)
@@ -132,9 +118,6 @@ func (h *AuctionHandler) GetBidHistory(ctx context.Context, req *gumav1.GetBidHi
 }
 
 func (h *AuctionHandler) UpdateAuction(ctx context.Context, req *gumav1.UpdateAuctionRequest) (*gumav1.UpdateAuctionResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	params := auctionsvc.UpdateParams{
@@ -172,9 +155,6 @@ func (h *AuctionHandler) UpdateAuction(ctx context.Context, req *gumav1.UpdateAu
 }
 
 func (h *AuctionHandler) DeleteAuction(ctx context.Context, req *gumav1.DeleteAuctionRequest) (*gumav1.DeleteAuctionResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	if err := h.svc.Delete(ctx, req.GuildId, req.AuctionId, userID); err != nil {
@@ -184,9 +164,6 @@ func (h *AuctionHandler) DeleteAuction(ctx context.Context, req *gumav1.DeleteAu
 }
 
 func (h *AuctionHandler) CancelAuction(ctx context.Context, req *gumav1.CancelAuctionRequest) (*gumav1.CancelAuctionResponse, error) {
-	if req.GuildId == "" || req.AuctionId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id and auction_id are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	a, err := h.svc.Cancel(ctx, req.GuildId, req.AuctionId, userID)

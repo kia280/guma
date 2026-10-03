@@ -21,6 +21,13 @@ auth:
   kratos_public_url: http://localhost:8081
   kratos_admin_url: http://localhost:4434
 
+# Guild authorization (Ory Keto gRPC APIs)
+# Env overrides: KETO_READ_ADDR, KETO_WRITE_ADDR, KETO_OUTBOX_SWEEP_INTERVAL
+keto:
+  read_addr: localhost:4466
+  write_addr: localhost:4467
+  outbox_sweep_interval: 5s  # retry cadence for pending membership syncs
+
 # Logging configuration
 logging:
   level: debug  # debug, info, warn, error

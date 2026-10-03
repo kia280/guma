@@ -9,30 +9,23 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 const (
-	defaultLootCategory  = "misc"
-	defaultLootRarity    = "common"
-	maxCheckInNotes      = 500
-	maxTitleLength       = 200
-	maxDescriptionLength = 2000
-	maxLootEntries       = 100
-	maxLootNameLength    = 100
-	maxLootDescLength    = 500
-	maxLootTagLength     = 50
-	maxImageURLLength    = 2048
+	defaultLootCategory = "misc"
+	defaultLootRarity   = "common"
 )
 
 // RollCall is the domain model for a roll call event.
@@ -147,11 +140,12 @@ type rollCallRow struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
 // New creates a new roll call Service.
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -159,16 +153,14 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	return &Service{
 		pool:   pool,
 		q:      q,
+		az:     az,
 		logger: logger.With().Str("service", "rollcall").Logger(),
 	}
 }
 
 // List returns paginated roll calls for a guild.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -225,10 +217,7 @@ func (s *Service) Get(ctx context.Context, guildIDStr, rollCallIDStr string) (*R
 
 // Create inserts a new roll call. Requires admin or moderator role.
 func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error) {
-	if err := validateRollCallFields(p.Title, p.Description, p.Datetime, p.ExpireTime); err != nil {
-		return nil, err
-	}
-	if err := checkLootCount(len(p.Loot)); err != nil {
+	if err := validateRollCallTimes(p.Datetime, p.ExpireTime); err != nil {
 		return nil, err
 	}
 	imageURL, err := normalizeImageURL(p.ImageURL)
@@ -243,14 +232,8 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, createdBy, "owner", "admin", "moderator"); err != nil {
-		return nil, err
-	}
 
-	prepared, err := prepareLoot(p.Loot)
-	if err != nil {
-		return nil, err
-	}
+	prepared := prepareLoot(p.Loot)
 	loot := prepared.items
 	lootJSON, err := json.Marshal(prepared.stored)
 	if err != nil {
@@ -313,18 +296,11 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*RollCall, error)
 
 // Update modifies an existing roll call.
 func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error) {
-	description := ""
-	if p.Description != nil {
-		description = *p.Description
-	}
-	if err := validateRollCallFields(p.Title, description, p.Datetime, p.ExpireTime); err != nil {
+	if err := validateRollCallTimes(p.Datetime, p.ExpireTime); err != nil {
 		return nil, err
 	}
 	if err := checkExpireTimeInFuture(p.ExpireTime, time.Now().UTC()); err != nil {
 		return nil, err
-	}
-	if len(p.Loot) > 0 {
-		return nil, fmt.Errorf("%w: loot list cannot be changed after publishing", errs.ErrInvalidArgument)
 	}
 	var imageURL *string
 	if p.ImageURL != nil {
@@ -341,13 +317,6 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*RollCall, error)
 	rollCallID, err := uuid.Parse(p.RollCallID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(p.UpdatedBy)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin", "moderator"); err != nil {
-		return nil, err
 	}
 
 	current, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})
@@ -398,13 +367,6 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 	if err != nil {
 		return fmt.Errorf("%w: roll call", errs.ErrNotFound)
 	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
-		return err
-	}
 	n, err := s.q.DeleteRollCall(ctx, db.DeleteRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
 		return fmt.Errorf("%w: delete roll call: %v", errs.ErrInternal, err)
@@ -428,9 +390,6 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
-		return nil, err
 	}
 
 	current, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})
@@ -483,9 +442,6 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, rollCallIDStr, userIDS
 }
 
 func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall, error) {
-	if err := checkLootCount(len(p.LootList)); err != nil {
-		return nil, err
-	}
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -497,9 +453,6 @@ func (s *Service) UpdateLoot(ctx context.Context, p UpdateLootParams) (*RollCall
 	userID, err := uuid.Parse(p.UpdatedBy)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin", "moderator"); err != nil {
-		return nil, err
 	}
 	donorName, _ := s.q.GetUserDisplayName(ctx, db.GetUserDisplayNameParams{GuildID: guildID, UserID: userID})
 
@@ -630,9 +583,6 @@ func (s *Service) Complete(ctx context.Context, guildIDStr, rollCallIDStr, userI
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin", "moderator"); err != nil {
-		return nil, err
-	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -701,10 +651,7 @@ func (s *Service) CheckIn(ctx context.Context, guildIDStr, rollCallIDStr, userID
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	notes, err = normalizeCheckInNotes(notes)
-	if err != nil {
-		return nil, err
-	}
+	notes = strings.TrimSpace(notes)
 
 	window, err := s.q.GetRollCallCheckInWindow(ctx, db.GetRollCallCheckInWindowParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
@@ -734,9 +681,7 @@ func (s *Service) CheckIn(ctx context.Context, guildIDStr, rollCallIDStr, userID
 
 // ListAttendees returns paginated attendees for a roll call.
 func (s *Service) ListAttendees(ctx context.Context, guildIDStr, rollCallIDStr string, pageSize, offset int) (*ListAttendeesResult, error) {
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize = pagination.StandardSize(pageSize)
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -797,9 +742,6 @@ func (s *Service) AssignLoot(ctx context.Context, guildIDStr, rollCallIDStr, ite
 	recipientID, err := uuid.Parse(recipientIDStr)
 	if err != nil {
 		return "", fmt.Errorf("%w: recipient", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, actorID, "owner", "admin", "moderator"); err != nil {
-		return "", err
 	}
 	if exists, err := s.q.RollCallExists(ctx, db.RollCallExistsParams{ID: rollCallID, GuildID: guildID}); err != nil || !exists {
 		return "", fmt.Errorf("%w: roll call", errs.ErrNotFound)
@@ -919,10 +861,7 @@ func planLootUpdate(current []models.Item, vault map[string]bool, requested []mo
 	kept := make(map[string]bool, len(requested))
 	for _, item := range requested {
 		if item.ID == "" {
-			added, err := normalizeLootItem(item)
-			if err != nil {
-				return nil, err
-			}
+			added := normalizeLootItem(item)
 			added.ID = uuid.NewString()
 			plan.added = append(plan.added, added)
 			plan.final = append(plan.final, added)
@@ -936,11 +875,8 @@ func planLootUpdate(current []models.Item, vault map[string]bool, requested []mo
 			return nil, fmt.Errorf("%w: loot item %s is listed more than once", errs.ErrInvalidArgument, item.ID)
 		}
 		kept[item.ID] = true
-		next, err := normalizeLootItem(item)
-		if err != nil {
-			return nil, err
-		}
-		if previous, err := normalizeLootItem(stored); err == nil && previous == next {
+		next := normalizeLootItem(item)
+		if normalizeLootItem(stored) == next {
 			plan.final = append(plan.final, stored)
 			continue
 		}
@@ -1004,14 +940,6 @@ func checkCheckInOpen(expireTime time.Time, isCancelled bool, now time.Time) err
 	return nil
 }
 
-func normalizeCheckInNotes(notes string) (string, error) {
-	notes = strings.TrimSpace(notes)
-	if utf8.RuneCountInString(notes) > maxCheckInNotes {
-		return "", fmt.Errorf("%w: notes must be at most %d characters", errs.ErrInvalidArgument, maxCheckInNotes)
-	}
-	return notes, nil
-}
-
 func toRollCall(r rollCallRow) *RollCall {
 	c := &RollCall{
 		ID: r.ID.String(), GuildID: r.GuildID.String(), CreatedBy: r.CreatedBy.String(),
@@ -1037,24 +965,18 @@ func marshalLoot(items []models.Item) ([]byte, error) {
 	return json.Marshal(items)
 }
 
-func prepareBankLoot(items []models.Item) ([]models.Item, error) {
+func prepareBankLoot(items []models.Item) []models.Item {
 	loot := make([]models.Item, 0, len(items))
 	for _, item := range items {
-		item, err := normalizeLootItem(item)
-		if err != nil {
-			return nil, err
-		}
+		item := normalizeLootItem(item)
 		item.ID = uuid.NewString()
 		loot = append(loot, item)
 	}
-	return loot, nil
+	return loot
 }
 
-func normalizeLootItem(item models.Item) (models.Item, error) {
+func normalizeLootItem(item models.Item) models.Item {
 	item.Name = strings.TrimSpace(item.Name)
-	if item.Name == "" {
-		return item, fmt.Errorf("%w: loot item name is required", errs.ErrInvalidArgument)
-	}
 	item.Description = strings.TrimSpace(item.Description)
 	item.Category = strings.ToLower(strings.TrimSpace(item.Category))
 	if item.Category == "" {
@@ -1064,32 +986,10 @@ func normalizeLootItem(item models.Item) (models.Item, error) {
 	if item.Rarity == "" {
 		item.Rarity = defaultLootRarity
 	}
-	for _, c := range []struct {
-		field, value string
-		max          int
-	}{
-		{"loot item name", item.Name, maxLootNameLength},
-		{"loot item description", item.Description, maxLootDescLength},
-		{"loot item category", item.Category, maxLootTagLength},
-		{"loot item rarity", item.Rarity, maxLootTagLength},
-	} {
-		if err := checkLength(c.field, c.value, c.max); err != nil {
-			return item, err
-		}
-	}
-	return item, nil
+	return item
 }
 
-func validateRollCallFields(title, description, datetime, expireTime string) error {
-	if strings.TrimSpace(title) == "" {
-		return fmt.Errorf("%w: title is required", errs.ErrInvalidArgument)
-	}
-	if err := checkLength("title", title, maxTitleLength); err != nil {
-		return err
-	}
-	if err := checkLength("description", description, maxDescriptionLength); err != nil {
-		return err
-	}
+func validateRollCallTimes(datetime, expireTime string) error {
 	eventAt, err := time.Parse(time.RFC3339, datetime)
 	if err != nil {
 		return fmt.Errorf("%w: datetime must be an RFC3339 timestamp", errs.ErrInvalidArgument)
@@ -1104,49 +1004,16 @@ func validateRollCallFields(title, description, datetime, expireTime string) err
 	return nil
 }
 
-func checkLength(field, value string, maxLength int) error {
-	if utf8.RuneCountInString(value) > maxLength {
-		return fmt.Errorf("%w: %s must be at most %d characters", errs.ErrInvalidArgument, field, maxLength)
-	}
-	return nil
-}
-
 func normalizeImageURL(raw string) (string, error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
 		return "", nil
-	}
-	if err := checkLength("image_url", raw, maxImageURLLength); err != nil {
-		return "", err
 	}
 	u, err := url.Parse(raw)
 	if err != nil || u.Scheme != "https" || u.Host == "" {
 		return "", fmt.Errorf("%w: image_url must be an absolute https URL", errs.ErrInvalidArgument)
 	}
 	return raw, nil
-}
-
-func checkLootCount(n int) error {
-	if n > maxLootEntries {
-		return fmt.Errorf("%w: loot list must have at most %d entries", errs.ErrInvalidArgument, maxLootEntries)
-	}
-	return nil
-}
-
-func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-	}
-	for _, r := range roles {
-		if role == r {
-			return nil
-		}
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, roles)
 }
 
 // NextPageToken encodes the offset as a page token string.

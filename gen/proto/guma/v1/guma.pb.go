@@ -1327,29 +1327,29 @@ var File_proto_guma_v1_guma_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_guma_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/guma/v1/guma.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\":\n" +
-	"\x14GetNavigationRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"F\n" +
+	"\x18proto/guma/v1/guma.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\">\n" +
+	"\x14GetNavigationRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\aguildId\"F\n" +
 	"\x15GetNavigationResponse\x12-\n" +
-	"\x05items\x18\x01 \x03(\v2\x17.guma.v1.NavigationItemR\x05items\"=\n" +
-	"\x17GetDashboardDataRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"F\n" +
+	"\x05items\x18\x01 \x03(\v2\x17.guma.v1.NavigationItemR\x05items\"A\n" +
+	"\x17GetDashboardDataRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\aguildId\"F\n" +
 	"\x18GetDashboardDataResponse\x12*\n" +
 	"\x04data\x18\x01 \x01(\v2\x16.guma.v1.DashboardDataR\x04data\"\x1b\n" +
 	"\x19GetUserPreferencesRequest\"X\n" +
 	"\x1aGetUserPreferencesResponse\x12:\n" +
-	"\vpreferences\x18\x01 \x01(\v2\x18.guma.v1.UserPreferencesR\vpreferences\"Z\n" +
-	"\x1cUpdateUserPreferencesRequest\x12:\n" +
-	"\vpreferences\x18\x01 \x01(\v2\x18.guma.v1.UserPreferencesR\vpreferences\"[\n" +
+	"\vpreferences\x18\x01 \x01(\v2\x18.guma.v1.UserPreferencesR\vpreferences\"b\n" +
+	"\x1cUpdateUserPreferencesRequest\x12B\n" +
+	"\vpreferences\x18\x01 \x01(\v2\x18.guma.v1.UserPreferencesB\x06\xbaH\x03\xc8\x01\x01R\vpreferences\"[\n" +
 	"\x1dUpdateUserPreferencesResponse\x12:\n" +
 	"\vpreferences\x18\x01 \x01(\v2\x18.guma.v1.UserPreferencesR\vpreferences\"\x15\n" +
 	"\x13GetAppConfigRequest\"B\n" +
 	"\x14GetAppConfigResponse\x12*\n" +
-	"\x06config\x18\x01 \x01(\v2\x12.guma.v1.AppConfigR\x06config\"z\n" +
-	"\x13SearchGlobalRequest\x12\x1e\n" +
-	"\x05query\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05query\x12\"\n" +
-	"\bguild_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12\x1f\n" +
-	"\x05limit\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\"H\n" +
+	"\x06config\x18\x01 \x01(\v2\x12.guma.v1.AppConfigR\x06config\"\x80\x01\n" +
+	"\x13SearchGlobalRequest\x12!\n" +
+	"\x05query\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\x80?\x01R\x05query\x12&\n" +
+	"\bguild_id\x18\x02 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12\x1e\n" +
+	"\x05limit\x18\x03 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\x05limit\"H\n" +
 	"\x14SearchGlobalResponse\x120\n" +
 	"\aresults\x18\x01 \x01(\v2\x16.guma.v1.SearchResultsR\aresults\"\xc3\x02\n" +
 	"\x0eNavigationItem\x12\x0e\n" +
@@ -1363,16 +1363,16 @@ const file_proto_guma_v1_guma_proto_rawDesc = "" +
 	"\avisible\x18\b \x01(\bR\avisible\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xef\x02\n" +
-	"\x0fUserPreferences\x12\x1d\n" +
-	"\x05theme\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18 R\x05theme\x12#\n" +
-	"\blanguage\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\blanguage\x12#\n" +
-	"\btimezone\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x18@R\btimezone\x12(\n" +
-	"\vdate_format\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
-	"dateFormat\x12(\n" +
-	"\vtime_format\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x18@R\n" +
-	"timeFormat\x12`\n" +
-	"\vui_settings\x18\x06 \x03(\v2(.guma.v1.UserPreferences.UiSettingsEntryB\x15\xbaH\x12\x9a\x01\x0f\x102\"\x04r\x02\x18d*\x05r\x03\x18\xd0\x0fR\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xe8\x02\n" +
+	"\x0fUserPreferences\x12\x1e\n" +
+	"\x05theme\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x05theme\x12$\n" +
+	"\blanguage\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xf0>\x01R\blanguage\x12$\n" +
+	"\btimezone\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xf0>\x01R\btimezone\x12)\n" +
+	"\vdate_format\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xf0>\x01R\n" +
+	"dateFormat\x12)\n" +
+	"\vtime_format\x18\x05 \x01(\tB\b\xbaH\x05r\x03\xf0>\x01R\n" +
+	"timeFormat\x12T\n" +
+	"\vui_settings\x18\x06 \x03(\v2(.guma.v1.UserPreferences.UiSettingsEntryB\t\xbaH\x06\x9a\x01\x03\xc8>\x01R\n" +
 	"uiSettings\x1a=\n" +
 	"\x0fUiSettingsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
@@ -1547,6 +1547,7 @@ func file_proto_guma_v1_guma_proto_init() {
 	if File_proto_guma_v1_guma_proto != nil {
 		return
 	}
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

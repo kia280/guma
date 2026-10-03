@@ -64,15 +64,6 @@ func TestAuctionStateChecks(t *testing.T) {
 	}
 }
 
-func TestValidateUpdate(t *testing.T) {
-	now := time.Now()
-	assert.NoError(t, validateUpdate(UpdateParams{}))
-	assert.ErrorIs(t, validateUpdate(UpdateParams{Item: &models.Item{Name: "  "}}), errs.ErrInvalidArgument)
-	assert.ErrorIs(t, validateUpdate(UpdateParams{StartingBid: ptr(int64(0))}), errs.ErrInvalidArgument)
-	assert.ErrorIs(t, validateUpdate(UpdateParams{MinBidIncrement: ptr(int64(-1))}), errs.ErrInvalidArgument)
-	assert.ErrorIs(t, validateUpdate(UpdateParams{StartTime: ptr(now), EndTime: ptr(now)}), errs.ErrInvalidArgument)
-}
-
 func TestApplyUpdateWithoutBids(t *testing.T) {
 	now := time.Date(2026, 9, 28, 12, 0, 0, 0, time.UTC)
 	current := openAuction(now)

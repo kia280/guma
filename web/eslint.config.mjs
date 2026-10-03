@@ -17,6 +17,8 @@ export default defineConfig([
       'react-hooks/exhaustive-deps': 'warn',
       'prefer-const': 'error',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'max-lines': ['warn', { max: 400, skipBlankLines: true, skipComments: true }],
+      'import/no-cycle': 'warn',
       'import/order': [
         'error',
         {

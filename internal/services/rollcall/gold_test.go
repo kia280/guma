@@ -13,12 +13,11 @@ import (
 )
 
 func TestPrepareLootSplitsItemsAndGold(t *testing.T) {
-	prepared, err := prepareLoot([]LootEntry{
+	prepared := prepareLoot([]LootEntry{
 		{Item: models.Item{Name: " Sword "}},
 		{Kind: " GOLD ", Amount: 12_345},
 		{Kind: LootKindItem, Item: models.Item{Name: "Shield", Rarity: "Rare"}},
 	})
-	require.NoError(t, err)
 	assert.Equal(t, int64(12_345), prepared.gold)
 	require.Len(t, prepared.items, 2)
 	assert.Equal(t, "Sword", prepared.items[0].Name)
@@ -27,28 +26,8 @@ func TestPrepareLootSplitsItemsAndGold(t *testing.T) {
 	assert.Equal(t, LootKindItem, prepared.stored[0].Kind)
 	assert.Equal(t, LootKindGold, prepared.stored[1].Kind)
 	assert.Equal(t, int64(12_345), prepared.stored[1].Amount)
-	_, err = uuid.Parse(prepared.stored[1].ID)
+	_, err := uuid.Parse(prepared.stored[1].ID)
 	assert.NoError(t, err)
-}
-
-func TestPrepareLootRejectsInvalidGold(t *testing.T) {
-	tests := []struct {
-		name  string
-		entry []LootEntry
-	}{
-		{name: "zero", entry: []LootEntry{{Kind: LootKindGold}}},
-		{name: "negative", entry: []LootEntry{{Kind: LootKindGold, Amount: -1}}},
-		{name: "too large", entry: []LootEntry{{Kind: LootKindGold, Amount: maxGoldAmount + 1}}},
-		{name: "two gold entries", entry: []LootEntry{{Kind: LootKindGold, Amount: 1}, {Kind: LootKindGold, Amount: 2}}},
-		{name: "unknown kind", entry: []LootEntry{{Kind: "gems", Amount: 1}}},
-		{name: "blank item", entry: []LootEntry{{Kind: LootKindItem}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := prepareLoot(tt.entry)
-			assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-		})
-	}
 }
 
 func TestDecodeLootReadsLegacyRowsAsItems(t *testing.T) {
@@ -64,8 +43,7 @@ func TestDecodeLootReadsLegacyRowsAsItems(t *testing.T) {
 }
 
 func TestStoredLootRoundTrip(t *testing.T) {
-	prepared, err := prepareLoot([]LootEntry{{Kind: LootKindGold, Amount: 900}, {Item: models.Item{Name: "Gem"}}})
-	require.NoError(t, err)
+	prepared := prepareLoot([]LootEntry{{Kind: LootKindGold, Amount: 900}, {Item: models.Item{Name: "Gem"}}})
 	raw, err := json.Marshal(prepared.stored)
 	require.NoError(t, err)
 	loot := decodeLoot(raw)
@@ -93,13 +71,9 @@ func TestNormalizeGoldPayouts(t *testing.T) {
 		name    string
 		payouts []GoldPayout
 	}{
-		{name: "empty", payouts: nil},
-		{name: "all zero", payouts: []GoldPayout{{UserID: a.String()}, {UserID: b.String()}}},
-		{name: "negative", payouts: []GoldPayout{{UserID: a.String(), Amount: 5}, {UserID: b.String(), Amount: -1}}},
 		{name: "duplicate", payouts: []GoldPayout{{UserID: a.String(), Amount: 5}, {UserID: a.String(), Amount: 5}}},
 		{name: "duplicate with zero", payouts: []GoldPayout{{UserID: a.String(), Amount: 5}, {UserID: a.String()}}},
 		{name: "bad user", payouts: []GoldPayout{{UserID: "nope", Amount: 5}}},
-		{name: "too large", payouts: []GoldPayout{{UserID: a.String(), Amount: maxGoldAmount + 1}}},
 		{name: "overflowing sum", payouts: []GoldPayout{{UserID: a.String(), Amount: maxGoldAmount}, {UserID: b.String(), Amount: 1}}},
 	}
 	for _, tt := range tests {

@@ -1,4 +1,4 @@
-import { DEV_MOCK_ROLES, type DevMockRole } from '@/lib/dev-mock';
+import { DEV_MOCK_ROLES, type DevMockRole } from '@/lib/mock-roles';
 
 const ROLE_STORAGE_KEY = 'guma-demo-role';
 

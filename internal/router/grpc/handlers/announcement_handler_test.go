@@ -17,7 +17,7 @@ import (
 )
 
 func TestAnnouncementService_Validation(t *testing.T) {
-	h := NewAnnouncementService(nil, zerolog.Nop())
+	h := NewAnnouncementService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guild = "00000000-0000-0000-0000-00000000000a"
 	const ann = "00000000-0000-0000-0000-0000000000f1"
@@ -27,19 +27,6 @@ func TestAnnouncementService_Validation(t *testing.T) {
 		call     func() error
 		wantCode codes.Code
 	}{
-		{
-			name:     "list missing guild",
-			call:     func() error { _, err := h.ListAnnouncements(authed, &gumav1.ListAnnouncementsRequest{}); return err },
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "get missing announcement",
-			call: func() error {
-				_, err := h.GetAnnouncement(authed, &gumav1.GetAnnouncementRequest{GuildId: guild})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name: "create malformed guild",
 			call: func() error {
@@ -52,22 +39,6 @@ func TestAnnouncementService_Validation(t *testing.T) {
 			name: "update malformed announcement",
 			call: func() error {
 				_, err := h.UpdateAnnouncement(authed, &gumav1.UpdateAnnouncementRequest{GuildId: guild, AnnouncementId: "nope"})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "unpublish missing announcement",
-			call: func() error {
-				_, err := h.UnpublishAnnouncement(authed, &gumav1.UnpublishAnnouncementRequest{GuildId: guild})
-				return err
-			},
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "delete missing guild",
-			call: func() error {
-				_, err := h.DeleteAnnouncementDraft(authed, &gumav1.DeleteAnnouncementDraftRequest{AnnouncementId: ann})
 				return err
 			},
 			wantCode: codes.InvalidArgument,

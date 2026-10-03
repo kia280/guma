@@ -19,14 +19,13 @@ import (
 )
 
 func TestUserService_UpdateMe_InvalidArgument(t *testing.T) {
-	service := NewUserService(nil, "", zerolog.New(os.Stdout))
+	service := NewUserService(nil, nil, "", zerolog.New(os.Stdout))
 	ctx := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 
 	tests := []struct {
 		name string
 		req  *gumav1.UpdateMeRequest
 	}{
-		{name: "empty display name", req: &gumav1.UpdateMeRequest{DisplayName: ""}},
 		{name: "display name too long", req: &gumav1.UpdateMeRequest{DisplayName: strings.Repeat("名", 33)}},
 	}
 	for _, tt := range tests {

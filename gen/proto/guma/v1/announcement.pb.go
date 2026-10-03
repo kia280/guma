@@ -840,7 +840,7 @@ var File_proto_guma_v1_announcement_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_announcement_proto_rawDesc = "" +
 	"\n" +
-	" proto/guma/v1/announcement.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8c\x03\n" +
+	" proto/guma/v1/announcement.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cproto/guma/v1/validate.proto\"\x8c\x03\n" +
 	"\fAnnouncement\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
 	"\bguild_id\x18\x02 \x01(\tR\aguildId\x12\x1b\n" +
@@ -856,44 +856,43 @@ const file_proto_guma_v1_announcement_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x8e\x01\n" +
-	"\x18ListAnnouncementsRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x12%\n" +
-	"\x0einclude_drafts\x18\x02 \x01(\bR\rincludeDrafts\x12'\n" +
-	"\tpage_size\x18\x03 \x01(\x05B\n" +
-	"\xbaH\a\x1a\x05\x18\xe8\a(\x00R\bpageSize\"X\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x91\x01\n" +
+	"\x18ListAnnouncementsRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12%\n" +
+	"\x0einclude_drafts\x18\x02 \x01(\bR\rincludeDrafts\x12&\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\xc8>\xc8\x01R\bpageSize\"X\n" +
 	"\x19ListAnnouncementsResponse\x12;\n" +
-	"\rannouncements\x18\x01 \x03(\v2\x15.guma.v1.AnnouncementR\rannouncements\"n\n" +
-	"\x16GetAnnouncementRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\"T\n" +
+	"\rannouncements\x18\x01 \x03(\v2\x15.guma.v1.AnnouncementR\rannouncements\"v\n" +
+	"\x16GetAnnouncementRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x124\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x0eannouncementId\"T\n" +
 	"\x17GetAnnouncementResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"D\n" +
-	"\x1eCreateAnnouncementDraftRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\"\\\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"H\n" +
+	"\x1eCreateAnnouncementDraftRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\"\\\n" +
 	"\x1fCreateAnnouncementDraftResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xce\x01\n" +
-	"\x19UpdateAnnouncementRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\x12\x1e\n" +
-	"\x05title\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\xc8\x01R\x05title\x12#\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"\xd6\x01\n" +
+	"\x19UpdateAnnouncementRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x124\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x0eannouncementId\x12\x1e\n" +
+	"\x05title\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x80?\x01R\x05title\x12#\n" +
 	"\acontent\x18\x04 \x01(\tB\t\xbaH\x06r\x04\x18\xa0\x9c\x01R\acontent\x12\x16\n" +
 	"\x06pinned\x18\x05 \x01(\bR\x06pinned\"W\n" +
 	"\x1aUpdateAnnouncementResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"r\n" +
-	"\x1aPublishAnnouncementRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\"X\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"z\n" +
+	"\x1aPublishAnnouncementRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x124\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x0eannouncementId\"X\n" +
 	"\x1bPublishAnnouncementResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"t\n" +
-	"\x1cUnpublishAnnouncementRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\"Z\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"|\n" +
+	"\x1cUnpublishAnnouncementRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x124\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x0eannouncementId\"Z\n" +
 	"\x1dUnpublishAnnouncementResponse\x129\n" +
-	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"v\n" +
-	"\x1eDeleteAnnouncementDraftRequest\x12\"\n" +
-	"\bguild_id\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x18@R\aguildId\x120\n" +
-	"\x0fannouncement_id\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18@R\x0eannouncementId\"!\n" +
+	"\fannouncement\x18\x01 \x01(\v2\x15.guma.v1.AnnouncementR\fannouncement\"~\n" +
+	"\x1eDeleteAnnouncementDraftRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x124\n" +
+	"\x0fannouncement_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\x0eannouncementId\"!\n" +
 	"\x1fDeleteAnnouncementDraftResponse2\x86\t\n" +
 	"\x13AnnouncementService\x12\x87\x01\n" +
 	"\x11ListAnnouncements\x12!.guma.v1.ListAnnouncementsRequest\x1a\".guma.v1.ListAnnouncementsResponse\"+\x82\xd3\xe4\x93\x02%\x12#/v1/guilds/{guild_id}/announcements\x12\x93\x01\n" +
@@ -971,6 +970,7 @@ func file_proto_guma_v1_announcement_proto_init() {
 	if File_proto_guma_v1_announcement_proto != nil {
 		return
 	}
+	file_proto_guma_v1_validate_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

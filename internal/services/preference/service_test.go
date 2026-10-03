@@ -59,10 +59,6 @@ func TestValidatesInputBeforeQuerying(t *testing.T) {
 			_, err := s.UpdateNotifications(ctx, "nope", NotificationPatch{AuctionAlerts: boolPtr(false)})
 			return err
 		}, want: errs.ErrInvalidArgument},
-		{name: "update empty patch", call: func() error {
-			_, err := s.UpdateNotifications(ctx, testUser, NotificationPatch{})
-			return err
-		}, want: errs.ErrInvalidArgument},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

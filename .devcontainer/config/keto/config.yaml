@@ -29,7 +29,7 @@ serve:
     #     base64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tXG5NSUlEWlRDQ0FrMmdBd0lCQWdJRVY1eE90REFOQmdr...
   write:
     port: 4467
-    host: localhost
+    host: 0.0.0.0
     write_listen_file: file:///tmp/keto-write-api
     cors:
       enabled: false
@@ -134,12 +134,9 @@ log:
 #         sampling_ratio: 0.4
 #       authorization_header: Bearer 2389s8fs9d8fus9f
 namespaces:
-  location: file:///etc/configs/keto/namespaces.ts
+  location: file:///etc/config/keto-namespaces/namespaces.keto.ts
 limit:
-  max_read_depth: 1
-  max_read_width: 1
-  max_batch_check_size: 1
-  batch_check_max_parallelization: 1
+  max_read_depth: 5
 clients:
   http:
     disallow_private_ip_ranges: true

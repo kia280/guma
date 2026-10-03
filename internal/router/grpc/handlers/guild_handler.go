@@ -6,12 +6,11 @@ import (
 	"github.com/rs/zerolog"
 	"google.golang.org/genproto/googleapis/api/httpbody"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	guildv1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	guildsvc "github.com/kia280/guma/internal/services/guild"
 	"github.com/kia280/guma/internal/session"
@@ -25,17 +24,14 @@ type GuildHandler struct {
 }
 
 // NewGuildService creates a new Guild gRPC handler.
-func NewGuildService(db *database.Pool, logger zerolog.Logger) *GuildHandler {
+func NewGuildService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *GuildHandler {
 	return &GuildHandler{
-		svc:    guildsvc.New(db, logger),
+		svc:    guildsvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "guild").Logger(),
 	}
 }
 
 func (h *GuildHandler) CreateGuild(ctx context.Context, req *guildv1.CreateGuildRequest) (*guildv1.CreateGuildResponse, error) {
-	if req.Name == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild name is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	g, err := h.svc.Create(ctx, guildsvc.CreateParams{
@@ -51,9 +47,6 @@ func (h *GuildHandler) CreateGuild(ctx context.Context, req *guildv1.CreateGuild
 }
 
 func (h *GuildHandler) GetGuild(ctx context.Context, req *guildv1.GetGuildRequest) (*guildv1.GetGuildResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	g, err := h.svc.Get(ctx, req.GuildId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -62,9 +55,6 @@ func (h *GuildHandler) GetGuild(ctx context.Context, req *guildv1.GetGuildReques
 }
 
 func (h *GuildHandler) UpdateGuild(ctx context.Context, req *guildv1.UpdateGuildRequest) (*guildv1.UpdateGuildResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	g, err := h.svc.Update(ctx, guildsvc.UpdateParams{
@@ -82,9 +72,6 @@ func (h *GuildHandler) UpdateGuild(ctx context.Context, req *guildv1.UpdateGuild
 }
 
 func (h *GuildHandler) UploadGuildLogo(ctx context.Context, req *guildv1.UploadGuildLogoRequest) (*guildv1.UploadGuildLogoResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	g, err := h.svc.UploadLogo(ctx, guildsvc.UploadLogoParams{
@@ -100,9 +87,6 @@ func (h *GuildHandler) UploadGuildLogo(ctx context.Context, req *guildv1.UploadG
 }
 
 func (h *GuildHandler) DeleteGuildLogo(ctx context.Context, req *guildv1.DeleteGuildLogoRequest) (*guildv1.DeleteGuildLogoResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	g, err := h.svc.DeleteLogo(ctx, req.GuildId, userID)
@@ -113,9 +97,6 @@ func (h *GuildHandler) DeleteGuildLogo(ctx context.Context, req *guildv1.DeleteG
 }
 
 func (h *GuildHandler) GetGuildLogo(ctx context.Context, req *guildv1.GetGuildLogoRequest) (*httpbody.HttpBody, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	logo, err := h.svc.GetLogo(ctx, req.GuildId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -132,9 +113,6 @@ func (h *GuildHandler) GetGuildLogo(ctx context.Context, req *guildv1.GetGuildLo
 }
 
 func (h *GuildHandler) DeleteGuild(ctx context.Context, req *guildv1.DeleteGuildRequest) (*guildv1.DeleteGuildResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	if err := h.svc.Delete(ctx, req.GuildId, userID); err != nil {
@@ -182,9 +160,6 @@ func (h *GuildHandler) GetCurrentGuild(ctx context.Context, _ *guildv1.GetCurren
 }
 
 func (h *GuildHandler) JoinGuildById(ctx context.Context, req *guildv1.JoinGuildByIdRequest) (*guildv1.JoinGuildByIdResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	g, err := h.svc.Join(ctx, req.GuildId, userID)
@@ -195,9 +170,6 @@ func (h *GuildHandler) JoinGuildById(ctx context.Context, req *guildv1.JoinGuild
 }
 
 func (h *GuildHandler) LeaveGuild(ctx context.Context, req *guildv1.LeaveGuildRequest) (*guildv1.LeaveGuildResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	if err := h.svc.Leave(ctx, req.GuildId, userID); err != nil {
@@ -207,9 +179,6 @@ func (h *GuildHandler) LeaveGuild(ctx context.Context, req *guildv1.LeaveGuildRe
 }
 
 func (h *GuildHandler) GetGuildSettings(ctx context.Context, req *guildv1.GetGuildSettingsRequest) (*guildv1.GetGuildSettingsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	settings, err := h.svc.GetSettings(ctx, req.GuildId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -218,12 +187,6 @@ func (h *GuildHandler) GetGuildSettings(ctx context.Context, req *guildv1.GetGui
 }
 
 func (h *GuildHandler) UpdateGuildSettings(ctx context.Context, req *guildv1.UpdateGuildSettingsRequest) (*guildv1.UpdateGuildSettingsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-	if req.Settings == nil {
-		return nil, status.Error(codes.InvalidArgument, "settings are required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	updated, err := h.svc.UpdateSettings(ctx, req.GuildId, userID, settingsFromProto(req.Settings))
@@ -234,9 +197,6 @@ func (h *GuildHandler) UpdateGuildSettings(ctx context.Context, req *guildv1.Upd
 }
 
 func (h *GuildHandler) GetGuildStats(ctx context.Context, req *guildv1.GetGuildStatsRequest) (*guildv1.GetGuildStatsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	stats, err := h.svc.Stats(ctx, req.GuildId, userID)

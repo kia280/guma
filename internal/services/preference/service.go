@@ -40,14 +40,6 @@ type NotificationPatch struct {
 	RollCallReminders  *bool
 }
 
-func (p NotificationPatch) IsEmpty() bool {
-	return p.EmailNotifications == nil &&
-		p.AuctionAlerts == nil &&
-		p.RaffleAlerts == nil &&
-		p.EventReminders == nil &&
-		p.RollCallReminders == nil
-}
-
 var DefaultNotifications = NotificationPreferences{
 	EmailNotifications: true,
 	AuctionAlerts:      true,
@@ -107,9 +99,6 @@ func (s *Service) UpdateNotifications(ctx context.Context, userIDStr string, pat
 	userID, err := parseUserID(userIDStr)
 	if err != nil {
 		return nil, err
-	}
-	if patch.IsEmpty() {
-		return nil, fmt.Errorf("%w: no notification preferences to update", errs.ErrInvalidArgument)
 	}
 
 	row, err := s.q.UpsertNotificationPreferences(ctx, db.UpsertNotificationPreferencesParams{

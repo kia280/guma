@@ -3,28 +3,19 @@ package rollcalltemplate
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
 
-const (
-	itemEntity           = "item template"
-	maxDescriptionLength = 500
-)
-
-var (
-	itemCategories = []string{"weapon", "armor", "accessory", "consumable", "skill_scroll", "material", "misc"}
-	itemRarities   = []string{"common", "uncommon", "rare", "epic", "legendary", "mythic"}
-)
+const itemEntity = "item template"
 
 type ItemTemplate struct {
 	ID          string
@@ -47,23 +38,21 @@ type ItemFields struct {
 
 type ItemService struct {
 	q      store
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
-func NewItemService(pool *database.Pool, logger zerolog.Logger) *ItemService {
-	return newItemService(newStore(pool), logger)
+func NewItemService(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *ItemService {
+	return newItemService(newStore(pool), az, logger)
 }
 
-func newItemService(q store, logger zerolog.Logger) *ItemService {
-	return &ItemService{q: q, logger: logger.With().Str("service", "itemtemplate").Logger()}
+func newItemService(q store, az authz.Checker, logger zerolog.Logger) *ItemService {
+	return &ItemService{q: q, az: az, logger: logger.With().Str("service", "itemtemplate").Logger()}
 }
 
 func (s *ItemService) List(ctx context.Context, guildIDStr, userIDStr string) ([]*ItemTemplate, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
 		return nil, err
 	}
 	rows, err := s.q.ListItemTemplates(ctx, guildID)
@@ -78,15 +67,9 @@ func (s *ItemService) List(ctx context.Context, guildIDStr, userIDStr string) ([
 }
 
 func (s *ItemService) Create(ctx context.Context, guildIDStr, userIDStr string, f ItemFields) (*ItemTemplate, error) {
-	f, err := normalizeItemFields(f)
-	if err != nil {
-		return nil, err
-	}
+	f = normalizeItemFields(f)
 	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
 		return nil, err
 	}
 	r, err := s.q.CreateItemTemplate(ctx, db.CreateItemTemplateParams{
@@ -101,20 +84,14 @@ func (s *ItemService) Create(ctx context.Context, guildIDStr, userIDStr string, 
 }
 
 func (s *ItemService) Update(ctx context.Context, guildIDStr, templateIDStr, userIDStr string, f ItemFields) (*ItemTemplate, error) {
-	f, err := normalizeItemFields(f)
-	if err != nil {
-		return nil, err
-	}
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	f = normalizeItemFields(f)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return nil, err
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", errs.ErrNotFound, itemEntity)
-	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
-		return nil, err
 	}
 	r, err := s.q.UpdateItemTemplate(ctx, db.UpdateItemTemplateParams{
 		ID: templateID, GuildID: guildID,
@@ -127,16 +104,13 @@ func (s *ItemService) Update(ctx context.Context, guildIDStr, templateIDStr, use
 }
 
 func (s *ItemService) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDStr string) error {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return err
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
 		return fmt.Errorf("%w: %s", errs.ErrNotFound, itemEntity)
-	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
-		return err
 	}
 	n, err := s.q.DeleteItemTemplate(ctx, db.DeleteItemTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {
@@ -148,24 +122,13 @@ func (s *ItemService) Delete(ctx context.Context, guildIDStr, templateIDStr, use
 	return nil
 }
 
-func normalizeItemFields(f ItemFields) (ItemFields, error) {
-	name, err := requiredText("name", f.Name, maxNameLength)
-	if err != nil {
-		return ItemFields{}, err
+func normalizeItemFields(f ItemFields) ItemFields {
+	return ItemFields{
+		Name:        strings.TrimSpace(f.Name),
+		Description: strings.TrimSpace(f.Description),
+		Category:    strings.ToLower(strings.TrimSpace(f.Category)),
+		Rarity:      strings.ToLower(strings.TrimSpace(f.Rarity)),
 	}
-	description := strings.TrimSpace(f.Description)
-	if utf8.RuneCountInString(description) > maxDescriptionLength {
-		return ItemFields{}, fmt.Errorf("%w: description must be at most %d characters", errs.ErrInvalidArgument, maxDescriptionLength)
-	}
-	category := strings.ToLower(strings.TrimSpace(f.Category))
-	if !slices.Contains(itemCategories, category) {
-		return ItemFields{}, fmt.Errorf("%w: category must be one of %v", errs.ErrInvalidArgument, itemCategories)
-	}
-	rarity := strings.ToLower(strings.TrimSpace(f.Rarity))
-	if !slices.Contains(itemRarities, rarity) {
-		return ItemFields{}, fmt.Errorf("%w: rarity must be one of %v", errs.ErrInvalidArgument, itemRarities)
-	}
-	return ItemFields{Name: name, Description: description, Category: category, Rarity: rarity}, nil
 }
 
 func toItemTemplate(r db.ItemTemplate) *ItemTemplate {

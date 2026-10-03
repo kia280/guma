@@ -14,10 +14,13 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 const (
@@ -61,13 +64,15 @@ type Guild struct {
 
 // Service supports development-only impersonation of existing users.
 type Service struct {
-	pool *database.Pool
-	q    *db.Queries
+	pool   *database.Pool
+	q      *db.Queries
+	syncer authz.MemberSyncer
+	logger zerolog.Logger
 }
 
 // New creates a dev auth Service.
-func New(pool *database.Pool) *Service {
-	return &Service{pool: pool, q: db.New(pool.Pool)}
+func New(pool *database.Pool, syncer authz.MemberSyncer, logger zerolog.Logger) *Service {
+	return &Service{pool: pool, q: db.New(pool.Pool), syncer: syncer, logger: logger.With().Str("service", "devauth").Logger()}
 }
 
 func (s *Service) ResolveGuild(ctx context.Context, userID string) (*Guild, error) {
@@ -171,6 +176,9 @@ func (s *Service) SeedGuildMembers(ctx context.Context, guildID string, count in
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
+	for _, u := range users {
+		s.syncMember(ctx, gid, uuid.MustParse(u.ID))
+	}
 	return users, nil
 }
 
@@ -190,9 +198,13 @@ func joinGuild(ctx context.Context, q *db.Queries, userID, guildID uuid.UUID, ro
 
 func seedRole(n int) string {
 	if n%moderatorEvery == 0 {
-		return "moderator"
+		return string(authz.RoleModerator)
 	}
-	return "member"
+	return string(authz.RoleMember)
+}
+
+func (s *Service) syncMember(ctx context.Context, guildID, userID uuid.UUID) {
+	authz.SyncAfterCommit(ctx, s.syncer, s.logger, guildID, userID)
 }
 
 func randomSeedName() (string, error) {
@@ -216,13 +228,7 @@ func randomItem(items []string) (string, error) {
 }
 
 func clampLimit(limit int32) int32 {
-	if limit <= 0 {
-		return defaultListLimit
-	}
-	if limit > maxListLimit {
-		return maxListLimit
-	}
-	return limit
+	return pagination.Size(limit, defaultListLimit, maxListLimit)
 }
 
 // ListUsers returns the most recently created users.
@@ -321,13 +327,16 @@ func (s *Service) CreateUser(ctx context.Context, displayName, guildID string) (
 
 	role := ""
 	if gid != uuid.Nil {
-		role = "member"
+		role = string(authz.RoleMember)
 		if err := joinGuild(ctx, qtx, row.ID, gid, role); err != nil {
 			return nil, err
 		}
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
+	}
+	if gid != uuid.Nil {
+		s.syncMember(ctx, gid, row.ID)
 	}
 
 	return &User{

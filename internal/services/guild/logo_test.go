@@ -17,6 +17,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/kia280/guma/internal/authz"
+	"github.com/kia280/guma/internal/authz/authztest"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
@@ -28,7 +30,6 @@ type fakeRow struct {
 func (r fakeRow) Scan(dest ...any) error { return r.scan(dest...) }
 
 type fakeDB struct {
-	role         string
 	upsertCalled bool
 	upsertArgs   []any
 	statsCalled  bool
@@ -45,14 +46,6 @@ func (f *fakeDB) Query(context.Context, string, ...any) (pgx.Rows, error) {
 
 func (f *fakeDB) QueryRow(_ context.Context, sql string, args ...any) pgx.Row {
 	switch {
-	case strings.Contains(sql, "name: GetGuildMemberRole"):
-		return fakeRow{scan: func(dest ...any) error {
-			if f.role == "" {
-				return pgx.ErrNoRows
-			}
-			*dest[0].(*string) = f.role
-			return nil
-		}}
 	case strings.Contains(sql, "name: UpsertGuildLogo"):
 		f.upsertCalled = true
 		f.upsertArgs = args
@@ -86,8 +79,8 @@ func (f *fakeDB) QueryRow(_ context.Context, sql string, args ...any) pgx.Row {
 	return fakeRow{scan: func(...any) error { return errors.New("unexpected query row") }}
 }
 
-func newTestService(f *fakeDB) *Service {
-	return &Service{q: db.New(f), logger: zerolog.Nop()}
+func newTestService(f *fakeDB, az *authztest.Fake) *Service {
+	return &Service{q: db.New(f), az: az, logger: zerolog.Nop()}
 }
 
 func pngBytes(t *testing.T) []byte {
@@ -130,26 +123,22 @@ func TestValidateLogo(t *testing.T) {
 	}
 }
 
-func TestUploadLogo_Permissions(t *testing.T) {
+func TestUploadLogo_StoresLogo(t *testing.T) {
 	guildID := uuid.New()
 	userID := uuid.New()
 
 	tests := []struct {
 		name    string
-		role    string
+		grants  []authz.Permission
 		wantErr error
 	}{
-		{name: "owner allowed", role: "owner"},
-		{name: "admin allowed", role: "admin"},
-		{name: "moderator denied", role: "moderator", wantErr: errs.ErrPermissionDenied},
-		{name: "member denied", role: "member", wantErr: errs.ErrPermissionDenied},
-		{name: "non-member denied", role: "", wantErr: errs.ErrPermissionDenied},
+		{name: "manage guild allowed", grants: []authz.Permission{authz.View, authz.ManageGuild}},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f := &fakeDB{role: tt.role}
-			g, err := newTestService(f).UploadLogo(context.Background(), UploadLogoParams{
+			f := &fakeDB{}
+			g, err := newTestService(f, authztest.New().Grant(guildID, userID, tt.grants...)).UploadLogo(context.Background(), UploadLogoParams{
 				GuildID:     guildID.String(),
 				UserID:      userID.String(),
 				ContentType: "image/png",
@@ -169,8 +158,8 @@ func TestUploadLogo_Permissions(t *testing.T) {
 }
 
 func TestUploadLogo_RejectsInvalidImageBeforeWriting(t *testing.T) {
-	f := &fakeDB{role: "owner"}
-	_, err := newTestService(f).UploadLogo(context.Background(), UploadLogoParams{
+	f := &fakeDB{}
+	_, err := newTestService(f, authztest.New()).UploadLogo(context.Background(), UploadLogoParams{
 		GuildID:     uuid.NewString(),
 		UserID:      uuid.NewString(),
 		ContentType: "image/svg+xml",
@@ -178,10 +167,4 @@ func TestUploadLogo_RejectsInvalidImageBeforeWriting(t *testing.T) {
 	})
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 	assert.False(t, f.upsertCalled)
-}
-
-func TestDeleteLogo_RequiresAdmin(t *testing.T) {
-	f := &fakeDB{role: "member"}
-	_, err := newTestService(f).DeleteLogo(context.Background(), uuid.NewString(), uuid.NewString())
-	assert.ErrorIs(t, err, errs.ErrPermissionDenied)
 }

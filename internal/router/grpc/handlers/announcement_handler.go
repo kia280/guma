@@ -4,11 +4,10 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	announcementsvc "github.com/kia280/guma/internal/services/announcement"
 	"github.com/kia280/guma/internal/session"
@@ -20,17 +19,14 @@ type AnnouncementHandler struct {
 	logger zerolog.Logger
 }
 
-func NewAnnouncementService(db *database.Pool, logger zerolog.Logger) *AnnouncementHandler {
+func NewAnnouncementService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *AnnouncementHandler {
 	return &AnnouncementHandler{
-		svc:    announcementsvc.New(db, logger),
+		svc:    announcementsvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "announcement").Logger(),
 	}
 }
 
 func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1.ListAnnouncementsRequest) (*gumav1.ListAnnouncementsResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 
 	list, err := h.svc.List(ctx, announcementsvc.ListParams{
@@ -50,7 +46,7 @@ func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1
 }
 
 func (h *AnnouncementHandler) GetAnnouncement(ctx context.Context, req *gumav1.GetAnnouncementRequest) (*gumav1.GetAnnouncementResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -62,9 +58,6 @@ func (h *AnnouncementHandler) GetAnnouncement(ctx context.Context, req *gumav1.G
 }
 
 func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *gumav1.CreateAnnouncementDraftRequest) (*gumav1.CreateAnnouncementDraftResponse, error) {
-	if req.GuildId == "" {
-		return nil, status.Error(codes.InvalidArgument, "guild_id is required")
-	}
 	userID := session.UserIDFromContext(ctx)
 	a, err := h.svc.CreateDraft(ctx, req.GuildId, userID)
 	if err != nil {
@@ -74,7 +67,7 @@ func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *
 }
 
 func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav1.UpdateAnnouncementRequest) (*gumav1.UpdateAnnouncementResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +86,7 @@ func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav
 }
 
 func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *gumav1.PublishAnnouncementRequest) (*gumav1.PublishAnnouncementResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +98,7 @@ func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *guma
 }
 
 func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gumav1.UnpublishAnnouncementRequest) (*gumav1.UnpublishAnnouncementResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +110,7 @@ func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gu
 }
 
 func (h *AnnouncementHandler) DeleteAnnouncementDraft(ctx context.Context, req *gumav1.DeleteAnnouncementDraftRequest) (*gumav1.DeleteAnnouncementDraftResponse, error) {
-	userID, err := requireAnnouncementTarget(ctx, req.GuildId, req.AnnouncementId)
+	userID, err := requireAnnouncementUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -127,14 +120,9 @@ func (h *AnnouncementHandler) DeleteAnnouncementDraft(ctx context.Context, req *
 	return &gumav1.DeleteAnnouncementDraftResponse{}, nil
 }
 
-func requireAnnouncementTarget(ctx context.Context, guildID, announcementID string) (string, error) {
-	if guildID == "" {
-		return "", status.Error(codes.InvalidArgument, "guild_id is required")
-	}
-	if announcementID == "" {
-		return "", status.Error(codes.InvalidArgument, "announcement_id is required")
-	}
-	return session.UserIDFromContext(ctx), nil
+func requireAnnouncementUser(ctx context.Context) (string, error) {
+	userID := session.UserIDFromContext(ctx)
+	return userID, nil
 }
 
 func announcementToProto(a *announcementsvc.Announcement) *gumav1.Announcement {

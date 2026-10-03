@@ -18,7 +18,7 @@ import (
 
 func TestNewMemberService(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	assert.NotNil(t, service)
 	assert.NotNil(t, service.logger)
@@ -26,7 +26,7 @@ func TestNewMemberService(t *testing.T) {
 
 func TestMemberService_InviteMember(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -35,20 +35,6 @@ func TestMemberService_InviteMember(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.InviteMemberRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name:     "missing email",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.InviteMemberRequest{GuildId: "guild-123"},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name: "successful member invitation",
 			ctx:  session.WithUserID(context.Background(), "test-user"),
@@ -83,7 +69,7 @@ func TestMemberService_InviteMember(t *testing.T) {
 
 func TestMemberService_JoinGuild(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -92,13 +78,6 @@ func TestMemberService_JoinGuild(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing invite_code",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.JoinGuildRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:    "successful guild join",
 			ctx:     session.WithUserID(context.Background(), "test-user"),
@@ -127,7 +106,7 @@ func TestMemberService_JoinGuild(t *testing.T) {
 
 func TestMemberService_UpdateMember(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -136,20 +115,6 @@ func TestMemberService_UpdateMember(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.UpdateMemberRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name:     "missing member_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.UpdateMemberRequest{GuildId: "guild-123"},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name: "successful member update",
 			ctx:  session.WithUserID(context.Background(), "test-user"),
@@ -184,7 +149,7 @@ func TestMemberService_UpdateMember(t *testing.T) {
 
 func TestMemberService_RemoveMember(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -193,20 +158,6 @@ func TestMemberService_RemoveMember(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.RemoveMemberRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name:     "missing member_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.RemoveMemberRequest{GuildId: "guild-123"},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name: "successful member removal",
 			ctx:  session.WithUserID(context.Background(), "test-user"),
@@ -238,7 +189,7 @@ func TestMemberService_RemoveMember(t *testing.T) {
 
 func TestMemberService_ListMembers(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -247,13 +198,6 @@ func TestMemberService_ListMembers(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.ListMembersRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:     "malformed guild_id",
 			ctx:      session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000002"),
@@ -269,16 +213,6 @@ func TestMemberService_ListMembers(t *testing.T) {
 				PageSize:  10,
 				PageToken: "next",
 				Role:      "admin",
-			},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "unknown role filter",
-			ctx:  session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000002"),
-			req: &memberv1.ListMembersRequest{
-				GuildId: "00000000-0000-0000-0000-000000000001",
-				Role:    "king",
 			},
 			wantErr:  true,
 			wantCode: codes.InvalidArgument,
@@ -305,7 +239,7 @@ func TestMemberService_ListMembers(t *testing.T) {
 
 func TestMemberService_GetMember(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -314,20 +248,6 @@ func TestMemberService_GetMember(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.GetMemberRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name:     "missing member_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.GetMemberRequest{GuildId: "guild-123"},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name: "successful member retrieval",
 			ctx:  session.WithUserID(context.Background(), "test-user"),
@@ -359,7 +279,7 @@ func TestMemberService_GetMember(t *testing.T) {
 
 func TestMemberService_GenerateInviteCode(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -368,13 +288,6 @@ func TestMemberService_GenerateInviteCode(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.GenerateInviteCodeRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:    "successful invite code generation",
 			ctx:     session.WithUserID(context.Background(), "test-user"),
@@ -404,7 +317,7 @@ func TestMemberService_GenerateInviteCode(t *testing.T) {
 
 func TestMemberService_ValidateInviteCode(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -413,13 +326,6 @@ func TestMemberService_ValidateInviteCode(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing code",
-			ctx:      context.Background(),
-			req:      &memberv1.ValidateInviteCodeRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:    "successful invite code validation",
 			ctx:     context.Background(),
@@ -449,7 +355,7 @@ func TestMemberService_ValidateInviteCode(t *testing.T) {
 
 func TestMemberService_ListInvites(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -458,13 +364,6 @@ func TestMemberService_ListInvites(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.ListInvitesRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:    "successful invite listing",
 			ctx:     session.WithUserID(context.Background(), "test-user"),
@@ -493,7 +392,7 @@ func TestMemberService_ListInvites(t *testing.T) {
 
 func TestMemberService_RevokeInvite(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewMemberService(nil, logger)
+	service := NewMemberService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -502,20 +401,6 @@ func TestMemberService_RevokeInvite(t *testing.T) {
 		wantErr  bool
 		wantCode codes.Code
 	}{
-		{
-			name:     "missing guild_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.RevokeInviteRequest{},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
-		{
-			name:     "missing invite_id",
-			ctx:      session.WithUserID(context.Background(), "test-user"),
-			req:      &memberv1.RevokeInviteRequest{GuildId: "guild-123"},
-			wantErr:  true,
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name: "successful invite revocation",
 			ctx:  session.WithUserID(context.Background(), "test-user"),
@@ -546,7 +431,7 @@ func TestMemberService_RevokeInvite(t *testing.T) {
 }
 
 func TestMemberService_UpdateMemberRole(t *testing.T) {
-	service := NewMemberService(nil, zerolog.Nop())
+	service := NewMemberService(nil, nil, zerolog.Nop())
 	const guildID = "00000000-0000-0000-0000-000000000001"
 	const actorID = "00000000-0000-0000-0000-000000000002"
 	const targetID = "00000000-0000-0000-0000-000000000003"
@@ -558,15 +443,6 @@ func TestMemberService_UpdateMemberRole(t *testing.T) {
 		req      *memberv1.UpdateMemberRoleRequest
 		wantCode codes.Code
 	}{
-		{name: "missing guild_id", ctx: authed, req: &memberv1.UpdateMemberRoleRequest{}, wantCode: codes.InvalidArgument},
-		{name: "missing user_id", ctx: authed, req: &memberv1.UpdateMemberRoleRequest{GuildId: guildID}, wantCode: codes.InvalidArgument},
-		{name: "missing role", ctx: authed, req: &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: targetID}, wantCode: codes.InvalidArgument},
-		{
-			name:     "unknown role",
-			ctx:      authed,
-			req:      &memberv1.UpdateMemberRoleRequest{GuildId: guildID, UserId: targetID, Role: "king"},
-			wantCode: codes.InvalidArgument,
-		},
 		{
 			name:     "malformed target",
 			ctx:      authed,

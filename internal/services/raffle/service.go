@@ -17,11 +17,13 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
 	"github.com/kia280/guma/internal/services/errs"
 	"github.com/kia280/guma/internal/services/inventory"
+	"github.com/kia280/guma/internal/services/pagination"
 )
 
 type cryptoSource struct{}
@@ -157,11 +159,12 @@ type raffleRow struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
 // New creates a new raffle Service.
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -169,16 +172,14 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	return &Service{
 		pool:   pool,
 		q:      q,
+		az:     az,
 		logger: logger.With().Str("service", "raffle").Logger(),
 	}
 }
 
 // List returns paginated raffles for a guild.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
-	pageSize := p.PageSize
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize := pagination.StandardSize(p.PageSize)
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
@@ -247,9 +248,6 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Raffle, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
-	if err := s.requireRole(ctx, guildID, createdBy, "owner", "admin"); err != nil {
-		return nil, err
-	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -302,9 +300,6 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Raffle, error) {
 
 // PurchaseTickets deducts cost from wallet and issues tickets.
 func (s *Service) PurchaseTickets(ctx context.Context, guildIDStr, raffleIDStr, userIDStr string, quantity int32) ([]*RaffleTicket, int64, error) {
-	if quantity <= 0 {
-		return nil, 0, fmt.Errorf("%w: quantity must be positive", errs.ErrFailedPrecondition)
-	}
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, 0, fmt.Errorf("%w: raffle", errs.ErrNotFound)
@@ -428,13 +423,6 @@ func (s *Service) Draw(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr
 	raffleID, err := uuid.Parse(raffleIDStr)
 	if err != nil {
 		return nil, nil, fmt.Errorf("%w: raffle", errs.ErrNotFound)
-	}
-	callerID, err := uuid.Parse(callerIDStr)
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
-		return nil, nil, err
 	}
 
 	winners, err := s.draw(ctx, guildID, raffleID, false)
@@ -698,11 +686,8 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Raffle, error) {
 	if err := validateUpdate(p, now); err != nil {
 		return nil, err
 	}
-	guildID, raffleID, callerID, err := parseIDs(p.GuildID, p.RaffleID, p.UpdatedBy)
+	guildID, raffleID, _, err := parseIDs(p.GuildID, p.RaffleID, p.UpdatedBy)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
 		return nil, err
 	}
 
@@ -745,11 +730,8 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Raffle, error) {
 // Cancel cancels an undrawn raffle, refunds every ticket to its buyer and
 // returns item prizes to where they came from.
 func (s *Service) Cancel(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr string) (*Raffle, error) {
-	guildID, raffleID, callerID, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
+	guildID, raffleID, _, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
 		return nil, err
 	}
 
@@ -803,11 +785,8 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, raffleIDStr, callerIDS
 
 // Delete permanently removes a cancelled raffle together with its tickets.
 func (s *Service) Delete(ctx context.Context, guildIDStr, raffleIDStr, callerIDStr string) error {
-	guildID, raffleID, callerID, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
+	guildID, raffleID, _, err := parseIDs(guildIDStr, raffleIDStr, callerIDStr)
 	if err != nil {
-		return err
-	}
-	if err := s.requireRole(ctx, guildID, callerID, "owner", "admin"); err != nil {
 		return err
 	}
 
@@ -889,9 +868,7 @@ func parseIDs(guildIDStr, raffleIDStr, userIDStr string) (uuid.UUID, uuid.UUID, 
 
 // ListMyTickets returns tickets owned by a user across all guilds (or filtered by guild).
 func (s *Service) ListMyTickets(ctx context.Context, userIDStr, guildIDStr string, pageSize, offset int) (*ListTicketsResult, error) {
-	if pageSize <= 0 || pageSize > 100 {
-		pageSize = 20
-	}
+	pageSize = pagination.StandardSize(pageSize)
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
@@ -962,22 +939,6 @@ func (s *Service) getWinners(ctx context.Context, raffleID uuid.UUID) ([]*Raffle
 		})
 	}
 	return winners, nil
-}
-
-func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-	}
-	for _, r := range roles {
-		if role == r {
-			return nil
-		}
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, roles)
 }
 
 // NextPageToken encodes the offset as a page token string.

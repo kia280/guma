@@ -4,11 +4,10 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	usersvc "github.com/kia280/guma/internal/services/user"
 	"github.com/kia280/guma/internal/session"
@@ -23,9 +22,9 @@ type UserHandler struct {
 
 // NewUserService creates a new User gRPC handler. kratosPublicURL is used
 // by the service's GetMe to refresh the profile from Kratos.
-func NewUserService(db *database.Pool, kratosPublicURL string, logger zerolog.Logger, opts ...usersvc.Option) *UserHandler {
+func NewUserService(db *database.Pool, syncer authz.MemberSyncer, kratosPublicURL string, logger zerolog.Logger, opts ...usersvc.Option) *UserHandler {
 	return &UserHandler{
-		svc:    usersvc.New(db, kratosPublicURL, logger, opts...),
+		svc:    usersvc.New(db, syncer, kratosPublicURL, logger, opts...),
 		logger: logger.With().Str("handler", "user").Logger(),
 	}
 }
@@ -58,10 +57,6 @@ func (h *UserHandler) UpdateMe(ctx context.Context, req *gumav1.UpdateMeRequest)
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *gumav1.GetUserRequest) (*gumav1.GetUserResponse, error) {
-	if req.UserId == "" {
-		return nil, status.Error(codes.InvalidArgument, "user_id is required")
-	}
-
 	u, err := h.svc.GetUser(ctx, req.UserId)
 	if err != nil {
 		return nil, toStatus(err)

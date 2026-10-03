@@ -7,6 +7,7 @@
 package gumav1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -1587,86 +1588,87 @@ var File_proto_guma_v1_raffle_proto protoreflect.FileDescriptor
 
 const file_proto_guma_v1_raffle_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/guma/v1/raffle.proto\x12\aguma.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\"\x83\x01\n" +
-	"\x12ListRafflesRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\x1aproto/guma/v1/raffle.proto\x12\aguma.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18proto/guma/v1/item.proto\x1a\x1cproto/guma/v1/validate.proto\"\xae\x01\n" +
+	"\x12ListRafflesRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12 \n" +
+	"\x06status\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xe8>\x01R\x06status\x12%\n" +
+	"\tpage_size\x18\x03 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x04 \x01(\tR\tpageToken\"\x89\x01\n" +
+	"page_token\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x89\x01\n" +
 	"\x13ListRafflesResponse\x12)\n" +
 	"\araffles\x18\x01 \x03(\v2\x0f.guma.v1.RaffleR\araffles\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
 	"\vtotal_count\x18\x03 \x01(\x05R\n" +
-	"totalCount\"J\n" +
-	"\x10GetRaffleRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
-	"\traffle_id\x18\x02 \x01(\tR\braffleId\"<\n" +
+	"totalCount\"d\n" +
+	"\x10GetRaffleRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
+	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\"<\n" +
 	"\x11GetRaffleResponse\x12'\n" +
-	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"\xa8\x02\n" +
-	"\x13CreateRaffleRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x14\n" +
-	"\x05title\x18\x02 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\x12!\n" +
-	"\fticket_price\x18\x04 \x01(\x03R\vticketPrice\x12\x1f\n" +
-	"\vmax_tickets\x18\x05 \x01(\x05R\n" +
-	"maxTickets\x12/\n" +
-	"\x14max_tickets_per_user\x18\x06 \x01(\x05R\x11maxTicketsPerUser\x12\x1b\n" +
-	"\tdraw_date\x18\a \x01(\tR\bdrawDate\x12,\n" +
-	"\x06prizes\x18\b \x03(\v2\x14.guma.v1.RafflePrizeR\x06prizes\"?\n" +
+	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"\xff\x02\n" +
+	"\x13CreateRaffleRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12!\n" +
+	"\x05title\x18\x02 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x80?\x01R\x05title\x12*\n" +
+	"\vdescription\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x90?\x01R\vdescription\x12+\n" +
+	"\fticket_price\x18\x04 \x01(\x03B\b\xbaH\x05\"\x03\xd0>\x01R\vticketPrice\x12(\n" +
+	"\vmax_tickets\x18\x05 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\n" +
+	"maxTickets\x128\n" +
+	"\x14max_tickets_per_user\x18\x06 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\x11maxTicketsPerUser\x12(\n" +
+	"\tdraw_date\x18\a \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xf0>\x01R\bdrawDate\x126\n" +
+	"\x06prizes\x18\b \x03(\v2\x14.guma.v1.RafflePrizeB\b\xbaH\x05\x92\x01\x02\x10dR\x06prizes\"?\n" +
 	"\x14CreateRaffleResponse\x12'\n" +
-	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"l\n" +
-	"\x16PurchaseTicketsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
-	"\traffle_id\x18\x02 \x01(\tR\braffleId\x12\x1a\n" +
-	"\bquantity\x18\x03 \x01(\x05R\bquantity\"i\n" +
+	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"\x8f\x01\n" +
+	"\x16PurchaseTicketsRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
+	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\x12#\n" +
+	"\bquantity\x18\x03 \x01(\x05B\a\xbaH\x04\x1a\x02 \x00R\bquantity\"i\n" +
 	"\x17PurchaseTicketsResponse\x12/\n" +
 	"\atickets\x18\x01 \x03(\v2\x15.guma.v1.RaffleTicketR\atickets\x12\x1d\n" +
 	"\n" +
-	"total_cost\x18\x02 \x01(\x03R\ttotalCost\"Q\n" +
-	"\x17GetRaffleWinnersRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
-	"\traffle_id\x18\x02 \x01(\tR\braffleId\"K\n" +
+	"total_cost\x18\x02 \x01(\x03R\ttotalCost\"k\n" +
+	"\x17GetRaffleWinnersRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
+	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\"K\n" +
 	"\x18GetRaffleWinnersResponse\x12/\n" +
-	"\awinners\x18\x01 \x03(\v2\x15.guma.v1.RaffleWinnerR\awinners\"K\n" +
-	"\x11DrawRaffleRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
-	"\traffle_id\x18\x02 \x01(\tR\braffleId\"n\n" +
+	"\awinners\x18\x01 \x03(\v2\x15.guma.v1.RaffleWinnerR\awinners\"e\n" +
+	"\x11DrawRaffleRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
+	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\"n\n" +
 	"\x12DrawRaffleResponse\x12'\n" +
 	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\x12/\n" +
-	"\awinners\x18\x02 \x03(\v2\x15.guma.v1.RaffleWinnerR\awinners\"\x84\x03\n" +
-	"\x13UpdateRaffleRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
-	"\traffle_id\x18\x02 \x01(\tR\braffleId\x12\x1b\n" +
-	"\tdraw_date\x18\x03 \x01(\tR\bdrawDate\x12\x19\n" +
-	"\x05title\x18\x04 \x01(\tH\x00R\x05title\x88\x01\x01\x12%\n" +
-	"\vdescription\x18\x05 \x01(\tH\x01R\vdescription\x88\x01\x01\x12&\n" +
-	"\fticket_price\x18\x06 \x01(\x03H\x02R\vticketPrice\x88\x01\x01\x12$\n" +
-	"\vmax_tickets\x18\a \x01(\x05H\x03R\n" +
-	"maxTickets\x88\x01\x01\x124\n" +
-	"\x14max_tickets_per_user\x18\b \x01(\x05H\x04R\x11maxTicketsPerUser\x88\x01\x01B\b\n" +
+	"\awinners\x18\x02 \x03(\v2\x15.guma.v1.RaffleWinnerR\awinners\"\xb1\x05\n" +
+	"\x13UpdateRaffleRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
+	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\x12%\n" +
+	"\tdraw_date\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xf0>\x01R\bdrawDate\x12&\n" +
+	"\x05title\x18\x04 \x01(\tB\v\xbaH\br\x06\xc8>\x01\x80?\x01H\x00R\x05title\x88\x01\x01\x12/\n" +
+	"\vdescription\x18\x05 \x01(\tB\b\xbaH\x05r\x03\x90?\x01H\x01R\vdescription\x88\x01\x01\x120\n" +
+	"\fticket_price\x18\x06 \x01(\x03B\b\xbaH\x05\"\x03\xd0>\x01H\x02R\vticketPrice\x88\x01\x01\x12-\n" +
+	"\vmax_tickets\x18\a \x01(\x05B\a\xbaH\x04\x1a\x02(\x00H\x03R\n" +
+	"maxTickets\x88\x01\x01\x12=\n" +
+	"\x14max_tickets_per_user\x18\b \x01(\x05B\a\xbaH\x04\x1a\x02(\x00H\x04R\x11maxTicketsPerUser\x88\x01\x01:\xd3\x01\xbaH\xcf\x01\x1a\xcc\x01\n" +
+	"\x1fupdate_raffle.nothing_to_update\x12\x11nothing to update\x1a\x95\x01has(this.title) || has(this.description) || this.draw_date != '' || has(this.ticket_price) || has(this.max_tickets) || has(this.max_tickets_per_user)B\b\n" +
 	"\x06_titleB\x0e\n" +
 	"\f_descriptionB\x0f\n" +
 	"\r_ticket_priceB\x0e\n" +
 	"\f_max_ticketsB\x17\n" +
 	"\x15_max_tickets_per_user\"?\n" +
 	"\x14UpdateRaffleResponse\x12'\n" +
-	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"M\n" +
-	"\x13CancelRaffleRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
-	"\traffle_id\x18\x02 \x01(\tR\braffleId\"?\n" +
+	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"g\n" +
+	"\x13CancelRaffleRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
+	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\"?\n" +
 	"\x14CancelRaffleResponse\x12'\n" +
-	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"M\n" +
-	"\x13DeleteRaffleRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
-	"\traffle_id\x18\x02 \x01(\tR\braffleId\"0\n" +
+	"\x06raffle\x18\x01 \x01(\v2\x0f.guma.v1.RaffleR\x06raffle\"g\n" +
+	"\x13DeleteRaffleRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12(\n" +
+	"\traffle_id\x18\x02 \x01(\tB\v\xbaH\b\xc8\x01\x01r\x03\xb0\x01\x01R\braffleId\"0\n" +
 	"\x14DeleteRaffleResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"m\n" +
-	"\x14ListMyTicketsRequest\x12\x19\n" +
-	"\bguild_id\x18\x01 \x01(\tR\aguildId\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x8e\x01\n" +
+	"\x14ListMyTicketsRequest\x12&\n" +
+	"\bguild_id\x18\x01 \x01(\tB\v\xbaH\b\xd8\x01\x01r\x03\xb0\x01\x01R\aguildId\x12%\n" +
+	"\tpage_size\x18\x02 \x01(\x05B\b\xbaH\x05\x1a\x03\xc8>dR\bpageSize\x12'\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tR\tpageToken\"\x91\x01\n" +
+	"page_token\x18\x03 \x01(\tB\b\xbaH\x05r\x03\xd0>\x01R\tpageToken\"\x91\x01\n" +
 	"\x15ListMyTicketsResponse\x12/\n" +
 	"\atickets\x18\x01 \x03(\v2\x15.guma.v1.RaffleTicketR\atickets\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1f\n" +
@@ -1693,11 +1695,11 @@ const file_proto_guma_v1_raffle_proto_rawDesc = "" +
 	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12=\n" +
-	"\fcancelled_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\vcancelledAt\"\xae\x01\n" +
-	"\vRafflePrize\x12\x12\n" +
-	"\x04rank\x18\x01 \x01(\x05R\x04rank\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x16\n" +
-	"\x06amount\x18\x03 \x01(\x03R\x06amount\x12!\n" +
+	"\fcancelled_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\vcancelledAt\"\xcb\x01\n" +
+	"\vRafflePrize\x12\x1b\n" +
+	"\x04rank\x18\x01 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\x04rank\x12*\n" +
+	"\vdescription\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x90?\x01R\vdescription\x12 \n" +
+	"\x06amount\x18\x03 \x01(\x03B\b\xbaH\x05\"\x03\xd0>\x01R\x06amount\x12!\n" +
 	"\x04item\x18\x04 \x01(\v2\r.guma.v1.ItemR\x04item\x12.\n" +
 	"\x06source\x18\x05 \x01(\v2\x16.guma.v1.ItemSourceRefR\x06source\"\xb8\x01\n" +
 	"\fRaffleTicket\x12\x0e\n" +
@@ -1826,6 +1828,7 @@ func file_proto_guma_v1_raffle_proto_init() {
 		return
 	}
 	file_proto_guma_v1_item_proto_init()
+	file_proto_guma_v1_validate_proto_init()
 	file_proto_guma_v1_raffle_proto_msgTypes[12].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
