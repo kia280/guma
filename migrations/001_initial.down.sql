@@ -27,6 +27,7 @@ DROP TABLE IF EXISTS activity CASCADE;
 DROP TABLE IF EXISTS notifications CASCADE;
 DROP TABLE IF EXISTS invitations CASCADE;
 DROP TABLE IF EXISTS member_role_changes CASCADE;
+DROP TABLE IF EXISTS authz_member_outbox CASCADE;
 DROP TABLE IF EXISTS members CASCADE;
 DROP TABLE IF EXISTS guild_logos CASCADE;
 DROP TABLE IF EXISTS guilds CASCADE;
@@ -35,6 +36,7 @@ DROP TABLE IF EXISTS users CASCADE;
 
 DROP FUNCTION IF EXISTS acting_admin_id();
 DROP FUNCTION IF EXISTS assign_member_display_name();
+DROP FUNCTION IF EXISTS enqueue_authz_member_sync();
 DROP FUNCTION IF EXISTS gold_amount(BIGINT);
 DROP FUNCTION IF EXISTS log_backpack_item_event();
 DROP FUNCTION IF EXISTS log_bank_item_event();

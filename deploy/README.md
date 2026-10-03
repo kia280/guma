@@ -18,8 +18,9 @@ Guild authorization is delegated to [Ory Keto](https://www.ory.sh/keto/) v25.
 2. Set `keto.readAddr` and `keto.writeAddr` in the chart values to the gRPC
    `host:port` of the Keto read and write APIs. The write API must be reachable
    from the backend pods but should not be exposed publicly.
-3. Apply database migrations. Migration `041_authz_member_outbox` queues every
-   existing guild membership, and the backend writes the matching relation tuples
-   to Keto shortly after it starts.
+3. Apply database migrations. A trigger on `members` queues every membership
+   change in `authz_member_outbox`, and the backend writes the matching relation
+   tuples to Keto shortly after it starts. For a database that already had
+   members before the trigger existed, run `guma authz sync` once.
 4. To repair drift between `members` and Keto at any time, run
    `guma authz sync`; it is idempotent.
