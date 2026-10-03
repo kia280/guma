@@ -87,12 +87,7 @@ func (s *Service) authorizeItemHistory(ctx context.Context, guildID, viewerID, i
 		return fmt.Errorf("%w: load backpack item: %v", errs.ErrInternal, err)
 	}
 	if ownerID != viewerID {
-		if err := authz.Require(ctx, s.az, guildID, viewerID, authz.ReviewBankRequests); err != nil {
-			if errors.Is(err, errs.ErrPermissionDenied) {
-				return fmt.Errorf("%w: item", errs.ErrNotFound)
-			}
-			return err
-		}
+		return authz.RequireOrNotFound(ctx, s.az, guildID, viewerID, authz.ReviewBankRequests, "item")
 	}
 	return nil
 }

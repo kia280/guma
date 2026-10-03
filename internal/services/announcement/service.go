@@ -75,11 +75,7 @@ func (s *Service) List(ctx context.Context, p ListParams) ([]*Announcement, erro
 	if err != nil {
 		return nil, err
 	}
-	permission := authz.View
-	if p.IncludeDrafts {
-		permission = authz.ManageAnnouncements
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, permission); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, listPermission(p.IncludeDrafts)); err != nil {
 		return nil, err
 	}
 
@@ -116,14 +112,18 @@ func (s *Service) Get(ctx context.Context, guildIDStr, announcementIDStr, userID
 		return nil, err
 	}
 	if a.Status == StatusDraft {
-		if err := authz.Require(ctx, s.az, guildID, userID, authz.ManageAnnouncements); err != nil {
-			if errors.Is(err, errs.ErrPermissionDenied) {
-				return nil, fmt.Errorf("%w: announcement", errs.ErrNotFound)
-			}
+		if err := authz.RequireOrNotFound(ctx, s.az, guildID, userID, authz.ManageAnnouncements, "announcement"); err != nil {
 			return nil, err
 		}
 	}
 	return a, nil
+}
+
+func listPermission(includeDrafts bool) authz.Permission {
+	if includeDrafts {
+		return authz.ManageAnnouncements
+	}
+	return authz.View
 }
 
 func (s *Service) CreateDraft(ctx context.Context, guildIDStr, userIDStr string) (*Announcement, error) {

@@ -37,10 +37,14 @@ generated `sqlc` queries.
   worktree on a new branch, and do all edits, generation, and checks there.
 - Keep transport concerns in handlers, business rules in services, and data access
   in sqlc queries.
-- Authorize guild actions only with `authz.Require(ctx, checker, guildID, userID,
-  authz.<Permission>)`; services never call `Checker.Can` directly and never
-  compare role strings. When a permission only changes what is shown, treat an
-  `errs.ErrPermissionDenied` from `Require` as "not allowed". To add a
+- Authorize guild actions only through the `authz` helpers; services never call
+  `Checker.Can` directly and never compare role strings. Use `authz.Require` to
+  reject the request, `authz.RequireOrNotFound` when a denial should hide that
+  the resource exists, and `authz.Allowed` when a permission only changes what
+  is shown. When the required permission depends on resource state (who owns
+  it, its status), choose it in a pure policy function in the service package
+  (for example `cancelPermission` in `internal/services/auction/policy.go`),
+  cover it with a table test, and make a single helper call. To add a
   permission, add a permit to `internal/authz/namespaces.keto.ts` and a matching
   constant in `internal/authz/authz.go` (a test keeps them in sync).
 - Membership rows (`members`) are mirrored into Keto by a trigger-fed outbox. After

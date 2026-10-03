@@ -2,6 +2,7 @@ package authz
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -82,6 +83,22 @@ func Require(ctx context.Context, c Checker, guildID, userID uuid.UUID, p Permis
 		return fmt.Errorf("%w: requires guild permission %s", errs.ErrPermissionDenied, p)
 	}
 	return nil
+}
+
+func RequireOrNotFound(ctx context.Context, c Checker, guildID, userID uuid.UUID, p Permission, resource string) error {
+	err := Require(ctx, c, guildID, userID, p)
+	if errors.Is(err, errs.ErrPermissionDenied) {
+		return fmt.Errorf("%w: %s", errs.ErrNotFound, resource)
+	}
+	return err
+}
+
+func Allowed(ctx context.Context, c Checker, guildID, userID uuid.UUID, p Permission) (bool, error) {
+	err := Require(ctx, c, guildID, userID, p)
+	if errors.Is(err, errs.ErrPermissionDenied) {
+		return false, nil
+	}
+	return err == nil, err
 }
 
 type authorizer struct {

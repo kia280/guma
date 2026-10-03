@@ -3,7 +3,6 @@ package member
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -83,12 +82,9 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	if err := authz.Require(ctx, s.az, guildID, callerID, authz.View); err != nil {
 		return nil, err
 	}
-	showDiscord := true
-	if err := authz.Require(ctx, s.az, guildID, callerID, authz.ViewMemberContacts); err != nil {
-		if !errors.Is(err, errs.ErrPermissionDenied) {
-			return nil, err
-		}
-		showDiscord = false
+	showDiscord, err := authz.Allowed(ctx, s.az, guildID, callerID, authz.ViewMemberContacts)
+	if err != nil {
+		return nil, err
 	}
 
 	rows, err := s.q.ListGuildMembers(ctx, db.ListGuildMembersParams{
