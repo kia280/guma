@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -72,12 +73,12 @@ func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gum
 	if err != nil {
 		return nil, err
 	}
-	notificationID, err := ids.Parse("notification_id", req.NotificationId)
-	if err != nil {
+	var in struct{ NotificationID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	n, err := h.svc.MarkRead(ctx, userID, notificationID)
+	n, err := h.svc.MarkRead(ctx, userID, in.NotificationID)
 	if err != nil {
 		return nil, toStatus(err)
 	}

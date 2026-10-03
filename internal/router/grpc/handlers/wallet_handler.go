@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -10,6 +12,7 @@ import (
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/ids"
+	"github.com/kia280/guma/internal/services/errs"
 	walletsvc "github.com/kia280/guma/internal/services/wallet"
 )
 
@@ -33,12 +36,12 @@ func (h *WalletHandler) GetWallet(ctx context.Context, req *gumav1.GetWalletRequ
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	w, err := h.svc.GetWallet(ctx, userID, guildID)
+	w, err := h.svc.GetWallet(ctx, userID, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -50,12 +53,12 @@ func (h *WalletHandler) DepositFunds(ctx context.Context, req *gumav1.DepositFun
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	tx, _, err := h.svc.Deposit(ctx, userID, guildID, req.Amount, req.Note)
+	tx, _, err := h.svc.Deposit(ctx, userID, in.GuildID, req.Amount, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -67,12 +70,12 @@ func (h *WalletHandler) WithdrawFunds(ctx context.Context, req *gumav1.WithdrawF
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	request, tx, w, err := h.svc.RequestWithdrawal(ctx, userID, guildID, req.Amount, req.Note)
+	request, tx, w, err := h.svc.RequestWithdrawal(ctx, userID, in.GuildID, req.Amount, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -88,8 +91,8 @@ func (h *WalletHandler) ListMyWithdrawalRequests(ctx context.Context, req *gumav
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
@@ -98,7 +101,7 @@ func (h *WalletHandler) ListMyWithdrawalRequests(ctx context.Context, req *gumav
 	}
 	result, err := h.svc.ListMyWithdrawalRequests(ctx, walletsvc.ListWithdrawalRequestsParams{
 		ViewerID: userID,
-		GuildID:  guildID,
+		GuildID:  in.GuildID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
@@ -118,14 +121,15 @@ func (h *WalletHandler) CancelWithdrawalRequest(ctx context.Context, req *gumav1
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	requestID := p.Parse("request_id", req.RequestId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID   uuid.UUID
+		RequestID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	request, w, err := h.svc.CancelWithdrawalRequest(ctx, userID, guildID, requestID)
+	request, w, err := h.svc.CancelWithdrawalRequest(ctx, userID, in.GuildID, in.RequestID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -140,8 +144,8 @@ func (h *WalletHandler) ListWithdrawalRequests(ctx context.Context, req *gumav1.
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
@@ -150,7 +154,7 @@ func (h *WalletHandler) ListWithdrawalRequests(ctx context.Context, req *gumav1.
 	}
 	result, err := h.svc.ListWithdrawalRequests(ctx, walletsvc.ListWithdrawalRequestsParams{
 		ViewerID: userID,
-		GuildID:  guildID,
+		GuildID:  in.GuildID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
@@ -170,14 +174,15 @@ func (h *WalletHandler) ReviewWithdrawalRequest(ctx context.Context, req *gumav1
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	requestID := p.Parse("request_id", req.RequestId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID   uuid.UUID
+		RequestID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	request, err := h.svc.ReviewWithdrawalRequest(ctx, userID, guildID, requestID, req.Status, req.Note)
+	request, err := h.svc.ReviewWithdrawalRequest(ctx, userID, in.GuildID, in.RequestID, req.Status, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -189,14 +194,15 @@ func (h *WalletHandler) TransferFunds(ctx context.Context, req *gumav1.TransferF
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	toUserID := p.Parse("to_user_id", req.ToUserId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID  uuid.UUID
+		ToUserID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	tx, _, err := h.svc.Transfer(ctx, userID, toUserID, guildID, req.Amount, req.Note)
+	tx, _, err := h.svc.Transfer(ctx, userID, in.ToUserID, in.GuildID, req.Amount, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -208,8 +214,8 @@ func (h *WalletHandler) ListTransactions(ctx context.Context, req *gumav1.ListTr
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
@@ -218,7 +224,7 @@ func (h *WalletHandler) ListTransactions(ctx context.Context, req *gumav1.ListTr
 	}
 	result, err := h.svc.ListTransactions(ctx, walletsvc.ListTransactionsParams{
 		UserID:   userID,
-		GuildID:  guildID,
+		GuildID:  in.GuildID,
 		Type:     req.Type,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
@@ -243,12 +249,12 @@ func (h *WalletHandler) GetBalanceTrend(ctx context.Context, req *gumav1.GetBala
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	points, err := h.svc.GetBalanceTrend(ctx, userID, guildID, req.Days)
+	points, err := h.svc.GetBalanceTrend(ctx, userID, in.GuildID, req.Days)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -265,8 +271,8 @@ func (h *WalletHandler) ListBackpackItems(ctx context.Context, req *gumav1.ListB
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 	offset, err := walletsvc.ParsePageToken(req.PageToken)
@@ -275,7 +281,7 @@ func (h *WalletHandler) ListBackpackItems(ctx context.Context, req *gumav1.ListB
 	}
 	result, err := h.svc.ListBackpackItems(ctx, walletsvc.ListBackpackParams{
 		OwnerID:  userID,
-		GuildID:  guildID,
+		GuildID:  in.GuildID,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
 	})
@@ -299,14 +305,15 @@ func (h *WalletHandler) WithdrawBackpackItem(ctx context.Context, req *gumav1.Wi
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	itemID := p.Parse("item_id", req.ItemId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID uuid.UUID
+		ItemID  uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	bi, err := h.svc.WithdrawBackpackItem(ctx, userID, guildID, itemID)
+	bi, err := h.svc.WithdrawBackpackItem(ctx, userID, in.GuildID, in.ItemID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -318,15 +325,16 @@ func (h *WalletHandler) TransferBackpackItem(ctx context.Context, req *gumav1.Tr
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	itemID := p.Parse("item_id", req.ItemId)
-	toUserID := p.Parse("to_user_id", req.ToUserId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID  uuid.UUID
+		ItemID   uuid.UUID
+		ToUserID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	bi, err := h.svc.TransferBackpackItem(ctx, userID, guildID, itemID, toUserID, req.Note)
+	bi, err := h.svc.TransferBackpackItem(ctx, userID, in.GuildID, in.ItemID, in.ToUserID, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -431,14 +439,15 @@ func (h *WalletHandler) CancelBackpackWithdrawal(ctx context.Context, req *gumav
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	itemID := p.Parse("item_id", req.ItemId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID uuid.UUID
+		ItemID  uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	bi, err := h.svc.CancelBackpackWithdrawal(ctx, userID, guildID, itemID)
+	bi, err := h.svc.CancelBackpackWithdrawal(ctx, userID, in.GuildID, in.ItemID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -446,11 +455,11 @@ func (h *WalletHandler) CancelBackpackWithdrawal(ctx context.Context, req *gumav
 }
 
 func (h *WalletHandler) ListPendingDeliveries(ctx context.Context, req *gumav1.ListPendingDeliveriesRequest) (*gumav1.ListPendingDeliveriesResponse, error) {
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	items, err := h.svc.ListPendingDeliveries(ctx, guildID)
+	items, err := h.svc.ListPendingDeliveries(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -466,14 +475,15 @@ func (h *WalletHandler) ConfirmBackpackDelivery(ctx context.Context, req *gumav1
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	itemID := p.Parse("item_id", req.ItemId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID uuid.UUID
+		ItemID  uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	bi, err := h.svc.ConfirmBackpackDelivery(ctx, userID, guildID, itemID)
+	bi, err := h.svc.ConfirmBackpackDelivery(ctx, userID, in.GuildID, in.ItemID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -481,11 +491,11 @@ func (h *WalletHandler) ConfirmBackpackDelivery(ctx context.Context, req *gumav1
 }
 
 func (h *WalletHandler) ListMemberAssets(ctx context.Context, req *gumav1.ListMemberAssetsRequest) (*gumav1.ListMemberAssetsResponse, error) {
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	summaries, err := h.svc.ListMemberAssets(ctx, guildID)
+	summaries, err := h.svc.ListMemberAssets(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -497,13 +507,14 @@ func (h *WalletHandler) ListMemberAssets(ctx context.Context, req *gumav1.ListMe
 }
 
 func (h *WalletHandler) GetMemberAssets(ctx context.Context, req *gumav1.GetMemberAssetsRequest) (*gumav1.GetMemberAssetsResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	memberID := p.Parse("user_id", req.UserId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID uuid.UUID
+		UserID  uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	assets, err := h.svc.GetMemberAssets(ctx, guildID, memberID)
+	assets, err := h.svc.GetMemberAssets(ctx, in.GuildID, in.UserID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -519,18 +530,23 @@ func (h *WalletHandler) AdminTransferFunds(ctx context.Context, req *gumav1.Admi
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	fromUserID := p.Parse("user_id", req.UserId)
-	destination := parseAssetDestination(&p, req.ToUserId, req.ToGuildBank)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID  uuid.UUID
+		UserID   uuid.UUID
+		ToUserID *uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	destination, err := assetDestination(in.ToUserID, req.ToGuildBank)
+	if err != nil {
 		return nil, toStatus(err)
 	}
 
 	tx, balance, err := h.svc.AdminTransferFunds(ctx, walletsvc.AdminTransferFundsParams{
 		AdminID:     userID,
-		GuildID:     guildID,
-		FromUserID:  fromUserID,
+		GuildID:     in.GuildID,
+		FromUserID:  in.UserID,
 		Destination: destination,
 		Amount:      req.Amount,
 		Note:        req.Note,
@@ -546,20 +562,25 @@ func (h *WalletHandler) AdminTransferBackpackItems(ctx context.Context, req *gum
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	fromUserID := p.Parse("user_id", req.UserId)
-	itemIDs := p.List("item_ids", req.ItemIds)
-	destination := parseAssetDestination(&p, req.ToUserId, req.ToGuildBank)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID  uuid.UUID
+		UserID   uuid.UUID
+		ItemIDs  []uuid.UUID
+		ToUserID *uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
+		return nil, toStatus(err)
+	}
+	destination, err := assetDestination(in.ToUserID, req.ToGuildBank)
+	if err != nil {
 		return nil, toStatus(err)
 	}
 
 	moved, err := h.svc.AdminTransferBackpackItems(ctx, walletsvc.AdminTransferItemsParams{
 		AdminID:     userID,
-		GuildID:     guildID,
-		FromUserID:  fromUserID,
-		ItemIDs:     itemIDs,
+		GuildID:     in.GuildID,
+		FromUserID:  in.UserID,
+		ItemIDs:     in.ItemIDs,
 		Destination: destination,
 		Note:        req.Note,
 	})
@@ -569,9 +590,12 @@ func (h *WalletHandler) AdminTransferBackpackItems(ctx context.Context, req *gum
 	return &gumav1.AdminTransferBackpackItemsResponse{ItemIds: moved}, nil
 }
 
-func parseAssetDestination(p *ids.Parser, toUserID string, toGuildBank bool) walletsvc.AssetDestination {
+func assetDestination(toUserID *uuid.UUID, toGuildBank bool) (walletsvc.AssetDestination, error) {
 	if toGuildBank {
-		return walletsvc.AssetDestination{GuildBank: true}
+		return walletsvc.AssetDestination{GuildBank: true}, nil
 	}
-	return walletsvc.AssetDestination{UserID: p.Parse("to_user_id", toUserID)}
+	if toUserID == nil {
+		return walletsvc.AssetDestination{}, fmt.Errorf("%w: to_user_id must be a UUID", errs.ErrInvalidArgument)
+	}
+	return walletsvc.AssetDestination{UserID: *toUserID}, nil
 }

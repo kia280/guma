@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"context"
-	"strings"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -31,8 +31,8 @@ func NewRollCallService(db *database.Pool, az authz.Authorizer, logger zerolog.L
 }
 
 func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRollCallsRequest) (*gumav1.ListRollCallsResponse, error) {
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
@@ -40,7 +40,7 @@ func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRol
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.List(ctx, rollcallsvc.ListParams{
-		GuildID:  guildID,
+		GuildID:  in.GuildID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
@@ -61,13 +61,14 @@ func (h *RollCallHandler) ListRollCalls(ctx context.Context, req *gumav1.ListRol
 }
 
 func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCallRequest) (*gumav1.GetRollCallResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	c, err := h.svc.Get(ctx, guildID, rollCallID)
+	c, err := h.svc.Get(ctx, in.GuildID, in.RollCallID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -79,13 +80,13 @@ func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.Create
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
 	c, err := h.svc.Create(ctx, rollcallsvc.CreateParams{
-		GuildID:     guildID,
+		GuildID:     in.GuildID,
 		CreatedBy:   userID,
 		Title:       req.Title,
 		Description: req.Description,
@@ -105,16 +106,17 @@ func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.Update
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
 	c, err := h.svc.Update(ctx, rollcallsvc.UpdateParams{
-		GuildID:     guildID,
-		RollCallID:  rollCallID,
+		GuildID:     in.GuildID,
+		RollCallID:  in.RollCallID,
 		UpdatedBy:   userID,
 		Title:       req.Title,
 		Description: req.Description,
@@ -134,13 +136,14 @@ func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.Delete
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	if err := h.svc.Delete(ctx, guildID, rollCallID, userID); err != nil {
+	if err := h.svc.Delete(ctx, in.GuildID, in.RollCallID, userID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteRollCallResponse{Success: true}, nil
@@ -151,14 +154,15 @@ func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.Comp
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	c, err := h.svc.Complete(ctx, guildID, rollCallID, userID, req.KeepLeftoversInBank)
+	c, err := h.svc.Complete(ctx, in.GuildID, in.RollCallID, userID, req.KeepLeftoversInBank)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -170,10 +174,11 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
@@ -183,8 +188,8 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 	}
 
 	c, err := h.svc.UpdateLoot(ctx, rollcallsvc.UpdateLootParams{
-		GuildID:    guildID,
-		RollCallID: rollCallID,
+		GuildID:    in.GuildID,
+		RollCallID: in.RollCallID,
 		UpdatedBy:  userID,
 		LootList:   lootList,
 	})
@@ -199,14 +204,15 @@ func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.Cancel
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	c, err := h.svc.Cancel(ctx, guildID, rollCallID, userID)
+	c, err := h.svc.Cancel(ctx, in.GuildID, in.RollCallID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -218,16 +224,17 @@ func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLoot
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	itemID := p.Parse("item_id", req.ItemId)
-	recipientID := p.Parse("user_id", req.UserId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+		ItemID     uuid.UUID
+		UserID     uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	backpackItemID, err := h.svc.AssignLoot(ctx, guildID, rollCallID, itemID, userID, recipientID)
+	backpackItemID, err := h.svc.AssignLoot(ctx, in.GuildID, in.RollCallID, in.ItemID, userID, in.UserID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -235,13 +242,14 @@ func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLoot
 }
 
 func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRollCallGoldRequest) (*gumav1.GetRollCallGoldResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	summary, err := h.svc.GetGold(ctx, guildID, rollCallID)
+	summary, err := h.svc.GetGold(ctx, in.GuildID, in.RollCallID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -256,22 +264,24 @@ func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	requestID := p.Parse("request_id", strings.TrimSpace(req.RequestId))
-	payouts := make([]rollcallsvc.GoldPayoutRequest, len(req.Payouts))
-	for i, payout := range req.Payouts {
-		payouts[i] = rollcallsvc.GoldPayoutRequest{UserID: p.Parse("payouts.user_id", strings.TrimSpace(payout.UserId)), Amount: payout.Amount}
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+		RequestID  uuid.UUID
+		Payouts    []struct{ UserID uuid.UUID }
 	}
-	if err := p.Err(); err != nil {
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
+	payouts := make([]rollcallsvc.GoldPayoutRequest, len(req.Payouts))
+	for i, payout := range req.Payouts {
+		payouts[i] = rollcallsvc.GoldPayoutRequest{UserID: in.Payouts[i].UserID, Amount: payout.Amount}
+	}
 	result, err := h.svc.DistributeGold(ctx, rollcallsvc.DistributeGoldParams{
-		GuildID:    guildID,
-		RollCallID: rollCallID,
+		GuildID:    in.GuildID,
+		RollCallID: in.RollCallID,
 		ActorID:    userID,
-		RequestID:  requestID,
+		RequestID:  in.RequestID,
 		Payouts:    payouts,
 	})
 	if err != nil {
@@ -290,14 +300,15 @@ func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInReques
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	attendee, err := h.svc.CheckIn(ctx, guildID, rollCallID, userID, req.Notes)
+	attendee, err := h.svc.CheckIn(ctx, in.GuildID, in.RollCallID, userID, req.Notes)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -305,17 +316,18 @@ func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInReques
 }
 
 func (h *RollCallHandler) ListAttendees(ctx context.Context, req *gumav1.ListAttendeesRequest) (*gumav1.ListAttendeesResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Parse("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 	offset, err := rollcallsvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
 	}
-	result, err := h.svc.ListAttendees(ctx, guildID, rollCallID, int(req.PageSize), offset)
+	result, err := h.svc.ListAttendees(ctx, in.GuildID, in.RollCallID, int(req.PageSize), offset)
 	if err != nil {
 		return nil, toStatus(err)
 	}

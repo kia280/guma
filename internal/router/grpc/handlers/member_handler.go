@@ -134,17 +134,18 @@ func (s *MemberService) UpdateMemberRole(ctx context.Context, req *memberv1.Upda
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	targetID := p.Parse("user_id", req.UserId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID uuid.UUID
+		UserID  uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
 	member, err := s.svc.UpdateRole(ctx, membersvc.UpdateRoleParams{
-		GuildID: guildID,
+		GuildID: in.GuildID,
 		ActorID: userID,
-		UserID:  targetID,
+		UserID:  in.UserID,
 		Role:    req.Role,
 	})
 	if err != nil {
@@ -181,13 +182,13 @@ func (s *MemberService) ListMembers(ctx context.Context, req *memberv1.ListMembe
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
 	result, err := s.svc.List(ctx, membersvc.ListParams{
-		GuildID:   guildID,
+		GuildID:   in.GuildID,
 		CallerID:  userID,
 		Role:      req.Role,
 		PageSize:  req.PageSize,

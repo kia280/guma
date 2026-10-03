@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -27,11 +28,11 @@ func NewItemTemplateService(db *database.Pool, az authz.Authorizer, logger zerol
 }
 
 func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1.ListItemTemplatesRequest) (*gumav1.ListItemTemplatesResponse, error) {
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	templates, err := h.svc.List(ctx, guildID)
+	templates, err := h.svc.List(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -47,11 +48,11 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	t, err := h.svc.Create(ctx, guildID, userID, rollcalltemplatesvc.ItemFields{
+	t, err := h.svc.Create(ctx, in.GuildID, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
 		Category:    req.Category,
@@ -64,13 +65,14 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav1.UpdateItemTemplateRequest) (*gumav1.UpdateItemTemplateResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	templateID := p.Parse("template_id", req.TemplateId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		TemplateID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	t, err := h.svc.Update(ctx, guildID, templateID, rollcalltemplatesvc.ItemFields{
+	t, err := h.svc.Update(ctx, in.GuildID, in.TemplateID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
 		Category:    req.Category,
@@ -83,13 +85,14 @@ func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) DeleteItemTemplate(ctx context.Context, req *gumav1.DeleteItemTemplateRequest) (*gumav1.DeleteItemTemplateResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	templateID := p.Parse("template_id", req.TemplateId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		TemplateID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	if err := h.svc.Delete(ctx, guildID, templateID); err != nil {
+	if err := h.svc.Delete(ctx, in.GuildID, in.TemplateID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteItemTemplateResponse{Success: true}, nil

@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -31,13 +32,13 @@ func (h *AnnouncementHandler) ListAnnouncements(ctx context.Context, req *gumav1
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
 	list, err := h.svc.List(ctx, announcementsvc.ListParams{
-		GuildID:       guildID,
+		GuildID:       in.GuildID,
 		UserID:        userID,
 		IncludeDrafts: req.IncludeDrafts,
 		PageSize:      req.PageSize,
@@ -57,13 +58,14 @@ func (h *AnnouncementHandler) GetAnnouncement(ctx context.Context, req *gumav1.G
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	announcementID := p.Parse("announcement_id", req.AnnouncementId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID        uuid.UUID
+		AnnouncementID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	a, err := h.svc.Get(ctx, guildID, announcementID, userID)
+	a, err := h.svc.Get(ctx, in.GuildID, in.AnnouncementID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -75,11 +77,11 @@ func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	a, err := h.svc.CreateDraft(ctx, guildID, userID)
+	a, err := h.svc.CreateDraft(ctx, in.GuildID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -87,15 +89,16 @@ func (h *AnnouncementHandler) CreateAnnouncementDraft(ctx context.Context, req *
 }
 
 func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav1.UpdateAnnouncementRequest) (*gumav1.UpdateAnnouncementResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	announcementID := p.Parse("announcement_id", req.AnnouncementId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID        uuid.UUID
+		AnnouncementID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 	a, err := h.svc.Update(ctx, announcementsvc.Update{
-		GuildID:        guildID,
-		AnnouncementID: announcementID,
+		GuildID:        in.GuildID,
+		AnnouncementID: in.AnnouncementID,
 		Title:          req.Title,
 		Content:        req.Content,
 		Pinned:         req.Pinned,
@@ -107,13 +110,14 @@ func (h *AnnouncementHandler) UpdateAnnouncement(ctx context.Context, req *gumav
 }
 
 func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *gumav1.PublishAnnouncementRequest) (*gumav1.PublishAnnouncementResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	announcementID := p.Parse("announcement_id", req.AnnouncementId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID        uuid.UUID
+		AnnouncementID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	a, err := h.svc.Publish(ctx, guildID, announcementID)
+	a, err := h.svc.Publish(ctx, in.GuildID, in.AnnouncementID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -121,13 +125,14 @@ func (h *AnnouncementHandler) PublishAnnouncement(ctx context.Context, req *guma
 }
 
 func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gumav1.UnpublishAnnouncementRequest) (*gumav1.UnpublishAnnouncementResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	announcementID := p.Parse("announcement_id", req.AnnouncementId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID        uuid.UUID
+		AnnouncementID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	a, err := h.svc.Unpublish(ctx, guildID, announcementID)
+	a, err := h.svc.Unpublish(ctx, in.GuildID, in.AnnouncementID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -135,13 +140,14 @@ func (h *AnnouncementHandler) UnpublishAnnouncement(ctx context.Context, req *gu
 }
 
 func (h *AnnouncementHandler) DeleteAnnouncementDraft(ctx context.Context, req *gumav1.DeleteAnnouncementDraftRequest) (*gumav1.DeleteAnnouncementDraftResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	announcementID := p.Parse("announcement_id", req.AnnouncementId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID        uuid.UUID
+		AnnouncementID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	if err := h.svc.DeleteDraft(ctx, guildID, announcementID); err != nil {
+	if err := h.svc.DeleteDraft(ctx, in.GuildID, in.AnnouncementID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteAnnouncementDraftResponse{}, nil

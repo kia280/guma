@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -64,11 +65,11 @@ func (h *UserHandler) UpdateMe(ctx context.Context, req *gumav1.UpdateMeRequest)
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *gumav1.GetUserRequest) (*gumav1.GetUserResponse, error) {
-	userID, err := ids.Parse("user_id", req.UserId)
-	if err != nil {
+	var in struct{ UserID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	u, err := h.svc.GetUser(ctx, userID)
+	u, err := h.svc.GetUser(ctx, in.UserID)
 	if err != nil {
 		return nil, toStatus(err)
 	}

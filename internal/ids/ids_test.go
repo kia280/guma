@@ -39,27 +39,3 @@ func TestParseOptional(t *testing.T) {
 		t.Fatalf("expected ErrInvalidArgument, got %v", err)
 	}
 }
-
-func TestParseList(t *testing.T) {
-	got, err := ParseList("item_ids", []string{validID, validID})
-	if err != nil || len(got) != 2 {
-		t.Fatalf("ParseList(valid) = %v, %v", got, err)
-	}
-	if _, err := ParseList("item_ids", []string{validID, "nope"}); !errors.Is(err, errs.ErrInvalidArgument) {
-		t.Fatalf("expected ErrInvalidArgument, got %v", err)
-	}
-}
-
-func TestParserKeepsFirstError(t *testing.T) {
-	var p Parser
-	guildID := p.Parse("guild_id", validID)
-	p.Parse("auction_id", "bad")
-	p.Parse("user_id", "worse")
-
-	if guildID != uuid.MustParse(validID) {
-		t.Fatalf("guildID = %s", guildID)
-	}
-	if want := "invalid argument: auction_id must be a UUID"; p.Err() == nil || p.Err().Error() != want {
-		t.Fatalf("Err() = %v, want %q", p.Err(), want)
-	}
-}

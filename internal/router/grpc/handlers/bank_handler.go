@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -30,11 +31,11 @@ func NewBankService(db *database.Pool, az authz.Authorizer, logger zerolog.Logge
 }
 
 func (h *BankHandler) GetBank(ctx context.Context, req *gumav1.GetBankRequest) (*gumav1.GetBankResponse, error) {
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	bank, err := h.svc.GetBank(ctx, guildID)
+	bank, err := h.svc.GetBank(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -46,12 +47,12 @@ func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.Contribut
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	contribution, updatedBank, err := h.svc.ContributeFunds(ctx, guildID, userID, req.Amount, req.Note)
+	contribution, updatedBank, err := h.svc.ContributeFunds(ctx, in.GuildID, userID, req.Amount, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -66,12 +67,12 @@ func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFunds
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	fr, err := h.svc.RequestFunds(ctx, guildID, userID, req.Amount, req.Reason)
+	fr, err := h.svc.RequestFunds(ctx, in.GuildID, userID, req.Amount, req.Reason)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -83,14 +84,15 @@ func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewF
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	requestID := p.Parse("request_id", req.RequestId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID   uuid.UUID
+		RequestID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	fr, err := h.svc.ReviewFundRequest(ctx, guildID, requestID, userID, req.Status, req.Note)
+	fr, err := h.svc.ReviewFundRequest(ctx, in.GuildID, in.RequestID, userID, req.Status, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -102,8 +104,8 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
@@ -112,7 +114,7 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.ListFundRequests(ctx, banksvc.ListFundRequestsParams{
-		GuildID:  guildID,
+		GuildID:  in.GuildID,
 		UserID:   userID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
@@ -134,8 +136,8 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 }
 
 func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListContributionsRequest) (*gumav1.ListContributionsResponse, error) {
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 	offset, err := banksvc.ParsePageToken(req.PageToken)
@@ -143,7 +145,7 @@ func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListCon
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.ListContributions(ctx, banksvc.ListContributionsParams{
-		GuildID:  guildID,
+		GuildID:  in.GuildID,
 		PageSize: int(req.PageSize),
 		Offset:   offset,
 	})
@@ -167,14 +169,15 @@ func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequ
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	backpackItemID := p.Parse("backpack_item_id", req.BackpackItemId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID        uuid.UUID
+		BackpackItemID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	bi, err := h.svc.DonateItem(ctx, guildID, userID, backpackItemID, req.Note)
+	bi, err := h.svc.DonateItem(ctx, in.GuildID, userID, in.BackpackItemID, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -186,10 +189,11 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	rollCallID := p.Optional("roll_call_id", req.RollCallId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		RollCallID *uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
@@ -198,9 +202,9 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.ListBankItems(ctx, banksvc.ListBankItemsParams{
-		GuildID:    guildID,
+		GuildID:    in.GuildID,
 		ViewerID:   userID,
-		RollCallID: rollCallID,
+		RollCallID: in.RollCallID,
 		Category:   req.Category,
 		Rarity:     req.Rarity,
 		PageSize:   int(req.PageSize),
@@ -226,14 +230,15 @@ func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBank
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	bankItemID := p.Parse("bank_item_id", req.BankItemId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		BankItemID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	if err := h.svc.DeleteBankItem(ctx, guildID, userID, bankItemID); err != nil {
+	if err := h.svc.DeleteBankItem(ctx, in.GuildID, userID, in.BankItemID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteBankItemResponse{Success: true}, nil
@@ -244,14 +249,15 @@ func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRe
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	bankItemID := p.Parse("bank_item_id", req.BankItemId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		BankItemID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	ir, err := h.svc.RequestItem(ctx, guildID, userID, bankItemID, req.Reason)
+	ir, err := h.svc.RequestItem(ctx, in.GuildID, userID, in.BankItemID, req.Reason)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -263,14 +269,15 @@ func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewI
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	requestID := p.Parse("request_id", req.RequestId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID   uuid.UUID
+		RequestID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	ir, err := h.svc.ReviewItemRequest(ctx, guildID, requestID, userID, req.Status, req.Note)
+	ir, err := h.svc.ReviewItemRequest(ctx, in.GuildID, in.RequestID, userID, req.Status, req.Note)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -282,8 +289,8 @@ func (h *BankHandler) ListItemRequests(ctx context.Context, req *gumav1.ListItem
 	if err != nil {
 		return nil, err
 	}
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
@@ -292,7 +299,7 @@ func (h *BankHandler) ListItemRequests(ctx context.Context, req *gumav1.ListItem
 		return nil, toStatus(err)
 	}
 	result, err := h.svc.ListItemRequests(ctx, banksvc.ListItemRequestsParams{
-		GuildID:  guildID,
+		GuildID:  in.GuildID,
 		UserID:   userID,
 		Status:   req.Status,
 		PageSize: int(req.PageSize),
@@ -427,14 +434,15 @@ func (h *BankHandler) GetItemHistory(ctx context.Context, req *gumav1.GetItemHis
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	itemID := p.Parse("item_id", req.ItemId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID uuid.UUID
+		ItemID  uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
 
-	events, err := h.svc.GetItemHistory(ctx, guildID, userID, itemID)
+	events, err := h.svc.GetItemHistory(ctx, in.GuildID, userID, in.ItemID)
 	if err != nil {
 		return nil, toStatus(err)
 	}

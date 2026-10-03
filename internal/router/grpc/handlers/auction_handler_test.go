@@ -12,9 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
-	"github.com/kia280/guma/internal/ids"
 	auctionsvc "github.com/kia280/guma/internal/services/auction"
-	"github.com/kia280/guma/internal/services/errs"
 	"github.com/kia280/guma/internal/session"
 )
 
@@ -114,21 +112,17 @@ func TestAuctionHandler_MalformedIDs(t *testing.T) {
 	}
 }
 
-func TestSourceRefFromProto(t *testing.T) {
+func TestItemSourceIDsRef(t *testing.T) {
 	backpackID := uuid.MustParse("00000000-0000-0000-0000-000000000004")
 
-	var p ids.Parser
-	assert.True(t, sourceRefFromProto(&p, "source", nil).IsZero())
-	assert.True(t, sourceRefFromProto(&p, "source", &gumav1.ItemSourceRef{}).IsZero())
-	ref := sourceRefFromProto(&p, "source", &gumav1.ItemSourceRef{BackpackItemId: backpackID.String()})
-	require.NoError(t, p.Err())
+	var absent *itemSourceIDs
+	assert.True(t, absent.ref().IsZero())
+	assert.True(t, (&itemSourceIDs{}).ref().IsZero())
+
+	ref := (&itemSourceIDs{BackpackItemID: &backpackID}).ref()
 	require.NotNil(t, ref.BackpackItemID)
 	assert.Equal(t, backpackID, *ref.BackpackItemID)
 	assert.Nil(t, ref.BankItemID)
-
-	sourceRefFromProto(&p, "source", &gumav1.ItemSourceRef{BankItemId: "bad"})
-	require.ErrorIs(t, p.Err(), errs.ErrInvalidArgument)
-	assert.Contains(t, p.Err().Error(), "source.bank_item_id")
 }
 
 func TestAuctionToProtoIncludesParticipantNames(t *testing.T) {

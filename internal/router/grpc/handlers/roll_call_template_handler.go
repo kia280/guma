@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -27,11 +28,11 @@ func NewRollCallTemplateService(db *database.Pool, az authz.Authorizer, logger z
 }
 
 func (h *RollCallTemplateHandler) ListRollCallTemplates(ctx context.Context, req *gumav1.ListRollCallTemplatesRequest) (*gumav1.ListRollCallTemplatesResponse, error) {
-	guildID, err := ids.Parse("guild_id", req.GuildId)
-	if err != nil {
+	var in struct{ GuildID uuid.UUID }
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	templates, err := h.svc.List(ctx, guildID)
+	templates, err := h.svc.List(ctx, in.GuildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -47,16 +48,17 @@ func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, re
 	if err != nil {
 		return nil, err
 	}
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	itemTemplateIDs := p.List("item_template_ids", req.ItemTemplateIds)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID         uuid.UUID
+		ItemTemplateIDs []uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	t, err := h.svc.Create(ctx, guildID, userID, rollcalltemplatesvc.Fields{
+	t, err := h.svc.Create(ctx, in.GuildID, userID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
-		ItemTemplateIDs: itemTemplateIDs,
+		ItemTemplateIDs: in.ItemTemplateIDs,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -65,17 +67,18 @@ func (h *RollCallTemplateHandler) CreateRollCallTemplate(ctx context.Context, re
 }
 
 func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, req *gumav1.UpdateRollCallTemplateRequest) (*gumav1.UpdateRollCallTemplateResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	templateID := p.Parse("template_id", req.TemplateId)
-	itemTemplateIDs := p.List("item_template_ids", req.ItemTemplateIds)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID         uuid.UUID
+		TemplateID      uuid.UUID
+		ItemTemplateIDs []uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	t, err := h.svc.Update(ctx, guildID, templateID, rollcalltemplatesvc.Fields{
+	t, err := h.svc.Update(ctx, in.GuildID, in.TemplateID, rollcalltemplatesvc.Fields{
 		Name:            req.Name,
 		Title:           req.Title,
-		ItemTemplateIDs: itemTemplateIDs,
+		ItemTemplateIDs: in.ItemTemplateIDs,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -84,13 +87,14 @@ func (h *RollCallTemplateHandler) UpdateRollCallTemplate(ctx context.Context, re
 }
 
 func (h *RollCallTemplateHandler) DeleteRollCallTemplate(ctx context.Context, req *gumav1.DeleteRollCallTemplateRequest) (*gumav1.DeleteRollCallTemplateResponse, error) {
-	var p ids.Parser
-	guildID := p.Parse("guild_id", req.GuildId)
-	templateID := p.Parse("template_id", req.TemplateId)
-	if err := p.Err(); err != nil {
+	var in struct {
+		GuildID    uuid.UUID
+		TemplateID uuid.UUID
+	}
+	if err := ids.Bind(req, &in); err != nil {
 		return nil, toStatus(err)
 	}
-	if err := h.svc.Delete(ctx, guildID, templateID); err != nil {
+	if err := h.svc.Delete(ctx, in.GuildID, in.TemplateID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteRollCallTemplateResponse{Success: true}, nil
