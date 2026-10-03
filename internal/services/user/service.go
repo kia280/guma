@@ -140,15 +140,10 @@ func newKratosClient(baseURL string) *kratos.APIClient {
 // in sync with the canonical identity (email, avatar), bootstrapping the
 // row on first touch. kratosCookie is a raw "name=value" Cookie header
 // value forwarded by the gateway.
-func (s *Service) GetMe(ctx context.Context, userID, kratosCookie string) (*User, error) {
+func (s *Service) GetMe(ctx context.Context, id uuid.UUID, kratosCookie string) (*User, error) {
 	s.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", id.String()).
 		Msg("GetMe")
-
-	id, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
-	}
 
 	row, ident, err := s.loadProfile(ctx, id, kratosCookie)
 	if err != nil {
@@ -356,13 +351,8 @@ func identityFromKratos(kid *kratos.Identity) kratosIdentity {
 // UpdateMe updates mutable profile fields for the authenticated user.
 // kratosCookie is optional and only used to enrich the response with the
 // identity state; a failed lookup leaves those fields unset.
-func (s *Service) UpdateMe(ctx context.Context, userID, kratosCookie string, p UpdateParams) (*User, error) {
-	id, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
-	}
-
-	p, err = validateUpdateParams(p)
+func (s *Service) UpdateMe(ctx context.Context, id uuid.UUID, kratosCookie string, p UpdateParams) (*User, error) {
+	p, err := validateUpdateParams(p)
 	if err != nil {
 		return nil, err
 	}
@@ -444,12 +434,7 @@ func validateUpdateParams(p UpdateParams) (UpdateParams, error) {
 }
 
 // GetUser returns the public profile for any user by ID.
-func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
-	id, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
-	}
-
+func (s *Service) GetUser(ctx context.Context, id uuid.UUID) (*User, error) {
 	row, err := s.q.GetUserPublicByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -468,12 +453,7 @@ func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
 }
 
 // GetStats returns aggregate stats for the authenticated user.
-func (s *Service) GetStats(ctx context.Context, userID string) (*Stats, error) {
-	id, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrNotFound)
-	}
-
+func (s *Service) GetStats(ctx context.Context, id uuid.UUID) (*Stats, error) {
 	guilds, err := s.q.CountUserGuilds(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("%w: query guilds joined: %v", errs.ErrInternal, err)

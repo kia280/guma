@@ -9,6 +9,7 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	usersvc "github.com/kia280/guma/internal/services/user"
 	"github.com/kia280/guma/internal/session"
 )
@@ -30,10 +31,13 @@ func NewUserService(db *database.Pool, syncer authz.MemberSyncer, kratosPublicUR
 }
 
 func (h *UserHandler) GetMe(ctx context.Context, _ *gumav1.GetMeRequest) (*gumav1.GetMeResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	cookie := session.CookieFromContext(ctx)
 	h.logger.Info().
-		Str("user_id", userID).
+		Str("user_id", userID.String()).
 		Msg("GetMe called")
 	u, err := h.svc.GetMe(ctx, userID, cookie)
 	if err != nil {
@@ -43,7 +47,10 @@ func (h *UserHandler) GetMe(ctx context.Context, _ *gumav1.GetMeRequest) (*gumav
 }
 
 func (h *UserHandler) UpdateMe(ctx context.Context, req *gumav1.UpdateMeRequest) (*gumav1.UpdateMeResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	u, err := h.svc.UpdateMe(ctx, userID, session.CookieFromContext(ctx), usersvc.UpdateParams{
 		DisplayName: req.DisplayName,
@@ -57,7 +64,11 @@ func (h *UserHandler) UpdateMe(ctx context.Context, req *gumav1.UpdateMeRequest)
 }
 
 func (h *UserHandler) GetUser(ctx context.Context, req *gumav1.GetUserRequest) (*gumav1.GetUserResponse, error) {
-	u, err := h.svc.GetUser(ctx, req.UserId)
+	userID, err := ids.Parse("user_id", req.UserId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	u, err := h.svc.GetUser(ctx, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -65,7 +76,10 @@ func (h *UserHandler) GetUser(ctx context.Context, req *gumav1.GetUserRequest) (
 }
 
 func (h *UserHandler) GetUserStats(ctx context.Context, _ *gumav1.GetUserStatsRequest) (*gumav1.GetUserStatsResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	st, err := h.svc.GetStats(ctx, userID)
 	if err != nil {

@@ -71,3 +71,23 @@ func TestUserToProto_UnknownIdentityState(t *testing.T) {
 	assert.Nil(t, got.Discord)
 	assert.Empty(t, got.GuildRole)
 }
+
+func TestUserHandler_GetUser_RejectsMalformedID(t *testing.T) {
+	service := NewUserService(nil, nil, "", zerolog.Nop())
+
+	_, err := service.GetUser(session.WithUserID(context.Background(), testUserID), &gumav1.GetUserRequest{UserId: "bad"})
+	requireCode(t, err, codes.InvalidArgument)
+}
+
+func TestUserHandler_RequiresAuthenticatedUser(t *testing.T) {
+	service := NewUserService(nil, nil, "", zerolog.Nop())
+
+	_, err := service.GetMe(context.Background(), &gumav1.GetMeRequest{})
+	requireCode(t, err, codes.Unauthenticated)
+
+	_, err = service.UpdateMe(context.Background(), &gumav1.UpdateMeRequest{})
+	requireCode(t, err, codes.Unauthenticated)
+
+	_, err = service.GetUserStats(context.Background(), &gumav1.GetUserStatsRequest{})
+	requireCode(t, err, codes.Unauthenticated)
+}
