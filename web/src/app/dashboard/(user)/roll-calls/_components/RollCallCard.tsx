@@ -11,7 +11,7 @@ import { useCountdownFormatter } from '@/i18n/useCountdownFormatter';
 import { useIntlFormatter } from '@/i18n/useIntlFormatter';
 import { useFormatGold } from '@/lib/guma/useFormatGold';
 import { rollCallStatusColor } from '@/lib/status-colors';
-import { RollCallStatus } from './data';
+import { RollCallStatus } from '@/types/roll-call';
 
 export { RollCallStatus };
 
