@@ -17,50 +17,12 @@ import (
 	"github.com/kia280/guma/internal/services/errs"
 )
 
-const (
-	testGuild = "00000000-0000-0000-0000-00000000000a"
-	testUser  = "00000000-0000-0000-0000-000000000001"
-	testAnn   = "00000000-0000-0000-0000-0000000000f1"
-)
-
-func TestValidatesInputBeforeQuerying(t *testing.T) {
-	s := New(nil, nil, zerolog.Nop())
-	ctx := context.Background()
-
-	tests := []struct {
-		name string
-		call func() error
-		want error
-	}{
-		{name: "list without user", call: func() error { _, err := s.List(ctx, ListParams{GuildID: testGuild}); return err }, want: errs.ErrUnauthenticated},
-		{name: "list bad guild", call: func() error { _, err := s.List(ctx, ListParams{GuildID: "nope", UserID: testUser}); return err }, want: errs.ErrInvalidArgument},
-		{name: "get bad announcement id", call: func() error { _, err := s.Get(ctx, testGuild, "nope", testUser); return err }, want: errs.ErrInvalidArgument},
-		{name: "create without user", call: func() error { _, err := s.CreateDraft(ctx, testGuild, ""); return err }, want: errs.ErrUnauthenticated},
-		{name: "create bad user", call: func() error { _, err := s.CreateDraft(ctx, testGuild, "nope"); return err }, want: errs.ErrInvalidArgument},
-		{name: "update bad announcement id", call: func() error {
-			_, err := s.Update(ctx, Update{GuildID: testGuild, UserID: testUser, AnnouncementID: "nope"})
-			return err
-		}, want: errs.ErrInvalidArgument},
-		{name: "publish bad guild", call: func() error { _, err := s.Publish(ctx, "nope", testAnn, testUser); return err }, want: errs.ErrInvalidArgument},
-		{name: "unpublish without user", call: func() error { _, err := s.Unpublish(ctx, testGuild, testAnn, ""); return err }, want: errs.ErrUnauthenticated},
-		{name: "unpublish bad announcement id", call: func() error { _, err := s.Unpublish(ctx, testGuild, "nope", testUser); return err }, want: errs.ErrInvalidArgument},
-		{name: "delete bad announcement id", call: func() error { return s.DeleteDraft(ctx, testGuild, "", testUser) }, want: errs.ErrInvalidArgument},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := tt.call(); !errors.Is(err, tt.want) {
-				t.Fatalf("expected %v, got %v", tt.want, err)
-			}
-		})
-	}
-}
-
 func TestDraftAccessRequiresManagePermission(t *testing.T) {
 	guild, user := uuid.New(), uuid.New()
 	s := New(nil, authztest.New().Grant(guild, user, authz.View), zerolog.Nop())
 	ctx := context.Background()
 
-	_, err := s.List(ctx, ListParams{GuildID: guild.String(), UserID: user.String(), IncludeDrafts: true})
+	_, err := s.List(ctx, ListParams{GuildID: guild, UserID: user, IncludeDrafts: true})
 	if !errors.Is(err, errs.ErrPermissionDenied) {
 		t.Fatalf("listing drafts: expected permission denied, got %v", err)
 	}
@@ -68,7 +30,7 @@ func TestDraftAccessRequiresManagePermission(t *testing.T) {
 
 func TestNonMemberCannotListAnnouncements(t *testing.T) {
 	s := New(nil, authztest.New(), zerolog.Nop())
-	_, err := s.List(context.Background(), ListParams{GuildID: uuid.NewString(), UserID: uuid.NewString()})
+	_, err := s.List(context.Background(), ListParams{GuildID: uuid.New(), UserID: uuid.New()})
 	if !errors.Is(err, errs.ErrPermissionDenied) {
 		t.Fatalf("expected permission denied, got %v", err)
 	}

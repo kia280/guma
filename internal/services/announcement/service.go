@@ -41,16 +41,15 @@ type Announcement struct {
 }
 
 type ListParams struct {
-	GuildID       string
-	UserID        string
+	GuildID       uuid.UUID
+	UserID        uuid.UUID
 	IncludeDrafts bool
 	PageSize      int32
 }
 
 type Update struct {
-	GuildID        string
-	AnnouncementID string
-	UserID         string
+	GuildID        uuid.UUID
+	AnnouncementID uuid.UUID
 	Title          string
 	Content        string
 	Pinned         bool
@@ -71,16 +70,12 @@ func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service 
 }
 
 func (s *Service) List(ctx context.Context, p ListParams) ([]*Announcement, error) {
-	guildID, userID, err := parseGuildAndUser(p.GuildID, p.UserID)
-	if err != nil {
-		return nil, err
-	}
-	if err := authz.Require(ctx, s.az, guildID, userID, listPermission(p.IncludeDrafts)); err != nil {
+	if err := authz.Require(ctx, s.az, p.GuildID, p.UserID, listPermission(p.IncludeDrafts)); err != nil {
 		return nil, err
 	}
 
 	rows, err := s.q.ListGuildAnnouncements(ctx, db.ListGuildAnnouncementsParams{
-		GuildID:       guildID,
+		GuildID:       p.GuildID,
 		IncludeDrafts: p.IncludeDrafts,
 		PageSize:      clampPageSize(p.PageSize),
 	})
@@ -94,16 +89,7 @@ func (s *Service) List(ctx context.Context, p ListParams) ([]*Announcement, erro
 	return out, nil
 }
 
-func (s *Service) Get(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) (*Announcement, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
-	announcementID, err := parseAnnouncementID(announcementIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) Get(ctx context.Context, guildID, announcementID, userID uuid.UUID) (*Announcement, error) {
 	a, err := s.load(ctx, guildID, announcementID)
 	if err != nil {
 		return nil, err
@@ -123,12 +109,7 @@ func listPermission(includeDrafts bool) authz.Permission {
 	return authz.View
 }
 
-func (s *Service) CreateDraft(ctx context.Context, guildIDStr, userIDStr string) (*Announcement, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) CreateDraft(ctx context.Context, guildID, userID uuid.UUID) (*Announcement, error) {
 	id, err := s.q.CreateAnnouncementDraft(ctx, db.CreateAnnouncementDraftParams{GuildID: guildID, AuthorID: userID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: create announcement draft: %v", errs.ErrInternal, err)
@@ -137,15 +118,7 @@ func (s *Service) CreateDraft(ctx context.Context, guildIDStr, userIDStr string)
 }
 
 func (s *Service) Update(ctx context.Context, p Update) (*Announcement, error) {
-	guildID, _, err := parseGuildAndUser(p.GuildID, p.UserID)
-	if err != nil {
-		return nil, err
-	}
-	announcementID, err := parseAnnouncementID(p.AnnouncementID)
-	if err != nil {
-		return nil, err
-	}
-
+	guildID, announcementID := p.GuildID, p.AnnouncementID
 	n, err := s.q.UpdateAnnouncement(ctx, db.UpdateAnnouncementParams{
 		ID:      announcementID,
 		GuildID: guildID,
@@ -166,16 +139,7 @@ func (s *Service) Update(ctx context.Context, p Update) (*Announcement, error) {
 	return a, nil
 }
 
-func (s *Service) Unpublish(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) (*Announcement, error) {
-	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
-	announcementID, err := parseAnnouncementID(announcementIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) Unpublish(ctx context.Context, guildID, announcementID uuid.UUID) (*Announcement, error) {
 	n, err := s.q.UnpublishAnnouncement(ctx, db.UnpublishAnnouncementParams{ID: announcementID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: unpublish announcement: %v", errs.ErrInternal, err)
@@ -190,16 +154,7 @@ func (s *Service) Unpublish(ctx context.Context, guildIDStr, announcementIDStr, 
 	return a, nil
 }
 
-func (s *Service) Publish(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) (*Announcement, error) {
-	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
-	announcementID, err := parseAnnouncementID(announcementIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) Publish(ctx context.Context, guildID, announcementID uuid.UUID) (*Announcement, error) {
 	n, err := s.q.PublishAnnouncement(ctx, db.PublishAnnouncementParams{ID: announcementID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: publish announcement: %v", errs.ErrInternal, err)
@@ -214,16 +169,7 @@ func (s *Service) Publish(ctx context.Context, guildIDStr, announcementIDStr, us
 	return a, nil
 }
 
-func (s *Service) DeleteDraft(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) error {
-	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return err
-	}
-	announcementID, err := parseAnnouncementID(announcementIDStr)
-	if err != nil {
-		return err
-	}
-
+func (s *Service) DeleteDraft(ctx context.Context, guildID, announcementID uuid.UUID) error {
 	n, err := s.q.DeleteAnnouncementDraft(ctx, db.DeleteAnnouncementDraftParams{ID: announcementID, GuildID: guildID})
 	if err != nil {
 		return fmt.Errorf("%w: delete announcement draft: %v", errs.ErrInternal, err)
@@ -263,29 +209,6 @@ func publishRejection(a *Announcement) error {
 		return fmt.Errorf("%w: title and content are required to publish", errs.ErrFailedPrecondition)
 	}
 	return fmt.Errorf("%w: announcement could not be published", errs.ErrFailedPrecondition)
-}
-
-func parseGuildAndUser(guildIDStr, userIDStr string) (uuid.UUID, uuid.UUID, error) {
-	if userIDStr == "" {
-		return uuid.Nil, uuid.Nil, errs.ErrUnauthenticated
-	}
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, fmt.Errorf("%w: guild_id must be a UUID", errs.ErrInvalidArgument)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, fmt.Errorf("%w: user id must be a UUID", errs.ErrInvalidArgument)
-	}
-	return guildID, userID, nil
-}
-
-func parseAnnouncementID(raw string) (uuid.UUID, error) {
-	id, err := uuid.Parse(raw)
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("%w: announcement_id must be a UUID", errs.ErrInvalidArgument)
-	}
-	return id, nil
 }
 
 func clampPageSize(size int32) int32 {
