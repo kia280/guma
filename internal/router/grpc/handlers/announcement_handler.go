@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	announcementsvc "github.com/kia280/guma/internal/services/announcement"
 	"github.com/kia280/guma/internal/session"
@@ -20,9 +21,9 @@ type AnnouncementHandler struct {
 	logger zerolog.Logger
 }
 
-func NewAnnouncementService(db *database.Pool, logger zerolog.Logger) *AnnouncementHandler {
+func NewAnnouncementService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *AnnouncementHandler {
 	return &AnnouncementHandler{
-		svc:    announcementsvc.New(db, logger),
+		svc:    announcementsvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "announcement").Logger(),
 	}
 }

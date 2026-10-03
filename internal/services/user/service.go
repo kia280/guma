@@ -18,6 +18,7 @@ import (
 	"github.com/rs/zerolog"
 	"golang.org/x/text/unicode/norm"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
@@ -76,6 +77,7 @@ type Stats struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	syncer authz.MemberSyncer
 	kratos *kratos.APIClient
 	logger zerolog.Logger
 
@@ -104,7 +106,7 @@ func WithKratosAdminURL(url string) Option {
 
 // New creates a new user Service. kratosPublicURL is used by GetMe to
 // whoami-refresh the user profile from Kratos on every call.
-func New(pool *database.Pool, kratosPublicURL string, logger zerolog.Logger, opts ...Option) *Service {
+func New(pool *database.Pool, syncer authz.MemberSyncer, kratosPublicURL string, logger zerolog.Logger, opts ...Option) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -112,6 +114,7 @@ func New(pool *database.Pool, kratosPublicURL string, logger zerolog.Logger, opt
 	s := &Service{
 		pool:   pool,
 		q:      q,
+		syncer: syncer,
 		kratos: newKratosClient(kratosPublicURL),
 		logger: logger.With().Str("service", "user").Logger(),
 	}
@@ -542,10 +545,11 @@ func (s *Service) autoJoinSingletonGuild(ctx context.Context, userID uuid.UUID) 
 	if err := s.q.InsertGuildMember(ctx, db.InsertGuildMemberParams{
 		UserID:  userID,
 		GuildID: guildID,
-		Role:    "member",
+		Role:    string(authz.RoleMember),
 	}); err != nil {
 		return fmt.Errorf("insert guild member: %w", err)
 	}
+	authz.SyncAfterCommit(ctx, s.syncer, s.logger, guildID, userID)
 	s.logger.Info().
 		Str("user_id", userID.String()).
 		Str("guild_id", guildID.String()).

@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	rollcalltemplatesvc "github.com/kia280/guma/internal/services/rollcalltemplate"
 	"github.com/kia280/guma/internal/session"
@@ -20,9 +21,9 @@ type ItemTemplateHandler struct {
 	logger zerolog.Logger
 }
 
-func NewItemTemplateService(db *database.Pool, logger zerolog.Logger) *ItemTemplateHandler {
+func NewItemTemplateService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *ItemTemplateHandler {
 	return &ItemTemplateHandler{
-		svc:    rollcalltemplatesvc.NewItemService(db, logger),
+		svc:    rollcalltemplatesvc.NewItemService(db, az, logger),
 		logger: logger.With().Str("handler", "item_template").Logger(),
 	}
 }

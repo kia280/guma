@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	guildv1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/services/errs"
 	guildsvc "github.com/kia280/guma/internal/services/guild"
@@ -27,9 +28,9 @@ type GuildHandler struct {
 }
 
 // NewGuildService creates a new Guild gRPC handler.
-func NewGuildService(db *database.Pool, logger zerolog.Logger) *GuildHandler {
+func NewGuildService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *GuildHandler {
 	return &GuildHandler{
-		svc:    guildsvc.New(db, logger),
+		svc:    guildsvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "guild").Logger(),
 	}
 }

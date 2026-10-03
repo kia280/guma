@@ -8,13 +8,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/kia280/guma/internal/authz"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
-)
-
-const (
-	roleOwner = "owner"
-	roleAdmin = "admin"
 )
 
 type UpdateRoleParams struct {
@@ -37,6 +33,10 @@ func (s *Service) UpdateRole(ctx context.Context, p UpdateRoleParams) (*Member, 
 	if err != nil {
 		return nil, fmt.Errorf("%w: member", errs.ErrNotFound)
 	}
+	newRole, ok := authz.ParseRole(p.Role)
+	if !ok {
+		return nil, fmt.Errorf("%w: unknown role %q", errs.ErrInvalidArgument, p.Role)
+	}
 	if actorID == userID {
 		return nil, fmt.Errorf("%w: you cannot change your own role", errs.ErrPermissionDenied)
 	}
@@ -50,38 +50,34 @@ func (s *Service) UpdateRole(ctx context.Context, p UpdateRoleParams) (*Member, 
 
 	locked, err := qtx.LockGuildMemberRoles(ctx, db.LockGuildMemberRolesParams{
 		GuildID: guildID,
-		UserIds: []uuid.UUID{actorID, userID},
+		UserIds: []uuid.UUID{userID},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: lock members: %v", errs.ErrInternal, err)
 	}
-	roles := make(map[uuid.UUID]string, len(locked))
-	for _, row := range locked {
-		roles[row.UserID] = row.Role
-	}
-	actorRole, ok := roles[actorID]
-	if !ok {
-		return nil, fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-	}
-	if actorRole != roleOwner && actorRole != roleAdmin {
-		return nil, fmt.Errorf("%w: only owners and admins can change roles", errs.ErrPermissionDenied)
-	}
-	currentRole, ok := roles[userID]
-	if !ok {
+	if len(locked) == 0 {
 		return nil, fmt.Errorf("%w: member", errs.ErrNotFound)
 	}
-	if err := authorizeRoleChange(actorRole, currentRole, p.Role); err != nil {
+	currentRole, ok := authz.ParseRole(locked[0].Role)
+	if !ok {
+		return nil, fmt.Errorf("%w: member has unknown role %q", errs.ErrInternal, locked[0].Role)
+	}
+	permission, err := roleChangePermission(currentRole, newRole)
+	if err != nil {
+		return nil, err
+	}
+	if err := authz.Require(ctx, s.az, guildID, actorID, permission); err != nil {
 		return nil, err
 	}
 
-	if currentRole != p.Role {
+	if currentRole != newRole {
 		if _, err := qtx.UpdateGuildMemberRole(ctx, db.UpdateGuildMemberRoleParams{
-			Role: p.Role, GuildID: guildID, UserID: userID,
+			Role: string(newRole), GuildID: guildID, UserID: userID,
 		}); err != nil {
 			return nil, fmt.Errorf("%w: update role: %v", errs.ErrInternal, err)
 		}
 		if err := qtx.InsertMemberRoleChange(ctx, db.InsertMemberRoleChangeParams{
-			GuildID: guildID, UserID: userID, ActorID: &actorID, OldRole: currentRole, NewRole: p.Role,
+			GuildID: guildID, UserID: userID, ActorID: &actorID, OldRole: string(currentRole), NewRole: string(newRole),
 		}); err != nil {
 			return nil, fmt.Errorf("%w: record role change: %v", errs.ErrInternal, err)
 		}
@@ -98,9 +94,10 @@ func (s *Service) UpdateRole(ctx context.Context, p UpdateRoleParams) (*Member, 
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 
-	if currentRole != p.Role {
+	if currentRole != newRole {
+		authz.SyncAfterCommit(ctx, s.az, s.logger, guildID, userID)
 		s.logger.Info().Str("actor_id", p.ActorID).Str("user_id", p.UserID).Str("guild_id", p.GuildID).
-			Str("old_role", currentRole).Str("new_role", p.Role).Msg("member role changed")
+			Str("old_role", string(currentRole)).Str("new_role", string(newRole)).Msg("member role changed")
 	}
 
 	return &Member{
@@ -117,18 +114,14 @@ func (s *Service) UpdateRole(ctx context.Context, p UpdateRoleParams) (*Member, 
 	}, nil
 }
 
-func authorizeRoleChange(actorRole, currentRole, newRole string) error {
+func roleChangePermission(currentRole, newRole authz.Role) (authz.Permission, error) {
 	switch {
-	case currentRole == roleOwner:
-		return fmt.Errorf("%w: the owner's role cannot be changed", errs.ErrPermissionDenied)
-	case newRole == roleOwner:
-		return fmt.Errorf("%w: ownership cannot be assigned", errs.ErrPermissionDenied)
-	case actorRole == roleOwner:
-		return nil
-	case actorRole != roleAdmin:
-		return fmt.Errorf("%w: only owners and admins can change roles", errs.ErrPermissionDenied)
-	case currentRole == roleAdmin:
-		return fmt.Errorf("%w: only the owner can change an admin's role", errs.ErrPermissionDenied)
+	case currentRole == authz.RoleOwner:
+		return "", fmt.Errorf("%w: the owner's role cannot be changed", errs.ErrPermissionDenied)
+	case newRole == authz.RoleOwner:
+		return "", fmt.Errorf("%w: ownership cannot be assigned", errs.ErrPermissionDenied)
+	case currentRole == authz.RoleAdmin:
+		return authz.ManageAdmins, nil
 	}
-	return nil
+	return authz.ManageRoles, nil
 }

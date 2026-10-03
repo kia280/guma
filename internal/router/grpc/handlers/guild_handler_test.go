@@ -18,7 +18,7 @@ import (
 
 func TestNewGuildService(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewGuildService(nil, logger)
+	service := NewGuildService(nil, nil, logger)
 
 	assert.NotNil(t, service)
 	assert.NotNil(t, service.logger)
@@ -26,7 +26,7 @@ func TestNewGuildService(t *testing.T) {
 
 func TestGuildService_CreateGuild_Validation(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewGuildService(nil, logger)
+	service := NewGuildService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -55,7 +55,7 @@ func TestGuildService_CreateGuild_Validation(t *testing.T) {
 
 func TestGuildService_GetGuild_Validation(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewGuildService(nil, logger)
+	service := NewGuildService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -84,7 +84,7 @@ func TestGuildService_GetGuild_Validation(t *testing.T) {
 
 func TestGuildService_UpdateGuild_Validation(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewGuildService(nil, logger)
+	service := NewGuildService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -113,7 +113,7 @@ func TestGuildService_UpdateGuild_Validation(t *testing.T) {
 
 func TestGuildService_DeleteGuild_Validation(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewGuildService(nil, logger)
+	service := NewGuildService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -142,7 +142,7 @@ func TestGuildService_DeleteGuild_Validation(t *testing.T) {
 
 func TestGuildService_ListGuilds_Validation(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewGuildService(nil, logger)
+	service := NewGuildService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -171,7 +171,7 @@ func TestGuildService_ListGuilds_Validation(t *testing.T) {
 
 func TestGuildService_GetGuildSettings_Validation(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewGuildService(nil, logger)
+	service := NewGuildService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -200,7 +200,7 @@ func TestGuildService_GetGuildSettings_Validation(t *testing.T) {
 
 func TestGuildService_UpdateGuildSettings_Validation(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewGuildService(nil, logger)
+	service := NewGuildService(nil, nil, logger)
 
 	tests := []struct {
 		name     string
@@ -231,7 +231,7 @@ func TestGuildService_UpdateGuildSettings_Validation(t *testing.T) {
 }
 
 func TestGuildService_GuildLogo_Validation(t *testing.T) {
-	service := NewGuildService(nil, zerolog.Nop())
+	service := NewGuildService(nil, nil, zerolog.Nop())
 
 	tests := []struct {
 		name     string
@@ -289,7 +289,7 @@ func TestGuildService_GuildLogo_Validation(t *testing.T) {
 
 func TestGuildService_GetGuildStats_Validation(t *testing.T) {
 	logger := zerolog.New(os.Stdout)
-	service := NewGuildService(nil, logger)
+	service := NewGuildService(nil, nil, logger)
 
 	tests := []struct {
 		name     string

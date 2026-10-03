@@ -24,13 +24,6 @@ func (s *Service) Stats(ctx context.Context, guildIDStr, userIDStr string) (*Sta
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
 	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
-		return nil, err
-	}
 
 	row, err := s.q.GetGuildStats(ctx, guildID)
 	if err != nil {

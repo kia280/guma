@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/models"
 	rollcallsvc "github.com/kia280/guma/internal/services/rollcall"
@@ -23,9 +24,9 @@ type RollCallHandler struct {
 }
 
 // NewRollCallService creates a new roll call gRPC handler.
-func NewRollCallService(db *database.Pool, logger zerolog.Logger) *RollCallHandler {
+func NewRollCallService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *RollCallHandler {
 	return &RollCallHandler{
-		svc:    rollcallsvc.New(db, logger),
+		svc:    rollcallsvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "roll_call").Logger(),
 	}
 }

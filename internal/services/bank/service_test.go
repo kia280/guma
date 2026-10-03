@@ -21,7 +21,7 @@ const (
 )
 
 func TestRequestFundsValidatesInput(t *testing.T) {
-	s := New(nil, zerolog.Nop())
+	s := New(nil, nil, zerolog.Nop())
 	tests := []struct {
 		name   string
 		guild  string
@@ -41,7 +41,7 @@ func TestRequestFundsValidatesInput(t *testing.T) {
 }
 
 func TestDeleteBankItemValidatesIDs(t *testing.T) {
-	s := New(nil, zerolog.Nop())
+	s := New(nil, nil, zerolog.Nop())
 	tests := []struct {
 		name  string
 		guild string
@@ -58,10 +58,6 @@ func TestDeleteBankItemValidatesIDs(t *testing.T) {
 			assert.ErrorIs(t, s.DeleteBankItem(context.Background(), tt.guild, tt.user, tt.item), tt.want)
 		})
 	}
-}
-
-func TestItemDeleterRolesExcludeModerators(t *testing.T) {
-	assert.ElementsMatch(t, []string{"owner", "admin"}, itemDeleterRoles)
 }
 
 func TestCheckReviewable(t *testing.T) {

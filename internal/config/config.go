@@ -19,6 +19,8 @@ type Config struct {
 	// Authentication configuration
 	Auth AuthConfig `mapstructure:"auth"`
 
+	Keto KetoConfig `mapstructure:"keto"`
+
 	// Logging configuration
 	Logging LoggingConfig `mapstructure:"logging"`
 
@@ -56,6 +58,12 @@ type DatabaseConfig struct {
 type AuthConfig struct {
 	KratosPublicURL string `mapstructure:"kratos_public_url"`
 	KratosAdminURL  string `mapstructure:"kratos_admin_url"`
+}
+
+type KetoConfig struct {
+	ReadAddr            string        `mapstructure:"read_addr"`
+	WriteAddr           string        `mapstructure:"write_addr"`
+	OutboxSweepInterval time.Duration `mapstructure:"outbox_sweep_interval"`
 }
 
 // DevConfig holds development-only tooling configuration
@@ -120,6 +128,9 @@ func Load() (*Config, error) {
 	v.BindEnv("cors.allowed_origins", "CORS_ALLOWED_ORIGINS")
 	v.BindEnv("cors.allowed_methods", "CORS_ALLOWED_METHODS")
 	v.BindEnv("cors.allowed_headers", "CORS_ALLOWED_HEADERS")
+	v.BindEnv("keto.read_addr", "KETO_READ_ADDR")
+	v.BindEnv("keto.write_addr", "KETO_WRITE_ADDR")
+	v.BindEnv("keto.outbox_sweep_interval", "KETO_OUTBOX_SWEEP_INTERVAL")
 	v.BindEnv("dev.auth_enabled", "DEV_AUTH_ENABLED")
 	v.BindEnv("scheduler.raffle_draw_interval", "SCHEDULER_RAFFLE_DRAW_INTERVAL")
 	v.BindEnv("scheduler.auction_settle_interval", "SCHEDULER_AUCTION_SETTLE_INTERVAL")
@@ -174,6 +185,10 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("logging.level", "info")
 	v.SetDefault("logging.format", "json")
 
+	v.SetDefault("keto.read_addr", "localhost:4466")
+	v.SetDefault("keto.write_addr", "localhost:4467")
+	v.SetDefault("keto.outbox_sweep_interval", "5s")
+
 	// CORS defaults
 	v.SetDefault("cors.allowed_origins", []string{"http://localhost:3000"})
 	v.SetDefault("cors.allowed_methods", []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
@@ -210,6 +225,10 @@ func (c *Config) Validate() error {
 		return err
 	}
 
+	if err := c.Keto.Validate(); err != nil {
+		return err
+	}
+
 	if c.Dev.AuthEnabled && !c.IsDevelopment() {
 		return fmt.Errorf("dev auth can only be enabled when server.env is development, got %q", c.Server.Environment)
 	}
@@ -226,6 +245,16 @@ func (c CORSConfig) Validate() error {
 		if origin == "*" {
 			return fmt.Errorf("cors allowed origins must list explicit origins; %q is not allowed with credentialed requests", origin)
 		}
+	}
+	return nil
+}
+
+func (k KetoConfig) Validate() error {
+	if k.ReadAddr == "" || k.WriteAddr == "" {
+		return fmt.Errorf("keto read and write addresses are required")
+	}
+	if k.OutboxSweepInterval <= 0 {
+		return fmt.Errorf("keto outbox sweep interval must be positive, got %s", k.OutboxSweepInterval)
 	}
 	return nil
 }

@@ -16,7 +16,7 @@ import (
 )
 
 func TestRaffleService_UpdateRaffle_Validation(t *testing.T) {
-	service := NewRaffleService(nil, zerolog.New(os.Stdout))
+	service := NewRaffleService(nil, nil, zerolog.New(os.Stdout))
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 
 	tests := []struct {
@@ -65,7 +65,7 @@ func TestRaffleService_UpdateRaffle_Validation(t *testing.T) {
 }
 
 func TestRaffleService_UpdateRaffle_MalformedRaffleID(t *testing.T) {
-	service := NewRaffleService(nil, zerolog.Nop())
+	service := NewRaffleService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 
@@ -75,7 +75,7 @@ func TestRaffleService_UpdateRaffle_MalformedRaffleID(t *testing.T) {
 }
 
 func TestCancelAndDeleteRaffle_Validation(t *testing.T) {
-	service := NewRaffleService(nil, zerolog.Nop())
+	service := NewRaffleService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 

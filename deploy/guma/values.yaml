@@ -108,6 +108,16 @@ readinessProbe:
   periodSeconds: 5
   failureThreshold: 3
 
+# Ory Keto gRPC endpoints used for guild authorization. Keto must load the
+# namespaces from internal/authz/namespaces.keto.ts with limit.max_read_depth >= 5.
+keto:
+  # host:port of the Keto read API (checks and tuple listing), e.g. keto-read:4466
+  readAddr: ""
+  # host:port of the Keto write API (relation tuple writes), e.g. keto-write:4467
+  writeAddr: ""
+  # How often the authorization outbox is swept for retries and missed notifications.
+  outboxSweepInterval: 5s
+
 # OpenTelemetry metrics exported over OTLP. Disabled by default.
 metrics:
   enabled: false

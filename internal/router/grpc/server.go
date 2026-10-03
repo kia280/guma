@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/config"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/events"
@@ -36,7 +37,7 @@ type Server struct {
 const healthCheckInterval = 5 * time.Second
 
 // NewServer creates and configures a new gRPC server
-func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, logger zerolog.Logger) (*Server, error) {
+func NewServer(cfg *config.Config, db *database.Pool, az authz.Authorizer, broker *events.Broker, logger zerolog.Logger) (*Server, error) {
 	logger = logger.With().Str("component", "grpc-server").Logger()
 
 	validator, err := protovalidate.New()
@@ -52,6 +53,7 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),
 			grpcprotovalidate.UnaryServerInterceptor(validator),
+			interceptors.GuildAuthzInterceptor(az),
 		),
 		grpc.ChainStreamInterceptor(
 			interceptors.StreamErrorSanitizerInterceptor(logger),
@@ -62,23 +64,23 @@ func NewServer(cfg *config.Config, db *database.Pool, broker *events.Broker, log
 
 	// Initialize service handlers
 	gumaHandler := handlers.NewGumaService(logger)
-	guildHandler := handlers.NewGuildService(db, logger)
-	memberHandler := handlers.NewMemberService(db, logger)
-	userHandler := handlers.NewUserService(db, cfg.Auth.KratosPublicURL, logger,
+	guildHandler := handlers.NewGuildService(db, az, logger)
+	memberHandler := handlers.NewMemberService(db, az, logger)
+	userHandler := handlers.NewUserService(db, az, cfg.Auth.KratosPublicURL, logger,
 		usersvc.WithDevAuth(cfg.Dev.AuthEnabled),
 		usersvc.WithKratosAdminURL(cfg.Auth.KratosAdminURL),
 	)
-	rollCallHandler := handlers.NewRollCallService(db, logger)
-	rollCallTemplateHandler := handlers.NewRollCallTemplateService(db, logger)
-	itemTemplateHandler := handlers.NewItemTemplateService(db, logger)
-	walletHandler := handlers.NewWalletService(db, logger)
-	auctionHandler := handlers.NewAuctionService(db, logger)
+	rollCallHandler := handlers.NewRollCallService(db, az, logger)
+	rollCallTemplateHandler := handlers.NewRollCallTemplateService(db, az, logger)
+	itemTemplateHandler := handlers.NewItemTemplateService(db, az, logger)
+	walletHandler := handlers.NewWalletService(db, az, logger)
+	auctionHandler := handlers.NewAuctionService(db, az, logger)
 	eventHandler := handlers.NewEventService(db, logger)
-	raffleHandler := handlers.NewRaffleService(db, logger)
-	bankHandler := handlers.NewBankService(db, logger)
+	raffleHandler := handlers.NewRaffleService(db, az, logger)
+	bankHandler := handlers.NewBankService(db, az, logger)
 	notificationHandler := handlers.NewNotificationService(db, logger)
 	preferenceHandler := handlers.NewPreferenceService(db, logger)
-	announcementHandler := handlers.NewAnnouncementService(db, logger)
+	announcementHandler := handlers.NewAnnouncementService(db, az, logger)
 	streamHandler := handlers.NewStreamService(broker, events.MemberGuildIDs(db), logger)
 
 	healthService := health.NewService(db)

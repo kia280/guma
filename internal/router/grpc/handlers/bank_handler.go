@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/models"
 	banksvc "github.com/kia280/guma/internal/services/bank"
@@ -23,9 +24,9 @@ type BankHandler struct {
 }
 
 // NewBankService creates a new Bank gRPC handler.
-func NewBankService(db *database.Pool, logger zerolog.Logger) *BankHandler {
+func NewBankService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *BankHandler {
 	return &BankHandler{
-		svc:    banksvc.New(db, logger),
+		svc:    banksvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "bank").Logger(),
 	}
 }

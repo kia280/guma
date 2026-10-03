@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
@@ -29,8 +28,6 @@ const (
 
 	withdrawalReferenceType = "withdrawal"
 )
-
-var withdrawalReviewerRoles = []string{"owner", "admin", "moderator"}
 
 type WithdrawalRequest struct {
 	ID                 string
@@ -68,9 +65,6 @@ func (s *Service) RequestWithdrawal(ctx context.Context, userIDStr, guildIDStr s
 		return nil, nil, nil, err
 	}
 	note = strings.TrimSpace(note)
-	if err := s.requireMember(ctx, s.q, guildID, userID, errs.ErrPermissionDenied); err != nil {
-		return nil, nil, nil, err
-	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -162,9 +156,6 @@ func (s *Service) ReviewWithdrawalRequest(ctx context.Context, reviewerIDStr, gu
 		return nil, fmt.Errorf("%w: withdrawal request", errs.ErrNotFound)
 	}
 	note = strings.TrimSpace(note)
-	if err := s.requireWithdrawalReviewer(ctx, guildID, reviewerID); err != nil {
-		return nil, err
-	}
 
 	resolution := withdrawalResolution{
 		guildID: guildID, requestID: requestID, actorID: reviewerID, reviewerID: &reviewerID,
@@ -192,11 +183,8 @@ func (s *Service) ListMyWithdrawalRequests(ctx context.Context, p ListWithdrawal
 }
 
 func (s *Service) ListWithdrawalRequests(ctx context.Context, p ListWithdrawalRequestsParams) (*ListWithdrawalRequestsResult, error) {
-	viewerID, guildID, err := parseIDs(p.ViewerID, p.GuildID)
+	_, guildID, err := parseIDs(p.ViewerID, p.GuildID)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireWithdrawalReviewer(ctx, guildID, viewerID); err != nil {
 		return nil, err
 	}
 	return s.listWithdrawalRequests(ctx, guildID, nil, p)
@@ -353,18 +341,4 @@ func toWithdrawalRequest(r db.ListWithdrawalRequestsRow) *WithdrawalRequest {
 		ReviewerID: uuidString(r.ReviewerID), ReviewerName: r.ReviewerName, ReviewNote: r.ReviewNote,
 		CreatedAt: r.CreatedAt, ReviewedAt: timestampPtr(r.ReviewedAt),
 	}
-}
-
-func (s *Service) requireWithdrawalReviewer(ctx context.Context, guildID, userID uuid.UUID) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: load member role: %v", errs.ErrInternal, err)
-	}
-	if !slices.Contains(withdrawalReviewerRoles, role) {
-		return fmt.Errorf("%w: only officers can review withdrawal requests", errs.ErrPermissionDenied)
-	}
-	return nil
 }

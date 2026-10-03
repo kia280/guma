@@ -273,9 +273,6 @@ func (s *Service) DistributeGold(ctx context.Context, p DistributeGoldParams) (*
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireRole(ctx, guildID, actorID, "owner", "admin", "moderator"); err != nil {
-		return nil, err
-	}
 	rollCall, err := s.q.GetRollCall(ctx, db.GetRollCallParams{ID: rollCallID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: roll call", errs.ErrNotFound)

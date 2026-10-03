@@ -103,7 +103,6 @@ func TestUpdateValidatesBeforeQuerying(t *testing.T) {
 		}, wantErr: errs.ErrInvalidArgument},
 		{name: "malformed guild", mutate: func(p *UpdateParams) { p.GuildID = "bad" }, wantErr: errs.ErrNotFound},
 		{name: "malformed roll call", mutate: func(p *UpdateParams) { p.RollCallID = "bad" }, wantErr: errs.ErrNotFound},
-		{name: "malformed user", mutate: func(p *UpdateParams) { p.UpdatedBy = "bad" }, wantErr: errs.ErrInvalidArgument},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

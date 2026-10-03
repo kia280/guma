@@ -48,6 +48,7 @@ spec:
               containerPort: {{ .Values.grpcPort }}
               protocol: TCP
           env:
+            {{- include "guma.ketoEnv" . | trim | nindent 12 }}
             {{- include "guma.metricsEnv" . | trim | nindent 12 }}
             {{- include "guma.tracingEnv" . | trim | nindent 12 }}
           {{- with .Values.startupProbe }}

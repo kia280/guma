@@ -68,6 +68,18 @@ CREATE INDEX idx_members_guild_id ON members (guild_id);
 CREATE INDEX idx_members_user_id ON members (user_id);
 CREATE UNIQUE INDEX members_guild_display_name_key ON members (guild_id, lower(display_name));
 
+CREATE TABLE authz_member_outbox (
+    id           BIGSERIAL   PRIMARY KEY,
+    guild_id     UUID        NOT NULL,
+    user_id      UUID        NOT NULL,
+    attempts     INT         NOT NULL DEFAULT 0,
+    available_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_authz_member_outbox_available ON authz_member_outbox (available_at, id);
+CREATE INDEX idx_authz_member_outbox_member ON authz_member_outbox (guild_id, user_id);
+
 CREATE TABLE member_role_changes (
     id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
     guild_id   UUID        NOT NULL REFERENCES guilds(id) ON DELETE CASCADE,
@@ -518,6 +530,30 @@ BEGIN
         NEW.display_name := btrim(NEW.display_name);
     END IF;
     RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION enqueue_authz_member_sync() RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF TG_OP = 'UPDATE'
+        AND NEW.role IS NOT DISTINCT FROM OLD.role
+        AND NEW.guild_id = OLD.guild_id
+        AND NEW.user_id = OLD.user_id THEN
+        RETURN NEW;
+    END IF;
+
+    IF TG_OP IN ('UPDATE', 'DELETE') THEN
+        INSERT INTO authz_member_outbox (guild_id, user_id) VALUES (OLD.guild_id, OLD.user_id);
+    END IF;
+    IF TG_OP = 'INSERT'
+        OR (TG_OP = 'UPDATE' AND (NEW.guild_id <> OLD.guild_id OR NEW.user_id <> OLD.user_id)) THEN
+        INSERT INTO authz_member_outbox (guild_id, user_id) VALUES (NEW.guild_id, NEW.user_id);
+    END IF;
+
+    PERFORM pg_notify('authz_member_changed', '');
+    RETURN NULL;
 END;
 $$;
 
@@ -1325,6 +1361,11 @@ CREATE TRIGGER members_assign_display_name
     BEFORE INSERT OR UPDATE OF display_name ON members
     FOR EACH ROW
     EXECUTE FUNCTION assign_member_display_name();
+
+CREATE TRIGGER members_enqueue_authz_sync
+    AFTER INSERT OR DELETE OR UPDATE OF role, guild_id, user_id ON members
+    FOR EACH ROW
+    EXECUTE FUNCTION enqueue_authz_member_sync();
 
 CREATE TRIGGER member_role_changes_notify
     AFTER INSERT ON member_role_changes

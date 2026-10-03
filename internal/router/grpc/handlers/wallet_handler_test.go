@@ -16,7 +16,7 @@ import (
 )
 
 func TestWalletHandler_GetBalanceTrend_Validation(t *testing.T) {
-	handler := NewWalletService(nil, zerolog.New(os.Stdout))
+	handler := NewWalletService(nil, nil, zerolog.New(os.Stdout))
 
 	tests := []struct {
 		name     string

@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	usersvc "github.com/kia280/guma/internal/services/user"
 	"github.com/kia280/guma/internal/session"
@@ -23,9 +24,9 @@ type UserHandler struct {
 
 // NewUserService creates a new User gRPC handler. kratosPublicURL is used
 // by the service's GetMe to refresh the profile from Kratos.
-func NewUserService(db *database.Pool, kratosPublicURL string, logger zerolog.Logger, opts ...usersvc.Option) *UserHandler {
+func NewUserService(db *database.Pool, syncer authz.MemberSyncer, kratosPublicURL string, logger zerolog.Logger, opts ...usersvc.Option) *UserHandler {
 	return &UserHandler{
-		svc:    usersvc.New(db, kratosPublicURL, logger, opts...),
+		svc:    usersvc.New(db, syncer, kratosPublicURL, logger, opts...),
 		logger: logger.With().Str("handler", "user").Logger(),
 	}
 }

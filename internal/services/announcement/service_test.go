@@ -11,6 +11,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
+	"github.com/kia280/guma/internal/authz/authztest"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
@@ -22,7 +24,7 @@ const (
 )
 
 func TestValidatesInputBeforeQuerying(t *testing.T) {
-	s := New(nil, zerolog.Nop())
+	s := New(nil, nil, zerolog.Nop())
 	ctx := context.Background()
 
 	tests := []struct {
@@ -53,26 +55,22 @@ func TestValidatesInputBeforeQuerying(t *testing.T) {
 	}
 }
 
-func TestCheckRole(t *testing.T) {
-	tests := []struct {
-		role    string
-		allowed []string
-		wantErr bool
-	}{
-		{role: "member", allowed: nil},
-		{role: "owner", allowed: managerRoles},
-		{role: "admin", allowed: managerRoles},
-		{role: "moderator", allowed: managerRoles},
-		{role: "member", allowed: managerRoles, wantErr: true},
+func TestDraftAccessRequiresManagePermission(t *testing.T) {
+	guild, user := uuid.New(), uuid.New()
+	s := New(nil, authztest.New().Grant(guild, user, authz.View), zerolog.Nop())
+	ctx := context.Background()
+
+	_, err := s.List(ctx, ListParams{GuildID: guild.String(), UserID: user.String(), IncludeDrafts: true})
+	if !errors.Is(err, errs.ErrPermissionDenied) {
+		t.Fatalf("listing drafts: expected permission denied, got %v", err)
 	}
-	for _, tt := range tests {
-		err := checkRole(tt.role, tt.allowed)
-		if tt.wantErr != (err != nil) {
-			t.Fatalf("checkRole(%q, %v) = %v, wantErr %v", tt.role, tt.allowed, err, tt.wantErr)
-		}
-		if err != nil && !errors.Is(err, errs.ErrPermissionDenied) {
-			t.Fatalf("expected permission denied, got %v", err)
-		}
+}
+
+func TestNonMemberCannotListAnnouncements(t *testing.T) {
+	s := New(nil, authztest.New(), zerolog.Nop())
+	_, err := s.List(context.Background(), ListParams{GuildID: uuid.NewString(), UserID: uuid.NewString()})
+	if !errors.Is(err, errs.ErrPermissionDenied) {
+		t.Fatalf("expected permission denied, got %v", err)
 	}
 }
 

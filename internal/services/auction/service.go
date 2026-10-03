@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
@@ -110,11 +111,12 @@ type BidHistoryResult struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
 // New creates a new auction Service.
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -122,6 +124,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	return &Service{
 		pool:   pool,
 		q:      q,
+		az:     az,
 		logger: logger.With().Str("service", "auction").Logger(),
 	}
 }
@@ -196,6 +199,9 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*AuctionItem, err
 	if err != nil {
 		return nil, fmt.Errorf("%w: seller", errs.ErrInvalidArgument)
 	}
+	if err := authz.Require(ctx, s.az, guildID, sellerID, createPermission(p.Source)); err != nil {
+		return nil, err
+	}
 
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
@@ -204,11 +210,6 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*AuctionItem, err
 	defer pgtx.Rollback(ctx) //nolint:errcheck
 	qtx := s.q.WithTx(pgtx)
 
-	if p.Source.BankItemID != "" {
-		if err := s.requireRole(ctx, guildID, sellerID, "owner", "admin"); err != nil {
-			return nil, err
-		}
-	}
 	auctionID := uuid.New()
 	locked, err := inventory.Lock(ctx, qtx, guildID, sellerID, p.Source,
 		inventory.Holder{Type: inventory.HolderAuction, ID: auctionID}, "Listed in an auction")
@@ -420,7 +421,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*AuctionItem, err
 	if err != nil {
 		return nil, err
 	}
-	if _, err := authorizeManage(ctx, qtx, guildID, userID, current); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, managePermission(current, userID)); err != nil {
 		return nil, err
 	}
 	now := time.Now().UTC()
@@ -472,19 +473,14 @@ func (s *Service) Cancel(ctx context.Context, guildIDStr, auctionIDStr, userIDSt
 	if err != nil {
 		return nil, err
 	}
-	isOfficer, err := authorizeManage(ctx, qtx, guildID, userID, current)
-	if err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, cancelPermission(current, userID)); err != nil {
 		return nil, err
 	}
 	if err := checkCancellable(current.Status, current.EndTime, time.Now().UTC()); err != nil {
 		return nil, err
 	}
-	hasBids := current.CurrentBidderID != nil
-	if hasBids && !isOfficer {
-		return nil, fmt.Errorf("%w: only an owner or admin can cancel an auction that has bids", errs.ErrPermissionDenied)
-	}
 
-	if hasBids && current.CurrentBid > 0 {
+	if current.CurrentBidderID != nil && current.CurrentBid > 0 {
 		if err := refundBid(ctx, qtx, guildID, *current.CurrentBidderID, current.CurrentBid, auctionIDStr, "Auction cancelled refund"); err != nil {
 			return nil, err
 		}
@@ -524,7 +520,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, auctionIDStr, userIDSt
 	if err != nil {
 		return err
 	}
-	if _, err := authorizeManage(ctx, qtx, guildID, userID, current); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, managePermission(current, userID)); err != nil {
 		return err
 	}
 	if err := checkDeletable(current.Status); err != nil {
@@ -586,18 +582,6 @@ func lockAuction(ctx context.Context, qtx *db.Queries, guildID, auctionID uuid.U
 	return a, nil
 }
 
-func authorizeManage(ctx context.Context, qtx *db.Queries, guildID, userID uuid.UUID, a db.Auction) (bool, error) {
-	role, err := qtx.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		return false, fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-	}
-	isOfficer := role == "owner" || role == "admin"
-	if !isOfficer && a.SellerID != userID {
-		return false, fmt.Errorf("%w: only the seller or an owner or admin can manage this auction", errs.ErrPermissionDenied)
-	}
-	return isOfficer, nil
-}
-
 func refundBid(ctx context.Context, qtx *db.Queries, guildID, bidderID uuid.UUID, amount int64, auctionID, description string) error {
 	if err := qtx.EnsureWallet(ctx, db.EnsureWalletParams{UserID: bidderID, GuildID: guildID}); err != nil {
 		return fmt.Errorf("%w: ensure wallet: %v", errs.ErrInternal, err)
@@ -630,22 +614,6 @@ func parseIDs(guildIDStr, auctionIDStr, userIDStr string) (uuid.UUID, uuid.UUID,
 		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
 	}
 	return guildID, auctionID, userID, nil
-}
-
-func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-	}
-	for _, r := range roles {
-		if role == r {
-			return nil
-		}
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, roles)
 }
 
 // NextPageToken encodes the offset as a page token string.

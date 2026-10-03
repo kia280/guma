@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	"github.com/kia280/guma/internal/models"
 	auctionsvc "github.com/kia280/guma/internal/services/auction"
@@ -24,9 +25,9 @@ type AuctionHandler struct {
 }
 
 // NewAuctionService creates a new Auction gRPC handler.
-func NewAuctionService(db *database.Pool, logger zerolog.Logger) *AuctionHandler {
+func NewAuctionService(db *database.Pool, az authz.Authorizer, logger zerolog.Logger) *AuctionHandler {
 	return &AuctionHandler{
-		svc:    auctionsvc.New(db, logger),
+		svc:    auctionsvc.New(db, az, logger),
 		logger: logger.With().Str("handler", "auction").Logger(),
 	}
 }

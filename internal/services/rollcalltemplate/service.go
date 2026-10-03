@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
@@ -37,23 +38,21 @@ type Fields struct {
 
 type Service struct {
 	q      store
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
-	return newService(newStore(pool), logger)
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
+	return newService(newStore(pool), az, logger)
 }
 
-func newService(q store, logger zerolog.Logger) *Service {
-	return &Service{q: q, logger: logger.With().Str("service", "rollcalltemplate").Logger()}
+func newService(q store, az authz.Checker, logger zerolog.Logger) *Service {
+	return &Service{q: q, az: az, logger: logger.With().Str("service", "rollcalltemplate").Logger()}
 }
 
 func (s *Service) List(ctx context.Context, guildIDStr, userIDStr string) ([]*Template, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
 		return nil, err
 	}
 	rows, err := s.q.ListRollCallTemplates(ctx, guildID)
@@ -76,9 +75,6 @@ func (s *Service) Create(ctx context.Context, guildIDStr, userIDStr string, f Fi
 	if err != nil {
 		return nil, err
 	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
-		return nil, err
-	}
 	if err := s.requireGuildItems(ctx, guildID, itemIDs); err != nil {
 		return nil, err
 	}
@@ -97,16 +93,13 @@ func (s *Service) Update(ctx context.Context, guildIDStr, templateIDStr, userIDS
 	if err != nil {
 		return nil, err
 	}
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return nil, err
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", errs.ErrNotFound, rollCallTemplateEntity)
-	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
-		return nil, err
 	}
 	if err := s.requireGuildItems(ctx, guildID, itemIDs); err != nil {
 		return nil, err
@@ -121,16 +114,13 @@ func (s *Service) Update(ctx context.Context, guildIDStr, templateIDStr, userIDS
 }
 
 func (s *Service) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDStr string) error {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return err
 	}
 	templateID, err := uuid.Parse(templateIDStr)
 	if err != nil {
 		return fmt.Errorf("%w: %s", errs.ErrNotFound, rollCallTemplateEntity)
-	}
-	if err := requireManager(ctx, s.q, guildID, userID); err != nil {
-		return err
 	}
 	n, err := s.q.DeleteRollCallTemplate(ctx, db.DeleteRollCallTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {

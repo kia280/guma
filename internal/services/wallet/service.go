@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/models"
@@ -110,11 +111,12 @@ type ListBackpackResult struct {
 type Service struct {
 	pool   *database.Pool
 	q      *db.Queries
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
 // New creates a new wallet Service.
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
@@ -122,6 +124,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 	return &Service{
 		pool:   pool,
 		q:      q,
+		az:     az,
 		logger: logger.With().Str("service", "wallet").Logger(),
 	}
 }

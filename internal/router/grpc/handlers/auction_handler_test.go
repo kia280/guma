@@ -24,7 +24,7 @@ func requireCode(t *testing.T, err error, want codes.Code) {
 }
 
 func TestUpdateAuction_Validation(t *testing.T) {
-	h := NewAuctionService(nil, zerolog.Nop())
+	h := NewAuctionService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 	const auctionID = "00000000-0000-0000-0000-000000000003"
@@ -48,7 +48,7 @@ func TestUpdateAuction_Validation(t *testing.T) {
 }
 
 func TestCancelAndDeleteAuction_Validation(t *testing.T) {
-	h := NewAuctionService(nil, zerolog.Nop())
+	h := NewAuctionService(nil, nil, zerolog.Nop())
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"slices"
 	"strings"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
@@ -25,8 +25,6 @@ const (
 	defaultPageSize = 50
 	maxPageSize     = 200
 )
-
-var managerRoles = []string{"owner", "admin", "moderator"}
 
 type Announcement struct {
 	ID          string
@@ -60,15 +58,16 @@ type Update struct {
 
 type Service struct {
 	q      *db.Queries
+	az     authz.Checker
 	logger zerolog.Logger
 }
 
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Checker, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
 	}
-	return &Service{q: q, logger: logger.With().Str("service", "announcement").Logger()}
+	return &Service{q: q, az: az, logger: logger.With().Str("service", "announcement").Logger()}
 }
 
 func (s *Service) List(ctx context.Context, p ListParams) ([]*Announcement, error) {
@@ -76,11 +75,7 @@ func (s *Service) List(ctx context.Context, p ListParams) ([]*Announcement, erro
 	if err != nil {
 		return nil, err
 	}
-	roles := []string(nil)
-	if p.IncludeDrafts {
-		roles = managerRoles
-	}
-	if err := s.requireRole(ctx, guildID, userID, roles...); err != nil {
+	if err := authz.Require(ctx, s.az, guildID, userID, listPermission(p.IncludeDrafts)); err != nil {
 		return nil, err
 	}
 
@@ -108,28 +103,29 @@ func (s *Service) Get(ctx context.Context, guildIDStr, announcementIDStr, userID
 	if err != nil {
 		return nil, err
 	}
-	if err := s.requireRole(ctx, guildID, userID); err != nil {
-		return nil, err
-	}
 
 	a, err := s.load(ctx, guildID, announcementID)
 	if err != nil {
 		return nil, err
 	}
 	if a.Status == StatusDraft {
-		if err := s.requireRole(ctx, guildID, userID, managerRoles...); err != nil {
-			return nil, fmt.Errorf("%w: announcement", errs.ErrNotFound)
+		if err := authz.RequireOrNotFound(ctx, s.az, guildID, userID, authz.ManageAnnouncements, "announcement"); err != nil {
+			return nil, err
 		}
 	}
 	return a, nil
 }
 
+func listPermission(includeDrafts bool) authz.Permission {
+	if includeDrafts {
+		return authz.ManageAnnouncements
+	}
+	return authz.View
+}
+
 func (s *Service) CreateDraft(ctx context.Context, guildIDStr, userIDStr string) (*Announcement, error) {
 	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireRole(ctx, guildID, userID, managerRoles...); err != nil {
 		return nil, err
 	}
 
@@ -141,15 +137,12 @@ func (s *Service) CreateDraft(ctx context.Context, guildIDStr, userIDStr string)
 }
 
 func (s *Service) Update(ctx context.Context, p Update) (*Announcement, error) {
-	guildID, userID, err := parseGuildAndUser(p.GuildID, p.UserID)
+	guildID, _, err := parseGuildAndUser(p.GuildID, p.UserID)
 	if err != nil {
 		return nil, err
 	}
 	announcementID, err := parseAnnouncementID(p.AnnouncementID)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireRole(ctx, guildID, userID, managerRoles...); err != nil {
 		return nil, err
 	}
 
@@ -174,15 +167,12 @@ func (s *Service) Update(ctx context.Context, p Update) (*Announcement, error) {
 }
 
 func (s *Service) Unpublish(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) (*Announcement, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return nil, err
 	}
 	announcementID, err := parseAnnouncementID(announcementIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireRole(ctx, guildID, userID, managerRoles...); err != nil {
 		return nil, err
 	}
 
@@ -201,15 +191,12 @@ func (s *Service) Unpublish(ctx context.Context, guildIDStr, announcementIDStr, 
 }
 
 func (s *Service) Publish(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) (*Announcement, error) {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return nil, err
 	}
 	announcementID, err := parseAnnouncementID(announcementIDStr)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.requireRole(ctx, guildID, userID, managerRoles...); err != nil {
 		return nil, err
 	}
 
@@ -228,15 +215,12 @@ func (s *Service) Publish(ctx context.Context, guildIDStr, announcementIDStr, us
 }
 
 func (s *Service) DeleteDraft(ctx context.Context, guildIDStr, announcementIDStr, userIDStr string) error {
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
+	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
 	if err != nil {
 		return err
 	}
 	announcementID, err := parseAnnouncementID(announcementIDStr)
 	if err != nil {
-		return err
-	}
-	if err := s.requireRole(ctx, guildID, userID, managerRoles...); err != nil {
 		return err
 	}
 
@@ -262,24 +246,6 @@ func (s *Service) load(ctx context.Context, guildID, announcementID uuid.UUID) (
 		return nil, fmt.Errorf("%w: load announcement: %v", errs.ErrInternal, err)
 	}
 	return toAnnouncement(row), nil
-}
-
-func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: load member role: %v", errs.ErrInternal, err)
-	}
-	return checkRole(role, roles)
-}
-
-func checkRole(role string, allowed []string) error {
-	if len(allowed) == 0 || slices.Contains(allowed, role) {
-		return nil
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, allowed)
 }
 
 func updateRejection(a *Announcement) error {

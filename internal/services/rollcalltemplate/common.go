@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"slices"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -15,10 +14,7 @@ import (
 	"github.com/kia280/guma/internal/services/errs"
 )
 
-var managerRoles = []string{"owner", "admin", "moderator"}
-
 type store interface {
-	GetGuildMemberRole(ctx context.Context, arg db.GetGuildMemberRoleParams) (string, error)
 	ListRollCallTemplates(ctx context.Context, guildID uuid.UUID) ([]db.ListRollCallTemplatesRow, error)
 	GetRollCallTemplate(ctx context.Context, arg db.GetRollCallTemplateParams) (db.GetRollCallTemplateRow, error)
 	CreateRollCallTemplate(ctx context.Context, arg db.CreateRollCallTemplateParams) (uuid.UUID, error)
@@ -36,20 +32,6 @@ func newStore(pool *database.Pool) store {
 		return nil
 	}
 	return db.New(pool.Pool)
-}
-
-func requireManager(ctx context.Context, q store, guildID, userID uuid.UUID) error {
-	role, err := q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{GuildID: guildID, UserID: userID})
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-		}
-		return fmt.Errorf("%w: get member role: %v", errs.ErrInternal, err)
-	}
-	if slices.Contains(managerRoles, role) {
-		return nil
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, managerRoles)
 }
 
 func parseGuildAndUser(guildIDStr, userIDStr string) (uuid.UUID, uuid.UUID, error) {

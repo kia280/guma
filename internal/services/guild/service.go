@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog"
 
+	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
@@ -78,17 +79,19 @@ type ListResult struct {
 // Service handles guild business logic and database access.
 type Service struct {
 	q      *db.Queries
+	az     authz.Authorizer
 	logger zerolog.Logger
 }
 
 // New creates a new guild Service.
-func New(pool *database.Pool, logger zerolog.Logger) *Service {
+func New(pool *database.Pool, az authz.Authorizer, logger zerolog.Logger) *Service {
 	var q *db.Queries
 	if pool != nil {
 		q = db.New(pool.Pool)
 	}
 	return &Service{
 		q:      q,
+		az:     az,
 		logger: logger.With().Str("service", "guild").Logger(),
 	}
 }
@@ -166,10 +169,11 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*Guild, error) {
 	if err := s.q.InsertGuildMember(ctx, db.InsertGuildMemberParams{
 		UserID:  ownerID,
 		GuildID: row.ID,
-		Role:    "owner",
+		Role:    string(authz.RoleOwner),
 	}); err != nil {
 		return nil, fmt.Errorf("%w: add owner member: %v", errs.ErrInternal, err)
 	}
+	authz.SyncAfterCommit(ctx, s.az, s.logger, row.ID, ownerID)
 
 	g.MemberCount = 1
 	s.logger.Info().Str("guild_id", g.ID).Str("owner_id", p.OwnerID).Msg("guild created")
@@ -190,13 +194,6 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*Guild, error) {
 	guildID, err := uuid.Parse(p.GuildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(p.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
-		return nil, err
 	}
 
 	row, err := s.q.UpdateGuild(ctx, db.UpdateGuildParams{
@@ -230,13 +227,6 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, userIDStr string) erro
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID, "owner"); err != nil {
-		return err
 	}
 	if err := s.q.DeleteGuild(ctx, guildID); err != nil {
 		return fmt.Errorf("%w: delete guild: %v", errs.ErrInternal, err)
@@ -331,10 +321,11 @@ func (s *Service) Join(ctx context.Context, guildIDStr, userIDStr string) (*Guil
 	if err := s.q.InsertGuildMember(ctx, db.InsertGuildMemberParams{
 		UserID:  userID,
 		GuildID: guildID,
-		Role:    "member",
+		Role:    string(authz.RoleMember),
 	}); err != nil {
 		return nil, fmt.Errorf("%w: join guild: %v", errs.ErrInternal, err)
 	}
+	authz.SyncAfterCommit(ctx, s.az, s.logger, guildID, userID)
 	return s.fetch(ctx, guildID)
 }
 
@@ -362,6 +353,7 @@ func (s *Service) Leave(ctx context.Context, guildIDStr, userIDStr string) error
 	}); err != nil {
 		return fmt.Errorf("%w: leave guild: %v", errs.ErrInternal, err)
 	}
+	authz.SyncAfterCommit(ctx, s.az, s.logger, guildID, userID)
 	return nil
 }
 
@@ -395,13 +387,6 @@ func (s *Service) UpdateSettings(ctx context.Context, guildIDStr, userIDStr stri
 	guildID, err := uuid.Parse(guildIDStr)
 	if err != nil {
 		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
-	if err := s.requireRole(ctx, guildID, userID, "owner", "admin"); err != nil {
-		return nil, err
 	}
 
 	cs := settings.CustomSettings
@@ -449,22 +434,6 @@ func (s *Service) fetch(ctx context.Context, guildID uuid.UUID) (*Guild, error) 
 func (s *Service) memberCount(ctx context.Context, guildID uuid.UUID) (int32, error) {
 	n, err := s.q.CountGuildMembers(ctx, guildID)
 	return int32(n), err
-}
-
-func (s *Service) requireRole(ctx context.Context, guildID, userID uuid.UUID, roles ...string) error {
-	role, err := s.q.GetGuildMemberRole(ctx, db.GetGuildMemberRoleParams{
-		GuildID: guildID,
-		UserID:  userID,
-	})
-	if err != nil {
-		return fmt.Errorf("%w: not a member of this guild", errs.ErrPermissionDenied)
-	}
-	for _, r := range roles {
-		if role == r {
-			return nil
-		}
-	}
-	return fmt.Errorf("%w: requires role %v", errs.ErrPermissionDenied, roles)
 }
 
 // NextPageToken encodes the offset as a page token string.
