@@ -19,12 +19,7 @@ type Stats struct {
 	BankItemCount    int32
 }
 
-func (s *Service) Stats(ctx context.Context, guildIDStr, userIDStr string) (*Stats, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrNotFound)
-	}
-
+func (s *Service) Stats(ctx context.Context, guildID, userID uuid.UUID) (*Stats, error) {
 	row, err := s.q.GetGuildStats(ctx, guildID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

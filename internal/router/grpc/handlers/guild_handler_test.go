@@ -57,3 +57,49 @@ func TestGuildService_GuildLogo_Validation(t *testing.T) {
 		})
 	}
 }
+
+func TestGuildHandler_RejectsMalformedIDs(t *testing.T) {
+	h := NewGuildService(nil, nil, zerolog.Nop())
+	authed := session.WithUserID(context.Background(), testUserID)
+
+	tests := []struct {
+		name string
+		call func() error
+	}{
+		{name: "get guild", call: func() error {
+			_, err := h.GetGuild(authed, &guildv1.GetGuildRequest{GuildId: "bad"})
+			return err
+		}},
+		{name: "get guild logo", call: func() error {
+			_, err := h.GetGuildLogo(authed, &guildv1.GetGuildLogoRequest{GuildId: "bad"})
+			return err
+		}},
+		{name: "join guild", call: func() error {
+			_, err := h.JoinGuildById(authed, &guildv1.JoinGuildByIdRequest{GuildId: "bad"})
+			return err
+		}},
+		{name: "leave guild", call: func() error {
+			_, err := h.LeaveGuild(authed, &guildv1.LeaveGuildRequest{GuildId: "bad"})
+			return err
+		}},
+		{name: "get guild stats", call: func() error {
+			_, err := h.GetGuildStats(authed, &guildv1.GetGuildStatsRequest{GuildId: "bad"})
+			return err
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requireCode(t, tt.call(), codes.InvalidArgument)
+		})
+	}
+}
+
+func TestGuildHandler_RequiresAuthenticatedUser(t *testing.T) {
+	h := NewGuildService(nil, nil, zerolog.Nop())
+
+	_, err := h.CreateGuild(context.Background(), &guildv1.CreateGuildRequest{Name: "guild"})
+	requireCode(t, err, codes.Unauthenticated)
+
+	_, err = h.GetCurrentGuild(context.Background(), &guildv1.GetCurrentGuildRequest{})
+	requireCode(t, err, codes.Unauthenticated)
+}
