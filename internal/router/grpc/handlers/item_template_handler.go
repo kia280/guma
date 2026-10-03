@@ -9,6 +9,7 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	rollcalltemplatesvc "github.com/kia280/guma/internal/services/rollcalltemplate"
 )
 
@@ -26,8 +27,11 @@ func NewItemTemplateService(db *database.Pool, az authz.Authorizer, logger zerol
 }
 
 func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1.ListItemTemplatesRequest) (*gumav1.ListItemTemplatesResponse, error) {
-	userID := legacyCallerID(ctx)
-	templates, err := h.svc.List(ctx, req.GuildId, userID)
+	guildID, err := ids.Parse("guild_id", req.GuildId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	templates, err := h.svc.List(ctx, guildID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -39,8 +43,15 @@ func (h *ItemTemplateHandler) ListItemTemplates(ctx context.Context, req *gumav1
 }
 
 func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav1.CreateItemTemplateRequest) (*gumav1.CreateItemTemplateResponse, error) {
-	userID := legacyCallerID(ctx)
-	t, err := h.svc.Create(ctx, req.GuildId, userID, rollcalltemplatesvc.ItemFields{
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	guildID, err := ids.Parse("guild_id", req.GuildId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	t, err := h.svc.Create(ctx, guildID, userID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
 		Category:    req.Category,
@@ -53,8 +64,13 @@ func (h *ItemTemplateHandler) CreateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav1.UpdateItemTemplateRequest) (*gumav1.UpdateItemTemplateResponse, error) {
-	userID := legacyCallerID(ctx)
-	t, err := h.svc.Update(ctx, req.GuildId, req.TemplateId, userID, rollcalltemplatesvc.ItemFields{
+	var p ids.Parser
+	guildID := p.Parse("guild_id", req.GuildId)
+	templateID := p.Parse("template_id", req.TemplateId)
+	if err := p.Err(); err != nil {
+		return nil, toStatus(err)
+	}
+	t, err := h.svc.Update(ctx, guildID, templateID, rollcalltemplatesvc.ItemFields{
 		Name:        req.Name,
 		Description: req.Description,
 		Category:    req.Category,
@@ -67,8 +83,13 @@ func (h *ItemTemplateHandler) UpdateItemTemplate(ctx context.Context, req *gumav
 }
 
 func (h *ItemTemplateHandler) DeleteItemTemplate(ctx context.Context, req *gumav1.DeleteItemTemplateRequest) (*gumav1.DeleteItemTemplateResponse, error) {
-	userID := legacyCallerID(ctx)
-	if err := h.svc.Delete(ctx, req.GuildId, req.TemplateId, userID); err != nil {
+	var p ids.Parser
+	guildID := p.Parse("guild_id", req.GuildId)
+	templateID := p.Parse("template_id", req.TemplateId)
+	if err := p.Err(); err != nil {
+		return nil, toStatus(err)
+	}
+	if err := h.svc.Delete(ctx, guildID, templateID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteItemTemplateResponse{Success: true}, nil

@@ -111,7 +111,7 @@ func validFields() Fields {
 	return Fields{
 		Name:            "  Weekly raid  ",
 		Title:           " Raid night ",
-		ItemTemplateIDs: []string{testSword.String(), testShield.String(), testSword.String()},
+		ItemTemplateIDs: []uuid.UUID{testSword, testShield, testSword},
 	}
 }
 
@@ -127,7 +127,7 @@ func TestCreateRollCallTemplateKeepsItemOrderAndDuplicates(t *testing.T) {
 	}
 	s := newService(store, manager(), zerolog.Nop())
 
-	tmpl, err := s.Create(context.Background(), testGuild.String(), testUser.String(), validFields())
+	tmpl, err := s.Create(context.Background(), testGuild, testUser, validFields())
 	require.NoError(t, err)
 
 	assert.Equal(t, "Weekly raid", store.rollCallTemplateCreate.Name)
@@ -145,7 +145,7 @@ func TestCreateRollCallTemplateWithoutItemsSkipsItemCheck(t *testing.T) {
 	f := validFields()
 	f.ItemTemplateIDs = nil
 
-	tmpl, err := s.Create(context.Background(), testGuild.String(), testUser.String(), f)
+	tmpl, err := s.Create(context.Background(), testGuild, testUser, f)
 	require.NoError(t, err)
 	assert.Empty(t, store.countArg.Ids)
 	assert.NotNil(t, store.rollCallTemplateCreate.ItemTemplateIds)
@@ -156,20 +156,9 @@ func TestCreateRollCallTemplateRejectsItemsFromOtherGuilds(t *testing.T) {
 	store := newFake()
 	s := newService(store, manager(), zerolog.Nop())
 	f := validFields()
-	f.ItemTemplateIDs = []string{testSword.String(), uuid.NewString()}
+	f.ItemTemplateIDs = []uuid.UUID{testSword, uuid.New()}
 
-	_, err := s.Create(context.Background(), testGuild.String(), testUser.String(), f)
-	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
-	assert.Zero(t, store.writes)
-}
-
-func TestCreateRollCallTemplateRejectsMalformedItemIDs(t *testing.T) {
-	store := newFake()
-	s := newService(store, manager(), zerolog.Nop())
-	f := validFields()
-	f.ItemTemplateIDs = []string{"nope"}
-
-	_, err := s.Create(context.Background(), testGuild.String(), testUser.String(), f)
+	_, err := s.Create(context.Background(), testGuild, testUser, f)
 	assert.ErrorIs(t, err, errs.ErrInvalidArgument)
 	assert.Zero(t, store.writes)
 }
@@ -178,7 +167,7 @@ func TestCreateItemTemplateNormalizesFields(t *testing.T) {
 	store := newFake()
 	s := newItemService(store, manager(), zerolog.Nop())
 
-	_, err := s.Create(context.Background(), testGuild.String(), testUser.String(), validItem())
+	_, err := s.Create(context.Background(), testGuild, testUser, validItem())
 	require.NoError(t, err)
 	assert.Equal(t, db.CreateItemTemplateParams{
 		GuildID: testGuild, CreatedBy: testUser,
@@ -200,16 +189,16 @@ func TestManagementOperationsSucceed(t *testing.T) {
 			rollCalls := newService(store, tt.checker, zerolog.Nop())
 			items := newItemService(store, tt.checker, zerolog.Nop())
 			ctx := context.Background()
-			guild, tmpl, user := testGuild.String(), testTemplate.String(), testUser.String()
+			guild, tmpl, user := testGuild, testTemplate, testUser
 
-			_, listErr := rollCalls.List(ctx, guild, user)
+			_, listErr := rollCalls.List(ctx, guild)
 			_, createErr := rollCalls.Create(ctx, guild, user, validFields())
-			_, updateErr := rollCalls.Update(ctx, guild, tmpl, user, validFields())
-			deleteErr := rollCalls.Delete(ctx, guild, tmpl, user)
-			_, itemListErr := items.List(ctx, guild, user)
+			_, updateErr := rollCalls.Update(ctx, guild, tmpl, validFields())
+			deleteErr := rollCalls.Delete(ctx, guild, tmpl)
+			_, itemListErr := items.List(ctx, guild)
 			_, itemCreateErr := items.Create(ctx, guild, user, validItem())
-			_, itemUpdateErr := items.Update(ctx, guild, tmpl, user, validItem())
-			itemDeleteErr := items.Delete(ctx, guild, tmpl, user)
+			_, itemUpdateErr := items.Update(ctx, guild, tmpl, validItem())
+			itemDeleteErr := items.Delete(ctx, guild, tmpl)
 
 			for _, err := range []error{
 				listErr, createErr, updateErr, deleteErr,
@@ -232,9 +221,9 @@ func TestDuplicateNamesReturnAlreadyExists(t *testing.T) {
 	store := newFake()
 	store.writeErr = &pgconn.PgError{Code: "23505"}
 
-	_, err := newService(store, manager(), zerolog.Nop()).Create(context.Background(), testGuild.String(), testUser.String(), validFields())
+	_, err := newService(store, manager(), zerolog.Nop()).Create(context.Background(), testGuild, testUser, validFields())
 	assert.ErrorIs(t, err, errs.ErrAlreadyExists)
-	_, err = newItemService(store, manager(), zerolog.Nop()).Create(context.Background(), testGuild.String(), testUser.String(), validItem())
+	_, err = newItemService(store, manager(), zerolog.Nop()).Create(context.Background(), testGuild, testUser, validItem())
 	assert.ErrorIs(t, err, errs.ErrAlreadyExists)
 }
 
@@ -243,24 +232,13 @@ func TestUpdateMissingTemplatesReturnNotFound(t *testing.T) {
 	store.writeErr = pgx.ErrNoRows
 	ctx := context.Background()
 
-	_, err := newService(store, manager(), zerolog.Nop()).Update(ctx, testGuild.String(), testTemplate.String(), testUser.String(), validFields())
+	_, err := newService(store, manager(), zerolog.Nop()).Update(ctx, testGuild, testTemplate, validFields())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
 	assert.Equal(t, testGuild, store.rollCallTemplateUpdate.GuildID)
 
-	_, err = newItemService(store, manager(), zerolog.Nop()).Update(ctx, testGuild.String(), testTemplate.String(), testUser.String(), validItem())
+	_, err = newItemService(store, manager(), zerolog.Nop()).Update(ctx, testGuild, testTemplate, validItem())
 	assert.ErrorIs(t, err, errs.ErrNotFound)
 	assert.Equal(t, testGuild, store.itemUpdate.GuildID)
-}
-
-func TestMalformedTemplateIDReturnsNotFound(t *testing.T) {
-	store := newFake()
-	ctx := context.Background()
-
-	_, err := newService(store, manager(), zerolog.Nop()).Update(ctx, testGuild.String(), "nope", testUser.String(), validFields())
-	assert.ErrorIs(t, err, errs.ErrNotFound)
-	err = newItemService(store, manager(), zerolog.Nop()).Delete(ctx, testGuild.String(), "nope", testUser.String())
-	assert.ErrorIs(t, err, errs.ErrNotFound)
-	assert.Zero(t, store.writes)
 }
 
 func TestDeleteMissingTemplatesReturnNotFound(t *testing.T) {
@@ -268,9 +246,9 @@ func TestDeleteMissingTemplatesReturnNotFound(t *testing.T) {
 	store.deleted = 0
 	ctx := context.Background()
 
-	err := newService(store, manager(), zerolog.Nop()).Delete(ctx, testGuild.String(), testTemplate.String(), testUser.String())
+	err := newService(store, manager(), zerolog.Nop()).Delete(ctx, testGuild, testTemplate)
 	assert.ErrorIs(t, err, errs.ErrNotFound)
-	err = newItemService(store, manager(), zerolog.Nop()).Delete(ctx, testGuild.String(), testTemplate.String(), testUser.String())
+	err = newItemService(store, manager(), zerolog.Nop()).Delete(ctx, testGuild, testTemplate)
 	assert.ErrorIs(t, err, errs.ErrNotFound)
 }
 
@@ -282,7 +260,7 @@ func TestListRollCallTemplatesDecodesItems(t *testing.T) {
 	}
 	s := newService(store, manager(), zerolog.Nop())
 
-	templates, err := s.List(context.Background(), testGuild.String(), testUser.String())
+	templates, err := s.List(context.Background(), testGuild)
 	require.NoError(t, err)
 	require.Len(t, templates, 2)
 	assert.Equal(t, []models.Item{{ID: "x", Name: "Gem", Rarity: "epic"}}, templates[0].Items)

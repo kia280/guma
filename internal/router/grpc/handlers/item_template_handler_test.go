@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,7 +16,7 @@ import (
 
 func TestItemTemplateService_Validation(t *testing.T) {
 	h := NewItemTemplateService(nil, nil, zerolog.Nop())
-	authed := session.WithUserID(context.Background(), uuid.MustParse("00000000-0000-0000-0000-000000000001"))
+	authed := session.WithUserID(context.Background(), testUserID)
 	const guildID = "00000000-0000-0000-0000-000000000002"
 
 	tests := []struct {
@@ -33,7 +32,39 @@ func TestItemTemplateService_Validation(t *testing.T) {
 				})
 				return err
 			},
-			wantCode: codes.NotFound,
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "list malformed guild id",
+			call: func() error {
+				_, err := h.ListItemTemplates(authed, &gumav1.ListItemTemplatesRequest{GuildId: "nope"})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "create malformed guild id",
+			call: func() error {
+				_, err := h.CreateItemTemplate(authed, &gumav1.CreateItemTemplateRequest{GuildId: "nope", Name: "Sword"})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
+		},
+		{
+			name: "create unauthenticated",
+			call: func() error {
+				_, err := h.CreateItemTemplate(context.Background(), &gumav1.CreateItemTemplateRequest{GuildId: guildID, Name: "Sword"})
+				return err
+			},
+			wantCode: codes.Unauthenticated,
+		},
+		{
+			name: "delete malformed template id",
+			call: func() error {
+				_, err := h.DeleteItemTemplate(authed, &gumav1.DeleteItemTemplateRequest{GuildId: guildID, TemplateId: "nope"})
+				return err
+			},
+			wantCode: codes.InvalidArgument,
 		},
 	}
 

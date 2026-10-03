@@ -33,7 +33,7 @@ type Template struct {
 type Fields struct {
 	Name            string
 	Title           string
-	ItemTemplateIDs []string
+	ItemTemplateIDs []uuid.UUID
 }
 
 type Service struct {
@@ -50,11 +50,7 @@ func newService(q store, az authz.Checker, logger zerolog.Logger) *Service {
 	return &Service{q: q, az: az, logger: logger.With().Str("service", "rollcalltemplate").Logger()}
 }
 
-func (s *Service) List(ctx context.Context, guildIDStr, userIDStr string) ([]*Template, error) {
-	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
+func (s *Service) List(ctx context.Context, guildID uuid.UUID) ([]*Template, error) {
 	rows, err := s.q.ListRollCallTemplates(ctx, guildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: list roll call templates: %v", errs.ErrInternal, err)
@@ -66,15 +62,8 @@ func (s *Service) List(ctx context.Context, guildIDStr, userIDStr string) ([]*Te
 	return templates, nil
 }
 
-func (s *Service) Create(ctx context.Context, guildIDStr, userIDStr string, f Fields) (*Template, error) {
-	name, title, itemIDs, err := normalizeFields(f)
-	if err != nil {
-		return nil, err
-	}
-	guildID, userID, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
+func (s *Service) Create(ctx context.Context, guildID, userID uuid.UUID, f Fields) (*Template, error) {
+	name, title, itemIDs := normalizeFields(f)
 	if err := s.requireGuildItems(ctx, guildID, itemIDs); err != nil {
 		return nil, err
 	}
@@ -84,23 +73,12 @@ func (s *Service) Create(ctx context.Context, guildIDStr, userIDStr string, f Fi
 	if err != nil {
 		return nil, writeError(rollCallTemplateEntity, err)
 	}
-	s.logger.Info().Str("template_id", id.String()).Str("guild_id", guildIDStr).Msg("roll call template created")
+	s.logger.Info().Str("template_id", id.String()).Str("guild_id", guildID.String()).Msg("roll call template created")
 	return s.get(ctx, guildID, id)
 }
 
-func (s *Service) Update(ctx context.Context, guildIDStr, templateIDStr, userIDStr string, f Fields) (*Template, error) {
-	name, title, itemIDs, err := normalizeFields(f)
-	if err != nil {
-		return nil, err
-	}
-	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return nil, err
-	}
-	templateID, err := uuid.Parse(templateIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %s", errs.ErrNotFound, rollCallTemplateEntity)
-	}
+func (s *Service) Update(ctx context.Context, guildID, templateID uuid.UUID, f Fields) (*Template, error) {
+	name, title, itemIDs := normalizeFields(f)
 	if err := s.requireGuildItems(ctx, guildID, itemIDs); err != nil {
 		return nil, err
 	}
@@ -113,15 +91,7 @@ func (s *Service) Update(ctx context.Context, guildIDStr, templateIDStr, userIDS
 	return s.get(ctx, guildID, id)
 }
 
-func (s *Service) Delete(ctx context.Context, guildIDStr, templateIDStr, userIDStr string) error {
-	guildID, _, err := parseGuildAndUser(guildIDStr, userIDStr)
-	if err != nil {
-		return err
-	}
-	templateID, err := uuid.Parse(templateIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: %s", errs.ErrNotFound, rollCallTemplateEntity)
-	}
+func (s *Service) Delete(ctx context.Context, guildID, templateID uuid.UUID) error {
 	n, err := s.q.DeleteRollCallTemplate(ctx, db.DeleteRollCallTemplateParams{ID: templateID, GuildID: guildID})
 	if err != nil {
 		return fmt.Errorf("%w: delete roll call template: %v", errs.ErrInternal, err)
@@ -162,16 +132,12 @@ func (s *Service) requireGuildItems(ctx context.Context, guildID uuid.UUID, item
 	return nil
 }
 
-func normalizeFields(f Fields) (string, string, []uuid.UUID, error) {
-	itemIDs := make([]uuid.UUID, 0, len(f.ItemTemplateIDs))
-	for _, raw := range f.ItemTemplateIDs {
-		id, err := uuid.Parse(raw)
-		if err != nil {
-			return "", "", nil, fmt.Errorf("%w: item template id", errs.ErrInvalidArgument)
-		}
-		itemIDs = append(itemIDs, id)
+func normalizeFields(f Fields) (string, string, []uuid.UUID) {
+	itemIDs := f.ItemTemplateIDs
+	if itemIDs == nil {
+		itemIDs = []uuid.UUID{}
 	}
-	return strings.TrimSpace(f.Name), strings.TrimSpace(f.Title), itemIDs, nil
+	return strings.TrimSpace(f.Name), strings.TrimSpace(f.Title), itemIDs
 }
 
 func toTemplate(r db.GetRollCallTemplateRow) *Template {
