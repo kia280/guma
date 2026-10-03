@@ -14,12 +14,7 @@ import (
 	"github.com/kia280/guma/internal/services/errs"
 )
 
-func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerIDStr, guildIDStr, itemIDStr string) (*BackpackItem, error) {
-	ownerID, guildID, itemID, err := parseItemIDs(ownerIDStr, guildIDStr, itemIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerID, guildID, itemID uuid.UUID) (*BackpackItem, error) {
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
@@ -49,12 +44,7 @@ func (s *Service) WithdrawBackpackItem(ctx context.Context, ownerIDStr, guildIDS
 	return item, nil
 }
 
-func (s *Service) CancelBackpackWithdrawal(ctx context.Context, ownerIDStr, guildIDStr, itemIDStr string) (*BackpackItem, error) {
-	ownerID, guildID, itemID, err := parseItemIDs(ownerIDStr, guildIDStr, itemIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) CancelBackpackWithdrawal(ctx context.Context, ownerID, guildID, itemID uuid.UUID) (*BackpackItem, error) {
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
@@ -82,12 +72,7 @@ func (s *Service) CancelBackpackWithdrawal(ctx context.Context, ownerIDStr, guil
 	return toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt), nil
 }
 
-func (s *Service) ListPendingDeliveries(ctx context.Context, viewerIDStr, guildIDStr string) ([]*BackpackItem, error) {
-	_, guildID, err := parseIDs(viewerIDStr, guildIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) ListPendingDeliveries(ctx context.Context, guildID uuid.UUID) ([]*BackpackItem, error) {
 	rows, err := s.q.ListPendingDeliveries(ctx, guildID)
 	if err != nil {
 		return nil, fmt.Errorf("%w: list pending deliveries: %v", errs.ErrInternal, err)
@@ -102,12 +87,7 @@ func (s *Service) ListPendingDeliveries(ctx context.Context, viewerIDStr, guildI
 	return items, nil
 }
 
-func (s *Service) ConfirmBackpackDelivery(ctx context.Context, officerIDStr, guildIDStr, itemIDStr string) (*BackpackItem, error) {
-	officerID, guildID, itemID, err := parseItemIDs(officerIDStr, guildIDStr, itemIDStr)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) ConfirmBackpackDelivery(ctx context.Context, officerID, guildID, itemID uuid.UUID) (*BackpackItem, error) {
 	pgtx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("%w: begin tx: %v", errs.ErrInternal, err)
@@ -133,22 +113,10 @@ func (s *Service) ConfirmBackpackDelivery(ctx context.Context, officerIDStr, gui
 	if err := pgtx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
-	s.logger.Info().Str("item_id", itemIDStr).Str("officer_id", officerIDStr).Msg("backpack item delivered")
+	s.logger.Info().Str("item_id", itemID.String()).Str("officer_id", officerID.String()).Msg("backpack item delivered")
 	item := toBackpackItem(row.ID, row.OwnerID, row.GuildID, row.Item, row.Source, row.SourceID, row.Note, row.AcquiredAt)
 	item.DeliveryRequestedAt = timestampPtr(row.DeliveryRequestedAt)
 	return item, nil
-}
-
-func parseItemIDs(userIDStr, guildIDStr, itemIDStr string) (uuid.UUID, uuid.UUID, uuid.UUID, error) {
-	userID, guildID, err := parseIDs(userIDStr, guildIDStr)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, uuid.Nil, err
-	}
-	itemID, err := uuid.Parse(itemIDStr)
-	if err != nil {
-		return uuid.Nil, uuid.Nil, uuid.Nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
-	}
-	return userID, guildID, itemID, nil
 }
 
 func timestampPtr(t pgtype.Timestamptz) *time.Time {

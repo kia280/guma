@@ -46,8 +46,8 @@ type WithdrawalRequest struct {
 }
 
 type ListWithdrawalRequestsParams struct {
-	ViewerID string
-	GuildID  string
+	ViewerID uuid.UUID
+	GuildID  uuid.UUID
 	Status   string
 	PageSize int
 	Offset   int
@@ -59,11 +59,7 @@ type ListWithdrawalRequestsResult struct {
 	NextOffset int
 }
 
-func (s *Service) RequestWithdrawal(ctx context.Context, userIDStr, guildIDStr string, amount int64, note string) (*WithdrawalRequest, *Transaction, *Wallet, error) {
-	userID, guildID, err := parseIDs(userIDStr, guildIDStr)
-	if err != nil {
-		return nil, nil, nil, err
-	}
+func (s *Service) RequestWithdrawal(ctx context.Context, userID, guildID uuid.UUID, amount int64, note string) (*WithdrawalRequest, *Transaction, *Wallet, error) {
 	note = strings.TrimSpace(note)
 
 	pgtx, err := s.pool.Begin(ctx)
@@ -112,24 +108,15 @@ func (s *Service) RequestWithdrawal(ctx context.Context, userIDStr, guildIDStr s
 		return nil, nil, nil, fmt.Errorf("%w: commit: %v", errs.ErrInternal, err)
 	}
 
-	s.logger.Info().Str("withdrawal_request_id", request.ID).Str("user_id", userIDStr).Int64("amount", amount).Msg("withdrawal requested")
-	w, err := s.GetWallet(ctx, userIDStr, guildIDStr)
+	s.logger.Info().Str("withdrawal_request_id", request.ID).Str("user_id", userID.String()).Int64("amount", amount).Msg("withdrawal requested")
+	w, err := s.GetWallet(ctx, userID, guildID)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 	return request, t, w, nil
 }
 
-func (s *Service) CancelWithdrawalRequest(ctx context.Context, userIDStr, guildIDStr, requestIDStr string) (*WithdrawalRequest, *Wallet, error) {
-	userID, guildID, err := parseIDs(userIDStr, guildIDStr)
-	if err != nil {
-		return nil, nil, err
-	}
-	requestID, err := uuid.Parse(requestIDStr)
-	if err != nil {
-		return nil, nil, fmt.Errorf("%w: withdrawal request", errs.ErrNotFound)
-	}
-
+func (s *Service) CancelWithdrawalRequest(ctx context.Context, userID, guildID, requestID uuid.UUID) (*WithdrawalRequest, *Wallet, error) {
 	request, err := s.resolveWithdrawalRequest(ctx, withdrawalResolution{
 		guildID: guildID, requestID: requestID, actorID: userID, ownerID: &userID,
 		status: WithdrawalCancelled, txType: TypeWithdrawalCancelled, refund: true,
@@ -138,23 +125,15 @@ func (s *Service) CancelWithdrawalRequest(ctx context.Context, userIDStr, guildI
 		return nil, nil, err
 	}
 
-	s.logger.Info().Str("withdrawal_request_id", requestIDStr).Str("user_id", userIDStr).Msg("withdrawal cancelled")
-	w, err := s.GetWallet(ctx, userIDStr, guildIDStr)
+	s.logger.Info().Str("withdrawal_request_id", requestID.String()).Str("user_id", userID.String()).Msg("withdrawal cancelled")
+	w, err := s.GetWallet(ctx, userID, guildID)
 	if err != nil {
 		return nil, nil, err
 	}
 	return request, w, nil
 }
 
-func (s *Service) ReviewWithdrawalRequest(ctx context.Context, reviewerIDStr, guildIDStr, requestIDStr, status, note string) (*WithdrawalRequest, error) {
-	reviewerID, guildID, err := parseIDs(reviewerIDStr, guildIDStr)
-	if err != nil {
-		return nil, err
-	}
-	requestID, err := uuid.Parse(requestIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: withdrawal request", errs.ErrNotFound)
-	}
+func (s *Service) ReviewWithdrawalRequest(ctx context.Context, reviewerID, guildID, requestID uuid.UUID, status, note string) (*WithdrawalRequest, error) {
 	note = strings.TrimSpace(note)
 
 	resolution := withdrawalResolution{
@@ -170,24 +149,16 @@ func (s *Service) ReviewWithdrawalRequest(ctx context.Context, reviewerIDStr, gu
 		return nil, err
 	}
 
-	s.logger.Info().Str("withdrawal_request_id", requestIDStr).Str("reviewer_id", reviewerIDStr).Str("status", status).Msg("withdrawal reviewed")
+	s.logger.Info().Str("withdrawal_request_id", requestID.String()).Str("reviewer_id", reviewerID.String()).Str("status", status).Msg("withdrawal reviewed")
 	return request, nil
 }
 
 func (s *Service) ListMyWithdrawalRequests(ctx context.Context, p ListWithdrawalRequestsParams) (*ListWithdrawalRequestsResult, error) {
-	viewerID, guildID, err := parseIDs(p.ViewerID, p.GuildID)
-	if err != nil {
-		return nil, err
-	}
-	return s.listWithdrawalRequests(ctx, guildID, &viewerID, p)
+	return s.listWithdrawalRequests(ctx, p.GuildID, &p.ViewerID, p)
 }
 
 func (s *Service) ListWithdrawalRequests(ctx context.Context, p ListWithdrawalRequestsParams) (*ListWithdrawalRequestsResult, error) {
-	_, guildID, err := parseIDs(p.ViewerID, p.GuildID)
-	if err != nil {
-		return nil, err
-	}
-	return s.listWithdrawalRequests(ctx, guildID, nil, p)
+	return s.listWithdrawalRequests(ctx, p.GuildID, nil, p)
 }
 
 func (s *Service) listWithdrawalRequests(ctx context.Context, guildID uuid.UUID, requesterID *uuid.UUID, p ListWithdrawalRequestsParams) (*ListWithdrawalRequestsResult, error) {

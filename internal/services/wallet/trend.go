@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	db "github.com/kia280/guma/internal/db/sqlc"
 	"github.com/kia280/guma/internal/services/errs"
 )
@@ -25,11 +26,7 @@ type balanceChange struct {
 	amount int64
 }
 
-func (s *Service) GetBalanceTrend(ctx context.Context, userIDStr, guildIDStr string, days int32) ([]*BalancePoint, error) {
-	userID, guildID, err := parseIDs(userIDStr, guildIDStr)
-	if err != nil {
-		return nil, err
-	}
+func (s *Service) GetBalanceTrend(ctx context.Context, userID, guildID uuid.UUID, days int32) ([]*BalancePoint, error) {
 	span := normalizeTrendDays(days)
 	from := trendWindowStart(time.Now(), span)
 
