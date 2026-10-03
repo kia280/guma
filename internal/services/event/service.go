@@ -52,7 +52,7 @@ type RecurringPattern struct {
 
 // ListParams holds the inputs for List.
 type ListParams struct {
-	GuildID  string
+	GuildID  uuid.UUID
 	View     string
 	Date     string
 	PageSize int
@@ -68,8 +68,8 @@ type ListResult struct {
 
 // CreateParams holds the inputs for Create.
 type CreateParams struct {
-	GuildID          string
-	CreatedBy        string
+	GuildID          uuid.UUID
+	CreatedBy        uuid.UUID
 	Title            string
 	Description      string
 	Type             string
@@ -84,9 +84,9 @@ type CreateParams struct {
 
 // UpdateParams holds the inputs for Update.
 type UpdateParams struct {
-	GuildID          string
-	EventID          string
-	UserID           string
+	GuildID          uuid.UUID
+	EventID          uuid.UUID
+	UserID           uuid.UUID
 	Title            string
 	Description      string
 	Type             string
@@ -141,10 +141,7 @@ func New(pool *database.Pool, logger zerolog.Logger) *Service {
 // List returns paginated events for a guild.
 func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 	pageSize := pagination.StandardSize(p.PageSize)
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
+	guildID := p.GuildID
 
 	rows, err := s.q.ListEvents(ctx, db.ListEventsParams{
 		GuildID: guildID, PageSize: int32(pageSize), PageOffset: int32(p.Offset),
@@ -168,15 +165,7 @@ func (s *Service) List(ctx context.Context, p ListParams) (*ListResult, error) {
 }
 
 // Get fetches a single event by ID.
-func (s *Service) Get(ctx context.Context, guildIDStr, eventIDStr string) (*GuildEvent, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: event", errs.ErrNotFound)
-	}
-	eventID, err := uuid.Parse(eventIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: event", errs.ErrNotFound)
-	}
+func (s *Service) Get(ctx context.Context, guildID, eventID uuid.UUID) (*GuildEvent, error) {
 	r, err := s.q.GetEvent(ctx, db.GetEventParams{ID: eventID, GuildID: guildID})
 	if err != nil {
 		return nil, fmt.Errorf("%w: event", errs.ErrNotFound)
@@ -188,14 +177,8 @@ func (s *Service) Get(ctx context.Context, guildIDStr, eventIDStr string) (*Guil
 func (s *Service) Create(ctx context.Context, p CreateParams) (*GuildEvent, error) {
 	f := normalizeFields(eventFields{Title: p.Title, Type: p.Type, Priority: p.Priority})
 	p.Title, p.Type, p.Priority = f.Title, f.Type, f.Priority
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
-	createdBy, err := uuid.Parse(p.CreatedBy)
-	if err != nil {
-		return nil, fmt.Errorf("%w: user", errs.ErrInvalidArgument)
-	}
+	guildID := p.GuildID
+	createdBy := p.CreatedBy
 
 	rpJSON, err := marshalPattern(p.RecurringPattern)
 	if err != nil {
@@ -213,7 +196,7 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*GuildEvent, erro
 		return nil, fmt.Errorf("%w: create event: %v", errs.ErrInternal, err)
 	}
 	e := toEvent(eventRow(r))
-	s.logger.Info().Str("event_id", e.ID).Str("guild_id", p.GuildID).Msg("event created")
+	s.logger.Info().Str("event_id", e.ID).Str("guild_id", p.GuildID.String()).Msg("event created")
 	return e, nil
 }
 
@@ -221,14 +204,8 @@ func (s *Service) Create(ctx context.Context, p CreateParams) (*GuildEvent, erro
 func (s *Service) Update(ctx context.Context, p UpdateParams) (*GuildEvent, error) {
 	f := normalizeFields(eventFields{Title: p.Title, Type: p.Type, Priority: p.Priority})
 	p.Title, p.Type, p.Priority = f.Title, f.Type, f.Priority
-	guildID, err := uuid.Parse(p.GuildID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: event", errs.ErrNotFound)
-	}
-	eventID, err := uuid.Parse(p.EventID)
-	if err != nil {
-		return nil, fmt.Errorf("%w: event", errs.ErrNotFound)
-	}
+	guildID := p.GuildID
+	eventID := p.EventID
 
 	rpJSON, err := marshalPattern(p.RecurringPattern)
 	if err != nil {
@@ -249,15 +226,7 @@ func (s *Service) Update(ctx context.Context, p UpdateParams) (*GuildEvent, erro
 }
 
 // Delete removes a guild event.
-func (s *Service) Delete(ctx context.Context, guildIDStr, eventIDStr, userIDStr string) error {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: event", errs.ErrNotFound)
-	}
-	eventID, err := uuid.Parse(eventIDStr)
-	if err != nil {
-		return fmt.Errorf("%w: event", errs.ErrNotFound)
-	}
+func (s *Service) Delete(ctx context.Context, guildID, eventID, userID uuid.UUID) error {
 	n, err := s.q.DeleteEvent(ctx, db.DeleteEventParams{ID: eventID, GuildID: guildID})
 	if err != nil {
 		return fmt.Errorf("%w: delete event: %v", errs.ErrInternal, err)
@@ -269,11 +238,7 @@ func (s *Service) Delete(ctx context.Context, guildIDStr, eventIDStr, userIDStr 
 }
 
 // ListByRange returns events within a date range.
-func (s *Service) ListByRange(ctx context.Context, guildIDStr, startDate, endDate string) ([]*GuildEvent, error) {
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
-	}
+func (s *Service) ListByRange(ctx context.Context, guildID uuid.UUID, startDate, endDate string) ([]*GuildEvent, error) {
 	rows, err := s.q.ListEventsByRange(ctx, db.ListEventsByRangeParams{
 		GuildID: guildID, StartDate: startDate, EndDate: endDate,
 	})
@@ -288,13 +253,9 @@ func (s *Service) ListByRange(ctx context.Context, guildIDStr, startDate, endDat
 }
 
 // ListUpcoming returns the next N upcoming events for a guild.
-func (s *Service) ListUpcoming(ctx context.Context, guildIDStr string, limit int32) ([]*GuildEvent, error) {
+func (s *Service) ListUpcoming(ctx context.Context, guildID uuid.UUID, limit int32) ([]*GuildEvent, error) {
 	if limit <= 0 {
 		limit = defaultUpcomingLimit
-	}
-	guildID, err := uuid.Parse(guildIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("%w: guild", errs.ErrInvalidArgument)
 	}
 	rows, err := s.q.ListUpcomingEvents(ctx, db.ListUpcomingEventsParams{GuildID: guildID, Lim: limit})
 	if err != nil {
