@@ -11,6 +11,7 @@ import (
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/authz"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	"github.com/kia280/guma/internal/models"
 	auctionsvc "github.com/kia280/guma/internal/services/auction"
 	"github.com/kia280/guma/internal/services/inventory"
@@ -32,8 +33,12 @@ func NewAuctionService(db *database.Pool, az authz.Authorizer, logger zerolog.Lo
 }
 
 func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAuctionsRequest) (*gumav1.ListAuctionsResponse, error) {
+	guildID, err := ids.Parse("guild_id", req.GuildId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 	result, err := h.svc.List(ctx, auctionsvc.ListParams{
-		GuildID:  req.GuildId,
+		GuildID:  guildID,
 		Status:   req.Status,
 		Category: req.Category,
 		Rarity:   req.Rarity,
@@ -57,7 +62,13 @@ func (h *AuctionHandler) ListAuctions(ctx context.Context, req *gumav1.ListAucti
 }
 
 func (h *AuctionHandler) GetAuction(ctx context.Context, req *gumav1.GetAuctionRequest) (*gumav1.GetAuctionResponse, error) {
-	a, err := h.svc.Get(ctx, req.GuildId, req.AuctionId)
+	var p ids.Parser
+	guildID := p.Parse("guild_id", req.GuildId)
+	auctionID := p.Parse("auction_id", req.AuctionId)
+	if err := p.Err(); err != nil {
+		return nil, toStatus(err)
+	}
+	a, err := h.svc.Get(ctx, guildID, auctionID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -65,7 +76,16 @@ func (h *AuctionHandler) GetAuction(ctx context.Context, req *gumav1.GetAuctionR
 }
 
 func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAuctionRequest) (*gumav1.CreateAuctionResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var p ids.Parser
+	guildID := p.Parse("guild_id", req.GuildId)
+	source := sourceRefFromProto(&p, "source", req.Source)
+	if err := p.Err(); err != nil {
+		return nil, toStatus(err)
+	}
 
 	var item models.Item
 	if req.Item != nil {
@@ -73,7 +93,7 @@ func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAu
 	}
 
 	a, err := h.svc.Create(ctx, auctionsvc.CreateParams{
-		GuildID:         req.GuildId,
+		GuildID:         guildID,
 		SellerID:        userID,
 		Item:            item,
 		StartingBid:     req.StartingBid,
@@ -81,7 +101,7 @@ func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAu
 		DurationHours:   req.DurationHours,
 		IsBlind:         req.IsBlind,
 		Status:          req.Status,
-		Source:          sourceRefFromProto(req.Source),
+		Source:          source,
 	})
 	if err != nil {
 		return nil, toStatus(err)
@@ -90,9 +110,18 @@ func (h *AuctionHandler) CreateAuction(ctx context.Context, req *gumav1.CreateAu
 }
 
 func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidRequest) (*gumav1.PlaceBidResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var p ids.Parser
+	guildID := p.Parse("guild_id", req.GuildId)
+	auctionID := p.Parse("auction_id", req.AuctionId)
+	if err := p.Err(); err != nil {
+		return nil, toStatus(err)
+	}
 
-	auctionItem, bid, err := h.svc.PlaceBid(ctx, req.GuildId, req.AuctionId, userID, req.Amount)
+	auctionItem, bid, err := h.svc.PlaceBid(ctx, guildID, auctionID, userID, req.Amount)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -100,7 +129,13 @@ func (h *AuctionHandler) PlaceBid(ctx context.Context, req *gumav1.PlaceBidReque
 }
 
 func (h *AuctionHandler) GetBidHistory(ctx context.Context, req *gumav1.GetBidHistoryRequest) (*gumav1.GetBidHistoryResponse, error) {
-	result, err := h.svc.GetBidHistory(ctx, req.GuildId, req.AuctionId, int(req.PageSize), auctionsvc.ParsePageToken(req.PageToken))
+	var p ids.Parser
+	guildID := p.Parse("guild_id", req.GuildId)
+	auctionID := p.Parse("auction_id", req.AuctionId)
+	if err := p.Err(); err != nil {
+		return nil, toStatus(err)
+	}
+	result, err := h.svc.GetBidHistory(ctx, guildID, auctionID, int(req.PageSize), auctionsvc.ParsePageToken(req.PageToken))
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -117,11 +152,20 @@ func (h *AuctionHandler) GetBidHistory(ctx context.Context, req *gumav1.GetBidHi
 }
 
 func (h *AuctionHandler) UpdateAuction(ctx context.Context, req *gumav1.UpdateAuctionRequest) (*gumav1.UpdateAuctionResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var p ids.Parser
+	guildID := p.Parse("guild_id", req.GuildId)
+	auctionID := p.Parse("auction_id", req.AuctionId)
+	if err := p.Err(); err != nil {
+		return nil, toStatus(err)
+	}
 
 	params := auctionsvc.UpdateParams{
-		GuildID:         req.GuildId,
-		AuctionID:       req.AuctionId,
+		GuildID:         guildID,
+		AuctionID:       auctionID,
 		UpdatedBy:       userID,
 		StartingBid:     req.StartingBid,
 		MinBidIncrement: req.MinBidIncrement,
@@ -154,18 +198,36 @@ func (h *AuctionHandler) UpdateAuction(ctx context.Context, req *gumav1.UpdateAu
 }
 
 func (h *AuctionHandler) DeleteAuction(ctx context.Context, req *gumav1.DeleteAuctionRequest) (*gumav1.DeleteAuctionResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var p ids.Parser
+	guildID := p.Parse("guild_id", req.GuildId)
+	auctionID := p.Parse("auction_id", req.AuctionId)
+	if err := p.Err(); err != nil {
+		return nil, toStatus(err)
+	}
 
-	if err := h.svc.Delete(ctx, req.GuildId, req.AuctionId, userID); err != nil {
+	if err := h.svc.Delete(ctx, guildID, auctionID, userID); err != nil {
 		return nil, toStatus(err)
 	}
 	return &gumav1.DeleteAuctionResponse{Success: true}, nil
 }
 
 func (h *AuctionHandler) CancelAuction(ctx context.Context, req *gumav1.CancelAuctionRequest) (*gumav1.CancelAuctionResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var p ids.Parser
+	guildID := p.Parse("guild_id", req.GuildId)
+	auctionID := p.Parse("auction_id", req.AuctionId)
+	if err := p.Err(); err != nil {
+		return nil, toStatus(err)
+	}
 
-	a, err := h.svc.Cancel(ctx, req.GuildId, req.AuctionId, userID)
+	a, err := h.svc.Cancel(ctx, guildID, auctionID, userID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -242,9 +304,12 @@ func itemFromProto(p *gumav1.Item) models.Item {
 	}
 }
 
-func sourceRefFromProto(p *gumav1.ItemSourceRef) inventory.Ref {
-	if p == nil {
+func sourceRefFromProto(p *ids.Parser, field string, src *gumav1.ItemSourceRef) inventory.Ref {
+	if src == nil {
 		return inventory.Ref{}
 	}
-	return inventory.Ref{BackpackItemID: p.BackpackItemId, BankItemID: p.BankItemId}
+	return inventory.Ref{
+		BackpackItemID: p.Optional(field+".backpack_item_id", src.BackpackItemId),
+		BankItemID:     p.Optional(field+".bank_item_id", src.BankItemId),
+	}
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func createPermission(source inventory.Ref) authz.Permission {
-	if source.BankItemID != "" {
+	if source.BankItemID != nil {
 		return authz.ManageAuctions
 	}
 	return authz.View

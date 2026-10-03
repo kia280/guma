@@ -23,12 +23,12 @@ const (
 )
 
 type Ref struct {
-	BackpackItemID string
-	BankItemID     string
+	BackpackItemID *uuid.UUID
+	BankItemID     *uuid.UUID
 }
 
 func (r Ref) IsZero() bool {
-	return r.BackpackItemID == "" && r.BankItemID == ""
+	return r.BackpackItemID == nil && r.BankItemID == nil
 }
 
 type Holder struct {
@@ -51,10 +51,8 @@ func Lock(ctx context.Context, qtx *db.Queries, guildID, actorID uuid.UUID, ref 
 		err        error
 	)
 	switch {
-	case ref.BackpackItemID != "":
-		if itemID, err = uuid.Parse(ref.BackpackItemID); err != nil {
-			return nil, fmt.Errorf("%w: backpack item", errs.ErrNotFound)
-		}
+	case ref.BackpackItemID != nil:
+		itemID = *ref.BackpackItemID
 		rawItem, err = qtx.LockBackpackItem(ctx, db.LockBackpackItemParams{
 			HolderType: holder.Type, HolderID: holder.ID, ID: itemID, OwnerID: actorID, GuildID: guildID,
 		})
@@ -64,10 +62,8 @@ func Lock(ctx context.Context, qtx *db.Queries, guildID, actorID uuid.UUID, ref 
 			})
 		}
 		sourceType = SourceBackpack
-	case ref.BankItemID != "":
-		if itemID, err = uuid.Parse(ref.BankItemID); err != nil {
-			return nil, fmt.Errorf("%w: bank item", errs.ErrNotFound)
-		}
+	case ref.BankItemID != nil:
+		itemID = *ref.BankItemID
 		rawItem, err = qtx.LockBankItem(ctx, db.LockBankItemParams{
 			HolderType: holder.Type, HolderID: holder.ID, ID: itemID, GuildID: guildID,
 		})
