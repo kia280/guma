@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
@@ -32,10 +30,6 @@ func NewBankService(db *database.Pool, az authz.Authorizer, logger zerolog.Logge
 }
 
 func (h *BankHandler) GetBank(ctx context.Context, req *gumav1.GetBankRequest) (*gumav1.GetBankResponse, error) {
-	if session.UserIDFromContext(ctx) == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
 	bank, err := h.svc.GetBank(ctx, req.GuildId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -45,9 +39,6 @@ func (h *BankHandler) GetBank(ctx context.Context, req *gumav1.GetBankRequest) (
 
 func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.ContributeFundsRequest) (*gumav1.ContributeFundsResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	contribution, updatedBank, err := h.svc.ContributeFunds(ctx, req.GuildId, userID, req.Amount, req.Note)
 	if err != nil {
@@ -61,9 +52,6 @@ func (h *BankHandler) ContributeFunds(ctx context.Context, req *gumav1.Contribut
 
 func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFundsRequest) (*gumav1.RequestFundsResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	fr, err := h.svc.RequestFunds(ctx, req.GuildId, userID, req.Amount, req.Reason)
 	if err != nil {
@@ -74,9 +62,6 @@ func (h *BankHandler) RequestFunds(ctx context.Context, req *gumav1.RequestFunds
 
 func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewFundRequestRequest) (*gumav1.ReviewFundRequestResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	fr, err := h.svc.ReviewFundRequest(ctx, req.GuildId, req.RequestId, userID, req.Status, req.Note)
 	if err != nil {
@@ -87,9 +72,6 @@ func (h *BankHandler) ReviewFundRequest(ctx context.Context, req *gumav1.ReviewF
 
 func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFundRequestsRequest) (*gumav1.ListFundRequestsResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	offset, err := banksvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -118,10 +100,6 @@ func (h *BankHandler) ListFundRequests(ctx context.Context, req *gumav1.ListFund
 }
 
 func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListContributionsRequest) (*gumav1.ListContributionsResponse, error) {
-	if session.UserIDFromContext(ctx) == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
 	offset, err := banksvc.ParsePageToken(req.PageToken)
 	if err != nil {
 		return nil, toStatus(err)
@@ -148,9 +126,6 @@ func (h *BankHandler) ListContributions(ctx context.Context, req *gumav1.ListCon
 
 func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequest) (*gumav1.DonateItemResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	bi, err := h.svc.DonateItem(ctx, req.GuildId, userID, req.BackpackItemId, req.Note)
 	if err != nil {
@@ -161,9 +136,6 @@ func (h *BankHandler) DonateItem(ctx context.Context, req *gumav1.DonateItemRequ
 
 func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankItemsRequest) (*gumav1.ListBankItemsResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	offset, err := banksvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -195,9 +167,6 @@ func (h *BankHandler) ListBankItems(ctx context.Context, req *gumav1.ListBankIte
 
 func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBankItemRequest) (*gumav1.DeleteBankItemResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	if err := h.svc.DeleteBankItem(ctx, req.GuildId, userID, req.BankItemId); err != nil {
 		return nil, toStatus(err)
@@ -207,9 +176,6 @@ func (h *BankHandler) DeleteBankItem(ctx context.Context, req *gumav1.DeleteBank
 
 func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRequest) (*gumav1.RequestItemResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	ir, err := h.svc.RequestItem(ctx, req.GuildId, userID, req.BankItemId, req.Reason)
 	if err != nil {
@@ -220,9 +186,6 @@ func (h *BankHandler) RequestItem(ctx context.Context, req *gumav1.RequestItemRe
 
 func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewItemRequestRequest) (*gumav1.ReviewItemRequestResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	ir, err := h.svc.ReviewItemRequest(ctx, req.GuildId, req.RequestId, userID, req.Status, req.Note)
 	if err != nil {
@@ -233,9 +196,6 @@ func (h *BankHandler) ReviewItemRequest(ctx context.Context, req *gumav1.ReviewI
 
 func (h *BankHandler) ListItemRequests(ctx context.Context, req *gumav1.ListItemRequestsRequest) (*gumav1.ListItemRequestsResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	offset, err := banksvc.ParsePageToken(req.PageToken)
 	if err != nil {
@@ -374,9 +334,6 @@ func itemRequestToProto(ir *banksvc.ItemRequest) *gumav1.ItemRequest {
 
 func (h *BankHandler) GetItemHistory(ctx context.Context, req *gumav1.GetItemHistoryRequest) (*gumav1.GetItemHistoryResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	events, err := h.svc.GetItemHistory(ctx, req.GuildId, userID, req.ItemId)
 	if err != nil {

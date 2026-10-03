@@ -18,19 +18,13 @@ import (
 
 func TestNotificationService_Validation(t *testing.T) {
 	h := NewNotificationService(nil, zerolog.Nop())
-	anon := context.Background()
-	authed := session.WithUserID(anon, "00000000-0000-0000-0000-000000000001")
+	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 
 	tests := []struct {
 		name     string
 		call     func() error
 		wantCode codes.Code
 	}{
-		{
-			name:     "list unauthenticated",
-			call:     func() error { _, err := h.ListNotifications(anon, &gumav1.ListNotificationsRequest{}); return err },
-			wantCode: codes.Unauthenticated,
-		},
 		{
 			name: "list bad page token",
 			call: func() error {
@@ -40,36 +34,12 @@ func TestNotificationService_Validation(t *testing.T) {
 			wantCode: codes.InvalidArgument,
 		},
 		{
-			name: "unread count unauthenticated",
-			call: func() error {
-				_, err := h.GetUnreadNotificationCount(anon, &gumav1.GetUnreadNotificationCountRequest{})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
-		},
-		{
 			name: "mark read malformed id",
 			call: func() error {
 				_, err := h.MarkNotificationRead(authed, &gumav1.MarkNotificationReadRequest{NotificationId: "nope"})
 				return err
 			},
 			wantCode: codes.InvalidArgument,
-		},
-		{
-			name: "mark read unauthenticated",
-			call: func() error {
-				_, err := h.MarkNotificationRead(anon, &gumav1.MarkNotificationReadRequest{NotificationId: "00000000-0000-0000-0000-000000000002"})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "mark all read unauthenticated",
-			call: func() error {
-				_, err := h.MarkAllNotificationsRead(anon, &gumav1.MarkAllNotificationsReadRequest{})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
 		},
 	}
 

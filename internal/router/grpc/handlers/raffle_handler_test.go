@@ -26,12 +26,6 @@ func TestRaffleService_UpdateRaffle_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name:     "unauthenticated",
-			ctx:      context.Background(),
-			req:      &gumav1.UpdateRaffleRequest{GuildId: "g", RaffleId: "l", DrawDate: "2099-01-01T00:00:00Z"},
-			wantCode: codes.Unauthenticated,
-		},
-		{
 			name: "draw date in the past",
 			ctx:  authed,
 			req: &gumav1.UpdateRaffleRequest{
@@ -79,13 +73,9 @@ func TestCancelAndDeleteRaffle_Validation(t *testing.T) {
 	authed := session.WithUserID(context.Background(), "00000000-0000-0000-0000-000000000001")
 	const guildID = "00000000-0000-0000-0000-000000000002"
 
-	_, err := service.CancelRaffle(context.Background(), &gumav1.CancelRaffleRequest{GuildId: guildID, RaffleId: "l"})
-	requireCode(t, err, codes.Unauthenticated)
-	_, err = service.CancelRaffle(authed, &gumav1.CancelRaffleRequest{GuildId: guildID, RaffleId: "bad"})
+	_, err := service.CancelRaffle(authed, &gumav1.CancelRaffleRequest{GuildId: guildID, RaffleId: "bad"})
 	requireCode(t, err, codes.NotFound)
 
-	_, err = service.DeleteRaffle(context.Background(), &gumav1.DeleteRaffleRequest{GuildId: guildID, RaffleId: "l"})
-	requireCode(t, err, codes.Unauthenticated)
 	_, err = service.DeleteRaffle(authed, &gumav1.DeleteRaffleRequest{GuildId: guildID, RaffleId: "bad"})
 	requireCode(t, err, codes.NotFound)
 }

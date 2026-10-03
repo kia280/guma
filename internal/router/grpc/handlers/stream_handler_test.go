@@ -43,12 +43,6 @@ func (s *fakeUserEventStream) messages() []*gumav1.WatchUserEventsResponse {
 
 func noGuilds(context.Context, string) ([]string, error) { return nil, nil }
 
-func TestWatchUserEventsRequiresAuthentication(t *testing.T) {
-	h := NewStreamService(events.NewBroker(), noGuilds, zerolog.Nop())
-	err := h.WatchUserEvents(&gumav1.WatchUserEventsRequest{}, &fakeUserEventStream{ctx: context.Background()})
-	assert.Equal(t, codes.Unauthenticated, status.Code(err))
-}
-
 func TestWatchUserEventsStreamsWalletUpdates(t *testing.T) {
 	broker := events.NewBroker()
 	h := NewStreamService(broker, noGuilds, zerolog.Nop())

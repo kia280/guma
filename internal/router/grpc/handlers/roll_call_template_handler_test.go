@@ -25,22 +25,6 @@ func TestRollCallTemplateService_Validation(t *testing.T) {
 		wantCode codes.Code
 	}{
 		{
-			name: "list unauthenticated",
-			call: func() error {
-				_, err := h.ListRollCallTemplates(context.Background(), &gumav1.ListRollCallTemplatesRequest{GuildId: guildID})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
-		},
-		{
-			name: "create unauthenticated",
-			call: func() error {
-				_, err := h.CreateRollCallTemplate(context.Background(), &gumav1.CreateRollCallTemplateRequest{GuildId: guildID, Name: "n", Title: "t"})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
-		},
-		{
 			name: "create malformed item template id",
 			call: func() error {
 				_, err := h.CreateRollCallTemplate(authed, &gumav1.CreateRollCallTemplateRequest{
@@ -59,14 +43,6 @@ func TestRollCallTemplateService_Validation(t *testing.T) {
 				return err
 			},
 			wantCode: codes.NotFound,
-		},
-		{
-			name: "delete unauthenticated",
-			call: func() error {
-				_, err := h.DeleteRollCallTemplate(context.Background(), &gumav1.DeleteRollCallTemplateRequest{GuildId: guildID, TemplateId: "x"})
-				return err
-			},
-			wantCode: codes.Unauthenticated,
 		},
 		{
 			name: "delete malformed template id",

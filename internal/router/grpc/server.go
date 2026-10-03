@@ -52,12 +52,14 @@ func NewServer(cfg *config.Config, db *database.Pool, az authz.Authorizer, broke
 			interceptors.ErrorSanitizerInterceptor(),
 			interceptors.LoggingInterceptor(logger),
 			interceptors.RecoveryInterceptor(logger),
+			interceptors.AuthInterceptor(),
 			grpcprotovalidate.UnaryServerInterceptor(validator),
 			interceptors.GuildAuthzInterceptor(az),
 		),
 		grpc.ChainStreamInterceptor(
 			interceptors.StreamErrorSanitizerInterceptor(logger),
 			interceptors.StreamRecoveryInterceptor(logger),
+			interceptors.StreamAuthInterceptor(),
 			grpcprotovalidate.StreamServerInterceptor(validator),
 		),
 	)

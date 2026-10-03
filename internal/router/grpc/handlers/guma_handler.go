@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/session"
@@ -30,10 +28,6 @@ func (s *GumaService) GetNavigation(ctx context.Context, req *gumav1.GetNavigati
 
 	// Get user ID from context
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		logger.Warn().Msg("user_id not found in context")
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	logger.Info().Str("user_id", userID).Str("guild_id", req.GuildId).Msg("getting navigation")
 
@@ -68,9 +62,6 @@ func (s *GumaService) GetDashboardData(ctx context.Context, req *gumav1.GetDashb
 	logger := s.logger.With().Str("operation", "get_dashboard_data").Logger()
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	logger.Info().Str("user_id", userID).Str("guild_id", req.GuildId).Msg("getting dashboard data")
 
@@ -93,9 +84,6 @@ func (s *GumaService) GetDashboardData(ctx context.Context, req *gumav1.GetDashb
 // GetUserPreferences retrieves user preferences
 func (s *GumaService) GetUserPreferences(ctx context.Context, req *gumav1.GetUserPreferencesRequest) (*gumav1.GetUserPreferencesResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().Str("user_id", userID).Msg("getting user preferences")
 
@@ -118,9 +106,6 @@ func (s *GumaService) GetUserPreferences(ctx context.Context, req *gumav1.GetUse
 // UpdateUserPreferences updates user preferences
 func (s *GumaService) UpdateUserPreferences(ctx context.Context, req *gumav1.UpdateUserPreferencesRequest) (*gumav1.UpdateUserPreferencesResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	s.logger.Info().Str("user_id", userID).Msg("updating user preferences")
 
@@ -163,9 +148,6 @@ func (s *GumaService) SearchGlobal(ctx context.Context, req *gumav1.SearchGlobal
 	logger := s.logger.With().Str("operation", "search_global").Logger()
 
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	logger.Info().Str("user_id", userID).Str("query", req.Query).Msg("performing global search")
 

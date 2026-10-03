@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
@@ -67,9 +65,6 @@ func (h *RollCallHandler) GetRollCall(ctx context.Context, req *gumav1.GetRollCa
 
 func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.CreateRollCallRequest) (*gumav1.CreateRollCallResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	c, err := h.svc.Create(ctx, rollcallsvc.CreateParams{
 		GuildID:     req.GuildId,
@@ -89,9 +84,6 @@ func (h *RollCallHandler) CreateRollCall(ctx context.Context, req *gumav1.Create
 
 func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.UpdateRollCallRequest) (*gumav1.UpdateRollCallResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	c, err := h.svc.Update(ctx, rollcallsvc.UpdateParams{
 		GuildID:     req.GuildId,
@@ -112,9 +104,6 @@ func (h *RollCallHandler) UpdateRollCall(ctx context.Context, req *gumav1.Update
 
 func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.DeleteRollCallRequest) (*gumav1.DeleteRollCallResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 	if err := h.svc.Delete(ctx, req.GuildId, req.RollCallId, userID); err != nil {
 		return nil, toStatus(err)
 	}
@@ -123,9 +112,6 @@ func (h *RollCallHandler) DeleteRollCall(ctx context.Context, req *gumav1.Delete
 
 func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.CompleteRollCallRequest) (*gumav1.CompleteRollCallResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	c, err := h.svc.Complete(ctx, req.GuildId, req.RollCallId, userID, req.KeepLeftoversInBank)
 	if err != nil {
@@ -136,9 +122,6 @@ func (h *RollCallHandler) CompleteRollCall(ctx context.Context, req *gumav1.Comp
 
 func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.UpdateRollCallLootRequest) (*gumav1.UpdateRollCallLootResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	lootList := make([]models.Item, len(req.LootList))
 	for i, item := range req.LootList {
@@ -159,9 +142,6 @@ func (h *RollCallHandler) UpdateRollCallLoot(ctx context.Context, req *gumav1.Up
 
 func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.CancelRollCallRequest) (*gumav1.CancelRollCallResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	c, err := h.svc.Cancel(ctx, req.GuildId, req.RollCallId, userID)
 	if err != nil {
@@ -172,9 +152,6 @@ func (h *RollCallHandler) CancelRollCall(ctx context.Context, req *gumav1.Cancel
 
 func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLootRequest) (*gumav1.AssignLootResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	backpackItemID, err := h.svc.AssignLoot(ctx, req.GuildId, req.RollCallId, req.ItemId, userID, req.UserId)
 	if err != nil {
@@ -184,10 +161,6 @@ func (h *RollCallHandler) AssignLoot(ctx context.Context, req *gumav1.AssignLoot
 }
 
 func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRollCallGoldRequest) (*gumav1.GetRollCallGoldResponse, error) {
-	if session.UserIDFromContext(ctx) == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
-
 	summary, err := h.svc.GetGold(ctx, req.GuildId, req.RollCallId)
 	if err != nil {
 		return nil, toStatus(err)
@@ -200,9 +173,6 @@ func (h *RollCallHandler) GetRollCallGold(ctx context.Context, req *gumav1.GetRo
 
 func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav1.DistributeRollCallGoldRequest) (*gumav1.DistributeRollCallGoldResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	payouts := make([]rollcallsvc.GoldPayout, len(req.Payouts))
 	for i, p := range req.Payouts {
@@ -228,9 +198,6 @@ func (h *RollCallHandler) DistributeRollCallGold(ctx context.Context, req *gumav
 
 func (h *RollCallHandler) CheckIn(ctx context.Context, req *gumav1.CheckInRequest) (*gumav1.CheckInResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	attendee, err := h.svc.CheckIn(ctx, req.GuildId, req.RollCallId, userID, req.Notes)
 	if err != nil {

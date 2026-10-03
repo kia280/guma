@@ -27,7 +27,6 @@ func TestCancelRollCall_Validation(t *testing.T) {
 		req      *gumav1.CancelRollCallRequest
 		wantCode codes.Code
 	}{
-		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.CancelRollCallRequest{GuildId: guildID, RollCallId: rollCallID}, wantCode: codes.Unauthenticated},
 		{name: "malformed roll call id", ctx: authed, req: &gumav1.CancelRollCallRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.NotFound},
 	}
 	for _, tt := range tests {
@@ -61,7 +60,6 @@ func TestUpdateRollCall_Validation(t *testing.T) {
 		req      func() *gumav1.UpdateRollCallRequest
 		wantCode codes.Code
 	}{
-		{name: "unauthenticated", ctx: context.Background(), req: valid, wantCode: codes.Unauthenticated},
 		{name: "expire before datetime", ctx: authed, req: func() *gumav1.UpdateRollCallRequest { r := valid(); r.ExpireTime = r.Datetime; return r }, wantCode: codes.InvalidArgument},
 		{name: "malformed roll call id", ctx: authed, req: func() *gumav1.UpdateRollCallRequest { r := valid(); r.RollCallId = "bad"; return r }, wantCode: codes.NotFound},
 	}
@@ -104,7 +102,6 @@ func TestDistributeRollCallGold_Validation(t *testing.T) {
 		req      func() *gumav1.DistributeRollCallGoldRequest
 		wantCode codes.Code
 	}{
-		{name: "unauthenticated", ctx: context.Background(), req: valid, wantCode: codes.Unauthenticated},
 		{name: "malformed roll call id", ctx: authed, req: with(func(r *gumav1.DistributeRollCallGoldRequest) { r.RollCallId = "bad" }), wantCode: codes.NotFound},
 		{name: "malformed request id", ctx: authed, req: with(func(r *gumav1.DistributeRollCallGoldRequest) { r.RequestId = "bad" }), wantCode: codes.InvalidArgument},
 		{name: "duplicate recipient", ctx: authed, req: with(func(r *gumav1.DistributeRollCallGoldRequest) { r.Payouts[1].UserId = alice }), wantCode: codes.InvalidArgument},
@@ -133,7 +130,6 @@ func TestGetRollCallGold_Validation(t *testing.T) {
 		req      *gumav1.GetRollCallGoldRequest
 		wantCode codes.Code
 	}{
-		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.GetRollCallGoldRequest{GuildId: guildID, RollCallId: rollCallID}, wantCode: codes.Unauthenticated},
 		{name: "malformed roll call id", ctx: authed, req: &gumav1.GetRollCallGoldRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.NotFound},
 	}
 	for _, tt := range tests {
@@ -171,7 +167,6 @@ func TestCompleteRollCall_Validation(t *testing.T) {
 		req      *gumav1.CompleteRollCallRequest
 		wantCode codes.Code
 	}{
-		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.CompleteRollCallRequest{GuildId: guildID, RollCallId: rollCallID}, wantCode: codes.Unauthenticated},
 		{name: "malformed roll call id", ctx: authed, req: &gumav1.CompleteRollCallRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.NotFound},
 	}
 	for _, tt := range tests {
@@ -197,7 +192,6 @@ func TestUpdateRollCallLoot_Validation(t *testing.T) {
 		req      *gumav1.UpdateRollCallLootRequest
 		wantCode codes.Code
 	}{
-		{name: "unauthenticated", ctx: context.Background(), req: &gumav1.UpdateRollCallLootRequest{GuildId: guildID, RollCallId: rollCallID}, wantCode: codes.Unauthenticated},
 		{name: "malformed roll call id", ctx: authed, req: &gumav1.UpdateRollCallLootRequest{GuildId: guildID, RollCallId: "bad"}, wantCode: codes.NotFound},
 	}
 	for _, tt := range tests {

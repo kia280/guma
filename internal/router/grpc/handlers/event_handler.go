@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
@@ -66,9 +64,6 @@ func (h *EventHandler) GetEvent(ctx context.Context, req *gumav1.GetEventRequest
 
 func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventRequest) (*gumav1.CreateEventResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	e, err := h.svc.Create(ctx, eventsvc.CreateParams{
 		GuildID:          req.GuildId,
@@ -92,9 +87,6 @@ func (h *EventHandler) CreateEvent(ctx context.Context, req *gumav1.CreateEventR
 
 func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventRequest) (*gumav1.UpdateEventResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	e, err := h.svc.Update(ctx, eventsvc.UpdateParams{
 		GuildID:          req.GuildId,
@@ -119,9 +111,6 @@ func (h *EventHandler) UpdateEvent(ctx context.Context, req *gumav1.UpdateEventR
 
 func (h *EventHandler) DeleteEvent(ctx context.Context, req *gumav1.DeleteEventRequest) (*gumav1.DeleteEventResponse, error) {
 	userID := session.UserIDFromContext(ctx)
-	if userID == "" {
-		return nil, status.Error(codes.Unauthenticated, "user not authenticated")
-	}
 
 	if err := h.svc.Delete(ctx, req.GuildId, req.EventId, userID); err != nil {
 		return nil, toStatus(err)
