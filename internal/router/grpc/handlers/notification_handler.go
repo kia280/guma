@@ -9,6 +9,7 @@ import (
 
 	gumav1 "github.com/kia280/guma/gen/proto/guma/v1"
 	"github.com/kia280/guma/internal/database"
+	"github.com/kia280/guma/internal/ids"
 	notificationsvc "github.com/kia280/guma/internal/services/notification"
 )
 
@@ -26,7 +27,10 @@ func NewNotificationService(db *database.Pool, logger zerolog.Logger) *Notificat
 }
 
 func (h *NotificationHandler) ListNotifications(ctx context.Context, req *gumav1.ListNotificationsRequest) (*gumav1.ListNotificationsResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := h.svc.List(ctx, notificationsvc.ListParams{
 		UserID:     userID,
@@ -51,7 +55,10 @@ func (h *NotificationHandler) ListNotifications(ctx context.Context, req *gumav1
 }
 
 func (h *NotificationHandler) GetUnreadNotificationCount(ctx context.Context, _ *gumav1.GetUnreadNotificationCountRequest) (*gumav1.GetUnreadNotificationCountResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	count, err := h.svc.UnreadCount(ctx, userID)
 	if err != nil {
@@ -61,9 +68,16 @@ func (h *NotificationHandler) GetUnreadNotificationCount(ctx context.Context, _ 
 }
 
 func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gumav1.MarkNotificationReadRequest) (*gumav1.MarkNotificationReadResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	notificationID, err := ids.Parse("notification_id", req.NotificationId)
+	if err != nil {
+		return nil, toStatus(err)
+	}
 
-	n, err := h.svc.MarkRead(ctx, userID, req.NotificationId)
+	n, err := h.svc.MarkRead(ctx, userID, notificationID)
 	if err != nil {
 		return nil, toStatus(err)
 	}
@@ -71,7 +85,10 @@ func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *gum
 }
 
 func (h *NotificationHandler) MarkAllNotificationsRead(ctx context.Context, _ *gumav1.MarkAllNotificationsReadRequest) (*gumav1.MarkAllNotificationsReadResponse, error) {
-	userID := legacyCallerID(ctx)
+	userID, err := callerID(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	updated, err := h.svc.MarkAllRead(ctx, userID)
 	if err != nil {

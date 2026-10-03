@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
 	"github.com/kia280/guma/internal/services/errs"
@@ -14,21 +15,15 @@ import (
 func TestValidatesInputBeforeQuerying(t *testing.T) {
 	s := New(nil, zerolog.Nop())
 	ctx := context.Background()
-	const user = "00000000-0000-0000-0000-000000000001"
+	user := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 
 	tests := []struct {
 		name string
 		call func() error
 		want error
 	}{
-		{name: "list without user", call: func() error { _, err := s.List(ctx, ListParams{}); return err }, want: errs.ErrUnauthenticated},
-		{name: "list bad user id", call: func() error { _, err := s.List(ctx, ListParams{UserID: "nope"}); return err }, want: errs.ErrInvalidArgument},
 		{name: "list bad page token", call: func() error { _, err := s.List(ctx, ListParams{UserID: user, PageToken: "next"}); return err }, want: errs.ErrInvalidArgument},
 		{name: "list negative page token", call: func() error { _, err := s.List(ctx, ListParams{UserID: user, PageToken: "-1"}); return err }, want: errs.ErrInvalidArgument},
-		{name: "unread count bad user id", call: func() error { _, err := s.UnreadCount(ctx, "nope"); return err }, want: errs.ErrInvalidArgument},
-		{name: "mark read without user", call: func() error { _, err := s.MarkRead(ctx, "", user); return err }, want: errs.ErrUnauthenticated},
-		{name: "mark read bad notification id", call: func() error { _, err := s.MarkRead(ctx, user, "nope"); return err }, want: errs.ErrInvalidArgument},
-		{name: "mark all read bad user id", call: func() error { _, err := s.MarkAllRead(ctx, "nope"); return err }, want: errs.ErrInvalidArgument},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
